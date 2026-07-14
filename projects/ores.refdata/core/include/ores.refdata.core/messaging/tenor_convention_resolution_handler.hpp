@@ -22,10 +22,10 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
-#include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
+#include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -53,15 +53,17 @@ using namespace ores::logging;
  */
 class tenor_convention_resolution_handler {
 public:
-    tenor_convention_resolution_handler(ores::nats::service::client& nats,
-                                        ores::database::context ctx,
-                                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    tenor_convention_resolution_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -86,7 +88,8 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Completed " << msg.subject;
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 

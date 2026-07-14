@@ -130,14 +130,13 @@ public:
                 throw std::invalid_argument("at least one GMM component is required");
 
             for (int p = 0; p < num_paths; ++p) {
-                auto process =
-                    ores::analytics::quant::service::process_factory::make_process(
-                        req->process_type,
-                        req->gmm_means,
-                        req->gmm_stdevs,
-                        req->gmm_weights,
-                        req->initial_price,
-                        req->seed + static_cast<std::uint32_t>(p));
+                auto process = ores::analytics::quant::service::process_factory::make_process(
+                    req->process_type,
+                    req->gmm_means,
+                    req->gmm_stdevs,
+                    req->gmm_weights,
+                    req->initial_price,
+                    req->seed + static_cast<std::uint32_t>(p));
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)

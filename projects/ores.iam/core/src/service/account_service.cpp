@@ -421,8 +421,8 @@ account_service::find_account_by_id(const boost::uuids::uuid& account_id) {
 
     auto accounts = account_repo_.read_latest(account_id);
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No account found for id: "
-                                   << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), debug)
+            << "No account found for id: " << boost::uuids::to_string(account_id);
         return std::nullopt;
     }
     return accounts.front();
@@ -588,7 +588,7 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
 }
 
 std::string account_service::set_my_default_party(const boost::uuids::uuid& account_id,
-                                                   const boost::uuids::uuid& party_id) {
+                                                  const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
                                << boost::uuids::to_string(account_id);
 
@@ -604,8 +604,8 @@ std::string account_service::set_my_default_party(const boost::uuids::uuid& acco
         // the default should succeed silently, not fail — callers like
         // provisioning scripts and the shell command may legitimately repeat
         // this call against an already-provisioned system.
-        BOOST_LOG_SEV(lg(), debug) << "Default party unchanged for account: "
-                                   << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Default party unchanged for account: " << boost::uuids::to_string(account_id);
         return "";
     }
 

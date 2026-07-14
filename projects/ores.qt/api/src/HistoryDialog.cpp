@@ -59,17 +59,16 @@ void HistoryDialog::loadHistory() {
     request.entity_id = entityId_;
 
     QPointer<HistoryDialog> self = this;
-    runHistoryRequest(
-        clientManager_, std::move(request), [self](auto response) {
-            if (!self)
-                return;
-            if (!response.success) {
-                self->historyLoadFailed(QString::fromStdString(response.message));
-                return;
-            }
-            self->versions_ = std::move(response.versions);
-            self->historyLoaded();
-        });
+    runHistoryRequest(clientManager_, std::move(request), [self](auto response) {
+        if (!self)
+            return;
+        if (!response.success) {
+            self->historyLoadFailed(QString::fromStdString(response.message));
+            return;
+        }
+        self->versions_ = std::move(response.versions);
+        self->historyLoaded();
+    });
 }
 
 int HistoryDialog::historySize() const {
@@ -83,7 +82,7 @@ QString HistoryDialog::historyTitle() const {
 HistoryDialogBase::VersionRow HistoryDialog::versionRow(int index) const {
     const auto& v = versions_[index];
     return {v.version,
-           {relative_time_helper::format(v.recorded_at), QString::fromStdString(v.modified_by)}};
+            {relative_time_helper::format(v.recorded_at), QString::fromStdString(v.modified_by)}};
 }
 
 HistoryDialogBase::DiffResult HistoryDialog::calculateDiffAt(int ci, int /*pi*/) const {
@@ -92,9 +91,9 @@ HistoryDialogBase::DiffResult HistoryDialog::calculateDiffAt(int ci, int /*pi*/)
     // HistoryDialogBase always requests (previous_index == ci + 1).
     DiffResult diffs;
     for (const auto& entry : versions_[ci].changes.entries) {
-        diffs.append({QString::fromStdString(entry.field_name),
-                      {QString::fromStdString(entry.old_value),
-                       QString::fromStdString(entry.new_value)}});
+        diffs.append(
+            {QString::fromStdString(entry.field_name),
+             {QString::fromStdString(entry.old_value), QString::fromStdString(entry.new_value)}});
     }
     return diffs;
 }
@@ -114,15 +113,15 @@ void HistoryDialog::displayFullDetails(int index) {
 }
 
 void HistoryDialog::openVersionAt(int index) {
-    emit openVersionRequested(
-        QString::fromStdString(entityType_), QString::fromStdString(entityId_),
-        versions_[index].version);
+    emit openVersionRequested(QString::fromStdString(entityType_),
+                              QString::fromStdString(entityId_),
+                              versions_[index].version);
 }
 
 void HistoryDialog::revertToVersionAt(int index) {
-    emit revertVersionRequested(
-        QString::fromStdString(entityType_), QString::fromStdString(entityId_),
-        versions_[index].version);
+    emit revertVersionRequested(QString::fromStdString(entityType_),
+                                QString::fromStdString(entityId_),
+                                versions_[index].version);
 }
 
 }

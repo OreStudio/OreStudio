@@ -153,12 +153,13 @@ public:
         const std::uint32_t seed = rd();
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-        auto process = ores::analytics::quant::service::process_factory::make_process(process_type,
-                                                     std::move(means),
-                                                     std::move(stdevs),
-                                                     std::move(weights),
-                                                     initial_price,
-                                                     seed);
+        auto process =
+            ores::analytics::quant::service::process_factory::make_process(process_type,
+                                                                           std::move(means),
+                                                                           std::move(stdevs),
+                                                                           std::move(weights),
+                                                                           initial_price,
+                                                                           seed);
         auto feed = std::make_shared<fx_spot_feed>(
             nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
         running_feed rf;

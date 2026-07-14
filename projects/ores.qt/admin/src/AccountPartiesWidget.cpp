@@ -484,10 +484,9 @@ void AccountPartiesWidget::populateDefaultPartyCombo() {
     // load() triggered by a party add/remove alongside an unrelated
     // default-party save) would desync the visible selection from the real
     // default and, if saved again, silently clear it.
-    const int idx = defaultPartyId_.is_nil() ?
-        0 :
-        defaultPartyCombo_->findData(
-            QString::fromStdString(boost::uuids::to_string(defaultPartyId_)));
+    const int idx = defaultPartyId_.is_nil() ? 0 :
+                                               defaultPartyCombo_->findData(QString::fromStdString(
+                                                   boost::uuids::to_string(defaultPartyId_)));
     defaultPartyCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
     defaultPartyComboInitialized_ = true;
 }

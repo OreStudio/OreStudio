@@ -21,8 +21,8 @@
 #define ORES_HISTORY_MESSAGING_HISTORY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.history.core/export.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
+#include "ores.history.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -61,7 +61,10 @@ public:
                     const service::dispatch_registry& registry,
                     ores::database::context ctx,
                     std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), registry_(registry), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        : nats_(nats)
+        , registry_(registry)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;

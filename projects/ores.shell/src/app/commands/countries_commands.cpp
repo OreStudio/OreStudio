@@ -240,8 +240,7 @@ void countries_commands::process_get_country_history(std::ostream& out,
         return;
     }
     if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: countries history alpha2_code [--diff] [--version <n>]"
-                  << std::endl;
+        fail(out) << "Usage: countries history alpha2_code [--diff] [--version <n>]" << std::endl;
         return;
     }
     auto alpha2_code = parsed->positionals.front();

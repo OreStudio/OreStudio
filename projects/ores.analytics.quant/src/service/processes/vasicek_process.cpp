@@ -23,8 +23,7 @@ namespace ores::analytics::quant::service {
 
 vasicek_process::vasicek_process(
     double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed)
-    : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, seed) {
-}
+    : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, seed) {}
 
 double vasicek_process::next() {
     return inner_.next();

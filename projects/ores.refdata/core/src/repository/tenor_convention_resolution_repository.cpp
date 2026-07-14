@@ -61,7 +61,10 @@ tenor_convention_resolution_repository::read_all(context ctx) {
 
     return execute_read_query<tenor_convention_resolution_entity,
                               domain::tenor_convention_resolution>(
-        ctx, query, [](const auto& entities) { return map(entities); }, lg(),
+        ctx,
+        query,
+        [](const auto& entities) { return map(entities); },
+        lg(),
         "Reading all tenor convention resolutions.");
 }
 

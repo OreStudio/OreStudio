@@ -87,18 +87,22 @@ struct tenor_window final {
  * yet implemented (see the capture for adding it).
  */
 ORES_REFDATA_API_EXPORT std::chrono::year_month_day
-resolve_end_date(const tenor& t, const tenor_convention& convention,
-    const std::optional<tenor_convention_resolution>& resolution,
-    std::chrono::year_month_day horizon, std::chrono::year_month_day spot);
+resolve_end_date(const tenor& t,
+                 const tenor_convention& convention,
+                 const std::optional<tenor_convention_resolution>& resolution,
+                 std::chrono::year_month_day horizon,
+                 std::chrono::year_month_day spot);
 
 /**
  * @brief Resolves a (horizon, tenor, convention) triple into its [start, end) date window, where
  * start is the horizon date itself. See resolve_end_date() for the parameters and error modes.
  */
 ORES_REFDATA_API_EXPORT tenor_window
-resolve_window(const tenor& t, const tenor_convention& convention,
-    const std::optional<tenor_convention_resolution>& resolution,
-    std::chrono::year_month_day horizon, std::chrono::year_month_day spot);
+resolve_window(const tenor& t,
+               const tenor_convention& convention,
+               const std::optional<tenor_convention_resolution>& resolution,
+               std::chrono::year_month_day horizon,
+               std::chrono::year_month_day spot);
 
 /**
  * @brief Whether two half-open date windows [a.start, a.end) and [b.start, b.end) overlap.

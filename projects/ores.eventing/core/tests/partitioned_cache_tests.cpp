@@ -74,7 +74,7 @@ TEST_CASE("other partitions are untouched by a replace", "[partitioned_cache]") 
 }
 
 TEST_CASE("a second replace_partition wholesale-replaces the prior snapshot",
-         "[partitioned_cache]") {
+          "[partitioned_cache]") {
     string_cache cache;
     cache.replace_partition("tenant-a", make_entries<string_cache>({{"x", 1}, {"y", 2}}));
     cache.replace_partition("tenant-a", make_entries<string_cache>({{"x", 100}}));
@@ -104,7 +104,7 @@ TEST_CASE("aux index is carried alongside the entries when supplied", "[partitio
 }
 
 TEST_CASE("concurrent replace_partition on different partitions never loses an update",
-         "[partitioned_cache]") {
+          "[partitioned_cache]") {
     string_cache cache;
     constexpr int tenant_count = 16;
     constexpr int rounds = 50;
@@ -115,8 +115,7 @@ TEST_CASE("concurrent replace_partition on different partitions never loses an u
         threads.emplace_back([&cache, t]() {
             const auto tenant = "tenant-" + std::to_string(t);
             for (int round = 0; round < rounds; ++round)
-                cache.replace_partition(tenant,
-                                        make_entries<string_cache>({{"v", round}}));
+                cache.replace_partition(tenant, make_entries<string_cache>({{"v", round}}));
         });
     }
     for (auto& th : threads)
@@ -143,8 +142,7 @@ TEST_CASE("a reader never observes a torn mix within one snapshot", "[partitione
     std::thread writer([&cache, &stop]() {
         int i = 1;
         while (!stop.load(std::memory_order_relaxed)) {
-            cache.replace_partition("tenant-a",
-                                    make_entries<string_cache>({{"x", i}, {"y", i}}));
+            cache.replace_partition("tenant-a", make_entries<string_cache>({{"x", i}, {"y", i}}));
             ++i;
         }
     });

@@ -26,13 +26,13 @@
 using ores::analytics::quant::service::hull_white_process;
 
 TEST_CASE("hull_white_process reports the initial rate before any next() call",
-    "[hull_white_process]") {
+          "[hull_white_process]") {
     hull_white_process p(0.1, {0.03}, 0.01, 0.03);
     CHECK(p.current() == 0.03);
 }
 
 TEST_CASE("hull_white_process next() updates and returns the same value as current()",
-    "[hull_white_process]") {
+          "[hull_white_process]") {
     hull_white_process p(0.1, {0.03}, 0.01, 0.03);
     const double n = p.next();
     CHECK(n == p.current());
@@ -60,7 +60,7 @@ TEST_CASE("hull_white_process one-tick discount_factor is exp(-r_t)", "[hull_whi
 }
 
 TEST_CASE("hull_white_process holds the last theta_path value flat beyond its length",
-    "[hull_white_process]") {
+          "[hull_white_process]") {
     // A single-element path and a path that repeats that same value for
     // longer must simulate identically for a fixed seed: theta_at() must
     // extend the last value, not wrap or throw once tick_ exceeds the
@@ -73,7 +73,7 @@ TEST_CASE("hull_white_process holds the last theta_path value flat beyond its le
 }
 
 TEST_CASE("hull_white_process with zero volatility decays deterministically toward theta",
-    "[hull_white_process]") {
+          "[hull_white_process]") {
     hull_white_process p(0.5, {0.03}, 0.0, 0.08);
     double prev = 0.08;
     for (int i = 0; i < 50; ++i) {
@@ -86,7 +86,7 @@ TEST_CASE("hull_white_process with zero volatility decays deterministically towa
 }
 
 TEST_CASE("hull_white_process with kappa <= 0 degenerates to a driftless random walk",
-    "[hull_white_process]") {
+          "[hull_white_process]") {
     hull_white_process p(0.0, {0.03}, 0.0, 0.03);
     for (int i = 0; i < 10; ++i)
         CHECK(p.next() == Catch::Approx(0.03));
@@ -101,8 +101,8 @@ TEST_CASE("hull_white_process rejects negative sigma", "[hull_white_process]") {
 }
 
 TEST_CASE("hull_white_process discount_factor decreases monotonically with maturity for a "
-    "positive rate",
-    "[hull_white_process]") {
+          "positive rate",
+          "[hull_white_process]") {
     hull_white_process p(0.3, {0.03}, 0.01, 0.03);
     double prev = 1.0;
     for (std::size_t t = 1; t <= 20; ++t) {
@@ -114,8 +114,8 @@ TEST_CASE("hull_white_process discount_factor decreases monotonically with matur
 }
 
 TEST_CASE("hull_white_process with a constant theta_path matches vasicek's discount_factor "
-    "exactly (composition consistency)",
-    "[hull_white_process]") {
+          "exactly (composition consistency)",
+          "[hull_white_process]") {
     hull_white_process p(0.3, {0.04}, 0.015, 0.05);
     // Same formula vasicek_process delegates to; recomputed here directly
     // against a single-element path to pin the constant-theta special case.

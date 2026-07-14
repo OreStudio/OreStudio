@@ -51,39 +51,45 @@ add_offset(std::chrono::year_month_day anchor, const std::string& unit, int mult
     throw std::invalid_argument("Unrecognised offset unit: " + unit);
 }
 
-std::chrono::year_month_day
-resolve_anchor_date(const std::string& anchor_code, std::chrono::year_month_day horizon,
-    std::chrono::year_month_day spot) {
+std::chrono::year_month_day resolve_anchor_date(const std::string& anchor_code,
+                                                std::chrono::year_month_day horizon,
+                                                std::chrono::year_month_day spot) {
     using namespace std::chrono;
 
-    if (anchor_code == "SPOT") return spot;
-    if (anchor_code == "TODAY") return horizon;
-    if (anchor_code == "TOMORROW") return year_month_day(sys_days(horizon) + days(1));
+    if (anchor_code == "SPOT")
+        return spot;
+    if (anchor_code == "TODAY")
+        return horizon;
+    if (anchor_code == "TOMORROW")
+        return year_month_day(sys_days(horizon) + days(1));
 
     throw std::invalid_argument(
-        "Anchor '" + anchor_code + "' does not resolve to a concrete date under the "
+        "Anchor '" + anchor_code +
+        "' does not resolve to a concrete date under the "
         "ANCHOR_OFFSET algorithm (NEAR_LEG and IMM_ROLL require convention-specific handling)");
 }
 
 }
 
 std::chrono::year_month_day
-resolve_end_date(const tenor& t, const tenor_convention& convention,
-    const std::optional<tenor_convention_resolution>& resolution,
-    std::chrono::year_month_day horizon, std::chrono::year_month_day spot) {
+resolve_end_date(const tenor& t,
+                 const tenor_convention& convention,
+                 const std::optional<tenor_convention_resolution>& resolution,
+                 std::chrono::year_month_day horizon,
+                 std::chrono::year_month_day spot) {
 
     if (!resolution)
-        throw std::invalid_argument(
-            "Tenor '" + t.code + "' does not belong to convention '" + convention.code +
-            "'s set (no tenor_convention_resolution row)");
+        throw std::invalid_argument("Tenor '" + t.code + "' does not belong to convention '" +
+                                    convention.code +
+                                    "'s set (no tenor_convention_resolution row)");
 
     if (convention.resolution_algorithm == "IMM_ROLL")
-        throw std::logic_error(
-            "IMM_ROLL resolution is not yet implemented for convention '" + convention.code + "'");
+        throw std::logic_error("IMM_ROLL resolution is not yet implemented for convention '" +
+                               convention.code + "'");
 
     if (convention.resolution_algorithm != "ANCHOR_OFFSET")
-        throw std::invalid_argument(
-            "Unrecognised resolution_algorithm: " + convention.resolution_algorithm);
+        throw std::invalid_argument("Unrecognised resolution_algorithm: " +
+                                    convention.resolution_algorithm);
 
     const auto& anchor_code =
         resolution->anchor_override ? *resolution->anchor_override : convention.measured_from;
@@ -106,9 +112,11 @@ resolve_end_date(const tenor& t, const tenor_convention& convention,
     throw std::invalid_argument("Unrecognised tenor kind: " + t.kind);
 }
 
-tenor_window resolve_window(const tenor& t, const tenor_convention& convention,
-    const std::optional<tenor_convention_resolution>& resolution,
-    std::chrono::year_month_day horizon, std::chrono::year_month_day spot) {
+tenor_window resolve_window(const tenor& t,
+                            const tenor_convention& convention,
+                            const std::optional<tenor_convention_resolution>& resolution,
+                            std::chrono::year_month_day horizon,
+                            std::chrono::year_month_day spot) {
     return tenor_window{horizon, resolve_end_date(t, convention, resolution, horizon, spot)};
 }
 

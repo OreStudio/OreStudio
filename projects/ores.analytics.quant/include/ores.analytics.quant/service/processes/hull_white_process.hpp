@@ -78,10 +78,10 @@ class ORES_ANALYTICS_QUANT_EXPORT hull_white_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
     hull_white_process(double kappa,
-                        std::vector<double> theta_path,
-                        double sigma,
-                        double initial_rate,
-                        std::uint32_t seed = 42);
+                       std::vector<double> theta_path,
+                       double sigma,
+                       double initial_rate,
+                       std::uint32_t seed = 42);
 
     double next() override;
     double current() const override;

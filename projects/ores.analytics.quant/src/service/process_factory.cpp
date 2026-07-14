@@ -82,8 +82,8 @@ process_factory::make_yield_curve_process(const std::string& process_type,
             kappa, std::move(theta_path), sigma, initial_rate, seed);
 
     throw std::invalid_argument(
-        "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type
-        + "'");
+        "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type +
+        "'");
 }
 
 }

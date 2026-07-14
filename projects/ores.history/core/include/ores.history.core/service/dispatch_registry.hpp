@@ -21,8 +21,8 @@
 #define ORES_HISTORY_SERVICE_DISPATCH_REGISTRY_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.history.core/export.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
+#include "ores.history.core/export.hpp"
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -81,7 +81,7 @@ public:
      */
     [[nodiscard]] messaging::get_entity_history_response
     dispatch(const messaging::get_entity_history_request& request,
-            const ores::database::context& ctx) const;
+             const ores::database::context& ctx) const;
 
 private:
     std::unordered_map<std::string, history_provider> providers_;

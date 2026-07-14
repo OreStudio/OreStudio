@@ -70,14 +70,14 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelLedgerCcy">
+           <widget class="QLabel" name="labelFunctionalCurrency">
             <property name="text">
-             <string>Ledger Currency:</string>
+             <string>Functional Currency:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="ores::qt::OreCurrencyComboBox" name="ledgerCcyEdit">
+           <widget class="ores::qt::OreCurrencyComboBox" name="functionalCurrencyEdit">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>

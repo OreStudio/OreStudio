@@ -241,7 +241,7 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 *** Icon columns (Qt model)
 
 Pivot currency gets its own flag icon, same as any other
-single-currency cell (e.g. Book's LedgerCcy) -- no compositing
+single-currency cell (e.g. Book's FunctionalCurrency) -- no compositing
 needed since it's a single column.
 
 | column             | accessor           | field1               | field2 |

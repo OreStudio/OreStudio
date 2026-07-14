@@ -239,7 +239,7 @@ references (=currency_iso_code=, =country_alpha2_code=, =party_id=, …) are
 decision ("party X may see country Y"), not a business datum.  An orphan
 junction row — pointing to a country that does not (yet) exist — is
 harmless: the join produces no rows and the UI shows nothing.  Contrast
-this with a =book.ledger_ccy= field: if the currency disappears, the
+this with a =book.functional_currency= field: if the currency disappears, the
 book's P&L calculation breaks.  The semantic difference justifies the
 asymmetry.
 

@@ -98,7 +98,7 @@ void BookDetailDialog::setupConnections() {
 
     connect(ui_->idEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
-    connect(ui_->ledgerCcyEdit,
+    connect(ui_->functionalCurrencyEdit,
             &QComboBox::currentIndexChanged,
             this,
             &BookDetailDialog::onFieldChanged);
@@ -126,13 +126,13 @@ void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status");
     populateRegulatoryBookTypeCombo();
     setup_badge_combo(this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
-    populateLedgerCcyCombo();
+    populateFunctionalCurrencyCombo();
     populateRatesCentreCodeCombo();
 }
 
-void BookDetailDialog::populateLedgerCcyCombo() {
-    setup_currency_combo(ui_->ledgerCcyEdit, this, clientManager_, imageCache(), [this]() {
-        return QString::fromStdString(book_.ledger_ccy);
+void BookDetailDialog::populateFunctionalCurrencyCombo() {
+    setup_currency_combo(ui_->functionalCurrencyEdit, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(book_.functional_currency);
     });
 }
 
@@ -206,7 +206,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->ledgerCcyEdit->setEnabled(!readOnly);
+    ui_->functionalCurrencyEdit->setEnabled(!readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusCombo->setEnabled(!readOnly);
@@ -257,9 +257,9 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
     {
-        const auto val = QString::fromStdString(book_.ledger_ccy);
-        const int idx = ui_->ledgerCcyEdit->findText(val);
-        ui_->ledgerCcyEdit->setCurrentIndex(idx);
+        const auto val = QString::fromStdString(book_.functional_currency);
+        const int idx = ui_->functionalCurrencyEdit->findText(val);
+        ui_->functionalCurrencyEdit->setCurrentIndex(idx);
     }
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
@@ -286,7 +286,7 @@ void BookDetailDialog::updateUiFromBook() {
 
 void BookDetailDialog::updateBookFromUi() {
     book_.name = ui_->nameEdit->text().trimmed().toStdString();
-    book_.ledger_ccy = ui_->ledgerCcyEdit->currentText().toStdString();
+    book_.functional_currency = ui_->functionalCurrencyEdit->currentText().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
     book_.book_status = ui_->bookStatusCombo->currentText().toStdString();

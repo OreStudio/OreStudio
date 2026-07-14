@@ -112,14 +112,14 @@ Optional FK to business_units. Should reference a unit that is an owner_unit_id 
 std::nullopt
 #+end_src
 
-** ledger_ccy
+** functional_currency
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-Functional/accounting currency.
+Functional/accounting currency, designated by the ledger.
 
 ISO 4217 currency code.
 
@@ -272,7 +272,7 @@ std::string("WRLD")
 
 | column               | validation_function                       |
 |----------------------+--------------------------------------------|
-| ledger_ccy           | ores_refdata_validate_currency_fn         |
+| functional_currency  | ores_refdata_validate_currency_fn         |
 | book_status          | ores_refdata_validate_book_status_fn      |
 | regulatory_book_type | ores_refdata_validate_regulatory_book_type_fn |
 | rates_centre_code    | ores_refdata_validate_business_centre_fn  |
@@ -320,7 +320,7 @@ std::string("WRLD")
 |----------------------+---------------------|
 | name                 | Name                |
 | party_id             | Party               |
-| ledger_ccy           | Currency            |
+| functional_currency  | Currency            |
 | book_status          | Status              |
 | regulatory_book_type | Regulatory Book Type |
 | is_sweepable          | Sweepable            |
@@ -365,7 +365,7 @@ std::string("WRLD")
 |----------------------+-----------------------+-------------------------+---------------+--------+-------------+------------------------------+-------------------+--------------------+-------------------------------+------------------------------------------+-----------------------------+-------------------------------+---------------------------+-------------------+----------------------+-------------------+------------------------+---------------------------+------------------------|
 | id                   | Id                    | idEdit                  | line_edit     | true   | true        | Book id                      |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 | name                 | Name                  | nameEdit                | line_edit     |        | true        | Enter book name               |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| ledger_ccy           | Ledger Currency       | ledgerCcyEdit           | flagged_combo |        |             |                               | currency          |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| functional_currency  | Functional Currency   | functionalCurrencyEdit | flagged_combo |        |             |                               | currency          |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 | gl_account_ref       | GL Account Ref        | glAccountRefEdit        | line_edit     |        |             | Enter GL account reference    |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 | cost_center          | Cost Center           | costCenterEdit          | line_edit     |        |             | Enter cost center             |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 | book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::book_status           | ores.qt/LookupFetcher.hpp  | fetch_book_statuses           | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
@@ -378,7 +378,7 @@ std::string("WRLD")
 | enum_name          | field                | header               | type      | width | is_badge | badge_key            | formatter | formatter_include |
 |--------------------+----------------------+----------------------+-----------+-------+----------+-----------------------+-----------+--------------------|
 | Name               | name                 | Name                 | string    | 200   |          |                       |           |                    |
-| LedgerCcy          | ledger_ccy           | Ledger Ccy           | string    | 100   |          |                       |           |                    |
+| FunctionalCurrency | functional_currency  | Functional Currency  | string    | 130   |          |                       |           |                    |
 | BookStatus         | book_status          | Status               | string    | 100   | true     | book_status           |           |                    |
 | CostCenter         | cost_center          | Cost Center          | string    | 120   |          |                       |           |                    |
 | RegulatoryBookType | regulatory_book_type | Regulatory Book Type | string    | 130   | true     | regulatory_book_type |           |                    |
@@ -396,7 +396,7 @@ compositing needed since it's a single column.
 
 | column         | accessor                 | field1             | field2 |
 |----------------+---------------------------+---------------------+--------|
-| LedgerCcy      | currency_flag_icon        | ledger_ccy          |        |
+| FunctionalCurrency | currency_flag_icon    | functional_currency |        |
 | RatesCentreCode | business_centre_flag_icon | rates_centre_code  |        |
 
 ** Custom repository methods

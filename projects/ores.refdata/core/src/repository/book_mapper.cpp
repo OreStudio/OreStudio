@@ -46,7 +46,7 @@ domain::book book_mapper::map(const book_entity& v) {
     r.owner_unit_id = v.owner_unit_id.has_value() ?
                           std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) :
                           std::nullopt;
-    r.ledger_ccy = v.ledger_ccy;
+    r.functional_currency = v.functional_currency;
     r.gl_account_ref = v.gl_account_ref.value_or("");
     r.cost_center = v.cost_center.value_or("");
     r.book_status = v.book_status;
@@ -81,7 +81,7 @@ book_entity book_mapper::map(const domain::book& v) {
     r.owner_unit_id = v.owner_unit_id.has_value() ?
                           std::optional(boost::uuids::to_string(*v.owner_unit_id)) :
                           std::nullopt;
-    r.ledger_ccy = v.ledger_ccy;
+    r.functional_currency = v.functional_currency;
     r.gl_account_ref = v.gl_account_ref.empty() ? std::nullopt : std::optional(v.gl_account_ref);
     r.cost_center = v.cost_center.empty() ? std::nullopt : std::optional(v.cost_center);
     r.book_status = v.book_status;

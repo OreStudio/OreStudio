@@ -82,8 +82,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
         switch (index.column()) {
             case Name:
                 return QString::fromStdString(book.name);
-            case LedgerCcy:
-                return QString::fromStdString(book.ledger_ccy);
+            case FunctionalCurrency:
+                return QString::fromStdString(book.functional_currency);
             case BookStatus:
                 return QString::fromStdString(book.book_status);
             case CostCenter:
@@ -106,8 +106,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
     }
 
     if (role == Qt::DecorationRole && imageCache_) {
-        if (index.column() == Column::LedgerCcy)
-            return currency_flag_icon(*imageCache_, book.ledger_ccy);
+        if (index.column() == Column::FunctionalCurrency)
+            return currency_flag_icon(*imageCache_, book.functional_currency);
         if (index.column() == Column::RatesCentreCode)
             return business_centre_flag_icon(*imageCache_, book.rates_centre_code);
     }
@@ -126,8 +126,8 @@ QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, i
     switch (section) {
         case Name:
             return tr("Name");
-        case LedgerCcy:
-            return tr("Ledger Ccy");
+        case FunctionalCurrency:
+            return tr("Functional Currency");
         case BookStatus:
             return tr("Status");
         case CostCenter:

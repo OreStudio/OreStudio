@@ -270,7 +270,7 @@ TEST_CASE("generate_books_reference_leaf_portfolios", tags) {
         CHECK(!book.id.is_nil());
         CHECK(leaf_ids.count(book.parent_portfolio_id) == 1);
         CHECK(!book.name.empty());
-        CHECK(!book.ledger_ccy.empty());
+        CHECK(!book.functional_currency.empty());
         CHECK(!book.gl_account_ref.empty());
     }
 }

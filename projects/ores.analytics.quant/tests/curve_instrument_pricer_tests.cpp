@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -142,6 +143,16 @@ TEST_CASE("deposit_rate/fra_rate/swap_par_rate applied to a real hull_white_proc
     CHECK(std::isfinite(deposit));
     CHECK(std::isfinite(fra));
     CHECK(std::isfinite(swap));
+
+    // The multi-period swap rate is a discount-factor-weighted average of the
+    // per-period forward rates, so it must sit between the shortest and
+    // longest single-period forward rates for a monotonically-shaped curve.
+    const double shortest_forward = deposit;
+    const double longest_forward = curve_instrument_pricer::fra_rate(df_1y, df_2y, 1.0);
+    const double lower = std::min(shortest_forward, longest_forward);
+    const double upper = std::max(shortest_forward, longest_forward);
+    CHECK(swap >= lower);
+    CHECK(swap <= upper);
 }
 
 TEST_CASE("vasicek_process (a hull_white_process composition) produces the same "

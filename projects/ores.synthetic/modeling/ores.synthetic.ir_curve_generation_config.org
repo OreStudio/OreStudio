@@ -213,6 +213,7 @@ faker::datatype::boolean()
 | "process_type" in ('vasicek', 'cir', 'hull_white')       |
 | "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
+| "process_type" <> 'cir' or "initial_rate" >= 0             |
 
 * Foreign keys
 

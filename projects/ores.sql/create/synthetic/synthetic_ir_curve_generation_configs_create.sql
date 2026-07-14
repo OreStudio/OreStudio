@@ -67,7 +67,8 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("index_name" <> ''),
     check ("process_type" in ('vasicek', 'cir', 'hull_white')),
     check ("sigma" >= 0),
-    check ("ticks_per_hour" > 0)
+    check ("ticks_per_hour" > 0),
+    check ("process_type" <> 'cir' or "initial_rate" >= 0)
 );
 
 -- Composite natural key: unique combination for active records

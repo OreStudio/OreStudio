@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 7E49D8B2-2280-4032-9BA5-C0AA30A59FDC
+:END:
+#+title: ccache served stale object files after a codegen field rename
+#+description: Several book_*.cpp.o files in ores.refdata.core.lib kept emitting the old ledger_ccy column name in compiled SQL long after the source was correctly regenerated to functional_currency; only CCACHE_DISABLE=1 + deleting the build dir fixed it.
+#+type: capture
+#+level: cross
+#+filetags: :build:ccache:codegen:tooling:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+While renaming =book.ledger_ccy= to =book.functional_currency=
+(codegen-regenerated =book_mapper.cpp=, =book_entity.cpp=,
+=book_repository.cpp=, =book_registrar.cpp=, =book_service.cpp=,
+=book_history_field_mapper.cpp=), several of the corresponding
+=.cpp.o= object files in =ores.refdata.core.lib= kept a compiled-in
+=INSERT=/=SELECT= column list containing the *old* =ledger_ccy= name
+— confirmed via =strings <file>.cpp.o | grep ledger_ccy= against
+each object file individually, even though the corresponding =.cpp=
+source (confirmed via plain =grep=) had zero occurrences and a
+correct, later mtime. =ccache -s= showed a 96% direct-mode hit rate.
+Deleting just the offending =.o= files and relinking wasn't
+sufficient (still-stale sibling files elsewhere in the same
+directory); the fix that worked was removing the whole
+=CMakeFiles.*.dir= build directories for the affected libraries,
+reconfiguring (=cmake --preset ...=, since deleting the dir also
+deletes the generated Makefiles), and rebuilding with
+=CCACHE_DISABLE=1=.
+
+Investigate whether this is a ccache direct-mode hashing gap specific
+to how codegen writes regenerated files (e.g. a mtime/inode reuse
+pattern that direct mode's file-signature cache misreads as
+unchanged), and whether a =CCACHE_SLOPPINESS= tweak or a
+codegen-triggered targeted =ccache -Z=/cache-clear for touched files
+would prevent this recurring on the next field rename.
+
+* Why
+
+This class of failure is dangerous specifically because it's silent
+at compile time — the build reports success, tests that don't hit
+the live DB pass, and only a live query against the (correctly)
+renamed schema surfaces the mismatch as a runtime SQL error. It cost
+several rebuild-and-reprovision cycles to root-cause during the
+=functional_currency= rename task, and will recur on any future
+codegen-driven rename that touches multiple sibling =.cpp= files in
+one component.
+
+* References
+
+- Surfaced during [[id:A4F81E5E-6795-4533-AD3A-371EE4F01D41][Task: Rename ledger_ccy to functional_currency]].
+
+* See also
+
+-

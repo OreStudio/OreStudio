@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/ores.qt/{component}/src/{EntityPascal}HistoryDialog.cpp
 #+facet: ores.cpp.qt
+#+default: disabled
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -15,6 +16,12 @@ Read-only history view over temporal rows.  Qt UI component: model/view class or
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
+
+Disabled by default (=#+default: disabled=): every entity now uses the
+single generic =ores::qt::HistoryDialog= (constructed with
+=(entity_type, entity_id)= by =ores.cpp.qt.controller_impl=) instead of
+a per-entity history dialog class. Retained only for reference until
+HistoryDialogBase and its remaining legacy adopters are fully retired.
 
 * Template
 
@@ -78,8 +85,10 @@ using namespace ores::logging;
     ui_->changesTableWidget->setColumnCount(3);
     ui_->changesTableWidget->setHorizontalHeaderLabels(
         {tr("Field"), tr("Old Value"), tr("New Value")});
-    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
-                         ui_->titleLabel, ui_->closeButton});
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                        .changesTable = ui_->changesTableWidget,
+                        .titleLabel = ui_->titleLabel,
+                        .closeButton = ui_->closeButton});
 }
 
 {{domain_entity.entity_pascal}}HistoryDialog::~{{domain_entity.entity_pascal}}HistoryDialog() {

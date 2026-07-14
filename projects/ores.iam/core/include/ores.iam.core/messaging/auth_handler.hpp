@@ -35,7 +35,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.core/service/party_cache.hpp"
+#include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
@@ -84,7 +84,7 @@ auth_compute_visible_party_ids(const service::cache::party_cache& cache,
 inline std::optional<refdata::domain::party> auth_lookup_party(const service::cache::party_cache& cache,
                                                                const std::string& tenant_id,
                                                                const boost::uuids::uuid& party_id) {
-    return cache.lookup_party(tenant_id, party_id);
+    return cache.lookup(tenant_id, party_id);
 }
 
 inline void
@@ -92,7 +92,7 @@ auth_ensure_parties_cached(service::cache::party_cache& cache,
                            const std::string& tenant_id,
                            const std::vector<ores::iam::domain::account_party>& account_parties) {
     for (const auto& ap : account_parties) {
-        if (!cache.lookup_party(tenant_id, ap.party_id)) {
+        if (!cache.lookup(tenant_id, ap.party_id)) {
             // Cache miss: reload from refdata (handles bootstrap and startup race).
             cache.load(tenant_id);
             break;

@@ -22,6 +22,29 @@ See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 variables and their semantics, and the facet doc for the =cached_by= /
 =read_for_cache= flags this archetype requires.
 
+** Optional aux index
+
+Entities whose consumer needs more than key/value lookups (e.g. a
+parent/child hierarchy derived from the mirrored data) opt in with
+=cache_aux_type: <TypeName>= (C++ Flags) and supply three paste-point
+blocks in their own model, matching the =party_cache= prototype this
+generalizes (=children_map= built from =parent_party_id=):
+
+- =:implements ADD930C7-EF33-44B4-A0A2-49254FCC7ACD= — the aux type's
+  declaration (e.g. =using children_map = immer::map<...>;=), emitted
+  inside the class before the =cache_t= alias.
+- =:implements 60520267-94E5-4369-97E9-7AED54CDEDD2= — builds a local
+  =aux= variable (of the declared aux type) from =entries= (the
+  just-built =cache_t::entries_map=), emitted inside =load()= right
+  before =replace_partition=.
+- =:implements C0EDFBDF-F38F-4E02-874F-A086FB435FB0= — extra public
+  methods reading the aux index (e.g. =compute_visible_party_ids=),
+  emitted alongside =lookup()=.
+
+Entities that don't set =cache_aux_type= get all three paste points
+collapsed to nothing and =AuxIndex= defaults to =std::monostate=,
+exactly as before this section existed.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -44,8 +67,15 @@ The full template source. Edit here and re-tangle with
 {{#primary_key.is_uuid}}
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
+{{^cache_aux_type}}
 #include <variant>
+{{/cache_aux_type}}
 {{/primary_key.is_uuid}}
+{{#cache_aux_type}}
+#include <immer/map.hpp>
+#include <immer/map_transient.hpp>
+#include <vector>
+{{/cache_aux_type}}
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
@@ -72,13 +102,18 @@ inline auto& {{entity_singular}}_cache_lg() {
 class {{entity_singular}}_cache {
 {{#primary_key.is_uuid}}
     using key_hash = boost::hash<{{primary_key.cpp_type}}>;
+{{/primary_key.is_uuid}}
+<<paste:ADD930C7-EF33-44B4-A0A2-49254FCC7ACD>>
+{{#primary_key.is_uuid}}
     using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
-        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}, std::monostate,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}},
+        {{#cache_aux_type}}{{cache_aux_type}}{{/cache_aux_type}}{{^cache_aux_type}}std::monostate{{/cache_aux_type}},
         key_hash>;
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
     using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
-        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}>;
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}
+        {{#cache_aux_type}}, {{cache_aux_type}}{{/cache_aux_type}}>;
 {{/primary_key.is_uuid}}
 
 public:
@@ -112,7 +147,9 @@ public:
             const auto count = resp->{{entity_plural_short}}.size();
             for (auto& v : resp->{{entity_plural_short}})
                 entries_t.set(v.{{primary_key.column}}, std::move(v));
-            cache_.replace_partition(tenant_id, entries_t.persistent());
+            auto entries = entries_t.persistent();
+<<paste:60520267-94E5-4369-97E9-7AED54CDEDD2>>
+            cache_.replace_partition(tenant_id, entries{{#cache_aux_type}}, aux{{/cache_aux_type}});
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
                 << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
         } catch (const std::exception& e) {
@@ -127,6 +164,7 @@ public:
         return cache_.get(tenant_id, key);
     }
 
+<<paste:C0EDFBDF-F38F-4E02-874F-A086FB435FB0>>
 private:
     ores::nats::service::client& nats_;
     cache_t cache_;

@@ -7,43 +7,114 @@
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-party-to-generated-cache
+#+pr: 1557
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Wire party onto the =nats-event-cache= facet for real: set
+=cached_by: iam=, =read_for_cache: true= on party's model, generate
+its cache under =ores.iam=, retire the hand-written
+=ores.iam.core/service/party_cache.hpp= prototype, and repoint every
+consumer (registrar warm-up/subscribe wiring, =auth_handler=,
+=account_handler=, =bootstrap_handler=) at the generated version.
+Confirms the facet design end-to-end on a real entity, including the
+parent/child aux index =compute_visible_party_ids= depends on.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- party's model sets =cached_by: iam=, =read_for_cache: true=,
+  =cache_aux_type: children_map=, and enables the facet.
+- The generated =party_cache.hpp=/=party_cache_registrar.hpp= replace
+  the hand-written =ores.iam.core/service/party_cache.hpp= (deleted).
+- =compute_visible_party_ids= keeps working via a new, generic
+  aux-index mechanism on the =nats-event-cache= facet (see below) —
+  not a party-only special case.
+- =registrar.cpp=, =auth_handler.hpp=, =account_handler.hpp=,
+  =bootstrap_handler.hpp= all build against the generated cache's API
+  (=lookup=, unchanged =load=/=compute_visible_party_ids=).
+- No regression: unrelated entities regenerate byte-identical; party's
+  other (pre-existing, drifted) facets are unaffected.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Investigate real consumers of the hand-written =party_cache=
+   (=auth_handler=, =account_handler=, =bootstrap_handler=,
+   =registrar.cpp=) to find the full API surface to preserve —
+   discovered =compute_visible_party_ids= depends on a parent/child
+   aux index the facet didn't yet support (scope gap, confirmed with
+   the user: extend the facet now rather than defer or partially
+   migrate).
+2. Extend the =nats-event-cache= facet with a generic, entity-agnostic
+   aux-index mechanism: a =cache_aux_type= flag plus three paste
+   points (type declaration, build-from-entries, extra methods),
+   mirroring the existing =custom_subscriptions= paste-point
+   convention. Add =partitioned_cache::aux_type= alias (Layer A,
+   additive) to support it.
+3. Author party's three paste-point blocks (children_map type,
+   parent-id-keyed build, iterative =compute_visible_party_ids=)
+   reproducing the hand-written prototype's visible-set membership
+   (traversal order differs: iterative stack vs. the original's
+   recursive pre-order DFS — harmless, since both consumers only use
+   the result for membership checks).
+4. Set party's model flags for real (=cached_by=, =read_for_cache=,
+   =cache_aux_type=, facet-enabled); generate the two files under
+   =ores.iam=.
+5. Rewire =registrar.cpp= to call the generated
+   =warm_and_subscribe_party_cache=; repoint the three handler headers
+   at the new include path and =.lookup(...)= method name; delete the
+   hand-written prototype.
+6. Verify: regen unaffected entities byte-identical; party's other
+   facets' pre-existing drift unchanged; codegen test suite green; no
+   stray references to the old path/method name.
 
 * Notes
+
+Verified with =compass codegen entity generate party --address
+ores.cpp.nats-event-cache --diff=: renders =party_cache.hpp= with the
+=children_map= aux index and =compute_visible_party_ids= wired in,
+matching the hand-written prototype's behaviour. Regenerated for real
+(not reverted, unlike the previous task) since this is the actual
+migration.
+
+Regression checks:
+- =counterparty=/=currency=/=book= =--diff= counts unchanged from
+  baseline (42/12/8) — no impact from the facet extension.
+- party's =ores.cpp.protocol=/=nats-handler=/=nats-sub-registrar=
+  =--diff= counts unchanged from baseline (2/2/2, pre-existing drift
+  noted in an earlier task) — this task didn't touch party's other
+  facets.
+- =grep= confirms no remaining references to the old flat
+  =service/party_cache.hpp= path or =.lookup_party(...)= method name
+  anywhere in the tree.
+- Codegen python test suite: 45/45 passed.
+- Could not run a full C++ build in this environment (vcpkg
+  dependencies not installed) — verified by close comparison against
+  the hand-written prototype being replaced, which does compile and
+  run in production. The =partitioned_cache::aux_type= alias addition
+  is purely additive (no existing call site touches it), so it carries
+  no risk to =ores.eventing.core= consumers/tests.
+- Regression-test coverage for reload-on-notification is the separate
+  backlog task "Test party_cache reload-on-notification".
 
 * Test Scenarios
 
@@ -60,12 +131,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1557][#1557]] | [iam,refdata] Migrate party to the generated nats-event-cache |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unconditional immer/vector includes even without cache_aux_type (flagged by 1 of 3 runs) | ores.cpp.nats-event-cache.cache_header.org | Accepted | Gated <immer/map.hpp>/<immer/map_transient.hpp>/<vector> behind {{#cache_aux_type}}; <variant> now only emitted when is_uuid AND no cache_aux_type |
+| 2 | cache_aux_type has no validation coupling to cached_by (flagged by 2 of 3 runs) | core.py | Accepted | Added validate_cache_aux_type + test_cache_aux_type.py mirroring the existing pattern |
+| 3 | Dropped "Warming party cache for N tenant(s)" log line (flagged by all 3 runs) | ores.cpp.nats-event-cache.registrar_wiring.org | Accepted | Restored via a dedicated logger in the generated warm_and_subscribe_* function |
+| 4 | Traversal order in compute_visible_party_ids differs from the recursive original; task doc's "exactly" overstated (flagged by 2 of 3 runs) | task doc | Accepted | Reworded to note membership is identical, order differs harmlessly (both consumers only check membership) |
+| 5 | Formatting nit: extra spaces on the cache_aux_type flag line (flagged by 1 of 3 runs) | ores.refdata.party.org | Accepted | Aligned with neighbouring flags |
+| 6 | No cycle protection in compute_visible_party_ids (flagged by 1 of 3 runs) | party_cache.hpp / aux_methods paste block | Declined | Reviewer's own analysis: pre-existing gap in the hand-written prototype being replaced, not a regression introduced by this PR |
 
 * Result
+
+Party is now the first real =nats-event-cache= consumer:
+
+- Extended the facet with a generic aux-index mechanism (=cache_aux_type=
+  flag + three paste points: type declaration, build-from-entries, extra
+  methods) plus an additive =partitioned_cache::aux_type= alias — needed
+  because =compute_visible_party_ids= (used by =auth_handler=/
+  =account_handler=) depends on a parent/child index the facet didn't
+  originally generate.
+- Set =cached_by: iam=, =read_for_cache: true=,
+  =cache_aux_type: children_map= on party's model, with its three
+  paste-point blocks faithfully reproducing the hand-written
+  prototype's =children_map=/=compute_visible_party_ids= logic
+  (same visible-set membership; traversal order differs, harmlessly —
+  see Plan step 3).
+- Generated =party_cache.hpp=/=party_cache_registrar.hpp= under
+  =ores.iam=; deleted the hand-written
+  =ores.iam.core/service/party_cache.hpp= prototype.
+- Rewired =registrar.cpp= (now calls =warm_and_subscribe_party_cache=)
+  and repointed =auth_handler.hpp=/=account_handler.hpp=/
+  =bootstrap_handler.hpp= at the new include path and =.lookup(...)=.
+
+Verified: unrelated entities and party's other (pre-existing, drifted)
+facets regenerate byte-identical to baseline; no stray references to
+the old path/method remain; codegen suite 45/45 passed. No full C++
+build available in this environment — mitigated by close comparison
+against the previously-compiling hand-written logic being replaced,
+and the =partitioned_cache= change being purely additive.

@@ -33,7 +33,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.core/service/party_cache.hpp"
+#include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -80,7 +80,7 @@ acct_compute_visible_party_ids(const service::cache::party_cache& cache,
 inline std::optional<refdata::domain::party> acct_lookup_party(const service::cache::party_cache& cache,
                                                                const std::string& tenant_id,
                                                                const boost::uuids::uuid& party_id) {
-    return cache.lookup_party(tenant_id, party_id);
+    return cache.lookup(tenant_id, party_id);
 }
 
 // Reads onboarding.party directly from the DB (never the party cache), so

@@ -255,6 +255,7 @@ std::string("Active")
 :history_request_class:   refdata::messaging::get_counterparty_history_request
 :history_response_class:  refdata::messaging::get_counterparty_history_response
 :history_message_type:    get_counterparty_history_request
+:has_change_reason_cache: true
 :settings_group:          CounterpartyListWindow
 :window_title:            Counterparties
 :icon:                    Handshake

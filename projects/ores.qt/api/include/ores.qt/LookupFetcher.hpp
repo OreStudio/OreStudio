@@ -115,6 +115,25 @@ ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
 ORES_QT_API std::vector<std::string> fetch_country_codes(ClientManager* cm);
 
 /**
+ * @brief Fetches all contact type codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Party's and Counterparty's contact information "Type" combo.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_contact_type_codes(ClientManager* cm);
+
+/**
+ * @brief Fetches all party id scheme codes (e.g. "LEI", "BIC") from the
+ * server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Party's and Counterparty's identifier "Scheme" combo.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_party_id_scheme_codes(ClientManager* cm);
+
+/**
  * @brief Fetches currency pair codes (e.g. "EUR/USD") from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.

@@ -68,6 +68,10 @@ BEGIN
         'Lifecycle status codes for party and counterparty records.', 1);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'Party Type',
+        'Classification codes for party and counterparty records.', 30);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Book Status',
         'Lifecycle status codes for book records.', 2);
 
@@ -465,17 +469,39 @@ BEGIN
 
     -- --- Badge Mappings ---
 
-    -- party_status
+    -- party_status: Active/Inactive/Suspended are the only codes in
+    -- ores_refdata_party_statuses_tbl (refdata_party_statuses_populate.sql);
+    -- Closed/Frozen/Pending were removed here as they didn't correspond to
+    -- any real row and would never actually be selectable. Suspended
+    -- reuses the warning-coloured 'frozen' definition as a semantic fit
+    -- (temporarily blocked, may be reactivated).
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Active', 'active');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Inactive', 'inactive');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'party_status', 'Closed', 'inactive');
+        'party_status', 'Suspended', 'frozen');
+
+    -- party_type (reuses existing badge definitions as neutral-but-distinct
+    -- colours purely for visual differentiation across the 8 codes in
+    -- ores_refdata_party_types_tbl -- not to convey status, same pattern
+    -- as tenor_unit above).
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'party_status', 'Frozen', 'frozen');
+        'party_type', 'Internal', 'account_type_service');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'party_status', 'Pending', 'pending');
+        'party_type', 'Bank', 'classification_major');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'CorporateGroup', 'origin_primary');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'HedgeFund', 'classification_exotic');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'Corporate', 'classification_minor');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'CentralBank', 'treatment_enriched');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'Exchange', 'state_running');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_type', 'Individual', 'nature_simulated');
 
     -- book_status: only Active/Closed/Frozen exist in
     -- ores_refdata_book_statuses_tbl (refdata_book_statuses_populate.sql);

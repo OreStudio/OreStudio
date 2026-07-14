@@ -296,6 +296,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 :history_request_class:  refdata::messaging::get_party_history_request
 :history_response_class: refdata::messaging::get_party_history_response
 :history_message_type:   get_party_history_request
+:has_change_reason_cache: true
 :settings_group:         PartyListWindow
 :window_title:           Parties
 :icon:                   Organization

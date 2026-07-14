@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CounterpartyController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CounterpartyDetailDialog.hpp"
 #include "ores.qt/CounterpartyHistoryDialog.hpp"
 #include "ores.qt/CounterpartyMdiWindow.hpp"
@@ -43,11 +44,13 @@ CounterpartyController::CounterpartyController(QMainWindow* mainWindow,
                                                QMdiArea* mdiArea,
                                                ClientManager* clientManager,
                                                ImageCache* imageCache,
+                                               ChangeReasonCache* changeReasonCache,
                                                const QString& username,
                                                BadgeCache* badgeCache,
                                                QObject* parent)
     : EntityController(
           mainWindow, mdiArea, clientManager, username, counterparty_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -165,6 +168,8 @@ void CounterpartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty";
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -215,6 +220,8 @@ void CounterpartyController::showDetailWindow(const refdata::domain::counterpart
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << counterparty.short_code;
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -358,6 +365,8 @@ void CounterpartyController::onOpenVersion(const refdata::domain::counterparty& 
     }
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -409,6 +418,8 @@ void CounterpartyController::onRevertVersion(const refdata::domain::counterparty
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);

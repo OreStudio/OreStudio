@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PartyController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyDetailDialog.hpp"
@@ -43,10 +44,12 @@ PartyController::PartyController(QMainWindow* mainWindow,
                                  QMdiArea* mdiArea,
                                  ClientManager* clientManager,
                                  ImageCache* imageCache,
+                                 ChangeReasonCache* changeReasonCache,
                                  const QString& username,
                                  BadgeCache* badgeCache,
                                  QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, party_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -150,6 +153,8 @@ void PartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -194,6 +199,8 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << party.short_code;
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -327,6 +334,8 @@ void PartyController::onOpenVersion(const refdata::domain::party& party, int ver
     }
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
@@ -377,6 +386,8 @@ void PartyController::onRevertVersion(const refdata::domain::party& party) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);

@@ -90,7 +90,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_tenor_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_unit_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_tenor_resolution_algorithm_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_tenor_resolution_algorithm_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

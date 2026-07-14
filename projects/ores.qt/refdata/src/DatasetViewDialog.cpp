@@ -158,9 +158,7 @@ void DatasetViewDialog::onCopyIdClicked() {
 void DatasetViewDialog::updateHeaderBanner() {
     headerNameLabel_->setText(QString::fromStdString(dataset_.name));
     headerCodeVersionLabel_->setText(
-        tr("%1  |  v%2")
-            .arg(QString::fromStdString(dataset_.code))
-            .arg(dataset_.version));
+        tr("%1  |  v%2").arg(QString::fromStdString(dataset_.code)).arg(dataset_.version));
     const auto idString = boost::uuids::to_string(dataset_.id);
     headerIdLabel_->setText(tr("ID: %1").arg(QString::fromStdString(idString)));
 }
@@ -409,10 +407,9 @@ void DatasetViewDialog::setDatasetNames(const std::map<std::string, std::string>
 void DatasetViewDialog::updateOverviewTab() {
     overviewDescriptionLabel_->setText(
         dataset_.description.empty() ? tr("-") : QString::fromStdString(dataset_.description));
-    overviewCommentaryLabel_->setText(
-        dataset_.change_commentary.empty() ?
-            tr("-") :
-            QString::fromStdString(dataset_.change_commentary));
+    overviewCommentaryLabel_->setText(dataset_.change_commentary.empty() ?
+                                          tr("-") :
+                                          QString::fromStdString(dataset_.change_commentary));
 
     overviewDomainLabel_->setText(QString::fromStdString(dataset_.domain_name));
     overviewSubjectAreaLabel_->setText(QString::fromStdString(dataset_.subject_area_name));
@@ -421,40 +418,39 @@ void DatasetViewDialog::updateOverviewTab() {
 
     // Same badge domains as DatasetItemDelegate's list-row rendering.
     BadgeLabelUtils::apply(overviewOriginBadge_,
-                          badgeCache_,
-                          "dq_origin",
-                          dataset_.origin_code,
-                          QString::fromStdString(dataset_.origin_code));
+                           badgeCache_,
+                           "dq_origin",
+                           dataset_.origin_code,
+                           QString::fromStdString(dataset_.origin_code));
     BadgeLabelUtils::apply(overviewNatureBadge_,
-                          badgeCache_,
-                          "dq_nature",
-                          dataset_.nature_code,
-                          QString::fromStdString(dataset_.nature_code));
+                           badgeCache_,
+                           "dq_nature",
+                           dataset_.nature_code,
+                           QString::fromStdString(dataset_.nature_code));
     BadgeLabelUtils::apply(overviewTreatmentBadge_,
-                          badgeCache_,
-                          "dq_treatment",
-                          dataset_.treatment_code,
-                          QString::fromStdString(dataset_.treatment_code));
+                           badgeCache_,
+                           "dq_treatment",
+                           dataset_.treatment_code,
+                           QString::fromStdString(dataset_.treatment_code));
 
     overviewModifiedByLabel_->setText(QString::fromStdString(dataset_.modified_by));
     overviewRecordedAtLabel_->setText(relative_time_helper::format(dataset_.recorded_at));
 }
 
 void DatasetViewDialog::updateProvenanceAndMethodologyTab() {
-    businessContextLabel_->setText(
-        dataset_.business_context.empty() ?
-            tr("-") :
-            QString::fromStdString(dataset_.business_context));
+    businessContextLabel_->setText(dataset_.business_context.empty() ?
+                                       tr("-") :
+                                       QString::fromStdString(dataset_.business_context));
 
     asOfDateLabel_->setText(relative_time_helper::format(dataset_.as_of_date));
     ingestionLabel_->setText(relative_time_helper::format(dataset_.ingestion_timestamp));
 
     sourceSystemLabel_->setText(QString::fromStdString(dataset_.source_system_id));
-    licenseLabel_->setText(
-        dataset_.license_info ? QString::fromStdString(*dataset_.license_info) : tr("-"));
-    codingSchemeLabel_->setText(
-        dataset_.coding_scheme_code ? QString::fromStdString(*dataset_.coding_scheme_code) :
-                                      tr("-"));
+    licenseLabel_->setText(dataset_.license_info ? QString::fromStdString(*dataset_.license_info) :
+                                                   tr("-"));
+    codingSchemeLabel_->setText(dataset_.coding_scheme_code ?
+                                    QString::fromStdString(*dataset_.coding_scheme_code) :
+                                    tr("-"));
 
     upstreamDerivationLabel_->setText(
         dataset_.upstream_derivation_id ?
@@ -477,20 +473,18 @@ void DatasetViewDialog::updateProvenanceAndMethodologyTab() {
         return;
     }
 
-    methodologyDescriptionLabel_->setText(
-        methodology->description.empty() ? tr("-") :
-                                           QString::fromStdString(methodology->description));
-    commentaryLabel_->setText(
-        methodology->change_commentary.empty() ?
-            tr("-") :
-            QString::fromStdString(methodology->change_commentary));
+    methodologyDescriptionLabel_->setText(methodology->description.empty() ?
+                                              tr("-") :
+                                              QString::fromStdString(methodology->description));
+    commentaryLabel_->setText(methodology->change_commentary.empty() ?
+                                  tr("-") :
+                                  QString::fromStdString(methodology->change_commentary));
     methodologyNameLabel_->setText(QString::fromStdString(methodology->name));
     methodologyVersionLabel_->setText(QString::number(methodology->version));
-    methodologyIdLabel_->setText(
-        QString::fromStdString(boost::uuids::to_string(methodology->id)));
-    logicReferenceLabel_->setText(
-        methodology->logic_reference ? QString::fromStdString(*methodology->logic_reference) :
-                                       tr("-"));
+    methodologyIdLabel_->setText(QString::fromStdString(boost::uuids::to_string(methodology->id)));
+    logicReferenceLabel_->setText(methodology->logic_reference ?
+                                      QString::fromStdString(*methodology->logic_reference) :
+                                      tr("-"));
     pmModifiedByLabel_->setText(QString::fromStdString(methodology->modified_by));
     pmRecordedAtLabel_->setText(relative_time_helper::format(methodology->recorded_at));
 

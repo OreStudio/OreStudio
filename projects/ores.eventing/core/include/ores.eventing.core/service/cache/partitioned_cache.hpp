@@ -57,11 +57,11 @@ namespace ores::eventing::service::cache {
  * concurrency code again.
  */
 template <typename PartitionKey,
-         typename Key,
-         typename Value,
-         typename AuxIndex = std::monostate,
-         typename KeyHash = std::hash<Key>,
-         typename PartitionKeyHash = std::hash<PartitionKey>>
+          typename Key,
+          typename Value,
+          typename AuxIndex = std::monostate,
+          typename KeyHash = std::hash<Key>,
+          typename PartitionKeyHash = std::hash<PartitionKey>>
 class partitioned_cache {
 public:
     using entries_map = immer::map<Key, Value, KeyHash>;
@@ -99,9 +99,7 @@ public:
         // reference and .set() copies it fresh on every attempt; immer
         // types make that cheap (structural sharing), not a deep copy.
         const partition data{std::move(entries), std::move(aux)};
-        cache_.update([&](partition_map m) {
-            return std::move(m).set(partition_key, data);
-        });
+        cache_.update([&](partition_map m) { return std::move(m).set(partition_key, data); });
     }
 
     /// Wait-free lookup of a single entry. Never blocks on, or is
@@ -121,8 +119,7 @@ public:
     /// Wait-free snapshot of a whole partition (entries + aux index),
     /// for callers that need more than a single-key lookup (e.g. reading
     /// the aux index directly).
-    [[nodiscard]] std::optional<partition>
-    snapshot(const PartitionKey& partition_key) const {
+    [[nodiscard]] std::optional<partition> snapshot(const PartitionKey& partition_key) const {
         const auto snap = cache_.load().get();
         const auto* part = snap.find(partition_key);
         if (!part)

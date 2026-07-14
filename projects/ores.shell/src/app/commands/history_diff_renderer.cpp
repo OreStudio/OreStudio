@@ -49,8 +49,7 @@ void render_history_diff(std::ostream& out,
     using ores::history::messaging::get_entity_history_request;
     using ores::history::messaging::get_entity_history_response;
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating history diff for " << entity_type << " "
-                               << entity_id;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating history diff for " << entity_type << " " << entity_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get history." << std::endl;
@@ -61,8 +60,8 @@ void render_history_diff(std::ostream& out,
     req.entity_type = std::string(entity_type);
     req.entity_id = std::move(entity_id);
 
-    auto reply = session.authenticated_request(
-        get_entity_history_request::nats_subject, rfl::json::write(req));
+    auto reply = session.authenticated_request(get_entity_history_request::nats_subject,
+                                               rfl::json::write(req));
     auto data_str =
         std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
     auto result = rfl::json::read<get_entity_history_response>(data_str);
@@ -86,12 +85,10 @@ void render_history_diff(std::ostream& out,
     // Versions arrive newest first; default to the latest.
     const auto* target = &versions.front();
     if (version) {
-        const auto it = std::find_if(versions.begin(), versions.end(), [&](const auto& v) {
-            return v.version == *version;
-        });
+        const auto it = std::find_if(
+            versions.begin(), versions.end(), [&](const auto& v) { return v.version == *version; });
         if (it == versions.end()) {
-            fail(out) << "Version " << *version << " not found for " << req.entity_id
-                      << std::endl;
+            fail(out) << "Version " << *version << " not found for " << req.entity_id << std::endl;
             return;
         }
         target = &*it;
@@ -119,23 +116,26 @@ void render_history_diff(std::ostream& out,
         // current version's field order; fields the current version no
         // longer has (removed) are appended last, in changes order.
         for (const auto& f : target->fields) {
-            const auto entry = std::find_if(
-                target->changes.entries.begin(), target->changes.entries.end(),
-                [&](const auto& e) { return e.field_name == f.name; });
+            const auto entry = std::find_if(target->changes.entries.begin(),
+                                            target->changes.entries.end(),
+                                            [&](const auto& e) { return e.field_name == f.name; });
             if (entry == target->changes.entries.end()) {
                 out << " " << f.name << ": " << f.value << "\n";
             } else {
                 const auto in_predecessor =
-                    std::any_of(prev_it->fields.begin(), prev_it->fields.end(),
-                               [&](const auto& pf) { return pf.name == f.name; });
+                    std::any_of(prev_it->fields.begin(),
+                                prev_it->fields.end(),
+                                [&](const auto& pf) { return pf.name == f.name; });
                 if (in_predecessor)
                     out << "-" << entry->field_name << ": " << entry->old_value << "\n";
                 out << "+" << entry->field_name << ": " << entry->new_value << "\n";
             }
         }
         for (const auto& e : target->changes.entries) {
-            const auto in_fields = std::any_of(target->fields.begin(), target->fields.end(),
-                                               [&](const auto& f) { return f.name == e.field_name; });
+            const auto in_fields =
+                std::any_of(target->fields.begin(), target->fields.end(), [&](const auto& f) {
+                    return f.name == e.field_name;
+                });
             if (!in_fields)
                 out << "-" << e.field_name << ": " << e.old_value << "\n";
         }

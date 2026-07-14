@@ -32,7 +32,8 @@ using ores::refdata::presentation::render_currency_fields;
 
 namespace {
 
-std::string field(const std::vector<ores::diff::domain::field_value>& fields, const std::string& name) {
+std::string field(const std::vector<ores::diff::domain::field_value>& fields,
+                  const std::string& name) {
     const auto it = std::ranges::find_if(fields, [&](const auto& f) { return f.name == name; });
     return it == fields.end() ? std::string{"<missing>"} : it->value;
 }
@@ -92,8 +93,22 @@ TEST_CASE("render_currency_fields_renders_empty_optional_uuid_as_empty_string", 
 
 TEST_CASE("render_currency_fields_renders_populated_optional_uuid", tags) {
     currency c;
-    c.image_id = boost::uuids::uuid{
-        {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}};
+    c.image_id = boost::uuids::uuid{{0x01,
+                                     0x02,
+                                     0x03,
+                                     0x04,
+                                     0x05,
+                                     0x06,
+                                     0x07,
+                                     0x08,
+                                     0x09,
+                                     0x0a,
+                                     0x0b,
+                                     0x0c,
+                                     0x0d,
+                                     0x0e,
+                                     0x0f,
+                                     0x10}};
 
     const auto fields = render_currency_fields(c);
 

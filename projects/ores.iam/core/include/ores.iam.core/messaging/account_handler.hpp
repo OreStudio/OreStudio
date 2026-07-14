@@ -77,9 +77,10 @@ acct_compute_visible_party_ids(const service::cache::party_cache& cache,
     return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
-inline std::optional<refdata::domain::party> acct_lookup_party(const service::cache::party_cache& cache,
-                                                               const std::string& tenant_id,
-                                                               const boost::uuids::uuid& party_id) {
+inline std::optional<refdata::domain::party>
+acct_lookup_party(const service::cache::party_cache& cache,
+                  const std::string& tenant_id,
+                  const boost::uuids::uuid& party_id) {
     return cache.lookup(tenant_id, party_id);
 }
 
@@ -554,8 +555,8 @@ public:
                 }
                 repository::account_party_repository ap_repo(ctx);
                 auto parties = ap_repo.read_latest_by_account(account_id);
-                const bool is_member = std::any_of(
-                    parties.begin(), parties.end(), [&](const auto& ap) {
+                const bool is_member =
+                    std::any_of(parties.begin(), parties.end(), [&](const auto& ap) {
                         return ap.party_id == party_id;
                     });
                 if (!is_member) {
@@ -681,8 +682,9 @@ public:
 
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);
-            const bool is_member = std::any_of(
-                parties.begin(), parties.end(), [&](const auto& ap) { return ap.party_id == party_id; });
+            const bool is_member = std::any_of(parties.begin(), parties.end(), [&](const auto& ap) {
+                return ap.party_id == party_id;
+            });
             if (!is_member) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "set_default_party: party " << req->party_id
@@ -690,8 +692,8 @@ public:
                     << " parties)";
                 reply(nats_,
                       msg,
-                      set_my_default_party_response{.success = false,
-                                                    .message = "User is not a member of requested party"});
+                      set_my_default_party_response{
+                          .success = false, .message = "User is not a member of requested party"});
                 return;
             }
 

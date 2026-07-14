@@ -57,8 +57,7 @@ TEST_CASE("builds a valid spanning tree from majors", "[topology_builder]") {
 
 TEST_CASE("the driver/derived direction survives into the built topology", "[topology_builder]") {
     const std::vector<ccy_pair_input> pairs = {
-        {"EUR", "USD", true},
-        {"USD", "JPY", false}, // a derived-only edge, not a driver
+        {"EUR", "USD", true}, {"USD", "JPY", false}, // a derived-only edge, not a driver
     };
     const auto topology = topology_builder::build(pairs, "USD", {"EUR", "JPY"});
 

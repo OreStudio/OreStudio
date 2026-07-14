@@ -263,8 +263,8 @@ void currencies_commands::process_delete_currency(std::ostream& out,
 }
 
 void currencies_commands::process_get_currency_history(std::ostream& out,
-                                                        nats_client& session,
-                                                        const std::vector<std::string>& args) {
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
     auto parsed = parse_args(args,
                              {{.name = "diff", .requires_value = false, .default_value = "false"},
                               {.name = "version", .requires_value = true, .default_value = ""}});

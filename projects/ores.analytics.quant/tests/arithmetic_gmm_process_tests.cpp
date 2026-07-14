@@ -24,16 +24,14 @@
 
 using ores::analytics::quant::service::arithmetic_gmm_process;
 
-TEST_CASE(
-    "arithmetic_gmm_process reports the initial price before any next() call",
-    "[arithmetic_gmm_process]") {
+TEST_CASE("arithmetic_gmm_process reports the initial price before any next() call",
+          "[arithmetic_gmm_process]") {
     arithmetic_gmm_process p({0.0}, {0.01}, {1.0}, 100.0);
     CHECK(p.current() == 100.0);
 }
 
-TEST_CASE(
-    "arithmetic_gmm_process next() updates and returns the same value as current()",
-    "[arithmetic_gmm_process]") {
+TEST_CASE("arithmetic_gmm_process next() updates and returns the same value as current()",
+          "[arithmetic_gmm_process]") {
     arithmetic_gmm_process p({0.0}, {0.01}, {1.0}, 100.0);
     const double n = p.next();
     CHECK(n == p.current());
@@ -47,9 +45,8 @@ TEST_CASE("arithmetic_gmm_process is deterministic for a fixed seed", "[arithmet
         CHECK(a.next() == b.next());
 }
 
-TEST_CASE(
-    "arithmetic_gmm_process applies increments additively, unlike the geometric engine",
-    "[arithmetic_gmm_process]") {
+TEST_CASE("arithmetic_gmm_process applies increments additively, unlike the geometric engine",
+          "[arithmetic_gmm_process]") {
     // sd == 0 hits the degenerate branch: the draw is exactly the mean.
     arithmetic_gmm_process p({5.0}, {0.0}, {1.0}, 100.0);
     CHECK(p.next() == Catch::Approx(105.0));
@@ -62,23 +59,22 @@ TEST_CASE("arithmetic_gmm_process price may cross zero", "[arithmetic_gmm_proces
     CHECK(p.current() == Catch::Approx(-40.0));
 }
 
-TEST_CASE(
-    "arithmetic_gmm_process rejects mismatched parameter vector sizes",
-    "[arithmetic_gmm_process]") {
-    CHECK_THROWS_AS(
-        arithmetic_gmm_process({0.0, 0.0}, {0.01}, {1.0}, 100.0), std::invalid_argument);
-    CHECK_THROWS_AS(
-        arithmetic_gmm_process({0.0}, {0.01, 0.01}, {1.0}, 100.0), std::invalid_argument);
-    CHECK_THROWS_AS(
-        arithmetic_gmm_process({0.0}, {0.01}, {1.0, 0.0}, 100.0), std::invalid_argument);
+TEST_CASE("arithmetic_gmm_process rejects mismatched parameter vector sizes",
+          "[arithmetic_gmm_process]") {
+    CHECK_THROWS_AS(arithmetic_gmm_process({0.0, 0.0}, {0.01}, {1.0}, 100.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(arithmetic_gmm_process({0.0}, {0.01, 0.01}, {1.0}, 100.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(arithmetic_gmm_process({0.0}, {0.01}, {1.0, 0.0}, 100.0),
+                    std::invalid_argument);
 }
 
 TEST_CASE("arithmetic_gmm_process rejects an empty component set", "[arithmetic_gmm_process]") {
     CHECK_THROWS_AS(arithmetic_gmm_process({}, {}, {}, 100.0), std::invalid_argument);
 }
 
-TEST_CASE(
-    "arithmetic_gmm_process rejects a non-positive initial price", "[arithmetic_gmm_process]") {
+TEST_CASE("arithmetic_gmm_process rejects a non-positive initial price",
+          "[arithmetic_gmm_process]") {
     CHECK_THROWS_AS(arithmetic_gmm_process({0.0}, {0.01}, {1.0}, 0.0), std::invalid_argument);
     CHECK_THROWS_AS(arithmetic_gmm_process({0.0}, {0.01}, {1.0}, -1.0), std::invalid_argument);
 }

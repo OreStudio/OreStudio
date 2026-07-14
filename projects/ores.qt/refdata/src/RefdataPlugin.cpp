@@ -32,6 +32,9 @@
 #include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CountryController.hpp"
+#include "ores.qt/CrmDriverPairController.hpp"
+#include "ores.qt/CrmEnabledDerivedPairController.hpp"
+#include "ores.qt/CrmTopologyConfigController.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/CurrencyPairController.hpp"
@@ -47,9 +50,6 @@
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CrmDriverPairController.hpp"
-#include "ores.qt/CrmEnabledDerivedPairController.hpp"
-#include "ores.qt/CrmTopologyConfigController.hpp"
 #include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
@@ -164,11 +164,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(codingSchemeController_.get());
 
     contactTypeController_ = std::make_unique<ContactTypeController>(ctx_.main_window,
-                                                                      ctx_.mdi_area,
-                                                                      ctx_.client_manager,
-                                                                      ctx_.change_reason_cache,
-                                                                      ctx_.username,
-                                                                      this);
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(contactTypeController_.get());
 
     datasetController_ = std::make_unique<DatasetController>(ctx_.main_window,
@@ -181,11 +181,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 
     dayCountFractionTypeController_ =
         std::make_unique<DayCountFractionTypeController>(ctx_.main_window,
-                                                          ctx_.mdi_area,
-                                                          ctx_.client_manager,
-                                                          ctx_.change_reason_cache,
-                                                          ctx_.username,
-                                                          this);
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username,
+                                                         this);
     connectControllerSignals(dayCountFractionTypeController_.get());
 
     businessDayConventionTypeController_ =
@@ -269,79 +269,79 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     // via a non-owning pointer for its composite trading-workflow views
     // (Portfolio/Org Explorer) and its "&Books" menu action.
     bookController_ = std::make_unique<BookController>(ctx_.main_window,
-                                                        ctx_.mdi_area,
-                                                        ctx_.client_manager,
-                                                        ctx_.image_cache,
-                                                        ctx_.change_reason_cache,
-                                                        ctx_.username,
-                                                        ctx_.badge_cache,
-                                                        this);
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.image_cache,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       ctx_.badge_cache,
+                                                       this);
     connectControllerSignals(bookController_.get());
 
     bookStatusController_ = std::make_unique<BookStatusController>(ctx_.main_window,
-                                                                    ctx_.mdi_area,
-                                                                    ctx_.client_manager,
-                                                                    ctx_.change_reason_cache,
-                                                                    ctx_.username,
-                                                                    this);
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(bookStatusController_.get());
 
-    regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username,
-        this);
+    regulatoryBookTypeController_ =
+        std::make_unique<RegulatoryBookTypeController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(regulatoryBookTypeController_.get());
 
-    bookPurposeTypeController_ = std::make_unique<BookPurposeTypeController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username,
-        this);
+    bookPurposeTypeController_ =
+        std::make_unique<BookPurposeTypeController>(ctx_.main_window,
+                                                    ctx_.mdi_area,
+                                                    ctx_.client_manager,
+                                                    ctx_.change_reason_cache,
+                                                    ctx_.username,
+                                                    this);
     connectControllerSignals(bookPurposeTypeController_.get());
 
-    ledgerFeedTypeController_ = std::make_unique<LedgerFeedTypeController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username,
-        this);
+    ledgerFeedTypeController_ = std::make_unique<LedgerFeedTypeController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(ledgerFeedTypeController_.get());
 
-    crmTopologyConfigController_ = std::make_unique<CrmTopologyConfigController>(ctx_.main_window,
-                                                                                  ctx_.mdi_area,
-                                                                                  ctx_.client_manager,
-                                                                                  ctx_.image_cache,
-                                                                                  ctx_.change_reason_cache,
-                                                                                  ctx_.username,
-                                                                                  ctx_.badge_cache,
-                                                                                  this);
+    crmTopologyConfigController_ =
+        std::make_unique<CrmTopologyConfigController>(ctx_.main_window,
+                                                      ctx_.mdi_area,
+                                                      ctx_.client_manager,
+                                                      ctx_.image_cache,
+                                                      ctx_.change_reason_cache,
+                                                      ctx_.username,
+                                                      ctx_.badge_cache,
+                                                      this);
     connectControllerSignals(crmTopologyConfigController_.get());
 
     crmDriverPairController_ = std::make_unique<CrmDriverPairController>(ctx_.main_window,
-                                                                          ctx_.mdi_area,
-                                                                          ctx_.client_manager,
-                                                                          ctx_.image_cache,
-                                                                          ctx_.change_reason_cache,
-                                                                          ctx_.username,
-                                                                          ctx_.badge_cache,
-                                                                          this);
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.image_cache,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         ctx_.badge_cache,
+                                                                         this);
     connectControllerSignals(crmDriverPairController_.get());
 
     crmEnabledDerivedPairController_ =
         std::make_unique<CrmEnabledDerivedPairController>(ctx_.main_window,
-                                                            ctx_.mdi_area,
-                                                            ctx_.client_manager,
-                                                            ctx_.image_cache,
-                                                            ctx_.change_reason_cache,
-                                                            ctx_.username,
-                                                            ctx_.badge_cache,
-                                                            this);
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.image_cache,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username,
+                                                          ctx_.badge_cache,
+                                                          this);
     connectControllerSignals(crmEnabledDerivedPairController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
@@ -493,12 +493,12 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(treatmentDimensionController_.get());
 
     tenorController_ = std::make_unique<TenorController>(ctx_.main_window,
-                                                          ctx_.mdi_area,
-                                                          ctx_.client_manager,
-                                                          ctx_.change_reason_cache,
-                                                          ctx_.username,
-                                                          ctx_.badge_cache,
-                                                          this);
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username,
+                                                         ctx_.badge_cache,
+                                                         this);
     connectControllerSignals(tenorController_.get());
     connect(tenorController_.get(), &TenorController::showConventionsRequested, this, [this]() {
         if (tenorConventionController_)
@@ -511,11 +511,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 
     tenorConventionController_ =
         std::make_unique<TenorConventionController>(ctx_.main_window,
-                                                     ctx_.mdi_area,
-                                                     ctx_.client_manager,
-                                                     ctx_.change_reason_cache,
-                                                     ctx_.username,
-                                                     this);
+                                                    ctx_.mdi_area,
+                                                    ctx_.client_manager,
+                                                    ctx_.change_reason_cache,
+                                                    ctx_.username,
+                                                    this);
     connectControllerSignals(tenorConventionController_.get());
     connect(tenorConventionController_.get(),
             &TenorConventionController::showAnchorsRequested,
@@ -541,28 +541,28 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(tenorAnchorController_.get());
 
     tenorKindController_ = std::make_unique<TenorKindController>(ctx_.main_window,
-                                                                  ctx_.mdi_area,
-                                                                  ctx_.client_manager,
-                                                                  ctx_.change_reason_cache,
-                                                                  ctx_.username,
-                                                                  this);
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(tenorKindController_.get());
 
     tenorUnitController_ = std::make_unique<TenorUnitController>(ctx_.main_window,
-                                                                  ctx_.mdi_area,
-                                                                  ctx_.client_manager,
-                                                                  ctx_.change_reason_cache,
-                                                                  ctx_.username,
-                                                                  this);
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(tenorUnitController_.get());
 
     tenorResolutionAlgorithmController_ =
         std::make_unique<TenorResolutionAlgorithmController>(ctx_.main_window,
-                                                              ctx_.mdi_area,
-                                                              ctx_.client_manager,
-                                                              ctx_.change_reason_cache,
-                                                              ctx_.username,
-                                                              this);
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username,
+                                                             this);
     connectControllerSignals(tenorResolutionAlgorithmController_.get());
 }
 
@@ -706,8 +706,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (tenorController_)
                 tenorController_->showListWindow();
         });
-        auto* actTenorConventions =
-            menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Conventions"));
+        auto* actTenorConventions = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Conventions"));
         connect(actTenorConventions, &QAction::triggered, this, [this]() {
             if (tenorConventionController_)
                 tenorConventionController_->showListWindow();
@@ -788,8 +787,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         // they land). Reference-data lookups belong here, not in the
         // Trading menu's Trading Codes submenu.
         auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
-        auto* actBookStatuses =
-            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
+        auto* actBookStatuses = menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
         connect(actBookStatuses, &QAction::triggered, this, [this]() {
             if (bookStatusController_)
                 bookStatusController_->showListWindow();
@@ -818,8 +816,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         // rate_engine but is not itself live market data -- see the
         // reclassification decision on the codegen task doc.
         auto* menuCrossRatesMatrix = ref->addMenu(tr("Cross Rates &Matrix"));
-        auto* actCrmTopology =
-            menuCrossRatesMatrix->addAction(ico(Icon::Chart), tr("&Topology"));
+        auto* actCrmTopology = menuCrossRatesMatrix->addAction(ico(Icon::Chart), tr("&Topology"));
         connect(actCrmTopology, &QAction::triggered, this, [this]() {
             if (crmTopologyConfigController_)
                 crmTopologyConfigController_->showListWindow();
@@ -830,8 +827,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (crmDriverPairController_)
                 crmDriverPairController_->showListWindow();
         });
-        auto* actCrmEnabledDerivedPairs = menuCrossRatesMatrix->addAction(
-            ico(Icon::ArrowSync), tr("&Enabled Derived Pairs"));
+        auto* actCrmEnabledDerivedPairs =
+            menuCrossRatesMatrix->addAction(ico(Icon::ArrowSync), tr("&Enabled Derived Pairs"));
         connect(actCrmEnabledDerivedPairs, &QAction::triggered, this, [this]() {
             if (crmEnabledDerivedPairController_)
                 crmEnabledDerivedPairController_->showListWindow();
@@ -999,10 +996,11 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_
-        || !act_business_centres_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
+        !act_business_centres_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_currencies_, act_countries_, act_currency_pairs_, act_books_, act_business_centres_};
+    return {
+        act_currencies_, act_countries_, act_currency_pairs_, act_books_, act_business_centres_};
 }
 
 // ---------------------------------------------------------------------------

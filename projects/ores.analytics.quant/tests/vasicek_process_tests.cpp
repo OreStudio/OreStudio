@@ -28,14 +28,13 @@
 using ores::analytics::quant::service::hull_white_process;
 using ores::analytics::quant::service::vasicek_process;
 
-TEST_CASE("vasicek_process reports the initial rate before any next() call",
-    "[vasicek_process]") {
+TEST_CASE("vasicek_process reports the initial rate before any next() call", "[vasicek_process]") {
     vasicek_process p(0.3, 0.03, 0.01, 0.03);
     CHECK(p.current() == 0.03);
 }
 
 TEST_CASE("vasicek_process next() updates and returns the same value as current()",
-    "[vasicek_process]") {
+          "[vasicek_process]") {
     vasicek_process p(0.3, 0.03, 0.01, 0.03);
     const double n = p.next();
     CHECK(n == p.current());
@@ -50,7 +49,7 @@ TEST_CASE("vasicek_process is deterministic for a fixed seed", "[vasicek_process
 }
 
 TEST_CASE("vasicek_process mean-reverts toward theta over a long run (statistical)",
-    "[vasicek_process]") {
+          "[vasicek_process]") {
     vasicek_process p(0.2, 0.03, 0.01, 0.06, 123);
     std::vector<double> tail;
     for (int i = 0; i < 5000; ++i) {
@@ -63,8 +62,8 @@ TEST_CASE("vasicek_process mean-reverts toward theta over a long run (statistica
 }
 
 TEST_CASE("vasicek_process is exactly hull_white_process composed with a constant theta_path "
-    "(next())",
-    "[vasicek_process]") {
+          "(next())",
+          "[vasicek_process]") {
     // Vasicek is not a separately-derived model here; it must produce
     // bit-identical simulated paths to the single-element-theta_path case
     // of hull_white_process, since that is literally what it delegates to.
@@ -76,8 +75,8 @@ TEST_CASE("vasicek_process is exactly hull_white_process composed with a constan
 }
 
 TEST_CASE("vasicek_process is exactly hull_white_process composed with a constant theta_path "
-    "(discount_factor())",
-    "[vasicek_process]") {
+          "(discount_factor())",
+          "[vasicek_process]") {
     vasicek_process v(0.3, 0.04, 0.015, 0.05);
     hull_white_process h(0.3, {0.04}, 0.015, 0.05);
 

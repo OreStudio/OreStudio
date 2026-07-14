@@ -80,8 +80,8 @@ double cir_process::discount_factor(std::size_t ticks_ahead) const {
     if (sigma_ == 0.0) {
         // Exact deterministic path: P = exp(-integral of r(s) ds, 0..tau),
         // r(s) = theta + (r_0 - theta) * e^{-kappa*s}.
-        const double integral
-            = theta_ * tau + (rate_ - theta_) * (1.0 - std::exp(-kappa_ * tau)) / kappa_;
+        const double integral =
+            theta_ * tau + (rate_ - theta_) * (1.0 - std::exp(-kappa_ * tau)) / kappa_;
         return std::exp(-integral);
     }
 

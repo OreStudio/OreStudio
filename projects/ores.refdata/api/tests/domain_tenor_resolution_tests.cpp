@@ -47,8 +47,9 @@ tenor make_special_tenor(std::string code) {
     return t;
 }
 
-tenor_convention make_convention(std::string code, std::string measured_from,
-    std::string algorithm = "ANCHOR_OFFSET") {
+tenor_convention make_convention(std::string code,
+                                 std::string measured_from,
+                                 std::string algorithm = "ANCHOR_OFFSET") {
     tenor_convention c;
     c.code = std::move(code);
     c.measured_from = std::move(measured_from);
@@ -56,10 +57,12 @@ tenor_convention make_convention(std::string code, std::string measured_from,
     return c;
 }
 
-tenor_convention_resolution make_resolution(std::string convention_code, std::string tenor_code,
-    std::optional<std::string> anchor_override = std::nullopt,
-    std::optional<std::string> offset_unit = std::nullopt,
-    std::optional<int> offset_multiplier = std::nullopt) {
+tenor_convention_resolution
+make_resolution(std::string convention_code,
+                std::string tenor_code,
+                std::optional<std::string> anchor_override = std::nullopt,
+                std::optional<std::string> offset_unit = std::nullopt,
+                std::optional<int> offset_multiplier = std::nullopt) {
     tenor_convention_resolution r;
     r.convention_code = std::move(convention_code);
     r.tenor_code = std::move(tenor_code);
@@ -144,10 +147,12 @@ TEST_CASE("resolve_end_date_rejects_tenor_not_a_member_of_the_convention", tags)
     const auto overnight = make_special_tenor("O/N");
     const auto convention = make_convention("RATES_SPOT_FORWARD", "SPOT");
 
-    CHECK_THROWS_AS(
-        resolve_end_date(overnight, convention, std::nullopt, std::chrono::year_month_day{},
-            std::chrono::year_month_day{}),
-        std::invalid_argument);
+    CHECK_THROWS_AS(resolve_end_date(overnight,
+                                     convention,
+                                     std::nullopt,
+                                     std::chrono::year_month_day{},
+                                     std::chrono::year_month_day{}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", tags) {
@@ -155,20 +160,23 @@ TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", tags) {
     const auto convention = make_convention("RATES_SPOT_FORWARD", "SPOT");
     const auto resolution = make_resolution("RATES_SPOT_FORWARD", "O/N");
 
-    CHECK_THROWS_AS(
-        resolve_end_date(overnight, convention, resolution, std::chrono::year_month_day{},
-            std::chrono::year_month_day{}),
-        std::invalid_argument);
+    CHECK_THROWS_AS(resolve_end_date(overnight,
+                                     convention,
+                                     resolution,
+                                     std::chrono::year_month_day{},
+                                     std::chrono::year_month_day{}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("resolve_end_date_throws_not_implemented_for_imm_roll", tags) {
     const auto oneYear = make_period_tenor("1Y", "YEAR", 1);
     const auto cds = make_convention("CREDIT_CDS_IMM", "", "IMM_ROLL");
-    const auto resolution = make_resolution("CREDIT_CDS_IMM", "1Y", std::nullopt, "ROLL_QUARTER", 4);
+    const auto resolution =
+        make_resolution("CREDIT_CDS_IMM", "1Y", std::nullopt, "ROLL_QUARTER", 4);
 
     CHECK_THROWS_AS(
-        resolve_end_date(oneYear, cds, resolution, std::chrono::year_month_day{},
-            std::chrono::year_month_day{}),
+        resolve_end_date(
+            oneYear, cds, resolution, std::chrono::year_month_day{}, std::chrono::year_month_day{}),
         std::logic_error);
 }
 
@@ -185,8 +193,7 @@ TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {
     const year_month_day laterSpot{year(2026), month(3), day(3)};
 
     auto deposit = resolve_window(threeMonths, convention, resolution, horizon, spot);
-    auto overlapping =
-        resolve_window(threeMonths, convention, resolution, laterHorizon, laterSpot);
+    auto overlapping = resolve_window(threeMonths, convention, resolution, laterHorizon, laterSpot);
 
     CHECK(windows_overlap(deposit, overlapping));
 }

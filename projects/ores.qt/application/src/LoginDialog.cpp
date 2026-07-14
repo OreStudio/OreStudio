@@ -32,8 +32,8 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -703,17 +703,18 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 << " parties available";
 
             if (quickLoginCheck_->isChecked() && !result.default_party_id.is_nil()) {
-                const auto it = std::find_if(
-                    result.available_parties.begin(),
-                    result.available_parties.end(),
-                    [&](const auto& p) { return p.id == result.default_party_id; });
+                const auto it =
+                    std::find_if(result.available_parties.begin(),
+                                 result.available_parties.end(),
+                                 [&](const auto& p) { return p.id == result.default_party_id; });
                 if (it != result.available_parties.end()) {
                     BOOST_LOG_SEV(lg(), info)
                         << "Quick-login: selecting default party " << it->name.toStdString();
                     statusLabel_->setText("Logging in to default party...");
                     if (clientManager_->selectParty(it->id, it->name)) {
                         statusLabel_->setText("Login successful!");
-                        emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
+                        emit loginSucceeded(
+                            QString::fromStdString(clientManager_->currentUsername()));
                         if (clientManager_->lastPartySetupRequired()) {
                             emit partySetupDetected();
                         } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {

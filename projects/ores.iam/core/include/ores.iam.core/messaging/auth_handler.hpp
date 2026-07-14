@@ -38,7 +38,6 @@
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <algorithm>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -50,6 +49,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <rfl/json.hpp>
@@ -81,9 +81,10 @@ auth_compute_visible_party_ids(const service::cache::party_cache& cache,
     return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
-inline std::optional<refdata::domain::party> auth_lookup_party(const service::cache::party_cache& cache,
-                                                               const std::string& tenant_id,
-                                                               const boost::uuids::uuid& party_id) {
+inline std::optional<refdata::domain::party>
+auth_lookup_party(const service::cache::party_cache& cache,
+                  const std::string& tenant_id,
+                  const boost::uuids::uuid& party_id) {
     return cache.lookup(tenant_id, party_id);
 }
 

@@ -55,8 +55,8 @@ TEST_CASE("cir_process never produces a negative rate over a long run", "[cir_pr
 }
 
 TEST_CASE("cir_process never produces a negative rate even when the Feller condition is "
-    "violated",
-    "[cir_process]") {
+          "violated",
+          "[cir_process]") {
     // 2*kappa*theta = 0.02 < sigma^2 = 0.25: the process can touch zero,
     // but the exact simulation must never go negative.
     cir_process p(0.1, 0.1, 0.5, 0.05, 321);
@@ -64,8 +64,7 @@ TEST_CASE("cir_process never produces a negative rate even when the Feller condi
         CHECK(p.next() >= 0.0);
 }
 
-TEST_CASE("cir_process mean-reverts toward theta over a long run (statistical)",
-    "[cir_process]") {
+TEST_CASE("cir_process mean-reverts toward theta over a long run (statistical)", "[cir_process]") {
     cir_process p(0.6, 0.05, 0.1, 0.1, 123);
     std::vector<double> tail;
     for (int i = 0; i < 8000; ++i) {
@@ -78,8 +77,8 @@ TEST_CASE("cir_process mean-reverts toward theta over a long run (statistical)",
 }
 
 TEST_CASE("cir_process with zero volatility follows the deterministic mean-reversion ODE "
-    "exactly",
-    "[cir_process]") {
+          "exactly",
+          "[cir_process]") {
     cir_process p(0.5, 0.03, 0.0, 0.08);
     double prev = 0.08;
     for (int i = 0; i < 50; ++i) {
@@ -119,8 +118,8 @@ TEST_CASE("cir_process discount_factor decreases monotonically with maturity", "
 }
 
 TEST_CASE("cir_process discount_factor with zero volatility matches the deterministic "
-    "closed form",
-    "[cir_process]") {
+          "closed form",
+          "[cir_process]") {
     cir_process p(0.5, 0.03, 0.0, 0.05);
     // r(s) = theta + (r0-theta)*e^{-kappa*s}; integral over [0,tau] has a
     // simple closed form -- recomputed independently here as an oracle.
@@ -133,7 +132,7 @@ TEST_CASE("cir_process discount_factor with zero volatility matches the determin
 }
 
 TEST_CASE("cir_process discount_factor stays finite and in (0, 1] for long maturities",
-    "[cir_process]") {
+          "[cir_process]") {
     // Regression test: the un-normalised textbook formula computes
     // exp(gamma*tau) directly, which overflows to +inf once gamma*tau
     // exceeds ~709 -- e.g. gamma around 0.3 with tau in the thousands

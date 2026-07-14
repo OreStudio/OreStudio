@@ -363,10 +363,9 @@ void CurrencyController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CurrencyController::onOpenVersion(
-    const refdata::domain::currency& currency,
-    int versionNumber,
-    const std::vector<refdata::domain::currency>& fullHistory) {
+void CurrencyController::onOpenVersion(const refdata::domain::currency& currency,
+                                       int versionNumber,
+                                       const std::vector<refdata::domain::currency>& fullHistory) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for currency: " << currency.iso_code;
 
@@ -497,17 +496,16 @@ void CurrencyController::fetchCurrencyHistory(
 
     QPointer<CurrencyController> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
-    auto future =
-        QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
-            if (!clientManager || !clientManager->isConnected())
-                return std::unexpected(QString("Not connected to server"));
-            auto result = clientManager->process_authenticated_request(std::move(request));
-            if (!result)
-                return std::unexpected(QString::fromStdString(result.error()));
-            if (!result->success)
-                return std::unexpected(QString::fromStdString(result->message));
-            return std::move(result->history);
-        });
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);
     connect(watcher,
@@ -532,14 +530,15 @@ void CurrencyController::onOpenHistoryVersion(const QString& entityId, int versi
             if (!self)
                 return;
             if (!result) {
-                emit self->errorMessage(
-                    QString("Failed to load history for '%1': %2").arg(entityId).arg(result.error()));
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
                 return;
             }
             const auto& history = *result;
-            const auto it = std::find_if(
-                history.begin(), history.end(),
-                [&](const auto& c) { return c.version == versionNumber; });
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& c) {
+                return c.version == versionNumber;
+            });
             if (it == history.end()) {
                 emit self->errorMessage(
                     QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
@@ -558,14 +557,15 @@ void CurrencyController::onRevertHistoryVersion(const QString& entityId, int ver
             if (!self)
                 return;
             if (!result) {
-                emit self->errorMessage(
-                    QString("Failed to load history for '%1': %2").arg(entityId).arg(result.error()));
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
                 return;
             }
             const auto& history = *result;
-            const auto it = std::find_if(
-                history.begin(), history.end(),
-                [&](const auto& c) { return c.version == versionNumber; });
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& c) {
+                return c.version == versionNumber;
+            });
             if (it == history.end()) {
                 emit self->errorMessage(
                     QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));

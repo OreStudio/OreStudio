@@ -110,6 +110,7 @@
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
 \ir ../refdata/refdata_countries_populate.sql
 \ir ../refdata/refdata_calendar_types_populate.sql
+\ir ../refdata/refdata_calendars_populate.sql
 \ir ../refdata/refdata_party_categories_populate.sql
 \ir ../refdata/refdata_party_types_populate.sql
 \ir ../refdata/refdata_party_statuses_populate.sql

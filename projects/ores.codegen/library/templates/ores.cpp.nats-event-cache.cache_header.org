@@ -67,14 +67,18 @@ The full template source. Edit here and re-tangle with
 {{#primary_key.is_uuid}}
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
+{{^cache_aux_type}}
 #include <variant>
+{{/cache_aux_type}}
 {{/primary_key.is_uuid}}
+{{#cache_aux_type}}
 #include <immer/map.hpp>
 #include <immer/map_transient.hpp>
+#include <vector>
+{{/cache_aux_type}}
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
-#include <vector>
 
 namespace ores::{{cache_component}}::service::cache {
 

@@ -33,7 +33,6 @@
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace ores::iam::service::cache {

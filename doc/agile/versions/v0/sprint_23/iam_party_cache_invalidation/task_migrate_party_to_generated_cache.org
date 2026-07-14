@@ -72,7 +72,10 @@ parent/child aux index =compute_visible_party_ids= depends on.
    additive) to support it.
 3. Author party's three paste-point blocks (children_map type,
    parent-id-keyed build, iterative =compute_visible_party_ids=)
-   reproducing the hand-written prototype's behaviour exactly.
+   reproducing the hand-written prototype's visible-set membership
+   (traversal order differs: iterative stack vs. the original's
+   recursive pre-order DFS — harmless, since both consumers only use
+   the result for membership checks).
 4. Set party's model flags for real (=cached_by=, =read_for_cache=,
    =cache_aux_type=, facet-enabled); generate the two files under
    =ores.iam=.
@@ -134,7 +137,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unconditional immer/vector includes even without cache_aux_type (flagged by 1 of 3 runs) | ores.cpp.nats-event-cache.cache_header.org | Accepted | Gated <immer/map.hpp>/<immer/map_transient.hpp>/<vector> behind {{#cache_aux_type}}; <variant> now only emitted when is_uuid AND no cache_aux_type |
+| 2 | cache_aux_type has no validation coupling to cached_by (flagged by 2 of 3 runs) | core.py | Accepted | Added validate_cache_aux_type + test_cache_aux_type.py mirroring the existing pattern |
+| 3 | Dropped "Warming party cache for N tenant(s)" log line (flagged by all 3 runs) | ores.cpp.nats-event-cache.registrar_wiring.org | Accepted | Restored via a dedicated logger in the generated warm_and_subscribe_* function |
+| 4 | Traversal order in compute_visible_party_ids differs from the recursive original; task doc's "exactly" overstated (flagged by 2 of 3 runs) | task doc | Accepted | Reworded to note membership is identical, order differs harmlessly (both consumers only check membership) |
+| 5 | Formatting nit: extra spaces on the cache_aux_type flag line (flagged by 1 of 3 runs) | ores.refdata.party.org | Accepted | Aligned with neighbouring flags |
+| 6 | No cycle protection in compute_visible_party_ids (flagged by 1 of 3 runs) | party_cache.hpp / aux_methods paste block | Declined | Reviewer's own analysis: pre-existing gap in the hand-written prototype being replaced, not a regression introduced by this PR |
 
 * Result
 
@@ -148,8 +156,10 @@ Party is now the first real =nats-event-cache= consumer:
   originally generate.
 - Set =cached_by: iam=, =read_for_cache: true=,
   =cache_aux_type: children_map= on party's model, with its three
-  paste-point blocks reproducing the hand-written prototype's
-  =children_map=/=compute_visible_party_ids= logic exactly.
+  paste-point blocks faithfully reproducing the hand-written
+  prototype's =children_map=/=compute_visible_party_ids= logic
+  (same visible-set membership; traversal order differs, harmlessly —
+  see Plan step 3).
 - Generated =party_cache.hpp=/=party_cache_registrar.hpp= under
   =ores.iam=; deleted the hand-written
   =ores.iam.core/service/party_cache.hpp= prototype.

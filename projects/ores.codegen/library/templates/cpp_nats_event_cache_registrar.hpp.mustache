@@ -6,6 +6,7 @@
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
 #include "ores.nats/service/client.hpp"
@@ -16,6 +17,14 @@
 #include <vector>
 
 namespace ores::{{cache_component}}::service::cache {
+
+namespace {
+inline auto& {{entity_singular}}_cache_registrar_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.{{cache_component}}.service.cache.{{entity_singular}}_cache_registrar");
+    return instance;
+}
+} // namespace
 
 /**
  * @brief Warms {{entity_singular}}_cache for every given tenant, then
@@ -28,6 +37,9 @@ inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_
     ores::nats::service::client& nats,
     std::shared_ptr<{{entity_singular}}_cache> cache,
     const std::vector<std::string>& tenant_ids) {
+    using namespace ores::logging;
+    BOOST_LOG_SEV({{entity_singular}}_cache_registrar_lg(), debug)
+        << "Warming {{entity_singular}} cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
         cache->load(tenant_id);
 

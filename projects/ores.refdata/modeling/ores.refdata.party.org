@@ -227,7 +227,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 :service_pagination:          true
 :read_for_cache:              true
 :cached_by:                   iam
-:cache_aux_type:               children_map
+:cache_aux_type:              children_map
 :END:
 
 ** Repository

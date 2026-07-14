@@ -23,6 +23,7 @@
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include <memory>
@@ -32,6 +33,14 @@
 #include <vector>
 
 namespace ores::iam::service::cache {
+
+namespace {
+inline auto& party_cache_registrar_lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.iam.service.cache.party_cache_registrar");
+    return instance;
+}
+} // namespace
 
 /**
  * @brief Warms party_cache for every given tenant, then
@@ -44,6 +53,9 @@ inline ores::nats::service::subscription
 warm_and_subscribe_party_cache(ores::nats::service::client& nats,
                                std::shared_ptr<party_cache> cache,
                                const std::vector<std::string>& tenant_ids) {
+    using namespace ores::logging;
+    BOOST_LOG_SEV(party_cache_registrar_lg(), debug)
+        << "Warming party cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
         cache->load(tenant_id);
 

@@ -1444,6 +1444,27 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires read_for_cache")
 
 
+def validate_cache_aux_type(domain_entity):
+    """
+    Validate the cache_aux_type messaging flag: the C++ type name of a
+    nats-event-cache's optional aux index (e.g. party's parent/child
+    children_map), supplied via the entity's own paste-point blocks.
+    Requires cached_by, since an aux index with no generated cache to
+    attach it to is meaningless.
+
+    Args:
+        domain_entity (dict): not mutated; cache_aux_type has no default
+            (its absence simply means the generated cache's AuxIndex
+            stays std::monostate).
+
+    Raises:
+        ValueError: if cache_aux_type is set without cached_by.
+    """
+    if domain_entity.get('cache_aux_type') and not domain_entity.get('cached_by'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: cache_aux_type requires cached_by")
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2128,6 +2149,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity.setdefault('single_delete', False)
         validate_read_for_cache(domain_entity)
         validate_cached_by(domain_entity)
+        validate_cache_aux_type(domain_entity)
         # Derive paged list-by-foreign-key NATS operations (protocol/handler/
         # registrar) from any foreign key opted in via :list_by: true. The
         # repository/service methods themselves are generated directly off

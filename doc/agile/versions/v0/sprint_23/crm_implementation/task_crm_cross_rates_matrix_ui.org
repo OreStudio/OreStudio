@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:ui:crm_implementation:
 #+owner: marco
 #+branch: feature/crm-cross-rates-matrix-ui
-#+pr:
+#+pr: 1570
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -194,7 +194,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1570][#1570]] | [qt,marketdata,sql] Redesign CRM cross-rates matrix UI with real manual QA fixes |
 
 * Review
 

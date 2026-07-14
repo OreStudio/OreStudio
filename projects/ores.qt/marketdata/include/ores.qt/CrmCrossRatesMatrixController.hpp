@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include <QMainWindow>
+#include <QMap>
 #include <QMdiArea>
 #include <QObject>
 #include <QPointer>
@@ -31,9 +32,20 @@
 namespace ores::qt {
 
 class CrmCrossRatesMatrixMdiWindow;
+class ImageCache;
 
 /**
- * @brief Controller for the CRM cross-rates matrix window.
+ * @brief Controller for the CRM cross-rates matrix window(s).
+ *
+ * showMatrix() first asks the user which named CRM to open (via
+ * fetch_crm_topology_configs) -- "All" plus one entry per named
+ * crm_topology_config for the current party -- then reuses that name's
+ * existing window if one is already open, or creates a new one
+ * otherwise. This lets users compare multiple named CRMs side by side
+ * (e.g. majors and exotics at once) while never opening a duplicate
+ * window for the same name. Each name's window geometry and "Hide
+ * Empty" preference persist independently (see
+ * CrmCrossRatesMatrixMdiWindow's settingsGroup_).
  */
 class CrmCrossRatesMatrixController final : public QObject {
     Q_OBJECT
@@ -51,6 +63,7 @@ public:
     CrmCrossRatesMatrixController(QMainWindow* mainWindow,
                                   QMdiArea* mdiArea,
                                   ClientManager* clientManager,
+                                  ImageCache* imageCache,
                                   QObject* parent = nullptr);
 
     void showMatrix();
@@ -63,12 +76,17 @@ signals:
     void detachableWindowDestroyed(DetachableMdiSubWindow* window);
 
 private:
+    void openMatrix(const QString& crmName);
+
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
 
-    QPointer<CrmCrossRatesMatrixMdiWindow> matrixWindow_;
-    QPointer<DetachableMdiSubWindow> matrixSubWindow_;
+    /// Keyed by crm_name ("" for "All") -- at most one open window per
+    /// name, so picking the same name twice refocuses instead of
+    /// duplicating.
+    QMap<QString, QPointer<DetachableMdiSubWindow>> matrixSubWindows_;
 };
 
 }

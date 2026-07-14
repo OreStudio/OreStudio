@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79
+:END:
+#+title: Task: Export CRM cross-rates matrix as CSV and ORE XML
+#+description: Add an export button to the CRM cross-rates matrix UI panel to save the currently displayed rates as CSV, and as an ORE-format market data export (matching the existing ExportOre convention used elsewhere in the app).
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an export toolbar action to the CRM cross-rates matrix UI panel
+(see [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the panel task]]) that saves the
+currently displayed matrix (whatever the current Base Currency/Hide
+Empty/Show Inverted filters produce -- what the user sees, not
+necessarily the full unfiltered response) to a file, in two formats:
+
+- *CSV*: one row per (base, quote, rate, status, as_of) -- straightforward
+  tabular dump for spreadsheet use.
+- *ORE XML*: matching whatever ORE market data export convention the
+  app already uses elsewhere (=Icon::ExportOre= exists in
+  =IconUtils.hpp=, and other panels presumably already implement an ORE
+  export -- reuse that existing convention/helper rather than
+  inventing a new one).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- Toolbar export action (or two, CSV/ORE) on
+  =CrmCrossRatesMatrixMdiWindow=, following whatever existing
+  export-button pattern/icon (=Icon::ExportCsv=/=Icon::ExportOre=
+  already exist in =IconUtils.hpp=) other panels in the app use, for
+  consistency.
+- CSV export: one row per currently-visible cell (base, quote, rate,
+  status, as_of) -- respects the current Base Currency filter, Hide
+  Empty toggle, and Show Inverted toggle (exports what's on screen).
+- ORE XML export: reuses the app's existing ORE market-data export
+  convention/helper rather than a new one-off implementation.
+- Manual QA scenario covering both export formats against real data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

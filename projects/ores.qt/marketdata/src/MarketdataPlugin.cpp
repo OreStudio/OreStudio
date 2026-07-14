@@ -73,7 +73,7 @@ void MarketdataPlugin::on_login(const plugin_context& ctx) {
             &PluginBase::windowDestroyed);
 
     crmCrossRatesMatrixController_ = std::make_unique<CrmCrossRatesMatrixController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache);
 
     connect(crmCrossRatesMatrixController_.get(),
             &CrmCrossRatesMatrixController::statusMessage,

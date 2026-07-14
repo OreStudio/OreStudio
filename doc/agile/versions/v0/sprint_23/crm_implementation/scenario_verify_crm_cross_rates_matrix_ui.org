@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 1F2B5815-DF46-446A-A204-3E36A37C2747
+:END:
+#+title: Test Scenario: Verify CRM cross-rates matrix UI panel
+#+description: Manual QA scenario for the CRM cross-rates matrix Qt panel: NxN grid, crm_name selector, manual reload, rate status styling.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm:ui:marketdata:crm_implementation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][CRM cross-rates matrix UI panel]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][CRM cross-rates matrix UI panel]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow            |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, party BARCLAYS PLC
+
+If the DB was recreated since, re-run
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+via =compass shell -f <path>= to restore this account, party, and its
+CRM data first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Market Data > Cross-&Rates Matrix
+
+Confirm the panel opens as an MDI window with a toolbar (Reload
+button) above an empty/loading grid, and a footer row (CRM combo on
+the left, status label on the right).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the CRM combo lists "All", "exotics", "majors"
+
+Barclays PLC has two named CRMs seeded by provisioning. The combo
+should be populated asynchronously shortly after the window opens
+(it fetches crm_topology_configs in the background), and should be
+comfortably readable (not clipped/truncated).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Click Reload with "All" selected
+
+Confirm the grid populates as an NxN matrix (rows/columns are every
+currency appearing in any rate), diagonal cells show "-", and the
+footer shows "CONNECTED | N Currencies" with N matching the actual
+currency count.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select "majors" in the CRM combo and Reload
+
+Confirm the grid changes to a smaller matrix covering only the majors
+CRM's currencies (EUR, GBP, AUD, NZD, CAD, CHF, SEK, JPY, USD).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select "exotics" in the CRM combo and Reload
+
+Confirm the grid changes again to the exotics CRM's currencies
+(should include ZAR/MXN/INR alongside USD).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm no auto-refresh happens
+
+Leave the panel open and idle for at least 15 seconds without
+clicking Reload. Confirm the grid and footer do not change on their
+own (manual reload only, per the story's architecture decision — no
+timer, no NATS subscription).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-14T21:11:51Z |
+| Branch        | feature/crm-cross-rates-matrix-ui |
+| Commit        | 40559e6cd |
+| Worktree      | clever_dijkstra |
+
+* Notes

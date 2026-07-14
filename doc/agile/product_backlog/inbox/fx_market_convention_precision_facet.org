@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 76362D7D-44E6-4990-8058-2F9C41BF08DD
+:END:
+#+title: Add FX market-convention facet (base/quote order, pip precision)
+#+description: No reusable facet exists for FX market conventions (canonical base/quote ordering per pair, pip/decimal precision for display) -- rates are formatted as plain doubles everywhere they're shown.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:fx:marketdata:ui:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a reusable FX market-convention lookup (likely a small refdata
+entity or static table keyed by currency pair) capturing, per pair:
+the canonical base/quote ordering the market actually quotes in
+(e.g. EUR/USD, not USD/EUR; GBP/USD not USD/GBP) and the standard
+display precision (pip size / decimal places -- e.g. most pairs to
+4-5 decimals, JPY crosses to 2-3). Today `crm_rate_item::rate` and
+every other rate display in the codebase is a bare `double`, always
+formatted the same way regardless of pair (see
+`CrmCrossRatesMatrixMdiWindow::reload()`'s
+`QString::number(item.rate, 'f', 5)` for one instance) and there is
+no ordering convention applied anywhere -- driver/derived pairs are
+stored and displayed in whatever base/quote order they were
+generated or configured in.
+
+* Why
+
+Surfaced while building the CRM cross-rates matrix UI panel (see
+[[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the task]]), whose reference mockup
+(`doc/analysis/gemini_cross_rates_matrix.png`) shows convention-aware
+formatting (JPY pairs to fewer decimals, consistent base/quote
+ordering) that the codebase has no facility to produce. This isn't
+specific to the matrix panel -- any place a rate or currency pair is
+displayed (feed bindings, market data feeds, trading tickets) would
+benefit from a single source of truth for market convention instead
+of ad hoc fixed-precision formatting per call site.
+
+* References
+
+- `projects/ores.qt/marketdata/src/CrmCrossRatesMatrixMdiWindow.cpp`
+- `doc/analysis/gemini_cross_rates_matrix.png`
+- [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][CRM cross-rates matrix UI panel]] (task where the gap surfaced)
+
+* See also
+
+-

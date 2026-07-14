@@ -22,25 +22,41 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include <QComboBox>
 #include <QLabel>
+#include <QPushButton>
 #include <QSize>
 #include <QTableWidget>
+#include <QTimer>
 #include <QToolBar>
 #include <QWidget>
+#include <deque>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::qt {
 
+class ImageCache;
+class CrmRateSparklineWidget;
+
 /**
- * @brief Read-only NxN cross-rates matrix for the current party's CRM
- * (Cross-rates matrix) configuration.
+ * @brief Read-only NxN cross-rates matrix for one named CRM (or "All"),
+ * for the current party.
  *
- * Sourced entirely from a single `marketdata.v1.crm.rates` request --
- * manual reload only, by design: the CRM story's own architecture
- * decision is to never broadcast the full derived rate set, so this
- * panel deliberately has no auto-refresh timer and no NATS subscription
- * (contrast with ServiceDashboardMdiWindow's optional auto-refresh).
+ * The named CRM is fixed at construction (chosen up front via the
+ * controller's picker, see CrmCrossRatesMatrixController::showMatrix) --
+ * this window never switches CRM after opening; comparing two CRMs means
+ * opening two windows, one per name. Sourced from repeated
+ * `marketdata.v1.crm.rates` requests -- the manual Reload button, and a
+ * client-side polling timer driven by the footer's "Update Interval"
+ * combo (defaults to 5s, matching the reference mockup; "No
+ * auto-refresh" stops it). This is still no server-side broadcast/push
+ * and no NATS subscription: the story's "never broadcast the derived
+ * set" decision is about the server never pushing ticks to every
+ * subscriber, not about whether a client automates its own on-demand
+ * pulls -- see the story's `* Decisions` for the full reasoning.
  * Rows/columns are the currencies that actually appear in the response,
  * not a fixed/curated list -- see the reference mockup at
  * doc/analysis/gemini_cross_rates_matrix.png for the general shape
@@ -59,7 +75,11 @@ private:
     }
 
 public:
-    explicit CrmCrossRatesMatrixMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
+    /// crmName empty selects "All" (every enabled CRM for the party).
+    explicit CrmCrossRatesMatrixMdiWindow(ClientManager* clientManager,
+                                          ImageCache* imageCache,
+                                          QString crmName,
+                                          QWidget* parent = nullptr);
     ~CrmCrossRatesMatrixMdiWindow() override = default;
 
     QSize sizeHint() const override {
@@ -73,16 +93,56 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
 
+private slots:
+    void onCellSelected(int row, int column);
+    void onRefreshIntervalChanged();
+    void onHideEmptyToggled(bool checked);
+    void onShowInvertedToggled(bool checked);
+
 private:
     void setupUi();
     void setupToolbar();
+    void updateOverviewPanel(const std::string& base, const std::string& quote);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
+    /// Fixed for this window's lifetime -- empty means "All".
+    QString crmName_;
+    /// QSettings group this window's "Hide Empty" preference is stored
+    /// under -- one per named CRM, matching the geometry key the
+    /// controller assigns, so each named CRM's window remembers its own
+    /// preference independently.
+    QString settingsGroup_;
 
     QToolBar* toolbar_;
+    QComboBox* baseCurrencyCombo_;
+    QComboBox* refreshIntervalCombo_;
     QAction* reloadAction_;
+    QPushButton* hideEmptyButton_;
+    QPushButton* showInvertedButton_;
+    QTimer* autoRefreshTimer_;
     QTableWidget* table_;
     QLabel* footerLabel_;
+
+    // "FX Pair Overview" side panel for the currently selected cell.
+    QLabel* overviewPairLabel_;
+    QLabel* overviewRateLabel_;
+    CrmRateSparklineWidget* overviewSparkline_;
+
+    /// Currencies currently shown as row/column headers, indexed by the
+    /// grid's row/column position -- lets cell-selection map back to a
+    /// (base, quote) pair without re-deriving it from response data.
+    std::vector<std::string> displayedCurrencies_;
+
+    /// Previous reload's rate per (base, quote) -- used to colour cells
+    /// up/down relative to their last known value. Client-side only, no
+    /// server-side tick history.
+    std::map<std::pair<std::string, std::string>, double> previousRates_;
+
+    /// Rolling per-session rate history per (base, quote), one point per
+    /// reload -- feeds the overview panel's sparkline. Capped so an
+    /// all-day session doesn't grow this unbounded.
+    std::map<std::pair<std::string, std::string>, std::deque<double>> rateHistory_;
 };
 
 }

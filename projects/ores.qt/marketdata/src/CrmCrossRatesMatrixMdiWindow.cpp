@@ -20,15 +20,23 @@
 #include "ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/CrmRateCellWidget.hpp"
+#include "ores.qt/CrmRateSparklineWidget.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include <QFrame>
 #include <QFutureWatcher>
+#include <QHBoxLayout>
 #include <QHeaderView>
+#include <QLabel>
 #include <QMessageBox>
 #include <QSet>
+#include <QSettings>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <cmath>
 #include <map>
 
 namespace ores::qt {
@@ -38,8 +46,13 @@ namespace marketdata_msg = ores::marketdata::messaging;
 
 namespace {
 
-QTableWidgetItem* make_item(const QString& text) {
-    auto* item = new QTableWidgetItem(text);
+constexpr int cell_width = 110;
+constexpr int cell_height = 56;
+constexpr int row_header_width = 100;
+constexpr std::size_t max_history_points = 30;
+
+QTableWidgetItem* make_dash_item() {
+    auto* item = new QTableWidgetItem(QStringLiteral("-"));
     item->setTextAlignment(Qt::AlignCenter);
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     return item;
@@ -54,13 +67,30 @@ struct RatesResult {
 } // namespace
 
 CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* clientManager,
+                                                            ImageCache* imageCache,
+                                                            QString crmName,
                                                             QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , crmName_(std::move(crmName))
+    , settingsGroup_(QStringLiteral("CrmCrossRatesMatrixWindow_")
+                      + (crmName_.isEmpty() ? QStringLiteral("All") : crmName_))
     , toolbar_(nullptr)
+    , baseCurrencyCombo_(nullptr)
+    , refreshIntervalCombo_(nullptr)
     , reloadAction_(nullptr)
+    , hideEmptyButton_(nullptr)
+    , showInvertedButton_(nullptr)
+    , autoRefreshTimer_(nullptr)
     , table_(nullptr)
-    , footerLabel_(nullptr) {
+    , footerLabel_(nullptr)
+    , overviewPairLabel_(nullptr)
+    , overviewRateLabel_(nullptr)
+    , overviewSparkline_(nullptr) {
+
+    autoRefreshTimer_ = new QTimer(this);
+    connect(autoRefreshTimer_, &QTimer::timeout, this, &CrmCrossRatesMatrixMdiWindow::reload);
 
     setupUi();
     reload();
@@ -74,16 +104,154 @@ void CrmCrossRatesMatrixMdiWindow::setupUi() {
     setupToolbar();
     mainLayout->addWidget(toolbar_);
 
+    auto* bodyLayout = new QHBoxLayout();
+
     table_ = new QTableWidget(this);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    table_->setSelectionMode(QAbstractItemView::NoSelection);
+    table_->setSelectionMode(QAbstractItemView::SingleSelection);
+    table_->setSelectionBehavior(QAbstractItemView::SelectItems);
     table_->setAlternatingRowColors(true);
-    table_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    table_->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    mainLayout->addWidget(table_);
+    // Fixed cell/header sizes -- deliberately not Stretch: the grid must
+    // not visibly grow/shrink per cell as the currency count changes
+    // between reloads (e.g. switching CRM selector), matching the
+    // reference mockup's uniform cell sizing.
+    table_->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    table_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    table_->horizontalHeader()->setDefaultSectionSize(cell_width);
+    table_->verticalHeader()->setDefaultSectionSize(cell_height);
+    // Row-header column (flag + code) needs more width than the header's
+    // own content-based size hint gives it by default -- it was visibly
+    // squished against the flag icon.
+    table_->verticalHeader()->setFixedWidth(row_header_width);
+    table_->setIconSize(QSize(20, 14));
+    bodyLayout->addWidget(table_, 1);
+
+    // "FX Pair Overview" side panel, matching the reference mockup --
+    // shows whichever cell was last clicked, sourced entirely from this
+    // panel's own local reload history (no separate rate-history endpoint
+    // exists, by design).
+    auto* overviewFrame = new QFrame(this);
+    overviewFrame->setFrameShape(QFrame::StyledPanel);
+    overviewFrame->setFixedWidth(200);
+    auto* overviewLayout = new QVBoxLayout(overviewFrame);
+
+    auto* overviewTitle = new QLabel(tr("FX Pair Overview"), overviewFrame);
+    overviewTitle->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    overviewLayout->addWidget(overviewTitle);
+
+    overviewPairLabel_ = new QLabel(tr("(select a cell)"), overviewFrame);
+    overviewLayout->addWidget(overviewPairLabel_);
+
+    overviewRateLabel_ = new QLabel(overviewFrame);
+    overviewLayout->addWidget(overviewRateLabel_);
+
+    overviewSparkline_ = new CrmRateSparklineWidget(overviewFrame);
+    overviewLayout->addWidget(overviewSparkline_);
+    overviewLayout->addStretch(1);
+
+    bodyLayout->addWidget(overviewFrame);
+    mainLayout->addLayout(bodyLayout, 1);
+
+    auto* footerLayout = new QHBoxLayout();
+    footerLayout->addWidget(new QLabel(tr("Base Currency:"), this));
+    baseCurrencyCombo_ = new QComboBox(this);
+    baseCurrencyCombo_->setMinimumWidth(120);
+    baseCurrencyCombo_->addItem(tr("All"), QString());
+    footerLayout->addWidget(baseCurrencyCombo_);
+    connect(baseCurrencyCombo_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CrmCrossRatesMatrixMdiWindow::reload);
+
+    footerLayout->addSpacing(12);
+    footerLayout->addWidget(new QLabel(tr("Update Interval:"), this));
+    refreshIntervalCombo_ = new QComboBox(this);
+    refreshIntervalCombo_->setMinimumWidth(120);
+    refreshIntervalCombo_->addItem(tr("No auto-refresh"), 0);
+    refreshIntervalCombo_->addItem(tr("5s"), 5);
+    refreshIntervalCombo_->addItem(tr("10s"), 10);
+    refreshIntervalCombo_->addItem(tr("30s"), 30);
+    refreshIntervalCombo_->addItem(tr("60s"), 60);
+    // 5s default, matching the reference mockup -- auto-refresh is now
+    // the default experience for this panel, not an opt-in extra. See
+    // the story's `* Decisions` for why polling (as opposed to
+    // server-side broadcast) is fine here.
+    refreshIntervalCombo_->setCurrentIndex(1);
+    footerLayout->addWidget(refreshIntervalCombo_);
+    connect(refreshIntervalCombo_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CrmCrossRatesMatrixMdiWindow::onRefreshIntervalChanged);
+
+    footerLayout->addSpacing(12);
+    // Real checkable toggle button (not a toolbar icon/checkbox) -- hides
+    // currencies with no configured pair at all (never appear as base or
+    // quote anywhere in the current selection). Distinct from the
+    // per-cell dash, which already covers "this specific pair has no
+    // data" while the currency itself still has data elsewhere.
+    hideEmptyButton_ = new QPushButton(tr("Hide Empty"), this);
+    hideEmptyButton_->setCheckable(true);
+    hideEmptyButton_->setCursor(Qt::PointingHandCursor);
+    hideEmptyButton_->setToolTip(tr("Hide currencies with no configured pair at all"));
+    {
+        const QColor accent = palette().color(QPalette::Highlight);
+        const QColor accentText = palette().color(QPalette::HighlightedText);
+        hideEmptyButton_->setStyleSheet(
+            QStringLiteral("QPushButton { padding: 3px 10px; border: 1px solid %1; "
+                           "border-radius: 3px; } "
+                           "QPushButton:checked { background: %1; color: %2; }")
+                .arg(accent.name(), accentText.name()));
+    }
+    footerLayout->addWidget(hideEmptyButton_);
+    {
+        QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
+        settings.beginGroup(settingsGroup_);
+        hideEmptyButton_->setChecked(settings.value(QStringLiteral("hideEmpty"), false).toBool());
+    }
+    connect(hideEmptyButton_,
+            &QPushButton::toggled,
+            this,
+            &CrmCrossRatesMatrixMdiWindow::onHideEmptyToggled);
+
+    footerLayout->addSpacing(12);
+    // When on, a cell with no direct quote but whose inverse pair *does*
+    // have one (e.g. no CAD/EUR row entry, but EUR/CAD exists) shows the
+    // computed 1/rate instead of a dash -- pure arithmetic, no new data
+    // needed. Off by default: still opt-in, since an inverted rate is a
+    // derived display value, not something the CRM actually quotes.
+    showInvertedButton_ = new QPushButton(tr("Show Inverted"), this);
+    showInvertedButton_->setCheckable(true);
+    showInvertedButton_->setCursor(Qt::PointingHandCursor);
+    showInvertedButton_->setToolTip(
+        tr("Show computed inverse rates (1/rate) for pairs with no direct quote"));
+    {
+        const QColor accent = palette().color(QPalette::Highlight);
+        const QColor accentText = palette().color(QPalette::HighlightedText);
+        showInvertedButton_->setStyleSheet(
+            QStringLiteral("QPushButton { padding: 3px 10px; border: 1px solid %1; "
+                           "border-radius: 3px; } "
+                           "QPushButton:checked { background: %1; color: %2; }")
+                .arg(accent.name(), accentText.name()));
+    }
+    footerLayout->addWidget(showInvertedButton_);
+    {
+        QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
+        settings.beginGroup(settingsGroup_);
+        showInvertedButton_->setChecked(
+            settings.value(QStringLiteral("showInverted"), false).toBool());
+    }
+    connect(showInvertedButton_,
+            &QPushButton::toggled,
+            this,
+            &CrmCrossRatesMatrixMdiWindow::onShowInvertedToggled);
+
+    footerLayout->addStretch(1);
 
     footerLabel_ = new QLabel(this);
-    mainLayout->addWidget(footerLabel_);
+    footerLayout->addWidget(footerLabel_);
+    mainLayout->addLayout(footerLayout);
+
+    onRefreshIntervalChanged();
 }
 
 void CrmCrossRatesMatrixMdiWindow::setupToolbar() {
@@ -92,14 +260,65 @@ void CrmCrossRatesMatrixMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    // Manual reload only -- no auto-refresh action, no timer. The CRM
-    // architecture deliberately never broadcasts the derived rate set, so
-    // this panel only ever pulls on an explicit click.
     reloadAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     reloadAction_->setToolTip(tr("Reload the cross-rates matrix"));
     connect(reloadAction_, &QAction::triggered, this, &CrmCrossRatesMatrixMdiWindow::reload);
+}
+
+void CrmCrossRatesMatrixMdiWindow::onRefreshIntervalChanged() {
+    const int secs = refreshIntervalCombo_->currentData().toInt();
+    if (secs <= 0) {
+        BOOST_LOG_SEV(lg(), info) << "CRM matrix auto-refresh disabled";
+        autoRefreshTimer_->stop();
+        return;
+    }
+    autoRefreshTimer_->setInterval(secs * 1000);
+    BOOST_LOG_SEV(lg(), info) << "CRM matrix auto-refresh interval=" << secs << "s";
+    autoRefreshTimer_->start();
+}
+
+void CrmCrossRatesMatrixMdiWindow::onHideEmptyToggled(bool checked) {
+    QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
+    settings.beginGroup(settingsGroup_);
+    settings.setValue(QStringLiteral("hideEmpty"), checked);
+    reload();
+}
+
+void CrmCrossRatesMatrixMdiWindow::onShowInvertedToggled(bool checked) {
+    QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
+    settings.beginGroup(settingsGroup_);
+    settings.setValue(QStringLiteral("showInverted"), checked);
+    reload();
+}
+
+void CrmCrossRatesMatrixMdiWindow::onCellSelected(int row, int column) {
+    if (row < 0 || column < 0 || row == column)
+        return;
+    if (row >= static_cast<int>(displayedCurrencies_.size())
+        || column >= static_cast<int>(displayedCurrencies_.size()))
+        return;
+
+    updateOverviewPanel(displayedCurrencies_[row], displayedCurrencies_[column]);
+}
+
+void CrmCrossRatesMatrixMdiWindow::updateOverviewPanel(const std::string& base,
+                                                        const std::string& quote) {
+    overviewPairLabel_->setText(QString::fromStdString(base) + QStringLiteral("/")
+                                 + QString::fromStdString(quote));
+
+    const auto key = std::make_pair(base, quote);
+    const auto history_it = rateHistory_.find(key);
+    if (history_it == rateHistory_.end() || history_it->second.empty()) {
+        overviewRateLabel_->setText(tr("No data"));
+        overviewSparkline_->setValues({});
+        return;
+    }
+
+    overviewRateLabel_->setText(
+        tr("Rate: %1").arg(QString::number(history_it->second.back(), 'f', 5)));
+    overviewSparkline_->setValues(history_it->second);
 }
 
 void CrmCrossRatesMatrixMdiWindow::reload() {
@@ -112,14 +331,17 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     emit statusChanged(tr("Loading cross-rates matrix..."));
 
     const auto party_id = boost::uuids::to_string(clientManager_->currentPartyId());
+    const auto crm_name = crmName_.toStdString();
     QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
 
-    QFuture<RatesResult> future = QtConcurrent::run([self, party_id]() -> RatesResult {
+    QFuture<RatesResult> future =
+        QtConcurrent::run([self, party_id, crm_name]() -> RatesResult {
         if (!self || !self->clientManager_)
             return {};
 
         marketdata_msg::get_crm_rates_request req;
         req.party_id = party_id;
+        req.crm_name = crm_name;
         auto resp = self->clientManager_->process_authenticated_request(req);
 
         RatesResult r;
@@ -161,8 +383,30 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             currencySet.insert(QString::fromStdString(rate.base_currency_code));
             currencySet.insert(QString::fromStdString(rate.quote_currency_code));
         }
-        QStringList currencies(currencySet.begin(), currencySet.end());
-        std::sort(currencies.begin(), currencies.end());
+        QStringList allCurrencies(currencySet.begin(), currencySet.end());
+        std::sort(allCurrencies.begin(), allCurrencies.end());
+
+        // Populate the Base Currency filter from whatever currencies this
+        // response actually covers, preserving the current selection.
+        {
+            const auto previous = self->baseCurrencyCombo_->currentData().toString();
+            self->baseCurrencyCombo_->blockSignals(true);
+            self->baseCurrencyCombo_->clear();
+            self->baseCurrencyCombo_->addItem(tr("All"), QString());
+            for (const auto& code : allCurrencies)
+                self->baseCurrencyCombo_->addItem(code, code);
+            const auto idx = self->baseCurrencyCombo_->findData(previous);
+            self->baseCurrencyCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
+            self->baseCurrencyCombo_->blockSignals(false);
+        }
+
+        // Base Currency filter restricts the grid to a single row (that
+        // currency as base against every other as quote), matching the
+        // mockup's "Base Currency" selector while keeping the same
+        // fixed-size-cell grid rendering path.
+        const auto baseFilter = self->baseCurrencyCombo_->currentData().toString();
+        QStringList rowCurrencies =
+            baseFilter.isEmpty() ? allCurrencies : QStringList{baseFilter};
 
         std::map<std::pair<QString, QString>, marketdata_msg::crm_rate_item> byPair;
         for (const auto& rate : result.rates) {
@@ -170,47 +414,165 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                    QString::fromStdString(rate.quote_currency_code)}] = rate;
         }
 
-        self->table_->clear();
-        self->table_->setRowCount(currencies.size());
-        self->table_->setColumnCount(currencies.size());
-        self->table_->setHorizontalHeaderLabels(currencies);
-        self->table_->setVerticalHeaderLabels(currencies);
+        // "Hide Empty": drop rows/columns for currencies that never
+        // appear as base/quote at all -- distinct from the per-cell
+        // dash, which already covers "no data for this specific pair"
+        // while the currency has data elsewhere (e.g. a USD-pivot-star
+        // exotics CRM where ZAR is always a quote, never a base, so its
+        // row is entirely dashes but its column isn't).
+        if (self->hideEmptyButton_->isChecked()) {
+            QSet<QString> basesSeen;
+            QSet<QString> quotesSeen;
+            for (const auto& rate : result.rates) {
+                basesSeen.insert(QString::fromStdString(rate.base_currency_code));
+                quotesSeen.insert(QString::fromStdString(rate.quote_currency_code));
+            }
+            QStringList filteredColumns;
+            for (const auto& code : allCurrencies)
+                if (quotesSeen.contains(code))
+                    filteredColumns.push_back(code);
+            allCurrencies = filteredColumns;
 
-        for (int row = 0; row < currencies.size(); ++row) {
-            for (int col = 0; col < currencies.size(); ++col) {
-                if (row == col) {
-                    self->table_->setItem(row, col, make_item(QStringLiteral("-")));
+            QStringList filteredRows;
+            for (const auto& code : rowCurrencies)
+                if (basesSeen.contains(code))
+                    filteredRows.push_back(code);
+            rowCurrencies = filteredRows;
+        }
+
+        self->table_->clear();
+        self->table_->setRowCount(rowCurrencies.size());
+        self->table_->setColumnCount(allCurrencies.size());
+
+        self->displayedCurrencies_.clear();
+        for (const auto& code : rowCurrencies)
+            self->displayedCurrencies_.push_back(code.toStdString());
+
+        for (int i = 0; i < allCurrencies.size(); ++i) {
+            const auto code = allCurrencies[i].toStdString();
+            const auto icon =
+                self->imageCache_ ? currency_flag_icon(*self->imageCache_, code) : QIcon();
+            auto* hHeader = new QTableWidgetItem(allCurrencies[i]);
+            hHeader->setIcon(icon);
+            self->table_->setHorizontalHeaderItem(i, hHeader);
+        }
+        for (int i = 0; i < rowCurrencies.size(); ++i) {
+            const auto code = rowCurrencies[i].toStdString();
+            const auto icon =
+                self->imageCache_ ? currency_flag_icon(*self->imageCache_, code) : QIcon();
+            auto* vHeader = new QTableWidgetItem(rowCurrencies[i]);
+            vHeader->setIcon(icon);
+            self->table_->setVerticalHeaderItem(i, vHeader);
+        }
+
+        std::map<std::pair<std::string, std::string>, double> currentRates;
+
+        for (int row = 0; row < rowCurrencies.size(); ++row) {
+            for (int col = 0; col < allCurrencies.size(); ++col) {
+                if (rowCurrencies[row] == allCurrencies[col]) {
+                    self->table_->setItem(row, col, make_dash_item());
                     continue;
                 }
 
-                const auto key = std::make_pair(currencies[row], currencies[col]);
-                const auto it = byPair.find(key);
+                const auto key = std::make_pair(rowCurrencies[row], allCurrencies[col]);
+                auto it = byPair.find(key);
+                bool inverted = false;
+                if (it == byPair.end() && self->showInvertedButton_->isChecked()) {
+                    const auto inverseKey = std::make_pair(allCurrencies[col], rowCurrencies[row]);
+                    it = byPair.find(inverseKey);
+                    inverted = it != byPair.end();
+                }
                 if (it == byPair.end()) {
-                    self->table_->setItem(row, col, make_item(QStringLiteral("-")));
+                    self->table_->setItem(row, col, make_dash_item());
                     continue;
                 }
 
                 const auto& item = it->second;
-                auto* cell = make_item(QString::number(item.rate, 'f', 5));
+                auto* cellWidget = new CrmRateCellWidget(self->table_);
+                cellWidget->setPastelBackground(inverted);
+
+                // Tracked/displayed by (row, col) -- not the underlying
+                // item's own base/quote -- so an inverted cell's %-change
+                // reflects the displayed (1/rate) value's own movement,
+                // not the direct pair's (which moves the opposite way).
+                const auto display_key = std::make_pair(rowCurrencies[row].toStdString(),
+                                                         allCurrencies[col].toStdString());
+                const double display_rate = inverted && item.rate != 0.0 ? 1.0 / item.rate
+                                                                          : item.rate;
+                currentRates[display_key] = display_rate;
+                const auto previous_it = self->previousRates_.find(display_key);
+
+                // Only the %-change indicator is coloured (matching the
+                // mockup); the rate itself stays neutral unless the cell
+                // is stale/unavailable. Stale/unavailable also colour
+                // the pair-code line, always paired with a distinct
+                // glyph prefix (not colour alone) -- same convention as
+                // FxSpotGridWindow's status icon+colour pairing.
+                auto rateColor = color_constants::level_text;
+                auto changeColor = color_constants::level_trace;
+                auto pairColor = color_constants::level_trace;
+                QString changeText = QStringLiteral("—");
+                QString pairPrefix;
+                QString tooltip;
+
                 if (item.status == "stale") {
-                    cell->setForeground(color_constants::level_warn);
-                    cell->setToolTip(tr("Stale as of %1").arg(QString::fromStdString(item.as_of)));
+                    rateColor = color_constants::level_warn;
+                    pairColor = color_constants::level_warn;
+                    pairPrefix = QStringLiteral("⚠");
+                    tooltip = tr("Stale as of %1").arg(QString::fromStdString(item.as_of));
                 } else if (item.status == "unavailable") {
-                    cell->setForeground(color_constants::level_trace);
-                    cell->setToolTip(tr("Unavailable"));
+                    rateColor = color_constants::level_trace;
+                    pairColor = color_constants::level_trace;
+                    pairPrefix = QStringLiteral("✕");
+                    tooltip = tr("Unavailable");
                 } else {
-                    cell->setToolTip(tr("Fresh as of %1").arg(QString::fromStdString(item.as_of)));
+                    tooltip = inverted ? tr("Computed inverse (1/rate); fresh as of %1")
+                                             .arg(QString::fromStdString(item.as_of))
+                                       : tr("Fresh as of %1").arg(QString::fromStdString(item.as_of));
+                    if (previous_it != self->previousRates_.end() && previous_it->second != 0.0) {
+                        const auto pct =
+                            (display_rate - previous_it->second) / previous_it->second * 100.0;
+                        if (std::abs(pct) > 1e-9) {
+                            changeText = (pct >= 0 ? QStringLiteral("▲ +%1%")
+                                                   : QStringLiteral("▼ %1%"))
+                                             .arg(QString::number(pct, 'f', 3));
+                            changeColor =
+                                pct >= 0 ? color_constants::level_info : color_constants::level_error;
+                        }
+                    }
                 }
-                self->table_->setItem(row, col, cell);
+
+                cellWidget->setData(rowCurrencies[row] + QStringLiteral("/") + allCurrencies[col],
+                                     QString::number(display_rate, 'f', 5),
+                                     changeText,
+                                     changeColor,
+                                     rateColor,
+                                     pairColor,
+                                     pairPrefix);
+                cellWidget->setToolTip(tooltip);
+                connect(cellWidget, &CrmRateCellWidget::clicked, self, [self, row, col]() {
+                    self->onCellSelected(row, col);
+                });
+                self->table_->setCellWidget(row, col, cellWidget);
             }
         }
 
+        self->previousRates_ = std::move(currentRates);
+
+        for (const auto& rate : result.rates) {
+            const auto key = std::make_pair(rate.base_currency_code, rate.quote_currency_code);
+            auto& history = self->rateHistory_[key];
+            history.push_back(rate.rate);
+            while (history.size() > max_history_points)
+                history.pop_front();
+        }
+
         self->footerLabel_->setText(
-            tr("CONNECTED | %1 Currencies").arg(currencies.size()));
+            tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
 
         BOOST_LOG_SEV(lg(), debug)
             << "CRM cross-rates matrix: " << result.rates.size() << " rate(s), "
-            << currencies.size() << " currencies";
+            << allCurrencies.size() << " currencies";
         emit self->statusChanged(
             tr("Cross-rates matrix updated: %1 rate(s)").arg(result.rates.size()));
     });

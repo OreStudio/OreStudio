@@ -27,7 +27,6 @@
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <QFutureWatcher>
-#include <unordered_map>
 #include <vector>
 
 namespace ores::qt {
@@ -76,6 +75,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::BusinessCenterCode,
+        };
+    }
+
+public:
     /**
      * @brief Refresh counterparty data from server asynchronously.
      */
@@ -131,7 +139,6 @@ private:
     };
 
     void fetch_counterparties(std::uint32_t offset, std::uint32_t limit);
-    void fetch_business_centres();
 
     ClientManager* clientManager_;
     std::vector<refdata::domain::counterparty> counterparties_;
@@ -143,8 +150,6 @@ private:
     using CounterpartyKeyExtractor = std::string (*)(const refdata::domain::counterparty&);
     RecencyTracker<refdata::domain::counterparty, CounterpartyKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
-
-    std::unordered_map<std::string, std::string> bc_code_to_country_alpha2_;
 };
 
 }

@@ -42,11 +42,15 @@ constexpr std::string_view party_event_name =
 PartyController::PartyController(QMainWindow* mainWindow,
                                  QMdiArea* mdiArea,
                                  ClientManager* clientManager,
+                                 ImageCache* imageCache,
                                  const QString& username,
+                                 BadgeCache* badgeCache,
                                  QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, party_event_name, parent)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "PartyController created";
 }
@@ -61,7 +65,7 @@ void PartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PartyMdiWindow(clientManager_, username_);
+    listWindow_ = new PartyMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_, &PartyMdiWindow::statusChanged, this, &PartyController::statusMessage);
@@ -146,6 +150,8 @@ void PartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -188,6 +194,8 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << party.short_code;
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -319,6 +327,8 @@ void PartyController::onOpenVersion(const refdata::domain::party& party, int ver
     }
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setParty(party);
@@ -367,6 +377,8 @@ void PartyController::onRevertVersion(const refdata::domain::party& party) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_party = party;

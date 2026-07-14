@@ -32,6 +32,7 @@
 #include <QTableWidget>
 #include <QTabWidget>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -73,8 +74,11 @@ PartyChildEntityTables::PartyChildEntityTables(QWidget* dialogParent)
 }
 
 void PartyChildEntityTables::attachTo(QTabWidget* tabWidget) {
-    tabWidget->addTab(identifierTable_, "Identifiers");
-    tabWidget->addTab(contactTable_, "Contact Information");
+    // Insert before the last (static, .ui-defined) tab -- Provenance --
+    // so dynamically-attached tabs never push it out of the last slot.
+    const int insertIndex = std::max(0, tabWidget->count() - 1);
+    tabWidget->insertTab(insertIndex, identifierTable_, "Identifiers");
+    tabWidget->insertTab(insertIndex + 1, contactTable_, "Contact Information");
 }
 
 void PartyChildEntityTables::reload(const boost::uuids::uuid& partyId,

@@ -254,6 +254,30 @@ fetch_book_statuses(ClientManager* cm) {
     return std::move(response->statuses);
 }
 
+std::expected<std::vector<refdata::domain::party_type>, QString>
+fetch_party_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_party_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::party_status>, QString>
+fetch_party_statuses(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_party_statuses_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->statuses);
+}
+
 std::expected<std::vector<refdata::domain::crm_topology_config>, QString>
 fetch_crm_topology_configs(ClientManager* cm) {
     if (!cm)

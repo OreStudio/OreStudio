@@ -374,12 +374,22 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                           this);
     connectControllerSignals(crmEnabledDerivedPairController_.get());
 
-    counterpartyController_ = std::make_unique<CounterpartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    counterpartyController_ = std::make_unique<CounterpartyController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.username,
+                                                                       ctx_.badge_cache,
+                                                                       this);
     connectControllerSignals(counterpartyController_.get());
 
-    partyController_ = std::make_unique<PartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    partyController_ = std::make_unique<PartyController>(ctx_.main_window,
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.image_cache,
+                                                         ctx_.username,
+                                                         ctx_.badge_cache,
+                                                         this);
     connectControllerSignals(partyController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,

@@ -20,7 +20,7 @@
 #include "ores.qt/ClientPartyModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <QtConcurrent>
@@ -54,8 +54,6 @@ ClientPartyModel::ClientPartyModel(ClientManager* clientManager, QObject* parent
             &RecencyPulseManager::pulsing_complete,
             this,
             &ClientPartyModel::onPulsingComplete);
-
-    fetch_business_centres();
 }
 
 int ClientPartyModel::rowCount(const QModelIndex& parent) const {
@@ -80,17 +78,6 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
 
     const auto& party = parties_[row];
 
-    if (role == Qt::DecorationRole && index.column() == BusinessCenterCode) {
-        if (imageCache_) {
-            auto it = bc_code_to_country_alpha2_.find(party.business_center_code);
-            if (it != bc_code_to_country_alpha2_.end() && !it->second.empty()) {
-                return imageCache_->getCountryFlagIcon(it->second);
-            }
-            return imageCache_->getNoFlagIcon();
-        }
-        return {};
-    }
-
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case ShortCode:
@@ -112,6 +99,11 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::BusinessCenterCode)
+            return business_centre_flag_icon(*imageCache_, party.business_center_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -329,33 +321,6 @@ void ClientPartyModel::onPulseStateChanged(bool /*isOn*/) {
 void ClientPartyModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
-}
-
-void ClientPartyModel::fetch_business_centres() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    using MapType = std::unordered_map<std::string, std::string>;
-    QPointer<ClientPartyModel> self = this;
-
-    auto* watcher = new QFutureWatcher<MapType>(this);
-    connect(watcher, &QFutureWatcher<MapType>::finished, this, [self, watcher]() {
-        auto mapping = watcher->result();
-        watcher->deleteLater();
-        if (!self || mapping.empty())
-            return;
-
-        self->bc_code_to_country_alpha2_ = std::move(mapping);
-
-        if (!self->parties_.empty()) {
-            emit self->dataChanged(self->index(0, 0),
-                                   self->index(self->rowCount() - 1, self->columnCount() - 1),
-                                   {Qt::DecorationRole});
-        }
-    });
-
-    watcher->setFuture(QtConcurrent::run(
-        [cm = clientManager_]() { return fetch_business_centre_country_map(cm); }));
 }
 
 }

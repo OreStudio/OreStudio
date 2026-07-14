@@ -32,6 +32,8 @@ namespace ores::qt {
 
 class PartyMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing party windows and operations.
@@ -55,7 +57,9 @@ public:
     PartyController(QMainWindow* mainWindow,
                     QMdiArea* mdiArea,
                     ClientManager* clientManager,
+                    ImageCache* imageCache,
                     const QString& username,
+                    BadgeCache* badgeCache,
                     QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -83,6 +87,7 @@ private:
     void showDetailWindow(const refdata::domain::party& party);
     void showHistoryWindow(const refdata::domain::party& party);
 
+    BadgeCache* badgeCache_;
     PartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

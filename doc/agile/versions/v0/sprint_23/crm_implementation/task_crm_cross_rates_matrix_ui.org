@@ -33,11 +33,11 @@ pixel-accurate spec, just the shape: a matrix, not a list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Unblocked: [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][the DQ publishing task]] landed, so a real, live-ticking majors + exotics CRM is now available after a synthetic_realistic party provisioning Apply. Widget/controller/plugin wiring from the earlier attempt still builds clean. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Resume: add a named-CRM selector to the panel (multi-CRM support changed the =marketdata.v1.crm.rates= contract to take/tag =crm_name=) and complete manual QA against real data. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -171,6 +171,14 @@ Round 5 (2026-07-14, same session) -- manual QA adding a new exotic pair (USD/AO
 | 22 | While investigating #21, discovered client-side UUID generation itself (=boost::uuids::random_generator()= in =setCreateMode()=) is architecturally wrong -- primary keys should be server-assigned, never client-chosen. Out of scope to fix broadly in this task (touches every UUID-keyed entity's save protocol) -- filed as [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][a new story]], "Server-side UUID generation for all entities", in Sprint 23. | CAPTURED (separate story) |
 | 23 | Market Simulator "Start" on a feed hung with no visible error for ~30s then silently failed. Root cause: =feed_controller::vintage_data_available= fetched up to 10,000 observations in one NATS request/reply to scan for a single vintage-date match; long-lived series (USD/ZAR: 4,582 observations; the new USD/AOA driver feed: 12,431 within minutes) produced a reply exceeding NATS's max payload, which fails silently server-side (handler completes, reply never sent) -- the caller just sees a timeout, not a clear error. Fixed by adding a paginated =list_observations_page()= client method and scanning in bounded 200-row pages (observations are already newest-first, so typical vintage lookups converge in 1-2 pages). | DONE |
 
+Round 6 (2026-07-14, same session):
+
+| 24 | Added a third named CRM ("scandies": EUR + Nordic currencies SEK/NOK/DKK) to the DQ seed scripts, with real Fed H.10 data for USD/NOK and USD/DKK (fetched via =tools/fetch_fed_h10_rates.py=, re-archived to =external/fed_h10/=) and matching synthetic feed configs, populated majors' full C(8,2)=28 cross set (already done, confirmed live). | DONE |
+| 25 | Matrix looked sparse/asymmetric for some rows (e.g. CAD, EUR) -- diagnosed as the same directional-storage behaviour as #8 (each derived pair stored once, not both directions), not a bug. Added a "Show Inverted" toggle (footer button, off by default) that computes 1/rate for a cell with no direct quote, pastel-tinted so it's visually distinct from a real quoted rate. | DONE |
+| 26 | The CRM-name picker dialog used QInputDialog's default platform OK/Cancel icons, inconsistent with the app's own convention (Icon::Checkmark/Icon::Dismiss, per PartyPickerDialog). Replaced with a small custom QDialog matching that convention. | DONE |
+| 27 | Filed a follow-up task ([[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's numeric logic out of the Qt client]]) to relocate the inversion/%-change-delta computation added in #14/#25 into =ores.analytics.quant= (self-contained, tested), exposed via NATS protocol additions, rather than leaving it client-side long-term. | CAPTURED (separate task) |
+| 28 | Filed a follow-up task ([[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]]) for a CSV/ORE export button on the matrix panel. | CAPTURED (separate task) |
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -195,3 +203,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered the CRM cross-rates matrix Qt panel (=CrmCrossRatesMatrixMdiWindow=
++ =CrmCrossRatesMatrixController=), reached through several rounds of
+real manual QA against live data, not just build/tests -- see the
+=* Open Issues= table above (28 items across 6 rounds) for the full
+trail. Final shape:
+
+- A picker dialog (custom Icon::Checkmark/Icon::Dismiss buttons, app
+  convention) lets the user open "All" or any named CRM
+  (=majors=/=exotics=/=scandies=); each name reuses its own window if
+  already open, with independently persisted geometry and toggle
+  state.
+- Fixed-size cells render via =CrmRateCellWidget= (pair code / rate /
+  coloured %-change with ▲/▼ arrows; stale/unavailable status shown via
+  colour *and* a glyph, never colour alone) with currency flag icons in
+  both header directions.
+- Footer controls: Base Currency filter, Update Interval (auto-refresh
+  on by default at 5s -- a deliberate relaxation of the story's
+  "never broadcast" decision, since client-side polling isn't
+  server-side broadcast; see the story's =* Decisions=), Hide Empty,
+  and Show Inverted (computed 1/rate, pastel-tinted).
+- A "FX Pair Overview" side panel with a client-side session sparkline
+  for whichever cell was last clicked.
+
+Along the way, fixed several real bugs surfaced only by driving the
+actual UI against real data: a missing =crm_enabled_derived_pair_changed_event=
+subscription in =crm_ingest_bridge=, an RLS policy that blocked its
+cross-tenant startup scan after the CRM tables moved to =ores_refdata_*=,
+an always-editable id field in every UUID-primary-keyed entity's Add
+dialog (fixed at the codegen template level), and a silent NATS
+max-payload timeout in Market Simulator's feed-start vintage lookup.
+
+Follow-up work captured as separate tasks/stories rather than expanded
+in place: server-side UUID generation (all entities), moving the
+matrix's inversion/delta logic into =ores.analytics.quant=, CSV/ORE
+export, a server-side rate-history endpoint for charts, and an FX
+market-convention precision facet.

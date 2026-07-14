@@ -8,7 +8,7 @@
 #+filetags: :ores_iam_core_missing_eventing_core_include:sprint_23:v0:
 #+owner: marco
 #+branch: feature/implement-ores-iam-core-missing-eventing-core-include
-#+pr:
+#+pr: 1561
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1561][#1561]] | [iam] Fix ores.iam.core build: link ores.eventing.core.lib |
 
 * Review
 

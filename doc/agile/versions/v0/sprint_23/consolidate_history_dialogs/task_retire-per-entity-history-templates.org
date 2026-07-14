@@ -45,6 +45,15 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+The real current blocker is story
+[[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] (created
+2026-07-14): only currency has migrated onto the generic
+=HistoryDialog= so far (task 7D8659AB); every other entity across
+=admin=, =analytics=, =compute=, =marketdata=, =party=, =refdata=,
+=synthetic=, =trading= and =workspace= still uses its hand-rolled
+per-entity =*HistoryDialog=. This task cannot start until that
+story's per-component tasks are all DONE.
+
 Flagged during PR #1553 review (task 7D8659AB, currency's first
 migration onto the generic =HistoryDialog=): currency's own org model
 (=projects/ores.refdata/modeling/ores.refdata.currency.org=) still

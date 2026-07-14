@@ -105,19 +105,16 @@ private:
     void showHistoryWindow(const QString& code);
 
     /**
-     * @brief Fetches the full typed currency history (the existing
-     * per-entity get_currency_history_request/response, unrelated to
-     * the generic history.v1.get subject) and hands it to @p callback
-     * on the UI thread. Used to resolve HistoryDialog's generic
-     * (entity_id, version) signals back to a typed currency, since
-     * the generic dialog holds no typed domain data. The callback
-     * receives an error message (not connected, request failed, or
-     * the server-reported failure) rather than an empty vector, so
-     * callers can distinguish a genuine fetch failure from "version
-     * not found in an otherwise-successful fetch".
+     * @brief Fetches the full typed currency history (the
+     * existing per-entity refdata::messaging::get_currency_history_request/
+     * refdata::messaging::get_currency_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed currency, since the
+     * generic dialog holds no typed domain data.
      */
     void fetchCurrencyHistory(
-        const QString& isoCode,
+        const QString& entityId,
         std::function<void(std::expected<std::vector<refdata::domain::currency>, QString>)>
             callback);
 

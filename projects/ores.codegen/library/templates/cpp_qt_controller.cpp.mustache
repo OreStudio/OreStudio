@@ -9,18 +9,22 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "{{domain_entity.qt.changed_event_include}}"
 {{/domain_entity.qt.changed_event_class}}
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/{{domain_entity.entity_pascal}}MdiWindow.hpp"
 #include "ores.qt/{{domain_entity.entity_pascal}}DetailDialog.hpp"
-#include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
-{{#domain_entity.qt.has_version_navigation}}
-#include "ores.qt/VersionNavigationHelper.hpp"
-{{/domain_entity.qt.has_version_navigation}}
+#include "{{domain_entity.qt.protocol_include}}"
+{{#domain_entity.qt.history_protocol_include}}
+#include "{{domain_entity.qt.history_protocol_include}}"
+{{/domain_entity.qt.history_protocol_include}}
 
 namespace ores::qt {
 
@@ -342,8 +346,11 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
-    auto* historyDialog = new {{domain_entity.entity_pascal}}HistoryDialog(
-        {{domain_entity.qt.item_var}}.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}}, code, clientManager_, mainWindow_);
+    const QString entityId = QString::fromStdString(
+        {{domain_entity.qt.item_var}}.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}});
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of({{domain_entity.qt.domain_class}}{})),
+        entityId.toStdString(), clientManager_, mainWindow_);
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
 void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString& code) {
@@ -362,23 +369,33 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
 
-    auto* historyDialog = new {{domain_entity.entity_pascal}}HistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of({{domain_entity.qt.domain_class}}{})),
+        code.toStdString(), clientManager_, mainWindow_);
 {{/domain_entity.qt.has_uuid_primary_key}}
 
-    connect(historyDialog, &{{domain_entity.entity_pascal}}HistoryDialog::statusChanged,
+    connect(historyDialog, &HistoryDialog::statusChanged,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& message) {
         if (!self) return;
         emit self->statusMessage(message);
     });
-    connect(historyDialog, &{{domain_entity.entity_pascal}}HistoryDialog::errorOccurred,
+    connect(historyDialog, &HistoryDialog::errorOccurred,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& message) {
         if (!self) return;
         emit self->errorMessage(message);
     });
-    connect(historyDialog, &{{domain_entity.entity_pascal}}HistoryDialog::revertVersionRequested,
-            this, &{{domain_entity.entity_pascal}}Controller::onRevertVersion);
-    connect(historyDialog, &{{domain_entity.entity_pascal}}HistoryDialog::openVersionRequested,
-            this, &{{domain_entity.entity_pascal}}Controller::onOpenVersion);
+    connect(historyDialog, &HistoryDialog::revertVersionRequested,
+            this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](
+                      const QString& /*entityType*/, const QString& entityId, int version) {
+        if (!self) return;
+        self->onRevertHistoryVersion(entityId, version);
+    });
+    connect(historyDialog, &HistoryDialog::openVersionRequested,
+            this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](
+                      const QString& /*entityType*/, const QString& entityId, int version) {
+        if (!self) return;
+        self->onOpenHistoryVersion(entityId, version);
+    });
 
     // Load history data
     historyDialog->loadHistory();
@@ -408,7 +425,8 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
 }
 
 void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
-    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}, int versionNumber) {
+    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}, int versionNumber{{#domain_entity.qt.has_version_navigation}},
+    const std::vector<{{domain_entity.qt.domain_class}}>& fullHistory{{/domain_entity.qt.has_version_navigation}}) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
@@ -436,13 +454,12 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 {{#domain_entity.qt.has_version_navigation}}
-    // A single version-nav toolbar (first/prev/next/last) only means something
-    // if the dialog has the *full* history to navigate, not just this one
-    // version. When onOpenVersion's sender is the HistoryDialog that
-    // requested it, pull that history across; otherwise fall back to a plain
-    // read-only single-version display.
-    if (!wireVersionHistory<{{domain_entity.entity_pascal}}HistoryDialog>(
-            sender(), detailDialog, versionNumber)) {
+    // A single version-nav toolbar (first/prev/next/last) only means
+    // something if the dialog has the *full* history to navigate, not
+    // just this one version.
+    if (!fullHistory.empty()) {
+        detailDialog->setHistory(fullHistory, versionNumber);
+    } else {
         detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
         detailDialog->setReadOnly(true, versionNumber);
     }
@@ -486,6 +503,97 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void {{domain_entity.entity_pascal}}Controller::fetch{{domain_entity.entity_pascal}}History(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<{{domain_entity.qt.domain_class}}>, QString>)> callback) {
+    {{domain_entity.qt.history_request_class}} request;
+{{#domain_entity.qt.has_uuid_primary_key}}
+    request.id = entityId.toStdString();
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.history_request_id_field}}
+    request.{{domain_entity.qt.history_request_id_field}} = entityId.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
+{{^domain_entity.qt.history_request_id_field}}
+    request.{{domain_entity.primary_key.column}} = entityId.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    using FetchResult = std::expected<std::vector<{{domain_entity.qt.domain_class}}>, QString>;
+
+    QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->{{domain_entity.qt.history_response_data_field}});
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        callback(std::move(result));
+    });
+    watcher->setFuture(future);
+}
+
+void {{domain_entity.entity_pascal}}Controller::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
+    fetch{{domain_entity.entity_pascal}}History(entityId,
+        [self, entityId, versionNumber](std::expected<std::vector<{{domain_entity.qt.domain_class}}>, QString> result) {
+        if (!self) return;
+        if (!result) {
+            emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                        .arg(entityId).arg(result.error()));
+            return;
+        }
+        const auto& history = *result;
+        const auto it = std::find_if(history.begin(), history.end(),
+            [&](const auto& v) { return v.version == versionNumber; });
+        if (it == history.end()) {
+            emit self->errorMessage(
+                QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+            return;
+        }
+{{#domain_entity.qt.has_version_navigation}}
+        self->onOpenVersion(*it, versionNumber, history);
+{{/domain_entity.qt.has_version_navigation}}
+{{^domain_entity.qt.has_version_navigation}}
+        self->onOpenVersion(*it, versionNumber);
+{{/domain_entity.qt.has_version_navigation}}
+    });
+}
+
+void {{domain_entity.entity_pascal}}Controller::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
+    fetch{{domain_entity.entity_pascal}}History(entityId,
+        [self, entityId, versionNumber](std::expected<std::vector<{{domain_entity.qt.domain_class}}>, QString> result) {
+        if (!self) return;
+        if (!result) {
+            emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                        .arg(entityId).arg(result.error()));
+            return;
+        }
+        const auto& history = *result;
+        const auto it = std::find_if(history.begin(), history.end(),
+            [&](const auto& v) { return v.version == versionNumber; });
+        if (it == history.end()) {
+            emit self->errorMessage(
+                QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+            return;
+        }
+        self->onRevertVersion(*it);
+    });
 }
 
 void {{domain_entity.entity_pascal}}Controller::onRevertVersion(

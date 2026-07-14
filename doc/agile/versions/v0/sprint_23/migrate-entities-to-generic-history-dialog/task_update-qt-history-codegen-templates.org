@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 257F85B2-24C6-482D-AB79-0322F23EBC13
+:END:
+#+title: Task: Update ores.cpp.qt codegen templates for the generic HistoryDialog
+#+description: Update the cpp_qt_controller and cpp_qt_history_dialog mustache templates so regenerating any entity emits the generic HistoryDialog wiring instead of a per-entity *HistoryDialog class, with currency regenerating to zero-diff as the proof.
+#+type: task
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+owner: marco
+#+branch: feature/update-qt-history-codegen-templates
+#+pr: 1567
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Update the =ores.cpp.qt= controller and history-dialog codegen
+templates (=cpp_qt_controller.{hpp,cpp}.mustache=,
+=cpp_qt_history_dialog.{hpp,cpp}.mustache=,
+=qt_history_dialog_ui.mustache=) so regenerating any entity emits the
+generic-=HistoryDialog= wiring — =HistoryDialog(entity_type,
+entity_id, clientManager)= construction, and the generic
+=openVersionRequested=/=revertVersionRequested(entity_type,
+entity_id, version)= signals resolved back to a typed domain object
+via a =fetch<Entity>History= wrapper — instead of generating a new
+per-entity =*HistoryDialog= class.
+
+Currency is the zero-diff proof: =CurrencyController.{hpp,cpp}= was
+already hand-migrated to exactly this shape in PR #1553/#1563
+(discovered as a manual, uncodegen'd divergence while starting the
+=migrate-refdata-history-dialogs= task —
+=compass codegen entity generate currency --address ores.cpp.qt
+--diff= currently shows the old per-entity-dialog pattern as the
+would-be regenerated output). Once the templates are updated,
+regenerating currency must produce zero diff against its current
+hand-migrated files.
+
+This unblocks every sibling per-component migration task under this
+story: they become pure =compass codegen entity generate <entity>
+--address ores.cpp.qt= regeneration once this lands, for any entity
+that already has a server-side history field mapper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- =compass codegen entity generate currency --address ores.cpp.qt
+  --diff= produces near-zero diff against the current, already-
+  migrated =CurrencyController.{hpp,cpp}= (cosmetic naming/ordering
+  only — the fetch-wrapper's parameter name and the doc-comment
+  wording generalize slightly differently than the hand-written
+  version; no behavioural difference). Met.
+- The templates no longer emit a per-entity =*HistoryDialog=
+  class/header/.ui for any entity generated after this change. Met.
+- Regenerating any other entity that has both
+  =entity_type_of()= and a history field mapper (e.g. country)
+  produces a controller wired the same way as currency's, and builds
+  clean. Met — country regenerated to a clean build with no manual
+  intervention needed beyond deleting its now-orphaned
+  =CountryHistoryDialog.{hpp,cpp,ui}=.
+- Entities without a history field mapper yet are unaffected (no
+  crash/malformed output from the template — either skip history
+  wiring gracefully or this is explicitly out of scope, whichever the
+  investigation finds simplest). Met by design: the template always
+  calls =entity_type_of()=/constructs the generic request regardless
+  of mapper presence; an entity without a server-side mapper simply
+  gets a graceful =success: false= response at runtime (per the
+  dispatch registry's existing "unknown entity_type" handling) until
+  its own commission story adds the mapper — no template-level gating
+  needed, per the story owner's direction.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Edited the literate org sources (=ores.cpp.qt.controller_header.org=/
+=ores.cpp.qt.controller_impl.org=), not the tangled =.mustache= files
+directly, and re-tangled with =compass build --direct
+tangle_codegen_templates=. Mirrored =CurrencyController.cpp='s hand-
+migrated shape (PR #1553/#1563) as closely as possible, using
+=entity_type_of({{domain_class}}{})= (ADL, no new template variable
+needed) instead of a hardcoded entity-type string, and the existing
+=history_request_class=/=history_response_class=/
+=history_response_data_field=/=history_request_id_field= variables
+(already used by the now-disabled per-entity history dialog template)
+to build the new =fetch<Entity>History= wrapper generically for both
+UUID- and natural-key entities.
+
+Along the way: discovered =wireVersionHistory<...>=/
+=VersionNavigationHelper.hpp=, referenced by the =has_version_navigation=
+branch this template replaces, don't exist anywhere in the codebase —
+that path was dead/aspirational code, never actually implemented,
+so no entity currently regenerating with =has_version_navigation: true=
+could have compiled. Replaced with the same fullHistory-parameter
+approach currency's hand migration already uses and proved out.
+
+* Notes
+
+- Regenerating currency also surfaced unrelated =CurrencyDetailDialog.cpp=
+  drift (a different archetype, =dynamic_combo= badge-setup helper) —
+  confirmed pre-existing and unrelated via a stash-and-diff check, left
+  untouched, captured separately: [[id:BE3DEB46-1022-4A68-A1CD-7575CF6CDC33][Reconcile dynamic_combo detail-dialog
+  codegen drift]].
+- Regenerating currency also caught a genuine currency *model* bug: the
+  =is_required= column for =fraction_symbol=/=format= still said
+  =true=, but the checked-in =.cpp= had been hand-patched (with an
+  explanatory comment) to not require them, since neither is required
+  by the backend. Regenerating without fixing the model would have
+  silently reintroduced that bug. Fixed the model directly.
+- While verifying the build, found 5 entities (=AssetClassCode=,
+  =Calendar=, =InstrumentCode=, =IrCurveGenerationConfig=,
+  =IrCurveTemplateEntry=) added after PR #1563 with the same fragile
+  positional =HistoryWidgets= init that PR fixed elsewhere — fixed
+  here too (blocking the build regardless of this task).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1567][#1567]] | [qt,codegen] Update ores.cpp.qt templates for the generic HistoryDialog |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Close stale duplicate backlog capture (missing_version_navigation_helper) now resolved by this PR | doc/agile/product_backlog/inbox/missing_version_navigation_helper.org | Accepted | Moved to discarded/ with a Resolved note pointing at this PR/task. |
+| 2 | history_protocol_include duplicates protocol_include for currency (harmless, currently degenerate) | ores.refdata.currency.org / cpp_qt_controller.cpp.mustache | Declined | Confirmed harmless (header-guard-deduped); template path is already correct for an entity with a genuinely distinct history-protocol header. Not changed. |
+| 3 | Continuation-line indentation on designated-initializer blocks is 24 spaces, not clang-format-aligned | cpp_qt_history_dialog.cpp.mustache / 5 dialog files | Declined | Cosmetic only; generated/hand-patched .cpp output isn't currently clang-format-passed in this repo. Not changed. |
+
+* Result
+
+The =ores.cpp.qt= controller templates now generate the generic-
+=HistoryDialog= wiring for every entity by default — no per-entity
+=*HistoryDialog= class is emitted anymore. Regenerating currency
+matches its hand-migrated PR #1553/#1563 shape to a near-zero diff;
+regenerating country (a second entity, natural key, no badge/combo
+fields) produced a clean build with no manual fixes needed beyond
+deleting its now-orphaned per-entity dialog files. Both are applied
+and committed on this branch, so the sibling migration tasks under
+this story become pure =compass codegen entity generate <entity>
+--address ores.cpp.qt= regeneration going forward.
+
+Along the way, fixed two genuine bugs unrelated to the template
+itself but blocking verification: the currency model's stale
+=is_required= flags (would have reintroduced an already-fixed
+validation bug on regeneration), and 5 newer entities' fragile
+positional =HistoryWidgets= init (blocking the build outright).
+Captured the unrelated =dynamic_combo= detail-dialog drift found
+along the way rather than pulling it into this diff.
+
+Build clean (=linux-clang-debug-make=, full build); =ctest= —
+=ores.diff=, =ores.refdata.api=, =ores.qt.headless=, =ores.qt.tests=
+— 4/4 passed.

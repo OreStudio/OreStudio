@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 6072E026-5CAC-410F-B800-A3B6F22DE093
+:END:
+#+title: Test Scenario: Verify the master-detail history dialog redesign
+#+description: Manually verify the master-detail layout, live diff pane, All Fields/Only Changes toggle, and two-version compare mode for currency's HistoryDialog.
+#+type: test_scenario
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+target_dialog: HistoryDialog (currency)
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1EAE3E54-1943-46DA-AB9A-FFC9D26287E6][Refactor history dialog UI per Gemini review]] in [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1EAE3E54-1943-46DA-AB9A-FFC9D26287E6][Refactor history dialog UI per Gemini review]] |
+| Parent story  | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]   |
+| Target dialog | HistoryDialog (currency)                |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in and select the Barclays Plc party
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select "BARCLAYS PLC" as the active party if prompted. If the
+database has been recreated since this was last provisioned, first
+run =./compass.sh shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to reprovision it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a currency with three versions
+
+Reference Data > Currencies > Add. Add a currency with ISO code
+=TST=, then edit it twice more (e.g. change the Name, then the
+Symbol) so it has three versions. Use change reason code
+=system.test=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the master-detail layout
+
+Open =TST='s history. Confirm the dialog shows a left-hand version
+timeline (~25-35% width) and a right-hand diff pane (~65-75% width)
+— no dead space, and no separate Changes/Full Details tab row.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the live diff pane on selection
+
+Click the newest version in the timeline. Confirm the diff pane
+header reads "Comparing: Version X -> Version Y" and immediately
+shows that version's changes, coloured (red old / green new) with
+the changed characters highlighted darker.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the All Fields / Only Changes toggle
+
+With a version selected, click "Only Changes" — confirm unchanged
+fields disappear from the diff pane, leaving only the rows that
+actually changed. Click "All Fields" — confirm unchanged fields
+reappear as plain (uncoloured) rows alongside the changed ones.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check two-version compare mode
+
+Click the oldest version, then Ctrl-click the newest version (with
+at least one version in between). Confirm the header updates to
+"Comparing: Version 1 -> Version 3" (or similar) and the diff pane
+shows the net change across both versions directly, not just the
+adjacent single-step diff.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Open/Revert are disabled during compare
+
+With two versions selected (from the previous step), confirm Open
+and Revert are disabled in the toolbar. Click back down to a single
+version and confirm they re-enable.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Open and Revert still work
+
+With a single version selected, click Open — confirm the read-only
+detail view opens correctly. Close it, select an older version, and
+click Revert — confirm the confirmation dialog appears and (on
+confirming) the editable revert dialog opens pre-populated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Clean up
+
+Delete the =TST= currency once verification is complete.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-14T14:55:23Z |
+| Branch        | feature/refactor-history-dialog-ui |
+| Commit        | a77d90431 |
+| Worktree      | brave_hopper |
+
+* Notes

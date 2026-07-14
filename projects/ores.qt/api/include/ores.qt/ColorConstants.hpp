@@ -91,6 +91,19 @@ struct color_constants {
     static inline const QColor diff_old_span_bg{248, 81, 73, 102};
     static inline const QColor diff_new_line_bg{63, 185, 80, 38};
     static inline const QColor diff_new_span_bg{46, 160, 67, 102};
+
+    /**
+     * @brief History timeline card palette: distinguishes the
+     * provenance lines (who/why a version was recorded) from each
+     * other and from the diff pane's changed-fields, so "Performed
+     * By", the reason-code badge, and the free-text commentary are
+     * each visually distinct at a glance rather than reading as one
+     * undifferentiated block of grey text.
+     */
+    static inline const QColor timeline_performed_by{100, 149, 237};  // Cornflower blue
+    static inline const QColor timeline_reason_bg{234, 179, 8, 40};   // Amber, faint chip fill
+    static inline const QColor timeline_reason_text{234, 179, 8};     // Amber
+    static inline const QColor timeline_commentary{163, 148, 217};    // Muted violet
 };
 
 }

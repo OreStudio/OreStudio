@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/refactor-history-dialog-ui
+#+pr: 1563
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +38,11 @@ interactive, "Git-style" version comparison tool, per
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -65,6 +65,41 @@ interactive, "Git-style" version comparison tool, per
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Redesigned currency's =HistoryDialog= (the only dialog wired for
+compare mode) against the Gemini mockup, iterating through several
+rounds of manual QA feedback:
+
+- Master-detail layout: =QSplitter= with a left ~25-35% "History
+  Timeline" panel (=QListWidget= with card-per-version item widgets,
+  no grid) and a right diff pane. Layout stretch factors on the main
+  =QVBoxLayout= eliminate dead space above the splitter.
+- Live diff pane rendered as one =QTextBrowser= HTML document (2
+  columns: Field, Value Diff — old value stacked above new value in
+  one cell) instead of a =QTableWidget=; this was the root-cause fix
+  for a persistent multiline-value truncation bug that two prior
+  =QTimer::singleShot= row-resize patches failed to fully solve.
+- Two explicit =compareFromCombo=/=compareToCombo= selectors replace
+  an earlier ctrl-click multi-select design (user feedback: fragile,
+  and a combo box makes "any two versions" trivial); validated so
+  "From" must be strictly older than "To", with equal-version compare
+  handled directly (show all fields / nothing per the toggle) rather
+  than as an error.
+- Segmented =QPushButton=/=QButtonGroup= "All Fields | Only Changes"
+  toggle — the same pill idiom as the synthetic market data
+  generator's Simple/Advanced toggle — replacing an initial
+  =QCheckBox= that user feedback flagged as non-idiomatic.
+- Provenance fields (Modified By, Performed By, Change Reason Code,
+  Change Commentary) moved out of the diff table and into the
+  timeline cards as labelled, colour-coded lines (git-log-style:
+  commit metadata beside the timeline, diff pane shows only content
+  changes) — field names centralized as
+  =ores::history::domain::provenance_fields= constants in
+  =ores.history.api= so the mapper and the dialog share one
+  definition.
+- Timeline card polish: "History Timeline" header, hover tooltip
+  showing the full ISO =Recorded At= timestamp, distinct label/value
+  colours per field.
+
 * Notes
 
 Related, narrower-scoped tasks already on this story:
@@ -86,18 +121,40 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:6072E026-5CAC-410F-B800-A3B6F22DE093][Verify the master-detail history dialog redesign]] | PASSED | Passed after several rounds of manual QA feedback and fixes. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1563][#1563]] | [qt] Redesign HistoryDialog per Gemini review (currency) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale doc comment: describes removed ctrl/shift-click compare interaction | HistoryDialog.hpp | Accepted | Reworded to describe the actual Compare-From/Compare-To selectors. Flagged independently by both review bots. |
+| 2 | Redundant displayFullDetails() call in compare mode | HistoryDialogBase.cpp | Declined | Harmless no-op per reviewer's own note; not worth a churn commit. |
+| 3 | No unit test coverage for calculateDiffBetween/equal-version branches | HistoryDialog.cpp / HistoryDialogBase.cpp | Declined | Matches existing project convention (verification via QA scenario, no other HistoryDialogBase/HistoryDialog unit tests exist); reviewer itself called this optional. |
 
 * Result
+
+Currency's =HistoryDialog= now shows a master-detail layout — a
+"History Timeline" panel of version cards on the left, a live diff
+pane on the right, no dead space, no separate Changes/Full Details
+tabs. All acceptance criteria met:
+
+- Master-detail layout with no dead space and no tab row.
+- Selecting a version renders its diff against the predecessor
+  immediately, with changed fields colour-highlighted and only the
+  changed span called out (intra-line highlighting via
+  =ores.diff='s byte-offset spans).
+- =compareFromCombo=/=compareToCombo= compute the diff between any
+  two chosen versions, not just adjacent ones.
+- Reload/Open/Revert behaviour is preserved unchanged.
+
+Verified manually via the =Verify the master-detail history dialog
+redesign= scenario (PASSED) — currency only, per the scoping decision
+recorded in the parent story; rollout to the other 60+ entities is
+tracked separately by the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic
+HistoryDialog]] story.

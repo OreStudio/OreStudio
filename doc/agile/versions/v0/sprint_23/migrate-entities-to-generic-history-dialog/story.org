@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: DBDFF0B1-E358-4300-B361-644A89FBD169
+:END:
+#+title: Story: Migrate all entities onto the generic HistoryDialog
+#+description: Roll out the generic HistoryDialog widget (built in task 7D8659AB, currently wired for currency only) to every other entity's history view, retiring each entity's hand-rolled per-entity *HistoryDialog class as it migrates. Prerequisite for the sibling story's task CB042B99, which retires HistoryDialogBase and the per-entity templates once every entity has migrated.
+#+type: story
+#+level: s2
+#+filetags: :qt:history:codegen:sprint_23:v0:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every entity's history view is the single generic =HistoryDialog=
+widget (built in [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]'s
+task 7D8659AB, currently wired for currency only) constructed with
+=(entity_type, entity_id)=, with no remaining hand-rolled per-entity
+=*HistoryDialog= class anywhere in =ores.qt=. Each entity's migration
+retires its own dialog (class + .ui) and adapts its controller's
+Open/Revert handling to the =(entity_type, entity_id, version)=
+generic signal shape, following exactly the pattern task 7D8659AB
+established for currency (=CurrencyController=, PR #1553): resolve
+the generic signal back to a typed domain object via that entity's
+own existing typed history/get request, preserving full version-nav.
+
+This story is the actual prerequisite for
+[[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]]
+(in the sibling story above), which is blocked until every entity has
+migrated — that task deletes =HistoryDialogBase= itself and the
+per-entity codegen templates once nothing depends on them anymore.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the first per-component migration task. |
+| Last touched  | 2026-07-14                              |
+
+* Acceptance
+
+- Every entity across every component listed in =* Tasks= below has migrated from its hand-rolled per-entity =*HistoryDialog= to the generic =HistoryDialog= widget.
+- Every migrated entity's controller resolves Open/Revert via the entity's own typed history request, matching the currency pattern from PR #1553 — no typed domain payload crosses =HistoryDialog='s signals.
+- Zero remaining =*HistoryDialog.{hpp,cpp,ui}= files anywhere in =projects/ores.qt= once every per-component task is DONE.
+- [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] is unblocked.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][Migrate ores.qt.refdata's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 43 hand-rolled *HistoryDialog classes in projects/ores.qt/refdata, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:D4A868F5-EAA2-4B4E-BDDB-1F8C022842DF][Migrate ores.qt.party's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 7 hand-rolled *HistoryDialog classes in projects/ores.qt/party, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:5AF50E6F-8CFB-4403-8047-11949323BF03][Migrate ores.qt.admin's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 6 hand-rolled *HistoryDialog classes in projects/ores.qt/admin, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:D95BD916-8928-42DF-BB23-7F08C3ACAA31][Migrate ores.qt.compute's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 6 hand-rolled *HistoryDialog classes in projects/ores.qt/compute, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:4A90CF44-A6AF-4E05-9DEC-ECDE69AEFA7E][Migrate ores.qt.analytics's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 4 hand-rolled *HistoryDialog classes in projects/ores.qt/analytics, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:A9D0DBEE-7BAD-4FA4-83CD-740994D4DAB0][Migrate ores.qt.marketdata's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 4 hand-rolled *HistoryDialog classes in projects/ores.qt/marketdata, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:78F582B3-4A75-402B-ABC5-3F9CD0734B71][Migrate ores.qt.synthetic's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 3 hand-rolled *HistoryDialog classes in projects/ores.qt/synthetic, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:E441DA77-896D-4CCF-98CE-9FE95AEF468D][Migrate ores.qt.trading's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 2 hand-rolled *HistoryDialog classes in projects/ores.qt/trading, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:586B6BCE-736A-42C9-9D4C-BE1ECFCE60F4][Migrate ores.qt.workspace's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 1 hand-rolled *HistoryDialog classes in projects/ores.qt/workspace, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+
+* Decisions
+
+* Out of scope
+
+-

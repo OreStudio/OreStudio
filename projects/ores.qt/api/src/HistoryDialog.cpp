@@ -18,8 +18,15 @@
  *
  */
 #include "ores.qt/HistoryDialog.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.diff/engine/compare.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ui_HistoryDialog.h"
+#include <algorithm>
+#include <iterator>
+#include <set>
 
 namespace ores::qt {
 
@@ -38,8 +45,16 @@ HistoryDialog::HistoryDialog(std::string entityType,
     , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    initializeHistoryUi(
-        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
+    initializeHistoryUi({.versionList = nullptr,
+                        .versionTimeline = ui_->versionTimeline,
+                        .changesTable = nullptr,
+                        .diffBrowser = ui_->diffBrowser,
+                        .titleLabel = nullptr,
+                        .closeButton = ui_->closeButton,
+                        .compareFromCombo = ui_->compareFromCombo,
+                        .compareToCombo = ui_->compareToCombo,
+                        .allFieldsToggle = ui_->allFieldsToggle,
+                        .onlyChangesToggle = ui_->onlyChangesToggle});
 }
 
 HistoryDialog::~HistoryDialog() {
@@ -79,37 +94,92 @@ QString HistoryDialog::historyTitle() const {
     return tr("History for: %1").arg(QString::fromStdString(entityId_));
 }
 
+namespace {
+
+// Field names shown as provenance in the timeline card rather than as
+// diffable rows — they describe who/why a version was recorded, not
+// what changed in it, so diffing them is either meaningless (Recorded
+// At differs on every version by construction) or redundant (already
+// shown, unabbreviated, on the card itself).
+bool isTimelineProvenanceField(const std::string& name) {
+    using ores::history::domain::provenance_fields;
+    static const std::set<std::string> fields{
+        provenance_fields::recorded_at, provenance_fields::modified_by,
+        provenance_fields::performed_by, provenance_fields::change_reason_code,
+        provenance_fields::change_commentary};
+    return fields.contains(name);
+}
+
+QString fieldValue(const std::vector<ores::diff::domain::field_value>& fields,
+                   const std::string& name) {
+    const auto it = std::find_if(fields.begin(), fields.end(),
+                                 [&](const auto& f) { return f.name == name; });
+    return it != fields.end() ? QString::fromStdString(it->value) : QString();
+}
+
+}
+
 HistoryDialogBase::VersionRow HistoryDialog::versionRow(int index) const {
     const auto& v = versions_[index];
+    const auto& fields = v.fields;
+    using ores::history::domain::provenance_fields;
     return {v.version,
-            {relative_time_helper::format(v.recorded_at), QString::fromStdString(v.modified_by)}};
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             fieldValue(fields, provenance_fields::performed_by),
+             fieldValue(fields, provenance_fields::change_reason_code),
+             fieldValue(fields, provenance_fields::change_commentary),
+             QString::fromStdString(
+                 ores::platform::time::datetime::to_iso8601_utc(v.recorded_at))}};
 }
 
-HistoryDialogBase::DiffResult HistoryDialog::calculateDiffAt(int ci, int /*pi*/) const {
-    // The server precomputes each version's diff against its own
-    // immediate predecessor, which is exactly the pair
-    // HistoryDialogBase always requests (previous_index == ci + 1).
+HistoryDialogBase::DiffResult
+HistoryDialog::calculateDiffBetween(int index_new, int index_old, bool include_unchanged) const {
+    auto without_provenance_fields = [](const auto& fields) {
+        std::vector<ores::diff::domain::field_value> filtered;
+        filtered.reserve(fields.size());
+        std::copy_if(fields.begin(), fields.end(), std::back_inserter(filtered),
+                    [](const auto& f) { return !isTimelineProvenanceField(f.name); });
+        return filtered;
+    };
+    const auto old_fields = without_provenance_fields(versions_[index_old].fields);
+    const auto new_fields = without_provenance_fields(versions_[index_new].fields);
+    const auto changes = ores::diff::engine::compute(old_fields, new_fields);
+
     DiffResult diffs;
-    for (const auto& entry : versions_[ci].changes.entries) {
-        diffs.append(
-            {QString::fromStdString(entry.field_name),
-             {QString::fromStdString(entry.old_value), QString::fromStdString(entry.new_value)}});
+    if (!include_unchanged) {
+        for (const auto& e : changes.entries) {
+            diffs.append({QString::fromStdString(e.field_name),
+                          {QString::fromStdString(e.old_value),
+                           QString::fromStdString(e.new_value)}});
+        }
+        return diffs;
+    }
+
+    // All Fields: every current-version field, changed or not, in its
+    // own order; fields removed since the older version are appended
+    // last, matching the diff_result contract's ordering.
+    for (const auto& f : new_fields) {
+        const auto it = std::find_if(changes.entries.begin(), changes.entries.end(),
+                                     [&](const auto& e) { return e.field_name == f.name; });
+        if (it != changes.entries.end()) {
+            diffs.append({QString::fromStdString(f.name),
+                          {QString::fromStdString(it->old_value),
+                           QString::fromStdString(it->new_value)}});
+        } else {
+            diffs.append({QString::fromStdString(f.name),
+                          {QString::fromStdString(f.value), QString::fromStdString(f.value)}});
+        }
+    }
+    for (const auto& e : changes.entries) {
+        const auto in_new = std::any_of(new_fields.begin(), new_fields.end(),
+                                        [&](const auto& f) { return f.name == e.field_name; });
+        if (!in_new)
+            diffs.append({QString::fromStdString(e.field_name),
+                          {QString::fromStdString(e.old_value),
+                           QString::fromStdString(e.new_value)}});
     }
     return diffs;
-}
-
-void HistoryDialog::displayFullDetails(int index) {
-    if (index < 0 || static_cast<std::size_t>(index) >= versions_.size())
-        return;
-
-    const auto& fields = versions_[index].fields;
-    ui_->fullDetailsTableWidget->setRowCount(static_cast<int>(fields.size()));
-    for (int i = 0; i < static_cast<int>(fields.size()); ++i) {
-        ui_->fullDetailsTableWidget->setItem(
-            i, 0, new QTableWidgetItem(QString::fromStdString(fields[i].name)));
-        ui_->fullDetailsTableWidget->setItem(
-            i, 1, new QTableWidgetItem(QString::fromStdString(fields[i].value)));
-    }
 }
 
 void HistoryDialog::openVersionAt(int index) {

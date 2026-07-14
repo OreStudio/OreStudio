@@ -35,10 +35,15 @@
 #include <optional>
 #include <string>
 
+class QAbstractItemView;
 class QAction;
+class QButtonGroup;
+class QComboBox;
 class QLabel;
+class QListWidget;
 class QPushButton;
 class QTableWidget;
+class QTextBrowser;
 class QToolBar;
 
 namespace ores::qt {
@@ -139,12 +144,33 @@ protected:
      * @brief The widgets the base machinery drives, owned by the
      * derived dialog's Ui. changesTable, titleLabel and closeButton
      * may be null when the dialog lacks the corresponding element.
+     *
+     * versionTimeline/diffBrowser/compareFromCombo/compareToCombo/
+     * allFieldsToggle/onlyChangesToggle are only needed by dialogs
+     * opting into compare mode (supportsCompareMode() returns true) —
+     * the master-detail redesign's pill-style version timeline, live
+     * diff pane (rendered as one HTML document so multiline values
+     * wrap and grow naturally, unlike a per-row table), the two
+     * explicit "compare version X with Y" selectors, and the
+     * segmented All Fields/Only Changes toggle (the same two-button
+     * QButtonGroup pill idiom used elsewhere, e.g. the synthetic
+     * market data generator's Simple/Advanced toggle, rather than a
+     * checkbox). Legacy dialogs leave them null (using versionList/
+     * changesTable instead) and are unaffected. Exactly one of
+     * versionList/versionTimeline, and of changesTable/diffBrowser,
+     * should be set.
      */
     struct HistoryWidgets {
         QTableWidget* versionList{};
+        QListWidget* versionTimeline{};
         QTableWidget* changesTable{};
+        QTextBrowser* diffBrowser{};
         QLabel* titleLabel{};
         QPushButton* closeButton{};
+        QComboBox* compareFromCombo{};
+        QComboBox* compareToCombo{};
+        QPushButton* allFieldsToggle{};
+        QPushButton* onlyChangesToggle{};
     };
 
     /**
@@ -200,7 +226,39 @@ protected:
     [[nodiscard]] virtual DiffResult calculateDiffAt(int current_index, int previous_index) const;
 
     /**
+     * @brief Whether this dialog supports the master-detail compare
+     * mode: two explicit "compare version X with Y" selectors picking
+     * any two versions to diff directly (not just adjacent ones), and
+     * the "Only Changes" checkbox on the diff pane. Defaults to false
+     * so legacy dialogs (single Changes/Full Details tabs) are
+     * unaffected; the generic HistoryDialog opts in.
+     */
+    [[nodiscard]] virtual bool supportsCompareMode() const {
+        return false;
+    }
+
+    /**
+     * @brief Field-level diff between two arbitrary versions — not
+     * necessarily adjacent, as calculateDiffAt() assumes. Only called
+     * when supportsCompareMode() is true.
+     *
+     * @param include_unchanged When true, also return every unchanged
+     * field as a row whose old and new values are equal (the "All
+     * Fields" toggle); when false, only actually-changed fields (the
+     * "Only Changes" toggle, equivalent to calculateDiffAt()'s default
+     * behaviour).
+     */
+    [[nodiscard]] virtual DiffResult
+    calculateDiffBetween(int index_a, int index_b, bool include_unchanged) const {
+        Q_UNUSED(include_unchanged);
+        return calculateDiffAt(qMin(index_a, index_b), qMax(index_a, index_b));
+    }
+
+    /**
      * @brief Renders the full-details panel for the given version.
+     * Unused by compare-mode dialogs (calculateDiffBetween's
+     * include_unchanged replaces it); legacy dialogs still call it
+     * from their own Full Details tab.
      */
     virtual void displayFullDetails(int index);
 
@@ -289,12 +347,19 @@ private slots:
     void onOpenClicked();
     void onRevertClicked();
     void onReloadPulseStateChanged(bool is_on);
+    void onCompareToggled(int button_id);
+    void onVersionSelectedRow(int row);
+    void onCompareComboChanged();
 
 private:
     void setupToolbar();
+    void displayDiffPane();
     void displayChangesTab(int version_index);
-    void onVersionSelectedRow(int row);
+    void renderDiffRows(const DiffResult& diffs);
+    void renderComparePane(const DiffResult& diffs);
     void updateActionStates();
+    void populateCompareCombos();
+    [[nodiscard]] QAbstractItemView* activeVersionView() const;
 
     HistoryWidgets widgets_;
     QToolBar* toolBar_{};
@@ -302,6 +367,8 @@ private:
     QAction* openAction_{};
     QAction* revertAction_{};
     RecencyPulseManager* reloadPulse_{};
+    QButtonGroup* onlyChangesGroup_{};
+    bool onlyChangesMode_{false};
 };
 
 }

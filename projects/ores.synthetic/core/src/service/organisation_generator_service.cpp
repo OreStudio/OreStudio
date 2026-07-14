@@ -792,7 +792,7 @@ void generate_books(const domain::organisation_generation_options& options,
             bk.party_id = root_party_id;
             bk.parent_portfolio_id = portfolio.id;
             bk.owner_unit_id = portfolio.owner_unit_id;
-            bk.ledger_ccy = portfolio.aggregation_ccy;
+            bk.functional_currency = portfolio.aggregation_ccy;
             bk.book_status =
                 std::string(ores::refdata::domain::book_status_constants::codes::active);
             bk.regulatory_book_type =

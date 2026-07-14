@@ -96,11 +96,11 @@ struct book final {
     std::optional<boost::uuids::uuid> owner_unit_id;
 
     /**
-     * @brief Functional/accounting currency.
+     * @brief Functional/accounting currency, designated by the ledger.
      *
      * ISO 4217 currency code.
      */
-    std::string ledger_ccy;
+    std::string functional_currency;
 
     /**
      * @brief Reference to external General Ledger.

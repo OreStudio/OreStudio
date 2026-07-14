@@ -203,7 +203,7 @@ namespace ores #F2F2F2 {
                 +description : string
                 +parent_portfolio_id : string
                 +owner_unit_id : optional<string>
-                +ledger_ccy : string
+                +functional_currency : string
                 +gl_account_ref : string
                 +cost_center : string
                 +book_status : string

@@ -106,7 +106,7 @@ private:
     void populateRegulatoryBookTypeCombo();
 
 
-    void populateLedgerCcyCombo();
+    void populateFunctionalCurrencyCombo();
 
     void populateRatesCentreCodeCombo();
 

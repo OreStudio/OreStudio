@@ -2834,14 +2834,14 @@ begin
 
     insert into ores_refdata_books_tbl (
         tenant_id, id, version, party_id, name,
-        parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
+        parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
         book_status, regulatory_book_type, is_sweepable, rates_centre_code, owner_unit_id,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         p_target_tenant_id,
         gen_random_uuid(), 0, v_root_party_id, a.name,
-        pmap.published_id, a.ledger_ccy, a.gl_account_ref, a.cost_center,
+        pmap.published_id, a.functional_currency, a.gl_account_ref, a.cost_center,
         a.book_status, a.regulatory_book_type, a.is_sweepable,
         -- The artefact template can't know which party it will be
         -- published to, so a region-agnostic book (e.g. a group-level

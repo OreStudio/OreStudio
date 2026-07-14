@@ -110,7 +110,8 @@ HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int ci, int pi)
                       {QString::fromStdString(boost::uuids::to_string(prev.id)),
                        QString::fromStdString(boost::uuids::to_string(curr.id))}});
     checkString(diffs, tr("Name"), curr.name, prev.name);
-    checkString(diffs, tr("Ledger Currency"), curr.ledger_ccy, prev.ledger_ccy);
+    checkString(
+        diffs, tr("Functional Currency"), curr.functional_currency, prev.functional_currency);
     checkString(diffs, tr("GL Account Ref"), curr.gl_account_ref, prev.gl_account_ref);
     checkString(diffs, tr("Cost Center"), curr.cost_center, prev.cost_center);
     checkString(diffs, tr("Status"), curr.book_status, prev.book_status);
@@ -129,7 +130,7 @@ void BookHistoryDialog::displayFullDetails(int index) {
 
     ui_->idValue->setText(QString::fromStdString(boost::uuids::to_string(version.id)));
     ui_->nameValue->setText(QString::fromStdString(version.name));
-    ui_->ledgerCcyValue->setText(QString::fromStdString(version.ledger_ccy));
+    ui_->functionalCurrencyValue->setText(QString::fromStdString(version.functional_currency));
     ui_->glAccountRefValue->setText(QString::fromStdString(version.gl_account_ref));
     ui_->costCenterValue->setText(QString::fromStdString(version.cost_center));
     ui_->bookStatusValue->setText(QString::fromStdString(version.book_status));

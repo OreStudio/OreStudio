@@ -55,7 +55,7 @@ public:
      */
     enum Column {
         Name,
-        LedgerCcy,
+        FunctionalCurrency,
         BookStatus,
         CostCenter,
         RegulatoryBookType,
@@ -81,7 +81,7 @@ protected:
     /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
     std::vector<int> iconColumns() const override {
         return {
-            Column::LedgerCcy,
+            Column::FunctionalCurrency,
             Column::RatesCentreCode,
         };
     }

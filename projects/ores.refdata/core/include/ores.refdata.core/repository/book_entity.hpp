@@ -49,7 +49,7 @@ struct book_entity {
     std::optional<std::string> description;
     std::string parent_portfolio_id;
     std::optional<std::string> owner_unit_id;
-    std::string ledger_ccy;
+    std::string functional_currency;
     std::optional<std::string> gl_account_ref;
     std::optional<std::string> cost_center;
     std::string book_status = "Active";

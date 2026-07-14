@@ -492,7 +492,7 @@ package "refdata" #FFF3E0 {
         * name : text
         * description : text
         * parent_portfolio_id : uuid <<FK>>
-        * ledger_ccy : text
+        * functional_currency : text
           gl_account_ref : text
           cost_center : text
         * book_status : text
@@ -1383,7 +1383,7 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * name : text
         * parent_portfolio_id : uuid <<FK>>
-        * ledger_ccy : text
+        * functional_currency : text
           gl_account_ref : text
           cost_center : text
         * book_status : text

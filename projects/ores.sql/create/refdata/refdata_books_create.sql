@@ -38,7 +38,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "description" text null,
     "parent_portfolio_id" uuid not null,
     "owner_unit_id" uuid null,
-    "ledger_ccy" text not null,
+    "functional_currency" text not null,
     "gl_account_ref" text null,
     "cost_center" text null,
     "book_status" text not null,
@@ -130,8 +130,8 @@ begin
         end if;
     end if;
 
-    -- Validate ledger_ccy
-    NEW.ledger_ccy := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.ledger_ccy);
+    -- Validate functional_currency
+    NEW.functional_currency := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.functional_currency);
 
     -- Validate book_status
     NEW.book_status := ores_refdata_validate_book_status_fn(NEW.tenant_id, NEW.book_status);

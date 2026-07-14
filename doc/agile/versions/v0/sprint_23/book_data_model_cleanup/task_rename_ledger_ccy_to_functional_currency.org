@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Rename =book.ledger_ccy= to =book.functional_currency= end to end —
+domain model, generated SQL/C++/Qt layers, hand-written references in
+=ores.ore=/=ores.synthetic=, and living documentation (manual chapter,
+architecture doc, PlantUML diagrams) — so the field's name matches
+domain terminology precisely, per the domain notes.
 
 * Status
 
@@ -28,20 +32,52 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | Implemented, tested, built clean; awaiting manual QA. |
+| Waiting on   | Manual QA (scenario loaded in client).  |
+| Next         | Close task once manual QA passes.       |
+| Last touched | 2026-07-14                               |
 
 * Acceptance
 
--
+- =book.functional_currency= replaces =ledger_ccy= in the domain
+  model, generated SQL/C++/Qt layers (label, widget name, column
+  header, icon-column accessor), and every hand-written reference
+  (=ores.ore= import planner/choices, =ores.synthetic= organisation
+  generator and its tests).
+- Living documentation updated: manual chapter prose/labels,
+  =postgresql_architecture.org=, =trading_structure.org=, and the
+  PlantUML class/schema diagrams that show the field. Two manual
+  screenshots flagged =[SCREENSHOT OUTDATED — retake needed]= since
+  they still show the old "Ledger Currency" label (pre-existing
+  convention in this chapter; not retaken here).
+- =ores.refdata.core.tests=, =ores.ore.core.tests=,
+  =ores.synthetic.core.tests= all pass against the renamed field.
+- =validate_schemas.sh= clean.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Renamed the field in =ores.refdata.book.org= (column, label, widget
+name, Table display/Icon columns/Validations rows), then regenerated
+via =compass codegen entity generate book= (entity-scoped, no
+unrelated diff). Hand-fixed every non-generated reference found by
+grep: =ores.sql/create/dq/dq_books_artefact_create.sql=,
+=refdata_publish_from_dq_create.sql=,
+=testdata_books_artefact_populate.sql= (SQL layer);
+=ores.ore.core/planner/import_choices.hpp= +
+=ore_import_planner.cpp= (the ORE import planner has its own
+=ledger_ccy= field feeding =book.ledger_ccy=, renamed both);
+=ores.synthetic.core/service/organisation_generator_service.cpp= +
+its test; 4 PlantUML diagrams
+(=ores.ore.core.puml=, =ores.refdata.api.puml=,
+=ores.refdata.core.puml=, =ores_schema.puml=);
+=postgresql_architecture.org=, =trading_structure.org=,
+=chapter_7_books.org= (manual). Left historical agile docs (sprint/
+task/story records, chat transcripts) untouched — those are a record
+of what was true when written, not living documentation.
+
+Verified against a full DB recreate + Barclays Plc provisioning
+(=testdata.books= publishes cleanly under the new column name) and
+the full affected-component test suite, not just a compile check.
 
 * Notes
 

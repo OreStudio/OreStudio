@@ -48,7 +48,7 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;
-    r.ledger_ccy = std::string("USD");
+    r.functional_currency = std::string("USD");
     r.gl_account_ref = std::string("GL-10150-TEST");
     r.cost_center = std::string("CC-001");
     r.book_status = std::string("Active");

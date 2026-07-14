@@ -144,9 +144,9 @@ struct import_choices {
     std::string aggregation_ccy = "USD";
 
     /**
-     * @brief Ledger currency for auto-created books.
+     * @brief Functional currency for auto-created books.
      */
-    std::string ledger_ccy = "USD";
+    std::string functional_currency = "USD";
 
     /**
      * @brief Purpose type for auto-created portfolios.

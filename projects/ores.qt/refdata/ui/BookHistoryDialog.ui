@@ -178,14 +178,14 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="ledger_ccyLabel">
+                <widget class="QLabel" name="functional_currencyLabel">
                  <property name="text">
-                  <string>Ledger Currency:</string>
+                  <string>Functional Currency:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLabel" name="ledgerCcyValue">
+                <widget class="QLabel" name="functionalCurrencyValue">
                  <property name="text">
                   <string/>
                  </property>

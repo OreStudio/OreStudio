@@ -62,8 +62,8 @@ portfolios can nest inside other portfolios, and every book links to
 exactly one portfolio — so the folder/file split above is also the
 whole of the tool's hierarchy, not just an analogy for it.
 
-Every book carries a *ledger currency* — the functional, or accounting,
-currency its positions are reported in. Trades themselves can happen in
+Every book carries a *functional currency* — the accounting currency
+its positions are reported in. Trades themselves can happen in
 whatever currency the deal was struck in, but the ledger needs one
 settled currency per book to carry balances and P&L in; that currency
 is designated by the ledger, not chosen freely by the desk. A book also
@@ -73,7 +73,7 @@ to — the trading system's record of a position only means something
 once it can be traced back to a specific line in the firm's books of
 account. Alongside that sits a *cost centre*, the internal code that
 activity in this book is charged against for cost allocation and
-management reporting; a full treatment of how ledger currency, GL
+management reporting; a full treatment of how functional currency, GL
 accounts, and cost centres compose into the wider accounting hierarchy
 belongs to a future ledger-focused chapter, not this one.
 
@@ -131,7 +131,7 @@ separate functions involved:
   authorising its own new book.
 - Three functions then *enrich* the book in parallel, each contributing
   the data their function owns: *Finance* wires the book into the
-  ledger — its ledger currency, cost centre, and monthly balance
+  ledger — its functional currency, cost centre, and monthly balance
   carry-forward; *Market Risk* sets its regulatory book type (Trading
   or Banking) and assigns it to a rates centre for consistent
   revaluation data; *Operations* sets up the book's allowed-currency
@@ -178,7 +178,7 @@ just described.
 Open the Books window from the /Trading/ menu. It lists all books
 defined in the tenant, with one row per book.
 
-#+caption: [SCREENSHOT OUTDATED — retake needed] The Books window, showing the full list of books in the tenant. Each row shows the name, ledger currency (with flag icon), status (as a colour-coded badge), cost centre, regulatory book type (as a colour-coded Trading/Banking badge), version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The Books window, showing the full list of books in the tenant. Each row shows the name, functional currency (with flag icon), status (as a colour-coded badge), cost centre, regulatory book type (as a colour-coded Trading/Banking badge), version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
 # Capture: open the Books window from the Trading menu with at least one book of each
 # Status (Active/Closed/Frozen) and Regulatory Book Type (Trading/Banking) visible, so
 # every badge colour shows in the list. Screenshot the full window including the toolbar
@@ -198,7 +198,7 @@ apply to the book as a whole.
 
 *** General
 
-#+caption: [SCREENSHOT OUTDATED — retake needed] The General tab for a book. It shows the id, name, ledger currency, GL account reference, cost centre, status, and regulatory book type.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The General tab for a book. It shows the id, name, functional currency, GL account reference, cost centre, status, and regulatory book type.
 # Capture: open Book Details on any book with a non-default Status and Regulatory Book
 # Type selected (so both badges are visible), and screenshot the General tab in full.
 # Save as book_details_general.png (overwrite the existing file).
@@ -211,11 +211,11 @@ The General tab carries the fields of the book:
 - *Name* — the book's display name. Unlike the id, the name can be
   changed after creation — real trading systems allow a book to be
   renamed while its id and GL mapping remain the durable identity.
-- *Ledger Currency* — the currency this book reports in, chosen from a
-  combo box populated with ISO currency codes, each shown with its
-  flag icon.
+- *Functional Currency* — the currency this book reports in, designated
+  by the ledger, chosen from a combo box populated with ISO currency
+  codes, each shown with its flag icon.
 
-  #+caption[The Ledger Currency picker]: The Ledger Currency combo box open, showing the list of ISO currency codes each with its flag icon. Selecting a currency updates the closed box to show the chosen code and flag.
+  #+caption: [SCREENSHOT OUTDATED — retake needed] The Functional Currency combo box open, showing the list of ISO currency codes each with its flag icon. Selecting a currency updates the closed box to show the chosen code and flag. (Field label changed from "Ledger Currency" to "Functional Currency".)
   [[proj:assets/images/book_ledger_currency_combo.png]]
 
 - *GL Account Ref* — free-text reference to the general ledger account
@@ -289,7 +289,7 @@ The chapter set out to show that managing a book well follows from
 understanding what it represents and the interface that governs its
 lifecycle, and it has traced exactly that path. A book is the
 leaf-level ledger unit that owns positions, identified within its
-party by an id and name and carrying a ledger currency, a GL mapping,
+party by an id and name and carrying a functional currency, a GL mapping,
 a cost centre, a status, and a trading/non-trading flag. Building on
 that, the Qt interface took the record from the list view down to a
 single detail dialog — its currency picker showing flags, its status
@@ -303,4 +303,4 @@ tracked separately as part of the shell and CLI commissioning work.
 ** See also
 
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
-- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the ledger currency a book references, and the Change Reason Required dialog.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the functional currency a book references, and the Change Reason Required dialog.

@@ -128,7 +128,7 @@ namespace ores #F2F2F2 {
                 +existing_target_book_id : optional<boost::uuids::uuid>
                 +party_id : boost::uuids::uuid
                 +aggregation_ccy : string
-                +ledger_ccy : string
+                +functional_currency : string
                 +purpose_type : string
             }
             class ore_import_plan <<struct>> {

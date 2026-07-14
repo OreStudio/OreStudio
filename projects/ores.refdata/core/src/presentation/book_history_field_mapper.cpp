@@ -36,7 +36,7 @@ std::vector<ores::diff::domain::field_value> render_book_fields(const domain::bo
     fields.push_back(
         {.name = "Owner Unit ID",
          .value = v.owner_unit_id ? boost::uuids::to_string(*v.owner_unit_id) : std::string{}});
-    fields.push_back({.name = "Ledger Ccy", .value = v.ledger_ccy});
+    fields.push_back({.name = "Functional Currency", .value = v.functional_currency});
     fields.push_back({.name = "Gl Account Ref", .value = v.gl_account_ref});
     fields.push_back({.name = "Cost Center", .value = v.cost_center});
     fields.push_back({.name = "Book Status", .value = v.book_status});

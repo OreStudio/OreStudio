@@ -66,7 +66,7 @@ begin
 
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
-        parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
+        parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
         book_status, regulatory_book_type, is_sweepable, rates_centre_code
     )
     values

@@ -87,7 +87,7 @@ std::vector<domain::book> book_repository::read_all(context ctx, const std::stri
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<book_entity, domain::book>(
         ctx,

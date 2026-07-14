@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: E2C5D7B5-0937-4512-90F2-E479B633B3D7
+:END:
+#+title: Test Scenario: Verify ledger_ccy renamed to functional_currency on Book
+#+description: Manual Qt client steps confirming book's currency field now reads as Functional Currency everywhere in the UI, still edits/saves/histories correctly, with no regressions.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:A4F81E5E-6795-4533-AD3A-371EE4F01D41][Rename ledger_ccy to functional_currency]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:A4F81E5E-6795-4533-AD3A-371EE4F01D41][Rename ledger_ccy to functional_currency]] |
+| Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
+| Target dialog | BookMdiWindow / BookDetailDialog / BookHistoryDialog (Reference Data > Books) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Books list shows a Functional Currency column (not Ledger Ccy)
+
+Open Reference Data > Books. Confirm the column that used to read
+"Ledger Ccy" now reads "Functional Currency", still shows the flag
+icon, and still shows every seeded book's correct currency (e.g. GBP
+books show GBP, USD books show USD) — no blank cells, no error
+banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Detail dialog shows the Functional Currency combo (not Ledger Currency)
+
+Double-click any book. Confirm the field that used to read "Ledger
+Currency:" now reads "Functional Currency:", pre-selected to the
+book's seeded value with its flag icon. Select a different currency,
+Save. Confirm the change-reason prompt appears, the save succeeds,
+the grid refreshes, the list's Functional Currency column shows the
+newly-selected flag/code, and Version increments by 1.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** History dialog shows the Functional Currency change
+
+Open History on that book. Confirm both versions appear, with the
+diff highlighting the field renamed to Functional Currency changing
+from the original code to the newly-selected one, and that closing
+the history dialog only closes the sub-window, not the whole app.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

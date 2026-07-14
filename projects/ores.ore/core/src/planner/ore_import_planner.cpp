@@ -203,7 +203,7 @@ ore_import_plan ore_import_planner::plan() {
         b.party_id = choices_.party_id;
         b.name = node.name;
         b.parent_portfolio_id = book_parent_id;
-        b.ledger_ccy = choices_.ledger_ccy;
+        b.functional_currency = choices_.functional_currency;
         b.book_status = std::string(book_status_constants::codes::active);
         b.regulatory_book_type = std::string(regulatory_book_type_constants::codes::trading);
         b.change_reason_code = std::string(reason::codes::new_record);

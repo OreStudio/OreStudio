@@ -730,6 +730,33 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- ores.marketdata.service's crm_ingest_bridge builds one rate_engine per
+-- (tenant, party) at startup/refresh via read_latest_all_tenants(), which
+-- has no single tenant session context to scope to -- a second, permissive,
+-- SELECT-only policy for that role's read-only role is OR'd with the
+-- tenant-isolation policy above, so it can see every tenant's rows without
+-- weakening the default-deny-cross-tenant behaviour for any other role.
+create policy crm_topology_configs_tbl_marketdata_cross_tenant_read_policy
+on ores_refdata_crm_topology_configs_tbl
+for select
+to :marketdata_service_user
+using (true);
+
+-- Party isolation: strict enforcement — no party context means no rows
+-- visible. Scoped to refdata_service_user (the normal party-scoped
+-- consumer for CRUD reads/writes on this table) so it does not also
+-- restrict marketdata_service_user's documented cross-tenant, cross-party
+-- read above. FOR SELECT only: party_id FK validated by trigger; WITH
+-- CHECK would block bulk inserts from the publisher.
+create policy crm_topology_configs_tbl_party_isolation_policy
+on ores_refdata_crm_topology_configs_tbl
+as restrictive
+for select
+to :refdata_service_user
+using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- CRM driver pairs (codegen-generated table)
 -- -----------------------------------------------------------------------------
@@ -742,6 +769,23 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- See crm_topology_configs_tbl_marketdata_cross_tenant_read_policy above.
+create policy crm_driver_pairs_tbl_marketdata_cross_tenant_read_policy
+on ores_refdata_crm_driver_pairs_tbl
+for select
+to :marketdata_service_user
+using (true);
+
+-- See crm_topology_configs_tbl_party_isolation_policy above.
+create policy crm_driver_pairs_tbl_party_isolation_policy
+on ores_refdata_crm_driver_pairs_tbl
+as restrictive
+for select
+to :refdata_service_user
+using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -882,4 +926,21 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- See crm_topology_configs_tbl_marketdata_cross_tenant_read_policy above.
+create policy crm_enabled_derived_pairs_tbl_marketdata_cross_tenant_read_policy
+on ores_refdata_crm_enabled_derived_pairs_tbl
+for select
+to :marketdata_service_user
+using (true);
+
+-- See crm_topology_configs_tbl_party_isolation_policy above.
+create policy crm_enabled_derived_pairs_tbl_party_isolation_policy
+on ores_refdata_crm_enabled_derived_pairs_tbl
+as restrictive
+for select
+to :refdata_service_user
+using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );

@@ -20,6 +20,7 @@
 #include "ores.qt/CounterpartyChildEntityTables.hpp"
 #include "ores.qt/ChildEntityTableWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
@@ -101,10 +102,12 @@ void CounterpartyChildEntityTables::attachTo(QTabWidget* tabWidget) {
 
 void CounterpartyChildEntityTables::reload(const boost::uuids::uuid& counterpartyId,
                                     ClientManager* clientManager,
-                                    const std::string& username) {
+                                    const std::string& username,
+                                    ImageCache* imageCache) {
     counterpartyId_ = counterpartyId;
     clientManager_ = clientManager;
     username_ = username;
+    imageCache_ = imageCache;
     if (counterpartyId_.is_nil() || !clientManager_ || !clientManager_->isConnected())
         return;
     loadIdentifiers();
@@ -405,12 +408,15 @@ void CounterpartyChildEntityTables::onAddContact() {
             });
     typeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_contact_type_codes(cm); }));
 
+    auto* imageCache = imageCache_;
+    countryCombo->setIconSize(single_flag_icon_size());
     auto* countryWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
     connect(countryWatcher,
             &QFutureWatcher<std::vector<std::string>>::finished,
             &dialog,
-            [countryWatcher, countryCombo]() {
+            [countryWatcher, countryCombo, imageCache]() {
                 populate_code_combo(countryCombo, countryWatcher->result());
+                apply_flag_icons(countryCombo, imageCache, FlagSource::Country);
                 countryWatcher->deleteLater();
             });
     countryWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));
@@ -545,12 +551,15 @@ void CounterpartyChildEntityTables::onEditContact(int row) {
             });
     typeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_contact_type_codes(cm); }));
 
+    auto* imageCache = imageCache_;
+    countryCombo->setIconSize(single_flag_icon_size());
     auto* countryWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
     connect(countryWatcher,
             &QFutureWatcher<std::vector<std::string>>::finished,
             &dialog,
-            [countryWatcher, countryCombo, currentCountry = contact.country_code]() {
+            [countryWatcher, countryCombo, imageCache, currentCountry = contact.country_code]() {
                 populate_code_combo(countryCombo, countryWatcher->result(), currentCountry);
+                apply_flag_icons(countryCombo, imageCache, FlagSource::Country);
                 countryWatcher->deleteLater();
             });
     countryWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));

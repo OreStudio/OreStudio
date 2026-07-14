@@ -34,6 +34,7 @@ namespace ores::qt {
 
 class ChildEntityTableWidget;
 class ClientManager;
+class ImageCache;
 
 /**
  * @brief Owns and drives the "Identifiers" and "Contact Information" tabs
@@ -58,7 +59,8 @@ public:
     /** @brief Re-fetch and repopulate both tables for the given party. No-op if partyId is nil. */
     void reload(const boost::uuids::uuid& partyId,
                 ClientManager* clientManager,
-                const std::string& username);
+                const std::string& username,
+                ImageCache* imageCache = nullptr);
 
     /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
     void setReadOnly(bool readOnly);
@@ -78,6 +80,7 @@ private:
     ChildEntityTableWidget* contactTable_{nullptr};
     boost::uuids::uuid partyId_;
     ClientManager* clientManager_{nullptr};
+    ImageCache* imageCache_{nullptr};
     std::string username_;
     bool readOnly_{false};
     std::vector<ores::refdata::domain::party_identifier> identifiers_;

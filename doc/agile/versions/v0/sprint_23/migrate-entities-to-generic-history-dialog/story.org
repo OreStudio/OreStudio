@@ -64,9 +64,34 @@ per-entity codegen templates once nothing depends on them anymore.
 | [[id:78F582B3-4A75-402B-ABC5-3F9CD0734B71][Migrate ores.qt.synthetic's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 3 hand-rolled *HistoryDialog classes in projects/ores.qt/synthetic, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
 | [[id:E441DA77-896D-4CCF-98CE-9FE95AEF468D][Migrate ores.qt.trading's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 2 hand-rolled *HistoryDialog classes in projects/ores.qt/trading, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
 | [[id:586B6BCE-736A-42C9-9D4C-BE1ECFCE60F4][Migrate ores.qt.workspace's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 1 hand-rolled *HistoryDialog classes in projects/ores.qt/workspace, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
-| [[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]] | STARTED | 2026-07-14 | | Update the cpp_qt_controller and cpp_qt_history_dialog mustache templates so regenerating any entity emits the generic HistoryDialog wiring instead of a per-entity *HistoryDialog class, with currency regenerating to zero-diff as the proof. |
+| [[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]] | DONE | 2026-07-14 | 2026-07-14 | Update the cpp_qt_controller and cpp_qt_history_dialog mustache templates so regenerating any entity emits the generic HistoryDialog wiring instead of a per-entity *HistoryDialog class, with currency regenerating to zero-diff as the proof. |
 
 * Decisions
+
+- Migration happens by updating the shared =ores.cpp.qt= codegen
+  templates once (task 257F85B2), not by hand-migrating each entity's
+  controller individually — hand-migrating currency first (PR
+  #1553/#1563) was the right initial proof, but repeating that by hand
+  across 60+ entities would just recreate the same manual, uncodegen'd
+  divergence 60+ more times. Discovered when starting the
+  =migrate-refdata-history-dialogs= task: =compass codegen entity
+  generate currency --diff= showed currency's own controller as a
+  manual divergence from what the templates still produced.
+- No template-level gating on whether an entity has a server-side
+  history field mapper yet: the template always emits the generic-
+  =HistoryDialog= wiring. An entity without a mapper gets a graceful
+  "no history" response at runtime (the dispatch registry's existing
+  unknown-=entity_type= handling) until its own commission story adds
+  the mapper — simpler than threading a new model flag through every
+  entity, and no entity is worse off than before (it had no working
+  history dialog either way, since the per-entity dialog's compile
+  path for =has_version_navigation= was itself dead code — see the
+  template task's Notes).
+- Per-component migration tasks proceed one entity at a time,
+  reviewing each regeneration's diff before committing — if an
+  entity's diff is unexpectedly large (structural incompatibility, not
+  just cosmetic), skip it and record it as drifted rather than forcing
+  it through.
 
 * Out of scope
 

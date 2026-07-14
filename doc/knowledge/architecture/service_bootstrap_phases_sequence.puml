@@ -1,0 +1,88 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Service Bootstrap Phases -- IAM / party_cache worked example
+
+participant "main.cpp" as Main
+participant "run_signing()" as Runner
+participant "registrar::\nregister_handlers()" as Registrar
+participant "NATS client\n(own dispatch thread)" as NatsThread
+participant "auth_handler" as Auth
+participant "party_cache" as Cache
+participant "refdata.service" as Refdata
+
+== Phase 1: Wiring & Readiness ==
+
+Main -> Runner : run_signing(io_ctx, nats, ctx, register_fn, on_started)
+activate Runner
+Runner -> Runner : build RS256 JWT signer
+Runner -> Registrar : register_fn(nats, ctx, signer)
+activate Registrar
+
+Registrar -> Auth : construct auth_handler(nats, ctx, signer)
+Registrar -> NatsThread : subscribe(iam.v1.auth.service-login)
+note right of NatsThread
+  Live immediately: dispatched on the NATS
+  client's own thread (cnats calls the handler
+  from a library thread, not io_ctx). Any call
+  to this subject can be answered from this
+  point on -- even mid-registration.
+end note
+Registrar -> Registrar : ... subscribe every other IAM subject ...
+
+== Phase 2: Post-Readiness Activities ==
+
+note over Registrar
+  Everything this service itself might need to
+  CALL (its own subjects included) is already
+  live. Safe now to mint tokens, warm caches,
+  and do any other work that talks back over NATS.
+end note
+
+Registrar -> Cache : construct party_cache(nats)
+Registrar -> Registrar : make_service_token_provider(\n  nats, ctx.service_account(), service_password)
+Registrar -> NatsThread : request_sync(iam.v1.auth.service-login)
+NatsThread -> Auth : dispatch (NATS thread)
+Auth --> NatsThread : JWT (service-account token)
+NatsThread --> Registrar : JWT
+Registrar -> Cache : attach token_provider
+
+Registrar -> Cache : warm_and_subscribe_party_cache(tenant_ids)
+loop each known tenant
+    Cache -> Refdata : read_parties_for_cache(tenant_id)\nAuthorization: Bearer <JWT>
+    Refdata --> Cache : parties
+end
+Cache -> NatsThread : subscribe(ores.refdata.party_changed)
+
+deactivate Registrar
+Runner -> Runner : on_started(io_ctx) -- e.g. spawn heartbeat_publisher
+deactivate Runner
+
+== Serving ==
+
+Runner -> Runner : log "Service ready."; wait for shutdown signal
+note over Runner
+  io_ctx has been running throughout Phases 1-2
+  (it hosts this very coroutine). An external
+  request to any subscribed subject is served as
+  soon as that subject was subscribed in Phase 1 --
+  it is not gated on Phase 2 completing.
+end note
+
+@enduml

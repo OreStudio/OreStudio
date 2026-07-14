@@ -22,6 +22,18 @@ See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 variables and their semantics, and the facet doc for the =cached_by= /
 =read_for_cache= flags this archetype requires.
 
+** Authentication
+
+=read_for_cache= requires a valid signed JWT (see the =nats-handler=
+archetype). The generated class takes an optional
+=std::function<std::string(bool)> token_provider= constructor
+parameter — pass
+=ores::iam::client::make_service_token_provider(...)='s return value
+(or any callable with the same shape) and every =load()= attaches a
+fresh =Authorization: Bearer <jwt>= header. Omitted (=nullptr=), no
+header is sent — only valid against a producer whose =read_for_cache=
+handler has no auth check, which none should after this fix.
+
 ** Optional aux index
 
 Entities whose consumer needs more than key/value lookups (e.g. a
@@ -60,6 +72,7 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -76,9 +89,12 @@ The full template source. Edit here and re-tangle with
 #include <immer/map_transient.hpp>
 #include <vector>
 {{/cache_aux_type}}
+#include <functional>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace ores::{{cache_component}}::service::cache {
 
@@ -98,6 +114,12 @@ inline auto& {{entity_singular}}_cache_lg() {
  * changed-event notification for the affected tenant (see the
  * nats-event-cache.registrar_wiring archetype). See the "Generic
  * entity-mirror cache primitive + codegen facet" story.
+ *
+ * read_{{entity_plural}}_for_cache requires a valid signed JWT (see the
+ * nats-handler archetype); pass a @c token_provider — typically
+ * ores::iam::client::make_service_token_provider's return value — so
+ * every load() attaches a fresh service-account Bearer token. Omit it
+ * only against a producer that has not opted into the auth check.
  */
 class {{entity_singular}}_cache {
 {{#primary_key.is_uuid}}
@@ -117,13 +139,27 @@ class {{entity_singular}}_cache {
 {{/primary_key.is_uuid}}
 
 public:
-    explicit {{entity_singular}}_cache(ores::nats::service::client& nats)
-        : nats_(nats) {}
+    explicit {{entity_singular}}_cache(ores::nats::service::client& nats,
+        std::function<std::string(bool)> token_provider = nullptr)
+        : nats_(nats)
+        , token_provider_(std::move(token_provider)) {}
 
     {{entity_singular}}_cache(const {{entity_singular}}_cache&) = delete;
     {{entity_singular}}_cache& operator=(const {{entity_singular}}_cache&) = delete;
     {{entity_singular}}_cache({{entity_singular}}_cache&&) = delete;
     {{entity_singular}}_cache& operator=({{entity_singular}}_cache&&) = delete;
+
+    /**
+     * @brief Arms (or replaces) the token provider after construction. For a
+     * consumer that must construct this cache during its own Phase 1
+     * (wiring/readiness) but can only mint a token during Phase 2
+     * (post-readiness) — e.g. a self-referential consumer authenticating
+     * against its own just-registered subjects. See "Service Bootstrap
+     * Phases" in the architecture docs.
+     */
+    void set_token_provider(std::function<std::string(bool)> token_provider) {
+        token_provider_ = std::move(token_provider);
+    }
 
     void load(const std::string& tenant_id) {
         using namespace ores::logging;
@@ -131,9 +167,13 @@ public:
             const auto req_json = rfl::json::write(
                 ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request{
                     .tenant_id = tenant_id});
+            std::unordered_map<std::string, std::string> headers;
+            if (token_provider_)
+                headers[std::string(ores::nats::headers::authorization)] =
+                    std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
             const auto reply = nats_.request_sync(
                 ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request::nats_subject,
-                ores::nats::as_bytes(req_json));
+                ores::nats::as_bytes(req_json), std::move(headers));
             auto resp =
                 rfl::json::read<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
                     ores::nats::as_string_view(reply.data));
@@ -167,6 +207,7 @@ public:
 <<paste:C0EDFBDF-F38F-4E02-874F-A086FB435FB0>>
 private:
     ores::nats::service::client& nats_;
+    std::function<std::string(bool)> token_provider_;
     cache_t cache_;
 };
 

@@ -127,6 +127,9 @@ How the codebase is put together.
   placement, CMake dependency chain, and scaffold profiles.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every layer of a NATS service (registry, IAM,
   certs, controller, runner, authentication) with a stand-up checklist.
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — Phase 1 (wire and subscribe every subject)
+  vs. Phase 2 (mint tokens, warm caches — anything that calls a subject,
+  including the service's own), worked through IAM's party_cache.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern of a top-level transport
   registrar delegating to per-entity sub-registrars, with a per-transport
   instance section (NATS, HTTP) linking to the codegen archetypes.

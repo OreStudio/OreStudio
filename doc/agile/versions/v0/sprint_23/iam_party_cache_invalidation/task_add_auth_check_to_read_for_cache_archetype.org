@@ -7,43 +7,125 @@
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/verify-activation-repro-fixed
+#+pr: 1566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
-#+updated: 2026-07-13
-#+environment:
+#+updated: 2026-07-14
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Close the read_for_cache auth gap for real: add the same
+=make_request_context= check the other generated handler methods use,
+wire the generated cache's =load()= to attach a service-account
+=Authorization: Bearer <jwt>= header, and fix party's own
+hand-written =read_for_cache= (never regenerated — its messaging
+layer is separately known-drifted) to match. Along the way, discovered
+that IAM authenticating against *itself* (party_cache calling
+=refdata=, but the token comes from IAM's own =service-login=) has a
+startup-ordering hazard, which produced a new architecture doc:
+[[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Nothing. |
+| Waiting on   | User to confirm the build passes.      |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
 
 * Acceptance
 
--
+- The generated =read_for_cache= handler requires a valid signed JWT
+  (=make_request_context=), like =list=/=history= — no specific
+  permission check, since the caller legitimately reads across
+  tenants under one service identity.
+- The generated cache class (=nats-event-cache= facet) accepts an
+  optional token provider — via constructor and/or
+  =set_token_provider= — and attaches an =Authorization: Bearer <jwt>=
+  header on every =load()= when one is set.
+- Party's hand-written =read_parties_for_cache= (never regenerated)
+  is fixed to match, since it's the one real consumer today.
+- IAM's =party_cache= is armed with a real service-account token
+  (via =make_service_token_provider=) and continues to warm/reload
+  correctly.
+- No startup-ordering hazard: IAM's own subjects (including
+  =service-login=, which the token mint calls) are fully registered
+  before anything tries to call them — documented as the general
+  "Service Bootstrap Phases" pattern, not a one-off fix.
+- =ores.iam.core= depends on =ores.iam.client.lib= (new CMake edge,
+  carefully checked for cycles — none: =ores.iam.client= depends only
+  on =ores.iam.api=/=ores.nats=).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =make_request_context= check to the =read_for_cache= handler
+   archetype (=ores.cpp.nats-handler.nats_handler_header.org=); no
+   permission check (cross-tenant access is the legitimate access
+   pattern for this caller).
+2. Add an optional =token_provider= (constructor param +
+   =set_token_provider= setter) to the =nats-event-cache= cache
+   archetype; attach =Authorization: Bearer <jwt>= on =load()= when
+   set.
+3. Hand-fix party's un-regenerable =read_parties_for_cache= handler
+   to match (same auth check).
+4. Regenerate party's =party_cache.hpp=/=party_cache_registrar.hpp=.
+5. Investigate how IAM should authenticate its own =party_cache=
+   calls: discovered =make_service_token_provider= eagerly logs in
+   synchronously, and IAM would be calling *itself* — found this is
+   an ordering hazard, not a threading deadlock (NATS subscriptions
+   dispatch on the NATS client's own thread, independent of =io_ctx=,
+   confirmed by reading =ores.nats/src/service/client.cpp='s =on_msg=
+   comment and =request_sync='s =cnats= implementation).
+6. Wrote [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] (+ sequence diagram) documenting
+   the general Phase 1 (wire/subscribe everything) vs. Phase 2
+   (mint tokens, warm caches — anything that calls a subject,
+   including the service's own) pattern, worked through this exact
+   case; cross-linked from "Anatomy of a Service" and
+   "Service-to-Service Auth".
+7. Applied the fix: =ores.iam.core/messaging/registrar.cpp=
+   restructured into the two phases — =party_cache= constructed
+   token-less in Phase 1 (needed by =auth_handler= et al.'s
+   constructors), armed via =set_token_provider= and warmed only
+   after every IAM subject (including =service-login=) is registered
+   in Phase 2. =registrar.hpp='s =register_handlers= gained a
+   =service_password= parameter; =application.cpp= passes
+   =cfg.database.password()=, matching the established pattern used
+   by reporting/synthetic/marketdata/workflow/ore's =application.cpp=
+   files.
+8. Added =ores.iam.client.lib= to =ores.iam.core='s =CMakeLists.txt=
+   (PRIVATE — only =registrar.cpp= needs the header; the cache class
+   itself only needs =std::function=, no new public dependency).
 
 * Notes
+
+Verified without a build (no vcpkg toolchain in this environment):
+- Codegen python test suite: 48/48 passed.
+- =--diff= regression check against =counterparty=/=currency=/=book=:
+  counts unchanged whether my template edits are stashed or not
+  (confirms no incidental change to unrelated entities; the raw
+  counts themselves shifted between checks only because =main= kept
+  moving underneath, unrelated to this work).
+- =cfg.database.password()= usage confirmed identical to 5 other
+  services' =application.cpp= (=reporting=, =synthetic=,
+  =marketdata=, =workflow=, =ore=).
+- =ores.iam.client= has no dependency on =ores.iam.core= (checked its
+  =CMakeLists.txt=), so the new edge is non-circular.
+- Could not build/run — same limitation as every task this session.
+  Given the previous hotfix (missing =ores.eventing.core.lib= link)
+  came from exactly this gap, flagging clearly: this PR needs a real
+  build before merge, same as usual, but this one touches more
+  surface (a new cross-component CMake edge, a public signature
+  change on =registrar::register_handlers=, and a startup-ordering
+  restructuring) so the build check matters more than usual here.
 
 * Test Scenarios
 
@@ -60,12 +142,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1566][#1566]] | [iam,refdata,codegen] Close entity-mirror cache story: auth check + bootstrap phases |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Narrow, self-healing startup race: a login between Phase 1 (auth_handler subscribed) and Phase 2 (party_cache armed) hits load() with no token, silently degrading that tenant's partition for one request (flagged by 2 of 3 runs) | service_bootstrap_phases.org | Accepted | Documented explicitly as a "Known limitation" section (accepted tradeoff, self-healing, not engineered away) + a Checklist item; no code change (the race itself is by design, not a bug) |
+| 2 | read_for_cache is authentication-only, not tenant-scoped -- any validly-signed token can read any tenant (flagged by all 3 runs) | ores.cpp.nats-handler.nats_handler_header.org, party_handler.hpp | Accepted | Added an explicit code comment on both the archetype and party's hand-written copy warning against copy-pasting this method as a tenant-authorized template |
+| 3 | No test asserts the rendered auth-check/token-provider code actually appears in template output (flagged by all 3 runs) | core.py / templates | Accepted | Added test_read_for_cache_auth_rendering.py rendering both templates against a fixture entity and asserting the auth check, token_provider param, set_token_provider, and Authorization header code all appear |
+| 4 | password captured/passed by value in application.cpp, not moved | application.cpp | No change needed | Reviewer confirmed register_fn is invoked exactly once, so this is correct as-is |
 
 * Result
+
+Closed the read_for_cache auth gap end-to-end: the generated handler
+and party's hand-written copy both now require a valid signed JWT;
+the generated cache attaches one via an optional token provider; IAM's
+own registrar mints a real service-account token for party_cache.
+Along the way, produced a durable architecture doc, [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap
+Phases]] (+ sequence diagram), naming the Phase 1 (wire/subscribe
+everything) vs. Phase 2 (mint tokens, warm caches) split that made the
+self-referential IAM case correct rather than a startup hazard.

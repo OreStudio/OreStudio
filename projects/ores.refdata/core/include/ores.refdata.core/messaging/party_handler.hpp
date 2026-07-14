@@ -211,6 +211,17 @@ public:
 
     void read_for_cache(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        // Authentication-only, deliberately not tenant-scoped: this proves
+        // the caller holds *a* valid signed JWT, but does not check that
+        // token's own tenant against req->tenant_id below (the tenant a
+        // cache-warming service account reads is unrelated to any tenant
+        // its own token carries). Do not copy this method as a template
+        // for a tenant-authorized endpoint.
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         auto req = decode<read_parties_for_cache_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;

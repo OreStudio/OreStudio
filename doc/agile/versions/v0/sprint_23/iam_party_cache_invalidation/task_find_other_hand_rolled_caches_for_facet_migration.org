@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 232F1FDF-20F7-4BC8-BF0A-A2F74C7F26A6
+:END:
+#+title: Task: Find other hand-rolled entity caches to migrate onto nats-event-cache
+#+description: Search the codebase for other consumer-side, hand-written in-process caches of another service's entity data (the same pattern party_cache used before this story), and produce a list of candidate migrations onto the generic nats-event-cache facet, each requiring cached_by/read_for_cache on the producer's model.
+#+type: task
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine whether any other service in the codebase hand-rolls a
+persistent, process-lifetime, cross-service entity-mirror cache the
+same way =party_cache= did before this story — and if so, list them
+as migration candidates onto the generic =nats-event-cache= facet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                    |
+| Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- Every =*_cache.hpp=-style class in the backend (=projects/ores.*=,
+  excluding =ores.qt=) is enumerated and classified as either a
+  cross-service entity mirror (migration candidate) or something else
+  (client-side UI cache, own-domain state, etc.).
+- Every persistent map/atom holding another component's =::domain::=
+  type is checked for the same pattern.
+- Findings recorded here, with any real candidates filed as new
+  BACKLOG tasks on this story.
+
+* Plan
+
+1. =grep= for =class.*[Cc]ache= across every backend =*.hpp=,
+   excluding =ores.qt= (a different pattern — client-side UI caches
+   of already-fetched data, not cross-service reload-on-notification
+   mirrors).
+2. =grep= for =immer::atom= usage outside =partitioned_cache.hpp=/
+   =party_cache.hpp= (the primitive's other known consumer,
+   =ores.analytics.quant='s =rate_engine=, is same-service — not a
+   candidate).
+3. =grep= for =immer::map</=std::unordered_map</=std::map< keyed on
+   another component's =::domain::= type, to catch hand-rolled
+   mirrors that don't use =immer::atom= or aren't named =*_cache=.
+4. For each hit, read enough context to tell a persistent,
+   process-lifetime, cross-service mirror apart from a local,
+   function-scoped lookup structure built from one query result.
+
+* Notes
+
+Findings:
+
+- Backend =class.*[Cc]ache= hits: only =party_cache.hpp= (now
+  generated) and =partitioned_cache.hpp= itself (the primitive). No
+  other =*_cache= class exists outside =ores.qt=.
+- =ores.qt='s several =*Cache= classes (=ImageCache=, =BadgeCache=,
+  =ChangeReasonCache=, =HostDisplayNameCache=) are a different
+  pattern entirely — client-side UI caches of data the client already
+  fetched via its own request/response flow, not a service mirroring
+  another service's entity data in-process. Out of scope for this
+  facet.
+- =immer::atom= outside the primitive/party: only
+  =ores.analytics.quant='s =rate_engine=/=rate_snapshot=, which
+  predates and inspired =partitioned_cache='s design (per the story's
+  own Goal section) but caches its *own* service's data, not another
+  service's — not a migration candidate.
+- No =immer::map</=unordered_map</=map< anywhere holds another
+  component's =::domain::= type as a persistent (member-scoped)
+  cache. The handful of hits found (=organisation_generator_service.cpp=,
+  =crm_ingest_bridge.cpp=, =trade_handler.hpp=) are all local,
+  function-scoped lookup maps built fresh from one query's result
+  within a single request/generation pass — not persistent,
+  reload-on-notification mirrors, so not candidates.
+
+Conclusion: =party_cache= was the *only* instance of this pattern in
+the codebase. There is nothing else to migrate right now. Two
+services make repeated cross-service NATS round-trips for
+reference-ish data on every request without any caching at all
+(=ores.trading='s per-trade instrument/leg lookups,
+=ores.reporting='s DQ report-template list passthrough) — these are
+potential *future* candidates for adopting the facet as a performance
+improvement, but neither has a staleness bug today (they always fetch
+fresh), so filing them as tasks now would be speculative rather than
+addressing a found problem. Not filed; noted here for whoever next
+looks at cross-service call patterns.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+No migration candidates found. Party's cache was the only
+cross-service, hand-rolled entity-mirror cache in the codebase before
+this story, and it's already migrated onto the generic facet. See
+Notes for the full search trail and the two forward-looking
+(performance, not correctness) opportunities noted but not filed as
+tasks.

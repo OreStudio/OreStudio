@@ -30,11 +30,11 @@ domain terminology precisely, per the domain notes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Implemented, tested, built clean; awaiting manual QA. |
+| Now          | Nothing. |
 | Waiting on   | Manual QA (scenario loaded in client).  |
-| Next         | Close task once manual QA passes.       |
+| Next         | Nothing. |
 | Last touched | 2026-07-14                               |
 
 * Acceptance
@@ -94,3 +94,24 @@ the full affected-component test suite, not just a compile check.
 |   |                 |      |          |       |
 
 * Result
+
+Renamed =book.ledger_ccy= to =book.functional_currency= throughout:
+domain model, generated SQL/C++/Qt layers, hand-written references in
+=ores.ore=/=ores.synthetic=, and living documentation. All acceptance
+items met; unit tests and manual QA both passed.
+
+Manual QA surfaced a real environment bug unrelated to the rename's
+correctness: =ccache= served stale compiled object code for several
+=book_*.cpp.o= files in =ores.refdata.core.lib= (still emitting
+=ledger_ccy= in SQL despite clean, correctly-regenerated source),
+causing the running service to query a column the schema no longer
+had. Root-caused by comparing per-object-file =strings= output
+against source, then fixed by clearing the affected build
+directories and rebuilding with =CCACHE_DISABLE=1=. Not a code
+defect from this task, but worth knowing this class of failure mode
+exists in this environment when a rename changes generated code.
+
+Verified end to end: DB recreate → Barclays Plc provisioning →
+services rebuilt clean (ccache disabled) → manual scenario
+=scenario_verify_book_functional_currency_rename.org= PASSED (5/5
+steps, no log errors).

@@ -138,7 +138,7 @@ values
      'dq_market_data_observations_artefact_tbl', 'marketdata_market_observations_tbl', 'marketdata.v1.market-data-observations.publish-from-dq', 37,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'crm_topology_bundles', 0, 'CRM Topology Bundles', 'Named CRM (Cross-Rates Matrix) topology configs, driver pairs, and curated derived pairs (writes crm_topology_configs, crm_driver_pairs, and crm_enabled_derived_pairs)',
-     'dq_crm_topology_bundles_artefact_tbl', 'marketdata_crm_topology_configs_tbl', 'marketdata.v1.crm-topology-bundles.publish-from-dq', 38,
+     'dq_crm_topology_bundles_artefact_tbl', 'refdata_crm_topology_configs_tbl', 'refdata.v1.crm-topology-bundles.publish-from-dq', 38,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'calendar_types', 0, 'Calendar Types', 'Calendar type classification (public holiday, central bank meeting, financial centre, data release, other)',
      'dq_calendar_types_artefact_tbl', 'refdata_calendar_types_tbl', 'refdata.v1.calendar-types.publish-from-dq', 39,

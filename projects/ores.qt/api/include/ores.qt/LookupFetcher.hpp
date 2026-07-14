@@ -23,6 +23,8 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/domain/calendar_type.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
@@ -215,6 +217,28 @@ fetch_monetary_natures(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::currency_market_tier>, QString>
 fetch_currency_market_tiers(ClientManager* cm);
+
+/**
+ * @brief Fetches all calendar types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate calendar's calendar_type combo.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::calendar_type>, QString>
+fetch_calendar_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all countries from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate calendar's country_code combo.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::country>, QString>
+fetch_countries(ClientManager* cm);
 
 /**
  * @brief Fetches all book statuses from the server.

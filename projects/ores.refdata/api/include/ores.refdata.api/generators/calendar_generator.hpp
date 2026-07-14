@@ -39,6 +39,18 @@ generate_synthetic_calendar(utility::generation::generation_context& ctx);
 ORES_REFDATA_API_EXPORT std::vector<domain::calendar>
 generate_synthetic_calendars(std::size_t n, utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates the full QuantLib calendar set as real reference data.
+ *
+ * Transcribed from QuantLib's calendar headers (ql/time/calendars/):
+ * one row per concrete calendar token, including sub-market variants
+ * (e.g. UnitedStates.NYSE, UnitedStates.GovernmentBond) as distinct
+ * rows rather than a joined variant field. This is real reference
+ * data, not fictional test data — every code matches ORE's XML
+ * <Calendar> vocabulary verbatim.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::calendar>
+generate_quantlib_calendars(utility::generation::generation_context& ctx);
 }
 
 #endif

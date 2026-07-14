@@ -233,17 +233,10 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :history_message_type:        get_calendar_history_request
 :history_request_id_field:    code
 :history_response_data_field: history
-:flag_icon_column:            CountryCode
-:flag_inline_widget:          countryCodeEdit
-:flag_accessor:                getCalendarFlagIcon
 :settings_group:              CalendarListWindow
 :qt_settings_version:         1
 :window_title:                Calendars
-:icon:                        Calendar
-:has_csv_xml_io:              true
-:csv_export_include:          ores.refdata.api/csv/exporter.hpp
-:csv_export_class:            refdata::csv::exporter
-:csv_export_method:           export_calendar_config
+:icon:                        CalendarClock
 :has_version_navigation:      true
 :changed_event_class:         refdata::eventing::calendar_changed_event
 :changed_event_include:       ores.refdata.api/eventing/calendar_changed_event.hpp
@@ -256,7 +249,7 @@ drop function if exists ores_refdata_validate_calendar_fn;
 | code          | Code          | codeEdit             | line_edit     | true   | true        | Enter QuantLib calendar code     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
 | name          | Name          | nameEdit             | line_edit     |        | true        | Enter calendar name              |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
 | calendar_type | Type          | calendarTypeCombo    | dynamic_combo |        |             |                                  | refdata::domain::calendar_type     | ores.qt/LookupFetcher.hpp    | fetch_calendar_types    | calendarTypeWatcher  | code              | description          | display_order     | calendar types    | CalendarTypeCombo     | General     |
-| country_code  | Country       | countryCodeCombo     | dynamic_combo |        |             |                                  | refdata::domain::country           | ores.qt/LookupFetcher.hpp    | fetch_countries         | countryCodeWatcher   | alpha2_code       | name                 | name              | countries         | CountryCodeCombo      | General     |
+| country_code  | Country       | countryCodeCombo     | dynamic_combo |        |             |                                  | refdata::domain::country           | ores.qt/LookupFetcher.hpp    | fetch_countries         | countryCodeWatcher   | alpha2_code       | name                 | version           | countries         | CountryCodeCombo      | General     |
 
 *** Columns (Qt model)
 
@@ -268,6 +261,126 @@ drop function if exists ores_refdata_validate_calendar_fn;
 | CountryCode  | country_code  | Country   | string | 80    |                |          |               |                    |
 | Version      | version       | Version   | int    | 70    |                |          |               |                    |
 | ModifiedBy   | modified_by   | Modified By | string | auto |               |          |               |                    |
+
+** Custom generator declarations
+
+#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+/**
+ * @brief Generates the full QuantLib calendar set as real reference data.
+ *
+ * Transcribed from QuantLib's calendar headers (ql/time/calendars/):
+ * one row per concrete calendar token, including sub-market variants
+ * (e.g. UnitedStates.NYSE, UnitedStates.GovernmentBond) as distinct
+ * rows rather than a joined variant field. This is real reference
+ * data, not fictional test data — every code matches ORE's XML
+ * <Calendar> vocabulary verbatim.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::calendar>
+generate_quantlib_calendars(utility::generation::generation_context& ctx);
+#+end_src
+
+** Custom generator implementations
+
+#+begin_src cpp :name implementation :implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
+std::vector<domain::calendar>
+generate_quantlib_calendars(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tenant_id =
+        parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    const auto now = ctx.past_timepoint();
+
+    struct row { const char* code; const char* name; const char* type; const char* country; };
+    static constexpr row rows[] = {
+        // Supranational
+        {"TARGET", "TARGET (Euro area)", "public_holiday", "ZZ"},
+        {"WeekendsOnly", "Weekends Only", "public_holiday", "ZZ"},
+        // Single-market national calendars
+        {"Argentina", "Argentina", "public_holiday", "AR"},
+        {"Australia", "Australia", "public_holiday", "AU"},
+        {"Austria", "Austria", "public_holiday", "AT"},
+        {"Botswana", "Botswana", "public_holiday", "BW"},
+        {"Brazil", "Brazil", "public_holiday", "BR"},
+        {"Chile", "Chile", "public_holiday", "CL"},
+        {"CzechRepublic", "Czech Republic", "public_holiday", "CZ"},
+        {"Denmark", "Denmark", "public_holiday", "DK"},
+        {"Finland", "Finland", "public_holiday", "FI"},
+        {"France", "France", "public_holiday", "FR"},
+        {"HongKong", "Hong Kong", "public_holiday", "HK"},
+        {"Hungary", "Hungary", "public_holiday", "HU"},
+        {"Iceland", "Iceland", "public_holiday", "IS"},
+        {"India", "India (National Stock Exchange)", "financial_centre", "IN"},
+        {"Italy", "Italy", "public_holiday", "IT"},
+        {"Japan", "Japan", "public_holiday", "JP"},
+        {"Mexico", "Mexico", "public_holiday", "MX"},
+        {"NewZealand", "New Zealand", "public_holiday", "NZ"},
+        {"Norway", "Norway", "public_holiday", "NO"},
+        {"Poland", "Poland", "public_holiday", "PL"},
+        {"Romania", "Romania", "public_holiday", "RO"},
+        {"Russia", "Russia", "public_holiday", "RU"},
+        {"SaudiArabia", "Saudi Arabia", "public_holiday", "SA"},
+        {"Singapore", "Singapore", "public_holiday", "SG"},
+        {"Slovakia", "Slovakia", "public_holiday", "SK"},
+        {"SouthAfrica", "South Africa", "public_holiday", "ZA"},
+        {"Sweden", "Sweden", "public_holiday", "SE"},
+        {"Switzerland", "Switzerland", "public_holiday", "CH"},
+        {"Taiwan", "Taiwan", "public_holiday", "TW"},
+        {"Thailand", "Thailand", "public_holiday", "TH"},
+        {"Turkey", "Turkey", "public_holiday", "TR"},
+        {"Ukraine", "Ukraine", "public_holiday", "UA"},
+        // United States (Market enum)
+        {"UnitedStates.Settlement", "United States (Settlement)", "public_holiday", "US"},
+        {"UnitedStates.NYSE", "United States (NYSE)", "financial_centre", "US"},
+        {"UnitedStates.GovernmentBond", "United States (Government Bond)", "financial_centre", "US"},
+        {"UnitedStates.NERC", "United States (NERC)", "financial_centre", "US"},
+        {"UnitedStates.LiborImpact", "United States (Libor Impact)", "financial_centre", "US"},
+        {"UnitedStates.FederalReserve", "United States (Federal Reserve)", "financial_centre", "US"},
+        {"UnitedStates.SOFR", "United States (SOFR)", "financial_centre", "US"},
+        // United Kingdom (Market enum)
+        {"UnitedKingdom.Settlement", "United Kingdom (Settlement)", "public_holiday", "GB"},
+        {"UnitedKingdom.Exchange", "United Kingdom (Exchange)", "financial_centre", "GB"},
+        {"UnitedKingdom.Metals", "United Kingdom (Metals)", "financial_centre", "GB"},
+        // China (Market enum)
+        {"China.SSE", "China (Shanghai Stock Exchange)", "financial_centre", "CN"},
+        {"China.IB", "China (Interbank)", "financial_centre", "CN"},
+        // Germany (Market enum)
+        {"Germany.Settlement", "Germany (Settlement)", "public_holiday", "DE"},
+        {"Germany.FrankfurtStockExchange", "Germany (Frankfurt Stock Exchange)", "financial_centre", "DE"},
+        {"Germany.Xetra", "Germany (Xetra)", "financial_centre", "DE"},
+        {"Germany.Eurex", "Germany (Eurex)", "financial_centre", "DE"},
+        {"Germany.Euwax", "Germany (Euwax)", "financial_centre", "DE"},
+        // Canada (Market enum)
+        {"Canada.Settlement", "Canada (Settlement)", "public_holiday", "CA"},
+        {"Canada.TSX", "Canada (Toronto Stock Exchange)", "financial_centre", "CA"},
+        // South Korea (Market enum)
+        {"SouthKorea.Settlement", "South Korea (Settlement)", "public_holiday", "KR"},
+        {"SouthKorea.KRX", "South Korea (Korea Exchange)", "financial_centre", "KR"},
+        // Indonesia (Market enum)
+        {"Indonesia.BEJ", "Indonesia (Jakarta SE, legacy BEJ)", "financial_centre", "ID"},
+        {"Indonesia.JSX", "Indonesia (Jakarta SE, legacy JSX)", "financial_centre", "ID"},
+        {"Indonesia.IDX", "Indonesia (Indonesia Stock Exchange)", "financial_centre", "ID"},
+        // Israel (Market enum)
+        {"Israel.Settlement", "Israel (Settlement)", "public_holiday", "IL"},
+        {"Israel.TASE", "Israel (Tel-Aviv Stock Exchange)", "financial_centre", "IL"},
+    };
+
+    std::vector<domain::calendar> result;
+    result.reserve(std::size(rows));
+    for (const auto& r : rows) {
+        result.push_back({.tenant_id = tenant_id,
+                          .code = r.code,
+                          .name = r.name,
+                          .calendar_type = r.type,
+                          .country_code = r.country,
+                          .modified_by = modified_by,
+                          .change_reason_code = "system.initial_load",
+                          .change_commentary = "QuantLib calendar reference data",
+                          .recorded_at = now});
+    }
+    return result;
+}
+#+end_src
 
 ** Custom repository methods
 

@@ -540,7 +540,7 @@ domain::country generate_country_sentinel(utility::generation::generation_contex
                            .name = "Supranational / Not Country-Specific",
                            .official_name = "Supranational / Not Country-Specific",
                            .modified_by = modified_by,
-                           .change_reason_code = "system.reference",
+                           .change_reason_code = "system.initial_load",
                            .change_commentary = "ISO 3166-1 user-assigned sentinel for "
                                                 "supranational calendars",
                            .recorded_at = now};

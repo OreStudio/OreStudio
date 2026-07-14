@@ -314,6 +314,30 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            this);
     connectControllerSignals(ledgerFeedTypeController_.get());
 
+    // BookController cross-domain relays (within refdata): toolbar buttons
+    // on BookMdiWindow open its lookup children's list windows, mirroring
+    // CurrencyController's RoundingType/MarketTier relay pattern above.
+    connect(bookController_.get(), &BookController::showBookStatusesRequested, this, [this]() {
+        if (bookStatusController_)
+            bookStatusController_->showListWindow();
+    });
+
+    connect(
+        bookController_.get(), &BookController::showRegulatoryBookTypesRequested, this, [this]() {
+            if (regulatoryBookTypeController_)
+                regulatoryBookTypeController_->showListWindow();
+        });
+
+    connect(bookController_.get(), &BookController::showBookPurposeTypesRequested, this, [this]() {
+        if (bookPurposeTypeController_)
+            bookPurposeTypeController_->showListWindow();
+    });
+
+    connect(bookController_.get(), &BookController::showLedgerFeedTypesRequested, this, [this]() {
+        if (ledgerFeedTypeController_)
+            ledgerFeedTypeController_->showListWindow();
+    });
+
     crmTopologyConfigController_ =
         std::make_unique<CrmTopologyConfigController>(ctx_.main_window,
                                                       ctx_.mdi_area,

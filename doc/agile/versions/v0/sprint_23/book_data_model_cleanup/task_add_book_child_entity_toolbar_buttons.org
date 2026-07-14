@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Expose Book's lookup children (=book_status=, =regulatory_book_type=,
+=book_purpose_type=, =ledger_feed_type=) as toolbar buttons on
+=BookMdiWindow= that open their respective list windows, mirroring
+=CurrencyMdiWindow='s RoundingType/MarketTier toolbar pattern.
 
 * Status
 
@@ -28,20 +31,47 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Now          | Implemented, built clean; awaiting manual QA. |
+| Waiting on   | Manual QA (scenario loaded in client).  |
+| Next         | Close task once manual QA passes.       |
+| Last touched | 2026-07-14                               |
 
 * Acceptance
 
--
+- =BookMdiWindow= toolbar shows 4 new buttons after a separator
+  following History: Statuses, Regulatory Types, Purpose Types,
+  Ledger Feed Types.
+- Each button opens its respective list window (=BookStatusMdiWindow=,
+  =RegulatoryBookTypeMdiWindow=, =BookPurposeTypeMdiWindow=,
+  =LedgerFeedTypeMdiWindow=), reusing the existing controllers (no
+  duplicate windows/controllers created).
+- Pattern matches =CurrencyMdiWindow=/=CurrencyController=/
+  =RefdataPlugin='s existing RoundingType/MarketTier/MonetaryNature
+  relay wiring exactly (signal on MdiWindow -> relay signal on
+  Controller -> connect in RefdataPlugin to the target controller's
+  =showListWindow()=).
+- Builds clean (=ores.qt.refdata.lib=, =ores.qt.exe=).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This is hand-maintained boilerplate, not codegen-driven -- confirmed
+no facet/template exists for cross-entity toolbar wiring (same
+finding as the earlier =rates_centre_code= flagged-combo task).
+=CurrencyMdiWindow.hpp='s "Extra signal declarations seam" comment
+references a =<<paste:UUID>>= mechanism that isn't actually populated
+here either; the signals are hand-added directly above the seam
+comment, same as Currency's own =showRoundingTypesRequested= etc.
+Followed that exact convention:
+
+1. =BookMdiWindow.hpp=/=.cpp= — 4 new signals + toolbar actions
+   (separator, then one =Icon::Tag= button per child, matching that
+   all 4 children's own list windows also use =Icon::Tag= for their
+   own window icon, same as RoundingType).
+2. =BookController.hpp=/=.cpp= — 4 matching relay signals, connected
+   to the =BookMdiWindow= signals in the constructor.
+3. =RefdataPlugin.cpp= — 4 =connect()= calls after all 5 controllers
+   (=bookController_= plus the 4 targets) are constructed, each
+   calling the target controller's =showListWindow()=.
 
 * Notes
 

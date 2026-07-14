@@ -81,6 +81,22 @@ void BookController::showListWindow() {
     connect(listWindow_, &BookMdiWindow::showBookDetails, this, &BookController::onShowDetails);
     connect(listWindow_, &BookMdiWindow::addNewRequested, this, &BookController::onAddNewRequested);
     connect(listWindow_, &BookMdiWindow::showBookHistory, this, &BookController::onShowHistory);
+    connect(listWindow_,
+            &BookMdiWindow::showBookStatusesRequested,
+            this,
+            &BookController::showBookStatusesRequested);
+    connect(listWindow_,
+            &BookMdiWindow::showRegulatoryBookTypesRequested,
+            this,
+            &BookController::showRegulatoryBookTypesRequested);
+    connect(listWindow_,
+            &BookMdiWindow::showBookPurposeTypesRequested,
+            this,
+            &BookController::showBookPurposeTypesRequested);
+    connect(listWindow_,
+            &BookMdiWindow::showLedgerFeedTypesRequested,
+            this,
+            &BookController::showLedgerFeedTypesRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

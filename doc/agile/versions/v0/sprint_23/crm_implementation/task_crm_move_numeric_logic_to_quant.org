@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB
+:END:
+#+title: Task: Move CRM matrix's numeric logic (inversion, deltas) out of the Qt client
+#+description: The cross-rates matrix UI panel currently computes inverted rates and %-change deltas client-side; this logic belongs in ores.analytics.quant (self-contained, unit-tested), exposed via NATS protocol additions (current+previous price with delta, an inverted-quote flag), with FX spot convention fields taken as caller-supplied input, not a class dependency.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The CRM cross-rates matrix UI panel (see
+[[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the panel task]]) currently
+computes two things client-side that don't belong there: inverted
+rates (1/rate, shown when no direct quote exists for a cell) and
+%-change deltas vs. the previous reload. Both are pure numerical
+domain logic, not UI concerns, and both currently live in
+=CrmCrossRatesMatrixMdiWindow.cpp= with no unit test coverage of their
+own.
+
+Move this logic into =ores.analytics.quant= (the CRM's own engine
+library, where =rate_engine=/=crm_topology= already live), self-contained
+and thoroughly tested there, then expose it through
+=ores.marketdata='s NATS protocol so the Qt client (and any other
+future consumer -- HTTP, shell, Wt) gets the computed values directly
+rather than re-deriving them.
+
+* Plan
+
+** Scope this task needs to resolve, not just implement
+
+- *Where does each piece of logic belong?* Figure out the actual split
+  between =ores.analytics.quant= (pure numerical/domain logic:
+  inversion, delta computation, convention-aware formatting) and
+  =ores.marketdata= (NATS glue: request/response shape, what
+  =rate_engine= needs to track to serve "current + previous" in one
+  call).
+- *Current + previous with delta.* =rate_engine= (or a thin wrapper)
+  needs to track each series' previous value so =crm_rate_item= (or a
+  new response shape) can carry both the current price and a computed
+  delta/% change -- not force every caller to diff two separate polls
+  itself, the way the Qt client does today.
+- *Inverted flag.* The CRM should support an "inverted" request flag
+  (per-pair or per-request) so it returns 1/rate for a pair with no
+  direct quote automatically -- not have every caller special-case
+  "look up the reverse key and invert" client-side, the way the Qt
+  client does today.
+- *FX spot convention as input, not a dependency.* Whatever
+  convention-aware behaviour is needed (canonical base/quote ordering,
+  display precision) should take the relevant FX spot convention
+  fields as caller-supplied parameters into the computation -- CRM/
+  =ores.analytics.quant= must *not* take an actual dependency on
+  whatever component eventually owns a convention entity/type (see
+  [[id:76362D7D-44E6-4990-8058-2F9C41BF08DD][the FX market-convention capture]]
+  for that separate, not-yet-built piece) -- keeping the numeric core
+  decoupled from refdata.
+- *Self-contained and thoroughly tested.* All of the above lands in
+  =ores.analytics.quant= (or wherever it ends up) with real Catch2
+  coverage of the numeric logic itself (inversion, delta computation,
+  edge cases: zero rate, first observation with no previous, etc.),
+  not just exercised incidentally through the Qt client.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- Rate inversion (1/rate for a pair with no direct quote) is computed
+  server-side (=ores.analytics.quant=), not by the Qt client scanning
+  for the reverse key -- =CrmCrossRatesMatrixMdiWindow= no longer
+  contains that logic itself, only display wiring.
+- %-change delta vs. the previous observation is computed server-side
+  and delivered in the response -- the client no longer maintains its
+  own =previousRates_= map and diffs itself.
+- Both behaviours are covered by real Catch2 tests in
+  =ores.analytics.quant= (or wherever the logic lands), independent of
+  the Qt client.
+- No new dependency from =ores.analytics.quant=/CRM onto a refdata FX
+  convention type -- convention-relevant fields (precision,
+  base/quote ordering, etc.) are plain caller-supplied parameters.
+- The Qt matrix panel's "Show Inverted" toggle keeps working, now
+  backed by the server-computed value instead of a client-side lookup.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

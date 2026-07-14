@@ -32,6 +32,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
+#include "ores.refdata.api/eventing/crm_enabled_derived_pair_changed_event.hpp"
 #include "ores.refdata.api/eventing/crm_topology_config_changed_event.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -120,6 +121,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.refdata.crm_topology_config", "ores_refdata_crm_topology_configs");
     ev::service::registrar::register_mapping<rdev::crm_driver_pair_changed_event>(
         event_source, "ores.refdata.crm_driver_pair", "ores_refdata_crm_driver_pairs");
+    ev::service::registrar::register_mapping<rdev::crm_enabled_derived_pair_changed_event>(
+        event_source,
+        "ores.refdata.crm_enabled_derived_pair",
+        "ores_refdata_crm_enabled_derived_pairs");
     auto crm_topology_sub = event_bus.subscribe<rdev::crm_topology_config_changed_event>(
         [crm_bridge](const rdev::crm_topology_config_changed_event&) {
             BOOST_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
@@ -130,6 +135,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             BOOST_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
+    auto crm_enabled_derived_pair_sub =
+        event_bus.subscribe<rdev::crm_enabled_derived_pair_changed_event>(
+            [crm_bridge](const rdev::crm_enabled_derived_pair_changed_event&) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "CRM enabled derived pair changed — refreshing CRM engines.";
+                crm_bridge->refresh();
+            });
     event_source.start();
     crm_bridge->refresh();
 

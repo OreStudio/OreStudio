@@ -158,7 +158,7 @@ void CrmEnabledDerivedPairDetailDialog::setPair(
 
 void CrmEnabledDerivedPairDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->configCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);

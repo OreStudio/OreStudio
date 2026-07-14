@@ -22,10 +22,13 @@
  * Synthetic FX Spot Config Seed Population Script — Realistic
  *
  * Registers the synthetic.fx_spot_configs.realistic dataset: all 8 G10
- * FX driver pairs plus 3 EM/exotic driver pairs (USD/ZAR, USD/MXN,
- * USD/INR -- added for the Cross-Rates Matrix "exotics" tier), seeded
- * from the same 2016-02-05 Fed H.10 vintage as Basic, but calibrated to
- * look like real FX behaviour instead of an exaggerated demo.
+ * FX driver pairs, 3 EM/exotic driver pairs (USD/ZAR, USD/MXN,
+ * USD/INR -- added for the Cross-Rates Matrix "exotics" tier), and 2
+ * more Nordic driver pairs (USD/NOK, USD/DKK -- added for the
+ * Cross-Rates Matrix "scandies" tier, alongside the majors' own
+ * EUR/USD and USD/SEK), seeded from the same 2016-02-05 Fed H.10
+ * vintage as Basic, but calibrated to look like real FX behaviour
+ * instead of an exaggerated demo.
  *
  * Process choice — geometric (GBM), not Ornstein-Uhlenbeck: every pair
  * here is freely-floating (or, for INR, RBI-managed but not pegged/
@@ -60,7 +63,10 @@
  *   AUD/USD 12.0%, USD/CAD 9.5%, NZD/USD 12.5% (G10 majors);
  *   USD/ZAR 20% (post-"Nenegate" 2015/16 volatility), USD/MXN 17%
  *   (2016 US-election risk premium), USD/INR 7.5% (RBI-managed float,
- *   structurally calmer than the other two EM currencies here) (EM).
+ *   structurally calmer than the other two EM currencies here) (EM);
+ *   USD/NOK 11.0% (oil-linked, somewhat more volatile than the other
+ *   Nordics), USD/DKK 9.5% (DKK's tight ERM II peg to EUR means its USD
+ *   vol tracks EUR/USD's own) (Scandies).
  *
  * This script is idempotent.
  */
@@ -150,7 +156,8 @@ begin
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
         ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),
-        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR')
+        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR'),
+        ('USD', 'NOK'), ('USD', 'DKK')
     ) as p(base, quote);
 
     -- Primary component: weight 0.95, calibrated per-pair stdev
@@ -173,7 +180,9 @@ begin
         ('NZD', 'USD', 12.5, 0.0000315),
         ('USD', 'ZAR', 20.0, 0.0000504),
         ('USD', 'MXN', 17.0, 0.0000428),
-        ('USD', 'INR', 7.5,  0.0000189)
+        ('USD', 'INR', 7.5,  0.0000189),
+        ('USD', 'NOK', 11.0, 0.0000277),
+        ('USD', 'DKK', 9.5,  0.0000239)
     ) as p(base, quote, annualised_vol_pct, stdev);
 
     -- Tail component: weight 0.05, 4x the primary's stdev, adding the fat
@@ -196,6 +205,8 @@ begin
         ('NZD', 'USD', 0.0001260),
         ('USD', 'ZAR', 0.0002015),
         ('USD', 'MXN', 0.0001712),
-        ('USD', 'INR', 0.0000755)
+        ('USD', 'INR', 0.0000755),
+        ('USD', 'NOK', 0.0001108),
+        ('USD', 'DKK', 0.0000956)
     ) as p(base, quote, stdev);
 end $$;

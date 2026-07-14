@@ -1,7 +1,7 @@
 {
-  "retrieved_at": "2026-07-13T12:31:47Z",
+  "retrieved_at": "2026-07-14T22:39:09Z",
   "source": "https://www.federalreserve.gov/releases/h10/hist/",
-  "command": "./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in --dates 2016-02-05 --format table --archive-zip external/fed_h10/pages.zip --force",
+  "command": "./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in,no,dn --dates 2016-02-05 --format table --archive-zip external/fed_h10/pages.zip --force",
   "archive": "pages.zip",
   "pages": [
     {
@@ -9,88 +9,104 @@
       "pair": "AUD/USD",
       "file": "dat00_al.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm",
-      "sha256": "84ab5f986c841b66ca1fe6851c88197df031f9b6f37bcc2692b8accd7c5369ef",
-      "size_bytes": 1119855
+      "sha256": "a4dc0f419b3bcd9fb1e5c0b467547c407375dcf3e4544e52b8b652db10c2f426",
+      "size_bytes": 1120610
     },
     {
       "code": "ca",
       "pair": "USD/CAD",
       "file": "dat00_ca.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_ca.htm",
-      "sha256": "7bfdbb1459b16c9f6ef2778a2a80fe47fe2298b3c991962eda6d7207821f5ed3",
-      "size_bytes": 1119855
+      "sha256": "bb0833df1fd3509e59004eeac1f3c3f613548a9901aaade4f27856407e020a2e",
+      "size_bytes": 1120610
+    },
+    {
+      "code": "dn",
+      "pair": "USD/DKK",
+      "file": "dat00_dn.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm",
+      "sha256": "4eeb2ad43c4e88a9b25478eae487d87e937f53e6b891d6cdae02e03f822e414a",
+      "size_bytes": 1120610
     },
     {
       "code": "eu",
       "pair": "EUR/USD",
       "file": "dat00_eu.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm",
-      "sha256": "0a20e4f82737db62220361bdc81ca7b17d1e3bbcfb365a5bdd0de532704558fb",
-      "size_bytes": 1119855
+      "sha256": "0a181d99a9faee3a8068078f89ecbc37c98ef1ad5df648d5657677c35877e21f",
+      "size_bytes": 1120610
     },
     {
       "code": "in",
       "pair": "USD/INR",
       "file": "dat00_in.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_in.htm",
-      "sha256": "278528650a4421fcf105bc73da41180ae4390815fa785664cbb638f57399acd9",
-      "size_bytes": 1119855
+      "sha256": "402ad6c1e10d76c49c91b127d5f2428471f013d3f2d1c4868045f5b8e0107cf6",
+      "size_bytes": 1120610
     },
     {
       "code": "ja",
       "pair": "USD/JPY",
       "file": "dat00_ja.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm",
-      "sha256": "e80d46a346ed94189fbde8481a51d1def87436536d87e76051be0b3b16f6325a",
-      "size_bytes": 1119855
+      "sha256": "654c625cccce8c1201dea5b0fa9cb7043cc57cd2a6e15a9467bca573df7b4e11",
+      "size_bytes": 1120610
     },
     {
       "code": "mx",
       "pair": "USD/MXN",
       "file": "dat00_mx.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm",
-      "sha256": "18b49d2d11e2e793db12d06a05b014376c1979371fc6d2861d77d5d948c59982",
-      "size_bytes": 1119855
+      "sha256": "81a27602dd064a363b98ed689e8303a1c9a41011e059eecb2bb85a1fba36835c",
+      "size_bytes": 1120610
+    },
+    {
+      "code": "no",
+      "pair": "USD/NOK",
+      "file": "dat00_no.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm",
+      "sha256": "4f2ae46cb4328d0338c69a89af172def9d83ef448e364e6e923a39eb30b0c929",
+      "size_bytes": 1120610
     },
     {
       "code": "nz",
       "pair": "NZD/USD",
       "file": "dat00_nz.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_nz.htm",
-      "sha256": "e9e6d3190c938f736e3c236cea4dfe609e70f53b015cd3f62ee4654be7152730",
-      "size_bytes": 1119855
+      "sha256": "044b557da83a9293dbb95d814603a84df4bd98d9335a322915229107a68a22cb",
+      "size_bytes": 1120610
     },
     {
       "code": "sd",
       "pair": "USD/SEK",
       "file": "dat00_sd.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm",
-      "sha256": "9d5aa8590241d463100d361bfd9c0cc13b57f0afb45238f6ffd6597b85098d9c",
-      "size_bytes": 1119855
+      "sha256": "1b931782e774a6e82a419ef9f202d01e1045d79b773cb9761e1422c06be892f5",
+      "size_bytes": 1120610
     },
     {
       "code": "sf",
       "pair": "USD/ZAR",
       "file": "dat00_sf.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm",
-      "sha256": "61ea095d63b948534efacb5cef8e9071cb54aa09f50d2dbc0f7ecfbb3f247692",
-      "size_bytes": 1119855
+      "sha256": "c2e916bc3e6f99b3bb494938b22fdc329d9811eeae031f3f9f90bb61f274375c",
+      "size_bytes": 1120610
     },
     {
       "code": "sz",
       "pair": "USD/CHF",
       "file": "dat00_sz.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sz.htm",
-      "sha256": "d8471f013631a186ad3f1e7bdc9118b340557896c8f83f993afc6cfdd1fecc3d",
-      "size_bytes": 1119855
+      "sha256": "18dab1e12e12c7d9f1435aafe13c5a20e8ed4bab97cb8ca5a4271d297fa47383",
+      "size_bytes": 1120610
     },
     {
       "code": "uk",
       "pair": "GBP/USD",
       "file": "dat00_uk.htm",
       "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_uk.htm",
-      "sha256": "b5d4d0ee99fdb8e1547e9beaa635740b4398dad327279264a9601f446da9f309",
-      "size_bytes": 1119855
+      "sha256": "5969c1d9b2fed630918e785f46b2e2d7e71bdaefeeba639176792100efcf5966",
+      "size_bytes": 1120610
     }
   ]
 }

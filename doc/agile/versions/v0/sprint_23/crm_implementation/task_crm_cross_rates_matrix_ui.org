@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:ui:crm_implementation:
 #+owner: marco
 #+branch: feature/crm-cross-rates-matrix-ui
-#+pr:
+#+pr: 1570
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -33,11 +33,11 @@ pixel-accurate spec, just the shape: a matrix, not a list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Unblocked: [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][the DQ publishing task]] landed, so a real, live-ticking majors + exotics CRM is now available after a synthetic_realistic party provisioning Apply. Widget/controller/plugin wiring from the earlier attempt still builds clean. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Resume: add a named-CRM selector to the panel (multi-CRM support changed the =marketdata.v1.crm.rates= contract to take/tag =crm_name=) and complete manual QA against real data. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -50,12 +50,14 @@ pixel-accurate spec, just the shape: a matrix, not a list.
   the response, blank/dash on the diagonal and for pairs the CRM doesn't
   currently cover -- see the mockup's own dashes on the diagonal and its
   "8 Currencies" footer count as the shape to match, not literal values.
-- *Manual reload only* -- a visible reload button that calls
-  =marketdata.v1.crm.rates= on click; *no* auto-refresh timer, no NATS
-  subscription/push. This is a deliberate, direct consequence of the
-  story's own architecture decision (never broadcast the derived set) --
-  a UI that polled or subscribed would be exactly the pattern the whole
-  design avoids.
+- A visible Reload button that calls =marketdata.v1.crm.rates= on
+  click, *plus* a footer "Update Interval" combo (No auto-refresh /
+  5s / 10s / 30s / 60s) driving a client-side polling timer -- *on by
+  default at 5s*, matching the reference mockup's own default
+  behaviour, not an opt-in extra. See the story's =* Decisions= for
+  why this doesn't reopen the "never broadcast the derived set"
+  decision (that's about server-side push, not client-side polling).
+  *No* NATS subscription/push either way.
 - Each cell also reflects =rate_status= (fresh/stale/unavailable) from
   the response -- at minimum a visual distinction (e.g. dimmed/greyed)
   for stale or unavailable cells, so the operator can tell a rate is
@@ -70,6 +72,25 @@ pixel-accurate spec, just the shape: a matrix, not a list.
   the grid dimension is however many currencies are actually configured
   for that party (the mockup's G10 filter is a nice-to-have, not
   required for this task).
+- Cells are a *fixed size*, not stretched to fill the widget -- the grid
+  should not visibly grow/shrink per-cell as the currency count changes
+  between reloads (e.g. switching the CRM selector from "majors" to
+  "exotics"), matching the mockup's uniform cell sizing.
+- Each cell shows the pair code (e.g. "EUR/USD") above the rate, not
+  just the bare number, matching the mockup's two-line cells.
+- Row/column headers show the currency's flag icon next to its code
+  (reuse =currency_flag_icon()= from =ores.qt.api/FlagIconHelper.hpp=,
+  the same helper already used by =ClientCrmDriverPairModel= etc.),
+  matching the mockup's flagged headers.
+- Fixed decimal precision is acceptable for this task (5 d.p.) --
+  convention-aware precision/base-quote ordering is a separate,
+  cross-cutting gap (see [[id:76362D7D-44E6-4990-8058-2F9C41BF08DD][the FX market-convention capture]]), not blocking
+  here.
+- Only the %-change indicator per cell is coloured green/up-arrow or
+  red/down-arrow (not the rate itself), computed against that same
+  cell's value on the *previous* reload of this session (client-side
+  comparison, no server-side tick history needed) -- first load and
+  unchanged values get neutral "—" styling, matching the mockup.
 
 * Plan
 
@@ -108,6 +129,56 @@ a realistic CRM available after a normal synthetic-data publish. Raised
 [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][the DQ publishing task]] to close that gap; this task resumes once
 they land.
 
+* Open Issues
+
+Captured verbatim from manual QA round 2 (scenario step "Open Market
+Data > Cross-&Rates Matrix", 2026-07-14) before any code changes, so
+nothing raised gets silently dropped this round:
+
+| # | Issue | Status |
+|---+-------+--------|
+| 1 | Pair code and rate run together in the cell (wrapped oddly) -- can't actually read the rate value. | OPEN |
+| 2 | Whole cell/rate text is coloured red/green; mockup only colours a %-change indicator, not the rate itself. No %-change is shown at all currently. | OPEN |
+| 3 | Pair code truncates with "..." in narrow cells -- font should shrink (or cell widen) so the full code always fits. | OPEN |
+| 4 | No auto-update/live timer like the Gemini mockup's "Update Interval: 5s". RESOLVED: auto-refresh is wanted for this and other trading-related UIs -- see the story's new =* Decisions= entry. | DONE |
+| 4a | Round-2 refinement: toolbar checkable toggle + modal interval dialog replaced with a footer "Update Interval" combo (No auto-refresh / 5s / 10s / 30s / 60s), on by default at 5s -- auto-refresh is the new default experience, not an opt-in. | DONE |
+| 9 | %-change indicator wasn't visibly coloured -- root cause: the app-wide QSS stylesheet overrides =QPalette=-based colours, so per-label tinting must go through =setStyleSheet("color: ...")= (matching the established =FxSpotGridWindow= pattern), not =QPalette::WindowText=. Also added ▲/▼ arrows per user request. | DONE |
+| 5 | Row-header column (flag + code) is too narrow/squished; column headers (top row) are fine. | DONE |
+| 6 | Overview sparkline looks static / doesn't resemble the Gemini mockup's live chart. RESOLVED (scope): a proper server-side rate-history endpoint is wanted, reusable across multiple chart panels -- captured separately as [[id:F4BD60AB-ED53-4BA3-9BB0-7B354EC6AC2E][a backlog item]] rather than built ad hoc here. This task keeps the client-side-only sparkline as an interim, clearly-scoped stand-in until that endpoint exists. | DEFERRED (captured) |
+| 7 | "CRM" label appears redundantly in both the window title and again next to the combo box in the footer. RESOLVED (round 4 redesign removed the in-window Config combo entirely, see #15-18); window title is now "Cross-Rates Matrix — <Name>" with no "CRM". | DONE |
+| 8 | ZAR row is all dashes even though a USD/ZAR driver feed is running and ticking; only the USD row shows a USD/ZAR cell. INVESTIGATED: expected -- the exotics CRM is a strict USD-pivot star (every exotic pair is USD-base), so ZAR is never a base currency and its row has no data by design; not a bug. | RESOLVED (expected) |
+
+Round 3 (2026-07-14, same session):
+
+| 10 | Window doesn't save/restore its geometry across close/reopen. | DONE |
+| 11 | Need to open more than one CRM matrix window at once (e.g. majors and exotics side by side) -- currently the controller reuses a single window/subwindow (singleton pattern), so a second =showMatrix()= just refocuses the existing one instead of opening another. | DONE (redesigned in round 4, see #16) |
+| 12 | Remove "CRM" from the window title bar (title currently "CRM Cross-Rates Matrix"). | DONE |
+| 13 | Add a button to hide rows/columns for currencies with *no* data at all (not configured in any pair) -- distinct from the existing per-cell dash (which already covers "this specific pair has no data" while the currency itself is still shown as a row/column because it appears in at least one other pair). | DONE (round 4 changed toolbar icon to a proper footer toggle button, see #15) |
+| 14 | Stale pairs need a clearer visual indicator -- proposed: colour the pair-code line (not just the rate) amber/yellow, following the established =FxSpotGridWindow= convention of pairing colour with a distinct icon/glyph (never colour alone, for accessibility) -- reuse that window's =k_stale_color= treatment and status-icon pattern rather than inventing a new one. | DONE |
+
+Round 4 (2026-07-14, same session) -- UX redesign after discovering the round-3 "Config combo inside the window" design didn't match how users actually want to open/manage named CRMs:
+
+| 15 | "Hide Empty" used a toolbar trashcan icon -- wrong UX language for a toggle. Replaced with a real checkable QPushButton (segmented-toggle style, matching FxSpotRateEditor's Simple/Advanced pattern) in the footer. | DONE |
+| 16 | Redesigned CRM selection: removed the in-window "Config:" combo entirely. =showMatrix()= now shows a picker (All + each named =crm_topology_config=) up front; the chosen name is fixed for that window's lifetime. Picking a name that's already open refocuses that window instead of opening a duplicate (per-name reuse, not global-singleton and not always-new). | DONE |
+| 17 | Geometry and "Hide Empty" state are now saved *per named CRM* (=CrmCrossRatesMatrixWindow_<Name>= settings group), not shared across all matrix windows -- e.g. the "majors" window can be sized differently from "exotics". | DONE |
+| 18 | Investigated "can't specify which currencies are in a named CRM" -- this already works today via the existing Cross Rates &Matrix > &Topology (create config) + &Driver Pairs (add its pairs, picking the config from the combo fixed earlier this session) flow; not a gap, just not discoverable. Filed and then abandoned a separate "FX menu with shortcuts" task ([[id:4F67DD95-2002-40AC-BBF2-5D3F6A5419EC][superseded]]) once the picker-on-open design (#16) made it redundant. | RESOLVED (existing flow, no new work needed) |
+
+Round 5 (2026-07-14, same session) -- manual QA adding a new exotic pair (USD/AOA) surfaced three real, separate bugs outside this task's own UI code:
+
+| 19 | Adding USD/AOA via Cross Rates &Matrix > &Enabled Derived Pairs never showed up in the matrix (even after reload/reopen). Root cause: =crm_ingest_bridge= (=ores.marketdata.service=) only subscribed to =crm_topology_config_changed_event= and =crm_driver_pair_changed_event=, never =crm_enabled_derived_pair_changed_event= -- so a derived-pair-only change never triggered a rate-engine refresh. Fixed by adding the missing subscription in =application.cpp=. | DONE |
+| 20 | Separately: an "enabled derived pair" only curates access to a pair *already reachable* via the driver-pair spanning tree (e.g. EUR/JPY via EUR/USD + USD/JPY) -- it doesn't create new reachability. AOA had zero =crm_driver_pair= rows, so even with #19 fixed it could never resolve. No validation catches this at save time. User re-added AOA correctly as a &Driver Pair instead, which resolved it (surfaced as "unavailable" until a market feed exists for it, which is correct/expected). | INVESTIGATED (no fix needed this round; the missing "is this pair even reachable" validation is a candidate future capture, not filed yet) |
+| 21 | =CrmDriverPairDetailDialog=/=CrmEnabledDerivedPairDetailDialog=/=CrmTopologyConfigDetailDialog='s =idEdit= field was editable in create mode (=setReadOnly(!createMode)= -- backwards; should never be user-editable since the id auto-generates). Same bug pre-existed in every other UUID-primary-keyed entity's dialog (confirmed in =BookDetailDialog=, long-established) -- not new to CRM. Fixed at the shared codegen template level (=ores.cpp.qt.detail_dialog_impl.org=, new =is_auto_generated_key= per-field flag), regenerated all 3 CRM entities. | DONE |
+| 22 | While investigating #21, discovered client-side UUID generation itself (=boost::uuids::random_generator()= in =setCreateMode()=) is architecturally wrong -- primary keys should be server-assigned, never client-chosen. Out of scope to fix broadly in this task (touches every UUID-keyed entity's save protocol) -- filed as [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][a new story]], "Server-side UUID generation for all entities", in Sprint 23. | CAPTURED (separate story) |
+| 23 | Market Simulator "Start" on a feed hung with no visible error for ~30s then silently failed. Root cause: =feed_controller::vintage_data_available= fetched up to 10,000 observations in one NATS request/reply to scan for a single vintage-date match; long-lived series (USD/ZAR: 4,582 observations; the new USD/AOA driver feed: 12,431 within minutes) produced a reply exceeding NATS's max payload, which fails silently server-side (handler completes, reply never sent) -- the caller just sees a timeout, not a clear error. Fixed by adding a paginated =list_observations_page()= client method and scanning in bounded 200-row pages (observations are already newest-first, so typical vintage lookups converge in 1-2 pages). | DONE |
+
+Round 6 (2026-07-14, same session):
+
+| 24 | Added a third named CRM ("scandies": EUR + Nordic currencies SEK/NOK/DKK) to the DQ seed scripts, with real Fed H.10 data for USD/NOK and USD/DKK (fetched via =tools/fetch_fed_h10_rates.py=, re-archived to =external/fed_h10/=) and matching synthetic feed configs, populated majors' full C(8,2)=28 cross set (already done, confirmed live). | DONE |
+| 25 | Matrix looked sparse/asymmetric for some rows (e.g. CAD, EUR) -- diagnosed as the same directional-storage behaviour as #8 (each derived pair stored once, not both directions), not a bug. Added a "Show Inverted" toggle (footer button, off by default) that computes 1/rate for a cell with no direct quote, pastel-tinted so it's visually distinct from a real quoted rate. | DONE |
+| 26 | The CRM-name picker dialog used QInputDialog's default platform OK/Cancel icons, inconsistent with the app's own convention (Icon::Checkmark/Icon::Dismiss, per PartyPickerDialog). Replaced with a small custom QDialog matching that convention. | DONE |
+| 27 | Filed a follow-up task ([[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's numeric logic out of the Qt client]]) to relocate the inversion/%-change-delta computation added in #14/#25 into =ores.analytics.quant= (self-contained, tested), exposed via NATS protocol additions, rather than leaving it client-side long-term. | CAPTURED (separate task) |
+| 28 | Filed a follow-up task ([[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]]) for a CSV/ORE export button on the matrix panel. | CAPTURED (separate task) |
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -117,18 +188,59 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:1F2B5815-DF46-446A-A204-3E36A37C2747][Verify CRM cross-rates matrix UI panel]] | PENDING | |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1570][#1570]] | [qt,marketdata,sql] Redesign CRM cross-rates matrix UI with real manual QA fixes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =onCellSelected= indexed both row and column into =displayedCurrencies_=, which was only populated from row currencies -- wrong/out-of-bounds column lookup whenever Base Currency filter or Hide Empty made rows and columns diverge (e.g. exotics/scandies USD-pivot-star tiers). | Accepted | Split into =displayedRowCurrencies_=/=displayedColumnCurrencies_=, populated from =rowCurrencies=/=allCurrencies= respectively; =onCellSelected= indexes each into its own list. |
+| 2 | =CrmCrossRatesMatrixController= never emitted =detachableWindowDestroyed=, so every closed CRM matrix window left a stale entry in =MainWindow::allDetachableWindows_= for the rest of the session (=EntityController=-derived controllers get this for free; this one manages its own windows directly). | Accepted | Added the =emit= in the =QObject::destroyed= handler, alongside the existing =matrixSubWindows_= cleanup. |
+| 3 | PR description overclaimed "fixed on every UUID-primary-keyed entity's Add dialog" -- =BookDetailDialog= (not regenerated in this PR) still has the bug. | Declined (as a code change) | Confirmed and already tracked separately: [[file:../../../product_backlog/inbox/book_id_field_not_readonly.org][book_id_field_not_readonly.org]], filed 2026-07-12 before this PR. Not a gap this PR introduced or missed silently -- out of scope for this PR's diff (no CRM entity involved); acknowledged via reply rather than expanding this PR to cover Book. |
+| 4 | Inverted-cell sparkline always showed "No data": =rateHistory_= was populated from a separate pass over =result.rates= (server's own base/quote direction), but =updateOverviewPanel()= looks it up by the *displayed* (row, col) key -- which is inverted for a Show-Inverted cell. | Accepted | Moved history recording into the per-cell rendering loop, keyed by the same =display_key=/=display_rate= already computed there (inverts when =inverted= is true). |
+| 5 | =external/fed_h10/manifest.json= mislabels the NOK/DKK pairs as their raw Fed codes ("no"/"dn") instead of "USD/NOK"/"USD/DKK", because =tools/fetch_fed_h10_rates.py='s =CURRENCY_NAMES= map was never updated for the two new currencies. | Accepted | Added the two entries to =CURRENCY_NAMES= and regenerated =pages.zip=/=manifest.json= via the documented command. |
 
 * Result
+
+Delivered the CRM cross-rates matrix Qt panel (=CrmCrossRatesMatrixMdiWindow=
++ =CrmCrossRatesMatrixController=), reached through several rounds of
+real manual QA against live data, not just build/tests -- see the
+=* Open Issues= table above (28 items across 6 rounds) for the full
+trail. Final shape:
+
+- A picker dialog (custom Icon::Checkmark/Icon::Dismiss buttons, app
+  convention) lets the user open "All" or any named CRM
+  (=majors=/=exotics=/=scandies=); each name reuses its own window if
+  already open, with independently persisted geometry and toggle
+  state.
+- Fixed-size cells render via =CrmRateCellWidget= (pair code / rate /
+  coloured %-change with ▲/▼ arrows; stale/unavailable status shown via
+  colour *and* a glyph, never colour alone) with currency flag icons in
+  both header directions.
+- Footer controls: Base Currency filter, Update Interval (auto-refresh
+  on by default at 5s -- a deliberate relaxation of the story's
+  "never broadcast" decision, since client-side polling isn't
+  server-side broadcast; see the story's =* Decisions=), Hide Empty,
+  and Show Inverted (computed 1/rate, pastel-tinted).
+- A "FX Pair Overview" side panel with a client-side session sparkline
+  for whichever cell was last clicked.
+
+Along the way, fixed several real bugs surfaced only by driving the
+actual UI against real data: a missing =crm_enabled_derived_pair_changed_event=
+subscription in =crm_ingest_bridge=, an RLS policy that blocked its
+cross-tenant startup scan after the CRM tables moved to =ores_refdata_*=,
+an always-editable id field in every UUID-primary-keyed entity's Add
+dialog (fixed at the codegen template level), and a silent NATS
+max-payload timeout in Market Simulator's feed-start vintage lookup.
+
+Follow-up work captured as separate tasks/stories rather than expanded
+in place: server-side UUID generation (all entities), moving the
+matrix's inversion/delta logic into =ores.analytics.quant=, CSV/ORE
+export, a server-side rate-history endpoint for charts, and an FX
+market-convention precision facet.

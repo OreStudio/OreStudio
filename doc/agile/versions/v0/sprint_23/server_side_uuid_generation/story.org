@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 093CDC6B-688C-4183-A500-96C55C4F9ACC
+:END:
+#+title: Story: Server-side UUID generation for all entities
+#+description: Clients must never generate primary-key UUIDs for entities they create. Every UUID-primary-keyed entity's Add flow currently generates the id client-side (boost::uuids::random_generator() in setCreateMode, part of the shared Qt detail-dialog codegen template); the server should assign the id on save instead, with the client showing a nil-UUID placeholder until the response comes back.
+#+type: story
+#+level: s2
+#+filetags: :server_side_uuid_generation:sprint_23:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Clients must never generate primary-key UUIDs. Today, every entity
+with a UUID primary key (Book, Portfolio, the CRM entities, and many
+more) has an Add dialog that calls
+=boost::uuids::random_generator()()= client-side in =setCreateMode()=
+(part of the shared =ores.cpp.qt.detail_dialog_impl.org= codegen
+template) and submits that id in the create request. This is a
+trust/integrity smell -- key assignment is a server responsibility --
+and surfaced concretely while investigating why a CRM entity's id
+field was editable in the UI (see
+[[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the cross-rates matrix task]]).
+
+Move id assignment to the server: the create request either omits the
+id or the server ignores/overwrites whatever the client sent, the
+server generates the real UUID during the save, and returns the
+created entity (with its real id) in the response. The client shows a
+nil UUID (=00000000-0000-0000-0000-000000000000=) as a placeholder
+while in create mode, never a client-chosen value, and never allows
+editing it.
+
+Scoped to *primary-key* UUIDs only -- other client-generated UUIDs
+(e.g. request correlation ids) are unaffected and out of scope.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-14                               |
+
+* Acceptance
+
+- The shared Qt detail-dialog codegen template
+  (=ores.cpp.qt.detail_dialog_impl.org=) no longer calls
+  =boost::uuids::random_generator()()= in =setCreateMode()= for any
+  UUID-primary-keyed entity -- the id field shows a nil UUID
+  placeholder and stays read-only in create mode (never user-editable,
+  matching the fix already landed for the CRM entities this session).
+- Every UUID-primary-keyed entity's save/create path is audited: the
+  server-side create handler generates the id (or a shared repository
+  helper does, consistently across entities) rather than trusting
+  whatever the client sent -- a malicious or buggy client submitting a
+  client-chosen id must not be able to make it stick.
+- The save response includes the server-assigned id, and the client
+  updates its in-memory copy from that response so the newly created
+  row is immediately usable (e.g. selectable in a dynamic combo) without
+  a manual reload.
+- This is a *codegen template + repository/service* change applied
+  once and regenerated everywhere, not N hand-patches across entities.
+- Explicitly out of scope: non-primary-key UUIDs (correlation ids,
+  etc.) -- those remain client-generated.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

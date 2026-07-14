@@ -23,16 +23,19 @@
  *
  * Registers the marketdata.fx_driver_rates dataset (member of the
  * marketdata.reference_vintage_2016_02_05 bundle) and seeds the artefact
- * table with real Federal Reserve H.10 FX spot rates for an 11-pair
- * USD-hub spanning tree: the original 8 majors (EUR/USD, GBP/USD,
- * USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD) plus 3 EM/exotic
+ * table with real Federal Reserve H.10 FX spot rates for a USD-hub
+ * spanning tree: the original 8 majors (EUR/USD, GBP/USD,
+ * USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD), 3 EM/exotic
  * currencies (USD/ZAR, USD/MXN, USD/INR) added for the Cross-Rates
- * Matrix's exotics tier -- covers EUR, USD, GBP, CHF, JPY, SEK, AUD,
- * CAD, NZD, ZAR, MXN, INR. Every value is an individual, direct Fed
- * H.10 quote - none are derived/computed here; each row carries its own
- * source_url/retrieved_at citation rather than a shared text blob, so
- * future additions (more dates, more asset classes: rates curves, vol
- * surfaces, ...) don't grow an ever-larger methodology description.
+ * Matrix's exotics tier, and 2 more Nordic currencies (USD/NOK,
+ * USD/DKK, alongside the majors' own USD/SEK) added for the Cross-Rates
+ * Matrix's scandies tier -- covers EUR, USD, GBP, CHF, JPY, SEK, AUD,
+ * CAD, NZD, ZAR, MXN, INR, NOK, DKK. Every value is an individual,
+ * direct Fed H.10 quote - none are derived/computed here; each row
+ * carries its own source_url/retrieved_at citation rather than a shared
+ * text blob, so future additions (more dates, more asset classes: rates
+ * curves, vol surfaces, ...) don't grow an ever-larger methodology
+ * description.
  *
  * Dates: 25 vintages across 2016 - the first and last trading day of each
  * calendar month (24 dates, spanning the year so the dataset isn't
@@ -46,7 +49,7 @@
  * for any future date/currency addition). Raw source HTML for every
  * currency page is archived at external/fed_h10/ (see its README.md) for
  * full reproducibility independent of the Fed's site staying up:
- *   ./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in \
+ *   ./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in,no,dn \
  *       --dates <25 target dates> --format sql
  *
  * Execution order: this file registers its own catalog/dataset/bundle, no
@@ -116,7 +119,7 @@ BEGIN
         'Raw',
         'Federal Reserve H.10 Historical Rates',
         'FX Driver Rates 2016',
-        '25 real Federal Reserve H.10 FX spot vintages across 2016 (start/end of each month, plus 2016-02-05 - ORE''s own bundled reference vintage date), a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD/ZAR/MXN/INR.',
+        '25 real Federal Reserve H.10 FX spot vintages across 2016 (start/end of each month, plus 2016-02-05 - ORE''s own bundled reference vintage date), a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD/ZAR/MXN/INR/NOK/DKK.',
         'ORESTUDIO',
         'Seed data for the FX driver rates Librarian bundle',
         '2016-12-31',
@@ -206,6 +209,8 @@ begin
         ('USD/JPY', date '2016-01-04', 119.3000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-01-04', 17.3600, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-01-04', 8.5057, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-01-04', 8.9246, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-01-04', 6.9072, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-01-04', 15.6150, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-01-04 / 2016-01-29: first/last trading day of January.
         ('AUD/USD', date '2016-01-29', 0.7071, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -218,6 +223,8 @@ begin
         ('USD/JPY', date '2016-01-29', 121.0500, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-01-29', 18.2110, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-01-29', 8.5709, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-01-29', 8.7071, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-01-29', 6.8886, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-01-29', 15.9535, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-02-01 / 2016-02-29: first/last trading day of February.
         ('AUD/USD', date '2016-02-01', 0.7084, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -230,6 +237,8 @@ begin
         ('USD/JPY', date '2016-02-01', 121.0600, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-02-01', 18.2930, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-02-01', 8.5385, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-02-01', 8.7104, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-02-01', 6.8540, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-02-01', 15.9480, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-02-05: ORE's own bundled reference vintage date (Legacy/Example_56).
         ('AUD/USD', date '2016-02-05', 0.7084, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -242,6 +251,8 @@ begin
         ('USD/JPY', date '2016-02-05', 116.9900, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-02-05', 18.3720, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-02-05', 8.4802, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-02-05', 8.6002, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-02-05', 6.7052, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-02-05', 15.9785, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-02-29', 0.7152, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-02-29', 1.0868, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -253,6 +264,8 @@ begin
         ('USD/JPY', date '2016-02-29', 112.9000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-02-29', 18.0675, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-02-29', 8.5709, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-02-29', 8.6919, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-02-29', 6.8632, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-02-29', 15.7465, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-03-01 / 2016-03-31: first/last trading day of March.
         ('AUD/USD', date '2016-03-01', 0.7172, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -265,6 +278,8 @@ begin
         ('USD/JPY', date '2016-03-01', 113.9400, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-03-01', 17.9000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-03-01', 8.6312, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-03-01', 8.6574, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-03-01', 6.8759, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-03-01', 15.5465, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-03-31', 0.7677, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-03-31', 1.1390, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -276,6 +291,8 @@ begin
         ('USD/JPY', date '2016-03-31', 112.4200, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-03-31', 17.2140, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-03-31', 8.0962, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-03-31', 8.2520, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-03-31', 6.5425, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-03-31', 14.7100, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-04-01 / 2016-04-29: first/last trading day of April.
         ('AUD/USD', date '2016-04-01', 0.7672, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -288,6 +305,8 @@ begin
         ('USD/JPY', date '2016-04-01', 112.0600, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-04-01', 17.3205, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-04-01', 8.1164, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-04-01', 8.3127, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-04-01', 6.5424, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-04-01', 14.7350, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-04-29', 0.7612, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-04-29', 1.1441, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -299,6 +318,8 @@ begin
         ('USD/JPY', date '2016-04-29', 106.9000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-04-29', 17.1900, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-04-29', 8.0267, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-04-29', 8.0643, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-04-29', 6.5059, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-04-29', 14.2355, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-05-02 / 2016-05-31: first/last trading day of May.
         ('AUD/USD', date '2016-05-02', 0.7641, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -311,6 +332,8 @@ begin
         ('USD/JPY', date '2016-05-02', 106.4800, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-05-02', 17.2425, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-05-02', 7.9761, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-05-02', 8.0361, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-05-02', 6.4625, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-05-02', 14.3255, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-05-31', 0.7242, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-05-31', 1.1135, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -322,6 +345,8 @@ begin
         ('USD/JPY', date '2016-05-31', 110.7500, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-05-31', 18.4130, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-05-31', 8.3360, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-05-31', 8.3678, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-05-31', 6.6788, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-05-31', 15.7150, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-06-01 / 2016-06-30: first/last trading day of June.
         ('AUD/USD', date '2016-06-01', 0.7242, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -334,6 +359,8 @@ begin
         ('USD/JPY', date '2016-06-01', 109.5500, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-06-01', 18.5475, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-06-01', 8.3030, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-06-01', 8.3099, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-06-01', 6.6630, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-06-01', 15.5975, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-06-30', 0.7432, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-06-30', 1.1032, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -345,6 +372,8 @@ begin
         ('USD/JPY', date '2016-06-30', 102.7700, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-06-30', 18.4935, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-06-30', 8.5028, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-06-30', 8.3931, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-06-30', 6.7208, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-06-30', 14.7755, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-07-01 / 2016-07-29: first/last trading day of July.
         ('AUD/USD', date '2016-07-01', 0.7485, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -357,6 +386,8 @@ begin
         ('USD/JPY', date '2016-07-01', 102.5500, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-07-01', 18.3930, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-07-01', 8.4301, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-07-01', 8.3279, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-07-01', 6.6757, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-07-01', 14.5755, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-07-29', 0.7599, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-07-29', 1.1168, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -368,6 +399,8 @@ begin
         ('USD/JPY', date '2016-07-29', 102.3200, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-07-29', 18.7610, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-07-29', 8.5503, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-07-29', 8.4250, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-07-29', 6.6596, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-07-29', 13.8875, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-08-01 / 2016-08-31: first/last trading day of August.
         ('AUD/USD', date '2016-08-01', 0.7567, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -380,6 +413,8 @@ begin
         ('USD/JPY', date '2016-08-01', 102.2600, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-08-01', 18.8325, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-08-01', 8.5701, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-08-01', 8.4750, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-08-01', 6.6557, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-08-01', 13.9005, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-08-31', 0.7519, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-08-31', 1.1146, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -391,6 +426,8 @@ begin
         ('USD/JPY', date '2016-08-31', 103.3800, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-08-31', 18.8490, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-08-31', 8.5689, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-08-31', 8.3438, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-08-31', 6.6764, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-08-31', 14.6985, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-09-01 / 2016-09-30: first/last trading day of September.
         ('AUD/USD', date '2016-09-01', 0.7542, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -403,6 +440,8 @@ begin
         ('USD/JPY', date '2016-09-01', 103.2200, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-09-01', 18.8260, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-09-01', 8.5504, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-09-01', 8.3256, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-09-01', 6.6476, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-09-01', 14.6845, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-09-30', 0.7667, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-09-30', 1.1238, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -414,6 +453,8 @@ begin
         ('USD/JPY', date '2016-09-30', 101.2100, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-09-30', 19.3355, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-09-30', 8.5726, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-09-30', 7.9897, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-09-30', 6.6249, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-09-30', 13.7200, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-10-03 / 2016-10-31: first/last trading day of October.
         ('AUD/USD', date '2016-10-03', 0.7664, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -426,6 +467,8 @@ begin
         ('USD/JPY', date '2016-10-03', 101.5400, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-10-03', 19.3350, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-10-03', 8.5641, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-10-03', 7.9725, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-10-03', 6.6401, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-10-03', 13.6450, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-10-31', 0.7611, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-10-31', 1.0962, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -437,6 +480,8 @@ begin
         ('USD/JPY', date '2016-10-31', 105.0700, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-10-31', 18.7900, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-10-31', 9.0207, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-10-31', 8.2501, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-10-31', 6.7900, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-10-31', 13.4850, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-11-01 / 2016-11-30: first/last trading day of November.
         ('AUD/USD', date '2016-11-01', 0.7659, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -449,6 +494,8 @@ begin
         ('USD/JPY', date '2016-11-01', 104.5900, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-11-01', 19.1000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-11-01', 8.9479, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-11-01', 8.1986, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-11-01', 6.7359, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-11-01', 13.5750, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-11-30', 0.7387, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-11-30', 1.0578, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -460,6 +507,8 @@ begin
         ('USD/JPY', date '2016-11-30', 114.3400, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-11-30', 20.4565, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-11-30', 9.2548, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-11-30', 8.5223, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-11-30', 7.0335, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-11-30', 14.0775, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         -- 2016-12-01 / 2016-12-30: first/last trading day of December.
         ('AUD/USD', date '2016-12-01', 0.7411, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
@@ -472,6 +521,8 @@ begin
         ('USD/JPY', date '2016-12-01', 114.3400, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-12-01', 20.7375, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-12-01', 9.2479, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-12-01', 8.4446, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-12-01', 6.9958, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-12-01', 14.0750, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm'),
         ('AUD/USD', date '2016-12-30', 0.7230, 'https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm'),
         ('EUR/USD', date '2016-12-30', 1.0552, 'https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm'),
@@ -483,6 +534,8 @@ begin
         ('USD/JPY', date '2016-12-30', 116.7800, 'https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm'),
         ('USD/MXN', date '2016-12-30', 20.6170, 'https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm'),
         ('USD/SEK', date '2016-12-30', 9.0803, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm'),
+        ('USD/NOK', date '2016-12-30', 8.6107, 'https://www.federalreserve.gov/releases/h10/hist/dat00_no.htm'),
+        ('USD/DKK', date '2016-12-30', 7.0462, 'https://www.federalreserve.gov/releases/h10/hist/dat00_dn.htm'),
         ('USD/ZAR', date '2016-12-30', 13.7000, 'https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm')
     ) as r(qualifier, observation_date, value, source_url);
 

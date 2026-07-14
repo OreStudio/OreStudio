@@ -150,7 +150,7 @@ void CrmDriverPairDetailDialog::setPair(const refdata::domain::crm_driver_pair& 
 
 void CrmDriverPairDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->configCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);

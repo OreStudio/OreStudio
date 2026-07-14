@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 4F67DD95-2002-40AC-BBF2-5D3F6A5419EC
+:END:
+#+title: Task: Market Data > FX menu with named-CRM quick-open shortcuts
+#+description: Reorganize Market Data into a Market Data > FX submenu (FX Spot Rates, Cross Rates Matrix, separator, then one entry per existing named crm_topology_config) so users can quickly reopen the matrix pre-filtered to a specific named CRM (e.g. majors, exotics) without manually selecting it from the Config combo every time.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Users comparing multiple named CRMs (e.g. majors and exotics side by
+side, per [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the cross-rates matrix UI panel task]]'s new
+multi-window support) currently have to open a matrix window and
+manually pick the config from its "Config:" combo every time. This
+task surfaces the *already-persisted* named configs
+(=crm_topology_config= rows, edited/created today via Reference Data
+> Cross Rates &Matrix > &Topology -- no new "save a named view"
+feature needed, that data already exists) as quick-open menu entries,
+so opening "Majors" or "Exotics" is a single click.
+
+Reorganize the Market Data menu into a *Market Data > FX* submenu:
+"FX Spot Rates", "Cross Rates Matrix", a separator, then one entry
+per existing named =crm_topology_config= for the current
+tenant/party (populated the same way the matrix panel's own "Config:"
+combo already is, via =fetch_crm_topology_configs=). Clicking a named
+entry opens a new matrix window pre-filtered to that config (same
+"always open a new window" behaviour as the plain "Cross Rates
+Matrix" entry, just pre-selected).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Superseded -- see Result. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- *No new save/configuration mechanism.* A "named CRM" is exactly a
+  =crm_topology_config= row plus its =crm_driver_pair=/
+  =crm_enabled_derived_pair= children -- the currencies/pairs a
+  config includes are already fully specifiable today via Reference
+  Data > Cross Rates &Matrix > &Topology / &Driver Pairs / &Enabled
+  Derived Pairs, including *creating a brand new named CRM* (the
+  Topology list window's existing "Add" action). This task is purely
+  a discovery/navigation convenience on top of that existing
+  create/edit flow, not a new persistence layer -- a config a user
+  just created there should show up as a menu entry the next time the
+  FX submenu is opened, with no separate registration step.
+- Market Data menu gains an "&FX" submenu containing, in order: "FX
+  &Spot Rates", "Cross &Rates Matrix", a separator, then one action
+  per named =crm_topology_config= for the current tenant/party
+  (alphabetical, refreshed the same way the matrix panel's own
+  "Config:" combo already refreshes -- no manual menu-rebuild step).
+- Clicking a named entry opens a *new* matrix window (per the
+  multi-window support already landed) pre-filtered to that config,
+  equivalent to opening "Cross Rates Matrix" and then picking that
+  name from the Config combo.
+- Zero named configs for the party -- the separator and per-name
+  entries are simply absent (not shown as a disabled/empty state);
+  "FX Spot Rates" and "Cross Rates Matrix" remain available
+  regardless.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Abandoned before implementation: superseded by a redesign of
+[[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the cross-rates matrix UI panel task]]
+itself. Instead of a separate FX submenu with per-name shortcuts, the
+in-window "Config:" combo was removed entirely -- clicking the single
+"Cross Rates Matrix" menu action now shows a picker (All + each named
+config) up front, and picking a name reuses that name's own window if
+already open (never a duplicate), with its own persisted geometry and
+"Hide Empty" state. This achieves the same "quick access to a named
+CRM" goal without a second menu structure to maintain.

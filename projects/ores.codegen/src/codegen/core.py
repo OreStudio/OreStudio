@@ -2582,6 +2582,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'is_static_combo': f['is_static_combo'],
                     'is_dynamic_combo': f['is_dynamic_combo'],
                     'is_flagged_combo': f['is_flagged_combo'],
+                    # The primary key's own line_edit is never
+                    # user-editable when the entity has a UUID primary
+                    # key: setCreateMode() auto-generates it
+                    # (has_uuid_primary_key's random_generator() block
+                    # below), so it must stay read-only even while
+                    # createMode is true -- not just after create like
+                    # every other locked field.
+                    'is_auto_generated_key': (
+                        f['is_key'] and qt.get('has_uuid_primary_key', False)
+                    ),
                 }
                 for f in detail_fields if f['is_locked_after_create']
             ]

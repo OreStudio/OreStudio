@@ -15,60 +15,18 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="titleLabel">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>History</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QTableWidget" name="versionListWidget">
-      <property name="minimumHeight">
-       <number>150</number>
+     <widget class="QWidget" name="timelinePane">
+      <property name="minimumWidth">
+       <number>220</number>
       </property>
-      <property name="maximumHeight">
-       <number>250</number>
+      <property name="maximumWidth">
+       <number>320</number>
       </property>
-      <property name="alternatingRowColors">
-       <bool>true</bool>
-      </property>
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <column>
-       <property name="text">
-        <string>Version</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Recorded At</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Modified By</string>
-       </property>
-      </column>
-     </widget>
-     <widget class="QWidget" name="detailWidget">
-      <layout class="QVBoxLayout" name="detailLayout">
+      <layout class="QVBoxLayout" name="timelinePaneLayout">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -82,81 +40,109 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="currentIndex">
-          <number>0</number>
+        <widget class="QLabel" name="timelineHeaderLabel">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <bold>true</bold>
+          </font>
          </property>
-         <widget class="QWidget" name="changesTab">
-          <attribute name="title">
-           <string>Changes</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="changesTabLayout">
+         <property name="text">
+          <string>History Timeline</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="versionTimeline">
+         <property name="toolTip">
+          <string>Click a version to preview it against its predecessor.</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="diffPane">
+      <layout class="QVBoxLayout" name="diffPaneLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="diffPaneHeaderLayout">
+         <item>
+          <widget class="QLabel" name="compareLabel">
+           <property name="text">
+            <string>Compare:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="compareFromCombo">
+           <property name="toolTip">
+            <string>The older version.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="compareArrowLabel">
+           <property name="text">
+            <string>→</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="compareToCombo">
+           <property name="toolTip">
+            <string>The newer version.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="diffPaneHeaderSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size><width>40</width><height>20</height></size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="onlyChangesToggleLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QTableWidget" name="changesTableWidget">
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
+            <widget class="QPushButton" name="allFieldsToggle">
+             <property name="text">
+              <string>All Fields</string>
              </property>
-             <property name="alternatingRowColors">
-              <bool>true</bool>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="onlyChangesToggle">
+             <property name="text">
+              <string>Only Changes</string>
              </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
-             </property>
-             <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-             <column>
-              <property name="text">
-               <string>Field</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Old Value</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Value</string>
-              </property>
-             </column>
             </widget>
            </item>
           </layout>
-         </widget>
-         <widget class="QWidget" name="fullDetailsTab">
-          <attribute name="title">
-           <string>Full Details</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="fullDetailsTabLayout">
-           <item>
-            <widget class="QTableWidget" name="fullDetailsTableWidget">
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
-             <property name="alternatingRowColors">
-              <bool>true</bool>
-             </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
-             </property>
-             <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-             <column>
-              <property name="text">
-               <string>Field</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Value</string>
-              </property>
-             </column>
-            </widget>
-           </item>
-          </layout>
-         </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTextBrowser" name="diffBrowser">
+         <property name="openExternalLinks">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>

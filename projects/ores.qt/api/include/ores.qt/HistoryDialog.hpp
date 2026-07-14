@@ -38,12 +38,16 @@ namespace ores::qt {
  *
  * Parameterised at construction by (entity_type, entity_id) rather
  * than subclassed per entity. Issues the generic history.v1.get
- * request and renders entity_history_version::fields (Full Details
- * tab) and ::changes (Changes tab) as plain Field/Value and
- * Field/Old/New tables — no typed domain knowledge, no per-entity Qt
- * class. Diff-span colour highlighting is a follow-on task; Open and
- * Revert emit generic (entity_type, entity_id, version) signals for
- * the caller to resolve against that entity's own typed request.
+ * request and renders a master-detail, GitHub-style diff view per
+ * doc/analysis/gemini_review_history_dialog.org: a compact version
+ * timeline on the left, a live diff pane on the right with GitHub
+ * colour highlighting (intra-line spans down to the token) and an
+ * "All Fields"/"Only Changes" toggle. Selecting two versions in the
+ * timeline (ctrl/shift-click) compares them directly, not just
+ * adjacent ones. No typed domain knowledge, no per-entity Qt class.
+ * Open and Revert emit generic (entity_type, entity_id, version)
+ * signals for the caller to resolve against that entity's own typed
+ * request.
  */
 class HistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
@@ -75,8 +79,11 @@ protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
-    void displayFullDetails(int index) override;
+    [[nodiscard]] bool supportsCompareMode() const override {
+        return true;
+    }
+    [[nodiscard]] DiffResult
+    calculateDiffBetween(int index_new, int index_old, bool include_unchanged) const override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 

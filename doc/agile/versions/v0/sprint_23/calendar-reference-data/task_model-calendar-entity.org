@@ -8,7 +8,7 @@
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch: feature/model-calendar-entity
-#+pr:
+#+pr: 1559
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -79,7 +79,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1559][#1559]] | [refdata,qt,dq] Model calendar reference data entity with QuantLib seed data and DQ publish support |
 
 * Review
 

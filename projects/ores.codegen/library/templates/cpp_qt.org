@@ -2,7 +2,7 @@
 :ID: 0D776415-7381-4E64-A368-1FE4DC55153C
 :END:
 #+title: C++ Qt templates
-#+description: Qt UI classes per entity: client model, controller, detail and history dialogs, and MDI window (hpp/cpp pairs).
+#+description: Qt UI classes per entity: client model, controller, detail dialog, and MDI window (hpp/cpp pairs).
 #+type: facet
 #+level: cross
 #+facet_group: cpp
@@ -22,17 +22,20 @@ Output paths and profile membership come from
 
 * Summary
 
-Five hpp/cpp pairs generating an entity's Qt UI layer: the client
+Four hpp/cpp pairs generating an entity's Qt UI layer: the client
 model (list data + NATS-driven refresh), the controller (dialog
-orchestration), detail and history dialogs (paired with the =.ui=
-XML in the [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets facet]]), and the MDI window hosting the list view.
-All ten belong to the =qt= profile; outputs target the pre-regroup
-=projects/ores.qt.{component}= layout (stale-profiles capture).
+orchestration — including the generic =ores::qt::HistoryDialog=
+wiring, per doc/knowledge/architecture/history_diff_architecture.org;
+no per-entity history dialog is generated anymore), the detail
+dialog (paired with the =.ui= XML in the [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets facet]]), and the MDI
+window hosting the list view. All eight belong to the =qt= profile;
+outputs target the pre-regroup =projects/ores.qt.{component}= layout
+(stale-profiles capture).
 
 * The cpp_qt facet
 
 The Qt projection of the /entity/ model, following the patterns in
-the Qt modeling docs: every entity gets the same five-class
+the Qt modeling docs: every entity gets the same four-class
 ensemble, derived from =domain_entity.qt= fields (detail fields,
 list columns, protocol class names). The dialogs load their =.ui=
 twins; the client model subscribes to the entity's NATS changed
@@ -56,8 +59,6 @@ the Phase-1 Qt-derivation story). Otherwise standard constructs.
 | [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][cpp_qt_controller.hpp.mustache]] | Controller declarations. |
 | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][cpp_qt_detail_dialog.cpp.mustache]] | Loads the generated =.ui=; field get/set per widget kind. |
 | [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][cpp_qt_detail_dialog.hpp.mustache]] | Detail dialog declarations. |
-| [[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][cpp_qt_history_dialog.cpp.mustache]] | Read-only history view over temporal rows. |
-| [[id:CB9F9EF2-0A5C-4117-B4EB-A7D700116CDA][cpp_qt_history_dialog.hpp.mustache]] | History dialog declarations. |
 | [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][cpp_qt_mdi_window.cpp.mustache]] | List view window hosted in the main MDI area. |
 | [[id:0FC76068-16A8-430F-8A15-2E765B562046][cpp_qt_mdi_window.hpp.mustache]] | MDI window declarations. |
 

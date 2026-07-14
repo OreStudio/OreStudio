@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ business_centre's Qt UI works correctly post-NATS migration across list, detail,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,17 @@ business_centre's Qt UI works correctly post-NATS migration across list, detail,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Rather than a separate pass, this task's acceptance was exercised as
+part of manual feature-testing during the regenerate/reconcile task
+(=0FCD3745-61CD-4644-BAE2-CBCD994448FE=, PR #1552): list window load,
+detail add/edit/save round-trip, history window, delete, and
+cross-session eventing were all driven live against a
+Barclays-provisioned database with two Qt clients, using the
+=Test Scenario: Verify business_centre= doc below (PASSED). The
+RefdataPlugin relocation itself (menu/toolbar under Reference Data,
+gone from the Party/Organisation area) was also confirmed working
+throughout that same session, since the scenario was run from the
+relocated menu entry the whole time.
 
 * Notes
 
@@ -54,7 +62,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:9563A7CC-856F-49CD-A39C-4E9BD9C23156][Verify business_centre windows and menu after RefdataPlugin relocation]] | PENDING | |
+| [[id:9FF8709A-6730-4861-B22E-77DA87FFD833][Test Scenario: Verify business_centre]] | PASSED | Run against the relocated RefdataPlugin menu entry; covers list/detail/history/delete/eventing. |
+| [[id:9563A7CC-856F-49CD-A39C-4E9BD9C23156][Verify business_centre windows and menu after RefdataPlugin relocation]] | Superseded | Scaffolded but not separately run -- its scope (menu relocation, toolbar, business_unit combo, logout/re-login) was covered live by the scenario above and by day-to-day use of the relocated menu during that same testing session. |
 
 * PRs
 
@@ -69,3 +78,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Verified as part of manual feature-testing during the
+regenerate/reconcile task (PR #1552): list load, add/edit/save,
+history, delete, and cross-session eventing all confirmed working
+against the relocated =RefdataPlugin= menu entry, via the
+=Test Scenario: Verify business_centre= scenario (PASSED). No
+regressions found.

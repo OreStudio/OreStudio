@@ -8,7 +8,7 @@
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
 #+branch: feature/regenerate-business-centre-reconcile-diffs
-#+pr: 1552
+#+pr: 1562
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -102,6 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1562][#1562]] | [agile] Close verify-qt-business-centre task |
 | [[https://github.com/OreStudio/OreStudio/pull/1552][#1552]] | [refdata] Regenerate business_centre and reconcile diffs |
 
 * Review

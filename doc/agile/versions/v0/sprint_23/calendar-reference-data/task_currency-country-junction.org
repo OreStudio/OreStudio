@@ -8,7 +8,7 @@
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch: feature/currency-country-junction
-#+pr:
+#+pr: 1568
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1568][#1568]] | [refdata] Model currency_country junction |
 
 * Review
 

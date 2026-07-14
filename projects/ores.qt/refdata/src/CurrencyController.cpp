@@ -300,7 +300,10 @@ void CurrencyController::showHistoryWindow(const QString& code) {
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog =
-        new HistoryDialog("ores.refdata.currency", code.toStdString(), clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::currency{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
             &HistoryDialog::statusChanged,
@@ -438,6 +441,95 @@ void CurrencyController::onOpenVersion(const refdata::domain::currency& currency
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void CurrencyController::fetchCurrencyHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::currency>, QString>)> callback) {
+    refdata::messaging::get_currency_history_request request;
+    request.iso_code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::currency>, QString>;
+
+    QPointer<CurrencyController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CurrencyController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CurrencyController> self = this;
+    fetchCurrencyHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber, history);
+        });
+}
+
+void CurrencyController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CurrencyController> self = this;
+    fetchCurrencyHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void CurrencyController::onRevertVersion(const refdata::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Reverting currency to version: " << currency.version;
 
@@ -484,95 +576,6 @@ void CurrencyController::onRevertVersion(const refdata::domain::currency& curren
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
-}
-
-void CurrencyController::fetchCurrencyHistory(
-    const QString& isoCode,
-    std::function<void(std::expected<std::vector<refdata::domain::currency>, QString>)> callback) {
-    refdata::messaging::get_currency_history_request request;
-    request.iso_code = isoCode.toStdString();
-
-    using FetchResult = std::expected<std::vector<refdata::domain::currency>, QString>;
-
-    QPointer<CurrencyController> self = this;
-    QPointer<ClientManager> clientManager = clientManager_;
-    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
-        if (!clientManager || !clientManager->isConnected())
-            return std::unexpected(QString("Not connected to server"));
-        auto result = clientManager->process_authenticated_request(std::move(request));
-        if (!result)
-            return std::unexpected(QString::fromStdString(result.error()));
-        if (!result->success)
-            return std::unexpected(QString::fromStdString(result->message));
-        return std::move(result->history);
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(this);
-    connect(watcher,
-            &QFutureWatcher<FetchResult>::finished,
-            this,
-            [self, watcher, callback = std::move(callback)]() mutable {
-                auto result = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                callback(std::move(result));
-            });
-    watcher->setFuture(future);
-}
-
-void CurrencyController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
-    QPointer<CurrencyController> self = this;
-    fetchCurrencyHistory(
-        entityId,
-        [self, entityId, versionNumber](
-            std::expected<std::vector<refdata::domain::currency>, QString> result) {
-            if (!self)
-                return;
-            if (!result) {
-                emit self->errorMessage(QString("Failed to load history for '%1': %2")
-                                            .arg(entityId)
-                                            .arg(result.error()));
-                return;
-            }
-            const auto& history = *result;
-            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& c) {
-                return c.version == versionNumber;
-            });
-            if (it == history.end()) {
-                emit self->errorMessage(
-                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
-                return;
-            }
-            self->onOpenVersion(*it, versionNumber, history);
-        });
-}
-
-void CurrencyController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
-    QPointer<CurrencyController> self = this;
-    fetchCurrencyHistory(
-        entityId,
-        [self, entityId, versionNumber](
-            std::expected<std::vector<refdata::domain::currency>, QString> result) {
-            if (!self)
-                return;
-            if (!result) {
-                emit self->errorMessage(QString("Failed to load history for '%1': %2")
-                                            .arg(entityId)
-                                            .arg(result.error()));
-                return;
-            }
-            const auto& history = *result;
-            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& c) {
-                return c.version == versionNumber;
-            });
-            if (it == history.end()) {
-                emit self->errorMessage(
-                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
-                return;
-            }
-            self->onRevertVersion(*it);
-        });
 }
 
 EntityListMdiWindow* CurrencyController::listWindow() const {

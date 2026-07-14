@@ -14,6 +14,9 @@
 {{#domain_entity.qt.has_export_macro}}
 #include "ores.qt/{{domain_entity.qt.export_header}}"
 {{/domain_entity.qt.has_export_macro}}
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -105,8 +108,17 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
     void onRevertVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{#domain_entity.qt.has_version_navigation}}
+    void onOpenVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},
+                       int versionNumber,
+                       const std::vector<{{domain_entity.qt.domain_class}}>& fullHistory = {});
+{{/domain_entity.qt.has_version_navigation}}
+{{^domain_entity.qt.has_version_navigation}}
     void onOpenVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},
                        int versionNumber);
+{{/domain_entity.qt.has_version_navigation}}
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
 {{#domain_entity.qt.has_parent_relationship}}
@@ -122,6 +134,20 @@ private:
 {{^domain_entity.qt.has_uuid_primary_key}}
     void showHistoryWindow(const QString& code);
 {{/domain_entity.qt.has_uuid_primary_key}}
+
+    /**
+     * @brief Fetches the full typed {{domain_entity.entity_singular_words}} history (the
+     * existing per-entity {{domain_entity.qt.history_request_class}}/
+     * {{domain_entity.qt.history_response_class}}, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed {{domain_entity.entity_singular_words}}, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetch{{domain_entity.entity_pascal}}History(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<{{domain_entity.qt.domain_class}}>, QString>)>
+            callback);
 
 {{#domain_entity.qt.has_change_reason_cache}}
     ChangeReasonCache* changeReasonCache_;

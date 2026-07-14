@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 14F24665-6CB0-4DAB-895E-1D5D1360E507
+:END:
+#+title: Story: Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency
+#+description: party_cache.hpp includes ores.eventing.core/service/cache/partitioned_cache.hpp but ores.iam.core's CMakeLists.txt doesn't depend on ores.eventing.core, so the include path is missing and the build fails.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:sprint_23:v0:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore a green build for =ores.iam.core=, broken by PR #1557
+("Migrate party to the generated nats-event-cache"): its generated
+=party_cache.hpp= includes a header from =ores.eventing.core= that the
+component's =CMakeLists.txt= never declared a dependency on.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Raise PR.                              |
+| Last touched  | 2026-07-14                               |
+
+* Acceptance
+
+- =cmake --build= succeeds past =ores.iam.core.lib='s
+  =messaging/registrar.cpp.o= (and the rest of =ores.iam.core=).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D649F9BE-9AEF-4983-AD0E-57756D4262E6][Scaffold story: Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency]] | DONE | 2026-07-14 | 2026-07-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B920D05D-A5FD-405D-B80F-39AD437CE4CE][Implement Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency]] | DONE | 2026-07-14 | 2026-07-14 | Initial task for: Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency |
+
+* Decisions
+
+- Root cause: PR #1557's generated =party_cache.hpp= introduced an
+  include on =ores.eventing.core= that its consuming component's
+  =CMakeLists.txt= never declared as a link dependency (only the
+  sibling =ores.eventing.api= was linked). One-line fix:
+  =target_link_libraries(... PUBLIC ... ores.eventing.core.lib)=.
+- Confirms a gap in that PR's verification: no vcpkg-based build was
+  available in the sandbox that authored it, so a missing CMake
+  dependency wasn't caught until a real build environment hit it.
+
+* Out of scope
+
+-

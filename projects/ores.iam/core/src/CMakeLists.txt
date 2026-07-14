@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.dq.api.lib
         ores.eventing.api.lib
+        ores.eventing.core.lib
         ores.geo.lib
         ores.platform.lib
         ores.security.lib

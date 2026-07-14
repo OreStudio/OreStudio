@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: B920D05D-A5FD-405D-B80F-39AD437CE4CE
+:END:
+#+title: Task: Implement Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency
+#+description: Initial task for: Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency
+#+type: task
+#+level: s1
+#+filetags: :ores_iam_core_missing_eventing_core_include:sprint_23:v0:
+#+owner: marco
+#+branch: feature/implement-ores-iam-core-missing-eventing-core-include
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14F24665-6CB0-4DAB-895E-1D5D1360E507][Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the =ores.iam.core= build failure: it now includes
+=ores.eventing.core/service/cache/partitioned_cache.hpp= (via the
+generated =party_cache.hpp=, PR #1557) but its =CMakeLists.txt= never
+declared a dependency on =ores.eventing.core.lib= — only on
+=ores.eventing.api.lib=, a different target — so the include path was
+never propagated and the compiler can't find the header.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:14F24665-6CB0-4DAB-895E-1D5D1360E507][Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency]] |
+| Now          | Nothing. |
+| Waiting on   | User to re-run the build (no vcpkg toolchain in this environment to verify locally). |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- =ores.iam.core.lib= links =ores.eventing.core.lib= so
+  =partitioned_cache.hpp='s include path resolves.
+- User confirms =cmake --build= succeeds past
+  =projects/ores.iam/core/src/messaging/registrar.cpp.o=.
+
+* Plan
+
+1. Confirm the target name: =ores.eventing.core/src/CMakeLists.txt=
+   sets =name = "ores.eventing.core"=, =lib_target_name =
+   ${name}.lib= → =ores.eventing.core.lib=.
+2. Add =ores.eventing.core.lib= to =ores.iam.core/src/CMakeLists.txt='s
+   =target_link_libraries(... PUBLIC ...)=, alongside the existing
+   =ores.eventing.api.lib= — PUBLIC because the include appears in
+   =ores.iam.core='s public headers (=party_cache.hpp=, pulled in by
+   =account_handler.hpp=/=auth_handler.hpp=/=bootstrap_handler.hpp=).
+3. Check =ores.iam.core/tests= for any direct include of the same
+   headers requiring its own CMake change — none found; tests link
+   =ores.iam.core.lib= and inherit the PUBLIC dependency transitively.
+4. Ask the user to re-run the build, since this environment has no
+   vcpkg toolchain to verify locally.
+
+* Notes
+
+Root cause: PR #1557 ("Migrate party to the generated
+nats-event-cache") added =ores.iam.core/service/cache/party_cache.hpp=
+including =ores.eventing.core/.../partitioned_cache.hpp=, but that PR
+was verified by static/template review only (no vcpkg-based build
+available in that sandbox) and missed that =ores.iam.core='s
+=CMakeLists.txt= had never needed =ores.eventing.core= before (only
+its sibling =ores.eventing.api=, a distinct target with a distinct
+include root). One-line fix: add the missing =target_link_libraries=
+entry.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added =ores.eventing.core.lib= to
+=projects/ores.iam/core/src/CMakeLists.txt='s PUBLIC
+=target_link_libraries=, alongside the existing
+=ores.eventing.api.lib=. User confirmed the build now passes past
+=registrar.cpp.o=.

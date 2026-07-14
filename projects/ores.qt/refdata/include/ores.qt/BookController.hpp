@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/book.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -88,11 +91,26 @@ private slots:
     void onShowHistory(const refdata::domain::book& book);
     void onRevertVersion(const refdata::domain::book& book);
     void onOpenVersion(const refdata::domain::book& book, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow(boost::uuids::uuid parentPortfolioId = {});
     void showDetailWindow(const refdata::domain::book& book);
     void showHistoryWindow(const refdata::domain::book& book);
+
+    /**
+     * @brief Fetches the full typed book history (the
+     * existing per-entity refdata::messaging::get_book_history_request/
+     * refdata::messaging::get_book_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed book, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchBookHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::book>, QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;

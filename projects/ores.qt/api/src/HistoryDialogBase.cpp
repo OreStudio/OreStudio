@@ -28,6 +28,7 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QMessageBox>
+#include <QPointer>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTimer>
@@ -57,12 +58,13 @@ const QIcon& reloadStaleIcon() {
     return icon;
 }
 
-// GitHub dark-theme diff palette: line background is a faint tint,
-// intra-line/token highlight is a stronger shade of the same colour.
-constexpr auto old_line_bg = "rgba(248,81,73,.15)";
-constexpr auto old_span_bg = "rgba(248,81,73,.40)";
-constexpr auto new_line_bg = "rgba(63,185,80,.15)";
-constexpr auto new_span_bg = "rgba(46,160,67,.40)";
+QString cssRgba(const QColor& color) {
+    return QString("rgba(%1,%2,%3,%4)")
+        .arg(color.red())
+        .arg(color.green())
+        .arg(color.blue())
+        .arg(color.alphaF());
+}
 
 QString escapeAndWrapNewlines(const QString& text) {
     QString escaped = text.toHtmlEscaped();
@@ -76,7 +78,7 @@ QString escapeAndWrapNewlines(const QString& text) {
 // code point is never split) wrapped in a highlighted <span>.
 QString renderSpannedHtml(const std::string& text,
                           const std::vector<ores::diff::domain::diff_span>& spans,
-                          const char* span_bg) {
+                          const QColor& span_bg) {
     if (spans.empty())
         return escapeAndWrapNewlines(QString::fromStdString(text));
 
@@ -84,6 +86,7 @@ QString renderSpannedHtml(const std::string& text,
     std::sort(sorted_spans.begin(), sorted_spans.end(),
               [](const auto& a, const auto& b) { return a.offset < b.offset; });
 
+    const QString span_bg_css = cssRgba(span_bg);
     QString html;
     std::size_t pos = 0;
     for (const auto& span : sorted_spans) {
@@ -92,7 +95,7 @@ QString renderSpannedHtml(const std::string& text,
                 QString::fromStdString(text.substr(pos, span.offset - pos)));
         const auto highlighted = text.substr(span.offset, span.length);
         html += QString("<span style=\"background-color:%1;\">%2</span>")
-                    .arg(span_bg, escapeAndWrapNewlines(QString::fromStdString(highlighted)));
+                    .arg(span_bg_css, escapeAndWrapNewlines(QString::fromStdString(highlighted)));
         pos = span.offset + span.length;
     }
     if (pos < text.size())
@@ -103,12 +106,12 @@ QString renderSpannedHtml(const std::string& text,
 // Wraps one side's spanned HTML in the line-level background.
 QString renderDiffCell(const std::string& text,
                        const std::vector<ores::diff::domain::diff_span>& spans,
-                       const char* line_bg,
-                       const char* span_bg) {
+                       const QColor& line_bg,
+                       const QColor& span_bg) {
     const QString inner =
         text.empty() ? QString() : renderSpannedHtml(text, spans, span_bg);
     return QString("<div style=\"background-color:%1; white-space:pre-wrap; padding:2px;\">%2</div>")
-        .arg(line_bg, inner);
+        .arg(cssRgba(line_bg), inner);
 }
 
 QLabel* makeDiffLabel(QWidget* parent, const QString& html) {
@@ -349,7 +352,9 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
             widgets_.changesTable->setCellWidget(
                 i, 1,
                 makeDiffLabel(widgets_.changesTable,
-                             renderDiffCell(entry->old_value, entry->old_spans, old_line_bg, old_span_bg)));
+                             renderDiffCell(entry->old_value, entry->old_spans,
+                                           color_constants::diff_old_line_bg,
+                                           color_constants::diff_old_span_bg)));
         } else {
             widgets_.changesTable->setItem(i, 1, new QTableWidgetItem(old_val));
         }
@@ -360,7 +365,9 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
             widgets_.changesTable->setCellWidget(
                 i, 2,
                 makeDiffLabel(widgets_.changesTable,
-                             renderDiffCell(entry->new_value, entry->new_spans, new_line_bg, new_span_bg)));
+                             renderDiffCell(entry->new_value, entry->new_spans,
+                                           color_constants::diff_new_line_bg,
+                                           color_constants::diff_new_span_bg)));
         } else {
             widgets_.changesTable->setItem(i, 2, new QTableWidgetItem(new_val));
         }

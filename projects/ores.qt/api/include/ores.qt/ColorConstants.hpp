@@ -78,6 +78,19 @@ struct color_constants {
      */
     static inline const QColor badge_fallback{249, 115, 22};       // Orange (#f97316)
     static inline const QColor badge_fallback_text{255, 255, 255}; // White
+
+    /**
+     * @brief GitHub dark-theme diff palette, used for the history
+     * changes tab. Line background is a faint tint (alpha ~.15);
+     * intra-line/token highlight is a stronger shade (alpha ~.40) —
+     * the new side uses a fractionally darker green for the
+     * highlight than the line background, matching GitHub's own
+     * palette, not just an alpha bump on the same RGB.
+     */
+    static inline const QColor diff_old_line_bg{248, 81, 73, 38};
+    static inline const QColor diff_old_span_bg{248, 81, 73, 102};
+    static inline const QColor diff_new_line_bg{63, 185, 80, 38};
+    static inline const QColor diff_new_span_bg{46, 160, 67, 102};
 };
 
 }

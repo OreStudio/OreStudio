@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.api.lib
         ores.iam.api.lib
         ores.history.api.lib
+        ores.diff.lib
         ores.refdata.api.lib
         ores.compute.api.lib
         ores.scheduler.api.lib

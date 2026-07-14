@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/curve-template-config
-#+pr:
+#+pr: 1564
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -128,7 +128,7 @@ valid codes.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1564][#1564]] | [refdata,synthetic,analytics.quant,qt] Curve Template sub-config, product catalogue, pricing derivations |
 
 * Review
 

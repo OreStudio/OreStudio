@@ -580,6 +580,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                             ctx_.client_manager,
                                                                             ctx_.change_reason_cache,
                                                                             ctx_.username,
+                                                                            ctx_.badge_cache,
                                                                             this);
     connectControllerSignals(instrumentCodeController_.get());
 }

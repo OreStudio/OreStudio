@@ -22,6 +22,8 @@
 #include "ores.qt/FxSpotGenerationConfigController.hpp"
 #include "ores.qt/GmmComponentController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/IrCurveGenerationConfigController.hpp"
+#include "ores.qt/IrCurveTemplateEntryController.hpp"
 #include "ores.qt/MarketDataGenerationConfigController.hpp"
 #include "ores.qt/MarketSimulatorWindow.hpp"
 #include <QAction>
@@ -124,6 +126,52 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             &GmmComponentController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
+
+    irCurveGenerationConfigController_ =
+        std::make_unique<IrCurveGenerationConfigController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username);
+    connect(irCurveGenerationConfigController_.get(),
+            &IrCurveGenerationConfigController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(irCurveGenerationConfigController_.get(),
+            &IrCurveGenerationConfigController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(irCurveGenerationConfigController_.get(),
+            &IrCurveGenerationConfigController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(irCurveGenerationConfigController_.get(),
+            &IrCurveGenerationConfigController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
+
+    irCurveTemplateEntryController_ =
+        std::make_unique<IrCurveTemplateEntryController>(ctx_.main_window,
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username);
+    connect(irCurveTemplateEntryController_.get(),
+            &IrCurveTemplateEntryController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(irCurveTemplateEntryController_.get(),
+            &IrCurveTemplateEntryController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(irCurveTemplateEntryController_.get(),
+            &IrCurveTemplateEntryController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(irCurveTemplateEntryController_.get(),
+            &IrCurveTemplateEntryController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 }
 
 // ---------------------------------------------------------------------------
@@ -199,6 +247,20 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
         if (gmmComponentController_)
             gmmComponentController_->showListWindow();
     });
+
+    auto* actIrCurveConfigs =
+        advancedMenu->addAction(ico(Icon::Chart), tr("IR Curve &Generation Configs"));
+    connect(actIrCurveConfigs, &QAction::triggered, this, [this]() {
+        if (irCurveGenerationConfigController_)
+            irCurveGenerationConfigController_->showListWindow();
+    });
+
+    auto* actIrCurveTemplateEntries =
+        advancedMenu->addAction(ico(Icon::Table), tr("IR Curve &Template Entries"));
+    connect(actIrCurveTemplateEntries, &QAction::triggered, this, [this]() {
+        if (irCurveTemplateEntryController_)
+            irCurveTemplateEntryController_->showListWindow();
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -221,6 +283,8 @@ void SyntheticPlugin::on_logout() {
         marketSimulatorWindow_->close();
         marketSimulatorWindow_ = nullptr;
     }
+    irCurveTemplateEntryController_.reset();
+    irCurveGenerationConfigController_.reset();
     gmmComponentController_.reset();
     fxSpotConfigController_.reset();
     configController_.reset();

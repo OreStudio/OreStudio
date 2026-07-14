@@ -8,7 +8,7 @@
 #+filetags: :qt:history:codegen:sprint_23:v0:
 #+created: 2026-07-14
 #+updated: 2026-07-14
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -37,7 +37,7 @@ per-entity codegen templates once nothing depends on them anymore.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -64,6 +64,7 @@ per-entity codegen templates once nothing depends on them anymore.
 | [[id:78F582B3-4A75-402B-ABC5-3F9CD0734B71][Migrate ores.qt.synthetic's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 3 hand-rolled *HistoryDialog classes in projects/ores.qt/synthetic, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
 | [[id:E441DA77-896D-4CCF-98CE-9FE95AEF468D][Migrate ores.qt.trading's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 2 hand-rolled *HistoryDialog classes in projects/ores.qt/trading, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
 | [[id:586B6BCE-736A-42C9-9D4C-BE1ECFCE60F4][Migrate ores.qt.workspace's history dialogs to the generic HistoryDialog]] | BACKLOG | | | Retire the 1 hand-rolled *HistoryDialog classes in projects/ores.qt/workspace, wiring each entity onto the generic HistoryDialog and adapting its controller's Open/Revert to the (entity_type, entity_id, version) signal shape, following the currency pattern from PR #1553. |
+| [[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]] | STARTED | 2026-07-14 | | Update the cpp_qt_controller and cpp_qt_history_dialog mustache templates so regenerating any entity emits the generic HistoryDialog wiring instead of a per-entity *HistoryDialog class, with currency regenerating to zero-diff as the proof. |
 
 * Decisions
 

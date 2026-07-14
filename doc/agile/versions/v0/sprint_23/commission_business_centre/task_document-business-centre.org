@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:2356D96D-2440-41CB-B8FB-9F4448316CAB][Capture screenshots for the Business Centres manual chapter]] | PENDING | |
 
 * PRs
 

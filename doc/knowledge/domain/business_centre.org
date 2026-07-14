@@ -29,16 +29,23 @@ its code rather than embedding calendar logic themselves: a
 
 ** FpML code and coding scheme
 
-Business centre codes follow the FpML =businessCenterScheme=: a
-4-character code that is either the real geographical location whose
-calendar governs bad-business-day adjustment (e.g. =USNY=, =GBLO=),
-or an FpML-format rate-publication calendar code used for fixing-day
-offsets. A code is scoped to a *coding scheme* (=FPML_BUSINESS_CENTER=
-for the standard FpML set, =NONE= for platform-internal centres like
-the system's =WRLD= "World" centre) but, unlike some coding-scheme-scoped
-reference data, a business centre's code is unique per tenant
-*regardless* of which scheme it was sourced from -- two schemes
-cannot register the same code for one tenant.
+Business centre codes follow the FpML =businessCenterScheme=
+([[https://www.fpml.org/coding-scheme/business-center][FpML Business Center Scheme]]): a 4-character code that is either the
+real geographical location whose calendar governs bad-business-day
+adjustment (e.g. =USNY=, =GBLO=), or an FpML-format rate-publication
+calendar code used for fixing-day offsets. FpML's own description of
+the scheme draws exactly this distinction: the geographical codes
+are "implicitly locatable and used for identifying a bad business
+day for the purpose of payment and rate calculation day
+adjustments", while the rate-publication codes "are used in the
+context of the fixing day offsets" -- two different jobs sharing the
+same 4-character code shape. A code is scoped to a *coding scheme*
+(=FPML_BUSINESS_CENTER= for the standard FpML set, =NONE= for
+platform-internal centres like the system's =WRLD= "World" centre)
+but, unlike some coding-scheme-scoped reference data, a business
+centre's code is unique per tenant *regardless* of which scheme it
+was sourced from -- two schemes cannot register the same code for
+one tenant.
 
 ** Holiday calendar identification
 
@@ -78,6 +85,10 @@ is based rather than which market data its books revalue against.
 
 * See also
 
+- [[https://www.fpml.org/coding-scheme/business-center][FpML Business Center Scheme]] -- the external code list business
+  centre codes are drawn from.
+- [[https://www.fpml.org/][FpML (Financial products Markup Language)]] -- the standards body
+  publishing the coding scheme.
 - [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] -- how a business
   centre's holiday calendar governs rolling of tenor dates.
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] -- the canonical business-day /

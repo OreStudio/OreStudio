@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.qt/export.hpp"
 #include <vector>
 
 namespace Ui {
@@ -49,7 +50,7 @@ namespace ores::qt {
  * signals for the caller to resolve against that entity's own typed
  * request.
  */
-class HistoryDialog final : public HistoryDialogBase {
+class ORES_QT_API HistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:

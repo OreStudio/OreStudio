@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 6268FA48-3F52-45C4-B8A1-82C67080A63E
+:END:
+#+title: Task: Fix Windows link error: HistoryDialog missing ORES_QT_API export
+#+description: ores.qt.refdata.dll fails to link on MSVC because HistoryDialog never got the ORES_QT_API export macro every other ores.qt.api class carries.
+#+type: task
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+owner: marco
+#+branch: feature/windows-historydialog-export-fix
+#+pr: 1569
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the Windows CI build break reported right after PR #1567 merged:
+=ores.qt.refdata.dll= fails to link with =LNK2019=/=LNK2001=
+unresolved externals for =ores::qt::HistoryDialog='s constructor,
+=loadHistory()=, signals, and =staticMetaObject=, referenced from
+=CurrencyController.cpp=. Root cause: =HistoryDialog= (task
+7D8659AB) never got the =ORES_QT_API= dllexport/dllimport macro every
+other =ores.qt.api= class carries — invisible on Linux/macOS (default
+symbol visibility), fatal on MSVC's explicit export model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- =HistoryDialog= carries =ORES_QT_API=, matching every other
+  exported class in =ores.qt.api= (e.g. =HistoryDialogBase=).
+- Windows CI (=windows-msvc-debug-ninja=) links =ores.qt.refdata.dll=
+  successfully.
+- No behavioural change on Linux/macOS.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1569][#1569]] | [qt] Fix Windows link error: HistoryDialog missing ORES_QT_API export |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One-line fix: added =#include "ores.qt/export.hpp"= and the
+=ORES_QT_API= macro to =HistoryDialog='s class declaration. Verified
+locally (=linux-clang-debug-make=, full build clean; =ctest=
+=ores.diff=/=ores.refdata.api=/=ores.qt.headless=/=ores.qt.tests= 4/4
+passed); Windows link result to be confirmed by CI.

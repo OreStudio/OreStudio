@@ -67,6 +67,9 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — hub note for scalar/tenor/term-structure
   concepts: tenor labels, horizon date, date rolling, IMM dates, and
   broken dates/turn points.
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the FpML business centre: a 4-character code
+  identifying a financial trading location's holiday calendar,
+  coding-scheme scoping, and its use as a book's rates centre.
 
 ** Calendars and reference data
 

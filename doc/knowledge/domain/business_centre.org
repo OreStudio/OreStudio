@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: DD828FB9-5901-4B9A-A767-71FD88472F0A
+:END:
+#+title: Business Centre
+#+description: The FpML business centre: a 4-character code identifying a financial trading location's holiday calendar, coding-scheme scoping, and its use as a book's rates centre.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:rates:curves:tenors:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+A *business centre* is an FpML-standard 4-character code (e.g.
+=USNY= for New York, =GBLO= for London) identifying either a real
+geographic financial trading location or an FpML-format rate
+publication calendar; its primary role is naming the holiday
+calendar that [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][date rolling]] and payment/fixing-day adjustments
+depend on. Each code belongs to a coding scheme (FpML, ISDA, or an
+internal =NONE= scheme for platform-only centres) but is unique per
+tenant regardless of scheme, and is optionally linked to a country
+for flag-icon display. Two entities reference a business centre by
+its code rather than embedding calendar logic themselves: a
+[[id:130A3261-E788-4222-9BD7-371AD92982FB][book]]'s [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][rates centre]]
+(=rates_centre_code=) and a business unit's home location
+(=business_centre_code=).
+
+* Detail
+
+** FpML code and coding scheme
+
+Business centre codes follow the FpML =businessCenterScheme=: a
+4-character code that is either the real geographical location whose
+calendar governs bad-business-day adjustment (e.g. =USNY=, =GBLO=),
+or an FpML-format rate-publication calendar code used for fixing-day
+offsets. A code is scoped to a *coding scheme* (=FPML_BUSINESS_CENTER=
+for the standard FpML set, =NONE= for platform-internal centres like
+the system's =WRLD= "World" centre) but, unlike some coding-scheme-scoped
+reference data, a business centre's code is unique per tenant
+*regardless* of which scheme it was sourced from -- two schemes
+cannot register the same code for one tenant.
+
+** Holiday calendar identification
+
+A business centre's defining job is to identify *which* holiday
+calendar applies. [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date rolling]] and the underlying
+[[id:267DD5E8-F095-47C1-B42B-733565306776][business-day / settlement-day distinction]] both operate against the
+holiday calendar(s) named by one or more business centre codes --
+the business centre itself is the identifier, not the calendar data;
+resolving a code to its actual holiday set is a downstream (ORE/
+QuantLib) concern.
+
+** Country and flag-icon linkage
+
+A business centre may optionally link to a country (via
+=country_alpha2_code=) purely for a friendlier Qt UI -- rendering a
+flag icon next to the centre in list and detail views. This link is
+cosmetic: it plays no role in calendar resolution, and a centre with
+no natural country mapping (e.g. a rate-publication-calendar code, or
+the system's global =WRLD= centre) simply has no flag.
+
+** As a book's rates centre
+
+A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] is assigned a business centre as its
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][rates centre]] (=rates_centre_code=), which determines which set of
+end-of-day revaluation market data the book uses -- every book
+sharing a rates centre revalues consistently. See
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] for how rates-centre assignment
+rolls books up into book groups and doubles as an access-control
+boundary.
+
+** As a business unit's home location
+
+A business unit separately records its own home business centre
+(=business_centre_code=) -- an organisational location, distinct
+from any book's rates centre, used to describe where the unit itself
+is based rather than which market data its books revalue against.
+
+* See also
+
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] -- how a business
+  centre's holiday calendar governs rolling of tenor dates.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] -- the canonical business-day /
+  settlement-day distinction business centre calendars feed into.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] -- a book's rates-centre
+  assignment and the book-group rollup built on top of it.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] -- hub note.

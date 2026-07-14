@@ -32,6 +32,8 @@ namespace ores::qt {
 
 class CounterpartyMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing counterparty windows and operations.
@@ -55,7 +57,9 @@ public:
     CounterpartyController(QMainWindow* mainWindow,
                            QMdiArea* mdiArea,
                            ClientManager* clientManager,
+                           ImageCache* imageCache,
                            const QString& username,
+                           BadgeCache* badgeCache,
                            QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -83,6 +87,7 @@ private:
     void showDetailWindow(const refdata::domain::counterparty& counterparty);
     void showHistoryWindow(const refdata::domain::counterparty& counterparty);
 
+    BadgeCache* badgeCache_;
     CounterpartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

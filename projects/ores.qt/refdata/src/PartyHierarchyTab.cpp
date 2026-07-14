@@ -26,17 +26,37 @@
 #include <QPointer>
 #include <QStandardItemModel>
 #include <QTabWidget>
+#include <QTreeView>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
+
+namespace {
+QModelIndex find_node_by_id(QAbstractItemModel* model, const QModelIndex& parent,
+                            const QString& id) {
+    const int rows = model->rowCount(parent);
+    for (int row = 0; row < rows; ++row) {
+        const auto index = model->index(row, 0, parent);
+        if (model->data(index, Qt::UserRole).toString() == id)
+            return index;
+        const auto found = find_node_by_id(model, index, id);
+        if (found.isValid())
+            return found;
+    }
+    return {};
+}
+}
 
 PartyHierarchyTab::PartyHierarchyTab(QWidget* dialogParent)
     : QObject(dialogParent)
     , tree_(new HierarchyTreeWidget(dialogParent)) {}
 
 void PartyHierarchyTab::attachTo(QTabWidget* tabWidget) {
-    tabWidget->addTab(tree_, "Hierarchy");
+    // Insert before the last (static, .ui-defined) tab -- Provenance --
+    // so dynamically-attached tabs never push it out of the last slot.
+    tabWidget->insertTab(std::max(0, tabWidget->count() - 1), tree_, "Hierarchy");
 }
 
 void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager* clientManager) {
@@ -50,7 +70,7 @@ void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager*
                  rootIdStr]() -> std::vector<ores::utility::domain::hierarchy_node> {
         refdata::messaging::get_party_hierarchy_request req;
         req.root_id = rootIdStr;
-        req.from_root = false;
+        req.from_root = true;
         auto result = clientManager->process_authenticated_request(std::move(req));
         if (!result || !result->success)
             return {};
@@ -61,7 +81,7 @@ void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager*
     connect(watcher,
             &QFutureWatcher<std::vector<ores::utility::domain::hierarchy_node>>::finished,
             this,
-            [self, watcher]() {
+            [self, watcher, rootIdStr]() {
                 auto roots = watcher->result();
                 watcher->deleteLater();
                 if (!self)
@@ -70,6 +90,10 @@ void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager*
                 model->setParent(self->tree_);
                 self->tree_->setModel(model);
                 self->tree_->expandAll();
+                const auto current =
+                    find_node_by_id(model, {}, QString::fromStdString(rootIdStr));
+                if (current.isValid())
+                    self->tree_->treeView()->setCurrentIndex(current);
             });
     watcher->setFuture(QtConcurrent::run(task));
 }

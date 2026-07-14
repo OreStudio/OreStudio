@@ -303,26 +303,35 @@ Everything below is consumed by the C++ codegen pipeline only.
 
 *** Detail fields
 
-| field                | label           | widget               | type      | is_key | is_required | placeholder              |
-|----------------------+-----------------+----------------------+-----------+--------+-------------+--------------------------|
-| short_code           | Short Code      | codeEdit             | line_edit | true   | true        | Enter short code         |
-| full_name            | Full Name       | nameEdit             | line_edit | false  | true        | Enter full name          |
-| party_type           | Party Type      | partyTypeEdit        | line_edit | false  | false       | Enter party type         |
-| status               | Status          | statusEdit           | line_edit | false  | false       | Enter status             |
-| business_center_code | Business Center | businessCenterEdit   | line_edit | false  | false       | Enter business center code |
+| field                | label           | widget               | type          | is_key | is_required | placeholder      | flag_source      | combo_allow_blank | combo_fetch                  | combo_domain_type              | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label    | combo_setter_pascal | badge_key    |
+|----------------------+-----------------+-----------------------+---------------+--------+-------------+-------------------+-------------------+---------------------+--------------------------------+-----------------------------------+-------------------------------+------------------------+-----------------------+--------------------+------------------------+--------------------+------------------+------------------------+---------------|
+| short_code           | Short Code      | codeEdit              | line_edit     | true   | true        | Enter short code |                   |                     |                                |                                    |                                |                        |                       |                    |                        |                    |                  |                        |               |
+| full_name            | Full Name       | nameEdit              | line_edit     | false  | true        | Enter full name  |                   |                     |                                |                                    |                                |                        |                       |                    |                        |                    |                  |                        |               |
+| party_type           | Party Type      | partyTypeCombo        | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_type       | ores.qt/LookupFetcher.hpp     | fetch_party_types      | partyTypeWatcher      | code               | description            | display_order      | party types      | PartyTypeCombo         | party_type    |
+| status               | Status          | statusCombo           | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_status     | ores.qt/LookupFetcher.hpp     | fetch_party_statuses   | partyStatusWatcher    | code               | description            | display_order      | party statuses   | PartyStatusCombo       | party_status  |
+| business_center_code | Business Center | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    | ores.qt/LookupFetcher.hpp     |                        |                       |                    |                        |                    |                  |                        |               |
 
 *** Columns (Qt model)
 
-| enum_name           | field                | header          | type      | width |
-|---------------------+----------------------+-----------------+-----------+-------|
-| ShortCode           | short_code           | Code            | string    |   120 |
-| FullName            | full_name            | Name            | string    |   250 |
-| PartyType           | party_type           | Type            | string    |   120 |
-| Status              | status               | Status          | string    |   100 |
-| BusinessCenterCode  | business_center_code | Business Center | string    |   130 |
-| Version             | version              | Version         | int       |    80 |
-| ModifiedBy          | modified_by          | Modified By     | string    |   120 |
-| RecordedAt          | recorded_at          | Recorded At     | timestamp |   150 |
+| enum_name           | field                | header          | type      | width | is_badge | badge_key    | formatter | formatter_include |
+|---------------------+----------------------+-----------------+-----------+-------+----------+--------------+-----------+--------------------|
+| ShortCode           | short_code           | Code            | string    |   120 |          |              |           |                    |
+| FullName            | full_name            | Name            | string    |   250 |          |              |           |                    |
+| PartyType           | party_type           | Type            | string    |   120 | true     | party_type   |           |                    |
+| Status              | status               | Status          | string    |   100 | true     | party_status |           |                    |
+| BusinessCenterCode  | business_center_code | Business Center | string    |   130 |          |              |           |                    |
+| Version             | version              | Version         | int       |    80 |          |              |           |                    |
+| ModifiedBy          | modified_by          | Modified By     | string    |   120 |          |              |           |                    |
+| RecordedAt          | recorded_at          | Recorded At     | timestamp |   150 |          |              |           |                    |
+
+*** Icon columns (Qt model)
+
+Business center gets its own flag icon, same as any other
+single-business-centre cell (e.g. Book's rates centre code column).
+
+| column              | accessor                  | field1                | field2 |
+|---------------------+----------------------------+------------------------+--------|
+| BusinessCenterCode  | business_centre_flag_icon | business_center_code  |        |
 
 ** Custom repository methods
 

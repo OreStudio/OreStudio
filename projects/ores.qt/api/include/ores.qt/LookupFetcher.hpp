@@ -30,6 +30,8 @@
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/party_status.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
@@ -251,6 +253,28 @@ fetch_countries(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
 fetch_book_statuses(ClientManager* cm);
+
+/**
+ * @brief Fetches all party types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Party's and Counterparty's party_type combo. Returns an
+ * error message on failure, distinguishing it from a legitimately-
+ * empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::party_type>, QString>
+fetch_party_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all party statuses from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Party's and Counterparty's status combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::party_status>, QString>
+fetch_party_statuses(ClientManager* cm);
 
 /**
  * @brief Fetches all CRM topology configs from the server.

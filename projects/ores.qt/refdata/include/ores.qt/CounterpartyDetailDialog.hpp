@@ -25,6 +25,8 @@
 #include "ores.qt/CounterpartyChildEntityTables.hpp"
 #include "ores.qt/CounterpartyHierarchyTab.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <vector>
 
@@ -95,11 +97,18 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromCounterparty();
     void updateCounterpartyFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+    void populatePartyTypeCombo();
+
+    void populatePartyStatusCombo();
+
+
+    void populateBusinessCenterCodeCombo();
 
     CounterpartyChildEntityTables* childTables_{nullptr};
     CounterpartyHierarchyTab* hierarchyTab_{nullptr};

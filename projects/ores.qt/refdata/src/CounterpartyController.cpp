@@ -42,12 +42,16 @@ constexpr std::string_view counterparty_event_name =
 CounterpartyController::CounterpartyController(QMainWindow* mainWindow,
                                                QMdiArea* mdiArea,
                                                ClientManager* clientManager,
+                                               ImageCache* imageCache,
                                                const QString& username,
+                                               BadgeCache* badgeCache,
                                                QObject* parent)
     : EntityController(
           mainWindow, mdiArea, clientManager, username, counterparty_event_name, parent)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CounterpartyController created";
 }
@@ -62,7 +66,7 @@ void CounterpartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CounterpartyMdiWindow(clientManager_, username_);
+    listWindow_ = new CounterpartyMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -161,6 +165,8 @@ void CounterpartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty";
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -209,6 +215,8 @@ void CounterpartyController::showDetailWindow(const refdata::domain::counterpart
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << counterparty.short_code;
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -350,6 +358,8 @@ void CounterpartyController::onOpenVersion(const refdata::domain::counterparty& 
     }
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
@@ -399,6 +409,8 @@ void CounterpartyController::onRevertVersion(const refdata::domain::counterparty
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_counterparty = counterparty;

@@ -18,16 +18,23 @@
  *
  */
 #include "ores.qt/PartyDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ui_PartyDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -39,7 +46,9 @@ PartyDetailDialog::PartyDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -89,6 +98,8 @@ void PartyDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void PartyDetailDialog::setupCombos() {}
+
 void PartyDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &PartyDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &PartyDetailDialog::onDeleteClicked);
@@ -96,14 +107,67 @@ void PartyDetailDialog::setupConnections() {
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onFieldChanged);
-    connect(ui_->partyTypeEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onFieldChanged);
-    connect(ui_->statusEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onFieldChanged);
-    connect(
-        ui_->businessCenterEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onFieldChanged);
+    connect(ui_->partyTypeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PartyDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PartyDetailDialog::onFieldChanged);
+    connect(ui_->businessCenterCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PartyDetailDialog::onFieldChanged);
 }
 
 void PartyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populatePartyTypeCombo();
+    setup_badge_combo(this, ui_->partyTypeCombo, badgeCache(), "party_type");
+    populatePartyStatusCombo();
+    setup_badge_combo(this, ui_->statusCombo, badgeCache(), "party_status");
+    populateBusinessCenterCodeCombo();
+}
+
+void PartyDetailDialog::populateBusinessCenterCodeCombo() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<PartyDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    QObject::connect(
+        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+
+            auto* combo = self->ui_->businessCenterCombo;
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since setParty() may run before or
+            // after setClientManager() triggers this fetch.
+            const QString fallback = QString::fromStdString(self->party_.business_center_code);
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
+
+            if (self->imageCache())
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::BusinessCentre, single_flag_icon_size());
+        });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_business_centre_codes(cm); }));
 }
 
 void PartyDetailDialog::setUsername(const std::string& username) {
@@ -138,20 +202,74 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->partyTypeEdit->setReadOnly(readOnly);
-    ui_->statusEdit->setReadOnly(readOnly);
-    ui_->businessCenterEdit->setReadOnly(readOnly);
+    ui_->partyTypeCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
+    ui_->businessCenterCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     childTables_->setReadOnly(readOnly);
 }
 
+void PartyDetailDialog::populatePartyTypeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating party_type combo";
+    populateDynamicCombo<refdata::domain::party_type>(
+        ui_->partyTypeCombo,
+        this,
+        clientManager_,
+        &fetch_party_types,
+        "partyTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(party_.party_type); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load party types: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->partyTypeCombo, badgeCache(), "party_type"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
+}
+void PartyDetailDialog::populatePartyStatusCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating status combo";
+    populateDynamicCombo<refdata::domain::party_status>(
+        ui_->statusCombo,
+        this,
+        clientManager_,
+        &fetch_party_statuses,
+        "partyStatusWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(party_.status); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load party statuses: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->statusCombo, badgeCache(), "party_status"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
+}
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(party_.full_name));
-    ui_->partyTypeEdit->setText(QString::fromStdString(party_.party_type));
-    ui_->statusEdit->setText(QString::fromStdString(party_.status));
-    ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code));
+    {
+        const auto val = QString::fromStdString(party_.party_type);
+        const int idx = ui_->partyTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->partyTypeCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(party_.status);
+        const int idx = ui_->statusCombo->findData(val);
+        if (idx >= 0)
+            ui_->statusCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(party_.business_center_code);
+        const int idx = ui_->businessCenterCombo->findText(val);
+        ui_->businessCenterCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(party_.version,
                        party_.modified_by,
@@ -169,9 +287,9 @@ void PartyDetailDialog::updatePartyFromUi() {
         party_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     party_.full_name = ui_->nameEdit->text().trimmed().toStdString();
-    party_.party_type = ui_->partyTypeEdit->text().trimmed().toStdString();
-    party_.status = ui_->statusEdit->text().trimmed().toStdString();
-    party_.business_center_code = ui_->businessCenterEdit->text().trimmed().toStdString();
+    party_.party_type = ui_->partyTypeCombo->currentText().toStdString();
+    party_.status = ui_->statusCombo->currentText().toStdString();
+    party_.business_center_code = ui_->businessCenterCombo->currentText().toStdString();
     party_.modified_by = username_;
 }
 

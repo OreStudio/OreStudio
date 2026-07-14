@@ -23,6 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/PartyChildEntityTables.hpp"
 #include "ores.qt/PartyHierarchyTab.hpp"
 #include "ores.refdata.api/domain/party.hpp"
@@ -95,11 +97,18 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromParty();
     void updatePartyFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+    void populatePartyTypeCombo();
+
+    void populatePartyStatusCombo();
+
+
+    void populateBusinessCenterCodeCombo();
 
     PartyChildEntityTables* childTables_{nullptr};
     PartyHierarchyTab* hierarchyTab_{nullptr};

@@ -22,7 +22,9 @@
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.api/messaging/asset_class_code_protocol.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
+#include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
@@ -335,6 +337,30 @@ fetch_coding_schemes(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->coding_schemes);
+}
+
+std::expected<std::vector<refdata::domain::asset_class_code>, QString>
+fetch_asset_class_codes(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_asset_class_codes_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->asset_classes);
+}
+
+std::expected<std::vector<refdata::domain::instrument_code>, QString>
+fetch_instrument_codes(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_instrument_codes_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->instruments);
 }
 
 std::expected<std::vector<refdata::domain::rounding_type>, QString>

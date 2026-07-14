@@ -106,6 +106,12 @@
 \ir ./refdata_book_purpose_types_drop.sql
 \ir ./refdata_ledger_feed_types_notify_trigger_drop.sql
 \ir ./refdata_ledger_feed_types_drop.sql
+
+-- Product catalogue: instrument_codes before asset_class_codes it references.
+\ir ./refdata_instrument_codes_notify_trigger_drop.sql
+\ir ./refdata_instrument_codes_drop.sql
+\ir ./refdata_asset_class_codes_notify_trigger_drop.sql
+\ir ./refdata_asset_class_codes_drop.sql
 \ir ./refdata_purpose_types_notify_trigger_drop.sql
 \ir ./refdata_purpose_types_drop.sql
 \ir ./refdata_party_id_schemes_notify_trigger_drop.sql

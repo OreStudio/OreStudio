@@ -1,0 +1,87 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_TEMPLATE_ENTRY_PROTOCOL_HPP
+#define ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_TEMPLATE_ENTRY_PROTOCOL_HPP
+
+#include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
+#include <cstdint>
+#include <string>
+#include <vector>
+
+namespace ores::synthetic::messaging {
+
+struct get_ir_curve_template_entries_request {
+    using response_type = struct get_ir_curve_template_entries_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ir_curve_template_entries.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_ir_curve_template_entries_response {
+    std::vector<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entries;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+struct save_ir_curve_template_entry_request {
+    using response_type = struct save_ir_curve_template_entry_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ir_curve_template_entries.save";
+    ores::synthetic::domain::ir_curve_template_entry data;
+
+    static save_ir_curve_template_entry_request
+    from(ores::synthetic::domain::ir_curve_template_entry v) {
+        return {.data = std::move(v)};
+    }
+};
+
+struct save_ir_curve_template_entry_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_ir_curve_template_entry_request {
+    using response_type = struct delete_ir_curve_template_entry_response;
+    static constexpr std::string_view nats_subject =
+        "synthetic.v1.ir_curve_template_entries.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_ir_curve_template_entry_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_ir_curve_template_entry_history_request {
+    using response_type = struct get_ir_curve_template_entry_history_response;
+    static constexpr std::string_view nats_subject =
+        "synthetic.v1.ir_curve_template_entries.history";
+    std::string id;
+};
+
+struct get_ir_curve_template_entry_history_response {
+    std::vector<ores::synthetic::domain::ir_curve_template_entry> history;
+    bool success = false;
+    std::string message;
+};
+
+}
+
+#endif

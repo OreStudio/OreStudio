@@ -18,6 +18,7 @@
  */
 #include "ores.qt/RefdataPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/AssetClassCodeController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookPurposeTypeController.hpp"
 #include "ores.qt/BookStatusController.hpp"
@@ -68,6 +69,7 @@
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.qt/TenorController.hpp"
 #include "ores.qt/TenorConventionController.hpp"
+#include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/TenorKindController.hpp"
 #include "ores.qt/TenorResolutionAlgorithmController.hpp"
 #include "ores.qt/TenorUnitController.hpp"
@@ -564,6 +566,22 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                              ctx_.username,
                                                              this);
     connectControllerSignals(tenorResolutionAlgorithmController_.get());
+
+    assetClassCodeController_ = std::make_unique<AssetClassCodeController>(ctx_.main_window,
+                                                                            ctx_.mdi_area,
+                                                                            ctx_.client_manager,
+                                                                            ctx_.change_reason_cache,
+                                                                            ctx_.username,
+                                                                            this);
+    connectControllerSignals(assetClassCodeController_.get());
+
+    instrumentCodeController_ = std::make_unique<InstrumentCodeController>(ctx_.main_window,
+                                                                            ctx_.mdi_area,
+                                                                            ctx_.client_manager,
+                                                                            ctx_.change_reason_cache,
+                                                                            ctx_.username,
+                                                                            this);
+    connectControllerSignals(instrumentCodeController_.get());
 }
 
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
@@ -756,6 +774,18 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
             if (codingSchemeAuthorityTypeController_)
                 codingSchemeAuthorityTypeController_->showListWindow();
+        });
+        auto* actAssetClassCodes =
+            menuClassifications->addAction(ico(Icon::Tag), tr("Asset &Class Codes"));
+        connect(actAssetClassCodes, &QAction::triggered, this, [this]() {
+            if (assetClassCodeController_)
+                assetClassCodeController_->showListWindow();
+        });
+        auto* actInstrumentCodes =
+            menuClassifications->addAction(ico(Icon::Tag), tr("&Instrument Codes"));
+        connect(actInstrumentCodes, &QAction::triggered, this, [this]() {
+            if (instrumentCodeController_)
+                instrumentCodeController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -1013,6 +1043,8 @@ void RefdataPlugin::on_logout() {
         data_librarian_window_ = nullptr;
     }
 
+    instrumentCodeController_.reset();
+    assetClassCodeController_.reset();
     tenorResolutionAlgorithmController_.reset();
     tenorUnitController_.reset();
     tenorKindController_.reset();

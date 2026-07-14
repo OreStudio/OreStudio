@@ -1,0 +1,242 @@
+:PROPERTIES:
+:ID: 42D13718-A760-4D36-B02F-A54E0161E36C
+:END:
+#+title: ores.synthetic.ir_curve_template_entry
+#+description: Codegen entity model for the synthetic ir_curve_template_entry table; one (tenor, instrument) entry of an IR Curve Template.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: ir_curve_template_entry
+#+entity_plural: ir_curve_template_entries
+#+entity_title: IR Curve Template Entry
+#+brief: One (tenor, instrument) entry of an IR Curve Template.
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+One row of the raw instrument grid (the "Curve Template") an
+=ir_curve_generation_config= publishes: which tenor, priced as which
+instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent --
+see =ores.refdata.instrument_code=), in what order. Entries belong to a
+parent config via =ir_curve_config_id=, the same
+one-config-many-children shape =fx_spot_generation_config='s
+=gmm_component= rows use. Every entry's published rate is derived from
+the parent config's short-rate process's =discount_factor()= at the
+tenor's maturity -- never an independently-noised value -- so the
+published tick batch is, by construction, a slice of one internally
+consistent curve. Party- and tenant-scoped.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this template entry.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this entry's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** ir_curve_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =ir_curve_generation_config= this entry contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** sequence_index
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:default_value: 0
+:END:
+
+Zero-based ordinal of this entry within its parent's template (short-end
+to long-end).
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 20)
+#+end_src
+
+* Columns
+
+** tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenor label this entry publishes (references =tenor.code=, e.g. "1M",
+"2Y").
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** instrument_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Instrument type this tenor is priced as (references
+=instrument_code.code=, e.g. "ForwardRateAgreement", "Swap") --
+determines which pricing derivation applies (simple rate, implied
+forward, or par-rate solve) when this entry's rate is computed from the
+parent process's =discount_factor()=.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_ir_curve_template_entries_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "tenor_code" <> ''    |
+| "instrument_code" <> '' |
+
+* Foreign keys
+
+** ir_curve_config_id
+:PROPERTIES:
+:table:         ores_synthetic_ir_curve_generation_configs_tbl
+:error_message: Invalid ir_curve_config_id: %. No active ir_curve_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Insert trigger
+** Validations
+
+| column          | validation_function                    |
+|-----------------+-------------------------------------------|
+| instrument_code | ores_refdata_validate_instrument_code_fn |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: ir_curve_template_entry
+:entity_plural_short:   ir_curve_template_entries
+:entity_singular_words: IR curve template entry
+:entity_plural_words:   IR curve template entries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: e
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/ir_curve_template_entry.hpp
+:domain_class:            synthetic::domain::ir_curve_template_entry
+:protocol_include:        ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp
+:collection_name:         ir_curve_template_entries
+:item_var:                ir_curve_template_entry
+:key_field:               id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:get_request_class:       synthetic::messaging::get_ir_curve_template_entries_request
+:get_response_class:      synthetic::messaging::get_ir_curve_template_entries_response
+:get_message_type:        get_ir_curve_template_entries_request
+:save_request_class:      synthetic::messaging::save_ir_curve_template_entry_request
+:save_response_class:     synthetic::messaging::save_ir_curve_template_entry_response
+:save_message_type:       save_ir_curve_template_entry_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_ir_curve_template_entry_request
+:delete_response_class:   synthetic::messaging::delete_ir_curve_template_entry_response
+:delete_message_type:     delete_ir_curve_template_entry_request
+:history_request_class:   synthetic::messaging::get_ir_curve_template_entry_history_request
+:history_response_class:  synthetic::messaging::get_ir_curve_template_entry_history_response
+:history_message_type:    get_ir_curve_template_entry_history_request
+:settings_group:          IrCurveTemplateEntryListWindow
+:window_title:            IR Curve Template Entries
+:icon:                    Table
+:changed_event_class:     synthetic::eventing::ir_curve_template_entry_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/ir_curve_template_entry_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field           | label           | widget              | type      | is_key | is_required | placeholder                        |
+|-----------------+-----------------+---------------------+-----------+--------+-------------+---------------------------------------|
+| sequence_index  | Sequence Index  | sequenceIndexEdit   | spin_box  |        | true        | Enter sequence index                |
+| tenor_code      | Tenor           | tenorCodeEdit       | line_edit |        | true        | Enter tenor code (e.g. 1Y)          |
+| instrument_code | Instrument      | instrumentCodeEdit  | line_edit |        | true        | Enter instrument code (e.g. Swap)   |
+
+*** Columns (Qt model)
+
+| enum_name      | field           | header          | type      | width |
+|----------------+-----------------+-----------------+-----------+-------|
+| SequenceIndex  | sequence_index  | Sequence Index  | int       | 120   |
+| TenorCode      | tenor_code      | Tenor           | string    | 100   |
+| InstrumentCode | instrument_code | Instrument      | string    | 150   |
+| Version        | version         | Version         | int       | 80    |
+| ModifiedBy     | modified_by     | Modified By     | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At     | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

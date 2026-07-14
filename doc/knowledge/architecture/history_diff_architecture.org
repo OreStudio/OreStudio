@@ -144,8 +144,12 @@ reflection and no template metaprogramming in the mapper's own logic.
 The codegen facet renders from each entity's field list plus a small
 per-field rendering-hint vocabulary (default: =to_string=/=std::string=
 passthrough; opt-in hints for enums, optional wrapping, foreign-key
-display strings, and UUID-like ids). It sits beside the existing
-[[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][ores.cpp.qt.history_dialog_impl]] archetype.
+display strings, and UUID-like ids). It sits beside the
+[[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] archetype, which wires the single
+generic =ores::qt::HistoryDialog= into every entity's controller —
+the per-entity =ores.cpp.qt.history_dialog_impl= archetype this
+originally sat beside was retired once every entity moved onto that
+generic dialog.
 
 ** ores.diff: generic, because it never sees a domain type
 
@@ -311,5 +315,7 @@ conflated:
   owning design for parent-child aggregate versioning.
 - [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — the component this document's diff-span extension
   belongs to.
-- [[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][ores.cpp.qt.history_dialog_impl]] — the existing history-dialog
-  codegen archetype the new mapper facet sits beside.
+- [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] — wires the generic
+  =ores::qt::HistoryDialog= into every entity's controller; the
+  per-entity history-dialog archetype this originally referenced was
+  retired once every entity moved onto that generic dialog.

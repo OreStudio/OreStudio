@@ -143,6 +143,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Template drift CI failure: cpp_group.org stale after hand-editing cpp_qt.org's description | cpp_group.org | Accepted | Fixed in 221c426b via regenerate_facet_inventories.py, confirmed resolved by re-review. |
+| 2 | Dangling id: links to the deleted ores.cpp.qt.history_dialog_impl archetype | doc/knowledge/architecture/history_diff_architecture.org | Accepted | Reworded both references to point at ores.cpp.qt.controller_impl (the archetype that now wires HistoryDialog) and explain the retirement, flagged independently by two review passes. |
+| 3 | Hand-written validateInput() rationale comment dropped by full regen (currency) | CurrencyDetailDialog.cpp | Declined | Explicit, accepted tradeoff of the "no selective/hand-patched regeneration" policy this task follows; multiple reviewers confirmed this is intentional, not a regression. |
+| 4 | Stale PlantUML diagrams still declare deleted BookHistoryDialog/BusinessCentreHistoryDialog classes | ores.qt.trading.puml / ores.qt.party.puml | Declined | Generated artifacts from a separate, out-of-scope archetype; reviewer flagged as informational only ("not a blocker"), and the diagrams already have pre-existing structural staleness (mis-scoped component placement) unrelated to this PR. |
 
 * Result

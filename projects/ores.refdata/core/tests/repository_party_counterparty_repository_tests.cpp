@@ -49,8 +49,9 @@ const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository][party_counterparty]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        ores::database::context ctx,
                                         const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest();
+    auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
@@ -79,11 +80,11 @@ TEST_CASE("write_single_party_counterparty", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
-    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -100,11 +101,11 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     std::vector<party_counterparty> pcs;
     for (int i = 0; i < 3; ++i) {
@@ -125,11 +126,11 @@ TEST_CASE("read_latest_party_counterparties_by_party", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -158,11 +159,11 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -184,11 +185,11 @@ TEST_CASE("remove_party_counterparty", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";

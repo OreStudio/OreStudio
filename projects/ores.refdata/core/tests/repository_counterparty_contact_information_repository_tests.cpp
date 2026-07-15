@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -60,8 +61,8 @@ TEST_CASE("write_single_counterparty_contact_information", tags) {
     cci.counterparty_id = cp.id;
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 
-    counterparty_contact_information_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(cci));
+    counterparty_contact_information_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), cci));
 }
 
 TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
@@ -83,8 +84,8 @@ TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact informations: "
                              << counterparty_contact_informations;
 
-    counterparty_contact_information_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(counterparty_contact_informations));
+    counterparty_contact_information_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), counterparty_contact_informations));
 }
 
 TEST_CASE("read_latest_counterparty_contact_informations", tags) {
@@ -106,10 +107,10 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
     BOOST_LOG_SEV(lg, debug) << "Written counterparty contact informations: "
                              << written_counterparty_contact_informations;
 
-    counterparty_contact_information_repository repo(h.context());
-    repo.write(written_counterparty_contact_informations);
+    counterparty_contact_information_repository repo;
+    repo.write(h.context(), written_counterparty_contact_informations);
 
-    auto read_counterparty_contact_informations = repo.read_latest();
+    auto read_counterparty_contact_informations = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read counterparty contact informations: "
                              << read_counterparty_contact_informations;
 
@@ -133,13 +134,14 @@ TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
     const auto original_city = cci.city;
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 
-    counterparty_contact_information_repository repo(h.context());
-    repo.write(cci);
+    counterparty_contact_information_repository repo;
+    repo.write(h.context(), cci);
 
     cci.city = original_city + " v2";
-    repo.write(cci);
+    repo.write(h.context(), cci);
 
-    auto read_counterparty_contact_informations = repo.read_latest(cci.id);
+    auto read_counterparty_contact_informations =
+        repo.read_latest(h.context(), boost::uuids::to_string(cci.id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparty contact informations: "
                              << read_counterparty_contact_informations;
 
@@ -152,12 +154,13 @@ TEST_CASE("read_nonexistent_counterparty_contact_information_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    counterparty_contact_information_repository repo(h.context());
+    counterparty_contact_information_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_counterparty_contact_informations = repo.read_latest(nonexistent_id);
+    auto read_counterparty_contact_informations =
+        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparty contact informations: "
                              << read_counterparty_contact_informations;
 

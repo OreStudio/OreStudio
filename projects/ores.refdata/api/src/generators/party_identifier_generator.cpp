@@ -20,9 +20,11 @@
 #include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <string_view>
 #include <unordered_set>
 
 namespace ores::refdata::generators {
@@ -43,7 +45,21 @@ generate_synthetic_party_identifier(utility::generation::generation_context& ctx
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.id_scheme = std::string("LEI") + "-" + std::to_string(idx);
+    // Rotate through valid schemes: a party may have at most one identifier
+    // per scheme (see ores_refdata_party_identifiers_insert_fn), so callers
+    // that generate several identifiers for the same party need distinct
+    // schemes, not just distinct ids.
+    static constexpr std::array<std::string_view, 10> valid_schemes{"LEI",
+                                                                     "BIC",
+                                                                     "MIC",
+                                                                     "NATIONAL_ID",
+                                                                     "CEDB",
+                                                                     "NATURAL_PERSON",
+                                                                     "ACER",
+                                                                     "DTCC_PARTICIPANT_ID",
+                                                                     "MPID",
+                                                                     "INTERNAL"};
+    r.id_scheme = std::string(valid_schemes[idx % valid_schemes.size()]);
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;

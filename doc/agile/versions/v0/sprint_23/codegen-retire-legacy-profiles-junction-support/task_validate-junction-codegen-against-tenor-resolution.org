@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:tooling:junction:marketdata:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/validate-junction-codegen-against-tenor-resolution
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -61,7 +61,7 @@ management UI screen manually to confirm nothing regressed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

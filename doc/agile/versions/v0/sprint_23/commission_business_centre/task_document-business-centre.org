@@ -66,7 +66,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Wrong ledger-sweep link + stale filename in is_sweepable capture | rethink_is_sweepable_flag_as_sweep_type_enum.org | Fixed | 804f04e0e |
+| 2 | Antal & Koch-Medina claim overstated (VaR sign is invariant; ES's is not) | aggregation_currency.org | Fixed | 804f04e0e |
+| 3 | Undefined "business centre's presentation currency" attribute | spot_sweep.org, presentation_currency.org | Fixed | 804f04e0e |
+| 4 | Leftover "reporting"/"natural" terminology from rename | knowledge.org, currency.org | Fixed | 804f04e0e |
+| 5 | ISDA SIMM inference + rooted/unrooted MST analogy mismatch | crm_risk_and_recentering.org | Fixed | 804f04e0e |
+| 6 | Overclaimed "home location... documented in their own chapters" | chapter_6b_business_centres.org | Fixed | 804f04e0e |
+| 7 | "book" anchor text nit on Book Currencies link | currency.org | Fixed | 804f04e0e |
 
 * Result
 

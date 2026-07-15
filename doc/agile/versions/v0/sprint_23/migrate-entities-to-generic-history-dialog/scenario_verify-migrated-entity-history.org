@@ -36,12 +36,25 @@ run =./compass.sh shell -f
 projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 to reprovision it.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check book history
 
 Reference Data > Books. Open an existing book's history (or create
 one, edit it, then open history). Confirm the History Timeline shows
 its versions and the diff pane renders without a "No history provider
 registered" error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Repository error: Query execution failed: ERROR:  column "functional_currency" does not exist; LINE 1: ...ription", "parent_portfolio_id", "owner_unit_id", "functiona... |
 
 ** Check CDS convention history
 
@@ -50,20 +63,47 @@ history. Confirm it loads correctly — this entity was one of the ones
 needing an explicit =history_response_data_field= override
 (=cds_conventions=, not the default =history=).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | cant save cds convention, missing change reasons. check all conventions |
+
 ** Check tenor history
 
 Reference Data > Tenors. Open an existing tenor's history. Confirm it
 loads correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
 
 ** Check currency group history
 
 Reference Data > Currency Groups. Open an existing currency group's
 history. Confirm it loads correctly.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | cannot find in menus |
+
 ** Check calendar history
 
 Reference Data > Calendars. Open an existing calendar's history.
 Confirm it loads correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | cannot see in menu |
 
 ** Check Open and Revert still work on one entity
 
@@ -73,14 +113,20 @@ detail view opens correctly. Close it, select an older version, and
 click Revert — confirm the confirmation dialog appears and (on
 confirming) the editable revert dialog opens pre-populated.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-15T12:31:20Z |
+| Branch        | feature/delete-history-dialog-archetypes-and-combo-drift |
+| Commit        | 6bb442299 |
+| Worktree      | brave_hopper |
 
 * Notes

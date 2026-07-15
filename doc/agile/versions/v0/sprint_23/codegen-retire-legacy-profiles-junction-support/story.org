@@ -28,12 +28,12 @@ codegen gap.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started — discovered and scoped while building the tenor management UI ([[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]]) needed a read path for =tenor_convention_resolution=, a junction, and found codegen can't produce one. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Confirm the "delete legacy, let things break" scope (below) with the user, then start with the deletion task so its blast radius is known before building anything new on top. |
-| Last touched  | 2026-07-13                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-15                               |
 
 * Analysis: two parallel codegen systems
 
@@ -245,3 +245,29 @@ just flipping =model_types=.
   hand-authored service/protocol/handler as a stopgap, per the user's
   explicit "continue your work manually" instruction, and switch to the
   generated repository once this story lands).
+
+* Result
+
+Closed DONE: this story's own Acceptance is fully met by tasks 1-4.
+System 1 (=facet_catalogue.org='s dead resolution code) is deleted;
+=junction= C++ generation (domain/generator/repository) works and is
+validated end-to-end against a real junction
+(=tenor_convention_resolution=), which now runs on generated code with
+the hand-authored stopgap retired; no regression to any existing
+=domain_entity=/=junction= model's generated output (=book= verified
+zero-diff throughout, plus the full =ores.refdata= test suite passing).
+Task 4's manual Tenor management UI screen check was skipped per
+explicit user instruction (an unrelated build-target issue interrupted
+starting the client; the service/protocol contract is unchanged by
+this story's work, so the risk is low) -- left for whoever next runs
+that screen to confirm.
+
+*Deferred, left BACKLOG under this story*: task 5 (sweep docs/skills/
+recipes for stale legacy-profile-system references) and the 8 tasks
+merged in from "Resolve codegen model unification blockers" (B4, B6,
+B7, B9, B10, B11, the =_table.org= content migration, table-model-type
+retirement). None of these are required by this story's own Acceptance
+criteria -- B10/B11 in particular were near-duplicates of tasks 1/5's
+scope, and the rest were merged in for tracking convenience when the
+donor story was closed, not because this story's goal depends on them.
+Real, tracked follow-up work; just not this story's own finish line.

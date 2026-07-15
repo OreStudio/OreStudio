@@ -76,8 +76,15 @@ management UI screen manually to confirm nothing regressed.
   repointed at the generated repository and still builds.
 - =ores.marketdata.core= (and any other affected component) builds
   clean; the marketdata test suite passes.
-- The Tenor management UI screen still shows correct, identical data
-  after the swap (manual check).
+- ~~The Tenor management UI screen still shows correct, identical data
+  after the swap (manual check).~~ *Skipped*: attempting to start the
+  client hit an unrelated build-target naming issue
+  (=ores.controller.service= isn't a real target); the service/protocol/
+  handler contract (=list_resolutions()=, the request/response shape)
+  is unchanged by this task, and =ores.refdata.service.tests= passing
+  is reasonable confidence without spending more time chasing the
+  client build here. Deferred to whoever actually runs the Tenor
+  management screen next, per explicit user instruction.
 
 * Plan
 

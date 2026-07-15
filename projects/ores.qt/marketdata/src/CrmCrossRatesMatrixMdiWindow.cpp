@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
+#include <iomanip>
 #include <sstream>
 
 namespace ores::qt {
@@ -649,25 +650,31 @@ void CrmCrossRatesMatrixMdiWindow::exportToCsv() {
     if (fileName.isEmpty())
         return;
 
-    std::ostringstream out;
-    out << "base,quote,rate,status,as_of\n";
-    for (const auto& r : displayedRates_) {
-        out << r.base_currency_code << ',' << r.quote_currency_code << ',' << r.rate << ','
-            << r.status << ',' << r.as_of << '\n';
-    }
+    try {
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(5);
+        out << "base,quote,rate,status,as_of\n";
+        for (const auto& r : displayedRates_) {
+            out << r.base_currency_code << ',' << r.quote_currency_code << ',' << r.rate << ','
+                << r.status << ',' << r.as_of << '\n';
+        }
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        const auto csvData = out.str();
+        file.write(csvData.c_str(), static_cast<qint64>(csvData.size()));
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(tr("Successfully exported CRM rates to %1").arg(fileName));
+    } catch (const std::exception& e) {
         MessageBoxHelper::critical(
-            this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
-        return;
+            this, tr("Export Error"), tr("Error during CSV export: %1").arg(e.what()));
     }
-    const auto csvData = out.str();
-    file.write(csvData.c_str(), static_cast<qint64>(csvData.size()));
-    file.close();
-
-    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-    emit statusChanged(tr("Successfully exported CRM rates to %1").arg(fileName));
 }
 
 void CrmCrossRatesMatrixMdiWindow::exportToOre() {
@@ -702,20 +709,27 @@ void CrmCrossRatesMatrixMdiWindow::exportToOre() {
         return;
     }
 
-    std::ostringstream out;
-    ores::ore::market::serialize_market_data(out, data);
+    try {
+        std::ostringstream out;
+        ores::ore::market::serialize_market_data(out, data);
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        const auto textData = out.str();
+        file.write(textData.c_str(), static_cast<qint64>(textData.size()));
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+    } catch (const std::exception& e) {
         MessageBoxHelper::critical(
-            this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+            this, tr("Export Error"), tr("Error during ORE market data export: %1").arg(e.what()));
         return;
     }
-    const auto textData = out.str();
-    file.write(textData.c_str(), static_cast<qint64>(textData.size()));
-    file.close();
 
-    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
     emit statusChanged(tr("Successfully exported CRM rates to %1").arg(fileName));
 }
 

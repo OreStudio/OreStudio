@@ -126,7 +126,9 @@ void CurrencyGroupMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "CurrencyGroupListWindow",
-                            {ClientCurrencyGroupModel::Description},
+                            {
+                                ClientCurrencyGroupModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -367,5 +369,6 @@ void CurrencyGroupMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -80,6 +80,11 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+
+    /**
+     * @brief Relayed from BookMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
     void showBookStatusesRequested();
     void showRegulatoryBookTypesRequested();
     void showBookPurposeTypesRequested();

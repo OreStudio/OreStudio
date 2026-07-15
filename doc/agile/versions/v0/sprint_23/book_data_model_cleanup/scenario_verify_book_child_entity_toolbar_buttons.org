@@ -44,7 +44,7 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Books toolbar shows 4 new buttons after History
 
@@ -57,7 +57,7 @@ list it opens.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Statuses button opens Book Statuses list
 
@@ -69,7 +69,7 @@ records, no error banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Regulatory Types button opens Regulatory Book Types list
 
@@ -80,7 +80,7 @@ Regulatory Book Types list window opens, populated, no error banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Purpose Types button opens Book Purpose Types list
 
@@ -91,7 +91,7 @@ Types list window opens, populated, no error banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Ledger Feed Types button opens Ledger Feed Types list
 
@@ -102,7 +102,7 @@ Feed Types list window opens, populated, no error banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -114,16 +114,16 @@ ERROR-level line.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-15T07:52:26Z |
+| Branch        | feature/add-book-child-entity-toolbar-buttons |
+| Commit        | 168d1f460 |
+| Worktree      | bright_faraday |
 
 * Notes

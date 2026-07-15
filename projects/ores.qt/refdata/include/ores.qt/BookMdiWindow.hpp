@@ -68,6 +68,13 @@ signals:
     void addNewRequested();
     void bookDeleted(const QString& code);
     void showBookHistory(const refdata::domain::book& book);
+
+    /**
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
+     */
     void showBookStatusesRequested();
     void showRegulatoryBookTypesRequested();
     void showBookPurposeTypesRequested();

@@ -31,10 +31,10 @@ Expose Book's lookup children (=book_status=, =regulatory_book_type=,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Implemented, built clean; awaiting manual QA. |
-| Waiting on   | Manual QA (scenario loaded in client).  |
-| Next         | Close task once manual QA passes.       |
-| Last touched | 2026-07-14                               |
+| Now          | Implemented via codegen facet, built clean, manual QA PASSED. |
+| Waiting on   | Nothing.                                |
+| Next         | Close task.                              |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
@@ -54,14 +54,56 @@ Expose Book's lookup children (=book_status=, =regulatory_book_type=,
 
 * Plan
 
-This is hand-maintained boilerplate, not codegen-driven -- confirmed
-no facet/template exists for cross-entity toolbar wiring (same
-finding as the earlier =rates_centre_code= flagged-combo task).
-=CurrencyMdiWindow.hpp='s "Extra signal declarations seam" comment
-references a =<<paste:UUID>>= mechanism that isn't actually populated
-here either; the signals are hand-added directly above the seam
-comment, same as Currency's own =showRoundingTypesRequested= etc.
-Followed that exact convention:
+Initially (wrongly) assumed this was hand-maintained boilerplate with
+no codegen facet, based on =CurrencyMdiWindow.hpp='s "Extra signal
+declarations seam" comment mentioning a =<<paste:UUID>>= mechanism
+that appeared unused. Corrected after being asked to check more
+carefully: a fully data-driven facet already exists --
+=*** Related entity shortcuts= under an entity's =** Qt= section (see
+=org_loader.py='s =_qt_related_entity_shortcuts=, and
+=cpp_qt_mdi_window.*.mustache=/=cpp_qt_controller.*.mustache='s
+=related_entity_shortcuts=/=has_related_entity_shortcuts= template
+sections). =ores.refdata.currency.org= already uses it for exactly
+the RoundingType/MonetaryNature/MarketTier toolbar buttons this
+task's own description names as the pattern to mirror -- I had
+duplicated it by hand instead of using the facet that was already
+there to copy.
+
+Fixed properly: added the same declarative table to
+=ores.refdata.book.org= (=signal=/=icon=/=label=/=tooltip= columns,
+one row per lookup child), which is now the canonical source for this
+wiring going forward. Ran =codegen entity generate book
+--address ores.cpp.qt= to confirm it: the generated
+=BookMdiWindow=/=BookController= toolbar/signal/relay code came out
+byte-for-byte equivalent to the hand-written version below, proving
+the facet works correctly for this case.
+
+*Initially* did not ship the full regen output: =--address ores.cpp.qt=
+regenerates every file in that address, and at the time
+=BookController.cpp=/=BookDetailDialog.cpp= also picked up unrelated,
+in-progress cross-team work -- the =BookHistoryDialog= -> generic
+=HistoryDialog= migration (another worktree's "Consolidate history
+dialogs onto HistoryDialogBase" story, then still unmerged) plus
+independent combo-lookup/party_id template fixes. Bundling an
+unmerged story's work into this task would have been scope creep, so
+reverted to the hand-written, already-tested version for those files
+and kept only the =book.org= model change.
+
+That migration merged to =main= shortly after (PR #1571, then further
+polished via PR #1568/#1575 rounds), so once this branch was rebased
+onto latest =main= the conflict disappeared -- =main='s own
+=BookController.cpp=/=BookDetailDialog.cpp= already contained the
+migration. Regenerated once more from the fully-rebased tree and
+diffed against what was already committed: =BookController.cpp= came
+back byte-identical (confirming the earlier hand-written version
+already matched what the merged migration produces), and
+=BookMdiWindow.hpp=/=.cpp=/=BookController.hpp= differed only by a
+codegen-added doc comment and a clang-format line-wrap -- both taken.
+=book.org= is now the sole source of truth for this wiring; no
+hand-written toolbar code remains outside the generated files.
+
+Implementation shape (now codegen-documented in =book.org=, matching
+what ships):
 
 1. =BookMdiWindow.hpp=/=.cpp= — 4 new signals + toolbar actions
    (separator, then one =Icon::Tag= button per child, matching that
@@ -71,7 +113,9 @@ Followed that exact convention:
    to the =BookMdiWindow= signals in the constructor.
 3. =RefdataPlugin.cpp= — 4 =connect()= calls after all 5 controllers
    (=bookController_= plus the 4 targets) are constructed, each
-   calling the target controller's =showListWindow()=.
+   calling the target controller's =showListWindow()= (this part is
+   plugin-level composition-root wiring, outside the facet's scope by
+   design -- see =_qt_related_entity_shortcuts='s own docstring).
 
 * Notes
 

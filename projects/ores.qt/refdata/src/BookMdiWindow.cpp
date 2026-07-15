@@ -115,12 +115,12 @@ void BookMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &BookMdiWindow::viewHistorySelected);
 
+
     toolbar_->addSeparator();
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
-            tr("Statuses"));
+            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Statuses"));
         action->setToolTip(tr("Open Book Statuses list"));
         connect(action, &QAction::triggered, this, [this]() { emit showBookStatusesRequested(); });
     }

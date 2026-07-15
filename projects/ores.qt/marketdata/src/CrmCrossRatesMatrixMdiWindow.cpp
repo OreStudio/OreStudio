@@ -129,6 +129,45 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
     autoRefreshTimer_ = new QTimer(this);
     connect(autoRefreshTimer_, &QTimer::timeout, this, &CrmCrossRatesMatrixMdiWindow::reload);
 
+    if (clientManager_) {
+        conventionCache_ =
+            std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
+                clientManager_->nats_client());
+        // load() is a blocking NATS round trip -- run it off the UI
+        // thread, but surface a failure visibly rather than only
+        // logging it: nothing reads from conventionCache_ yet (that's
+        // the sibling formatter task), so a silent failure here would
+        // otherwise be completely invisible, including to a developer
+        // testing this live. A QMessageBox rather than statusChanged/
+        // errorOccurred (which route into the same transient status-bar
+        // channel this window's own 5s auto-refresh success message
+        // keeps overwriting) -- load() only ever fires once, at
+        // construction, so it needs a notification that doesn't get
+        // stomped by the very next routine reload a few seconds later.
+        QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
+        const auto tenantId = clientManager_->currentTenantId();
+        auto* cacheWatcher = new QFutureWatcher<QString>(this);
+        connect(cacheWatcher, &QFutureWatcher<QString>::finished, this, [self, cacheWatcher]() {
+            const auto error = cacheWatcher->result();
+            cacheWatcher->deleteLater();
+            if (!self || error.isEmpty())
+                return;
+            BOOST_LOG_SEV(lg(), warn) << "Currency pair convention cache load failed: "
+                                      << error.toStdString();
+            MessageBoxHelper::critical(
+                self,
+                tr("FX Pair Conventions"),
+                tr("Could not load FX pair conventions. Rate display will use default "
+                   "formatting until this is resolved."),
+                error);
+        });
+        cacheWatcher->setFuture(QtConcurrent::run([self, tenantId]() -> QString {
+            if (!self || !self->conventionCache_)
+                return {};
+            return QString::fromStdString(self->conventionCache_->load(tenantId));
+        }));
+    }
+
     setupUi();
     reload();
 }

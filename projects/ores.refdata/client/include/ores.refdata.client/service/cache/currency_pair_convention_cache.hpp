@@ -90,7 +90,20 @@ public:
         token_provider_ = std::move(token_provider);
     }
 
-    void load(const std::string& tenant_id) {
+    /**
+     * @brief Loads (or reloads) one tenant's partition.
+     *
+     * @return An empty string on success. On failure, a human-readable
+     * message describing what went wrong -- the failure is still logged
+     * (@c warn) either way, but callers that can surface it to a user
+     * (e.g. a UI's status/error signal) need it returned, not just
+     * buried in a log a user never sees. Silently-swallowed background
+     * failures are the right default for the warm-up/refresh path
+     * (@c nats-event-cache.registrar_wiring calls this fire-and-forget
+     * from a detached thread), but the return value lets any caller
+     * that *can* react to a failure opt in.
+     */
+    [[nodiscard]] std::string load(const std::string& tenant_id) {
         using namespace ores::logging;
         try {
             const auto req_json = rfl::json::write(
@@ -109,11 +122,11 @@ public:
                 ores::refdata::messaging::read_currency_pair_conventions_for_cache_response>(
                 ores::nats::as_string_view(reply.data));
             if (!resp || !resp->success) {
-                const auto msg = resp ? resp->message : "parse error";
+                const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
                 BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)
                     << "CurrencyPairConvention cache load failed for tenant " << tenant_id << ": "
                     << msg;
-                return;
+                return msg;
             }
             auto entries_t = cache_t::entries_map{}.transient();
             const auto count = resp->conventions.size();
@@ -123,10 +136,12 @@ public:
             cache_.replace_partition(tenant_id, entries);
             BOOST_LOG_SEV(currency_pair_convention_cache_lg(), debug)
                 << "Loaded " << count << " currency_pair_conventions for tenant " << tenant_id;
+            return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)
                 << "CurrencyPairConvention cache load exception for tenant " << tenant_id << ": "
                 << e.what();
+            return e.what();
         }
     }
 

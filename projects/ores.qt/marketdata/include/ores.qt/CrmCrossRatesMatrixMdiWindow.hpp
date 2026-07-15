@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
@@ -33,6 +34,7 @@
 #include <QWidget>
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -163,6 +165,13 @@ private:
     /// data) work from this: what's on screen, not a fresh unfiltered
     /// fetch.
     std::vector<ores::marketdata::messaging::crm_rate_item> displayedRates_;
+
+    /// Warmed once at construction (this window's own tenant) and never
+    /// consulted yet -- proves the cache loads/is queryable end-to-end
+    /// against a live environment. Actual convention-aware formatting
+    /// using it is the sibling formatter task's job, not this one.
+    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache>
+        conventionCache_;
 };
 
 }

@@ -57,7 +57,7 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
     BOOST_LOG_SEV(party_cache_registrar_lg(), debug)
         << "Warming party cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
-        cache->load(tenant_id);
+        (void)cache->load(tenant_id); // warm-up failure is logged; nothing here can react to it
 
     using ores::eventing::domain::event_traits;
     using ores::refdata::eventing::party_changed_event;
@@ -68,7 +68,7 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
             if (evt && !evt->tenant_id.empty()) {
                 // Offload to a detached thread: load() calls request_sync,
                 // which would block the NATS callback thread if called inline.
-                std::thread([cache, tid = evt->tenant_id]() { cache->load(tid); }).detach();
+                std::thread([cache, tid = evt->tenant_id]() { (void)cache->load(tid); }).detach();
             }
         });
 }

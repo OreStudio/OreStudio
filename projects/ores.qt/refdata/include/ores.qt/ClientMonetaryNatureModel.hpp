@@ -87,6 +87,7 @@ public:
      */
     const refdata::domain::monetary_nature* getNature(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

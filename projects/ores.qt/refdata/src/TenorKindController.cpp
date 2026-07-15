@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorKindDetailDialog.hpp"
-#include "ores.qt/TenorKindHistoryDialog.hpp"
 #include "ores.qt/TenorKindMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/tenor_kind_changed_event.hpp"
+#include "ores.refdata.api/messaging/tenor_kind_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -279,10 +283,14 @@ void TenorKindController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new TenorKindHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::tenor_kind{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &TenorKindHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<TenorKindController>(this)](const QString& message) {
                 if (!self)
@@ -290,7 +298,7 @@ void TenorKindController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &TenorKindHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<TenorKindController>(this)](const QString& message) {
                 if (!self)
@@ -298,13 +306,23 @@ void TenorKindController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &TenorKindHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &TenorKindController::onRevertVersion);
+            [self = QPointer<TenorKindController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &TenorKindHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &TenorKindController::onOpenVersion);
+            [self = QPointer<TenorKindController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -392,6 +410,96 @@ void TenorKindController::onOpenVersion(const refdata::domain::tenor_kind& kind,
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void TenorKindController::fetchTenorKindHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::tenor_kind>, QString>)>
+        callback) {
+    refdata::messaging::get_tenor_kind_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::tenor_kind>, QString>;
+
+    QPointer<TenorKindController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void TenorKindController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenorKindController> self = this;
+    fetchTenorKindHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_kind>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void TenorKindController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenorKindController> self = this;
+    fetchTenorKindHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_kind>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void TenorKindController::onRevertVersion(const refdata::domain::tenor_kind& kind) {

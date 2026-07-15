@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorAnchorDetailDialog.hpp"
-#include "ores.qt/TenorAnchorHistoryDialog.hpp"
 #include "ores.qt/TenorAnchorMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/tenor_anchor_changed_event.hpp"
+#include "ores.refdata.api/messaging/tenor_anchor_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -283,10 +287,14 @@ void TenorAnchorController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new TenorAnchorHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::tenor_anchor{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &TenorAnchorHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<TenorAnchorController>(this)](const QString& message) {
                 if (!self)
@@ -294,7 +302,7 @@ void TenorAnchorController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &TenorAnchorHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<TenorAnchorController>(this)](const QString& message) {
                 if (!self)
@@ -302,13 +310,23 @@ void TenorAnchorController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &TenorAnchorHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &TenorAnchorController::onRevertVersion);
+            [self = QPointer<TenorAnchorController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &TenorAnchorHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &TenorAnchorController::onOpenVersion);
+            [self = QPointer<TenorAnchorController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -396,6 +414,96 @@ void TenorAnchorController::onOpenVersion(const refdata::domain::tenor_anchor& a
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void TenorAnchorController::fetchTenorAnchorHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::tenor_anchor>, QString>)>
+        callback) {
+    refdata::messaging::get_tenor_anchor_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::tenor_anchor>, QString>;
+
+    QPointer<TenorAnchorController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void TenorAnchorController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenorAnchorController> self = this;
+    fetchTenorAnchorHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_anchor>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void TenorAnchorController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenorAnchorController> self = this;
+    fetchTenorAnchorHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_anchor>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void TenorAnchorController::onRevertVersion(const refdata::domain::tenor_anchor& anchor) {

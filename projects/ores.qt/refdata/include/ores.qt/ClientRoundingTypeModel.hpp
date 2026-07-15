@@ -87,6 +87,7 @@ public:
      */
     const refdata::domain::rounding_type* getType(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

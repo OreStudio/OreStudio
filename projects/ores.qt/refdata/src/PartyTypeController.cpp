@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyTypeDetailDialog.hpp"
-#include "ores.qt/PartyTypeHistoryDialog.hpp"
 #include "ores.qt/PartyTypeMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/party_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -148,6 +152,7 @@ void PartyTypeController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new party type requested";
     showAddWindow();
 }
+
 
 void PartyTypeController::onShowHistory(const refdata::domain::party_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
@@ -278,10 +283,14 @@ void PartyTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new PartyTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::party_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &PartyTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<PartyTypeController>(this)](const QString& message) {
                 if (!self)
@@ -289,7 +298,7 @@ void PartyTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &PartyTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<PartyTypeController>(this)](const QString& message) {
                 if (!self)
@@ -297,13 +306,23 @@ void PartyTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &PartyTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &PartyTypeController::onRevertVersion);
+            [self = QPointer<PartyTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &PartyTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &PartyTypeController::onOpenVersion);
+            [self = QPointer<PartyTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -314,6 +333,7 @@ void PartyTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Party Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -392,6 +412,96 @@ void PartyTypeController::onOpenVersion(const refdata::domain::party_type& type,
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void PartyTypeController::fetchPartyTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::party_type>, QString>)>
+        callback) {
+    refdata::messaging::get_party_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::party_type>, QString>;
+
+    QPointer<PartyTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void PartyTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<PartyTypeController> self = this;
+    fetchPartyTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::party_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void PartyTypeController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<PartyTypeController> self = this;
+    fetchPartyTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::party_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void PartyTypeController::onRevertVersion(const refdata::domain::party_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting party type to version: " << type.version;
 
@@ -443,6 +553,28 @@ void PartyTypeController::onRevertVersion(const refdata::domain::party_type& typ
 
 EntityListMdiWindow* PartyTypeController::listWindow() const {
     return listWindow_;
+}
+
+void PartyTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

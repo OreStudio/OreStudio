@@ -40,6 +40,11 @@ PartyTypeDetailDialog::PartyTypeDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 PartyTypeDetailDialog::~PartyTypeDetailDialog() {
@@ -56,6 +61,10 @@ QWidget* PartyTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* PartyTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString PartyTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void PartyTypeDetailDialog::setupUi() {
@@ -179,6 +188,7 @@ void PartyTypeDetailDialog::onSaveClicked() {
         return;
     }
 
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -257,7 +267,8 @@ void PartyTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -308,5 +319,6 @@ void PartyTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

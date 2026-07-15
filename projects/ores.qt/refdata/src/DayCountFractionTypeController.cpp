@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DayCountFractionTypeDetailDialog.hpp"
-#include "ores.qt/DayCountFractionTypeHistoryDialog.hpp"
 #include "ores.qt/DayCountFractionTypeMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/day_count_fraction_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -290,10 +294,14 @@ void DayCountFractionTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new DayCountFractionTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::day_count_fraction_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &DayCountFractionTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<DayCountFractionTypeController>(this)](const QString& message) {
                 if (!self)
@@ -301,7 +309,7 @@ void DayCountFractionTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &DayCountFractionTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<DayCountFractionTypeController>(this)](const QString& message) {
                 if (!self)
@@ -309,13 +317,23 @@ void DayCountFractionTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &DayCountFractionTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &DayCountFractionTypeController::onRevertVersion);
+            [self = QPointer<DayCountFractionTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &DayCountFractionTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &DayCountFractionTypeController::onOpenVersion);
+            [self = QPointer<DayCountFractionTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -403,6 +421,99 @@ void DayCountFractionTypeController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void DayCountFractionTypeController::fetchDayCountFractionTypeHistory(
+    const QString& entityId,
+    std::function<void(
+        std::expected<std::vector<refdata::domain::day_count_fraction_type>, QString>)> callback) {
+    refdata::messaging::get_day_count_fraction_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::day_count_fraction_type>, QString>;
+
+    QPointer<DayCountFractionTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void DayCountFractionTypeController::onOpenHistoryVersion(const QString& entityId,
+                                                          int versionNumber) {
+    QPointer<DayCountFractionTypeController> self = this;
+    fetchDayCountFractionTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::day_count_fraction_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void DayCountFractionTypeController::onRevertHistoryVersion(const QString& entityId,
+                                                            int versionNumber) {
+    QPointer<DayCountFractionTypeController> self = this;
+    fetchDayCountFractionTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::day_count_fraction_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void DayCountFractionTypeController::onRevertVersion(

@@ -125,7 +125,9 @@ void PurposeTypeMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "PurposeTypeListWindow",
-                            {ClientPurposeTypeModel::Description},
+                            {
+                                ClientPurposeTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }

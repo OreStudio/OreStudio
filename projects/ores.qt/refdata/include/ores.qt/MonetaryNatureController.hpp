@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -64,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::monetary_nature& type);
@@ -77,15 +82,31 @@ private slots:
     void onShowHistory(const refdata::domain::monetary_nature& type);
     void onRevertVersion(const refdata::domain::monetary_nature& type);
     void onOpenVersion(const refdata::domain::monetary_nature& type, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::monetary_nature& type);
     void showHistoryWindow(const QString& code);
 
+    /**
+     * @brief Fetches the full typed monetary nature history (the
+     * existing per-entity refdata::messaging::get_monetary_nature_history_request/
+     * refdata::messaging::get_monetary_nature_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed monetary nature, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchMonetaryNatureHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::monetary_nature>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     MonetaryNatureMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ChangeReasonCache* changeReasonCache_;
 };
 
 }

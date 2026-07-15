@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorResolutionAlgorithmDetailDialog.hpp"
-#include "ores.qt/TenorResolutionAlgorithmHistoryDialog.hpp"
 #include "ores.qt/TenorResolutionAlgorithmMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/tenor_resolution_algorithm_changed_event.hpp"
+#include "ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -291,11 +295,14 @@ void TenorResolutionAlgorithmController::showHistoryWindow(const QString& code) 
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog =
-        new TenorResolutionAlgorithmHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of(refdata::domain::tenor_resolution_algorithm{})),
+        code.toStdString(),
+        clientManager_,
+        mainWindow_);
 
     connect(historyDialog,
-            &TenorResolutionAlgorithmHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<TenorResolutionAlgorithmController>(this)](const QString& message) {
                 if (!self)
@@ -303,7 +310,7 @@ void TenorResolutionAlgorithmController::showHistoryWindow(const QString& code) 
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &TenorResolutionAlgorithmHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<TenorResolutionAlgorithmController>(this)](const QString& message) {
                 if (!self)
@@ -311,13 +318,23 @@ void TenorResolutionAlgorithmController::showHistoryWindow(const QString& code) 
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &TenorResolutionAlgorithmHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &TenorResolutionAlgorithmController::onRevertVersion);
+            [self = QPointer<TenorResolutionAlgorithmController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &TenorResolutionAlgorithmHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &TenorResolutionAlgorithmController::onOpenVersion);
+            [self = QPointer<TenorResolutionAlgorithmController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -405,6 +422,101 @@ void TenorResolutionAlgorithmController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void TenorResolutionAlgorithmController::fetchTenorResolutionAlgorithmHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>,
+                                     QString>)> callback) {
+    refdata::messaging::get_tenor_resolution_algorithm_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>, QString>;
+
+    QPointer<TenorResolutionAlgorithmController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void TenorResolutionAlgorithmController::onOpenHistoryVersion(const QString& entityId,
+                                                              int versionNumber) {
+    QPointer<TenorResolutionAlgorithmController> self = this;
+    fetchTenorResolutionAlgorithmHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void TenorResolutionAlgorithmController::onRevertHistoryVersion(const QString& entityId,
+                                                                int versionNumber) {
+    QPointer<TenorResolutionAlgorithmController> self = this;
+    fetchTenorResolutionAlgorithmHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void TenorResolutionAlgorithmController::onRevertVersion(

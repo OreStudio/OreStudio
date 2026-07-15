@@ -18,20 +18,31 @@
  *
  */
 #include "ores.qt/CurrencyMarketTierController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CurrencyMarketTierDetailDialog.hpp"
-#include "ores.qt/CurrencyMarketTierHistoryDialog.hpp"
 #include "ores.qt/CurrencyMarketTierMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/currency_market_tier_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::currency_market_tier_changed_event>::name;
+}
 
 CurrencyMarketTierController::CurrencyMarketTierController(QMainWindow* mainWindow,
                                                            QMdiArea* mdiArea,
@@ -39,7 +50,7 @@ CurrencyMarketTierController::CurrencyMarketTierController(QMainWindow* mainWind
                                                            ChangeReasonCache* changeReasonCache,
                                                            const QString& username,
                                                            QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -147,6 +158,7 @@ void CurrencyMarketTierController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CurrencyMarketTierController::onShowHistory(
     const refdata::domain::currency_market_tier& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
@@ -253,7 +265,6 @@ void CurrencyMarketTierController::showDetailWindow(
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
     detailWindow->setGeometryKey(key);
-    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -280,10 +291,14 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new CurrencyMarketTierHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::currency_market_tier{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
                 if (!self)
@@ -291,7 +306,7 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
                 if (!self)
@@ -299,13 +314,23 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CurrencyMarketTierController::onRevertVersion);
+            [self = QPointer<CurrencyMarketTierController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CurrencyMarketTierController::onOpenVersion);
+            [self = QPointer<CurrencyMarketTierController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -316,12 +341,12 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Currency Market Tier History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
     historyWindow->setGeometryKey(windowKey);
-    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -395,6 +420,98 @@ void CurrencyMarketTierController::onOpenVersion(const refdata::domain::currency
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void CurrencyMarketTierController::fetchCurrencyMarketTierHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::currency_market_tier>, QString>)>
+        callback) {
+    refdata::messaging::get_currency_market_tier_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::currency_market_tier>, QString>;
+
+    QPointer<CurrencyMarketTierController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CurrencyMarketTierController::onOpenHistoryVersion(const QString& entityId,
+                                                        int versionNumber) {
+    QPointer<CurrencyMarketTierController> self = this;
+    fetchCurrencyMarketTierHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_market_tier>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CurrencyMarketTierController::onRevertHistoryVersion(const QString& entityId,
+                                                          int versionNumber) {
+    QPointer<CurrencyMarketTierController> self = this;
+    fetchCurrencyMarketTierHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_market_tier>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void CurrencyMarketTierController::onRevertVersion(
     const refdata::domain::currency_market_tier& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting currency market tier to version: " << type.version;
@@ -405,8 +522,11 @@ void CurrencyMarketTierController::onRevertVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setTier(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setTier(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &CurrencyMarketTierDetailDialog::statusMessage,
@@ -445,6 +565,28 @@ void CurrencyMarketTierController::onRevertVersion(
 
 EntityListMdiWindow* CurrencyMarketTierController::listWindow() const {
     return listWindow_;
+}
+
+void CurrencyMarketTierController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

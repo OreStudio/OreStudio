@@ -5,7 +5,7 @@
 #+description: Switch the live caller surfaces (codegen/qt/sql recipes, skills, runbooks, shell scripts, compass help) from the deprecated --profile to --address; resolve composite-profile cases (all, all-cpp, non-temporal) that have no single-address equivalent; leave historical agile/plan/analysis docs untouched. Then optionally remove the --profile shim.
 #+type: task
 #+level: s1
-#+filetags: :codegen:physical-space:docs:cleanup:codegen-unification-blockers:sprint_23:v0:
+#+filetags: :codegen:physical-space:docs:cleanup:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,20 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
 Every live caller of codegen generation uses --address with the correct physical-space address; the layer recipes map to their facet (qt->ores.cpp.qt, sql->ores.sql.schema, ...); composite profiles are replaced with explicit addresses or documented multi-step guidance; historical records are left as-is. Once no live caller uses --profile, the deprecated shim (_PROFILE_TO_FACETS, --profile args) can be removed.
+
+*Delineation from task "Sweep docs/skills/recipes for stale legacy-profile-system references"* (05C64B72-418A-45E7-BBD2-2E91FD69DE45), also in this story: that task fixes prose *describing* the now-deleted System 1 (facet_catalogue.org/_load_profiles_from_org) as if it still existed. This task is different -- it migrates *working* invocations of the still-functioning =--profile= shim (System 2's =_PROFILE_TO_FACETS= backward-compat path in generate.py) over to =--address=. Same file surfaces may show up in both greps; check which kind of hit it is before editing twice.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

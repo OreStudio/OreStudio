@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 17CAD54D-0C46-427F-9117-E2B82346BAE5
+:END:
+#+title: Task: Add a convention-aware CRM rate display formatter
+#+description: A stateless, plain C++ presentation overlay (ores.marketdata.client/presentation) that maps raw CRM rates + FX pair conventions to ready-to-bind display strings, so no UI hand-formats rates.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today the Qt CRM matrix panel hand-formats rates itself
+(=QString::number(rate, 'f', 5)=, fixed precision, no base/quote
+canonical ordering) -- the same "logic in the UI" problem the sibling
+task [[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's
+numeric logic (inversion, deltas) out of the Qt client]] already fixed
+for inversion and %-change. Formatting (display precision, base/quote
+canonical ordering per the existing currency-pair conventions and
+their per-currency format strings) is the remaining piece.
+
+Add a stateless, plain C++ presentation overlay -- a new
+=presentation= namespace/subfolder inside the existing
+=ores.marketdata.client= component (not a new top-level component:
+=client= is already the thin, DB-free library every UI links against
+for CRM NATS calls, and matches its own place in the component
+architecture) -- that maps a batch of =crm_rate_item= (or
+=ores.analytics.quant::domain::crm_rate_view=) plus the relevant FX
+pair convention into ready-to-bind display strings (rate text,
+%-change text, tooltip text), so no UI (Qt today, Wt/shell later)
+hand-formats a rate again. Qt's own cell widget already accepts
+=QString=, not a raw double, at its display boundary -- see
+=CrmCrossRatesMatrixMdiWindow::reload()= -- so this is a drop-in
+replacement for that formatting call, not a new UI contract.
+
+Zero NATS and zero Qt/Wt dependency in the formatter itself: it is a
+pure mapper, testable with plain Catch2 cases, decoupled from how the
+caller fetched its raw rates or where it renders the result.
+
+* Server-side caching note
+
+=ores.marketdata.service= will need the FX pair convention rows
+(base/quote canonical order, per-currency format string) to resolve
+this overlay's input on the server side (if formatting ends up
+happening in =crm_handler=) or the client will need them fetched
+once and cached locally (if formatting stays client-side, per the
+"plain C++ layer" design above). Either way this will likely want to
+use the project's new caching infrastructure to keep a local
+in-process cache of the relevant refdata convention rows, refreshed
+on change, rather than a refdata round-trip per CRM request/reload --
+mirroring how =crm_ingest_bridge= already caches
+=crm_topology_config=/=crm_driver_pair= rows and only rebuilds on a
+config-changed event. Confirm the exact caching mechanism to use
+against whatever the new caching infrastructure work lands as, once
+started.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- A new =presentation= namespace/subfolder inside
+  =ores.marketdata.client= (e.g.
+  =ores.marketdata.client/presentation/crm_rate_formatter.hpp=)
+  provides a stateless mapper from raw CRM rates + FX pair convention
+  to display-ready strings; no NATS or Qt/Wt dependency in the mapper
+  itself.
+- =CrmCrossRatesMatrixMdiWindow= (and any other CRM display surface
+  built by then) calls this formatter instead of formatting rates
+  itself; the fixed =\'f\', 5= precision and lack of base/quote
+  canonical ordering are replaced by convention-driven formatting.
+- Convention lookup uses the existing currency-pair conventions and
+  their per-currency format strings -- no new convention entity/type
+  is introduced by this task.
+- Whichever side resolves the convention data (client or
+  =ores.marketdata.service=) uses the project's caching infrastructure
+  to avoid a refdata round-trip per CRM request/reload, refreshed on
+  the relevant change event -- not queried fresh every call.
+- Real Catch2 coverage of the formatter itself: precision rounding,
+  base/quote reordering, inverted-pair display, missing/unavailable
+  status, independent of any NATS/Qt harness.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

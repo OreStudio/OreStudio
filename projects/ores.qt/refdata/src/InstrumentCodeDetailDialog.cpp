@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/InstrumentCodeDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -109,11 +110,16 @@ void InstrumentCodeDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &InstrumentCodeDetailDialog::onFieldChanged);
+    connect(ui_->oreTradeTypeEdit,
+            &QLineEdit::textChanged,
+            this,
+            &InstrumentCodeDetailDialog::onFieldChanged);
 }
 
 void InstrumentCodeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateAssetClassCombo();
+    setup_badge_combo(this, ui_->assetClassCombo, badgeCache(), "asset_class");
 }
 
 void InstrumentCodeDetailDialog::setUsername(const std::string& username) {
@@ -145,6 +151,7 @@ void InstrumentCodeDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->assetClassCombo->setEnabled(!readOnly);
+    ui_->oreTradeTypeEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -164,7 +171,7 @@ void InstrumentCodeDetailDialog::populateAssetClassCombo() {
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load asset class codes: %1").arg(error));
         },
-        []() {},
+        [this]() { setup_badge_combo(this, ui_->assetClassCombo, badgeCache(), "asset_class"); },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); });
@@ -179,6 +186,8 @@ void InstrumentCodeDetailDialog::updateUiFromCode() {
         if (idx >= 0)
             ui_->assetClassCombo->setCurrentIndex(idx);
     }
+    ui_->oreTradeTypeEdit->setText(
+        code__.ore_trade_type ? QString::fromStdString(*code__.ore_trade_type) : QString{});
     ui_->displayOrderEdit->setValue(code__.display_order);
 
     populateProvenance(code__.version,
@@ -199,6 +208,12 @@ void InstrumentCodeDetailDialog::updateCodeFromUi() {
     code__.name = ui_->nameEdit->text().trimmed().toStdString();
     code__.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     code__.asset_class = ui_->assetClassCombo->currentText().toStdString();
+    {
+        const auto ore_trade_type_str = ui_->oreTradeTypeEdit->text().trimmed().toStdString();
+        code__.ore_trade_type = ore_trade_type_str.empty() ?
+                                    std::nullopt :
+                                    std::optional<std::string>(ore_trade_type_str);
+    }
     code__.display_order = ui_->displayOrderEdit->value();
     code__.modified_by = username_;
 }

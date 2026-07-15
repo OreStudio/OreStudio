@@ -49,9 +49,11 @@ InstrumentCodeController::InstrumentCodeController(QMainWindow* mainWindow,
                                                    ClientManager* clientManager,
                                                    ChangeReasonCache* changeReasonCache,
                                                    const QString& username,
+                                                   BadgeCache* badgeCache,
                                                    QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, code__event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void InstrumentCodeController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new InstrumentCodeMdiWindow(clientManager_, username_);
+    listWindow_ = new InstrumentCodeMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -169,6 +171,7 @@ void InstrumentCodeController::showAddWindow() {
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -219,6 +222,7 @@ void InstrumentCodeController::showDetailWindow(const refdata::domain::instrumen
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -373,6 +377,7 @@ void InstrumentCodeController::onOpenVersion(const refdata::domain::instrument_c
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCode(code_);
@@ -514,6 +519,7 @@ void InstrumentCodeController::onRevertVersion(const refdata::domain::instrument
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_code_ = code_;

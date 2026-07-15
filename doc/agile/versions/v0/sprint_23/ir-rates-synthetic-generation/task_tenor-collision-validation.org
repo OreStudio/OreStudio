@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/tenor-collision-validation
+#+pr: 1572
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,7 +35,7 @@ instrument's active delivery window), using the new tenor type.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -63,16 +63,32 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Before starting this task's own implementation, this branch first
+carried incidental follow-up work from the just-merged Curve Template
+task: an =asset_class= badge + full descriptions for the product
+catalogue, redesigning =instrument_code.code= as a short FIX-inspired
+mnemonic with a new =ore_trade_type= column preserving ORE's literal
+string, wiring the previously-unreachable
+=ir_curve_generation_config=/=ir_curve_template_entry= Qt CRUD into a
+menu, and an unrelated fix for a =crm_topology_bundles= DQ artefact
+seed pointing at the wrong (marketdata) NATS subject. That work is
+raised as its own PR, separate from this task's actual tenor-collision
+validator, which has not yet been started.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1572][#1572]] | [refdata,synthetic,dq,qt] Instrument code shorthand, asset_class badge, CRM subject fix |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | opt_str<T>'s bool branch is dead code (only ever instantiated with T=std::string) | instrument_code_table.cpp | Declined | Shared codegen table-printer template, identical across every entity with an optional field (currency_table.cpp, deposit_convention_table.cpp...); not something to special-case for one entity. |
+| 2 | instrument_code_history_field_mapper isn't wired into registrar.cpp or any Qt dialog yet | instrument_code_history_field_mapper.cpp | Declined | Matches the existing not-yet-wired state of most other *_history_field_mapper files (tenor, calendar, business_centre...); only currency/country are wired today. Pre-existing rollout gap, not introduced by this PR. |
+| 3 | 13 templated instrument descriptions carry grammar bugs (stray "the", wrong plurals) | refdata_instrument_codes_populate.sql | Accepted | Fixed in 31fe486be. |
+| 4 | crm_topology_bundles subject fix is a no-op against already-provisioned databases (ON CONFLICT DO NOTHING) | dq_artefact_types_populate.sql | Accepted | Fixed in 31fe486be — added an idempotent backfill INSERT that corrects any existing row still carrying the old marketdata_* values; verified against a simulated pre-fix row. |
+| 5 | Two remaining "basket of the commodity prices" rows inconsistent with sibling FX/Equity fixes (non-blocking) | refdata_instrument_codes_populate.sql | Accepted | Fixed in c91d981ae. |
 
 * Result

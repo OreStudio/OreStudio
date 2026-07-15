@@ -372,6 +372,37 @@ BEGIN
         'tier_historical', 'Historical', 'Currency no longer in active use.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 49);
 
+    -- Asset class: a purely descriptive classification, not a status --
+    -- deliberately NOT green/amber/red (RAG is reserved for genuine
+    -- health/outcome/caution semantics; see ux_language.org rule 3), same
+    -- reasoning as currency_pair_classification above. Eight dedicated,
+    -- clearly separated hues so all eight remain visually distinguishable
+    -- side by side in an instrument_code list.
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_fx', 'FX', 'Foreign exchange asset class.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 50);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_rates', 'Rates', 'Interest rates asset class.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 51);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_credit', 'Credit', 'Credit asset class.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 52);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_equity', 'Equity', 'Equity asset class.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 53);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_commodity', 'Commodity AC', 'Commodity asset class.',
+        '#f97316', '#ffffff', 'warning', 'badge bg-warning', 54);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_inflation', 'Inflation', 'Inflation asset class.',
+        '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 55);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_bond', 'Bond', 'Bond asset class.',
+        '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_cross_asset', 'Cross Asset', 'Cross-asset asset class.',
+        '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -423,6 +454,10 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crm_enabled', 'CRM Enabled',
         'Whether a CRM topology config, driver pair, or enabled derived pair is currently active (Yes/No badge); shared across all three crm_* entities.', 29);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'Asset Class',
+        'Top-level product classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset), shown on instrument_code and asset_class_code.', 30);
 
     -- =============================================================================
     -- Badge Mappings
@@ -692,6 +727,24 @@ BEGIN
         'crm_enabled', 'true', 'active');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crm_enabled', 'false', 'inactive');
+
+    -- asset_class: shown on instrument_code's asset_class column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'fx', 'asset_class_fx');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'rates', 'asset_class_rates');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'credit', 'asset_class_credit');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'equity', 'asset_class_equity');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'commodity', 'asset_class_commodity');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'inflation', 'asset_class_inflation');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'bond', 'asset_class_bond');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'cross_asset', 'asset_class_cross_asset');
 
     -- =============================================================================
     -- Summary

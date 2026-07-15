@@ -89,6 +89,7 @@ public:
      */
     const refdata::domain::currency_pair_classification* getClassification(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

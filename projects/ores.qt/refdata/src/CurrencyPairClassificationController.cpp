@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CurrencyPairClassificationDetailDialog.hpp"
-#include "ores.qt/CurrencyPairClassificationHistoryDialog.hpp"
 #include "ores.qt/CurrencyPairClassificationMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/currency_pair_classification_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -155,6 +159,7 @@ void CurrencyPairClassificationController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new currency pair classification requested";
     showAddWindow();
 }
+
 
 void CurrencyPairClassificationController::onShowHistory(
     const refdata::domain::currency_pair_classification& classification) {
@@ -292,11 +297,14 @@ void CurrencyPairClassificationController::showHistoryWindow(const QString& code
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog =
-        new CurrencyPairClassificationHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of(refdata::domain::currency_pair_classification{})),
+        code.toStdString(),
+        clientManager_,
+        mainWindow_);
 
     connect(historyDialog,
-            &CurrencyPairClassificationHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CurrencyPairClassificationController>(this)](const QString& message) {
                 if (!self)
@@ -304,7 +312,7 @@ void CurrencyPairClassificationController::showHistoryWindow(const QString& code
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CurrencyPairClassificationHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CurrencyPairClassificationController>(this)](const QString& message) {
                 if (!self)
@@ -312,13 +320,23 @@ void CurrencyPairClassificationController::showHistoryWindow(const QString& code
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CurrencyPairClassificationHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CurrencyPairClassificationController::onRevertVersion);
+            [self = QPointer<CurrencyPairClassificationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CurrencyPairClassificationHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CurrencyPairClassificationController::onOpenVersion);
+            [self = QPointer<CurrencyPairClassificationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -329,6 +347,7 @@ void CurrencyPairClassificationController::showHistoryWindow(const QString& code
     historyWindow->setWindowTitle(QString("Currency Pair Classification History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -407,6 +426,101 @@ void CurrencyPairClassificationController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void CurrencyPairClassificationController::fetchCurrencyPairClassificationHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::currency_pair_classification>,
+                                     QString>)> callback) {
+    refdata::messaging::get_currency_pair_classification_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::currency_pair_classification>, QString>;
+
+    QPointer<CurrencyPairClassificationController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CurrencyPairClassificationController::onOpenHistoryVersion(const QString& entityId,
+                                                                int versionNumber) {
+    QPointer<CurrencyPairClassificationController> self = this;
+    fetchCurrencyPairClassificationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_pair_classification>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CurrencyPairClassificationController::onRevertHistoryVersion(const QString& entityId,
+                                                                  int versionNumber) {
+    QPointer<CurrencyPairClassificationController> self = this;
+    fetchCurrencyPairClassificationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_pair_classification>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void CurrencyPairClassificationController::onRevertVersion(
     const refdata::domain::currency_pair_classification& classification) {
     BOOST_LOG_SEV(lg(), info) << "Reverting currency pair classification to version: "
@@ -461,6 +575,28 @@ void CurrencyPairClassificationController::onRevertVersion(
 
 EntityListMdiWindow* CurrencyPairClassificationController::listWindow() const {
     return listWindow_;
+}
+
+void CurrencyPairClassificationController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

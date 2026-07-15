@@ -85,6 +85,7 @@ validator, which has not yet been started.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | opt_str<T>'s bool branch is dead code (only ever instantiated with T=std::string) | instrument_code_table.cpp | Declined | Shared codegen table-printer template, identical across every entity with an optional field (currency_table.cpp, deposit_convention_table.cpp...); not something to special-case for one entity. |
+| 2 | instrument_code_history_field_mapper isn't wired into registrar.cpp or any Qt dialog yet | instrument_code_history_field_mapper.cpp | Declined | Matches the existing not-yet-wired state of most other *_history_field_mapper files (tenor, calendar, business_centre...); only currency/country are wired today. Pre-existing rollout gap, not introduced by this PR. |
 
 * Result

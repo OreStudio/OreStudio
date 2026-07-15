@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class IborIndexConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing IBOR index convention windows and operations.
@@ -58,6 +59,7 @@ public:
     IborIndexConventionController(QMainWindow* mainWindow,
                                   QMdiArea* mdiArea,
                                   ClientManager* clientManager,
+                                  ChangeReasonCache* changeReasonCache,
                                   const QString& username,
                                   QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(
             std::expected<std::vector<refdata::domain::ibor_index_convention>, QString>)> callback);
 
+    ChangeReasonCache* changeReasonCache_;
     IborIndexConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

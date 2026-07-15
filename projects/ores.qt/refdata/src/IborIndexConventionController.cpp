@@ -19,6 +19,7 @@
  */
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IborIndexConventionDetailDialog.hpp"
@@ -46,9 +47,11 @@ constexpr std::string_view ic_event_name =
 IborIndexConventionController::IborIndexConventionController(QMainWindow* mainWindow,
                                                              QMdiArea* mdiArea,
                                                              ClientManager* clientManager,
+                                                             ChangeReasonCache* changeReasonCache,
                                                              const QString& username,
                                                              QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, ic_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -166,6 +169,8 @@ void IborIndexConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IBOR index convention";
 
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -215,6 +220,8 @@ void IborIndexConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << ic.id;
 
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -368,6 +375,8 @@ void IborIndexConventionController::onOpenVersion(const refdata::domain::ibor_in
     }
 
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(ic);
@@ -510,6 +519,8 @@ void IborIndexConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_ic = ic;

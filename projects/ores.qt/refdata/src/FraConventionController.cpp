@@ -19,6 +19,7 @@
  */
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FraConventionDetailDialog.hpp"
 #include "ores.qt/FraConventionMdiWindow.hpp"
@@ -46,9 +47,11 @@ constexpr std::string_view fc_event_name =
 FraConventionController::FraConventionController(QMainWindow* mainWindow,
                                                  QMdiArea* mdiArea,
                                                  ClientManager* clientManager,
+                                                 ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, fc_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -164,6 +167,8 @@ void FraConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new FRA convention";
 
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -212,6 +217,8 @@ void FraConventionController::showDetailWindow(const refdata::domain::fra_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << fc.id;
 
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -364,6 +371,8 @@ void FraConventionController::onOpenVersion(const refdata::domain::fra_conventio
     }
 
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(fc);
@@ -503,6 +512,8 @@ void FraConventionController::onRevertVersion(const refdata::domain::fra_convent
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_fc = fc;

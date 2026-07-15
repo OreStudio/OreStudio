@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class FraConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing FRA convention windows and operations.
@@ -58,6 +59,7 @@ public:
     FraConventionController(QMainWindow* mainWindow,
                             QMdiArea* mdiArea,
                             ClientManager* clientManager,
+                            ChangeReasonCache* changeReasonCache,
                             const QString& username,
                             QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::fra_convention>, QString>)>
             callback);
 
+    ChangeReasonCache* changeReasonCache_;
     FraConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

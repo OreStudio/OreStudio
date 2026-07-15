@@ -235,6 +235,7 @@ std::nullopt
 :item_var:                cc
 :key_field:               id
 :has_uuid_primary_key:    false
+:has_change_reason_cache:     true
 :delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_cds_conventions_request
 :get_response_class:      refdata::messaging::get_cds_conventions_response

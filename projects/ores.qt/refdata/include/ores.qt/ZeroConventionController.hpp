@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class ZeroConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing zero convention windows and operations.
@@ -58,6 +59,7 @@ public:
     ZeroConventionController(QMainWindow* mainWindow,
                              QMdiArea* mdiArea,
                              ClientManager* clientManager,
+                             ChangeReasonCache* changeReasonCache,
                              const QString& username,
                              QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::zero_convention>, QString>)>
             callback);
 
+    ChangeReasonCache* changeReasonCache_;
     ZeroConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

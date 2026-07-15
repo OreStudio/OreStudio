@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DepositConventionController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DepositConventionDetailDialog.hpp"
 #include "ores.qt/DepositConventionMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -46,9 +47,11 @@ constexpr std::string_view dc_event_name =
 DepositConventionController::DepositConventionController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
                                                          ClientManager* clientManager,
+                                                         ChangeReasonCache* changeReasonCache,
                                                          const QString& username,
                                                          QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, dc_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -164,6 +167,8 @@ void DepositConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new deposit convention";
 
     auto* detailDialog = new DepositConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -212,6 +217,8 @@ void DepositConventionController::showDetailWindow(const refdata::domain::deposi
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dc.id;
 
     auto* detailDialog = new DepositConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -364,6 +371,8 @@ void DepositConventionController::onOpenVersion(const refdata::domain::deposit_c
     }
 
     auto* detailDialog = new DepositConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(dc);
@@ -504,6 +513,8 @@ void DepositConventionController::onRevertVersion(const refdata::domain::deposit
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new DepositConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_dc = dc;

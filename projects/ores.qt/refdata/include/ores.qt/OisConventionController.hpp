@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class OisConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing OIS convention windows and operations.
@@ -58,6 +59,7 @@ public:
     OisConventionController(QMainWindow* mainWindow,
                             QMdiArea* mdiArea,
                             ClientManager* clientManager,
+                            ChangeReasonCache* changeReasonCache,
                             const QString& username,
                             QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::ois_convention>, QString>)>
             callback);
 
+    ChangeReasonCache* changeReasonCache_;
     OisConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

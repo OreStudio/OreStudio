@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class SwapConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing swap convention windows and operations.
@@ -58,6 +59,7 @@ public:
     SwapConventionController(QMainWindow* mainWindow,
                              QMdiArea* mdiArea,
                              ClientManager* clientManager,
+                             ChangeReasonCache* changeReasonCache,
                              const QString& username,
                              QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::swap_convention>, QString>)>
             callback);
 
+    ChangeReasonCache* changeReasonCache_;
     SwapConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

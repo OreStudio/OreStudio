@@ -19,6 +19,7 @@
  */
 #include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -43,12 +44,15 @@ constexpr std::string_view ni_event_name = eventing::domain::event_traits<
     refdata::eventing::overnight_index_convention_changed_event>::name;
 }
 
-OvernightIndexConventionController::OvernightIndexConventionController(QMainWindow* mainWindow,
-                                                                       QMdiArea* mdiArea,
-                                                                       ClientManager* clientManager,
-                                                                       const QString& username,
-                                                                       QObject* parent)
+OvernightIndexConventionController::OvernightIndexConventionController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
+    const QString& username,
+    QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, ni_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -166,6 +170,8 @@ void OvernightIndexConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new overnight index convention";
 
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -216,6 +222,8 @@ void OvernightIndexConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << ni.id;
 
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -370,6 +378,8 @@ void OvernightIndexConventionController::onOpenVersion(
     }
 
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(ni);
@@ -515,6 +525,8 @@ void OvernightIndexConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_ni = ni;

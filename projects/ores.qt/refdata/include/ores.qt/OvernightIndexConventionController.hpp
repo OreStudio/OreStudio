@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class OvernightIndexConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing overnight index convention windows and operations.
@@ -58,6 +59,7 @@ public:
     OvernightIndexConventionController(QMainWindow* mainWindow,
                                        QMdiArea* mdiArea,
                                        ClientManager* clientManager,
+                                       ChangeReasonCache* changeReasonCache,
                                        const QString& username,
                                        QObject* parent = nullptr);
 
@@ -102,6 +104,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::overnight_index_convention>,
                                          QString>)> callback);
 
+    ChangeReasonCache* changeReasonCache_;
     OvernightIndexConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

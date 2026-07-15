@@ -24,14 +24,30 @@
  *
  * Instrument Code Table
  *
- * General-purpose product catalogue: one row per instrument/product code
- * the system knows about (DEPOSIT, FRA, SWAP, BOND, OPTION,
- * ...), tagged with the asset_class_code it belongs to. Not scoped to
- * any single consumer: the IR Curve Template (deposit/FRA/swap tenor
- * roles) is the first consumer, but this catalogue exists independently
- * for any future feature needing to classify or enumerate the instrument
- * types the system supports. Managed by the system tenant, like other
- * shared code tables.
+ * General-purpose product catalogue: one row per instrument/product type
+ * the system knows about, covering every trade type in ORE's own
+ * authoritative oreTradeType enumeration
+ * (external/ore/xsd/instruments.xsd), plus one ORE Studio-specific
+ * addition, DEPO (ORE has no distinct money-market-deposit trade type
+ * — it models a deposit as a single-period Swap — so DEPO is added
+ * purely to give the IR Curve Template a distinct short-end label; its
+ * pricing still derives from the same par-rate formula a single-period
+ * swap would use). The code column is deliberately not ORE's own
+ * oreTradeType spelling: traders need something they can actually type
+ * quickly, and ORE's names (FxDoubleBarrierOption,
+ * EquityStrikeResettableOption) don't serve that. code is instead a
+ * short, FIX-inspired mnemonic (FRA, IRS, CDS, FXBAR, EQVS...),
+ * unique and typically under 10 characters. The literal ORE
+ * oreTradeType string, where one exists, is preserved separately in
+ * ore_trade_type (nullable — null only for DEPO) for future ORE
+ * trade-file interop; it is not itself validated or FK'd anywhere, only
+ * carried as a reference. Each row is tagged with the asset_class_code
+ * it belongs to. Not scoped to any single consumer: the IR Curve
+ * Template (which consumes the DEPO/FRA/IRS rates entries for its
+ * tenor roles) is the first consumer, but this catalogue exists
+ * independently for any future feature needing to classify or enumerate
+ * the instrument types the system supports. Managed by the system
+ * tenant, like other shared code tables.
  */
 
 create table if not exists "ores_refdata_instrument_codes_tbl" (
@@ -41,6 +57,7 @@ create table if not exists "ores_refdata_instrument_codes_tbl" (
     "name" text not null,
     "description" text not null,
     "asset_class" text not null,
+    "ore_trade_type" text null,
     "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

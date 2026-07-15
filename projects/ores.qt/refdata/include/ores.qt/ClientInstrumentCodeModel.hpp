@@ -58,6 +58,7 @@ public:
         Name,
         Description,
         AssetClass,
+        OreTradeType,
         DisplayOrder,
         Version,
         ModifiedBy,

@@ -88,6 +88,9 @@ QVariant ClientInstrumentCodeModel::data(const QModelIndex& index, int role) con
                 return QString::fromStdString(code_.description);
             case AssetClass:
                 return QString::fromStdString(code_.asset_class);
+            case OreTradeType:
+                return code_.ore_trade_type ? QString::fromStdString(*code_.ore_trade_type) :
+                                              QString{};
             case DisplayOrder:
                 return static_cast<qlonglong>(code_.display_order);
             case Version:
@@ -122,6 +125,8 @@ ClientInstrumentCodeModel::headerData(int section, Qt::Orientation orientation, 
             return tr("Description");
         case AssetClass:
             return tr("Asset Class");
+        case OreTradeType:
+            return tr("ORE Trade Type");
         case DisplayOrder:
             return tr("Display Order");
         case Version:

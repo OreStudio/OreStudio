@@ -18,7 +18,9 @@
  *
  */
 #include "ores.qt/InstrumentCodeMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
@@ -34,10 +36,12 @@ using namespace ores::logging;
 
 InstrumentCodeMdiWindow::InstrumentCodeMdiWindow(ClientManager* clientManager,
                                                  const QString& username,
+                                                 BadgeCache* badgeCache,
                                                  QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , badgeCache_(badgeCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -122,6 +126,40 @@ void InstrumentCodeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::badge_centered,
+            cs::text_left,
+            cs::mono_center,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("asset_class", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
     initializeTableSettings(tableView_,
                             model_,

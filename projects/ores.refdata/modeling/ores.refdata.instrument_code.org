@@ -2,34 +2,41 @@
 :ID: 4A02B9BB-B4B5-45DE-9036-C81EAEE3E921
 :END:
 #+title: ores.refdata.instrument_code
-#+description: Codegen entity model for the refdata instrument_code table: the full ORE product/trade-type catalogue (oreTradeType), each tagged with its asset class.
+#+description: Codegen entity model for the refdata instrument_code table: the full product/trade-type catalogue, keyed by a short idiomatic code and cross-referenced to ORE's oreTradeType where one exists.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: instrument_code
 #+entity_plural: instrument_codes
 #+entity_title: Instrument Code
-#+brief: Full ORE product/trade-type catalogue (oreTradeType), each tagged with its asset class.
+#+brief: Full product/trade-type catalogue, keyed by a short idiomatic code, cross-referenced to ORE's oreTradeType.
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-07-15
 
-General-purpose product catalogue: one row per instrument/product code
-the system knows about, sourced from ORE's own authoritative
-=oreTradeType= enumeration
-(=external/ore/xsd/instruments.xsd=) — =Swap=, =ForwardRateAgreement=,
-=FxOption=, =Bond=, =CreditDefaultSwap=, and every other trade type ORE
-supports (114 at the time of writing) — each tagged with the
-=asset_class_code= it belongs to, plus one ORE Studio-specific
-addition: =Deposit= (ORE has no distinct money-market-deposit trade
-type — it models a deposit as a single-period =Swap= — so =Deposit= is
-added purely to give the IR Curve Template a distinct short-end label;
-its pricing still derives from the same par-rate formula a
-single-period =Swap= would use). Not scoped to any single consumer: the
-IR Curve Template (which consumes the =Deposit=/=ForwardRateAgreement=/
-=Swap= rates entries for its tenor roles) is the first consumer, but
-this catalogue exists independently for any future feature needing to
-classify or enumerate the instrument types the system supports.
-Managed by the system tenant, like other shared code tables.
+General-purpose product catalogue: one row per instrument/product type
+the system knows about, covering every trade type in ORE's own
+authoritative =oreTradeType= enumeration
+(=external/ore/xsd/instruments.xsd=), plus one ORE Studio-specific
+addition, =DEPO= (ORE has no distinct money-market-deposit trade type
+— it models a deposit as a single-period =Swap= — so =DEPO= is added
+purely to give the IR Curve Template a distinct short-end label; its
+pricing still derives from the same par-rate formula a single-period
+swap would use). The =code= column is deliberately =not= ORE's own
+=oreTradeType= spelling: traders need something they can actually type
+quickly, and ORE's names (=FxDoubleBarrierOption=,
+=EquityStrikeResettableOption=) don't serve that. =code= is instead a
+short, FIX-inspired mnemonic (=FRA=, =IRS=, =CDS=, =FXBAR=, =EQVS=...),
+unique and typically under 10 characters. The literal ORE
+=oreTradeType= string, where one exists, is preserved separately in
+=ore_trade_type= (nullable — null only for =DEPO=) for future ORE
+trade-file interop; it is not itself validated or FK'd anywhere, only
+carried as a reference. Each row is tagged with the =asset_class_code=
+it belongs to. Not scoped to any single consumer: the IR Curve
+Template (which consumes the =DEPO=/=FRA=/=IRS= rates entries for its
+tenor roles) is the first consumer, but this catalogue exists
+independently for any future feature needing to classify or enumerate
+the instrument types the system supports. Managed by the system
+tenant, like other shared code tables.
 
 * Flags
 :PROPERTIES:
@@ -46,12 +53,11 @@ Managed by the system tenant, like other shared code tables.
 :cpp_type: std::string
 :END:
 
-Unique short code for the instrument type -- the literal ORE
-=oreTradeType= value (e.g. 'Swap', 'ForwardRateAgreement', 'FxOption',
-'Bond', 'CreditDefaultSwap').
+Unique short, FIX-inspired mnemonic code for the instrument type --
+=not= ORE's own =oreTradeType= spelling (see =ore_trade_type= below for
+that). Chosen so a trader can type it quickly.
 
-Examples: 'Swap', 'ForwardRateAgreement', 'FxOption', 'Bond',
-'CreditDefaultSwap'.
+Examples: 'IRS', 'FRA', 'CDS', 'FXBAR', 'EQVS'.
 
 #+begin_src cpp :name generator
 std::string("InstrumentCode")
@@ -102,6 +108,23 @@ code).
 
 #+begin_src cpp :name generator
 std::string("rates")
+#+end_src
+
+** ore_trade_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Literal ORE =oreTradeType= string (=external/ore/xsd/instruments.xsd=)
+this code corresponds to, e.g. 'ForwardRateAgreement' for =FRA=. Null
+only for =DEPO=, the one ORE Studio-specific addition with no ORE
+trade type of its own. Preserved for future ORE trade-file interop;
+not itself validated or referenced by any FK.
+
+#+begin_src cpp :name generator
+std::string("ForwardRateAgreement")
 #+end_src
 
 ** display_order
@@ -182,15 +205,16 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 
 ** Table display
 
-| column           | header        |
-|------------------+---------------|
-| code             | Code          |
-| name             | Name          |
-| description      | Description   |
-| asset_class      | Asset Class   |
-| display_order    | Display Order |
-| modified_by      | Modified By   |
-| version          | Version       |
+| column           | header         |
+|------------------+----------------|
+| code             | Code           |
+| name             | Name           |
+| description      | Description    |
+| asset_class      | Asset Class    |
+| ore_trade_type   | ORE Trade Type |
+| display_order    | Display Order  |
+| modified_by      | Modified By    |
+| version          | Version        |
 
 ** Qt
 :PROPERTIES:
@@ -223,26 +247,28 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 
 *** Detail fields
 
-| field            | label         | widget          | type          | is_key | is_required | placeholder                          | flag_source | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name   | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label       | combo_setter_pascal |
-|------------------+---------------+-----------------+---------------+--------+-------------+----------------------------------------+--------------+----------------------------------------+-----------------------------+--------------------------+-----------------------+--------------------+----------------------+--------------------+--------------------+------------------------|
-| code             | Code          | codeEdit        | line_edit     | true   | true        | Enter ORE trade type (e.g. Swap)      |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
-| name             | Name          | nameEdit        | line_edit     |        | true        | Enter full name                       |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
-| description      | Description   | descriptionEdit | text_edit     |        | true        | Enter a description                   |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
-| asset_class      | Asset Class   | assetClassCombo | dynamic_combo |        | true        |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        |
-| display_order    | Display Order | displayOrderEdit | spin_box     |        | true        |                                        |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
+| field            | label          | widget          | type          | is_key | is_required | placeholder                          | flag_source | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name   | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label       | combo_setter_pascal | badge_key   |
+|------------------+----------------+-----------------+---------------+--------+-------------+----------------------------------------+--------------+----------------------------------------+-----------------------------+--------------------------+-----------------------+--------------------+----------------------+--------------------+--------------------+------------------------+--------------|
+| code             | Code           | codeEdit        | line_edit     | true   | true        | Enter a short code (e.g. FRA)         |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
+| name             | Name           | nameEdit        | line_edit     |        | true        | Enter full name                       |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
+| description      | Description    | descriptionEdit | text_edit     |        | true        | Enter a description                   |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
+| asset_class      | Asset Class    | assetClassCombo | dynamic_combo |        | true        |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        | asset_class |
+| ore_trade_type   | ORE Trade Type | oreTradeTypeEdit | line_edit    |        |             | Enter the literal ORE oreTradeType (if any) |     |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
+| display_order    | Display Order  | displayOrderEdit | spin_box     |        | true        |                                        |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 
 *** Columns (Qt model)
 
-| enum_name    | field            | header        | type      | width |
-|--------------+------------------+---------------+-----------+-------|
-| Code         | code             | Code          | string    | auto  |
-| Name         | name             | Name          | string    | auto  |
-| Description  | description      | Description   | string    | auto  |
-| AssetClass   | asset_class      | Asset Class   | string    | auto  |
-| DisplayOrder | display_order    | Display Order | int       | 70    |
-| Version      | version          | Version       | int       | 70    |
-| ModifiedBy   | modified_by      | Modified By   | string    | auto  |
-| RecordedAt   | recorded_at      | Recorded At   | timestamp | auto  |
+| enum_name    | field            | header         | type      | width | is_badge | badge_key   |
+|--------------+------------------+----------------+-----------+-------+----------+-------------|
+| Code         | code             | Code           | string    | auto  |          |             |
+| Name         | name             | Name           | string    | auto  |          |             |
+| Description  | description      | Description    | string    | auto  |          |             |
+| AssetClass   | asset_class      | Asset Class    | string    | auto  | true     | asset_class |
+| OreTradeType | ore_trade_type   | ORE Trade Type | string    | auto  |          |             |
+| DisplayOrder | display_order    | Display Order  | int       | 70    |          |             |
+| Version      | version          | Version        | int       | 70    |          |             |
+| ModifiedBy   | modified_by      | Modified By    | string    | auto  |          |             |
+| RecordedAt   | recorded_at      | Recorded At    | timestamp | auto  |          |             |
 
 ** Custom repository methods
 

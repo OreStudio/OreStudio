@@ -45,6 +45,7 @@ generate_synthetic_instrument_code(utility::generation::generation_context& ctx)
     r.name = std::string(faker::word::adjective()) + " Instrument" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.asset_class = std::string("rates");
+    r.ore_trade_type = std::string("ForwardRateAgreement");
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

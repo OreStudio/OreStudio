@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 8C2C3F1E-5C4B-4C6A-9C9A-1E6D9A3B2F41
+:END:
+#+title: Test Scenario: Curve Template product catalogue and sub-config screens reachable from the menus
+#+description: Verify Asset Class Codes/Instrument Codes (Reference Data > Classifications) and IR Curve Generation Configs/Template Entries (Market Data > Synthetic > Advanced) are reachable and support basic CRUD.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] in [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] |
+| Parent story  | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]   |
+| Target dialog | AssetClassCodeMdiWindow / InstrumentCodeMdiWindow — Menu: Reference Data > Classifications; IrCurveGenerationConfigMdiWindow / IrCurveTemplateEntryMdiWindow — Menu: Market Data > Synthetic > Advanced (raw tables) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, select party "BARCLAYS PLC"
+
+If the database was recreated since this tenant was last provisioned,
+re-run =projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+via =compass shell -f <path>= first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Open Reference Data > Classifications > Asset Class Codes and confirm the list window opens
+
+Should show 8 rows (fx, rates, credit, equity, commodity, inflation,
+bond, cross_asset).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Open Reference Data > Classifications > Instrument Codes and confirm the list window opens
+
+Should show 115 rows (114 real ORE oreTradeType entries plus the
+synthetic 'Deposit' addition). Confirm the Asset Class combo box on
+the detail dialog is populated and functional.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Open Market Data > Synthetic > Advanced (raw tables) > IR Curve Generation Configs and confirm the list window opens
+
+Expect an empty list on a freshly provisioned tenant (no seed data);
+confirm the window opens without error and the Add dialog renders
+with process_type/kappa/theta/sigma/initial_rate/ticks_per_hour/
+enabled fields.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Open Market Data > Synthetic > Advanced (raw tables) > IR Curve Template Entries and confirm the list window opens
+
+Expect an empty list; confirm the Add dialog renders with
+sequence_index/tenor_code/instrument_code fields, and that the
+instrument_code field is a dynamic combo box populated from
+Instrument Codes.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+* Results
+
+* Notes

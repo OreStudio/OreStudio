@@ -38,6 +38,7 @@ domain::instrument_code instrument_code_mapper::map(const instrument_code_entity
 
     r.description = v.description;
     r.asset_class = v.asset_class;
+    r.ore_trade_type = v.ore_trade_type;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -61,6 +62,7 @@ instrument_code_entity instrument_code_mapper::map(const domain::instrument_code
 
     r.description = v.description;
     r.asset_class = v.asset_class;
+    r.ore_trade_type = v.ore_trade_type;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -42,9 +42,9 @@ scoping-out; not attempted in this pass.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Migrating the 14 codegen-model-backed entities via full regeneration, one at a time, per the AA97E310 process. |
-| Waiting on   | Nothing.                               |
-| Next         | After the 14, decide how (or whether) to handle the 16 non-codegen entities. |
+| Now          | All 14 codegen-model-backed entities migrated. Awaiting manual QA (scenario 44064405) before closing this batch. |
+| Waiting on   | Manual QA run of scenario 44064405.    |
+| Next         | After QA passes, decide how (or whether) to handle the 16 non-codegen entities (separate scope). |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -69,7 +69,56 @@ scoping-out; not attempted in this pass.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Same process as AA97E310: full, unmodified =compass codegen entity
+generate <entity> --address ores.cpp.qt=, diff reviewed before
+applying, legacy =*HistoryDialog.{hpp,cpp,ui}= deleted per entity,
+server-side history-provider registration added to =registrar.cpp=.
+
+Of the 14 entities, 7 (=asset_class_code=, =currency_market_tier=,
+=monetary_nature=, =rounding_type=, =tenor_kind=,
+=tenor_resolution_algorithm=, =tenor_unit=) never had a history field
+mapper generated at all despite having a history protocol — generated
+via =--address ores.cpp.presentation= for all 7.
+
+3 of those 7 (=currency_market_tier=, =rounding_type=,
+=monetary_nature=) turned out to be significantly stale beyond just
+the missing mapper: their domain object was missing =tenant_id= (the
+DB column and repository entity already had it — no schema migration
+needed), no pagination/count support, response structs missing the
+=success=/=message= failure-signalling wrapper (the exact
+silent-failure-as-empty-list bug fixed everywhere else in AA97E310),
+NATS subjects using dashes instead of underscores, and no event
+registrar. Flagged to the story owner before proceeding (full regen
+here is materially bigger than "migrate a history dialog"); decision
+was to do the full =--address ores.cpp= regen for all 3 and review
+each diff carefully — confirmed no =.sql= files in any of the three
+diffs, so no schema migration was required. Also caught two further
+stale =delete_request_id_field=/=history_request_id_field= overrides
+this surfaced (=currency_market_tier=: =tier=->=codes=/=code=,
+=rounding_type=: =type=->=codes=/=code=, =monetary_nature=:
+=nature=->=codes=/=code=) — same class of bug as AA97E310's 8
+conventions, just discovered a step later since these entities'
+protocols were stale enough that the delete/history requests didn't
+even compile until the entity-wide field rename was applied. Also
+required a CMake reconfigure (new event-registrar =.cpp= files aren't
+picked up by an incremental build) and a hand-fix to
+=ores.qt/api/src/LookupFetcher.cpp=, whose hand-written
+=fetch_rounding_types=/=fetch_monetary_natures=/
+=fetch_currency_market_tiers= referenced the old response field names.
+
 * Notes
+
+*Scope note*: 16 entities under =projects/ores.qt/refdata= have a
+=*HistoryDialog.cpp= but no codegen model at all (=catalog=,
+=change_reason=, =change_reason_category=, =code_domain=,
+=coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
+=dataset=, =dataset_bundle=, =floating_index_type=, =leg_type=,
+=methodology=, =nature_dimension=, =origin_dimension=,
+=payment_frequency_type=, =subject_area=, =treatment_dimension=) —
+hand-crafted data-catalogue and change-reason-system infrastructure.
+Not attempted in this pass; needs its own migration approach (or an
+explicit decision to leave them on the legacy dialog) before this
+task can be considered fully done.
 
 * Test Scenarios
 
@@ -80,7 +129,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:44064405-FBA7-42B6-A831-4FEABD683321][Verify second batch of migrated refdata history dialogs]] | PENDING | Awaiting manual execution via QA Validation Runner. |
 
 * PRs
 

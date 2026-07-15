@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/asset_class_code.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -80,11 +83,27 @@ private slots:
     void onShowHistory(const refdata::domain::asset_class_code& class_);
     void onRevertVersion(const refdata::domain::asset_class_code& class_);
     void onOpenVersion(const refdata::domain::asset_class_code& class_, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::asset_class_code& class_);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed asset class code history (the
+     * existing per-entity refdata::messaging::get_asset_class_code_history_request/
+     * refdata::messaging::get_asset_class_code_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed asset class code, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchAssetClassCodeHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::asset_class_code>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     AssetClassCodeMdiWindow* listWindow_;

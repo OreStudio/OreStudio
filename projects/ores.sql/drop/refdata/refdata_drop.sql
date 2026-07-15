@@ -150,6 +150,7 @@
 \ir ./refdata_currency_market_tiers_drop.sql
 \ir ./refdata_monetary_natures_notify_trigger_drop.sql
 \ir ./refdata_monetary_natures_drop.sql
+\ir ./refdata_rounding_types_notify_trigger_drop.sql
 \ir ./refdata_rounding_types_drop.sql
 
 -- Calendars (depends on calendar_types and countries; drop before both)
@@ -161,3 +162,37 @@
 -- Countries
 \ir ./refdata_countries_notify_trigger_drop.sql
 \ir ./refdata_countries_drop.sql
+
+-- Entities missing from this teardown list entirely until now (found while
+-- fixing rounding_type's missing notify trigger) -- no dependents reference
+-- them, safe to drop last.
+\ir ./refdata_account_types_notify_trigger_drop.sql
+\ir ./refdata_account_types_drop.sql
+\ir ./refdata_asset_classes_notify_trigger_drop.sql
+\ir ./refdata_asset_classes_drop.sql
+\ir ./refdata_asset_measures_notify_trigger_drop.sql
+\ir ./refdata_asset_measures_drop.sql
+\ir ./refdata_benchmark_rates_notify_trigger_drop.sql
+\ir ./refdata_benchmark_rates_drop.sql
+\ir ./refdata_business_centres_notify_trigger_drop.sql
+\ir ./refdata_business_centres_drop.sql
+\ir ./refdata_business_processes_notify_trigger_drop.sql
+\ir ./refdata_business_processes_drop.sql
+\ir ./refdata_cashflow_types_notify_trigger_drop.sql
+\ir ./refdata_cashflow_types_drop.sql
+\ir ./refdata_entity_classifications_notify_trigger_drop.sql
+\ir ./refdata_entity_classifications_drop.sql
+\ir ./refdata_local_jurisdictions_notify_trigger_drop.sql
+\ir ./refdata_local_jurisdictions_drop.sql
+\ir ./refdata_party_relationships_notify_trigger_drop.sql
+\ir ./refdata_party_relationships_drop.sql
+\ir ./refdata_party_roles_notify_trigger_drop.sql
+\ir ./refdata_party_roles_drop.sql
+\ir ./refdata_person_roles_notify_trigger_drop.sql
+\ir ./refdata_person_roles_drop.sql
+\ir ./refdata_regulatory_corporate_sectors_notify_trigger_drop.sql
+\ir ./refdata_regulatory_corporate_sectors_drop.sql
+\ir ./refdata_reporting_regimes_notify_trigger_drop.sql
+\ir ./refdata_reporting_regimes_drop.sql
+\ir ./refdata_supervisory_bodies_notify_trigger_drop.sql
+\ir ./refdata_supervisory_bodies_drop.sql

@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_CRM_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_CRM_PROTOCOL_HPP
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -42,6 +43,14 @@ struct crm_rate_item {
     std::string status;
     /// ISO-8601 UTC, empty when status is "unavailable".
     std::string as_of;
+    /// True when this pair has no direct quote and rate is computed as
+    /// 1/rate from the reverse pair -- only ever set when the request's
+    /// own `inverted` flag was true.
+    bool inverted = false;
+    /// %-change vs. the last value this connection was served for this
+    /// exact pair (as displayed, i.e. post-inversion). Unset for the
+    /// first observation of a pair, or when status is "unavailable".
+    std::optional<double> delta_pct;
 };
 
 /**
@@ -86,6 +95,13 @@ struct get_crm_rates_request {
     static constexpr std::string_view nats_subject = "marketdata.v1.crm.rates";
     std::string party_id;
     std::string crm_name;
+    /// When true, a configured pair with no direct quote but whose
+    /// reverse pair *is* configured is backfilled with the reverse's
+    /// computed inverse (1/rate) -- see
+    /// ores.analytics.quant::service::rate_inverter. When the reverse
+    /// pair is itself also directly configured, its own direct rate is
+    /// served instead of a synthesised inverse.
+    bool inverted = false;
 };
 
 struct get_crm_rates_response {

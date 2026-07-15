@@ -140,11 +140,6 @@ private:
     /// grid's column position -- see displayedRowCurrencies_.
     std::vector<std::string> displayedColumnCurrencies_;
 
-    /// Previous reload's rate per (base, quote) -- used to colour cells
-    /// up/down relative to their last known value. Client-side only, no
-    /// server-side tick history.
-    std::map<std::pair<std::string, std::string>, double> previousRates_;
-
     /// Rolling per-session rate history per (base, quote), one point per
     /// reload -- feeds the overview panel's sparkline. Capped so an
     /// all-day session doesn't grow this unbounded.

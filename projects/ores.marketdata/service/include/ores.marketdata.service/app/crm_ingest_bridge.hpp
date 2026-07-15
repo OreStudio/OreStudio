@@ -20,8 +20,11 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_CRM_INGEST_BRIDGE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_CRM_INGEST_BRIDGE_HPP
 
+#include "ores.analytics.quant/domain/crm_rate_view.hpp"
 #include "ores.analytics.quant/domain/derived_rate.hpp"
+#include "ores.analytics.quant/service/rate_delta_tracker.hpp"
 #include "ores.analytics.quant/service/rate_engine.hpp"
+#include "ores.analytics.quant/service/rate_inverter.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -46,6 +49,14 @@ namespace quant = ores::analytics::quant;
 struct named_rate {
     std::string crm_name;
     quant::domain::derived_rate rate;
+};
+
+/// A resolved (post-inversion, post-delta) view tagged with the name of
+/// the CRM that produced it -- returned by the all-CRMs overload of
+/// @c resolved_rates().
+struct named_rate_view {
+    std::string crm_name;
+    quant::domain::crm_rate_view view;
 };
 
 /**
@@ -133,6 +144,26 @@ public:
     [[nodiscard]] std::vector<named_rate> rates(const std::string& tenant_id_str,
                                                 const std::string& party_id_str) const;
 
+    /// Every configured pair for one named CRM, resolved: pairs with no
+    /// direct quote are backfilled with the reverse pair's inverse when
+    /// @p inverted is true (and the reverse itself isn't also a
+    /// configured pair, in which case its own direct rate wins), and
+    /// each view's delta_pct is filled in vs. the last value this
+    /// specific (tenant, party, crm_name) scope served for that pair.
+    /// Empty if no such engine exists.
+    [[nodiscard]] std::vector<quant::domain::crm_rate_view>
+    resolved_rates(const std::string& tenant_id_str,
+                   const std::string& party_id_str,
+                   const std::string& crm_name,
+                   bool inverted) const;
+
+    /// Resolved views (see above) across every enabled CRM for a party,
+    /// each tagged with which CRM produced it.
+    [[nodiscard]] std::vector<named_rate_view>
+    resolved_rates(const std::string& tenant_id_str,
+                   const std::string& party_id_str,
+                   bool inverted) const;
+
 private:
     using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)
 
@@ -140,6 +171,14 @@ private:
         std::string name;
         std::shared_ptr<quant::service::rate_engine> engine;
         std::vector<std::pair<std::string, std::string>> configured_pairs;
+        // shared_ptr, not by-value: rate_delta_tracker holds a mutex, so
+        // it is neither copyable nor movable, and named_engine must
+        // remain copyable to live in a std::vector the way engines_map
+        // already requires. One instance per (tenant, party, crm_name)
+        // scope, reset (like the engine itself) on every refresh() --
+        // see the class doc's note on refresh() being a full rebuild.
+        std::shared_ptr<quant::service::rate_delta_tracker> deltas =
+            std::make_shared<quant::service::rate_delta_tracker>();
     };
 
     using engines_map = std::map<pair_key, std::vector<named_engine>>;
@@ -156,6 +195,11 @@ private:
         std::lock_guard lock(engines_mutex_);
         return engines_;
     }
+
+    /// Resolves+deltas one named engine's configured pairs -- shared by
+    /// both @c resolved_rates overloads.
+    [[nodiscard]] static std::vector<quant::domain::crm_rate_view>
+    resolve(const named_engine& engine, bool inverted);
 
     ores::database::context ctx_;
     mutable std::mutex engines_mutex_;

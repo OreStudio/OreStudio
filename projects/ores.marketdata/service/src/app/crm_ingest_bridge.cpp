@@ -241,4 +241,64 @@ std::vector<named_rate> crm_ingest_bridge::rates(const std::string& tenant_id_st
     return result;
 }
 
+std::vector<quant::domain::crm_rate_view>
+crm_ingest_bridge::resolve(const named_engine& named_engine, bool inverted) {
+    const auto raw = named_engine.engine->rates(named_engine.configured_pairs);
+    const auto lookup = quant::service::rate_inverter::make_lookup(raw);
+
+    std::vector<quant::domain::crm_rate_view> views;
+    views.reserve(raw.size() * (inverted ? 2 : 1));
+    for (const auto& r : raw)
+        views.push_back(
+            quant::service::rate_inverter::resolve(r.base_code, r.quote_code, lookup, false));
+
+    if (inverted) {
+        for (const auto& [base_code, quote_code] : named_engine.configured_pairs) {
+            // Only synthesise the reverse when it isn't itself a
+            // configured pair -- a pair configured both ways already has
+            // its own real (non-inverted) view above, which must win.
+            if (lookup.contains({quote_code, base_code}))
+                continue;
+            views.push_back(
+                quant::service::rate_inverter::resolve(quote_code, base_code, lookup, true));
+        }
+    }
+
+    named_engine.deltas->apply(views);
+    return views;
+}
+
+std::vector<quant::domain::crm_rate_view>
+crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
+                                  const std::string& party_id_str,
+                                  const std::string& crm_name,
+                                  bool inverted) const {
+    const auto snap = snapshot();
+    const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
+    if (it == snap->end())
+        return {};
+    const auto named_it = std::ranges::find(it->second, crm_name, &named_engine::name);
+    if (named_it == it->second.end())
+        return {};
+    return resolve(*named_it, inverted);
+}
+
+std::vector<named_rate_view> crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
+                                                                const std::string& party_id_str,
+                                                                bool inverted) const {
+    const auto snap = snapshot();
+    const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
+    if (it == snap->end())
+        return {};
+
+    std::vector<named_rate_view> result;
+    for (const auto& named_engine : it->second) {
+        auto views = resolve(named_engine, inverted);
+        result.reserve(result.size() + views.size());
+        for (auto& v : views)
+            result.push_back(named_rate_view{named_engine.name, std::move(v)});
+    }
+    return result;
+}
+
 } // namespace ores::marketdata::service::app

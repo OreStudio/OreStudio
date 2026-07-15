@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/OisConventionDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
@@ -38,6 +39,11 @@ OisConventionDetailDialog::OisConventionDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 OisConventionDetailDialog::~OisConventionDetailDialog() {
@@ -54,6 +60,10 @@ QWidget* OisConventionDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* OisConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString OisConventionDetailDialog::code() const {
+    return QString::fromStdString(oc_.id);
 }
 
 void OisConventionDetailDialog::setupUi() {
@@ -107,6 +117,8 @@ void OisConventionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &OisConventionDetailDialog::onFieldChanged);
+    connect(
+        ui_->endOfMonthEdit, &QCheckBox::toggled, this, &OisConventionDetailDialog::onFieldChanged);
 }
 
 void OisConventionDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -128,6 +140,11 @@ void OisConventionDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void OisConventionDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -280,6 +297,15 @@ void OisConventionDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    oc_.change_reason_code = crSel->reason_code;
+    oc_.change_commentary = crSel->commentary;
+
     updateConventionFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving OIS convention: " << oc_.id;
@@ -350,6 +376,11 @@ void OisConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting OIS convention: " << oc_.id;
 
     QPointer<OisConventionDetailDialog> self = this;
@@ -397,5 +428,6 @@ void OisConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

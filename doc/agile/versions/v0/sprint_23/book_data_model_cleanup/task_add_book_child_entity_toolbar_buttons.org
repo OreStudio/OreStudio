@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-book-child-entity-toolbar-buttons
-#+pr:
+#+pr: 1577
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -134,7 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1577][#1577]] | [refdata,qt,agile] Add Book toolbar buttons via codegen facet |
 
 * Review
 

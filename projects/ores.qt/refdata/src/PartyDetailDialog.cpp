@@ -33,6 +33,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 
@@ -119,6 +120,10 @@ void PartyDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &PartyDetailDialog::onFieldChanged);
+    connect(ui_->parentPartyCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PartyDetailDialog::onFieldChanged);
 }
 
 void PartyDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,6 +132,7 @@ void PartyDetailDialog::setClientManager(ClientManager* clientManager) {
     setup_badge_combo(this, ui_->partyTypeCombo, badgeCache(), "party_type");
     populatePartyStatusCombo();
     setup_badge_combo(this, ui_->statusCombo, badgeCache(), "party_status");
+    populateParentPartyCombo();
     populateBusinessCenterCodeCombo();
 }
 
@@ -205,6 +211,7 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterCombo->setEnabled(!readOnly);
+    ui_->parentPartyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     childTables_->setReadOnly(readOnly);
@@ -250,6 +257,29 @@ void PartyDetailDialog::populatePartyStatusCombo() {
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); });
 }
+void PartyDetailDialog::populateParentPartyCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating parent_party_id combo";
+    populateDynamicCombo<refdata::domain::party>(
+        ui_->parentPartyCombo,
+        this,
+        clientManager_,
+        &fetch_parties,
+        "parentPartyWatcher",
+        [](const auto& t) { return QString::fromStdString(t.full_name); },
+        [](const auto& t) { return QString::fromStdString(t.short_code); },
+        [](const auto& t) { return t.version; },
+        [this]() {
+            const auto& _opt = party_.parent_party_id;
+            return _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load parties: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); });
+}
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(party_.full_name));
@@ -269,6 +299,13 @@ void PartyDetailDialog::updateUiFromParty() {
         const auto val = QString::fromStdString(party_.business_center_code);
         const int idx = ui_->businessCenterCombo->findText(val);
         ui_->businessCenterCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto& _opt = party_.parent_party_id;
+        const auto val = _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        const int idx = ui_->parentPartyCombo->findData(val);
+        if (idx >= 0)
+            ui_->parentPartyCombo->setCurrentIndex(idx);
     }
 
     populateProvenance(party_.version,
@@ -290,6 +327,19 @@ void PartyDetailDialog::updatePartyFromUi() {
     party_.party_type = ui_->partyTypeCombo->currentText().toStdString();
     party_.status = ui_->statusCombo->currentText().toStdString();
     party_.business_center_code = ui_->businessCenterCombo->currentText().toStdString();
+    {
+        const auto parent_party_id_str =
+            ui_->parentPartyCombo->currentData().toString().trimmed().toStdString();
+        if (parent_party_id_str.empty()) {
+            party_.parent_party_id = std::nullopt;
+        } else {
+            try {
+                party_.parent_party_id = boost::uuids::string_generator()(parent_party_id_str);
+            } catch (const std::exception&) {
+                party_.parent_party_id = std::nullopt;
+            }
+        }
+    }
     party_.modified_by = username_;
 }
 
@@ -311,8 +361,10 @@ void PartyDetailDialog::updateSaveButtonState() {
 bool PartyDetailDialog::validateInput() {
     const QString short_code_val = ui_->codeEdit->text().trimmed();
     const QString full_name_val = ui_->nameEdit->text().trimmed();
+    const bool parent_party_id_selected = ui_->parentPartyCombo->currentIndex() >= 0;
 
-    return true && !short_code_val.isEmpty() && !full_name_val.isEmpty();
+    return true && !short_code_val.isEmpty() && !full_name_val.isEmpty() &&
+           parent_party_id_selected;
 }
 
 void PartyDetailDialog::onSaveClicked() {

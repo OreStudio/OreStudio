@@ -28,6 +28,7 @@
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include "ores.refdata.api/messaging/contact_type_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
@@ -36,6 +37,7 @@
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
@@ -334,6 +336,32 @@ fetch_contact_types(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::party>, QString>
+fetch_parties(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_parties_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->parties);
+}
+
+std::expected<std::vector<refdata::domain::counterparty>, QString>
+fetch_counterparties(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_counterparties_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->counterparties);
 }
 
 std::expected<std::vector<refdata::domain::crm_topology_config>, QString>

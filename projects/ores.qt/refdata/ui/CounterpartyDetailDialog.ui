@@ -111,6 +111,20 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelParentCounterpartyId">
+            <property name="text">
+             <string>Parent Counterparty:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="parentCounterpartyCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

@@ -45,8 +45,8 @@ ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
 
 #include <iosfwd>
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
@@ -57,7 +57,7 @@ namespace ores::{{component}}::domain {
 /**
  * @brief Dumps the {{name_singular}} to a stream in JSON format.
  */
-ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
+ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
 
 }
 

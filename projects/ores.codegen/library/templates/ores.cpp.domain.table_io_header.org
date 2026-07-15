@@ -46,8 +46,8 @@ ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
 
 #include <iosfwd>
 #include <vector>
@@ -59,7 +59,7 @@ namespace ores::{{component}}::domain {
 /**
  * @brief Dumps the {{name_singular}} objects to a stream in table format.
  */
-ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v);
+ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v);
 
 }
 

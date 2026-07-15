@@ -40,6 +40,11 @@ RoundingTypeDetailDialog::RoundingTypeDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 RoundingTypeDetailDialog::~RoundingTypeDetailDialog() {
@@ -56,6 +61,10 @@ QWidget* RoundingTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* RoundingTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString RoundingTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void RoundingTypeDetailDialog::setupUi() {
@@ -105,6 +114,11 @@ void RoundingTypeDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void RoundingTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -175,6 +189,7 @@ void RoundingTypeDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -254,7 +269,8 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -273,7 +289,7 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_rounding_type_request request;
-        request.type = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -305,5 +321,6 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

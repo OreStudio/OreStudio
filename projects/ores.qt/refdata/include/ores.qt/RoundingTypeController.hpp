@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -64,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::rounding_type& type);
@@ -77,15 +82,31 @@ private slots:
     void onShowHistory(const refdata::domain::rounding_type& type);
     void onRevertVersion(const refdata::domain::rounding_type& type);
     void onOpenVersion(const refdata::domain::rounding_type& type, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::rounding_type& type);
     void showHistoryWindow(const QString& code);
 
+    /**
+     * @brief Fetches the full typed rounding type history (the
+     * existing per-entity refdata::messaging::get_rounding_type_history_request/
+     * refdata::messaging::get_rounding_type_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed rounding type, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchRoundingTypeHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::rounding_type>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     RoundingTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ChangeReasonCache* changeReasonCache_;
 };
 
 }

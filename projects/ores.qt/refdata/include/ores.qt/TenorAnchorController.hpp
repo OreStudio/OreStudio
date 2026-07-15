@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -79,11 +82,27 @@ private slots:
     void onShowHistory(const refdata::domain::tenor_anchor& anchor);
     void onRevertVersion(const refdata::domain::tenor_anchor& anchor);
     void onOpenVersion(const refdata::domain::tenor_anchor& anchor, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::tenor_anchor& anchor);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed tenor anchor history (the
+     * existing per-entity refdata::messaging::get_tenor_anchor_history_request/
+     * refdata::messaging::get_tenor_anchor_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenor anchor, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenorAnchorHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::tenor_anchor>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     TenorAnchorMdiWindow* listWindow_;

@@ -64,6 +64,12 @@ signals:
     void addNewRequested();
     void typeDeleted(const QString& code);
     void showTypeHistory(const refdata::domain::party_type& type);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();

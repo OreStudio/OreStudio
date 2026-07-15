@@ -63,6 +63,10 @@ ProvenanceWidget* PurposeTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString PurposeTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
+}
+
 void PurposeTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -184,6 +188,7 @@ void PurposeTypeDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -315,5 +320,6 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -18,20 +18,31 @@
  *
  */
 #include "ores.qt/MonetaryNatureController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MonetaryNatureDetailDialog.hpp"
-#include "ores.qt/MonetaryNatureHistoryDialog.hpp"
 #include "ores.qt/MonetaryNatureMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/monetary_nature_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::monetary_nature_changed_event>::name;
+}
 
 MonetaryNatureController::MonetaryNatureController(QMainWindow* mainWindow,
                                                    QMdiArea* mdiArea,
@@ -39,7 +50,7 @@ MonetaryNatureController::MonetaryNatureController(QMainWindow* mainWindow,
                                                    ChangeReasonCache* changeReasonCache,
                                                    const QString& username,
                                                    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -146,6 +157,7 @@ void MonetaryNatureController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void MonetaryNatureController::onShowHistory(const refdata::domain::monetary_nature& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
@@ -250,7 +262,6 @@ void MonetaryNatureController::showDetailWindow(const refdata::domain::monetary_
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
     detailWindow->setGeometryKey(key);
-    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<MonetaryNatureController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -277,10 +288,14 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new MonetaryNatureHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::monetary_nature{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &MonetaryNatureHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
                 if (!self)
@@ -288,7 +303,7 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &MonetaryNatureHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
                 if (!self)
@@ -296,13 +311,23 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &MonetaryNatureHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &MonetaryNatureController::onRevertVersion);
+            [self = QPointer<MonetaryNatureController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &MonetaryNatureHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &MonetaryNatureController::onOpenVersion);
+            [self = QPointer<MonetaryNatureController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -313,12 +338,12 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Monetary Nature History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
     historyWindow->setGeometryKey(windowKey);
-    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<MonetaryNatureController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -392,6 +417,96 @@ void MonetaryNatureController::onOpenVersion(const refdata::domain::monetary_nat
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void MonetaryNatureController::fetchMonetaryNatureHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::monetary_nature>, QString>)>
+        callback) {
+    refdata::messaging::get_monetary_nature_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::monetary_nature>, QString>;
+
+    QPointer<MonetaryNatureController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void MonetaryNatureController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<MonetaryNatureController> self = this;
+    fetchMonetaryNatureHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::monetary_nature>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void MonetaryNatureController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<MonetaryNatureController> self = this;
+    fetchMonetaryNatureHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::monetary_nature>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void MonetaryNatureController::onRevertVersion(const refdata::domain::monetary_nature& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting monetary nature to version: " << type.version;
 
@@ -401,8 +516,11 @@ void MonetaryNatureController::onRevertVersion(const refdata::domain::monetary_n
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setNature(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setNature(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &MonetaryNatureDetailDialog::statusMessage,
@@ -440,6 +558,28 @@ void MonetaryNatureController::onRevertVersion(const refdata::domain::monetary_n
 
 EntityListMdiWindow* MonetaryNatureController::listWindow() const {
     return listWindow_;
+}
+
+void MonetaryNatureController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

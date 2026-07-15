@@ -40,6 +40,11 @@ CurrencyMarketTierDetailDialog::CurrencyMarketTierDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 CurrencyMarketTierDetailDialog::~CurrencyMarketTierDetailDialog() {
@@ -56,6 +61,10 @@ QWidget* CurrencyMarketTierDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* CurrencyMarketTierDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString CurrencyMarketTierDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void CurrencyMarketTierDetailDialog::setupUi() {
@@ -117,6 +126,11 @@ void CurrencyMarketTierDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void CurrencyMarketTierDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -189,6 +203,7 @@ void CurrencyMarketTierDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -270,7 +285,8 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -289,7 +305,7 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_currency_market_tier_request request;
-        request.tier = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -321,5 +337,6 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

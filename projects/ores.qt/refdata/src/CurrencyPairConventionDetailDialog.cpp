@@ -131,6 +131,14 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CurrencyPairConventionDetailDialog::onFieldChanged);
+    connect(ui_->spotRelativeCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
+    connect(ui_->endOfMonthCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
 }
 
 void CurrencyPairConventionDetailDialog::setClientManager(ClientManager* clientManager) {

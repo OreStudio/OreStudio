@@ -482,7 +482,7 @@ fetch_rounding_types(ClientManager* cm) {
     auto response = cm->process_authenticated_request(std::move(request));
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
-    return std::move(response->rounding_types);
+    return std::move(response->types);
 }
 
 std::expected<std::vector<refdata::domain::monetary_nature>, QString>
@@ -494,7 +494,7 @@ fetch_monetary_natures(ClientManager* cm) {
     auto response = cm->process_authenticated_request(std::move(request));
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
-    return std::move(response->monetary_natures);
+    return std::move(response->types);
 }
 
 std::expected<std::vector<refdata::domain::currency_market_tier>, QString>
@@ -506,7 +506,7 @@ fetch_currency_market_tiers(ClientManager* cm) {
     auto response = cm->process_authenticated_request(std::move(request));
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
-    return std::move(response->currency_market_tiers);
+    return std::move(response->types);
 }
 
 std::expected<std::vector<refdata::domain::calendar_type>, QString>

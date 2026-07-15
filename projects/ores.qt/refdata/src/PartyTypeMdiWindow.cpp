@@ -125,7 +125,9 @@ void PartyTypeMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "PartyTypeListWindow",
-                            {ClientPartyTypeModel::Description},
+                            {
+                                ClientPartyTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -364,5 +366,6 @@ void PartyTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

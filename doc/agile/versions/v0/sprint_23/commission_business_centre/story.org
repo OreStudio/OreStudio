@@ -31,12 +31,12 @@ for Wt and HTTP support.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | All tasks complete.                    |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-12                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-15                               |
 
 * Acceptance
 
@@ -73,7 +73,7 @@ for Wt and HTTP support.
 | [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] | DONE | 2026-07-13 | 2026-07-13 | Run codegen against the updated model, diff every profile's output against the hand-written files, reconcile (zero-diff/fix-template/fix-code/accept). This is where the SQL security fix and Qt-to-RefdataPlugin relocation come from. |
 | [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] | DONE | | 2026-07-14 | Exercise the business_centre Qt UI end-to-end (from its new RefdataPlugin location): MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found. |
 | [[id:996277E2-DBF4-4FF6-9AB3-E8534F675238][Write the business_centre manual chapter]] | DONE | 2026-07-14 | 2026-07-15 | Add the business_centre entity chapter to the user manual, documenting the Qt windows (list, detail, history, delete). |
-| [[id:404A83BE-21BE-4AE5-9A98-A70346D26EFC][File Wt and HTTP backlog captures for business_centre]] | BACKLOG | | | File backlog captures for business_centre's Wt web UI and HTTP REST API support, since both are out of scope for this story (handled by the top-level Wt/HTTP commissioning stories). |
+| [[id:404A83BE-21BE-4AE5-9A98-A70346D26EFC][File Wt and HTTP backlog captures for business_centre]] | DONE | 2026-07-15 | 2026-07-15 | File backlog captures for business_centre's Wt web UI and HTTP REST API support, since both are out of scope for this story (handled by the top-level Wt/HTTP commissioning stories). |
 
 * Decisions
 

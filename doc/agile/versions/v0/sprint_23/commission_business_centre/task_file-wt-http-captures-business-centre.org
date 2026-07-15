@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/file-wt-http-captures-business-centre
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ business_centre's Wt and HTTP gaps are tracked in the backlog so the top-level c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -69,3 +69,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Filed two backlog captures in the inbox: Wt web UI support for
+business_centre and HTTP REST endpoints for business_centre, both
+linked back to this story and to the Entity commissioning process
+reference's gap protocol. Also checked chapter_6b_business_centres.org
+against the latest business_centre.org/business_unit.org/currency
+knowledge docs (post PR #1580) — no stale terminology or contradictions
+found; the chapter's Wt/HTTP callout in the Conclusion already points
+at exactly this backlog work.

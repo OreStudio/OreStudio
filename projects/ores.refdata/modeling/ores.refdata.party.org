@@ -305,6 +305,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 :settings_group:         PartyListWindow
 :window_title:           Parties
 :icon:                   Organization
+:has_pagination:         true
 :END:
 
 *** Detail fields

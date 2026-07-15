@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: F3F5B88E-4119-436C-8418-CAE34DEC2C9F
+:END:
+#+title: Task: Party/counterparty Create dialog cannot set parent_party_id
+#+description: parent_party_id is never exposed in the Qt Create/Edit dialog (deliberately excluded from Detail fields, like book's parent_portfolio_id precedent), but the DB enforces exactly one root party per tenant -- so creating any second party currently always fails with a duplicate-key error on parties_root_party_uniq_idx, with no way to fix it from the UI.
+#+type: task
+#+level: s1
+#+filetags: :qt:codegen:party:counterparty:blocking:commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Found while re-running the party/counterparty Qt UI scenarios: Create
+fails for any party/counterparty beyond the tenant's first, with
+=Repository error: Executing INSERT failed: ERROR:  duplicate key
+value violates unique constraint "parties_root_party_uniq_idx"= (the
+DB allows exactly one root party -- =parent_party_id IS NULL= -- per
+tenant, non-System category). =parent_party_id= is never exposed as a
+Detail field in =party.org=/=counterparty.org='s Qt facet (same
+precedent as book's =parent_portfolio_id=, set programmatically by the
+host rather than user-picked), and =PartyHierarchyTab=/
+=CounterpartyHierarchyTab= are read-only tree displays with no way to
+assign a parent either. Net effect: today there is genuinely no UI
+path to create a second party or counterparty at all.
+
+Add a nullable/optional "Parent Party" (resp. "Parent Counterparty")
+dynamic combo to the Create/Edit dialog -- self-referencing FK,
+allow-blank for root -- populated from the existing party/counterparty
+list, excluding the entity's own id when editing (to prevent
+self-parenting) and, ideally, its own descendants (to prevent cycles;
+confirm whether the server already validates this or if it needs a
+DB-side check too).
+
+This is new template territory: there's no existing self-referencing
+nullable dynamic-combo precedent in the codegen templates yet (the
+=combo_allow_blank= facet exists for plain lookup dynamic combos, but
+not for "combo sourced from the same entity, excluding self/
+descendants"). Scope whether to generalize this as a facet other
+self-referencing hierarchical entities could reuse, or keep it
+party/counterparty-specific for now given no other entity currently
+needs it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- Party and counterparty Create/Edit dialogs gain a "Parent Party"/
+  "Parent Counterparty" combo, blank-allowed, sourced from the
+  existing entity list.
+- Creating a second (non-root) party/counterparty with a parent
+  selected succeeds; leaving it blank on a tenant that already has a
+  root correctly still fails server-side (that constraint is correct
+  behavior, just needs a reachable, non-silent path around it).
+- Self-parenting and cyclic parent chains are rejected with a clear
+  error, not a generic constraint-violation message.
+- Builds cleanly; manually verified live for both party and
+  counterparty.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

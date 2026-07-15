@@ -80,7 +80,7 @@ change reason succeeds, history loads, delete works.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | no eventing on save. everything else worked correctly. |
 
 ** Check monetary nature history, list, save, and delete
@@ -123,10 +123,10 @@ confirming) the editable revert dialog opens pre-populated.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-15T22:36:40Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-15T23:09:25Z |
 | Branch        | feature/migrate-refdata-history-dialogs |
-| Commit        | 49b702c38 |
+| Commit        | ca73b6f7e |
 | Worktree      | brave_hopper |
 
 * Notes

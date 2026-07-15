@@ -149,8 +149,8 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 
 | Template | Output |
 |----------+--------|
-| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][cpp_nats_event_cache.hpp.mustache]] | projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache.hpp |
-| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][cpp_nats_event_cache_registrar.hpp.mustache]] | projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache_registrar.hpp |
+| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][cpp_nats_event_cache.hpp.mustache]] | projects/{cache_component_dir}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache.hpp |
+| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][cpp_nats_event_cache_registrar.hpp.mustache]] | projects/{cache_component_dir}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache_registrar.hpp |
 
 ** qt :facet:
 :PROPERTIES:

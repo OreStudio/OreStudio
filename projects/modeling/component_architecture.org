@@ -141,7 +141,7 @@ Exhaustive list of every sub-component name in use and its canonical role.
 | Name | Used in | Role |
 |------|---------|------|
 | =server= | =ores.http= | HTTP/web server entrypoint — wires HTTP routes and runs the Boost.Asio event loop. Equivalent to =service= but for HTTP rather than NATS. |
-| =client= | =ores.iam= | Client-side library — session management and authentication helpers for Qt and service consumers. Provides the consumer-facing API without coupling consumers to =core= internals. |
+| =client= | =ores.iam=, =ores.marketdata= | Client-side library — typed, DB-free NATS request facades and (for =ores.iam=) session/authentication helpers, for Qt and service consumers. Provides the consumer-facing API without coupling consumers to =core= internals; also the home for consumer-side entity-mirror caches (=nats-event-cache= facet, =cached_by=) shared by multiple UI-layer consumers — see [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]]. |
 | =wrapper= | =ores.compute= | External process wrapper/bridge — executes ORE risk runs as a child process and reports results back to =core=. |
 | =database= | =ores.telemetry= | Database persistence layer — owns the DB schema and repository for the group when the persistence concern is large enough to separate from =core=. |
 

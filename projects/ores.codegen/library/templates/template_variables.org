@@ -50,8 +50,10 @@ Variables that identify the component being generated into.
 | =component_service=       | Service sub-component name.                                     | =ores.accounts.service=          |
 | =component_service_upper= | Service sub-component uppercased.                                | =ORES_ACCOUNTS_SERVICE=          |
 | =component_service_dir=   | Service sub-component's on-disk directory.                      | =ores.accounts/service=          |
-| =cache_component=         | Consumer component for a =nats-event-cache= archetype (from =cached_by=; defaults to =component=). | =iam= |
-| =cache_component_upper=   | =cache_component= uppercased (underscores, all caps).           | =IAM=                            |
+| =cache_component=         | Consumer component for a =nats-event-cache= archetype -- the part of =cached_by= before an optional dot (defaults to =component= if =cached_by= is unset). | =refdata= |
+| =cache_component_upper=   | =cache_component= uppercased (underscores, all caps).           | =REFDATA=                        |
+| =cache_subcomponent=      | Which subcomponent of =cache_component= the generated cache lands in -- the part of =cached_by= after the dot, e.g. =cached_by: refdata.client= (defaults to =core=, every existing consumer's shape, when =cached_by= has no dot). Not a separate model flag. | =client= |
+| =cache_subcomponent_upper= | =cache_subcomponent= uppercased.                                | =CLIENT=                         |
 | =component_name=          | Short component name without the product prefix.                | =accounts=                       |
 | =full_name=               | Full qualified name (component + optional suffix).              | =ores.accounts=                  |
 | =full_name_upper=         | =full_name= uppercased.                                         | =ORES_ACCOUNTS=                  |

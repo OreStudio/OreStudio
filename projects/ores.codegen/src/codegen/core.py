@@ -614,8 +614,17 @@ def _component_path_vars(entity):
     # cached_by: the consumer component a nats-event-cache archetype's
     # output belongs to (e.g. party is defined in refdata but its
     # generated cache compiles into iam), distinct from the entity's
-    # own component used by every other facet above.
-    cache_component = entity.get('cached_by', component)
+    # own component used by every other facet above. Accepts the same
+    # "component.subcomponent" dotted form component_include already
+    # uses (e.g. cached_by: refdata.client) for a consumer whose cache
+    # doesn't land in its default "core" subcomponent -- no separate
+    # model flag; cache_component/cache_subcomponent below are purely
+    # derived, like every other _upper/_dir variable in this function.
+    cached_by_raw = entity.get('cached_by', component)
+    if '.' in cached_by_raw:
+        cache_component, cache_subcomponent = cached_by_raw.split('.', 1)
+    else:
+        cache_component, cache_subcomponent = cached_by_raw, 'core'
     cache_component_dir = f"ores.{cache_component}"
 
     return {
@@ -628,6 +637,7 @@ def _component_path_vars(entity):
         'component_service': component_service,
         'cache_component_dir': cache_component_dir,
         'cache_component': cache_component,
+        'cache_subcomponent': cache_subcomponent,
         'generator_facet_name': generator_facet_name,
     }
 
@@ -2013,10 +2023,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # cached_by: the consumer component a nats-event-cache
             # archetype's output belongs to (see resolve_output_path);
             # exposed to templates alongside the entity's own component.
-            domain_entity['cache_component'] = domain_entity.get('cached_by', component)
-            domain_entity['cache_component_upper'] = (
-                domain_entity['cache_component'].replace('.', '_').upper()
-            )
+            # Accepts the same "component.subcomponent" dotted form
+            # component_include already uses, for a consumer whose cache
+            # doesn't land in its default "core" subcomponent -- no
+            # separate model flag; both variables below are purely
+            # derived, like every other _upper variable in this block.
+            cached_by_raw = domain_entity.get('cached_by', component)
+            if '.' in cached_by_raw:
+                cache_component, cache_subcomponent = cached_by_raw.split('.', 1)
+            else:
+                cache_component, cache_subcomponent = cached_by_raw, 'core'
+            domain_entity['cache_component'] = cache_component
+            domain_entity['cache_component_upper'] = cache_component.upper()
+            domain_entity['cache_subcomponent'] = cache_subcomponent
+            domain_entity['cache_subcomponent_upper'] = cache_subcomponent.upper()
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")

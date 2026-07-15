@@ -46,9 +46,14 @@ the sibling formatter task's own "presentation lives in
 =ores.marketdata.client=, not =ores.qt=" decision was designed to
 avoid.
 
-There is no existing "refdata client" component to mirror
-=ores.marketdata.client='s role (thin, DB-free, NATS-only, shared by
-every UI). Add one -- =ores.refdata.client= -- and put
+=client= is an existing, documented specialist sub-component role
+(see =projects/modeling/component_architecture.org=: "provides the
+consumer-facing API without coupling consumers to core internals",
+currently only instantiated as =ores.iam.client=), so
+=ores.refdata.client= is the regular, catalogue-consistent name for
+this new piece -- not a bespoke ad hoc suffix. Add it, mirroring
+=ores.marketdata.client='s existing shape (thin, DB-free, NATS-only),
+and put
 =currency_pair_convention_cache= there, generated via the
 =nats-event-cache= facet exactly as =party_cache= was, so any UI
 component (Qt now, shell/Wt later) links one shared cache instead of
@@ -73,9 +78,10 @@ established.
 - The =nats-event-cache= facet's currently-hardcoded
   =projects/ores.{cached_by}/core/include/ores.{cached_by}.core/...=
   output path is generalised to accept a configurable subcomponent
-  segment (not a literal =core=), so =cached_by: refdata.client=
-  correctly targets =ores.refdata.client=, not a nonsensical
-  =ores.refdata.client.core=.
+  segment (not a literal =core=), so =cached_by: refdata=,
+  =cache_subcomponent: client= correctly targets
+  =ores.refdata.client= (=projects/ores.refdata/client/include/ores.refdata.client/...=),
+  not a nonsensical =ores.refdata.core=.
 - New =ores.refdata.client= component: thin, DB-free, links only NATS
   + refdata's own API/protocol types, following
   =ores.marketdata.client='s existing shape (its CMakeLists, export

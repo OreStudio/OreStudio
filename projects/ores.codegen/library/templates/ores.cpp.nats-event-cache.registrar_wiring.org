@@ -4,7 +4,7 @@
 #+title: ores.cpp.nats-event-cache.registrar_wiring
 #+description: Startup warm-up + change-event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet.
 #+type: archetype
-#+output: projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache_registrar.hpp
+#+output: projects/{cache_component_dir}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache_registrar.hpp
 #+facet: ores.cpp.nats-event-cache
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
@@ -33,13 +33,13 @@ The full template source. Edit here and re-tangle with
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.registrar_wiring.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
-#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
+#include "ores.{{cache_component}}.{{cache_subcomponent}}/service/cache/{{entity_singular}}_cache.hpp"
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
 #include "ores.nats/service/client.hpp"
 #include <memory>

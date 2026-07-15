@@ -1,13 +1,13 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.registrar_wiring.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
-#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
+#include "ores.{{cache_component}}.{{cache_subcomponent}}/service/cache/{{entity_singular}}_cache.hpp"
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
 #include "ores.nats/service/client.hpp"
 #include <memory>

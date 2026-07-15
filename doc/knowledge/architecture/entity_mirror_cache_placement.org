@@ -50,7 +50,14 @@ whichever UI happened to need it first.
    unrelated code. =ores.marketdata.client= already exists for this
    exact reason on the CRM side (NATS-only, DB-free, shared by every
    UI that talks to =ores.marketdata=); the refdata equivalent
-   (=ores.refdata.client=) follows the same shape.
+   (=ores.refdata.client=) follows the same shape. This isn't a new
+   naming convention invented for caching specifically -- =client= is
+   already a documented specialist sub-component role in
+   =projects/modeling/component_architecture.org='s sub-component
+   catalogue ("provides the consumer-facing API without coupling
+   consumers to core internals"), previously only instantiated as
+   =ores.iam.client=; a cache is one concrete shape that role can
+   take, not a reason to invent a separate =.cache= suffix.
 
 ** Current facet limitation: hardcoded =.core= output path
 

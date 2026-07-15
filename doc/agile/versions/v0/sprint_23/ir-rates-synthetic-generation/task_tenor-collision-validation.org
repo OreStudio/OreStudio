@@ -63,6 +63,18 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Before starting this task's own implementation, this branch first
+carried incidental follow-up work from the just-merged Curve Template
+task: an =asset_class= badge + full descriptions for the product
+catalogue, redesigning =instrument_code.code= as a short FIX-inspired
+mnemonic with a new =ore_trade_type= column preserving ORE's literal
+string, wiring the previously-unreachable
+=ir_curve_generation_config=/=ir_curve_template_entry= Qt CRUD into a
+menu, and an unrelated fix for a =crm_topology_bundles= DQ artefact
+seed pointing at the wrong (marketdata) NATS subject. That work is
+raised as its own PR, separate from this task's actual tenor-collision
+validator, which has not yet been started.
+
 * PRs
 
 | PR | Title |

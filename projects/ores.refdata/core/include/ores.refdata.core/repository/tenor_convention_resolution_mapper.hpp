@@ -17,29 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
-#define ORES_REFDATA_CORE_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
+#ifndef ORES_REFDATA_REPOSITORY_TENOR_CONVENTION_RESOLUTION_MAPPER_HPP
+#define ORES_REFDATA_REPOSITORY_TENOR_CONVENTION_RESOLUTION_MAPPER_HPP
 
-#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
-#include <vector>
+#include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
 
-namespace ores::refdata::service {
+namespace ores::refdata::repository {
 
 /**
- * @brief Service for reading tenor convention resolutions. Read-only: this junction's rows are
- * reference data managed via Foundation-layer SQL provisioning -- see
- * ores.refdata.tenor_convention_resolution.org. Hand-authored to fill the gap while junction
- * codegen doesn't generate a service/protocol/handler layer -- see the story on retiring the
- * legacy codegen profile system and adding junction C++ support.
+ * @brief Maps tenor_convention_resolution domain entities to data storage layer and vice-versa.
  */
-class ORES_REFDATA_CORE_EXPORT tenor_convention_resolution_service {
+class ORES_REFDATA_CORE_EXPORT tenor_convention_resolution_mapper {
 private:
     inline static std::string_view logger_name =
-        "ores.refdata.service.tenor_convention_resolution_service";
+        "ores.refdata.repository.tenor_convention_resolution_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,17 +42,13 @@ private:
     }
 
 public:
-    using context = ores::database::context;
+    static domain::tenor_convention_resolution map(const tenor_convention_resolution_entity& v);
+    static tenor_convention_resolution_entity map(const domain::tenor_convention_resolution& v);
 
-    explicit tenor_convention_resolution_service(context ctx);
-
-    /**
-     * @brief Lists every active resolution row for the tenant.
-     */
-    std::vector<domain::tenor_convention_resolution> list_resolutions();
-
-private:
-    repository::tenor_convention_resolution_repository repo_;
+    static std::vector<domain::tenor_convention_resolution>
+    map(const std::vector<tenor_convention_resolution_entity>& v);
+    static std::vector<tenor_convention_resolution_entity>
+    map(const std::vector<domain::tenor_convention_resolution>& v);
 };
 
 }

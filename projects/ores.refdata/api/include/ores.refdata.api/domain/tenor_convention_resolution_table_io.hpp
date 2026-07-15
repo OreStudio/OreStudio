@@ -17,19 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
+#ifndef ORES_REFDATA_API_DOMAIN_TENOR_CONVENTION_RESOLUTION_TABLE_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_TENOR_CONVENTION_RESOLUTION_TABLE_IO_HPP
 
-namespace ores::refdata::service {
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
-using namespace ores::logging;
+namespace ores::refdata::domain {
 
-tenor_convention_resolution_service::tenor_convention_resolution_service(context ctx)
-    : repo_(std::move(ctx)) {}
+/**
+ * @brief Dumps the tenor_convention_resolution objects to a stream in table format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<tenor_convention_resolution>& v);
 
-std::vector<domain::tenor_convention_resolution>
-tenor_convention_resolution_service::list_resolutions() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor convention resolutions";
-    return repo_.read_latest();
 }
 
-}
+#endif

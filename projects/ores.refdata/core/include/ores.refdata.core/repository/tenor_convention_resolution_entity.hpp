@@ -21,7 +21,9 @@
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_RESOLUTION_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -29,15 +31,15 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a row of ores_refdata_tenor_convention_resolutions_tbl. Hand-authored:
- * codegen's junction profile generates SQL only, no C++ entity struct (see
- * ores.refdata.tenor_convention_resolution.org).
+ * @brief Represents a tenor convention resolution in the database.
+ *
+ * Junction table with composite primary key (convention_code, tenor_code, valid_from).
  */
 struct tenor_convention_resolution_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_tenor_convention_resolutions_tbl";
 
-    std::string convention_code;
+    sqlgen::PrimaryKey<std::string> convention_code;
     std::string tenant_id;
     std::string tenor_code;
     int version = 0;
@@ -51,6 +53,8 @@ struct tenor_convention_resolution_entity {
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
+
+std::ostream& operator<<(std::ostream& s, const tenor_convention_resolution_entity& v);
 
 }
 

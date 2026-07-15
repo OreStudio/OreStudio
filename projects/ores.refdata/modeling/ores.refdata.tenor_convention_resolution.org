@@ -55,6 +55,10 @@ separate schema for the different algorithm. The runtime resolver for
 
 References [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor_convention.code]].
 
+#+begin_src cpp :name generator
+std::string("RATES_SPOT_FORWARD")
+#+end_src
+
 * Right
 :PROPERTIES:
 :column:        tenor_code
@@ -66,6 +70,10 @@ References [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor_convention.code]].
 :END:
 
 References [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor.code]].
+
+#+begin_src cpp :name generator
+std::string("1M")
+#+end_src
 
 * Columns
 
@@ -81,6 +89,10 @@ Null for the common case (the tenor resolves from the convention's own
 =measured_from=); set only when this specific tenor resolves from a
 different anchor under this specific convention.
 
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** offset_unit
 :PROPERTIES:
 :type:     text
@@ -93,6 +105,10 @@ referenced tenor is =PERIOD= (its own =unit= applies instead); required
 when the referenced tenor is =SPECIAL=, since a =SPECIAL= tenor has no
 duration outside a convention's say-so.
 
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** offset_multiplier
 :PROPERTIES:
 :type:          integer
@@ -103,6 +119,10 @@ duration outside a convention's say-so.
 The count paired with =offset_unit= (e.g. =1= day for =O/N= under
 spot/forward, =0= days for =O/N= under FX swap, =1= roll-quarter for a
 CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
 
 * SQL
 
@@ -117,7 +137,7 @@ CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
 :name_short:          resolutions
 :name_singular_words: tenor convention resolution
 :name_words:          tenor convention resolutions
-:order_column:        convention_code
+:order_column:        tenor_code
 :END:
 
 * C++
@@ -125,6 +145,7 @@ CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:read_only:       true
 :END:
 
 ** Domain includes

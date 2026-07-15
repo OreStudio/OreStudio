@@ -216,7 +216,14 @@ public:
 namespace ores::{{component}}::repository {
 
 /**
+{{#read_only}}
+ * @brief Reads {{name_words}} from data storage. Read-only: this
+ * junction's rows are managed via SQL provisioning, not application
+ * writes.
+{{/read_only}}
+{{^read_only}}
  * @brief Reads and writes {{name_words}} to data storage.
+{{/read_only}}
  */
 class ORES_{{component_core_upper}}_EXPORT {{name_singular}}_repository {
 private:
@@ -236,9 +243,11 @@ public:
 
     std::string sql();
 
+{{^read_only}}
     void write(const domain::{{name_singular}}& {{name_singular_short}});
     void write(const std::vector<domain::{{name_singular}}>& {{name_short}});
 
+{{/read_only}}
     std::vector<domain::{{name_singular}}> read_latest();
     std::vector<domain::{{name_singular}}>
 {{#left.is_uuid}}
@@ -255,6 +264,7 @@ public:
     read_latest_by_{{right.column_short}}(const std::string& {{right.column}});
 {{/right.is_uuid}}
 
+{{^read_only}}
 {{#left.is_uuid}}
 {{#right.is_uuid}}
     void remove(const boost::uuids::uuid& {{left.column}},
@@ -279,6 +289,7 @@ public:
     void remove_by_{{left.column_short}}(const std::string& {{left.column}});
 {{/right.is_uuid}}
 {{/left.is_uuid}}
+{{/read_only}}
 
 private:
     context ctx_;

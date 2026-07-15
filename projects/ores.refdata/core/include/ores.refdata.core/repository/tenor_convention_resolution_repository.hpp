@@ -17,23 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
+#ifndef ORES_REFDATA_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
+#define ORES_REFDATA_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/tenor_resolution.hpp"
-#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::refdata::repository {
 
 /**
- * @brief Reads ores_refdata_tenor_convention_resolutions_tbl. Read-only: this junction's rows
- * are reference data managed via Foundation-layer SQL provisioning, not user edits through this
- * repository -- see ores.refdata.tenor_convention_resolution.org.
+ * @brief Reads tenor convention resolutions from data storage. Read-only: this
+ * junction's rows are managed via SQL provisioning, not application
+ * writes.
  */
-class ORES_REFDATA_CORE_EXPORT tenor_convention_resolution_repository {
+class tenor_convention_resolution_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.tenor_convention_resolution_repository";
@@ -47,10 +48,19 @@ private:
 public:
     using context = ores::database::context;
 
-    /**
-     * @brief Reads every active resolution row for the tenant.
-     */
-    std::vector<domain::tenor_convention_resolution> read_all(context ctx);
+    explicit tenor_convention_resolution_repository(context ctx);
+
+    std::string sql();
+
+    std::vector<domain::tenor_convention_resolution> read_latest();
+    std::vector<domain::tenor_convention_resolution>
+    read_latest_by_convention(const std::string& convention_code);
+    std::vector<domain::tenor_convention_resolution>
+    read_latest_by_tenor(const std::string& tenor_code);
+
+
+private:
+    context ctx_;
 };
 
 }

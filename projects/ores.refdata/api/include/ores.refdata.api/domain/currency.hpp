@@ -139,13 +139,6 @@ struct currency final {
     int base_precedence = 0;
 
     /**
-     * @brief Named holiday calendar identifier (e.g. "TARGET", "US", "UK"). Free-text pending
-     * [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference
-     * data]].
-     */
-    std::optional<std::string> holiday_calendar;
-
-    /**
      * @brief Username of the person who last modified this currency.
      */
     std::string modified_by;

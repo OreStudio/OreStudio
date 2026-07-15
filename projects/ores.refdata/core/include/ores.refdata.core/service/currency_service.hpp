@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -37,8 +38,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing currencies.
  *
- * Provides a higher-level interface for currency operations, wrapping
- * the underlying repository.
+ * Provides a higher-level interface for currency operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT currency_service {
 private:
@@ -77,6 +78,25 @@ public:
     std::uint32_t count_currencies();
 
     /**
+     * @brief Retrieves a single currency as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param iso_code The iso_code of the currency.
+     * @param version The version to fetch.
+     * @return The currency at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency> get_currency_at_version(const std::string& iso_code,
+                                                            std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single currency by its iso_code.
+     *
+     * @param iso_code The iso_code of the currency.
+     * @return The currency if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency> get_currency(const std::string& iso_code);
+
+    /**
      * @brief Saves a currency (creates or updates).
      *
      * @param currency The currency to save.
@@ -85,7 +105,7 @@ public:
     void save_currency(const domain::currency& currency);
 
     /**
-     * @brief Saves a batch of currencies atomically (all or nothing).
+     * @brief Saves a batch of currencies.
      *
      * @param currencies The currencies to save.
      * @throws std::exception on failure.
@@ -93,31 +113,20 @@ public:
     void save_currencies(const std::vector<domain::currency>& currencies);
 
     /**
-     * @brief Deletes a currency by its ISO code.
+     * @brief Deletes a currency by its iso_code.
      *
-     * @param iso_code The ISO code of the currency to delete.
+     * @param iso_code The iso_code of the currency to delete.
      * @throws std::exception on failure.
      */
     void delete_currency(const std::string& iso_code);
 
     /**
-     * @brief Deletes currencies by their ISO codes.
+     * @brief Deletes currencies by their iso_codes.
      */
     void delete_currencies(const std::vector<std::string>& iso_codes);
 
     /**
-     * @brief Retrieves a single currency by its ISO code.
-     *
-     * @param iso_code The ISO code of the currency.
-     * @return The currency if found, std::nullopt otherwise.
-     */
-    std::optional<domain::currency> get_currency(const std::string& iso_code);
-
-    /**
      * @brief Retrieves all historical versions of a currency.
-     *
-     * @param iso_code The ISO code of the currency.
-     * @return Vector of all historical versions of the currency.
      */
     std::vector<domain::currency> get_currency_history(const std::string& iso_code);
 

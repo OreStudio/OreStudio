@@ -202,7 +202,6 @@ void CurrencyMdiWindow::setupTable() {
             cs::mono_center,
             cs::text_left,
             cs::mono_center,
-            cs::text_left,
             cs::mono_center,
             cs::text_left,
             cs::text_left,
@@ -252,7 +251,6 @@ void CurrencyMdiWindow::setupTable() {
                                 ClientCurrencyModel::Format,
                                 ClientCurrencyModel::SpotDays,
                                 ClientCurrencyModel::BasePrecedence,
-                                ClientCurrencyModel::HolidayCalendar,
                             },
                             {900, 400},
                             3);

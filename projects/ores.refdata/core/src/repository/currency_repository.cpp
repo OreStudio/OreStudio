@@ -95,6 +95,28 @@ std::vector<domain::currency> currency_repository::read_all(context ctx,
         "Reading all currency versions by iso_code.");
 }
 
+std::optional<domain::currency> currency_repository::read_at_version(context ctx,
+                                                                     const std::string& iso_code,
+                                                                     std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency at version. iso_code: " << iso_code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<currency_entity>> |
+        where("tenant_id"_c == tid && "iso_code"_c == iso_code && "version"_c == version) |
+        sqlgen::limit(1);
+
+    const auto entities = execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading currency at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 void currency_repository::remove(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency: " << iso_code;

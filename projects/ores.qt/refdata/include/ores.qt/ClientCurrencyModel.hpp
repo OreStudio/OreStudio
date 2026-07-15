@@ -68,7 +68,6 @@ public:
         SpotDays,
         DayBasis,
         BasePrecedence,
-        HolidayCalendar,
         Version,
         ModifiedBy,
         RecordedAt,

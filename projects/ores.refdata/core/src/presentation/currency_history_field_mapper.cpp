@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
-#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -44,8 +43,6 @@ std::vector<ores::diff::domain::field_value> render_currency_fields(const domain
     fields.push_back({.name = "Spot Days", .value = std::to_string(v.spot_days)});
     fields.push_back({.name = "Day Basis", .value = v.day_basis});
     fields.push_back({.name = "Base Precedence", .value = std::to_string(v.base_precedence)});
-    fields.push_back(
-        {.name = "Holiday Calendar", .value = v.holiday_calendar.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

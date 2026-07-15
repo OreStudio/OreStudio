@@ -17,42 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/currency_mapper.hpp"
+#include "ores.refdata.core/repository/currency_calendar_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.refdata.api/domain/currency_calendar_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::currency currency_mapper::map(const currency_entity& v) {
+domain::currency_calendar currency_calendar_mapper::map(const currency_calendar_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::currency r;
+    domain::currency_calendar r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.iso_code = v.iso_code.value();
-
-    r.name = v.name;
-
-    r.numeric_code = v.numeric_code;
-    r.symbol = v.symbol;
-    r.fraction_symbol = v.fraction_symbol;
-    r.fractions_per_unit = v.fractions_per_unit;
-    r.rounding_type = v.rounding_type;
-    r.rounding_precision = v.rounding_precision;
-    r.format = v.format;
-    r.monetary_nature = v.monetary_nature;
-    r.market_tier = v.market_tier;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
-    r.spot_days = v.spot_days;
-    r.day_basis = v.day_basis;
-    r.base_precedence = v.base_precedence;
+    r.currency_iso_code = v.currency_iso_code.value();
+    r.calendar_code = v.calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -63,30 +44,14 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     return r;
 }
 
-currency_entity currency_mapper::map(const domain::currency& v) {
+currency_calendar_entity currency_calendar_mapper::map(const domain::currency_calendar& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    currency_entity r;
-    r.iso_code = v.iso_code;
+    currency_calendar_entity r;
+    r.currency_iso_code = v.currency_iso_code;
     r.tenant_id = v.tenant_id.to_string();
+    r.calendar_code = v.calendar_code;
     r.version = v.version;
-
-    r.name = v.name;
-
-    r.numeric_code = v.numeric_code;
-    r.symbol = v.symbol;
-    r.fraction_symbol = v.fraction_symbol;
-    r.fractions_per_unit = v.fractions_per_unit;
-    r.rounding_type = v.rounding_type;
-    r.rounding_precision = v.rounding_precision;
-    r.format = v.format;
-    r.monetary_nature = v.monetary_nature;
-    r.market_tier = v.market_tier;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
-    r.spot_days = v.spot_days;
-    r.day_basis = v.day_basis;
-    r.base_precedence = v.base_precedence;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -96,13 +61,15 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     return r;
 }
 
-std::vector<domain::currency> currency_mapper::map(const std::vector<currency_entity>& v) {
-    return map_vector<currency_entity, domain::currency>(
+std::vector<domain::currency_calendar>
+currency_calendar_mapper::map(const std::vector<currency_calendar_entity>& v) {
+    return map_vector<currency_calendar_entity, domain::currency_calendar>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<currency_entity> currency_mapper::map(const std::vector<domain::currency>& v) {
-    return map_vector<domain::currency, currency_entity>(
+std::vector<currency_calendar_entity>
+currency_calendar_mapper::map(const std::vector<domain::currency_calendar>& v) {
+    return map_vector<domain::currency_calendar, currency_calendar_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

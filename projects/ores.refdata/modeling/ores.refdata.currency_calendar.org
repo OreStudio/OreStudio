@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: EC7B18A7-3865-424A-AD78-F6BE522F3B0B
+:END:
+#+title: ores.refdata.currency_calendar
+#+description: Codegen junction model for currency_calendars.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: currency_calendars
+#+name_singular: currency_calendar
+#+name_title: Currency Calendar
+#+name_singular_words: currency calendar assignment
+#+brief: Links a currency to a holiday calendar used for its spot/settlement date computation.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+Many-to-many junction between currency and calendar: a currency's
+spot/settlement date computation can depend on more than one calendar
+(e.g. a country calendar and a financial-centre calendar). Replaces
+[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][currency's]] free-text
+=holiday_calendar= column with a proper FK relationship to
+[[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]].
+
+* Left
+:PROPERTIES:
+:column:        currency_iso_code
+:column_short:  currency
+:column_title:  Currency
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up calendars used by a currency
+:END:
+
+ISO 4217 alpha-3 code of the currency.
+
+References ores_refdata_currencies_tbl.iso_code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        calendar_code
+:column_short:  calendar
+:column_title:  Calendar
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding currencies that use a calendar
+:END:
+
+QuantLib/ORE calendar token (e.g. TARGET, UnitedStates).
+
+References ores_refdata_calendars_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_calendars_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: currency_calendar
+:name_short:          currency_calendars
+:name_singular_words: currency calendar
+:name_words:          currency calendars
+:order_column:        calendar_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cc
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| currency_iso_code | Currency    |
+| calendar_code     | Calendar    |
+| modified_by       | Modified By |
+| version           | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — parent story.

@@ -47,9 +47,9 @@ TEST_CASE("render_currency_fields_renders_every_column_exactly_once", tags) {
 
     const auto fields = render_currency_fields(c);
 
-    // 21 columns in the domain struct as of this test: primary key,
+    // 20 columns in the domain struct as of this test: primary key,
     // natural keys, columns, 4 audit columns, recorded_at.
-    CHECK(fields.size() == 21);
+    CHECK(fields.size() == 20);
     // No duplicate field names.
     std::vector<std::string> names;
     for (const auto& f : fields)

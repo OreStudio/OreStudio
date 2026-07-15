@@ -109,7 +109,7 @@ Current composite components and their active sub-components:
 | =ores.marketdata= | =api=, =core=, =service= |
 | =ores.ore= | =api=, =core=, =service= |
 | =ores.qt= | =application=, =api=, =refdata=, =analytics=, =compute=, =data_transfer=, =mktdata=, =party=, =scheduler=, =trading=, =workflow=, =workspace=, =admin= |
-| =ores.refdata= | =api=, =core=, =service=, =modeling= |
+| =ores.refdata= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.reporting= | =api=, =core=, =service=, =modeling= |
 | =ores.scheduler= | =api=, =core=, =service=, =modeling= |
 | =ores.synthetic= | =api=, =core=, =service= |

@@ -21,6 +21,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -29,6 +30,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <limits>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -183,6 +185,50 @@ public:
                       msg,
                       delete_currency_pair_convention_response{.success = false,
                                                                .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void read_for_cache(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        // Authentication-only, deliberately not tenant-scoped: this proves
+        // the caller holds *a* valid signed JWT, but does not check that
+        // token's own tenant against req->tenant_id below (the tenant a
+        // cache-warming service account reads is unrelated to any tenant
+        // its own token carries). Do not copy this method as a template
+        // for a tenant-authorized endpoint.
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        if (auto req = decode<read_currency_pair_conventions_for_cache_request>(msg)) {
+            try {
+                using ores::database::service::tenant_context;
+                auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
+                service::currency_pair_convention_service svc(tctx);
+                // No dedicated unpaginated list method is generated; reuse
+                // the paginated one with an unbounded limit.
+                auto conventions =
+                    svc.list_conventions(0, std::numeric_limits<std::uint32_t>::max());
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                    << "Completed " << msg.subject << " (tenant=" << req->tenant_id
+                    << ", count=" << conventions.size() << ")";
+                reply(nats_,
+                      msg,
+                      read_currency_pair_conventions_for_cache_response{
+                          .success = true, .conventions = std::move(conventions)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      read_currency_pair_conventions_for_cache_response{.success = false,
+                                                                        .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)

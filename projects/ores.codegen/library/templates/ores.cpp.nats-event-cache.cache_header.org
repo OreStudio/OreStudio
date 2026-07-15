@@ -22,6 +22,19 @@ See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 variables and their semantics, and the facet doc for the =cached_by= /
 =read_for_cache= flags this archetype requires.
 
+Includes =ores.utility/rfl/reflectors.hpp= directly: =load()='s
+=rfl::json::read/write= calls need it whenever the entity carries a
+=boost::uuids::uuid=/=tenant_id= field (every =read_for_cache= entity
+does, since =read_for_cache= itself requires =has_tenant_id=), and a
+non-template header-only class's inline member bodies are fully
+compiled in *every* translation unit that includes it -- unlike
+=party_cache=, which only ever compiled by accident because every
+real consumer TU also pulled in a generated =*_handler.hpp= (which
+transitively includes =reflectors.hpp= via
+=ores.service/messaging/handler_helpers.hpp=) alongside it. Found via
+=ores.refdata.client='s standalone cache test, the first TU to
+include this header on its own.
+
 ** Authentication
 
 =read_for_cache= requires a valid signed JWT (see the =nats-handler=
@@ -89,6 +102,7 @@ The full template source. Edit here and re-tangle with
 #include <immer/map_transient.hpp>
 #include <vector>
 {{/cache_aux_type}}
+#include "ores.utility/rfl/reflectors.hpp"
 #include <functional>
 #include <optional>
 #include <rfl/json.hpp>

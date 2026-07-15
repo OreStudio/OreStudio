@@ -27,6 +27,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <functional>

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1B88215B-1FE0-4CAF-B6AB-53F471963CA6
+:ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.currency_pair_convention
 #+description: Codegen entity model for the refdata =currency_pair_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -177,6 +178,8 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:read_for_cache:  true
+:cached_by:       refdata.client
 :END:
 
 ** Repository

@@ -80,6 +80,22 @@ struct get_currency_pair_convention_history_response {
     std::string message;
 };
 
+/**
+ * @brief Reads all active currency_pair_conventions for a tenant — used by
+ * client-side caches to warm up without multiple round-trips.
+ */
+struct read_currency_pair_conventions_for_cache_request {
+    using response_type = struct read_currency_pair_conventions_for_cache_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_pair_conventions.read";
+    std::string tenant_id;
+};
+
+struct read_currency_pair_conventions_for_cache_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::refdata::domain::currency_pair_convention> conventions;
+};
+
 }
 
 #endif

@@ -8,7 +8,7 @@
 #+filetags: :codegen:tooling:junction:marketdata:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/validate-junction-codegen-against-tenor-resolution
-#+pr:
+#+pr: 1587
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -187,7 +187,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1587][#1587]] | [codegen,refdata] Retire hand-authored tenor_convention_resolution |
 
 * Review
 

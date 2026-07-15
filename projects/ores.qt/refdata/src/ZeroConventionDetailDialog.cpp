@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ZeroConventionDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
@@ -38,6 +39,11 @@ ZeroConventionDetailDialog::ZeroConventionDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 ZeroConventionDetailDialog::~ZeroConventionDetailDialog() {
@@ -54,6 +60,10 @@ QWidget* ZeroConventionDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* ZeroConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString ZeroConventionDetailDialog::code() const {
+    return QString::fromStdString(zc_.id);
 }
 
 void ZeroConventionDetailDialog::setupUi() {
@@ -124,6 +134,11 @@ void ZeroConventionDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void ZeroConventionDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -237,6 +252,15 @@ void ZeroConventionDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    zc_.change_reason_code = crSel->reason_code;
+    zc_.change_commentary = crSel->commentary;
+
     updateConventionFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving zero convention: " << zc_.id;
@@ -307,6 +331,11 @@ void ZeroConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting zero convention: " << zc_.id;
 
     QPointer<ZeroConventionDetailDialog> self = this;
@@ -354,5 +383,6 @@ void ZeroConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

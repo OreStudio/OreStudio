@@ -47,10 +47,22 @@ recreated since provisioning, re-run:
 ./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
 #+end_src
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Open the Counterparties list
 
 Menu: *Reference Data > Counterparties*. Confirm the list loads with
 the seeded GLEIF counterparty rows, and every column renders values.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Create
 
@@ -58,16 +70,35 @@ Click *Add*. Enter full name =Test Counterparty Co=, short code
 =TESTCPTY=, party type, business center, and status from the available
 combos. Save. Confirm the new row appears in the list.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | for parties:; ; Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "parties_root_party_uniq_idx"; ; ; for counterparty: saved bu tcant see it in UI. |
+
 *** Read
 
 Double-click the =TESTCPTY= row to reopen its detail dialog. Confirm
 every field round-trips exactly as saved.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Identifiers tab: add, view, delete
 
 Open the *Identifiers* tab. Click *Add Identifier*, enter a scheme and
 value, save. Confirm the new row appears in the table. Select it and
 click *Delete Identifier*; confirm it disappears.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Contact Information tab: add, edit, delete
 
@@ -79,6 +110,12 @@ page); change a field and save via *Save*. Confirm the change persists
 on reopen. Select the row and click *Delete Contact*; confirm it
 disappears.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Hierarchy tab
 
 Open the *Hierarchy* tab for a counterparty known to have children
@@ -86,16 +123,34 @@ Open the *Hierarchy* tab for a counterparty known to have children
 the seed data has a hierarchy). Confirm the tree displays the expected
 parent/child structure.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Update
 
 Edit =TESTCPTY='s full name to =Test Counterparty Co (updated)= and
 save. Confirm the list refreshes with the new name without a manual
 reload, and that a change-reason prompt was shown and recorded.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Delete
 
 Select the =TESTCPTY= row and click *Delete*, confirming the prompt.
 Confirm the row disappears from the list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** History
 
@@ -103,6 +158,12 @@ Reopen =TESTCPTY= via History (not the main list, since its current
 version is deleted) and open the History dialog. Confirm all prior
 operations — create, update, delete — are listed in order with the
 change reasons entered above.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** red
 
@@ -113,11 +174,23 @@ Log in with the same credentials as the =blue= instance
 Counterparties list here too, *before* the =blue= instance performs its
 Create step above.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Confirm the create event arrives
 
 After =blue='s Create step, confirm the =TESTCPTY= row appears in this
 =red= instance's list *without a manual reload* — this exercises the
 Postgres LISTEN/NOTIFY-to-NATS relay end to end.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Confirm the update and delete events arrive
 
@@ -125,14 +198,20 @@ After =blue='s Update step, confirm the name change lands here
 automatically. After =blue='s Delete step, confirm the row disappears
 here automatically too.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-15T08:31:59Z |
+| Branch        | feature/build-composite-child-table-qt-facet |
+| Commit        | 944622678 |
+| Worktree      | prime_origin |
 
 * Notes

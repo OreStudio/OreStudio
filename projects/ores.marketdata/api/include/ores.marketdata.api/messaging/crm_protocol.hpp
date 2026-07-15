@@ -47,9 +47,11 @@ struct crm_rate_item {
     /// 1/rate from the reverse pair -- only ever set when the request's
     /// own `inverted` flag was true.
     bool inverted = false;
-    /// %-change vs. the last value this connection was served for this
-    /// exact pair (as displayed, i.e. post-inversion). Unset for the
-    /// first observation of a pair, or when status is "unavailable".
+    /// %-change vs. the last value served for this exact pair (as
+    /// displayed, i.e. post-inversion) within this (tenant, party,
+    /// crm_name) scope -- shared across every session polling that same
+    /// CRM, not per-connection. Unset for the first observation of a
+    /// pair, or when status is "unavailable".
     std::optional<double> delta_pct;
 };
 

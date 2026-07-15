@@ -259,6 +259,12 @@ crm_ingest_bridge::resolve(const named_engine& named_engine, bool inverted) {
             // its own real (non-inverted) view above, which must win.
             if (lookup.contains({quote_code, base_code}))
                 continue;
+            // Args swapped on purpose: this targets the *reverse* of the
+            // configured pair (quote_code as base, base_code as quote),
+            // for which lookup has no direct entry by construction (the
+            // contains() check above), so resolve() falls through to its
+            // own reverse-of-what-was-asked branch and inverts the
+            // original (base_code, quote_code) rate found there.
             views.push_back(
                 quant::service::rate_inverter::resolve(quote_code, base_code, lookup, true));
         }

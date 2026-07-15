@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_MESSAGING_CRM_HANDLER_HPP
 #define ORES_MARKETDATA_SERVICE_MESSAGING_CRM_HANDLER_HPP
 
+#include "ores.analytics.quant/domain/crm_rate_view.hpp"
 #include "ores.analytics.quant/domain/derived_rate.hpp"
 #include "ores.analytics.quant/domain/rate_status.hpp"
 #include "ores.database/domain/context.hpp"
@@ -73,6 +74,18 @@ inline crm_rate_item to_item(const std::string& crm_name,
                          .rate = r.rate,
                          .status = rate_status_to_string(r.status),
                          .as_of = as_of_to_string(r.as_of)};
+}
+
+inline crm_rate_item to_item(const std::string& crm_name,
+                             const ores::analytics::quant::domain::crm_rate_view& v) {
+    return crm_rate_item{.crm_name = crm_name,
+                         .base_currency_code = v.base_code,
+                         .quote_currency_code = v.quote_code,
+                         .rate = v.rate,
+                         .status = rate_status_to_string(v.status),
+                         .as_of = as_of_to_string(v.as_of),
+                         .inverted = v.inverted,
+                         .delta_pct = v.delta_pct};
 }
 } // namespace
 
@@ -170,15 +183,16 @@ public:
         resp.success = true;
         if (req->crm_name.empty()) {
             // No CRM selected -- every enabled CRM the party has, tagged.
-            const auto results = bridge_->rates(tenant_id_str, req->party_id);
+            const auto results = bridge_->resolved_rates(tenant_id_str, req->party_id, req->inverted);
             resp.rates.reserve(results.size());
             for (const auto& r : results)
-                resp.rates.push_back(to_item(r.crm_name, r.rate));
+                resp.rates.push_back(to_item(r.crm_name, r.view));
         } else {
-            const auto results = bridge_->rates(tenant_id_str, req->party_id, req->crm_name);
+            const auto results =
+                bridge_->resolved_rates(tenant_id_str, req->party_id, req->crm_name, req->inverted);
             resp.rates.reserve(results.size());
-            for (const auto& r : results)
-                resp.rates.push_back(to_item(req->crm_name, r));
+            for (const auto& v : results)
+                resp.rates.push_back(to_item(req->crm_name, v));
         }
         reply(nats_, msg, resp);
     }

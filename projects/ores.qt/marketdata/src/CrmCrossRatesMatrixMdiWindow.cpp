@@ -336,29 +336,32 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     const auto party_id = boost::uuids::to_string(clientManager_->currentPartyId());
     const auto crm_name = crmName_.toStdString();
     QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
+    const bool inverted = showInvertedButton_->isChecked();
 
-    QFuture<RatesResult> future = QtConcurrent::run([self, party_id, crm_name]() -> RatesResult {
-        if (!self || !self->clientManager_)
-            return {};
+    QFuture<RatesResult> future =
+        QtConcurrent::run([self, party_id, crm_name, inverted]() -> RatesResult {
+            if (!self || !self->clientManager_)
+                return {};
 
-        marketdata_msg::get_crm_rates_request req;
-        req.party_id = party_id;
-        req.crm_name = crm_name;
-        auto resp = self->clientManager_->process_authenticated_request(req);
+            marketdata_msg::get_crm_rates_request req;
+            req.party_id = party_id;
+            req.crm_name = crm_name;
+            req.inverted = inverted;
+            auto resp = self->clientManager_->process_authenticated_request(req);
 
-        RatesResult r;
-        if (!resp) {
-            r.error = QStringLiteral("Failed to communicate with server");
+            RatesResult r;
+            if (!resp) {
+                r.error = QStringLiteral("Failed to communicate with server");
+                return r;
+            }
+            if (!resp->success) {
+                r.error = QString::fromStdString(resp->message);
+                return r;
+            }
+            r.success = true;
+            r.rates = resp->rates;
             return r;
-        }
-        if (!resp->success) {
-            r.error = QString::fromStdString(resp->message);
-            return r;
-        }
-        r.success = true;
-        r.rates = resp->rates;
-        return r;
-    });
+        });
 
     auto* watcher = new QFutureWatcher<RatesResult>(this);
     connect(watcher, &QFutureWatcher<RatesResult>::finished, this, [self, watcher]() {
@@ -469,8 +472,6 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             self->table_->setVerticalHeaderItem(i, vHeader);
         }
 
-        std::map<std::pair<std::string, std::string>, double> currentRates;
-
         for (int row = 0; row < rowCurrencies.size(); ++row) {
             for (int col = 0; col < allCurrencies.size(); ++col) {
                 if (rowCurrencies[row] == allCurrencies[col]) {
@@ -479,13 +480,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 }
 
                 const auto key = std::make_pair(rowCurrencies[row], allCurrencies[col]);
-                auto it = byPair.find(key);
-                bool inverted = false;
-                if (it == byPair.end() && self->showInvertedButton_->isChecked()) {
-                    const auto inverseKey = std::make_pair(allCurrencies[col], rowCurrencies[row]);
-                    it = byPair.find(inverseKey);
-                    inverted = it != byPair.end();
-                }
+                const auto it = byPair.find(key);
                 if (it == byPair.end()) {
                     self->table_->setItem(row, col, make_dash_item());
                     continue;
@@ -493,18 +488,11 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
 
                 const auto& item = it->second;
                 auto* cellWidget = new CrmRateCellWidget(self->table_);
-                cellWidget->setPastelBackground(inverted);
+                cellWidget->setPastelBackground(item.inverted);
 
-                // Tracked/displayed by (row, col) -- not the underlying
-                // item's own base/quote -- so an inverted cell's %-change
-                // reflects the displayed (1/rate) value's own movement,
-                // not the direct pair's (which moves the opposite way).
                 const auto display_key = std::make_pair(rowCurrencies[row].toStdString(),
                                                         allCurrencies[col].toStdString());
-                const double display_rate =
-                    inverted && item.rate != 0.0 ? 1.0 / item.rate : item.rate;
-                currentRates[display_key] = display_rate;
-                const auto previous_it = self->previousRates_.find(display_key);
+                const double display_rate = item.rate;
 
                 // Only the %-change indicator is coloured (matching the
                 // mockup); the rate itself stays neutral unless the cell
@@ -530,20 +518,16 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                     pairPrefix = QStringLiteral("✕");
                     tooltip = tr("Unavailable");
                 } else {
-                    tooltip = inverted ?
+                    tooltip = item.inverted ?
                                   tr("Computed inverse (1/rate); fresh as of %1")
                                       .arg(QString::fromStdString(item.as_of)) :
                                   tr("Fresh as of %1").arg(QString::fromStdString(item.as_of));
-                    if (previous_it != self->previousRates_.end() && previous_it->second != 0.0) {
-                        const auto pct =
-                            (display_rate - previous_it->second) / previous_it->second * 100.0;
-                        if (std::abs(pct) > 1e-9) {
-                            changeText =
-                                (pct >= 0 ? QStringLiteral("▲ +%1%") : QStringLiteral("▼ %1%"))
-                                    .arg(QString::number(pct, 'f', 3));
-                            changeColor = pct >= 0 ? color_constants::level_info :
-                                                     color_constants::level_error;
-                        }
+                    if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
+                        const auto pct = *item.delta_pct;
+                        changeText = (pct >= 0 ? QStringLiteral("▲ +%1%") : QStringLiteral("▼ %1%"))
+                                         .arg(QString::number(pct, 'f', 3));
+                        changeColor =
+                            pct >= 0 ? color_constants::level_info : color_constants::level_error;
                     }
                 }
 
@@ -560,20 +544,12 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 });
                 self->table_->setCellWidget(row, col, cellWidget);
 
-                // Recorded under the same display_key/display_rate as
-                // above (not a separate pass over result.rates), so an
-                // inverted cell's sparkline tracks the value actually
-                // shown (1/rate), not the server's own pair direction --
-                // otherwise the overview panel's history lookup (keyed by
-                // displayed row/col) always misses for inverted cells.
                 auto& history = self->rateHistory_[display_key];
                 history.push_back(display_rate);
                 while (history.size() > max_history_points)
                     history.pop_front();
             }
         }
-
-        self->previousRates_ = std::move(currentRates);
 
         self->footerLabel_->setText(tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
 

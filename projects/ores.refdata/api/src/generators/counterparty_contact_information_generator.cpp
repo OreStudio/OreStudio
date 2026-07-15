@@ -20,11 +20,9 @@
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
-#include <string_view>
 #include <unordered_set>
 
 namespace ores::refdata::generators {
@@ -45,24 +43,20 @@ generate_synthetic_counterparty_contact_information(utility::generation::generat
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.counterparty_id = ctx.generate_uuid();
-    // Rotate through valid contact types: a counterparty may have at most
-    // one contact information row per type (see
-    // ores_refdata_counterparty_contact_informations_insert_fn), so callers
-    // that generate several rows for the same counterparty need distinct
-    // types, not just distinct ids.
-    static constexpr std::array<std::string_view, 4> valid_contact_types{
-        "Legal", "Operations", "Settlement", "Billing"};
-    r.contact_type = std::string(valid_contact_types[idx % valid_contact_types.size()]);
+    r.contact_type = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+        // Rotate so a batch of several contact rows for one counterparty gets
+        // distinct types (max one contact row per type per counterparty).
+        [idx] {
+            static constexpr const char* types[] = {"Legal", "Operations", "Settlement", "Billing"};
+            return std::string(types[idx % 4]);
+        }();
     r.street_line_1 = std::string("456 Test Avenue");
     r.street_line_2 = std::string("Floor 10");
     r.city = std::string("New York");
     r.state = std::string("NY");
-    // Left blank rather than a hardcoded code: country_code is validated
-    // against the tenant-scoped countries table (see
-    // ores_refdata_counterparty_contact_informations_insert_fn), which
-    // isolated synthetic test tenants don't seed -- validation is skipped
-    // entirely when the value is empty.
-    r.country_code = std::string("");
+    r.country_code = // Left blank: validated against the tenant-scoped countries table, which
+        // isolated test tenants don't seed; empty skips validation.
+        std::string("");
     r.postal_code = std::string("10001");
     r.phone = std::string("+1 212 555 0100");
     r.email = std::string("info@example.com");

@@ -54,8 +54,9 @@ uuid_gen()
 
 ** id_scheme
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
 :END:
 
 The identification scheme for this identifier.
@@ -63,7 +64,15 @@ The identification scheme for this identifier.
 References the party_id_scheme lookup table (e.g. LEI, BIC).
 
 #+begin_src cpp :name generator
-std::string("LEI")
+// no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+// Rotate so a batch of several identifiers for one counterparty gets
+// distinct schemes (max one identifier per scheme per counterparty).
+[idx]{
+    static constexpr const char* schemes[] = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"};
+    return std::string(schemes[idx % 10]);
+}()
 #+end_src
 
 ** id_value
@@ -201,6 +210,7 @@ std::string("Test identifier")
 :has_change_reason_cache: true
 :settings_group:          CounterpartyIdentifierListWindow
 :window_title:            Counterparty Identifiers
+:has_pagination:          true
 :icon:                    Key
 :END:
 

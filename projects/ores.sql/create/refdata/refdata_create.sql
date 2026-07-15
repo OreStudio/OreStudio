@@ -24,6 +24,7 @@
 \ir ./refdata_day_count_fraction_types_create.sql
 \ir ./refdata_day_count_fraction_types_notify_trigger_create.sql
 \ir ./refdata_rounding_types_create.sql
+\ir ./refdata_rounding_types_notify_trigger_create.sql
 \ir ./refdata_monetary_natures_create.sql
 \ir ./refdata_monetary_natures_notify_trigger_create.sql
 \ir ./refdata_currency_market_tiers_create.sql

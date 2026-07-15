@@ -66,18 +66,26 @@ recreated since provisioning, re-run:
 
 Menu: *Reference Data > Parties*. Confirm the list loads with the
 seeded rows (including BARCLAYS PLC), and every column renders values.
+Note: =BACAAS= seeds with a Chinese =full_name= and no CJK font
+installed on this machine will render it as tofu boxes — this is an
+environment font gap, not a functional defect (filed as
+[[id:7AB584B7-DB3B-4F7E-B6DC-72BA3EF139F2][a separate capture]] re: falling back to =transliterated_name=). Treat
+the step as PASS if every *other* row/column renders correctly.
 
 **** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 *** Create
 
-Click *Add*. Enter full name =Test Party Co=, short code =TESTPTY=,
-party type, business center, and status from the available combos.
-Save. Confirm the new row appears in the list.
+Click *Add*. Enter full name =Test Party Co=, *short code* =TESTPTY=
+(required — Save stays disabled with no error message until it's
+filled in; this is a known UX gap, filed separately as
+[[id:DFD0364A-0D62-4513-B5C1-20E0D55161EE][a capture]], not something to retest here), party type, business
+center, and status from the available combos. Save. Confirm the new
+row appears in the list.
 
 **** Result
 
@@ -227,9 +235,9 @@ here automatically too.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-14T15:40:38Z |
+| Completed at  | 2026-07-15T07:29:45Z |
 | Branch        | feature/build-composite-child-table-qt-facet |
-| Commit        | 22ccf8702 |
+| Commit        | f1f98f0f0 |
 | Worktree      | prime_origin |
 
 * Notes

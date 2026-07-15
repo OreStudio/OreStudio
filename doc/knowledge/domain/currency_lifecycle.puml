@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Currency lifecycle
+
+skinparam state {
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4A78A8
+    ArrowFontColor #1A1A1E
+    StartColor #4A78A8
+    EndColor #4A78A8
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+state "Created" as Created
+state "Circulating" as Circulating
+state "Withdrawn" as Withdrawn <<end>>
+
+[*] --> Created : issuing authority\nintroduces the currency
+Created --> Circulating : enters general use
+Circulating --> Circulating : redenomination /\nmonetary union event
+Circulating --> Withdrawn : replaced, absorbed,\nor discontinued
+
+note right of Circulating
+  The same shape repeats one
+  level down for denominations,
+  and again for individual
+  note/coin instances -- the
+  lifecycle is fractal.
+end note
+
+note right of Withdrawn
+  Records of transactions made
+  during the currency's life
+  must still be retained after
+  withdrawal.
+end note
+
+@enduml

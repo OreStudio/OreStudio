@@ -11,7 +11,7 @@
 
 * Summary
 
-Every [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] carries a set of allowed currencies that constrains what
+Every [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] carries a set of [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][book currencies]] that constrains what
 may be booked into it, and is permissioned at a fine grain — read/write
 on the book, inherited by every trade booked within it. Access to a
 book is not permanent: it lapses without periodic renewal and must be
@@ -23,8 +23,8 @@ concentration.
 
 ** Book currencies
 
-Each book has a set of allowed currencies; only instruments whose
-currency intersects that set may be booked into it.
+See [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book Currencies]] for the allowed-currency set that constrains what
+may be booked into a book.
 
 ** Permissions
 
@@ -57,3 +57,5 @@ see risk concentration as a pie-chart-like breakdown.
 - [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the opening workflow's access-review step.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — centre ownership as trade-level
   access control.
+- [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book Currencies]] — the allowed-currency set in full, and the
+  distinct per-book Accounting Currency field.

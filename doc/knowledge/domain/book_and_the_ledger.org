@@ -13,9 +13,9 @@
 
 A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] sits at the bottom of a strict accounting hierarchy —
 /Legal Entity → Entity → Business Unit → Cost Centre → Ledger Book/ —
-and every ledger book carries a functional currency, a monthly
+and every ledger book carries a [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]], a monthly
 balance carry-forward, and a daily *Ledger Sweep* that converts
-transactional-currency positions into that functional currency.
+[[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][transactional-currency]] positions into that functional currency.
 Profit is periodically crystallised out of trading books and remitted
 to Group via a dedicated *Central Remittance Book*, and P&L
 attribution by book is the backbone of standard risk and P&L
@@ -65,12 +65,13 @@ cleanup" story; no new fields or entities were added as a result.
   Balance figures.
 - Forward valuations sent to the ledger must be expressed at the
   *leg level*.
-- Each book has a *functional currency*, as designated by the ledger.
+- Each book has a [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]], as designated by the ledger.
   Because trades happen in transactional currency, a daily automated
   process — the *Ledger Sweep* — spot-converts transactional-currency
   positions (live and settled cash) into functional currency,
   capturing the resulting P&L into a dedicated *FX Revaluation* entry
-  for that book.
+  (see [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation Types]] for the three treatments that entry
+  can take) for that book.
 - Finance separately maps funding books to their associated ledger
   books and requires a book-level valuation report aggregating all
   MtM and settled cash into book-level results. Any P&L difference
@@ -104,7 +105,7 @@ cleanup" story; no new fields or entities were added as a result.
 Book-level attribution is a recurring backbone of reporting across the
 system: risk measures (e.g. Rho — the effect of a 0.01% rate move) are
 reported at book level; the standard P&L report is fundamentally "P&L
-by book" (Book, Book Currency, P&L Currency, FX rate, P&L, Delta,
+by book" (Book, [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book Currency]], [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][P&L Currency]], FX rate, P&L, Delta,
 etc.); and a *Control Explain* process explicitly calls out book moves
 as a cause of hard-to-spot P&L breaks between days, since the deal's
 prior book is not retained on the deal record itself (see
@@ -123,3 +124,8 @@ standard EOD reporting).
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — the deal-level activity taxonomy underlying
   book-level P&L reporting.
 - [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — book-level risk measures.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the parallel organisational-hierarchy axis a book
+  also sits under (business unit and its business-centre/aggregation-
+  currency properties), distinct from this Cost-Centre accounting axis.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note for functional, transactional, and book
+  currency.

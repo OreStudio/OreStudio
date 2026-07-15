@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: C17C8215-DB6C-4E1A-BF88-63ABB7E145E0
+:END:
+#+title: Kinds of Money
+#+description: The historical forms money has taken -- commodity, fiat, bank money, and cryptocurrency -- and the constructed nature of the value each carries.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+[[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] has taken three broad historical forms, to which a fourth,
+non-standard form has been added in recent decades. Commodity money
+derives its acceptance from a fungible good's use or intrinsic value;
+fiat money derives it purely from decree or mutual agreement; and
+bank money -- by far the largest component of a modern money supply --
+consists entirely of records created when a bank lends and destroyed
+when the loan is repaid. Cryptocurrencies form a fourth, deliberately
+ambiguous category: assets that share enough structural properties
+with the first three to be treated as currencies for computational
+finance purposes, whether or not they are "really" money in the
+stricter sense.
+
+* Detail
+
+** Commodity money
+
+Commodity money is money whose form is itself a fungible commodity --
+historically gold, silver, or copper -- valued for two properties that,
+on inspection, both turn out to be as much a matter of shared belief
+as any other form of money. Its /use value/ is the tangible utility
+the commodity has independent of being money at all (gold's
+industrial and ornamental uses, for instance); its /intrinsic value/
+is the set of properties that make a substance a *good* medium of
+exchange -- divisibility, storability, portability, scarcity, and
+resistance to counterfeiting. Neither property escapes the social
+dimension money always carries: a commodity is only useful as money
+once a community agrees to treat it that way, and its "intrinsic"
+desirability as a medium of exchange is itself an assessment made by
+that community rather than a property gold or silver possesses in
+isolation.
+
+** Fiat money
+
+Fiat money is currency with no intrinsic value of its own, established
+as money purely by government decree or by the mutual agreement of the
+parties exchanging it. Its central advantage -- that money can be
+created without needing any raw material to back it -- is
+simultaneously its central danger: an oversupply of fiat money
+undermines the belief that sustains its acceptance, in the extreme
+case to the point of hyperinflation. Fiat money is the form in which
+essentially all of today's national currencies (see [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency
+Codes]]) exist.
+
+** Bank money
+
+Bank money is money that consists purely of records, created by
+private banks recording loans as deposits. A loan is not money moving
+from one place to another; it is new money being created the moment a
+bank credits a borrower's deposit account, and that money is destroyed
+again the moment the loan is repaid. This mechanism, rather than the
+printing of notes, accounts for the overwhelming majority of the money
+supply in a modern economy -- physical cash typically makes up under
+three percent of it. A useful reframing follows directly: depositing
+physical currency into a bank is not, conceptually, "storing" it, but
+*exchanging* government-supplied money for bank-supplied money, i.e.
+a claim on the bank rather than the original instrument itself.
+
+** Cryptocurrency
+
+Cryptocurrencies are a modern, non-standard fourth category: digital
+assets used as a medium of exchange, with ownership recorded via
+cryptography in a distributed ledger, typically without any central
+issuing authority. Whether a cryptocurrency is "really" money or
+currency in the stricter senses discussed above is deliberately left
+open here; for computational-finance purposes, cryptocurrencies share
+enough structural properties with conventional currencies -- a code
+or symbol identifying them, a market in which they are quoted and
+traded, a notion of holding a position in them -- to be handled the
+same way in most contexts, a stance [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency Codes]] returns
+to when discussing informal, non-ISO currency symbols.
+
+* See also
+
+- [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] -- the functional definition these forms all satisfy to
+  varying degrees.
+- [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency Codes]] -- how fiat currencies (and some
+  non-standard forms) are actually coded and identified.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.

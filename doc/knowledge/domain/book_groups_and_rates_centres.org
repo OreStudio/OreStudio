@@ -57,3 +57,5 @@ sits alongside.
 - [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — the wider permission model.
 - [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — what a rates centre actually is: the FpML
   business centre entity a book's =rates_centre_code= references.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the organisational-hierarchy node a rates centre
+  is typically assigned to, and how books inherit it by default.

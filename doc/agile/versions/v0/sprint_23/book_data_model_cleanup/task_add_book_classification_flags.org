@@ -62,8 +62,7 @@ book" vs "fed manually" vs "not fed" is a 3-state axis, not two
 booleans.
 
 Further teased apart against real process detail (see the new
-[[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]], [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]], [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger
-sweep]], and [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] knowledge docs): =book_purpose_type=
+[[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]], [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]], [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]], and [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] knowledge docs): =book_purpose_type=
 values are *mutually exclusive* (a book plays exactly one risk role),
 including two more values discovered from the process write-up — Sweep
 target and Remittance target — which look combinable at first glance

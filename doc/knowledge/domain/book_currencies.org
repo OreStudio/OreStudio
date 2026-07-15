@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: C5561A84-D060-4AB4-AB40-4ABC08875040
+:END:
+#+title: Book Currencies
+#+description: The set of currencies a book is permitted to trade in, and the distinct per-book Accounting Currency field used to store P&L adjustments.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Book currencies are the set of currencies a given [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] is permitted
+to trade in: only instruments whose own currency intersects this set
+may be booked into it at all, making book currencies a constraint on
+what a book *can hold* rather than a currency role a position is
+converted into. A book separately carries its own *Accounting
+Currency* field -- not to be confused with the identically-named
+older synonym for [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]] -- in which P&L adjustments
+specific to that book are stored, alongside its functional, reserve,
+ledger, and funding classification flags.
+
+* Detail
+
+** A constraint on what a book can hold
+
+Where every other currency role documented under [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] answers a
+question about how a *given* position is expressed, book currencies
+answer a prior, gating question: is this instrument's currency even
+eligible to be booked here at all? An instrument whose currency falls
+outside a book's permitted set cannot be booked into it regardless of
+how its [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][denominated currency]] or [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]] would otherwise be
+resolved -- the constraint is checked before any of those roles come
+into play.
+
+** Accounting Currency as a per-book field
+
+Distinct from its use elsewhere as an older synonym for [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation
+currency]], a book's own =Accounting Currency= is a concrete per-book
+data field: the currency in which P&L adjustments specific to that
+book are stored. The book data model carries this attribute alongside
+its functional, reserve, ledger, and funding classification flags,
+which is worth naming explicitly precisely because the term
+"accounting currency" is overloaded -- the same two words mean a
+book-level storage field in this context and a risk-engine-wide
+convert-and-compare currency in the aggregation-currency context, and
+the two must not be conflated when reading either concept back into
+the other.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] -- hub note; book currencies is a constraint on this entity.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] -- the fine-grained permission model
+  book currencies sits alongside.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-engine-wide concept that shares
+  the "Accounting Currency" name with this book-level field.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the book-level currency role Accounting
+  Currency sits alongside on the book data model.

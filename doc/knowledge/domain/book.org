@@ -58,7 +58,7 @@ accounting ledger.
 - *Wash books* → [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] (risk-neutral books
   paired with a designated risk book via system-generated
   back-to-backs).
-- *Sweep processes* → [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] (the two distinct
+- *Sweep processes* → [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] (the two distinct
   "sweep" mechanisms, and why the Sweep-target and Remittance-target
   book roles are not combinable).
 - *Central remittance* → [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]]

@@ -93,9 +93,8 @@ each row carrying the code, source, description, city, coding
 scheme, country (with its flag), version, last modifier, and when the
 record was last recorded.
 
-#+caption: [SCREENSHOT NEEDED] The Business Centres window, showing the full list of business centres in the tenant.
-# Capture: Open Reference Data > Business Centres with the Barclays Plc party selected. Capture the whole list window showing several rows with a mix of country flags and codes (e.g. USNY, GBLO, WRLD).
-[[proj:assets/images/TODO_business_centres_main_dialog.png]]
+#+caption[The Business Centres window]: The Business Centres window, showing a page of business centres imported from the FpML reference data. Each row shows the code, source, city, coding scheme, country flag, version, last modifier, and when the record was last recorded; the status bar shows the current page and total record count.
+[[proj:assets/images/business_centres_main_dialog.png]]
 
 The list is paginated; use the page controls at the bottom right to
 navigate the full set of business centres. The toolbar buttons reload
@@ -111,9 +110,8 @@ The Business Centre Details dialog has two tabs — *General* and
 
 *** General
 
-#+caption: [SCREENSHOT NEEDED] The General tab for a business centre, showing its code, source, description, city, coding scheme, and country.
-# Capture: Open a business centre with a country set (e.g. USNY) in the detail dialog and capture the General tab, showing the populated Coding Scheme combo and the flagged Country combo.
-[[proj:assets/images/TODO_business_centre_details_general.png]]
+#+caption[Business Centre Details — General tab]: The General tab for business centre =AEDU= (Dubai), showing its code, source, description, city, the populated Coding Scheme combo, and the flagged Country combo.
+[[proj:assets/images/business_centre_details_general.png]]
 
 The General tab carries the core identity of the business centre:
 
@@ -154,9 +152,8 @@ previous version is never overwritten.
 To delete a business centre, open it and click *Delete*. ORE Studio
 asks for confirmation before the record is closed off.
 
-#+caption: [SCREENSHOT NEEDED] The confirmation prompt shown before a business centre is deleted.
-# Capture: Open a business centre that is safe to delete (a test record, not one referenced by a book or business unit), click Delete, and capture the confirmation dialog before confirming.
-[[proj:assets/images/TODO_business_centre_details_delete_confirmation.png]]
+#+caption[The delete confirmation dialog]: The confirmation prompt shown before business centre =AEDU= is deleted.
+[[proj:assets/images/business_centre_details_delete_confirmation.png]]
 
 Deletion is a soft close — the record's history is preserved and
 remains visible in the History dialog.
@@ -167,9 +164,8 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption: [SCREENSHOT NEEDED] The History dialog for a business centre, listing every version newest-first.
-# Capture: Open the History dialog for a business centre with at least one edit already recorded. Select a version so the Changes tab shows a populated field-level diff.
-[[proj:assets/images/TODO_business_centre_history_dialog.png]]
+#+caption[The Business Centre History dialog]: The History dialog for business centre =AEAB= (Abu Dhabi), listing both versions newest-first. The Changes tab shows the field-level diff between the selected version and its predecessor — here, a correction to the Description field.
+[[proj:assets/images/business_centre_history_dialog.png]]
 
 Select a version to populate the detail panel. The *Changes* tab
 shows which fields changed between the selected version and its

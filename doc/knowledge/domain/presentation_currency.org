@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000
+:END:
+#+title: Presentation Currency
+#+description: The presentational, live-spot currency a report is converted into for display -- distinct from aggregation currency, which generates real risk -- and the apparent P&L movement it can create.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Presentation currency -- essentially synonymous with *reporting
+currency* and *display currency*, and precisely what IAS 21 (see
+[[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]]) calls *presentation currency*, "the currency
+in which the financial statements are presented" (see
+[[https://www.accountingtools.com/articles/reporting-currency][AccountingTools: Reporting currency]] for a
+practitioner-level definition of the same concept) -- answers a
+purely presentational question: which currency does the user want a
+report expressed in? It is conceptually close to a book's
+[[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]], but converts at the prevailing spot rate when
+the report is run rather than at a fixed Close-of-Business rate, and
+carries no risk consequence of its own -- a genuinely display-level
+conversion. That last property is precisely what distinguishes it
+from [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], the currency a risk engine converts
+amounts into internally, whose conversion *does* generate real risk;
+the two are best kept equal for a given report so that the figures
+being compared sit on the same basis.
+
+* Detail
+
+** A display-level conversion only
+
+Converting a report into its presentation currency is, by construction,
+purely presentational: it does not itself generate risk, because
+nothing about the underlying positions changes when a report is
+merely redisplayed in a different currency. What it *can* do is
+create an apparent P&L movement when figures are compared
+period-over-period: a EUR cash balance that is genuinely unchanged
+between one day and the next will still show reported movement if it
+is displayed in GBP and the EUR/GBP spot rate has itself moved,
+even though nothing happened to the position at all. This is an
+artefact of presentation, not a real gain or loss, and it is easy to
+mistake for one if the presentation-currency conversion is not kept
+conceptually separate from genuine risk.
+
+** Keeping presentation currency aligned with aggregation currency
+
+Because presentation currency and [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]] are configured
+as independent, separately-settable parameters on a report, it is
+good practice to set them equal when running risk reports, so that
+the numbers a user compares are computed on the same basis rather
+than mixing a presentational conversion with a risk-generating one.
+Ideally the spot risk that arises purely from a presentation-currency
+conversion would be distinguishable from other risk -- its own
+Greek, say -- so a user could choose to include or exclude it when
+reading a report; where that distinction is not available, the
+discipline of matching the two currencies is what keeps the apparent
+movement described above from contaminating genuine risk figures.
+
+** The Spot Sweep Process
+
+The *Spot Sweep Process* exists specifically to crystallise profit
+held in any currency other than a [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]]'s presentation
+currency: an FX rate is locked in to convert that profit into what
+Finance calls "P&L currency" -- presentation currency, in the terms
+used here -- and the converted amount is moved into a place inaccessible
+to traders. This is a periodic, deliberate crystallisation rather
+than the daily, automated translation [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]]'s Ledger
+Sweep performs; see [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] for how the two mechanisms differ and how
+each fits into the daily/periodic rhythm of book management.
+
+* See also
+
+- [[https://www.accountingtools.com/articles/reporting-currency][AccountingTools: Reporting currency]] -- practitioner definition of
+  the same concept IAS 21 calls presentation currency.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the fixed-rate, ledger-facing currency
+  presentation currency is conceptually closest to, and IAS 21's own
+  presentation-currency terminology.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-generating counterpart presentation
+  currency should normally be kept equal to.
+- [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] -- the Spot Sweep Process in full.
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- the location whose presentation currency the Spot
+  Sweep Process crystallises non-presentation-currency profit against.

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8
+:END:
+#+title: Business Unit
+#+description: The FpML BusinessUnit type and ORE Studio's organisational hierarchy: a self-referencing tree of units a legal entity is subdivided into, and the business centre, cost centre, and aggregation currency properties its nodes and books may carry.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:trading:book:organisation:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+A *business unit* is FpML's =BusinessUnit= type: an identified unit
+within a legal entity's organisation, named and optionally
+country-located, used to attribute a role -- trader, confirmation,
+settlement -- to a specific desk or department rather than to the
+legal entity as a whole. FpML defines the type flat, with no
+parent/child structure of its own; the organisational *hierarchy* a
+real firm needs -- region, branch, desk, sub-desk, each nested inside
+the last -- is a self-referencing structure built on top of it: every
+level of a typical investment bank's structure (e.g. /EMEA/ →
+/London/ → /FX Options Desk/ → /G10 Vol/) is modelled as one business
+unit pointing to its parent business unit, at whatever depth that
+level of the org chart requires. A business unit is the node to which
+the org-chart properties that matter operationally attach: an
+optional *business centre* (a location/calendar reference every unit
+may carry, whether inherited from a parent or assigned directly, and
+independent of whether that unit runs its own end-of-day process),
+and, orthogonal to that, an [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]]. A *cost centre* is a third, unrelated
+property tracked directly on a book rather than on the unit. A
+[[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] sits below the tree, owned by exactly one business unit -- the
+org chart's implicit, but load-bearing, link between the two.
+
+* Detail
+
+** FpML's BusinessUnit type
+
+FpML defines =BusinessUnit= as "a type that represents information
+about a unit within an organization", carrying a =name=, a
+=businessUnitId= ("an identifier used to uniquely identify
+organization unit"), optional =contactInfo=, and an optional =country=
+(the ISO 3166 code "where the individual works"). Its purpose in an
+FpML document is to be *referenced* by a =BusinessUnitRole=, which
+attributes one of a scheme of roles to that unit for a given trade or
+message -- FpML's own scheme lists "Trader, Collateral, Confirmation,
+Settlement, etc." as examples, extensible to custom roles. FpML's
+=BusinessUnit= is deliberately identity-only: it names a unit and
+locates it by country, but defines no parent/child relationship to
+any other unit -- the type says nothing about organisational
+hierarchy.
+
+** The organisational hierarchy: a self-referencing tree of units
+
+The hierarchy itself -- a legal entity subdivided into regions,
+branches, desks, and sub-desks -- is a self-referencing structure of
+business units: each unit optionally has a parent unit, and a unit
+with no parent sits directly under the legal entity. A typical
+investment bank's structure composes entirely from this single node
+type, nested as deep as the real org chart requires -- for example
+/EMEA/ (a region-level unit with no parent) containing /London/ (a
+branch-level unit whose parent is /EMEA/) containing /FX Options
+Desk/ (a desk-level unit whose parent is /London/) containing /G10
+Vol/ (a sub-desk one level deeper still). Nothing distinguishes a
+"region" unit from a "desk" unit except its depth and its name; the
+same generic type is reused at every level. The [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Cost Centre]]
+accounting axis a book also belongs to (=Legal Entity → Entity →
+Business Unit → Cost Centre → Ledger Book=) is a distinct, parallel
+hierarchy -- it groups books for accounting and management reasons,
+this one groups them by organisational and operational placement --
+and the two must not be conflated even though both ultimately root
+at the same legal entity.
+
+** Business centre: a location/calendar reference a unit can carry
+
+A business unit may carry a [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]] -- an FpML-coded
+identifier naming the holiday calendar and, more operationally, the
+*rates centre* whose end-of-day market-data snapshot a book revalues
+against (see [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] for the rates centre
+concept in full). This assignment is not mandatory at every node: by
+default, a unit and its books inherit the nearest ancestor's business
+centre up the tree, exactly as any other org-chart property would be
+inherited absent an override. Carrying a business centre is distinct
+from *running* an EOD process against it, however: a unit may be
+assigned its own business centre purely for inheritance or reporting
+purposes without itself triggering any end-of-day run. Whether a
+given unit actually runs its own EOD is a separate, independent
+question -- we may run EODs for business units if they are so
+configured, but that configuration is orthogonal to which business
+centre a unit or its books are associated with. Concretely, a book's
+own =rates centre code= is where the business-centre assignment
+resolves to a single, unambiguous value for revaluation purposes --
+the org chart supplies the default, a book may override it directly.
+
+** Cost centre: a distinct, unrelated property
+
+A cost centre is tracked on the book, not the business unit, and has
+no relationship to a unit's business centre: two books under the same
+business unit may carry different cost centres, and books under
+different business units may share one. Where a business centre
+governs *which market data* a book revalues against, a cost centre
+governs *how its P&L is grouped for accounting* -- the two properties
+answer unrelated questions and happen only to share a book as their
+common attachment point.
+
+** Aggregation currency
+
+A business-unit-tree node also carries an [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], the
+reporting counterpart to a business centre's EOD role -- see
+[[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] for its definition, [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]§"Aggregation
+Level" for the rollup hierarchy it converts figures through, and
+[[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk and recentering]] for how it governs risk star-shaping.
+
+** Relationship to book
+
+A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] belongs to exactly one business unit -- the org chart's own
+link between the two, carried as a plain reference on the book rather
+than as any richer relationship. This single reference is what makes
+the tree operationally meaningful: a book's default business centre,
+its place in regional/desk reporting rollups, and its aggregation are
+all reached by walking up from the book through its owning business
+unit.
+
+* See also
+
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- the EOD-rates identifier a business unit or
+  book may carry.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] -- the rates-centre roll-up and
+  access-control mechanics built on top of this property.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] -- the parallel Cost-Centre accounting axis.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note for aggregation currency and the wider
+  currency-role vocabulary.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-generating rollup currency in
+  full.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] -- the reporting rollup hierarchy aggregation
+  currency converts figures through.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] -- hub note.

@@ -24,6 +24,14 @@ documentation see [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]
 
 Finance concepts the codebase relies on, grouped by topic.
 
+** Currency
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note: the money/currency/cash foundation, ISO 4217
+  and currency lifecycle, and the distinct currency roles (functional,
+  reporting, natural/transactional, aggregation, settlement, premium,
+  book currencies) a book or trade carries, plus the sweep/reval
+  mechanics that reconcile between them.
+
 ** FX and market data conventions
 
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — hub note for currency pairs as reference data: naming,
@@ -104,6 +112,13 @@ Finance concepts the codebase relies on, grouped by topic.
   the book/portfolio distinction, dynamic books, book groups
   and rates centres, lifecycle, ledger connection, and access
   and permissions.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the FpML BusinessUnit type and the
+  self-referencing organisational hierarchy built on it: business
+  centre and aggregation currency as properties of a unit, distinct
+  from the unrelated cost-centre accounting axis.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — hub note for the general cash-centralisation concept and
+  the two distinct sweep types built on it, [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] and [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger
+  Sweep]].
 - [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] — the Basel III/IV
   regulatory classification: intent-based assignment, presumptive
   lists, trading desk structure, capital treatment, switching

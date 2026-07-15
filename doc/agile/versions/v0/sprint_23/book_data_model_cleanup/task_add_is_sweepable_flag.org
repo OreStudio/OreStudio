@@ -119,7 +119,7 @@ real random ones (verified no other file in the codebase references
 the old fake values before replacing), and added two realistic
 sweep-participating books (=GBP Nostro Sweep=, =USD Cash Management
 Sweep=, both =is_sweepable = true=) under the existing GBP/USD Rates
-portfolios, per the [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot and ledger sweep]] domain doc's naming.
+portfolios, per the [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] domain doc's naming.
 
 * Notes
 

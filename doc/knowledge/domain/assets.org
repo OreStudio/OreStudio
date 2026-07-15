@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB
+:END:
+#+title: Assets
+#+description: An asset as any owned or controlled resource representing convertible economic value, and the narrower category of financial assets whose value derives from a contractual claim.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+An asset is any resource, tangible or intangible, owned or
+controlled by an entity to produce economic value (see [[https://en.wikipedia.org/wiki/Asset][Wikipedia:
+Asset]]); every asset represents value that can, in principle, be
+converted into [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][cash]] -- cash itself being, trivially, an asset as
+well. A *financial asset* (see [[https://en.wikipedia.org/wiki/Financial_asset][Wikipedia: Financial asset]]) is the
+non-physical subset of this category: an asset whose value derives
+from a contractual claim rather than from a physical good, the
+standard examples being bank deposits, bonds, and shares.
+Financial assets are usually, though not universally, more
+[[id:0F727383-5B40-4366-91EF-36319F215997][liquid]] than tangible assets such as commodities or real estate,
+precisely because a contractual claim can typically be transferred or
+redeemed with less friction than a physical good can be sold.
+
+* Detail
+
+** Assets in general
+
+An asset is defined by what it represents, not by what it physically
+is: any resource an entity owns or controls that produces, or can be
+converted into, economic value. A building, a patent, a bar of gold,
+and a bank deposit are all assets by this definition, despite having
+almost nothing physically in common -- what unites them is that each
+can, in principle, be turned into [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][cash]], with varying degrees of
+friction along the way.
+
+** Financial assets
+
+A financial asset narrows the category to resources whose value comes
+from a contractual claim rather than from a physical good: a bank
+deposit is a claim on a bank, a bond is a claim on an issuer's future
+payments, a share is a claim on a company's residual value. Because a
+contractual claim can usually be transferred, sold, or redeemed with
+comparatively little friction, financial assets tend to sit toward
+the liquid end of the spectrum [[id:0F727383-5B40-4366-91EF-36319F215997][Liquidity]] describes -- though this is a
+tendency rather than a guarantee, since some financial assets (an
+illiquid private loan, for instance) can be markedly harder to convert
+than some tangible ones.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Asset][Wikipedia: Asset]] -- the general definition this note follows.
+- [[https://en.wikipedia.org/wiki/Financial_asset][Wikipedia: Financial asset]] -- the contractual-claim subset.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] -- the asset every other asset is, in principle, convertible
+  into.
+- [[id:0F727383-5B40-4366-91EF-36319F215997][Liquidity]] -- the ease with which an asset converts into cash.
+- [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash Flow]] -- the building block any financial asset can be
+  decomposed into or replicated by.

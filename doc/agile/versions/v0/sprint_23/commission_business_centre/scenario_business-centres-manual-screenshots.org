@@ -51,12 +51,26 @@ selected. Confirm several rows are visible with a mix of country
 flags and codes (e.g. =USNY=, =GBLO=, =WRLD=). Capture the whole list
 window.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_business-centres-manual-screenshots_step1_20260714_144251.png]] |
+
 ** Capture business_centre_details_general.png
 
 Open a business centre with a country set (e.g. =USNY=) in the detail
 dialog by double-clicking its row. Capture the whole General tab,
 showing the populated Coding Scheme combo and the flagged Country
 combo.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_business-centres-manual-screenshots_step2_20260714_144311.png]] |
 
 ** Capture business_centre_details_delete_confirmation.png
 
@@ -66,12 +80,26 @@ with code =ZZTS=, coding scheme =FPML_BUSINESS_CENTER=, country
 =US=). Click *Delete* and capture the confirmation dialog before
 confirming.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | cannot take screenshots of message boxes with scenario runner because they are modal. took manual one into ./tmp/ |
+
 ** Capture business_centre_history_dialog.png
 
 Open the History dialog for a business centre with at least one edit
 already recorded (e.g. the =ZZTS= test record after an edit, before
 deleting it). Select a version so the Changes tab shows a populated
 field-level diff. Capture the whole dialog.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_business-centres-manual-screenshots_step4_20260714_144603.png]] |
 
 ** Read the manual in the Qt client
 
@@ -82,20 +110,32 @@ Manual/, and read it top to bottom: confirm the prose reads
 correctly, the segues work, and every screenshot appears where
 expected and matches its caption.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+
 ** Check the built PDF
 
 Open the rebuilt =user_manual.pdf= (e.g. =zathura= or =evince=) at
 the Business Centres chapter's pages and confirm layout, figure
 numbering, and captions look correct in the PDF's own rendering.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-14T13:49:26Z |
+| Branch        | feature/document-business-centre |
+| Commit        | d43b6e9f7 |
+| Worktree      | jolly_knuth |
 
 * Notes

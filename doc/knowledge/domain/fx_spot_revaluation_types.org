@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 0CAD6D4D-604A-4FB9-A823-5231E759D760
+:END:
+#+title: FX Spot Revaluation Types
+#+description: The ledger's three FX Spot Revaluation types -- Balance Sheet, Position Account, and Forward Position reval -- and which side of settled versus unsettled FX each one covers.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+The [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]]'s daily translation of transactional-currency
+balances into [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]] is not a single undifferentiated
+process; the ledger recognises three distinct FX Spot Revaluation
+types, distinguished chiefly by whether the underlying FX has already
+settled. *Balance Sheet Reval* nets out and is sometimes called
+"Non-FX Reval"; *Position Account Reval* applies to settled FX and
+posts to Realised Gain/Loss; *Forward Position Reval* applies to
+unsettled FX and posts to Unrealised Gain/Loss using a reverse-replace
+posting of mark-to-market in transactional currency. The distinction
+matters because settled and unsettled FX carry genuinely different
+accounting treatment -- realised versus unrealised -- even though both
+are, at the level of the trader, simply "FX exposure" being revalued.
+
+* Detail
+
+** Balance Sheet Reval
+
+Balance Sheet Reval nets out entirely, which is why it is sometimes
+referred to as "Non-FX Reval": its purpose is to true up the balance
+sheet's own currency translation rather than to recognise any gain or
+loss on an open FX position. It sits apart from the other two types
+precisely because it produces no Realised or Unrealised Gain/Loss
+entry of its own.
+
+** Position Account Reval
+
+Position Account Reval applies to *settled* FX -- cash that has
+already moved -- and posts its revaluation result to Realised
+Gain/Loss. Once FX has settled, any further movement in the
+underlying rate before the position is next revalued is a genuine,
+crystallised gain or loss rather than a mark-to-market estimate,
+which is why this type posts to the realised rather than the
+unrealised side of the ledger.
+
+** Forward Position Reval
+
+Forward Position Reval applies to *unsettled* FX -- a forward
+position that has not yet reached its settlement date -- and posts to
+Unrealised Gain/Loss using a reverse-replace posting of the
+mark-to-market value in transactional currency. Because the
+underlying FX has not settled, its revaluation result is still an
+estimate rather than a realised outcome, and the reverse-replace
+mechanic ensures each day's posting supersedes the previous day's
+rather than accumulating alongside it.
+
+** Why the distinction matters
+
+Settled and unsettled FX read, from a trader's perspective, as the
+same thing -- exposure to a currency pair that needs revaluing -- but
+they carry genuinely different accounting treatment: a settled
+position's revaluation is a realised fact, an unsettled position's is
+still an estimate subject to further change before settlement. The
+three-way split lets the ledger apply the correct treatment
+automatically as a position moves from unsettled (Forward Position
+Reval) to settled (Position Account Reval), without requiring any
+manual reclassification at the moment settlement actually occurs.
+
+* See also
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] -- the daily process these three revaluation types
+  are the accounting detail of.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the currency every revaluation type
+  ultimately translates into.
+- [[id:10E36403-847A-4D0A-B532-E7DA0EE0B670][Closing Rates Screen]] -- where the EOD rate each revaluation uses
+  can be reviewed and, if needed, overridden.

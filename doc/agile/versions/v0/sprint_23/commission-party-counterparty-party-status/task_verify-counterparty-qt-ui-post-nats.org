@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,9 +31,9 @@ child-entity table/hierarchy facet in place; fix regressions found.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Verified live against BARCLAYS PLC's counterparties: list, read, update, delete, identifiers tab, contact information tab, hierarchy tab, and history all PASS. Same session as the party verification -- fixes there (pagination, changeReasonCache wiring, is_auto_generated_key) apply symmetrically to counterparty and were verified against both entities. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None -- Create against a *second* counterparty is separately tracked ([[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]]), not a blocker for this task. |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -75,8 +75,20 @@ via its "Verifies task" field.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+Review comments for PR #1581 covered both party and counterparty
+symmetrically; see the full decision table on the sibling
+[[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] task.
 
 * Result
+
+Verified live against BARCLAYS PLC's counterparties in the same
+session as the party verification: list, read, update, delete,
+identifiers tab, contact information tab, hierarchy tab, generic
+history dialog, and cross-client eventing all PASS. All fixes found
+during the shared verification pass (pagination reporting page size
+as total, missing =changeReasonCache= wiring, the =is_auto_generated_key=
+codegen bug locking =short_code=, stale repository tests/generators)
+apply symmetrically and were verified against both entities -- see the
+sibling party task for full detail. Create against a *second*
+counterparty remains blocked on the same separately-tracked
+=parent_party_id= gap. Merged via PR #1581.

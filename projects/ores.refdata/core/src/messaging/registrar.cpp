@@ -28,6 +28,7 @@
 #include "ores.refdata.core/messaging/book_status_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
@@ -36,6 +37,7 @@
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_group_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_classification_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
@@ -212,6 +214,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_book_status_handlers(nats, ctx, verifier));
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_unit_handlers(nats, ctx, verifier));
+    append(register_calendar_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
@@ -221,6 +224,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
     append(register_crm_topology_config_handlers(nats, ctx, verifier));
     append(register_currency_handlers(nats, ctx, verifier));
+    append(register_currency_group_handlers(nats, ctx, verifier));
     append(register_currency_market_tier_handlers(nats, ctx, verifier));
     append(register_currency_pair_classification_handlers(nats, ctx, verifier));
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));

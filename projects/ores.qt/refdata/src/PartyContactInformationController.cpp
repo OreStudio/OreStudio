@@ -21,15 +21,20 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyContactInformationDetailDialog.hpp"
-#include "ores.qt/PartyContactInformationHistoryDialog.hpp"
 #include "ores.qt/PartyContactInformationMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
+#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -302,11 +307,16 @@ void PartyContactInformationController::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << partyContactInformation.contact_type;
 
-    auto* historyDialog = new PartyContactInformationHistoryDialog(
-        partyContactInformation.id, code, clientManager_, mainWindow_);
+    const QString entityId =
+        QString::fromStdString(boost::uuids::to_string(partyContactInformation.id));
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::party_contact_information{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &PartyContactInformationHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<PartyContactInformationController>(this)](const QString& message) {
                 if (!self)
@@ -314,7 +324,7 @@ void PartyContactInformationController::showHistoryWindow(
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &PartyContactInformationHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<PartyContactInformationController>(this)](const QString& message) {
                 if (!self)
@@ -322,13 +332,23 @@ void PartyContactInformationController::showHistoryWindow(
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &PartyContactInformationHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &PartyContactInformationController::onRevertVersion);
+            [self = QPointer<PartyContactInformationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &PartyContactInformationHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &PartyContactInformationController::onOpenVersion);
+            [self = QPointer<PartyContactInformationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -418,6 +438,101 @@ void PartyContactInformationController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void PartyContactInformationController::fetchPartyContactInformationHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::party_contact_information>,
+                                     QString>)> callback) {
+    refdata::messaging::get_party_contact_information_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::party_contact_information>, QString>;
+
+    QPointer<PartyContactInformationController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void PartyContactInformationController::onOpenHistoryVersion(const QString& entityId,
+                                                             int versionNumber) {
+    QPointer<PartyContactInformationController> self = this;
+    fetchPartyContactInformationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::party_contact_information>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void PartyContactInformationController::onRevertHistoryVersion(const QString& entityId,
+                                                               int versionNumber) {
+    QPointer<PartyContactInformationController> self = this;
+    fetchPartyContactInformationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::party_contact_information>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void PartyContactInformationController::onRevertVersion(

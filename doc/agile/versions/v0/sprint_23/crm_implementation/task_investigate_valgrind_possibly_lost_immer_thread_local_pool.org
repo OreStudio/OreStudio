@@ -48,7 +48,7 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-07-13                               |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
@@ -122,7 +122,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | story.org roll-up row left at STARTED with no end date after task closed to DONE | story.org | Accepted | Synced row to DONE / 2026-07-15 |
+| 2 | Task's Status table "Last touched" stale at 2026-07-13 despite all commits on 2026-07-15 | task .org | Accepted | Bumped to 2026-07-15 |
+| 3 | Suppression matches on callee-side frames only, so it would also catch any other 280-byte immer::split_heap<...> instantiation, not literally only vertex_state | build/valgrind/custom.supp | Declined | Intentional -- narrow-by-allocator-shape is the deliberate tradeoff vs. a blanket immer suppression; flagged as a known, non-blocking limitation by both reviewers, not a defect |
 
 * Result
 

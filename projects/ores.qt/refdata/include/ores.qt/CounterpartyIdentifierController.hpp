@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -80,11 +83,27 @@ private slots:
     void onRevertVersion(const refdata::domain::counterparty_identifier& counterpartyIdentifier);
     void onOpenVersion(const refdata::domain::counterparty_identifier& counterpartyIdentifier,
                        int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::counterparty_identifier& counterpartyIdentifier);
     void showHistoryWindow(const refdata::domain::counterparty_identifier& counterpartyIdentifier);
+
+    /**
+     * @brief Fetches the full typed counterparty identifier history (the
+     * existing per-entity refdata::messaging::get_counterparty_identifier_history_request/
+     * refdata::messaging::get_counterparty_identifier_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed counterparty identifier, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchCounterpartyIdentifierHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::counterparty_identifier>,
+                                         QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     CounterpartyIdentifierMdiWindow* listWindow_;

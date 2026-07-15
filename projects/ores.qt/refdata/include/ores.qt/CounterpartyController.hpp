@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -83,11 +86,27 @@ private slots:
     void onShowHistory(const refdata::domain::counterparty& counterparty);
     void onRevertVersion(const refdata::domain::counterparty& counterparty);
     void onOpenVersion(const refdata::domain::counterparty& counterparty, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::counterparty& counterparty);
     void showHistoryWindow(const refdata::domain::counterparty& counterparty);
+
+    /**
+     * @brief Fetches the full typed counterparty history (the
+     * existing per-entity refdata::messaging::get_counterparty_history_request/
+     * refdata::messaging::get_counterparty_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed counterparty, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchCounterpartyHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::counterparty>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;

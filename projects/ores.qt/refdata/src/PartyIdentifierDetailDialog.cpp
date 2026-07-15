@@ -139,7 +139,7 @@ void PartyIdentifierDetailDialog::setIdentifier(
 
 void PartyIdentifierDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {

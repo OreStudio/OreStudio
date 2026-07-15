@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -82,6 +85,8 @@ private slots:
     void onRevertVersion(const refdata::domain::party_contact_information& partyContactInformation);
     void onOpenVersion(const refdata::domain::party_contact_information& partyContactInformation,
                        int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
@@ -89,6 +94,20 @@ private:
     showDetailWindow(const refdata::domain::party_contact_information& partyContactInformation);
     void
     showHistoryWindow(const refdata::domain::party_contact_information& partyContactInformation);
+
+    /**
+     * @brief Fetches the full typed party contact information history (the
+     * existing per-entity refdata::messaging::get_party_contact_information_history_request/
+     * refdata::messaging::get_party_contact_information_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed party contact information, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchPartyContactInformationHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::party_contact_information>,
+                                         QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     PartyContactInformationMdiWindow* listWindow_;

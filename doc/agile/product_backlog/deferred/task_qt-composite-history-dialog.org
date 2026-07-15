@@ -34,8 +34,8 @@ layer from the previous task.
 | Parent story | [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]] |
 | Now          | Interim flat-list Composite tab implemented, built, and partially verified live (steps 2-4 of the test scenario pass — as-of scoping is correct). Paused pending children commissioning. |
 | Waiting on   | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] to land per-child history dialogs. |
-| Next         | Once that task lands, resume the test scenario (steps 5-7) and revisit the Composite tab's UX to drill into per-child history instead of a flat list. |
-| Last touched | 2026-07-08                               |
+| Next         | Superseded -- see [[id:572EFE37-F066-4B89-802B-AAC4411FD9BF][Link parent history to the specific child change that caused it]], which redesigns this around a generic SQL as-of-window query and the new shared HistoryDialog widget (this task's per-entity PartyHistoryDialog/CounterpartyHistoryDialog classes and flat composite tab no longer exist post the history-dialog consolidation). |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 

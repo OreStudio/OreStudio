@@ -21,15 +21,20 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CounterpartyContactInformationDetailDialog.hpp"
-#include "ores.qt/CounterpartyContactInformationHistoryDialog.hpp"
 #include "ores.qt/CounterpartyContactInformationMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
+#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -310,12 +315,17 @@ void CounterpartyContactInformationController::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << counterpartyContactInformation.contact_type;
 
-    auto* historyDialog = new CounterpartyContactInformationHistoryDialog(
-        counterpartyContactInformation.id, code, clientManager_, mainWindow_);
+    const QString entityId =
+        QString::fromStdString(boost::uuids::to_string(counterpartyContactInformation.id));
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of(refdata::domain::counterparty_contact_information{})),
+        entityId.toStdString(),
+        clientManager_,
+        mainWindow_);
 
     connect(
         historyDialog,
-        &CounterpartyContactInformationHistoryDialog::statusChanged,
+        &HistoryDialog::statusChanged,
         this,
         [self = QPointer<CounterpartyContactInformationController>(this)](const QString& message) {
             if (!self)
@@ -324,7 +334,7 @@ void CounterpartyContactInformationController::showHistoryWindow(
         });
     connect(
         historyDialog,
-        &CounterpartyContactInformationHistoryDialog::errorOccurred,
+        &HistoryDialog::errorOccurred,
         this,
         [self = QPointer<CounterpartyContactInformationController>(this)](const QString& message) {
             if (!self)
@@ -332,13 +342,23 @@ void CounterpartyContactInformationController::showHistoryWindow(
             emit self->errorMessage(message);
         });
     connect(historyDialog,
-            &CounterpartyContactInformationHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CounterpartyContactInformationController::onRevertVersion);
+            [self = QPointer<CounterpartyContactInformationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CounterpartyContactInformationHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CounterpartyContactInformationController::onOpenVersion);
+            [self = QPointer<CounterpartyContactInformationController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -432,6 +452,101 @@ void CounterpartyContactInformationController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void CounterpartyContactInformationController::fetchCounterpartyContactInformationHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::counterparty_contact_information>,
+                                     QString>)> callback) {
+    refdata::messaging::get_counterparty_contact_information_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::counterparty_contact_information>, QString>;
+
+    QPointer<CounterpartyContactInformationController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CounterpartyContactInformationController::onOpenHistoryVersion(const QString& entityId,
+                                                                    int versionNumber) {
+    QPointer<CounterpartyContactInformationController> self = this;
+    fetchCounterpartyContactInformationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::counterparty_contact_information>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CounterpartyContactInformationController::onRevertHistoryVersion(const QString& entityId,
+                                                                      int versionNumber) {
+    QPointer<CounterpartyContactInformationController> self = this;
+    fetchCounterpartyContactInformationHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::counterparty_contact_information>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void CounterpartyContactInformationController::onRevertVersion(

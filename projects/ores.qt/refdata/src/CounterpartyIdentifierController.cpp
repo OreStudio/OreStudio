@@ -21,15 +21,20 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CounterpartyIdentifierDetailDialog.hpp"
-#include "ores.qt/CounterpartyIdentifierHistoryDialog.hpp"
 #include "ores.qt/CounterpartyIdentifierMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
+#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -296,11 +301,16 @@ void CounterpartyIdentifierController::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << counterpartyIdentifier.id_value;
 
-    auto* historyDialog = new CounterpartyIdentifierHistoryDialog(
-        counterpartyIdentifier.id, code, clientManager_, mainWindow_);
+    const QString entityId =
+        QString::fromStdString(boost::uuids::to_string(counterpartyIdentifier.id));
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::counterparty_identifier{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &CounterpartyIdentifierHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CounterpartyIdentifierController>(this)](const QString& message) {
                 if (!self)
@@ -308,7 +318,7 @@ void CounterpartyIdentifierController::showHistoryWindow(
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CounterpartyIdentifierHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CounterpartyIdentifierController>(this)](const QString& message) {
                 if (!self)
@@ -316,13 +326,23 @@ void CounterpartyIdentifierController::showHistoryWindow(
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CounterpartyIdentifierHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CounterpartyIdentifierController::onRevertVersion);
+            [self = QPointer<CounterpartyIdentifierController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CounterpartyIdentifierHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CounterpartyIdentifierController::onOpenVersion);
+            [self = QPointer<CounterpartyIdentifierController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -411,6 +431,99 @@ void CounterpartyIdentifierController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void CounterpartyIdentifierController::fetchCounterpartyIdentifierHistory(
+    const QString& entityId,
+    std::function<void(
+        std::expected<std::vector<refdata::domain::counterparty_identifier>, QString>)> callback) {
+    refdata::messaging::get_counterparty_identifier_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::counterparty_identifier>, QString>;
+
+    QPointer<CounterpartyIdentifierController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CounterpartyIdentifierController::onOpenHistoryVersion(const QString& entityId,
+                                                            int versionNumber) {
+    QPointer<CounterpartyIdentifierController> self = this;
+    fetchCounterpartyIdentifierHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::counterparty_identifier>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CounterpartyIdentifierController::onRevertHistoryVersion(const QString& entityId,
+                                                              int versionNumber) {
+    QPointer<CounterpartyIdentifierController> self = this;
+    fetchCounterpartyIdentifierHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::counterparty_identifier>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void CounterpartyIdentifierController::onRevertVersion(

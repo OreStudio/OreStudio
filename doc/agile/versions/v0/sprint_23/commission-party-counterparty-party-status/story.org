@@ -35,10 +35,10 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Both entities regenerated under codegen with zero diff and migrated to ores.qt.refdata; composite child-entity table/hierarchy facet done, restoring full UI parity for both. Rebased onto origin/main twice; build verified clean each time. |
-| Waiting on    | Nothing — both blockers ([[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]], [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]) are DONE. |
-| Next          | Recreate DB, start services, reprovision Barclays Plc, then run party and counterparty Qt UI end-to-end re-verification. |
-| Last touched  | 2026-07-14                               |
+| Now           | Party and counterparty Qt UI end-to-end verification both DONE against a live environment (BARCLAYS PLC); several real regressions found and fixed along the way (pagination, changeReasonCache wiring, is_auto_generated_key codegen bug, entity_type_of gap, crm_topology_bundles workflow hang, stale repository tests/generators). Manual chapters and the newly-filed parent-picker/generate_short_code/dead-abstraction tasks remain BACKLOG. |
+| Waiting on    | Nothing.                                |
+| Next          | Manual chapters (party/counterparty/party_status), or pick up one of the newly-filed follow-up tasks (parent_party_id picker, generate_short_code button, dead EntityDetailDialog removal). |
+| Last touched  | 2026-07-15                               |
 
 * Acceptance
 
@@ -54,9 +54,9 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 |------+-------+-------+-----+-------------|
 | [[id:2E46351B-9787-48D1-B4D2-ED407B220904][Bring party under codegen; verify zero-diff regen]] | DONE | 2026-07-13 | 2026-07-13 | Regenerated party's repository/service/handler/registrar/protocol/Qt (found and fixed party's repo/service still on the pre-context-ctx pattern, unlike counterparty's); migrated Qt from ores.qt.party to ores.qt.refdata. SQL profile deliberately excluded: codename generation still needs facet/paste-block work; report_events queue provisioning dropped to a backlog capture as likely-dead. Builds clean. |
 | [[id:B9755647-D29D-4A9A-9FBE-F5DBBB33EDA0][Regenerate counterparty under codegen; verify zero-diff regen]] | DONE | 2026-07-13 | 2026-07-14 | Regenerated counterparty's protocol/handler/registrar/Qt against current codegen templates; zero-diff. Migrated Qt to ores.qt.refdata; child-entity table/hierarchy gap closed by the composite child-entity table facet task. Re-verified clean after two rebases onto origin/main. |
-| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that party is under codegen; fix regressions found. |
+| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | DONE | 2026-07-14 | 2026-07-15 | Verified live against BARCLAYS PLC. Found and fixed real regressions along the way: missing entity_type_of(party), crm_topology_bundles workflow-hanging seed data, is_auto_generated_key codegen bug locking short_code, pagination reporting page size as total, missing changeReasonCache wiring blocking identifier/contact saves, and 8 stale repository tests + 2 generator bugs. |
 | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] | BACKLOG | | | Add the party entity chapter to the user manual covering Qt windows. |
-| [[id:8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE][Verify counterparty Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that counterparty is under codegen; fix regressions found. |
+| [[id:8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE][Verify counterparty Qt UI end-to-end post-NATS]] | DONE | 2026-07-14 | 2026-07-15 | Verified live against BARCLAYS PLC's counterparties in the same pass as party; shared fixes (pagination, changeReasonCache, is_auto_generated_key) verified against both entities. |
 | [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] | BACKLOG | | | Add the counterparty entity chapter to the user manual covering Qt windows. |
 | [[id:0AEAA66B-3B71-4E25-B7FA-145416F46C38][Write party_status manual chapter]] | BACKLOG | | | Add the party_status entity chapter to the user manual covering Qt windows. |
 | [[id:7B212F3B-1B36-4EE1-8B09-A225D7805E88][Investigate orchestration/workflow-step command usage in counterparty]] | BACKLOG | | | Party's save handler has a hand-written workflow-step-command branch (bypasses JWT, used by orchestration) with no template/facet coverage. Check whether counterparty has or needs equivalent orchestration support before its save() workflow paths (if any) are lost to codegen regen. |

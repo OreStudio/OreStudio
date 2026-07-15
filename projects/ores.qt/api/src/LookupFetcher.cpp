@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
+#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
@@ -34,6 +35,7 @@
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
@@ -178,6 +180,38 @@ std::vector<std::string> fetch_country_codes(ClientManager* cm) {
     return codes;
 }
 
+std::vector<std::string> fetch_contact_type_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_contact_types_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& type : response->types) {
+            codes.push_back(type.code);
+        }
+    }
+    return codes;
+}
+
+std::vector<std::string> fetch_party_id_scheme_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_party_id_schemes_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& scheme : response->party_id_schemes) {
+            codes.push_back(scheme.code);
+        }
+    }
+    return codes;
+}
+
 std::unordered_map<std::string, std::string> fetch_business_centre_country_map(ClientManager* cm) {
     std::unordered_map<std::string, std::string> mapping;
     if (!cm)
@@ -252,6 +286,54 @@ fetch_book_statuses(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->statuses);
+}
+
+std::expected<std::vector<refdata::domain::party_type>, QString>
+fetch_party_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_party_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::party_status>, QString>
+fetch_party_statuses(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_party_statuses_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->statuses);
+}
+
+std::expected<std::vector<refdata::domain::party_id_scheme>, QString>
+fetch_party_id_schemes(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_party_id_schemes_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->party_id_schemes);
+}
+
+std::expected<std::vector<refdata::domain::contact_type>, QString>
+fetch_contact_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_contact_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
 }
 
 std::expected<std::vector<refdata::domain::crm_topology_config>, QString>

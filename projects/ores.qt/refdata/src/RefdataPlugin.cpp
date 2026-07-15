@@ -33,6 +33,8 @@
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
+#include "ores.qt/CounterpartyController.hpp"
+#include "ores.qt/PartyController.hpp"
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/CrmDriverPairController.hpp"
 #include "ores.qt/CrmEnabledDerivedPairController.hpp"
@@ -372,6 +374,26 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                           this);
     connectControllerSignals(crmEnabledDerivedPairController_.get());
 
+    counterpartyController_ = std::make_unique<CounterpartyController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       ctx_.badge_cache,
+                                                                       this);
+    connectControllerSignals(counterpartyController_.get());
+
+    partyController_ = std::make_unique<PartyController>(ctx_.main_window,
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.image_cache,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username,
+                                                         ctx_.badge_cache,
+                                                         this);
+    connectControllerSignals(partyController_.get());
+
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
                                                                  ctx_.client_manager,
@@ -672,6 +694,18 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(act_currency_groups_, &QAction::triggered, this, [this]() {
             if (currencyGroupController_)
                 currencyGroupController_->showListWindow();
+        });
+
+        act_parties_ = ref->addAction(ico(Icon::Organization), tr("&Parties"));
+        connect(act_parties_, &QAction::triggered, this, [this]() {
+            if (partyController_)
+                partyController_->showListWindow();
+        });
+
+        act_counterparties_ = ref->addAction(ico(Icon::Handshake), tr("&Counterparties"));
+        connect(act_counterparties_, &QAction::triggered, this, [this]() {
+            if (counterpartyController_)
+                counterpartyController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -1076,11 +1110,16 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
-        !act_business_centres_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_
+        || !act_business_centres_ || !act_parties_ || !act_counterparties_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {
-        act_currencies_, act_countries_, act_currency_pairs_, act_books_, act_business_centres_};
+    return {act_currencies_,
+            act_countries_,
+            act_currency_pairs_,
+            act_books_,
+            act_business_centres_,
+            act_parties_,
+            act_counterparties_};
 }
 
 // ---------------------------------------------------------------------------
@@ -1113,6 +1152,8 @@ void RefdataPlugin::on_logout() {
 
     zeroConventionController_.reset();
     businessCentreController_.reset();
+    counterpartyController_.reset();
+    partyController_.reset();
     partyTypeController_.reset();
     purposeTypeController_.reset();
     ledgerFeedTypeController_.reset();

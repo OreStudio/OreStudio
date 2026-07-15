@@ -55,8 +55,9 @@ const std::string tags("[repository][party_country]");
 constexpr std::size_t total_slots = 10;
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        ores::database::context ctx,
                                         const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest();
+    auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
@@ -84,11 +85,11 @@ TEST_CASE("write_single_party_country", tags) {
 
     scoped_database_helper h;
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     country_repository cty_repo;
     party_country_repository repo(h.context());
 
-    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
     cty_repo.write(h.context(), {all[0]});
@@ -104,11 +105,11 @@ TEST_CASE("write_multiple_party_countries", tags) {
 
     scoped_database_helper h;
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     country_repository cty_repo;
     party_country_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
@@ -129,11 +130,11 @@ TEST_CASE("read_latest_party_countries_by_party", tags) {
 
     scoped_database_helper h;
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     country_repository cty_repo;
     party_country_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     h.set_party(system_party_id);
 
     auto gctx = ores::testing::make_generation_context(h);
@@ -163,11 +164,11 @@ TEST_CASE("read_latest_party_countries_by_country", tags) {
 
     scoped_database_helper h;
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     country_repository cty_repo;
     party_country_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     h.set_party(system_party_id);
 
     auto gctx = ores::testing::make_generation_context(h);
@@ -190,11 +191,11 @@ TEST_CASE("remove_party_country", tags) {
 
     scoped_database_helper h;
 
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     country_repository cty_repo;
     party_country_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
     cty_repo.write(h.context(), {all[5]});

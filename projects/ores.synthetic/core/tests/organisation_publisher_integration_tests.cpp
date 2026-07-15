@@ -189,8 +189,8 @@ TEST_CASE("publish_gb_organisation_succeeds", tags) {
     BOOST_LOG_SEV(lg, info) << "Seeding reference data for GB";
     seed_reference_data(ctx, tid, "GB", lg);
 
-    ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id = repo.read_system_party(tid).at(0).id;
+    ores::refdata::repository::party_repository repo;
+    const auto system_party_id = repo.read_system_party(ctx, tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -233,8 +233,8 @@ TEST_CASE("publish_us_organisation_succeeds", tags) {
     BOOST_LOG_SEV(lg, info) << "Seeding reference data for US";
     seed_reference_data(ctx, tid, "US", lg);
 
-    ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id = repo.read_system_party(tid).at(0).id;
+    ores::refdata::repository::party_repository repo;
+    const auto system_party_id = repo.read_system_party(ctx, tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -272,8 +272,8 @@ TEST_CASE("publish_organisation_without_addresses_succeeds", tags) {
     BOOST_LOG_SEV(lg, info) << "Seeding reference data for GB (no addresses)";
     seed_reference_data(ctx, tid, "GB", lg);
 
-    ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id = repo.read_system_party(tid).at(0).id;
+    ores::refdata::repository::party_repository repo;
+    const auto system_party_id = repo.read_system_party(ctx, tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -314,8 +314,8 @@ TEST_CASE("publish_large_organisation_with_unique_short_codes", tags) {
     BOOST_LOG_SEV(lg, info) << "Seeding reference data for GB (large)";
     seed_reference_data(ctx, tid, "GB", lg);
 
-    ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id = repo.read_system_party(tid).at(0).id;
+    ores::refdata::repository::party_repository repo;
+    const auto system_party_id = repo.read_system_party(ctx, tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;

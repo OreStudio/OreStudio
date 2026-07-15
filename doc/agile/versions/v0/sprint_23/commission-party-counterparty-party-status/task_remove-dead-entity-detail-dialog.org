@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 0E16650D-5389-42BC-A8C6-E15D49E3701B
+:END:
+#+title: Task: Remove dead EntityDetailDialog/EntityDetailOperations abstraction
+#+description: Now that party and counterparty have both migrated off the hand-maintained EntityDetailDialog/EntityDetailOperations pattern onto codegen-generated dialogs, no entity implements entity_detail_operations any more -- confirm via repo-wide search, then delete EntityDetailDialog/EntityDetailOperations and their .ui from ores.qt.api.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

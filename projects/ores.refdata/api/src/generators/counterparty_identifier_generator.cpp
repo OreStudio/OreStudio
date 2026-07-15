@@ -18,43 +18,52 @@
  *
  */
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.refdata.api/domain/party_id_scheme_constants.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
-namespace change_reason_codes = ores::dq::domain::change_reason_constants::codes;
-namespace id_scheme_constants = ores::refdata::domain::party_id_scheme_constants;
 
 domain::counterparty_identifier
 generate_synthetic_counterparty_identifier(utility::generation::generation_context& ctx) {
-    // Cycled rather than fixed to a single scheme so that batches of
-    // identifiers generated for the same counterparty don't collide with
-    // the max_cardinality=1 constraint some schemes carry.
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::counterparty_identifier r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.counterparty_id = ctx.generate_uuid();
-    r.id_scheme = std::string(id_scheme_constants::all[idx % id_scheme_constants::all.size()]);
+    r.id_scheme = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+        // Rotate so a batch of several identifiers for one counterparty gets
+        // distinct schemes (max one identifier per scheme per counterparty).
+        [idx] {
+            static constexpr const char* schemes[] = {"LEI",
+                                                      "BIC",
+                                                      "MIC",
+                                                      "NATIONAL_ID",
+                                                      "CEDB",
+                                                      "NATURAL_PERSON",
+                                                      "ACER",
+                                                      "DTCC_PARTICIPANT_ID",
+                                                      "MPID",
+                                                      "INTERNAL"};
+            return std::string(schemes[idx % 10]);
+        }();
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = change_reason_codes::synthetic_new;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

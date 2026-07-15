@@ -50,8 +50,9 @@ const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        ores::database::context ctx,
                                         const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest();
+    auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
@@ -68,8 +69,8 @@ TEST_CASE("write_single_account_party", tags) {
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    party_repository party_repo(h.context());
-    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
+    party_repository party_repo;
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
@@ -90,8 +91,8 @@ TEST_CASE("write_multiple_account_parties", tags) {
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    party_repository party_repo(h.context());
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    party_repository party_repo;
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     std::vector<account_party> aps;
     for (int i = 0; i < 3; ++i) {
@@ -101,7 +102,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
         auto party = ores::refdata::generators::generate_synthetic_party(ctx);
         party.change_reason_code = "system.test";
         party.parent_party_id = system_party_id;
-        party_repo.write(party);
+        party_repo.write(h.context(), party);
 
         auto ap = generate_synthetic_account_party(ctx);
         ap.account_id = acc.id;
@@ -120,8 +121,8 @@ TEST_CASE("read_latest_account_parties", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    party_repository party_repo(h.context());
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    party_repository party_repo;
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     std::vector<account_party> written;
     for (int i = 0; i < 3; ++i) {
@@ -131,7 +132,7 @@ TEST_CASE("read_latest_account_parties", tags) {
         auto party = ores::refdata::generators::generate_synthetic_party(ctx);
         party.change_reason_code = "system.test";
         party.parent_party_id = system_party_id;
-        party_repo.write(party);
+        party_repo.write(h.context(), party);
 
         auto ap = generate_synthetic_account_party(ctx);
         ap.account_id = acc.id;
@@ -162,8 +163,8 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    party_repository party_repo(h.context());
-    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
+    party_repository party_repo;
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     // Construct repo after set_party so its stored context has party IDs.
     h.set_party(party_id);

@@ -89,9 +89,14 @@ struct party final {
      *
      * References the party_category lookup table. Values: 'System' (one per
      * tenant, auto-created during provisioning) or 'Operational' (business
-     * entities created during normal system operation).
+     * entities created during normal system operation). Not user-editable
+     * via the Qt UI -- every party created through the detail dialog is
+     * 'Operational'; 'System' parties are exclusively auto-created during
+     * tenant provisioning. Defaults here so a freshly-constructed party
+     * (the Add dialog, with no UI field for this column) always carries a
+     * value the party_category-validation trigger accepts.
      */
-    std::string party_category;
+    std::string party_category = "Operational";
 
     /**
      * @brief Business classification of this party.
@@ -148,6 +153,16 @@ struct party final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for party, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const party&) {
+    return "ores.refdata.party";
+}
 
 }
 

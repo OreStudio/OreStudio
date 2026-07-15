@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: B9755647-D29D-4A9A-9FBE-F5DBBB33EDA0
+:END:
+#+title: Task: Regenerate counterparty under codegen; verify zero-diff regen
+#+description: Regenerate counterparty's SQL/C++/messaging/Qt against the current codegen templates (which have drifted significantly since counterparty was last touched) and diff against the repo; fix templates or repo to eliminate drift before Qt re-verification.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch: feature/regen-counterparty-under-codegen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerate counterparty's SQL/C++/messaging/Qt against current codegen
+templates and diff against the repo; fix templates or repo to eliminate
+drift, then migrate its Qt layer from the legacy =ores.qt.party= component
+onto the generated =ores.qt.refdata= classes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Protocol/handler/registrar zero-diff (re-verified after two subsequent rebases onto origin/main); Qt migrated to ores.qt.refdata; child-entity tables and hierarchy tree closed by the follow-up task. Both ores.qt.refdata.lib and ores.qt.party.lib build clean. |
+| Waiting on   | Nothing. |
+| Next         | See story's next task (Qt UI re-verification). |
+| Last touched | 2026-07-14                               |
+
+* Acceptance
+
+- Zero-diff regen for counterparty across protocol/handler/registrar profiles. DONE.
+- Qt layer migrated from ores.qt.party to ores.qt.refdata, RefdataPlugin owns CounterpartyController. DONE.
+- Build green for ores.qt.refdata.lib and ores.qt.party.lib. DONE.
+- Identifier/contact-information embedded-table editing in the Qt detail dialog. DONE — closed by [[id:E930D771-C8DA-4105-A556-69E137C3DB30][Build composite child-entity table Qt facet for party and counterparty]] (see that task's Result).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Diffed counterparty against current codegen templates (--address per
+   profile). SQL was already zero-diff (sprint 22 work). Messaging
+   (protocol/handler/registrar) showed a real gap: the hand-written
+   =composite_as_of= NATS message pair (added by the Temporal Composite
+   Entity Versioning story) had no facet/paste-block coverage, so a
+   regen would have silently deleted it.
+2. Added two new codegen paste-block kinds (mirroring the existing NATS
+   handler include/method/subscription pattern): "NATS protocol: custom
+   message includes" (=8A2E4C7F=) and "NATS protocol: custom message
+   types" (=2C4E8F1A=), documented in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]]. Wired
+   counterparty's =composite_as_of= request/response structs and handler
+   method through them; verified zero-diff after.
+3. Also fixed the same gap on party (workflow-step-command branch,
+   =composite_as_of=, =read_for_cache= — see the sibling regen-party
+   task) using the same mechanism plus one more new paste kind for a
+   =save()= early-exit override, since party's workflow-step path needed
+   to run *before* the standard flow, not just append extra methods.
+4. Regenerated counterparty's Qt profile for real. Found the generated
+   dialog writes to =projects/ores.qt/refdata/=, but the actual
+   hand-written Qt classes live in the legacy =projects/ores.qt/party/=
+   component (component-naming drift predating the refdata
+   consolidation) — a real path mismatch, not a capability gap.
+5. Found and fixed a second, unrelated model bug while regenerating:
+   counterparty.org's (and party.org's) Qt =domain_include=/
+   =protocol_include= flags pointed at =ores.refdata/...= instead of
+   =ores.refdata.api/...=, a stale value predating the =.api=
+   subcomponent split — caused a real compile failure
+   (=ores.refdata/domain/counterparty.hpp file not found=) once the
+   generated Qt files were actually wired into the build.
+6. Migrated: moved CounterpartyController ownership from PartyPlugin to
+   RefdataPlugin (menu entry, on_login/on_logout wiring), deleted the
+   old ores.qt.party counterparty files (ClientCounterpartyModel,
+   CounterpartyController, CounterpartyDetailOperations,
+   CounterpartyHistoryDialog, CounterpartyMdiWindow + .ui), left the
+   newly generated ores.qt.refdata files in place.
+7. Built ores.qt.refdata.lib and ores.qt.party.lib clean (-j1).
+
+* Notes
+
+*Deferred item closed.* The child-entity table/hierarchy-tree gap noted
+below was closed by [[id:E930D771-C8DA-4105-A556-69E137C3DB30][Build composite child-entity table Qt facet for party
+and counterparty]] (DONE): identifier/contact-information tables
+(add/edit/delete) via =ChildEntityTableWidget= +
+=CounterpartyChildEntityTables=, hierarchy tree via
+=HierarchyModelBuilder=/=HierarchyTreeWidget=. Full parity with the old
+=CounterpartyDetailOperations= is restored.
+
+*Original deferral note (superseded, kept for history):* the generated
+=CounterpartyDetailDialog= has no facet for embedding child-entity
+tables — the old hand-written =CounterpartyDetailOperations= (now
+deleted) handled identifiers and contact information as fully editable
+grids inside the detail dialog; the generated dialog has neither. This
+is a genuine functional regression until a follow-up builds the
+missing generic child-table Qt facet (the "Composite child-entity and
+hierarchy Qt widgets for codegen" story shipped the reusable pieces —
+=HierarchyTreeWidget=, hierarchy model-builder — but its
+"Bind ... to party and counterparty" task was ABANDONED and moved into
+*this* story, not actually completed). Party's hierarchy tree has the
+same gap plus the tree-view seam itself.
+
+*Rebase history*: this branch was rebased onto =origin/main= twice
+during the session (once mid-story for a merged CRM fix, once more to
+pick up further upstream landings before closing this task); both
+rebases re-verified zero-diff regen and a clean build afterwards.
+
+*Cross-environment note*: this migration touches the same Qt
+detail/history-dialog architecture that =brave_hopper='s
+"Consolidate history dialogs onto HistoryDialogBase" story (Phase C,
+STARTED) is actively rolling out across ~61 entities. Proceeded anyway
+per explicit direction; flagging here in case of a conflicting landing.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Counterparty is fully under codegen with zero diff across
+protocol/handler/registrar/Qt profiles, migrated from =ores.qt.party=
+to =ores.qt.refdata=, and at full UI parity with the deleted
+=CounterpartyDetailOperations= (identifiers, contacts, hierarchy).
+Verified building clean after two subsequent rebases onto
+=origin/main=. Ready for Qt UI end-to-end re-verification.

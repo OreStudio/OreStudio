@@ -29,8 +29,6 @@ namespace ores::qt {
 
 class PartyStatusController;
 class PartyIdSchemeController;
-class PartyController;
-class CounterpartyController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
 
@@ -66,14 +64,10 @@ public:
 private:
     plugin_context ctx_;
 
-    QAction* act_parties_{nullptr};
-    QAction* act_counterparties_{nullptr};
     QAction* act_business_units_{nullptr};
 
     std::unique_ptr<PartyStatusController> partyStatusController_;
     std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
-    std::unique_ptr<PartyController> partyController_;
-    std::unique_ptr<CounterpartyController> counterpartyController_;
     std::unique_ptr<BusinessUnitController> businessUnitController_;
     std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
 };

@@ -119,7 +119,6 @@ struct get_counterparty_composite_as_of_response {
     std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
     std::vector<ores::refdata::domain::counterparty_contact_information> contacts;
 };
-
 }
 
 #endif

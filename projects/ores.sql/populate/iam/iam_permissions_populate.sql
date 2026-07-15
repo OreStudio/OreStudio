@@ -140,10 +140,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_identifiers:write',  'Create and modify party identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_identifiers:delete', 'Delete party identifiers');
 
-    -- Party contact permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contacts:read',   'View party contacts');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contacts:write',  'Create and modify party contacts');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contacts:delete', 'Delete party contacts');
+    -- Party contact information permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contact_informations:read',   'View party contact information');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contact_informations:write',  'Create and modify party contact information');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_contact_informations:delete', 'Delete party contact information');
 
     -- Contact type permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::contact_types:read',   'View contact types');
@@ -160,10 +160,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_identifiers:write',  'Create and modify counterparty identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_identifiers:delete', 'Delete counterparty identifiers');
 
-    -- Counterparty contact permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contacts:read',   'View counterparty contacts');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contacts:write',  'Create and modify counterparty contacts');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contacts:delete', 'Delete counterparty contacts');
+    -- Counterparty contact information permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contact_informations:read',   'View counterparty contact information');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contact_informations:write',  'Create and modify counterparty contact information');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_contact_informations:delete', 'Delete counterparty contact information');
 
     -- Book permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::books:read',   'View books');

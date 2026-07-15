@@ -1,0 +1,238 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_REFDATA_CORE_MESSAGING_PARTY_CONTACT_INFORMATION_HANDLER_HPP
+#define ORES_REFDATA_CORE_MESSAGING_PARTY_CONTACT_INFORMATION_HANDLER_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
+#include "ores.refdata.core/service/party_contact_information_service.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <optional>
+
+namespace ores::refdata::messaging {
+
+namespace {
+inline auto& party_contact_information_handler_lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.refdata.messaging.party_contact_information_handler");
+    return instance;
+}
+} // namespace
+
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for party contact information operations.
+ */
+class party_contact_information_handler {
+public:
+    party_contact_information_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
+
+    void list(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::party_contact_information_service svc(req_ctx);
+        get_party_contact_informations_response resp;
+        if (auto req = decode<get_party_contact_informations_request>(msg)) {
+            try {
+                resp.party_contact_informations =
+                    svc.list_party_contact_informations(req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.count_party_contact_informations());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::party_contact_informations:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::party_contact_information_service svc(req_ctx);
+        if (auto req = decode<save_party_contact_information_request>(msg)) {
+            try {
+                svc.save_party_contact_information(req->data);
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, save_party_contact_information_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_,
+                    msg,
+                    save_party_contact_information_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::party_contact_information_service svc(req_ctx);
+        if (auto req = decode<get_party_contact_information_history_request>(msg)) {
+            try {
+                auto hist = svc.get_party_contact_information_history(req->id);
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_party_contact_information_history_response{.history = std::move(hist),
+                                                                     .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_party_contact_information_history_response{.success = false,
+                                                                     .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::party_contact_informations:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::party_contact_information_service svc(req_ctx);
+        if (auto req = decode<delete_party_contact_information_request>(msg)) {
+            try {
+                svc.delete_party_contact_informations(req->ids);
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, delete_party_contact_information_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_party_contact_information_response{.success = false,
+                                                                .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void list_by_party_id(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_contact_information_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::party_contact_information_service svc(req_ctx);
+        if (auto req = decode<get_party_contact_informations_by_party_id_request>(msg)) {
+            get_party_contact_informations_by_party_id_response resp;
+            try {
+                resp.party_contact_informations = svc.list_party_contact_informations_by_party_id(
+                    req->party_id, req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(
+                    svc.count_party_contact_informations_by_party_id(req->party_id));
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_contact_information_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(party_contact_information_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+private:
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+};
+
+} // namespace ores::refdata::messaging
+
+#endif

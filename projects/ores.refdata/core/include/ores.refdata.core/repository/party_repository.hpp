@@ -26,6 +26,7 @@
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -50,81 +51,89 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit party_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::party& party);
-    void write(const std::vector<domain::party>& parties);
-
-    std::vector<domain::party> read_latest();
-    std::vector<domain::party> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::party> read_latest_by_code(const std::string& code);
+    /**
+     * @brief Writes parties to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::party& v);
+    void write(context ctx, const std::vector<domain::party>& v);
+    /**@}*/
 
     /**
-     * @brief Reads the system party for a given tenant.
-     *
-     * Every tenant has exactly one system party (party_category='system')
-     * which serves as the root of the party hierarchy.
-     *
-     * @param tenant_id The tenant identifier
-     * @return Vector containing the system party, or empty if not found
+     * @brief Reads latest parties, possibly filtered by id.
      */
-    std::vector<domain::party> read_system_party(const std::string& tenant_id);
+    /**@{*/
+    std::vector<domain::party> read_latest(context ctx);
+    std::vector<domain::party> read_latest(context ctx, const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all parties, possibly filtered by id.
+     */
+    std::vector<domain::party> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single party as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::party>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest parties with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of parties within the specified range
      */
-    std::vector<domain::party> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::party> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active parties.
-     * @return Total number of parties with valid_to == max_timestamp
+     * @param ctx Repository context with database connection
+     * @return Total number of active parties
      */
-    std::uint32_t get_total_party_count();
+    std::uint32_t get_total_party_count(context ctx);
 
     /**
-     * @brief Reads all parties in the subtree rooted at the given party.
-     *
-     * Uses a recursive CTE to traverse the party hierarchy via parent_party_id.
-     * Returns the root party plus all its descendants (active records only).
-     *
-     * @param root_id The party to start from (included in result)
-     * @return UUIDs of root and all descendant parties
+     * @brief Deletes a party by closing its temporal validity.
      */
-    std::vector<boost::uuids::uuid> read_descendants(const boost::uuids::uuid& root_id);
+    void remove(context ctx, const std::string& id);
 
     /**
-     * @brief Reads the party hierarchy as a flat set of {id, parent_id, name}
-     * rows, via ores_refdata_parties_hierarchy_fn.
+     * @brief Deletes parties by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads the party hierarchy as a flat set of {id,
+     * parent_id, name} rows, via ores_refdata_parties_hierarchy_fn.
      *
-     * @param tenant_id The tenant owning the hierarchy.
+     * @param ctx Repository context with database connection (tenant is
+     * derived from ctx.tenant_id()).
      * @param root_id The party to start from.
      * @param from_root If true, first walks up to the ultimate ancestor and
      * returns the whole tree the given node belongs to, instead of just its
      * subtree.
      * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
      */
-    std::vector<ores::utility::domain::hierarchy_flat_row> get_hierarchy(
-        const boost::uuids::uuid& tenant_id, const boost::uuids::uuid& root_id, bool from_root);
+    std::vector<ores::utility::domain::hierarchy_flat_row>
+    get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root);
 
-    std::vector<domain::party> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
+    std::vector<domain::party> read_system_party(context ctx, const std::string& tenant_id);
 
-    /**
-     * @brief Reads a single party as it stood at a specific version — the
-     * version's own [valid_from, valid_to) window is returned verbatim, so
-     * the caller can compose child entities "as of" the same window. See the
-     * "Temporal composite entity versioning" architecture doc.
-     */
-    std::optional<domain::party> read_at_version(const boost::uuids::uuid& id,
-                                                 std::uint32_t version);
-
-private:
-    context ctx_;
+    std::vector<boost::uuids::uuid> read_descendants(context ctx,
+                                                     const boost::uuids::uuid& root_id);
 };
 
 }

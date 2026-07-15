@@ -54,8 +54,9 @@ uuid_gen()
 
 ** id_scheme
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
 :END:
 
 The identification scheme for this identifier.
@@ -63,7 +64,15 @@ The identification scheme for this identifier.
 References the party_id_scheme lookup table (e.g. LEI, BIC).
 
 #+begin_src cpp :name generator
-std::string("LEI")
+// no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+// Rotate so a batch of several identifiers for one party gets distinct
+// schemes (max one identifier per scheme per party).
+[idx]{
+    static constexpr const char* schemes[] = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"};
+    return std::string(schemes[idx % 10]);
+}()
 #+end_src
 
 ** id_value
@@ -115,6 +124,7 @@ std::string("Test identifier")
 :error_message: Invalid party_id: %. No active party found with this id.
 :list_by:       true
 :bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 * Insert trigger
@@ -130,7 +140,6 @@ std::string("Test identifier")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:no_history:      true
 :END:
 
 ** Repository
@@ -174,6 +183,60 @@ std::string("Test identifier")
 | version     | Version     |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/party_identifier.hpp
+:domain_class:            refdata::domain::party_identifier
+:protocol_include:        ores.refdata.api/messaging/party_identifier_protocol.hpp
+:collection_name:         party_identifiers
+:item_var:                partyIdentifier
+:key_field:               id_value
+:has_uuid_primary_key:    true
+:get_request_class:       refdata::messaging::get_party_identifiers_request
+:get_response_class:      refdata::messaging::get_party_identifiers_response
+:get_message_type:        get_party_identifiers_request
+:save_request_class:      refdata::messaging::save_party_identifier_request
+:save_response_class:     refdata::messaging::save_party_identifier_response
+:save_message_type:       save_party_identifier_request
+:save_request_item_field: data
+:delete_request_class:    refdata::messaging::delete_party_identifier_request
+:delete_response_class:   refdata::messaging::delete_party_identifier_response
+:delete_message_type:     delete_party_identifier_request
+:history_request_class:   refdata::messaging::get_party_identifier_history_request
+:history_response_class:  refdata::messaging::get_party_identifier_history_response
+:history_message_type:    get_party_identifier_history_request
+:has_change_reason_cache: true
+:settings_group:          PartyIdentifierListWindow
+:window_title:            Party Identifiers
+:has_pagination:          true
+:icon:                    Key
+:END:
+
+Note: =party_id= is deliberately not exposed as a Detail field -- like
+Book's =parent_portfolio_id=, it's always known from the owning
+context (the party's own Identifiers tab) and set programmatically
+before the dialog is shown, never user-chosen.
+
+*** Detail fields
+
+| field       | label       | widget          | type          | is_key | is_required | placeholder            | combo_domain_type              | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
+|-------------+-------------+-----------------+---------------+--------+-------------+-------------------------+----------------------------------+-----------------------------+--------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
+| id          | Id          | idEdit          | line_edit     | true   | true        | Party identifier id     |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
+| id_scheme   | Scheme      | idSchemeCombo   | dynamic_combo | false  | true        |                         | refdata::domain::party_id_scheme | ores.qt/LookupFetcher.hpp   | fetch_party_id_schemes  | idSchemeWatcher      | code               | description            | display_order      | id schemes      | IdSchemeCombo         |            |
+| id_value    | Value       | idValueEdit     | line_edit     | false  | true        | Enter identifier value  |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
+| description | Description | descriptionEdit | line_edit     | false  | false       | Enter description       |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| IdScheme    | id_scheme   | Scheme      | string    |   100 |
+| IdValue     | id_value    | Value       | string    |   180 |
+| Description | description | Description | string    |   200 |
+| Version     | version     | Version     | int       |    80 |
+| ModifiedBy  | modified_by | Modified By | string    |   120 |
+| RecordedAt  | recorded_at | Recorded At | timestamp |   150 |
 
 * See also
 

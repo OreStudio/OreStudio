@@ -121,6 +121,7 @@ public:
     }
 
     void save(ores::nats::message msg) {
+<<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(

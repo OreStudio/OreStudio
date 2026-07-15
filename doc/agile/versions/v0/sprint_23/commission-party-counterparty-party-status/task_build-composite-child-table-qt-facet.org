@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: E930D771-C8DA-4105-A556-69E137C3DB30
+:END:
+#+title: Task: Build composite child-entity table Qt facet for party and counterparty
+#+description: The generated CounterpartyDetailDialog/PartyDetailDialog have no facet for embedding child-entity tables (identifiers, contact information) or the hierarchy tree; the old hand-maintained EntityDetailDialog/Operations classes (now deleted for counterparty) handled these as full editable grids. Design and wire a generic child-entity-table Qt facet into the detail-dialog codegen templates, plus bind the existing HierarchyTreeWidget/hierarchy model-builder, restoring full feature parity for both entities.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch: feature/build-composite-child-table-qt-facet
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore identifier/contact-information table editing (including edit,
+not just add/delete) for party and counterparty's generated Qt detail
+dialogs, and bind the hierarchy tree for both -- full feature parity
+with the deleted EntityDetailDialog/Operations classes, without
+regenerating a whole new declarative cross-entity Qt facet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Both entities at full parity: Identifiers/Contact Information tabs (add/edit/delete) and Hierarchy tree, all building clean. |
+| Waiting on   | Nothing further for this task. |
+| Next         | Ready for manual QA (Qt UI verification tasks). |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Party: Identifiers tab (add/delete) and Contact Information tab (add/edit/delete, full field set) restored. DONE.
+- Party: Hierarchy tab (subtree rooted at the displayed party) restored. DONE.
+- Counterparty: same as party for all three. DONE.
+- ores.qt.refdata.lib and ores.qt.party.lib build clean (-j1). DONE.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. First attempt: embed the full ~250-line identifier/contact
+   setup/load/save/delete implementation directly as paste-block content
+   in party.org, mirroring the deleted EntityDetailDialog code verbatim.
+   Correctly rejected as too much hand-written C++ living inside an
+   org-mode literate model -- paste blocks are for small binding glue,
+   not entire feature implementations.
+2. Redesigned: a generic, entity-agnostic =ChildEntityTableWidget=
+   (ores.qt.api) -- a table + toolbar with add/delete signals, no
+   knowledge of any domain entity, in the same spirit as the existing
+   =HierarchyTreeWidget=. Then one small, hand-crafted (NOT codegen'd)
+   class per entity -- =PartyChildEntityTables=/
+   =CounterpartyChildEntityTables= in ores.qt.refdata -- owning two
+   =ChildEntityTableWidget= instances and doing the actual NATS
+   load/save/delete calls concretely (no cross-entity templating
+   attempted; the two classes are structurally identical but their
+   protocol/domain types differ enough that a template wouldn't clearly
+   pay for itself with only two consumers).
+3. Added four small new codegen paste-block kinds to the detail-dialog
+   templates (all documented in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]]): header extra
+   includes (=9C3E6A1D=), composite child-entity tables constructor seam
+   (=7E4A2C8D=, sibling to the existing hierarchy-tree seam), and an
+   entity-set load hook (=D5A8E2F1=, end of =set<Entity>()=). Each
+   entity's paste blocks are now just ~15 lines: construct the
+   hand-written class, attach it to =tabWidget()=, reload it when the
+   entity's id is (re)set.
+4. Hit one real bug along the way: the header member
+   (=ChildEntityTables* childTables_=) needs the class's full type
+   visible in the *header*, but the include I originally wrote only
+   went into the *impl* file's include paste point -- an "unknown type
+   name" compile error that cascaded into confusing "not convertible to
+   DetailDialogBase" errors elsewhere. Fixed by adding the
+   =9C3E6A1D= header-includes paste point.
+5. User caught a real parity gap after initial "done": contact
+   information only had add/delete, not the old dialog's
+   double-click-to-view/edit with its full 10-field set (street line 2,
+   state, postal code, email, web page). Added =onEditContact= to both
+   hand-written classes, connected to the table's =cellDoubleClicked=,
+   plus a =setReadOnly()= passthrough wired via the existing
+   =7A4AE8D5= (end of =setReadOnly()=) seam so add/edit/delete disable
+   correctly when the parent dialog is read-only (e.g. viewing history).
+6. Bound the hierarchy tree: turned out =HierarchyModelBuilder=
+   (ores.qt.headless) is *already fully generic* -- no
+   =PartyHierarchyModelBuilder=-style subclass needed, despite the
+   =9B165431= seam's doc comment suggesting one. Added
+   =PartyHierarchyTab=/=CounterpartyHierarchyTab= (hand-written, same
+   pattern as the child-entity-tables classes): own one
+   =HierarchyTreeWidget=, fetch the subtree via the existing
+   =get_<entity>_hierarchy_request= NATS call (already generated,
+   unused until now), build the model, display it. Wired via the
+   existing =9B165431= constructor seam (already documented, first real
+   consumer) plus the =D5A8E2F1= reload hook.
+
+* Notes
+
+=HierarchyTreeWidget=/=HierarchyModelBuilder= (ores.qt.headless) predate
+this task, entity-agnostic, and had zero consumers until now -- this
+task is their first real binding.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

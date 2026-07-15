@@ -19,8 +19,11 @@
  */
 #include "ores.refdata.api/generators/party_contact_information_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <array>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -28,32 +31,39 @@ using ores::utility::generation::generation_keys;
 
 domain::party_contact_information
 generate_synthetic_party_contact_information(utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 4> contact_types = {
-        "Legal", "Operations", "Settlement", "Billing"};
     static std::atomic<int> counter{0};
-    const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::party_contact_information r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.contact_type = std::string(contact_types[idx % contact_types.size()]);
+    r.contact_type = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+        // Rotate so a batch of several contact rows for one party gets distinct
+        // types (max one contact row per type per party).
+        [idx] {
+            static constexpr const char* types[] = {"Legal", "Operations", "Settlement", "Billing"};
+            return std::string(types[idx % 4]);
+        }();
     r.street_line_1 = std::string("123 Test Street");
     r.street_line_2 = std::string("Suite 100");
     r.city = std::string("London");
     r.state = std::string("");
-    r.country_code = std::string("");
+    r.country_code = // Left blank: validated against the tenant-scoped countries table, which
+        // isolated test tenants don't seed; empty skips validation.
+        std::string("");
     r.postal_code = std::string("EC2V 8AS");
     r.phone = std::string("+44 20 7000 0000");
     r.email = std::string("contact@example.com");
     r.web_page = std::string("https://example.com");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

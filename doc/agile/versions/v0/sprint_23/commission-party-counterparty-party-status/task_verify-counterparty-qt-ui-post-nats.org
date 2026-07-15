@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE
+:END:
+#+title: Task: Verify counterparty Qt UI end-to-end post-NATS
+#+description: Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch: feature/build-composite-child-table-qt-facet
+#+pr: 1581
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Re-verify the counterparty Qt list window, detail dialog, history
+dialog, delete, and cross-session eventing against a live environment
+now that counterparty is fully under codegen with the composite
+child-entity table/hierarchy facet in place; fix regressions found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Verified live against BARCLAYS PLC's counterparties: list, read, update, delete, identifiers tab, contact information tab, hierarchy tab, and history all PASS. Same session as the party verification -- fixes there (pagination, changeReasonCache wiring, is_auto_generated_key) apply symmetrically to counterparty and were verified against both entities. |
+| Waiting on   | Nothing.                               |
+| Next         | None -- Create against a *second* counterparty is separately tracked ([[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]]), not a blocker for this task. |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- List, Read, Update, Delete, Identifiers tab, Contact Information tab,
+  Hierarchy tab, and History all verified live against BARCLAYS PLC's
+  counterparties.
+- All regressions found during the shared verification pass (see the
+  party task for full detail) fixed or filed: pagination reporting
+  page size as total, missing changeReasonCache wiring blocking every
+  LEI/contact-information save, the is_auto_generated_key codegen bug
+  locking short_code permanently read-only, and stale
+  ores.refdata.core.tests signatures/generators. All 113 cases pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:B12A8474-32FF-45B7-BFD8-FF1B42845DAD][Verify counterparty Qt UI end-to-end post-NATS]] | PENDING | Covers list/create/read/identifiers/contacts/hierarchy/update/delete/history plus cross-client eventing (blue/red). |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 1581 | [refdata,qt,codegen] Commission party, counterparty, and party_status |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

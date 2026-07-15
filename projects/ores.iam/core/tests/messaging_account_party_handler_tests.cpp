@@ -43,8 +43,9 @@ const std::string_view test_suite("ores.iam.tests.account_party_handler");
 const std::string tags("[messaging]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        ores::database::context ctx,
                                         const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest();
+    auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
@@ -66,8 +67,8 @@ TEST_CASE("stamp_account_party_preserves_target_party_id", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    party_repository party_repo(h.context());
-    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
+    party_repository party_repo;
+    const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
 
     // The association target: a party distinct from whatever party the
     // caller's own context is currently scoped to.
@@ -75,7 +76,7 @@ TEST_CASE("stamp_account_party_preserves_target_party_id", tags) {
     target_party.parent_party_id = system_party_id;
     target_party.change_reason_code =
         std::string(ores::dq::domain::change_reason_constants::codes::new_record);
-    party_repo.write(target_party);
+    party_repo.write(h.context(), target_party);
 
     // Simulate the caller being logged in under a different party than the
     // one they're targeting with this association — the exact scenario

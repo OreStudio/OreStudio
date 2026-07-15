@@ -24,6 +24,7 @@
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -32,19 +33,25 @@ namespace ores::refdata::messaging {
 struct get_parties_request {
     using response_type = struct get_parties_response;
     static constexpr std::string_view nats_subject = "refdata.v1.parties.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_parties_response {
     std::vector<ores::refdata::domain::party> parties;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_party_request {
     using response_type = struct save_party_response;
     static constexpr std::string_view nats_subject = "refdata.v1.parties.save";
     ores::refdata::domain::party data;
+
+    static save_party_request from(ores::refdata::domain::party v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_party_response {
@@ -70,31 +77,14 @@ struct get_party_history_request {
 };
 
 struct get_party_history_response {
-    bool success = false;
-    std::string message;
     std::vector<ores::refdata::domain::party> history;
-};
-
-/**
- * @brief Reads all active parties for a tenant — used by IAM party cache.
- *
- * Returns the full, unpaginated party set for the given tenant so that
- * consumers can build an in-process cache without multiple round-trips.
- */
-struct read_parties_for_cache_request {
-    using response_type = struct read_parties_for_cache_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
-    std::string tenant_id;
-};
-
-struct read_parties_for_cache_response {
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::party> parties;
 };
 
 /**
- * @brief Reads the party hierarchy rooted at, or containing, a given party.
+ * @brief Reads the party hierarchy rooted at, or containing,
+ * a given party.
  */
 struct get_party_hierarchy_request {
     using response_type = struct get_party_hierarchy_response;
@@ -107,6 +97,22 @@ struct get_party_hierarchy_response {
     bool success = false;
     std::string message;
     std::vector<ores::utility::domain::hierarchy_node> roots;
+};
+
+/**
+ * @brief Reads all active parties for a tenant — used by
+ * client-side caches to warm up without multiple round-trips.
+ */
+struct read_parties_for_cache_request {
+    using response_type = struct read_parties_for_cache_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
+    std::string tenant_id;
+};
+
+struct read_parties_for_cache_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::refdata::domain::party> parties;
 };
 
 /**
@@ -129,7 +135,6 @@ struct get_party_composite_as_of_response {
     std::vector<ores::refdata::domain::party_identifier> identifiers;
     std::vector<ores::refdata::domain::party_contact_information> contacts;
 };
-
 }
 
 #endif

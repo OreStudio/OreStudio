@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 32700602-1610-4F40-9914-E704469FDA30
+:END:
+#+title: Task: Verify party Qt UI end-to-end post-NATS
+#+description: Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch: feature/build-composite-child-table-qt-facet
+#+pr: 1581
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Re-verify the party Qt list window, detail dialog, history dialog,
+delete, and cross-session eventing against a live environment now that
+party is fully under codegen with the composite child-entity table/
+hierarchy facet in place; fix regressions found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Verified live against BARCLAYS PLC: list, read, update, delete, identifiers tab, contact information tab, hierarchy tab, and history all PASS. Along the way, found and fixed several real regressions (see Notes) rather than test-scenario mistakes. |
+| Waiting on   | Nothing.                               |
+| Next         | None -- Create against a *second* party is separately tracked ([[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]]), not a blocker for this task. |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- List, Read, Update, Delete, Identifiers tab, Contact Information tab,
+  Hierarchy tab, and History all verified live against BARCLAYS PLC.
+- All regressions found during verification fixed or filed:
+  - =entity_type_of(party)= missing (party's hand-patched domain
+    profile never picked up the generic =HistoryDialog= dispatch
+    function the other 5 entities got via regen).
+  - =crm_topology_bundles= artefact type seeded with a =marketdata=
+    prefix instead of =refdata=, hanging the tenant-provisioning
+    workflow forever.
+  - =is_auto_generated_key= codegen bug: matched any =is_key= Detail
+    field on an entity with a UUID primary key, not specifically the
+    field that *is* that key -- wrongly locked party/counterparty's
+    natural =short_code= field permanently read-only, silently
+    blocking Create (disabled Save, no error shown).
+  - =has_pagination: true= never set on party/counterparty's Qt facet
+    -- =ClientPartyModel=/=ClientCounterpartyModel= reported the
+    current page's row count as the total, permanently hiding
+    anything past page 1 (looked like saves vanished).
+  - =changeReasonCache= never forwarded from
+    =PartyDetailDialog=/=CounterpartyDetailDialog= to their child
+    identifier/contact-information tables, silently blocking every
+    LEI/contact-information save ("Change reasons not loaded").
+  - 8 stale =ores.refdata.core.tests= files (pre-context-refactor
+    repository signatures) fixed, plus 2 synthetic-generator bugs
+    (invalid enum suffixes, hardcoded unseeded country codes) the
+    fix then surfaced. All 113 cases pass.
+- Two non-blocking UX gaps captured to backlog rather than fixed here
+  (CJK glyph fallback via =transliterated_name=; disabled-Save-with-
+  no-feedback on required-field validation).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:6EB36081-41D3-4500-9BBB-03451959A279][Verify party Qt UI end-to-end post-NATS]] | PENDING | Covers list/create/read/identifiers/contacts/hierarchy/update/delete/history plus cross-client eventing (blue/red). |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 1581 | [refdata,qt,codegen] Commission party, counterparty, and party_status |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Pagination bug also present in the 4 standalone child list models (ClientPartyIdentifierModel/ClientPartyContactInformationModel/ClientCounterpartyIdentifierModel/ClientCounterpartyContactInformationModel) | ClientPartyIdentifierModel.cpp et al. | Fixed | Added =:has_pagination: true= to the 4 child =.org= models, regenerated. Commit 0705f18d5. |
+| 2 | Synthetic generator fix (round 1) patched generated =.cpp= directly, not durable against regen | party_identifier_generator.cpp et al. | Fixed | Root-caused to the domain-type generator template unconditionally suffixing natural-key text columns; added a =no_generator_suffix= facet and moved the rotating-valid-values expression into the =.org= generator blocks themselves. Commit 0705f18d5. |
+| 3 | Minor: two identifier generators duplicate scheme codes instead of reusing =party_id_scheme_constants::all= | party_identifier_generator.cpp, counterparty_identifier_generator.cpp | Declined | Consistent with existing codebase convention (party_type/currency_pair generators also hardcode plain literals directly); reusing the constants header would add a dependency generators don't otherwise have. |
+| 4 | PR description discrepancy: crm_topology_bundles prefix fix / party_category default claimed as landing in this PR, reviewer found no diff | (description only) | Declined | Both fixes are genuinely in this branch's commit history (24d5d38de, party.hpp hand-patch); reviewer's diff search likely missed them since they're several commits back from HEAD at review time. |
+| 5 | Minor: ClientCounterpartyModel dropped the Transliterated Name column | ClientCounterpartyModel.cpp | Declined (captured) | Pre-existing gap, not introduced by this PR; captured separately as [[id:7AB584B7-DB3B-4F7E-B6DC-72BA3EF139F2][party_grid_ignores_transliterated_name]]. |
+
+* Result

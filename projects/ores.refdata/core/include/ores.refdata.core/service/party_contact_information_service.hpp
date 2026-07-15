@@ -25,8 +25,8 @@
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -36,8 +36,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing party contact informations.
  *
- * This service provides functionality for:
- * - Managing party contact informations (CRUD operations)
+ * Provides a higher-level interface for party contact information operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT party_contact_information_service {
 private:
@@ -54,83 +54,119 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a party_contact_information_service with required repositories.
+     * @brief Constructs a party_contact_information_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit party_contact_information_service(context ctx);
 
     /**
-     * @brief Lists all party contact informations.
-     */
-    std::vector<domain::party_contact_information> list_party_contact_informations();
-
-    /**
-     * @brief Lists party contact informations for a specific party.
+     * @brief Lists party contact informations with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of party contact informations for the requested page.
      */
     std::vector<domain::party_contact_information>
-    list_party_contact_informations_by_party(const boost::uuids::uuid& party_id);
+    list_party_contact_informations(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Finds a party contact information by its ID.
+     * @brief Gets the total count of active party contact informations.
+     *
+     * @return Total number of active party contact informations.
      */
-    std::optional<domain::party_contact_information>
-    find_party_contact_information(const boost::uuids::uuid& id);
+    std::uint32_t count_party_contact_informations();
 
     /**
-     * @brief Finds a party contact information by its code.
+     * @brief Lists party contact informations filtered by party_id, with pagination.
+     *
+     * @param party_id The party_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching party contact informations for the requested page.
+     */
+    std::vector<domain::party_contact_information> list_party_contact_informations_by_party_id(
+        const std::string& party_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party contact informations filtered by party_id.
+     *
+     * @param party_id The party_id to filter by.
+     * @return Total number of matching party contact informations.
+     */
+    std::uint32_t count_party_contact_informations_by_party_id(const std::string& party_id);
+
+    /**
+     * @brief Lists party contact informations filtered by party_id that were live at
+     * any point during a parent version's own [valid_from, valid_to) window.
+     * See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param party_id The party_id to filter by.
+     * @param valid_from_bound The parent version's own valid_from.
+     * @param valid_to_bound The parent version's own valid_to.
+     * @return Vector of matching party contact informations.
+     */
+    std::vector<domain::party_contact_information>
+    list_party_contact_informations_by_party_id_as_of(
+        const std::string& party_id,
+        std::chrono::system_clock::time_point valid_from_bound,
+        std::chrono::system_clock::time_point valid_to_bound);
+    /**
+     * @brief Retrieves a single party contact information as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the party contact information.
+     * @param version The version to fetch.
+     * @return The party contact information at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::party_contact_information>
-    find_party_contact_information_by_code(const std::string& code);
+    get_party_contact_information_at_version(const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single party contact information by its id.
+     *
+     * @param id The id of the party contact information.
+     * @return The party contact information if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_contact_information>
+    get_party_contact_information(const std::string& id);
 
     /**
      * @brief Saves a party contact information (creates or updates).
      *
-     * @param party_contact_information The party contact information to save
+     * @param party_contact_information The party contact information to save.
+     * @throws std::exception on failure.
      */
     void save_party_contact_information(
         const domain::party_contact_information& party_contact_information);
 
     /**
-     * @brief Saves multiple party contact informations (creates or updates).
+     * @brief Saves a batch of party contact informations.
      *
-     * @param party_contact_informations The party contact informations to save
+     * @param party_contact_informations The party contact informations to save.
+     * @throws std::exception on failure.
      */
     void save_party_contact_informations(
         const std::vector<domain::party_contact_information>& party_contact_informations);
 
     /**
-     * @brief Removes a party contact information.
+     * @brief Deletes a party contact information by its id.
      *
-     * @param id The ID of the party contact information to remove
+     * @param id The id of the party contact information to delete.
+     * @throws std::exception on failure.
      */
-    void remove_party_contact_information(const boost::uuids::uuid& id);
+    void delete_party_contact_information(const std::string& id);
 
     /**
-     * @brief Gets the version history for a party contact information.
-     *
-     * @param id The party contact information ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes party contact informations by their ids.
+     */
+    void delete_party_contact_informations(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a party contact information.
      */
     std::vector<domain::party_contact_information>
-    get_party_contact_information_history(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Retrieves a single party contact information as it stood at a
-     * specific version. See the "Temporal composite entity versioning"
-     * architecture doc.
-     */
-    std::optional<domain::party_contact_information>
-    get_party_contact_information_at_version(const boost::uuids::uuid& id, std::uint32_t version);
-
-    /**
-     * @brief Lists party contact informations for a party that were live
-     * during a parent version's own [valid_from, valid_to) window.
-     */
-    std::vector<domain::party_contact_information> list_party_contact_informations_by_party_as_of(
-        const boost::uuids::uuid& party_id,
-        std::chrono::system_clock::time_point valid_from_bound,
-        std::chrono::system_clock::time_point valid_to_bound);
+    get_party_contact_information_history(const std::string& id);
 
 private:
     context ctx_;

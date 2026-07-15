@@ -27,6 +27,12 @@ for the full mechanism. This header defines one:
   the same purpose in [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]]
   (=EC97923E-BC8D-4A50-9970-CBC5CBD4B732=) — an entity declares any
   extra private methods here that block implements.
+- =9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A= — after the generated includes,
+  before the =Ui= forward declaration. Use for any type used by a
+  =F55CB64E= member/method declaration that isn't already visible (e.g.
+  a hand-written helper class's header) — a forward declaration alone
+  is not enough for by-value or =unique_ptr<T>= members, so most
+  entities will need a real =#include= here.
 
 * Template
 
@@ -74,6 +80,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 {{/domain_entity.qt.has_flagged_combo_fields}}
+<<paste:9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A>>
 
 namespace Ui {
 class {{domain_entity.entity_pascal}}DetailDialog;

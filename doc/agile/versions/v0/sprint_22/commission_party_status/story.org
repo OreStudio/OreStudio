@@ -28,7 +28,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Abandoned — consolidated into a single capture with party and counterparty. |
 | Waiting on    | Nothing.                               |
-| Next          | See [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]]. |
+| Next          | Superseded by [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] (Sprint 23). |
 | Last touched  | 2026-07-10                             |
 
 * Acceptance

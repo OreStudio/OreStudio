@@ -19,7 +19,7 @@
  */
 #include "ores.refdata.core/service/party_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -29,88 +29,73 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 party_service::party_service(context ctx)
-    : ctx_(ctx)
-    , repo_(ctx) {}
-
-std::vector<domain::party> party_service::list_parties() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all parties";
-    return repo_.read_latest();
-}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::party> party_service::list_parties(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing parties with offset=" << offset << " limit=" << limit;
-    return repo_.read_latest(offset, limit);
+    BOOST_LOG_SEV(lg(), debug) << "Listing all parties";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_service::count_parties() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting parties";
-    return repo_.get_total_party_count();
+    BOOST_LOG_SEV(lg(), debug) << "Getting total parties count";
+    return repo_.get_total_party_count(ctx_);
 }
 
-std::optional<domain::party> party_service::find_party(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
+std::optional<domain::party> party_service::get_party_at_version(const std::string& id,
+                                                                 std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party at version: " << id << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::party> party_service::get_party(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-std::optional<domain::party> party_service::find_party_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
-}
-
-void party_service::save_party(const domain::party& party) {
-    if (party.id.is_nil()) {
-        throw std::invalid_argument("Party ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving party: " << party.id;
-    auto p = party;
-    stamp(p, ctx_);
-    repo_.write(p);
-    BOOST_LOG_SEV(lg(), info) << "Saved party: " << party.id;
+void party_service::save_party(const domain::party& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Party id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving party: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved party: " << v.id;
 }
 
 void party_service::save_parties(const std::vector<domain::party>& parties) {
-    for (const auto& p : parties) {
-        if (p.id.is_nil())
-            throw std::invalid_argument("Party ID cannot be nil.");
-    }
+    for (const auto& e : parties)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Party id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
-    auto stamped = parties;
-    for (auto& p : stamped)
-        stamp(p, ctx_);
-    repo_.write(stamped);
+    auto ts = parties;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void party_service::remove_party(const boost::uuids::uuid& id) {
+void party_service::delete_party(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed party: " << id;
 }
 
-std::vector<domain::party> party_service::get_party_history(const boost::uuids::uuid& id) {
+void party_service::delete_parties(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
+std::vector<domain::party> party_service::get_party_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, id);
 }
 
 std::vector<ores::utility::domain::hierarchy_node>
 party_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for party root: " << root_id;
-    const auto tenant_id = ctx_.tenant_id().to_uuid();
-    auto rows = repo_.get_hierarchy(tenant_id, root_id, from_root);
+    auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
     return ores::utility::domain::build_tree(rows);
-}
-
-std::optional<domain::party> party_service::get_party_at_version(const boost::uuids::uuid& id,
-                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party at version: " << id << " version: " << version;
-    return repo_.read_at_version(id, version);
 }
 
 }

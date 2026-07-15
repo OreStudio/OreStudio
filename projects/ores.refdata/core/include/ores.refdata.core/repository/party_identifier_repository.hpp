@@ -77,6 +77,19 @@ public:
     std::vector<domain::party_identifier> read_all(context ctx, const std::string& id);
 
     /**
+     * @brief Reads a single party identifier as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::party_identifier>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
      * @brief Reads latest party identifiers filtered by party_id, with pagination.
      * @param ctx Repository context with database connection
      * @param party_id The party_id to filter by
@@ -94,6 +107,22 @@ public:
     std::uint32_t get_total_party_identifier_count_by_party_id(context ctx,
                                                                const std::string& party_id);
 
+    /**
+     * @brief Reads party identifiers filtered by party_id that were live at
+     * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
+     * party identifiers that compose a parent entity's state as of one of
+     * its own historical versions. See the "Temporal composite entity
+     * versioning" architecture doc.
+     * @param ctx Repository context with database connection
+     * @param party_id The party_id to filter by
+     * @param valid_from_bound The parent version's own valid_from
+     * @param valid_to_bound The parent version's own valid_to
+     */
+    std::vector<domain::party_identifier>
+    read_by_party_id_as_of(context ctx,
+                           const std::string& party_id,
+                           std::chrono::system_clock::time_point valid_from_bound,
+                           std::chrono::system_clock::time_point valid_to_bound);
     /**
      * @brief Reads latest party identifiers with pagination support.
      * @param ctx Repository context with database connection
@@ -119,25 +148,6 @@ public:
      * @brief Deletes party identifiers by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
-
-    /**
-     * @brief Reads a single party identifier as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     */
-    std::optional<domain::party_identifier>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
-
-    /**
-     * @brief Reads party identifiers filtered by party_id that were live at
-     * any point during [valid_from_bound, valid_to_bound) — the set that
-     * composes a parent party's state as of one of its own historical
-     * versions.
-     */
-    std::vector<domain::party_identifier>
-    read_by_party_id_as_of(context ctx,
-                           const std::string& party_id,
-                           std::chrono::system_clock::time_point valid_from_bound,
-                           std::chrono::system_clock::time_point valid_to_bound);
 };
 
 }

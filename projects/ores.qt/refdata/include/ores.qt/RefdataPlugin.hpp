@@ -86,6 +86,8 @@ class TenorResolutionAlgorithmController;
 class CrmTopologyConfigController;
 class CrmDriverPairController;
 class CrmEnabledDerivedPairController;
+class CounterpartyController;
+class PartyController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -139,6 +141,8 @@ private:
     QAction* act_business_centres_{nullptr};
     QAction* act_calendars_{nullptr};
     QAction* act_currency_groups_{nullptr};
+    QAction* act_counterparties_{nullptr};
+    QAction* act_parties_{nullptr};
     QAction* act_data_librarian_{nullptr};
 
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)
@@ -192,6 +196,8 @@ private:
     std::unique_ptr<CrmTopologyConfigController> crmTopologyConfigController_;
     std::unique_ptr<CrmDriverPairController> crmDriverPairController_;
     std::unique_ptr<CrmEnabledDerivedPairController> crmEnabledDerivedPairController_;
+    std::unique_ptr<CounterpartyController> counterpartyController_;
+    std::unique_ptr<PartyController> partyController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController> dataDomainController_;

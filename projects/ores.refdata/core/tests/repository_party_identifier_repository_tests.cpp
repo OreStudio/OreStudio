@@ -51,17 +51,17 @@ TEST_CASE("write_single_party_identifier", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest();
+    auto existing = party_repo.read_latest(h.context());
     for (const auto& e : existing) {
         if (e.tenant_id == party.tenant_id) {
             party.parent_party_id = e.id;
             break;
         }
     }
-    party_repo.write(party);
+    party_repo.write(h.context(), party);
 
     auto pi = generate_synthetic_party_identifier(ctx);
     pi.change_reason_code = "system.test";
@@ -77,17 +77,17 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest();
+    auto existing = party_repo.read_latest(h.context());
     for (const auto& e : existing) {
         if (e.tenant_id == party.tenant_id) {
             party.parent_party_id = e.id;
             break;
         }
     }
-    party_repo.write(party);
+    party_repo.write(h.context(), party);
 
     auto party_identifiers = generate_synthetic_party_identifiers(3, ctx);
     for (auto& pi : party_identifiers) {
@@ -105,17 +105,17 @@ TEST_CASE("read_latest_party_identifiers", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest();
+    auto existing = party_repo.read_latest(h.context());
     for (const auto& e : existing) {
         if (e.tenant_id == party.tenant_id) {
             party.parent_party_id = e.id;
             break;
         }
     }
-    party_repo.write(party);
+    party_repo.write(h.context(), party);
     h.set_party(party.id);
 
     auto written_party_identifiers = generate_synthetic_party_identifiers(3, ctx);
@@ -139,17 +139,17 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest();
+    auto existing = party_repo.read_latest(h.context());
     for (const auto& e : existing) {
         if (e.tenant_id == party.tenant_id) {
             party.parent_party_id = e.id;
             break;
         }
     }
-    party_repo.write(party);
+    party_repo.write(h.context(), party);
     h.set_party(party.id);
 
     auto pi = generate_synthetic_party_identifier(ctx);
@@ -193,21 +193,21 @@ TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository party_repo(h.context());
+    party_repository party_repo;
     auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest();
+    auto existing = party_repo.read_latest(h.context());
     for (const auto& e : existing) {
         if (e.tenant_id == party.tenant_id) {
             party.parent_party_id = e.id;
             break;
         }
     }
-    party_repo.write(party);
+    party_repo.write(h.context(), party);
     h.set_party(party.id);
 
     // Fetch v1 of the party — created above, no identifiers yet.
-    const auto v1 = party_repo.read_at_version(party.id, 1);
+    const auto v1 = party_repo.read_at_version(h.context(), boost::uuids::to_string(party.id), 1);
     REQUIRE(v1.has_value());
     CHECK(v1->version == 1);
 
@@ -219,7 +219,7 @@ TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
     party_identifier_repository identifier_repo;
     identifier_repo.write(h.context(), pi);
 
-    const auto v2 = party_repo.read_at_version(party.id, 2);
+    const auto v2 = party_repo.read_at_version(h.context(), boost::uuids::to_string(party.id), 2);
     REQUIRE(v2.has_value());
     CHECK(v2->version == 2);
 
@@ -243,6 +243,6 @@ TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
     CHECK(identifiers_at_v2[0].id == pi.id);
 
     // Fetching a nonexistent version returns nullopt rather than throwing.
-    const auto missing = party_repo.read_at_version(party.id, 999);
+    const auto missing = party_repo.read_at_version(h.context(), boost::uuids::to_string(party.id), 999);
     CHECK_FALSE(missing.has_value());
 }

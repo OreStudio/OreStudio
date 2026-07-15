@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Party Contact Information Table
  *
  * Contact details for parties organised by purpose (Legal, Operations,
  * Settlement, Billing). Each party can have one contact record per type.
@@ -59,6 +59,11 @@ create table if not exists "ores_refdata_party_contact_informations_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists party_contact_informations_party_id_contact_type_uniq_idx
+on "ores_refdata_party_contact_informations_tbl" (tenant_id, party_id, contact_type)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists party_contact_informations_version_uniq_idx
 on "ores_refdata_party_contact_informations_tbl" (tenant_id, id, version)
@@ -72,10 +77,6 @@ create index if not exists party_contact_informations_tenant_idx
 on "ores_refdata_party_contact_informations_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists party_contact_informations_party_contact_type_uniq_idx
-on "ores_refdata_party_contact_informations_tbl" (tenant_id, party_id, contact_type)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_refdata_party_contact_informations_insert_fn()
 returns trigger as $$
 declare
@@ -84,20 +85,24 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate contact_type
-    NEW.contact_type := ores_refdata_validate_contact_type_fn(NEW.tenant_id, NEW.contact_type);
-
-    -- Validate party_id (soft FK)
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.party_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            NEW.party_id
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
             using errcode = '23503';
     end if;
 
+    -- Validate contact_type
+    NEW.contact_type := ores_refdata_validate_contact_type_fn(NEW.tenant_id, NEW.contact_type);
+
+    -- Paste block: doesn't fit soft_fk_validations (joins on id, not
+    -- an alpha-2 code column) or the Validations table
+    -- (ores_refdata_validate_country_fn only checks non-null/empty,
+    -- not existence).
     -- Validate country_code (nullable, inline check against countries table)
     if NEW.country_code is not null and NEW.country_code != '' then
         if not exists (
@@ -111,6 +116,23 @@ begin
                 using errcode = '23503';
         end if;
     end if;
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Bump ores_refdata_parties_tbl's version alongside this write (composite entity
+    -- versioning — see the "Temporal composite entity versioning"
+    -- architecture doc). The touch function re-validates modified_by
+    -- itself; change_reason_code is passed through as-is since it was
+    -- already validated above.
+    perform ores_refdata_parties_touch_version_fn(
+        NEW.tenant_id,
+        NEW.party_id,
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        'party_contact_information'
+    );
 
     -- Version management
     select version into current_version
@@ -145,29 +167,12 @@ begin
 
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
-    -- Bump ores_refdata_parties_tbl's version alongside this write (composite entity
-    -- versioning — see the "Temporal composite entity versioning"
-    -- architecture doc). change_reason_code is passed through as-is
-    -- since it was already validated above.
-    perform ores_refdata_parties_touch_version_fn(
-        NEW.tenant_id,
-        NEW.party_id,
-        NEW.change_reason_code,
-        NEW.change_commentary,
-        NEW.modified_by,
-        NEW.performed_by,
-        'party_contact_information'
-    );
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_party_contact_informations_insert_trg
 before insert on "ores_refdata_party_contact_informations_tbl"

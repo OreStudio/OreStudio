@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 7AB584B7-DB3B-4F7E-B6DC-72BA3EF139F2
+:END:
+#+title: Party/counterparty grid ignores transliterated_name for non-Latin full_name
+#+description: Parties/counterparties with a non-Latin full_name (e.g. CJK) render as tofu boxes when the required glyphs aren't installed; the transliterated_name column exists precisely for this but the list/detail views never fall back to it.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:party:counterparty:i18n:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Found while running the "Verify party Qt UI end-to-end post-NATS"
+scenario: party =BACAAS= seeds with =full_name= =巴克萊亞洲有限公司=
+(Chinese) and a =transliterated_name= of =BARCLAYS CAPITAL ASIA
+LIMITED=. The Parties list (=ClientPartyModel=) and
+=PartyDetailDialog= only ever display =full_name=, never
+=transliterated_name= -- on an environment without CJK glyphs
+installed, the row renders as a string of tofu boxes with no readable
+fallback. Same shape applies to counterparty.
+
+* Why
+
+=transliterated_name= exists on the =party=/=counterparty= tables
+specifically to give a Latin-script fallback for non-Latin legal
+names, but nothing in the Qt UI reads it. At minimum the list grid
+should fall back to =transliterated_name= when present (e.g. as a
+tooltip, or a secondary line/column), so operators without CJK fonts
+installed can still identify the row.
+
+* References
+
+- =projects/ores.qt/refdata/include/ores.qt/ClientPartyModel.hpp=/=.cpp=
+- =projects/ores.qt/refdata/src/PartyDetailDialog.cpp=
+- =projects/ores.refdata/api/include/ores.refdata.api/domain/party.hpp=
+  (=transliterated_name= field)
+
+* See also
+
+- [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]

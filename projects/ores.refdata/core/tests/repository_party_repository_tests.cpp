@@ -27,6 +27,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
@@ -48,15 +49,15 @@ TEST_CASE("write_single_party", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository repo(h.context());
-    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+    party_repository repo;
+    const auto parent_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
 
     auto p = generate_synthetic_party(ctx);
     p.change_reason_code = "system.test";
     p.parent_party_id = parent_id;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
-    CHECK_NOTHROW(repo.write(p));
+    CHECK_NOTHROW(repo.write(h.context(), p));
 }
 
 TEST_CASE("write_multiple_parties", tags) {
@@ -64,8 +65,8 @@ TEST_CASE("write_multiple_parties", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository repo(h.context());
-    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+    party_repository repo;
+    const auto parent_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
 
     auto parties = generate_synthetic_parties(3, ctx);
     for (auto& p : parties) {
@@ -74,7 +75,7 @@ TEST_CASE("write_multiple_parties", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Parties: " << parties;
 
-    CHECK_NOTHROW(repo.write(parties));
+    CHECK_NOTHROW(repo.write(h.context(), parties));
 }
 
 TEST_CASE("read_latest_parties", tags) {
@@ -82,8 +83,8 @@ TEST_CASE("read_latest_parties", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository repo(h.context());
-    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+    party_repository repo;
+    const auto parent_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
 
     auto written_parties = generate_synthetic_parties(3, ctx);
     for (auto& p : written_parties) {
@@ -92,9 +93,9 @@ TEST_CASE("read_latest_parties", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Written parties: " << written_parties;
 
-    repo.write(written_parties);
+    repo.write(h.context(), written_parties);
 
-    auto read_parties = repo.read_latest();
+    auto read_parties = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     CHECK(read_parties.size() >= written_parties.size());
@@ -105,8 +106,8 @@ TEST_CASE("read_latest_party_by_id", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository repo(h.context());
-    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+    party_repository repo;
+    const auto parent_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
 
     auto p = generate_synthetic_party(ctx);
     p.change_reason_code = "system.test";
@@ -114,12 +115,12 @@ TEST_CASE("read_latest_party_by_id", tags) {
     const auto original_full_name = p.full_name;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
-    repo.write(p);
+    repo.write(h.context(), p);
 
     p.full_name = original_full_name + " v2";
-    repo.write(p);
+    repo.write(h.context(), p);
 
-    auto read_parties = repo.read_latest(p.id);
+    auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(p.id));
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     REQUIRE(read_parties.size() == 1);
@@ -131,12 +132,12 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    party_repository repo(h.context());
+    party_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_parties = repo.read_latest(nonexistent_id);
+    auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     CHECK(read_parties.size() == 0);
@@ -147,20 +148,20 @@ TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    party_repository repo(h.context());
-    const auto system_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+    party_repository repo;
+    const auto system_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
 
     auto root = generate_synthetic_party(ctx);
     root.change_reason_code = "system.test";
     root.parent_party_id = system_id;
-    repo.write(root);
+    repo.write(h.context(), root);
 
     auto child = generate_synthetic_party(ctx);
     child.change_reason_code = "system.test";
     child.parent_party_id = root.id;
-    repo.write(child);
+    repo.write(h.context(), child);
 
-    const auto rows = repo.get_hierarchy(h.tenant_id().to_uuid(), root.id, false);
+    const auto rows = repo.get_hierarchy(h.context(), root.id, false);
     BOOST_LOG_SEV(lg, debug) << "Hierarchy rows: " << rows.size();
 
     REQUIRE(rows.size() == 2);

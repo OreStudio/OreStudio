@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-move-numeric-logic-to-quant
-#+pr:
+#+pr: 1573
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1573][#1573]] | [analytics.quant,marketdata,qt] Move CRM matrix's numeric logic out of the Qt client |
 
 * Review
 

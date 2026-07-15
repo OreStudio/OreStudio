@@ -78,6 +78,7 @@ public:
      */
     const refdata::domain::fra_convention* getConvention(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

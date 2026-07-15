@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -84,11 +87,27 @@ private slots:
     void onShowHistory(const refdata::domain::crm_topology_config& config);
     void onRevertVersion(const refdata::domain::crm_topology_config& config);
     void onOpenVersion(const refdata::domain::crm_topology_config& config, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::crm_topology_config& config);
     void showHistoryWindow(const refdata::domain::crm_topology_config& config);
+
+    /**
+     * @brief Fetches the full typed CRM topology config history (the
+     * existing per-entity refdata::messaging::get_crm_topology_config_history_request/
+     * refdata::messaging::get_crm_topology_config_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed CRM topology config, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchCrmTopologyConfigHistory(
+        const QString& entityId,
+        std::function<void(
+            std::expected<std::vector<refdata::domain::crm_topology_config>, QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;

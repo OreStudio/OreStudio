@@ -20,22 +20,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Re-verify the party Qt list window, detail dialog, history dialog,
+delete, and cross-session eventing against a live environment now that
+party is fully under codegen with the composite child-entity table/
+hierarchy facet in place; fix regressions found.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Party's Qt layer is migrated to ores.qt.refdata, builds clean, and Identifiers/Contact Information tabs are restored. Hierarchy tree remains unwired (was never wired pre-codegen either). Ready for end-to-end verification. |
+| Now          | Verified live against BARCLAYS PLC: list, read, update, delete, identifiers tab, contact information tab, hierarchy tab, and history all PASS. Along the way, found and fixed several real regressions (see Notes) rather than test-scenario mistakes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Next         | None -- Create against a *second* party is separately tracked ([[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]]), not a blocker for this task. |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
--
+- List, Read, Update, Delete, Identifiers tab, Contact Information tab,
+  Hierarchy tab, and History all verified live against BARCLAYS PLC.
+- All regressions found during verification fixed or filed:
+  - =entity_type_of(party)= missing (party's hand-patched domain
+    profile never picked up the generic =HistoryDialog= dispatch
+    function the other 5 entities got via regen).
+  - =crm_topology_bundles= artefact type seeded with a =marketdata=
+    prefix instead of =refdata=, hanging the tenant-provisioning
+    workflow forever.
+  - =is_auto_generated_key= codegen bug: matched any =is_key= Detail
+    field on an entity with a UUID primary key, not specifically the
+    field that *is* that key -- wrongly locked party/counterparty's
+    natural =short_code= field permanently read-only, silently
+    blocking Create (disabled Save, no error shown).
+  - =has_pagination: true= never set on party/counterparty's Qt facet
+    -- =ClientPartyModel=/=ClientCounterpartyModel= reported the
+    current page's row count as the total, permanently hiding
+    anything past page 1 (looked like saves vanished).
+  - =changeReasonCache= never forwarded from
+    =PartyDetailDialog=/=CounterpartyDetailDialog= to their child
+    identifier/contact-information tables, silently blocking every
+    LEI/contact-information save ("Change reasons not loaded").
+  - 8 stale =ores.refdata.core.tests= files (pre-context-refactor
+    repository signatures) fixed, plus 2 synthetic-generator bugs
+    (invalid enum suffixes, hardcoded unseeded country codes) the
+    fix then surfaced. All 113 cases pass.
+- Two non-blocking UX gaps captured to backlog rather than fixed here
+  (CJK glyph fallback via =transliterated_name=; disabled-Save-with-
+  no-feedback on required-field validation).
 
 * Plan
 

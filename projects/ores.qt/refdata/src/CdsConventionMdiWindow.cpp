@@ -122,6 +122,7 @@ void CdsConventionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_, model_, "CdsConventionListWindow", {}, {900, 400}, 1);
 }
 
@@ -290,7 +291,7 @@ void CdsConventionMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " CDS conventions";
+            << "Making delete request for " << codes.size() << " CDS conventions";
 
         refdata::messaging::delete_cds_convention_request request;
         request.codes = codes;
@@ -361,5 +362,6 @@ void CdsConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

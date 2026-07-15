@@ -140,7 +140,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Toolbar icon (Tag) inconsistent with existing Book Codes menu (Flag) for the same 4 actions | ores.refdata.book.org | Accepted | Changed icon column to Flag, regenerated; matches RefdataPlugin.cpp's menu icons exactly. |
+| 2 | Double blank line before the shortcuts separator (cpp_qt_mdi_window.cpp.mustache quirk when has_csv_xml_io is false) | BookMdiWindow.cpp | Declined | Pre-existing template whitespace quirk, not introduced by this PR; within clang-format's MaxEmptyLinesToKeep, cosmetic only. Left for a template-level follow-up if it recurs. |
+| 3 | book.org table column alignment | ores.refdata.book.org | Accepted | Re-aligned while fixing #1 (same edit). |
 
 * Result
 

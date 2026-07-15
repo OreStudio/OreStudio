@@ -120,14 +120,15 @@ void BookMdiWindow::setupToolbar() {
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Statuses"));
+            IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
+            tr("Statuses"));
         action->setToolTip(tr("Open Book Statuses list"));
         connect(action, &QAction::triggered, this, [this]() { emit showBookStatusesRequested(); });
     }
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
             tr("Regulatory Types"));
         action->setToolTip(tr("Open Regulatory Book Types list"));
         connect(action, &QAction::triggered, this, [this]() {
@@ -137,7 +138,7 @@ void BookMdiWindow::setupToolbar() {
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
             tr("Purpose Types"));
         action->setToolTip(tr("Open Book Purpose Types list"));
         connect(
@@ -146,7 +147,7 @@ void BookMdiWindow::setupToolbar() {
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
             tr("Ledger Feed Types"));
         action->setToolTip(tr("Open Ledger Feed Types list"));
         connect(

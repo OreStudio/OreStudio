@@ -401,12 +401,12 @@ compositing needed since it's a single column.
 
 *** Related entity shortcuts
 
-| signal              | icon | label             | tooltip                          |
-|----------------------+------+-------------------+-----------------------------------|
-| BookStatuses         | Tag  | Statuses          | Open Book Statuses list          |
-| RegulatoryBookTypes  | Tag  | Regulatory Types  | Open Regulatory Book Types list   |
-| BookPurposeTypes     | Tag  | Purpose Types     | Open Book Purpose Types list      |
-| LedgerFeedTypes      | Tag  | Ledger Feed Types | Open Ledger Feed Types list       |
+| signal             | icon | label             | tooltip                         |
+|--------------------+------+-------------------+----------------------------------|
+| BookStatuses        | Flag | Statuses          | Open Book Statuses list          |
+| RegulatoryBookTypes | Flag | Regulatory Types  | Open Regulatory Book Types list  |
+| BookPurposeTypes    | Flag | Purpose Types     | Open Book Purpose Types list     |
+| LedgerFeedTypes     | Flag | Ledger Feed Types | Open Ledger Feed Types list      |
 
 ** Custom repository methods
 

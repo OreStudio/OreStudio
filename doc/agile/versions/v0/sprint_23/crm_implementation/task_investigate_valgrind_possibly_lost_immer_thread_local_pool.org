@@ -63,9 +63,41 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Reproduce locally: build =ores.analytics.quant.tests= and run it
+  directly under =valgrind --leak-check=full --show-reachable=yes=
+  (both filtered to =[rate_engine]= and unfiltered), rather than the
+  full nightly =CTest.cmake= dashboard script -- much faster iteration
+  for a single component.
+- Check the =LEAK SUMMARY=: every run showed *0 bytes definitely lost,
+  0 indirectly lost* -- only "possibly lost", all funnelling through
+  the same =immer= thread-local free-list allocator chain
+  (=cpp_heap::allocate -> debug_size_heap::allocate ->
+  free_list_heap::allocate -> unsafe_free_list_heap_impl<thread_local_free_list_storage>::allocate
+  -> split_heap::allocate=), for both single-threaded and worker-thread
+  test cases. That's the confirming signal: a genuine leak in
+  =rate_engine=/=vertex_state='s own code wouldn't route through the
+  allocator's own internal pool-allocate frames for every single
+  occurrence, and definitely-lost/indirectly-lost would be nonzero.
+- Confirmed hypothesis (a): thread-local-allocator-pool false positive,
+  not a real leak.
+- Found =build/valgrind/custom.supp= (a real tracked source file, not
+  build output -- only =build/output/= is gitignored) is already wired
+  as =CTEST_MEMORYCHECK_SUPPRESSIONS_FILE= in =CTest.cmake= and used by
+  nightly's =with_memcheck=1= dashboard run, with an existing catalogue
+  of scoped suppressions (Boost.Log, OpenSSL, Catch2, glibc TLS, etc.)
+  to follow the same style/rigour for.
+- Added one new targeted suppression entry, matched on the immer
+  allocator's own 5-frame =allocate()= chain for this specific
+  280-byte/1024-slot pool instantiation (the one =rate_engine='s
+  =vertex_state= vector uses), with =match-leak-kinds: possible= only
+  -- deliberately *not* a blanket =immer::*= or =possibly lost=
+  suppression, so a genuine definite leak in the same call path (or a
+  possibly-lost report through a different immer allocation site)
+  still surfaces normally.
+- Verified: re-ran valgrind with =--suppressions=build/valgrind/custom.supp=
+  against the full =ores.analytics.quant.tests= suite (147 test cases) --
+  0 definitely/indirectly/possibly lost, all 4 hits of the new
+  suppression entry accounted for as "suppressed".
 
 * Notes
 

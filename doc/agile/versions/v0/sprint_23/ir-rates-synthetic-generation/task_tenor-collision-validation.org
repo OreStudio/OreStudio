@@ -89,5 +89,6 @@ validator, which has not yet been started.
 | 2 | instrument_code_history_field_mapper isn't wired into registrar.cpp or any Qt dialog yet | instrument_code_history_field_mapper.cpp | Declined | Matches the existing not-yet-wired state of most other *_history_field_mapper files (tenor, calendar, business_centre...); only currency/country are wired today. Pre-existing rollout gap, not introduced by this PR. |
 | 3 | 13 templated instrument descriptions carry grammar bugs (stray "the", wrong plurals) | refdata_instrument_codes_populate.sql | Accepted | Fixed in 31fe486be. |
 | 4 | crm_topology_bundles subject fix is a no-op against already-provisioned databases (ON CONFLICT DO NOTHING) | dq_artefact_types_populate.sql | Accepted | Fixed in 31fe486be — added an idempotent backfill INSERT that corrects any existing row still carrying the old marketdata_* values; verified against a simulated pre-fix row. |
+| 5 | Two remaining "basket of the commodity prices" rows inconsistent with sibling FX/Equity fixes (non-blocking) | refdata_instrument_codes_populate.sql | Accepted | Fixed in c91d981ae. |
 
 * Result

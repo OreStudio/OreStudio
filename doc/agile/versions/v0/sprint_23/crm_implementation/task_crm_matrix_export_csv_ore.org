@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-matrix-export-csv-ore
-#+pr:
+#+pr: 1589
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1589][#1589]] | [qt,agile] Add CSV/ORE export to CRM cross-rates matrix |
 
 * Review
 

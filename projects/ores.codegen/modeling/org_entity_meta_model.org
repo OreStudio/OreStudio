@@ -665,6 +665,24 @@ Entity attachment (future example):
 ,#+end_src
 #+end_src
 
+** Qt detail dialog: private members
+:PROPERTIES:
+:ID: F55CB64E-165A-4E15-A50A-5723C0320E97
+:END:
+
+Additional private member declarations injected into the generated
+=<Entity>DetailDialog.hpp=, immediately before the standard generated
+=ui_=/=clientManager_=/etc. members.
+
+Use this for a hand-written helper class owned by the dialog as a
+pointer member — e.g. the composite child-entity tables seam below owns
+one =PartyChildEntityTables*=/=CounterpartyChildEntityTables*= this way.
+Pair with the [[id:9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A][header extra includes]] seam: a forward declaration is not
+enough for most such members (only bare pointers can get away with one),
+so the member's own header needs including too.
+
+Templates reference: =<<paste:F55CB64E-165A-4E15-A50A-5723C0320E97>>=.
+
 ** Qt detail dialog: header extra includes
 :PROPERTIES:
 :ID: 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
@@ -674,9 +692,8 @@ Additional =#include= directives injected into the generated
 =<Entity>DetailDialog.hpp=, after the standard generated includes, before
 the =Ui= forward declaration.
 
-Use this for headers needed by types declared via the "NATS handler:
-extra includes"-style private-member seam ([[id:F55CB64E-165A-4E15-A50A-5723C0320E97][F55CB64E]]) in this same
-template — e.g. a hand-written helper class owned by the dialog as a
+Use this for headers needed by types declared via the [[id:F55CB64E-165A-4E15-A50A-5723C0320E97][private members]]
+seam above — e.g. a hand-written helper class owned by the dialog as a
 pointer member. A forward declaration is not enough for most such
 members (only bare pointers can get away with one; anything else needs
 the full type visible).

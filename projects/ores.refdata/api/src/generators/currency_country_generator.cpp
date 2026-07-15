@@ -72,14 +72,36 @@ generate_currency_countries(utility::generation::generation_context& ctx) {
         parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
     const auto now = ctx.past_timepoint();
 
-    struct row { const char* currency; const char* country; };
+    struct row {
+        const char* currency;
+        const char* country;
+    };
     static constexpr row rows[] = {
         // EUR spans the Eurozone
-        {"EUR", "DE"}, {"EUR", "FR"}, {"EUR", "IT"}, {"EUR", "ES"}, {"EUR", "AT"}, {"EUR", "FI"},
+        {"EUR", "DE"},
+        {"EUR", "FR"},
+        {"EUR", "IT"},
+        {"EUR", "ES"},
+        {"EUR", "AT"},
+        {"EUR", "FI"},
         // Single-country currencies
-        {"USD", "US"}, {"GBP", "GB"}, {"JPY", "JP"}, {"CHF", "CH"}, {"CAD", "CA"}, {"AUD", "AU"},
-        {"SEK", "SE"}, {"NOK", "NO"}, {"DKK", "DK"}, {"CNY", "CN"}, {"HKD", "HK"}, {"SGD", "SG"},
-        {"ZAR", "ZA"}, {"INR", "IN"}, {"KRW", "KR"}, {"MXN", "MX"}, {"BRL", "BR"},
+        {"USD", "US"},
+        {"GBP", "GB"},
+        {"JPY", "JP"},
+        {"CHF", "CH"},
+        {"CAD", "CA"},
+        {"AUD", "AU"},
+        {"SEK", "SE"},
+        {"NOK", "NO"},
+        {"DKK", "DK"},
+        {"CNY", "CN"},
+        {"HKD", "HK"},
+        {"SGD", "SG"},
+        {"ZAR", "ZA"},
+        {"INR", "IN"},
+        {"KRW", "KR"},
+        {"MXN", "MX"},
+        {"BRL", "BR"},
     };
 
     std::vector<domain::currency_country> result;

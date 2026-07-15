@@ -34,8 +34,8 @@
 #include <QSettings>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -67,15 +67,15 @@ struct RatesResult {
 } // namespace
 
 CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* clientManager,
-                                                            ImageCache* imageCache,
-                                                            QString crmName,
-                                                            QWidget* parent)
+                                                           ImageCache* imageCache,
+                                                           QString crmName,
+                                                           QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
     , imageCache_(imageCache)
     , crmName_(std::move(crmName))
-    , settingsGroup_(QStringLiteral("CrmCrossRatesMatrixWindow_")
-                      + (crmName_.isEmpty() ? QStringLiteral("All") : crmName_))
+    , settingsGroup_(QStringLiteral("CrmCrossRatesMatrixWindow_") +
+                     (crmName_.isEmpty() ? QStringLiteral("All") : crmName_))
     , toolbar_(nullptr)
     , baseCurrencyCombo_(nullptr)
     , refreshIntervalCombo_(nullptr)
@@ -299,17 +299,17 @@ void CrmCrossRatesMatrixMdiWindow::onCellSelected(int row, int column) {
     // this slot -- so no same-currency/diagonal guard is needed here.
     if (row < 0 || column < 0)
         return;
-    if (row >= static_cast<int>(displayedRowCurrencies_.size())
-        || column >= static_cast<int>(displayedColumnCurrencies_.size()))
+    if (row >= static_cast<int>(displayedRowCurrencies_.size()) ||
+        column >= static_cast<int>(displayedColumnCurrencies_.size()))
         return;
 
     updateOverviewPanel(displayedRowCurrencies_[row], displayedColumnCurrencies_[column]);
 }
 
 void CrmCrossRatesMatrixMdiWindow::updateOverviewPanel(const std::string& base,
-                                                        const std::string& quote) {
-    overviewPairLabel_->setText(QString::fromStdString(base) + QStringLiteral("/")
-                                 + QString::fromStdString(quote));
+                                                       const std::string& quote) {
+    overviewPairLabel_->setText(QString::fromStdString(base) + QStringLiteral("/") +
+                                QString::fromStdString(quote));
 
     const auto key = std::make_pair(base, quote);
     const auto history_it = rateHistory_.find(key);
@@ -337,8 +337,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     const auto crm_name = crmName_.toStdString();
     QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
 
-    QFuture<RatesResult> future =
-        QtConcurrent::run([self, party_id, crm_name]() -> RatesResult {
+    QFuture<RatesResult> future = QtConcurrent::run([self, party_id, crm_name]() -> RatesResult {
         if (!self || !self->clientManager_)
             return {};
 
@@ -408,13 +407,12 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         // mockup's "Base Currency" selector while keeping the same
         // fixed-size-cell grid rendering path.
         const auto baseFilter = self->baseCurrencyCombo_->currentData().toString();
-        QStringList rowCurrencies =
-            baseFilter.isEmpty() ? allCurrencies : QStringList{baseFilter};
+        QStringList rowCurrencies = baseFilter.isEmpty() ? allCurrencies : QStringList{baseFilter};
 
         std::map<std::pair<QString, QString>, marketdata_msg::crm_rate_item> byPair;
         for (const auto& rate : result.rates) {
             byPair[{QString::fromStdString(rate.base_currency_code),
-                   QString::fromStdString(rate.quote_currency_code)}] = rate;
+                    QString::fromStdString(rate.quote_currency_code)}] = rate;
         }
 
         // "Hide Empty": drop rows/columns for currencies that never
@@ -502,9 +500,9 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 // reflects the displayed (1/rate) value's own movement,
                 // not the direct pair's (which moves the opposite way).
                 const auto display_key = std::make_pair(rowCurrencies[row].toStdString(),
-                                                         allCurrencies[col].toStdString());
-                const double display_rate = inverted && item.rate != 0.0 ? 1.0 / item.rate
-                                                                          : item.rate;
+                                                        allCurrencies[col].toStdString());
+                const double display_rate =
+                    inverted && item.rate != 0.0 ? 1.0 / item.rate : item.rate;
                 currentRates[display_key] = display_rate;
                 const auto previous_it = self->previousRates_.find(display_key);
 
@@ -532,29 +530,30 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                     pairPrefix = QStringLiteral("✕");
                     tooltip = tr("Unavailable");
                 } else {
-                    tooltip = inverted ? tr("Computed inverse (1/rate); fresh as of %1")
-                                             .arg(QString::fromStdString(item.as_of))
-                                       : tr("Fresh as of %1").arg(QString::fromStdString(item.as_of));
+                    tooltip = inverted ?
+                                  tr("Computed inverse (1/rate); fresh as of %1")
+                                      .arg(QString::fromStdString(item.as_of)) :
+                                  tr("Fresh as of %1").arg(QString::fromStdString(item.as_of));
                     if (previous_it != self->previousRates_.end() && previous_it->second != 0.0) {
                         const auto pct =
                             (display_rate - previous_it->second) / previous_it->second * 100.0;
                         if (std::abs(pct) > 1e-9) {
-                            changeText = (pct >= 0 ? QStringLiteral("▲ +%1%")
-                                                   : QStringLiteral("▼ %1%"))
-                                             .arg(QString::number(pct, 'f', 3));
-                            changeColor =
-                                pct >= 0 ? color_constants::level_info : color_constants::level_error;
+                            changeText =
+                                (pct >= 0 ? QStringLiteral("▲ +%1%") : QStringLiteral("▼ %1%"))
+                                    .arg(QString::number(pct, 'f', 3));
+                            changeColor = pct >= 0 ? color_constants::level_info :
+                                                     color_constants::level_error;
                         }
                     }
                 }
 
                 cellWidget->setData(rowCurrencies[row] + QStringLiteral("/") + allCurrencies[col],
-                                     QString::number(display_rate, 'f', 5),
-                                     changeText,
-                                     changeColor,
-                                     rateColor,
-                                     pairColor,
-                                     pairPrefix);
+                                    QString::number(display_rate, 'f', 5),
+                                    changeText,
+                                    changeColor,
+                                    rateColor,
+                                    pairColor,
+                                    pairPrefix);
                 cellWidget->setToolTip(tooltip);
                 connect(cellWidget, &CrmRateCellWidget::clicked, self, [self, row, col]() {
                     self->onCellSelected(row, col);
@@ -576,12 +575,10 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
 
         self->previousRates_ = std::move(currentRates);
 
-        self->footerLabel_->setText(
-            tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
+        self->footerLabel_->setText(tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "CRM cross-rates matrix: " << result.rates.size() << " rate(s), "
-            << allCurrencies.size() << " currencies";
+        BOOST_LOG_SEV(lg(), debug) << "CRM cross-rates matrix: " << result.rates.size()
+                                   << " rate(s), " << allCurrencies.size() << " currencies";
         emit self->statusChanged(
             tr("Cross-rates matrix updated: %1 rate(s)").arg(result.rates.size()));
     });

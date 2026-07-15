@@ -48,9 +48,9 @@ IrCurveTemplateEntryHistoryDialog::IrCurveTemplateEntryHistoryDialog(const boost
     ui_->changesTableWidget->setHorizontalHeaderLabels(
         {tr("Field"), tr("Old Value"), tr("New Value")});
     initializeHistoryUi({.versionList = ui_->versionListWidget,
-                        .changesTable = ui_->changesTableWidget,
-                        .titleLabel = ui_->titleLabel,
-                        .closeButton = ui_->closeButton});
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
 IrCurveTemplateEntryHistoryDialog::~IrCurveTemplateEntryHistoryDialog() {

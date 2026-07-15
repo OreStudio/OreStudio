@@ -51,6 +51,7 @@
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
@@ -69,7 +70,6 @@
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.qt/TenorController.hpp"
 #include "ores.qt/TenorConventionController.hpp"
-#include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/TenorKindController.hpp"
 #include "ores.qt/TenorResolutionAlgorithmController.hpp"
 #include "ores.qt/TenorUnitController.hpp"
@@ -568,20 +568,20 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(tenorResolutionAlgorithmController_.get());
 
     assetClassCodeController_ = std::make_unique<AssetClassCodeController>(ctx_.main_window,
-                                                                            ctx_.mdi_area,
-                                                                            ctx_.client_manager,
-                                                                            ctx_.change_reason_cache,
-                                                                            ctx_.username,
-                                                                            this);
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(assetClassCodeController_.get());
 
     instrumentCodeController_ = std::make_unique<InstrumentCodeController>(ctx_.main_window,
-                                                                            ctx_.mdi_area,
-                                                                            ctx_.client_manager,
-                                                                            ctx_.change_reason_cache,
-                                                                            ctx_.username,
-                                                                            ctx_.badge_cache,
-                                                                            this);
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           ctx_.badge_cache,
+                                                                           this);
     connectControllerSignals(instrumentCodeController_.get());
 }
 

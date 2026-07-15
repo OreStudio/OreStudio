@@ -63,9 +63,8 @@ public:
      * @param accrual_fraction Accrual fraction from start to end; must be
      *        > 0.
      */
-    static double fra_rate(double discount_factor_start,
-                           double discount_factor_end,
-                           double accrual_fraction);
+    static double
+    fra_rate(double discount_factor_start, double discount_factor_end, double accrual_fraction);
 
     /**
      * @brief Par swap rate implied by a set of fixed-leg discount factors.

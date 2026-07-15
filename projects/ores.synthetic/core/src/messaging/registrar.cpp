@@ -115,11 +115,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     {
         auto s = register_ir_curve_generation_config_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
     {
         auto s = register_ir_curve_template_entry_handlers(nats, ctx, verifier);
-        subs.insert(subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
 
     // ----------------------------------------------------------------

@@ -100,8 +100,8 @@ meaningfully once they leave that location.
 - [[https://www.fpml.org/][FpML (Financial products Markup Language)]] -- the standards body
   publishing the coding scheme.
 - [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] -- the organisational-hierarchy node a business
-  centre attaches to, and how EOD-root inheritance works down that
-  tree.
+  centre attaches to, and how a business centre is inherited down that
+  tree by units not separately configured to run their own EOD.
 - [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note for aggregation currency and the wider
   currency-role vocabulary this note distinguishes itself from.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] -- the other first-class dimension, alongside

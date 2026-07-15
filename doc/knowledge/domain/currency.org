@@ -20,11 +20,11 @@ its own [[id:6AC99797-D97B-463C-9351-4946DC80D91C][lifecycle]], independent of a
 Once a trading system is layered on top, a single trade or book does
 not carry just one "currency" -- the same position is described in
 several different currencies at once, each serving a distinct
-purpose: a [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional]] currency for the ledger, a [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][reporting]]
+purpose: a [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional]] currency for the ledger, a [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation]]
 currency for display, a [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][transaction currency / denominated currency]]
 for a deal's own cash flows, an [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation]] currency for cross-currency risk
 comparison, and narrower roles still for [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][settlement]], [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][premium]], and
-which currencies a [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][book]] is even permitted to hold. The mechanisms that
+which [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][currencies a book]] is even permitted to hold. The mechanisms that
 convert and reconcile between these roles -- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][sweeps]],
 [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX spot revaluation]], and the [[id:10E36403-847A-4D0A-B532-E7DA0EE0B670][closing rates screen]] that reviews the
 rate they use -- are what keep this multiplicity of currencies

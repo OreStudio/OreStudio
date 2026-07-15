@@ -28,9 +28,9 @@ Finance concepts the codebase relies on, grouped by topic.
 
 - [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note: the money/currency/cash foundation, ISO 4217
   and currency lifecycle, and the distinct currency roles (functional,
-  reporting, natural/transactional, aggregation, settlement, premium,
-  book currencies) a book or trade carries, plus the sweep/reval
-  mechanics that reconcile between them.
+  presentation, transaction/denominated, aggregation, settlement,
+  premium, book currencies) a book or trade carries, plus the
+  sweep/reval mechanics that reconcile between them.
 
 ** FX and market data conventions
 

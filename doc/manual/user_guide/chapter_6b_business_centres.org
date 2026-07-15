@@ -77,9 +77,10 @@ has no flag.
 Two other entities reference a business centre by its code rather
 than embedding calendar logic of their own: a book's *rates centre*,
 which determines which set of end-of-day revaluation market data the
-book uses, and a business unit's *home location*. Both are documented
-in their own chapters; this chapter documents only the business
-centre record itself.
+book uses, and a business unit, which may itself carry a business
+centre assignment (see [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] in the domain knowledge base; a
+dedicated manual chapter for business units does not exist yet). This
+chapter documents only the business centre record itself.
 
 With the underlying identity and scoping rules in place, the rest of
 the chapter turns from what a business centre record contains to

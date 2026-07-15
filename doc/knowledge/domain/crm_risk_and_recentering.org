@@ -16,13 +16,12 @@ graph of derived dependencies, and that graph topology has a
 consequence that is easy to overlook until it produces a wrong-looking
 risk number: no rate in the matrix can be bumped in isolation, because
 every rate reachable from it through the graph moves with it. Standard
-regulatory practice for FX risk factors reaches the same conclusion
-from first principles -- the ISDA SIMM methodology defines the FX
-delta risk factor as the relative change of a foreign-domestic spot
-rate against a single base currency precisely so that every
-foreign-foreign rate can be represented, without ambiguity, as the
-ratio of two such rates (see [[https://www.isda.org/a/osMTE/ISDA-SIMM-v2.2-PUBLIC.pdf][ISDA SIMM Methodology v2.2]]§2, "FX Risk").
-ORE Studio recenters its own cross-rates matrix into that same
+regulatory practice for FX risk factors builds on a closely related
+idea: the ISDA SIMM methodology defines the FX delta risk factor as
+the relative change of a foreign-domestic spot rate against a single
+base currency, so that every foreign-foreign rate is represented as
+the ratio of two such rates (see [[https://www.isda.org/a/osMTE/ISDA-SIMM-v2.2-PUBLIC.pdf][ISDA SIMM Methodology v2.2]]§2, "FX
+Risk"). ORE Studio recenters its own cross-rates matrix into that same
 star shape around the [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], and this note works
 through what that recentering buys, what it costs, and where its
 side-effects surface downstream in a book's risk report.
@@ -57,13 +56,16 @@ requires and the ungraphed matrix does not have. A cyclic graph cannot
 be reduced to this shape automatically -- there is no general rule for
 which edges to prune from a cycle without losing information -- so the
 [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning tree]] has to be constructed deliberately with the aggregation
-currency as its root, rather than discovered after the fact. Academic
-work on FX network structure treats this same recentering as a genuine
-change of representation rather than a cosmetic one: reducing a dense
-correlation structure to a minimal spanning tree is what actually
-exposes a market's hierarchical structure to inspection (see
+currency as its root, rather than discovered after the fact -- unlike
+the data-driven, unrooted minimal spanning trees academic work on FX
+network structure fits to observed correlations, where reducing a
+dense correlation structure to a tree is itself what exposes a
+market's hierarchical structure to inspection in the first place (see
 [[https://arxiv.org/pdf/0809.0437][Minimal Spanning Tree graphs and power-like scaling in FOREX
-networks]]). Once the star is built, a Greek's market movement is
+networks]]); the CRM's star is a deliberately-imposed structure rather
+than a discovered one, but the same principle -- that a tree
+representation is what makes a dense, cyclic correlation structure
+tractable -- motivates both. Once the star is built, a Greek's market movement is
 simply the percentage move of the ratio (Greek currency)/([[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation
 currency]]) between two dates -- $\frac{D_1 - D_0}{D_0}$ -- and this can
 look surprising at first glance: for a EUR/USD deal aggregated in GBP,

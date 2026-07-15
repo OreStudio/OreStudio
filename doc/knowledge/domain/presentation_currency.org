@@ -59,17 +59,13 @@ reading a report; where that distinction is not available, the
 discipline of matching the two currencies is what keeps the apparent
 movement described above from contaminating genuine risk figures.
 
-** The Spot Sweep Process
+** Where a book's presentation currency is put to work
 
-The *Spot Sweep Process* exists specifically to crystallise profit
-held in any currency other than a [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]]'s presentation
-currency: an FX rate is locked in to convert that profit into what
-Finance calls "P&L currency" -- presentation currency, in the terms
-used here -- and the converted amount is moved into a place inaccessible
-to traders. This is a periodic, deliberate crystallisation rather
-than the daily, automated translation [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]]'s Ledger
-Sweep performs; see [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] for how the two mechanisms differ and how
-each fits into the daily/periodic rhythm of book management.
+Finance calls a book's presentation currency "P&L currency" when
+[[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] crystallises profit held in any other currency into it;
+see that note for the periodic, discretionary mechanics, and [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]]
+for how it differs from the daily, automated translation
+[[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]]'s Ledger Sweep performs.
 
 * See also
 
@@ -81,6 +77,5 @@ each fits into the daily/periodic rhythm of book management.
   presentation-currency terminology.
 - [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-generating counterpart presentation
   currency should normally be kept equal to.
-- [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] -- the Spot Sweep Process in full.
-- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- the location whose presentation currency the Spot
-  Sweep Process crystallises non-presentation-currency profit against.
+- [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] -- the process that crystallises non-presentation-currency
+  profit into a book's presentation currency.

@@ -15,7 +15,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 =book.is_sweepable= is currently a plain boolean, but it only ever
 governed eligibility for one sweep type -- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] -- and says
-nothing about [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][ledger sweep]] (which applies unconditionally to every
+nothing about [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][ledger sweep]] (which applies unconditionally to every
 book with a functional currency, regardless of this flag) or any
 future sweep type. A single boolean cannot express "which sweep(s)
 does this book participate in" once more than one sweep type exists
@@ -30,7 +30,8 @@ to mean that.
 * Why
 
 Found while splitting the domain knowledge docs for sweeping
-(=doc/knowledge/domain/spot_and_ledger_sweep.org= being split into a
+(=doc/knowledge/domain/sweep.org= being split from the old combined
+page into a
 general [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] concept plus dedicated Spot Sweep and Ledger Sweep
 pages): the domain model already has two structurally different sweep
 processes sharing the word "sweep" but with unrelated eligibility and

@@ -74,15 +74,18 @@ volatility and correlation structure of the aggregation currency's own
 FX pairs -- an FX delta of $\partial V_{\mathrm{agg}} / \partial S_i =
 \theta_i$ for every foreign currency in the book, plus the
 cross-currency volatility spreads between them. Antal & Koch-Medina
-push this further, past a first-order sensitivity, to a hard
-non-neutrality result: for non-linear risk measures such as
-Value-at-Risk and Expected Shortfall, changing which currency a
-multi-currency portfolio is aggregated in can change the sign or scale
-of the reported capital charge under Basel-style regimes, not merely
-its numerical value under a fixed methodology, because the exchange
-rates used for translation are themselves stochastic and correlated
-with the underlying positions (see [[https://www.semanticscholar.org/paper/Value-at-Risk-vs.-Expected-Shortfall%3A-Beware-of-the-Aggregation-Currency!-Antal-Koch-Medina/cd1901815bdb5e820580a5c68cd3950febf7ce06][Antal & Koch-Medina, "Value-at-Risk vs.
-Expected Shortfall: Beware of the Aggregation Currency!", 2014]]).
+push this further, past a first-order sensitivity, to a sharper
+non-neutrality result that cuts differently across risk measures: for
+a multi-currency capital position, the *sign* of Value-at-Risk --
+and hence the pass/fail outcome of a capital-adequacy test built on
+it -- is invariant to the choice of aggregation currency, but the sign
+of Expected Shortfall is not, and can flip depending on which currency
+the position is aggregated in. The asymmetry matters precisely because
+it is easy to assume the two measures behave alike here; they do not,
+and a capital-adequacy framework built on Expected Shortfall needs to
+treat aggregation currency as a genuine methodological choice rather
+than an arbitrary convention (see [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2439575][Antal & Koch-Medina, "Value-at-Risk vs.
+Expected Shortfall: Beware of the Aggregation Currency!", SSRN, 2014]]).
 A related applied study works through the same dependency for
 multi-currency Expected Shortfall frameworks directly, comparing how a
 portfolio's risk transforms under a localised aggregation currency
@@ -139,10 +142,10 @@ enforces that they must be.
 
 * See also
 
-- [[https://www.semanticscholar.org/paper/Value-at-Risk-vs.-Expected-Shortfall%3A-Beware-of-the-Aggregation-Currency!-Antal-Koch-Medina/cd1901815bdb5e820580a5c68cd3950febf7ce06][Antal & Koch-Medina, "Value-at-Risk vs. Expected Shortfall: Beware of
-  the Aggregation Currency!" (2014)]] -- the proof that aggregation
-  currency is a non-neutral parameter of capital-adequacy risk
-  measures.
+- [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2439575][Antal & Koch-Medina, "Value-at-Risk vs. Expected Shortfall: Beware of
+  the Aggregation Currency!" (2014)]] -- the proof that Expected
+  Shortfall's sign, unlike Value-at-Risk's, depends on the chosen
+  aggregation currency.
 - [[https://commerce.uct.ac.za/sites/default/files/media/documents/commerce_uct_ac_za/1961/2014_Financial_Mathematics_Team_Challenge_Research_Reports.pdf][UCT Financial Mathematics Team Challenge Research Reports (2014)]] --
   an applied study of the same dependency for multi-currency Expected
   Shortfall.

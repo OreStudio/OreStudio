@@ -12,7 +12,7 @@
 * Summary
 
 Spot sweep crystallises profit held in any currency other than a
-[[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]]'s [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation currency]]. As trading activity accrues
+book's [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation currency]]. As trading activity accrues
 cash balances in non-presentation currencies across many books, the firm
 periodically locks in an FX rate and converts those balances back
 into "P&L currency." It is a [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] in the general sense -- a

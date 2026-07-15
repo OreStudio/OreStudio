@@ -100,10 +100,10 @@ struct color_constants {
      * each visually distinct at a glance rather than reading as one
      * undifferentiated block of grey text.
      */
-    static inline const QColor timeline_performed_by{100, 149, 237};  // Cornflower blue
-    static inline const QColor timeline_reason_bg{234, 179, 8, 40};   // Amber, faint chip fill
-    static inline const QColor timeline_reason_text{234, 179, 8};     // Amber
-    static inline const QColor timeline_commentary{163, 148, 217};    // Muted violet
+    static inline const QColor timeline_performed_by{100, 149, 237}; // Cornflower blue
+    static inline const QColor timeline_reason_bg{234, 179, 8, 40};  // Amber, faint chip fill
+    static inline const QColor timeline_reason_text{234, 179, 8};    // Amber
+    static inline const QColor timeline_commentary{163, 148, 217};   // Muted violet
 };
 
 }

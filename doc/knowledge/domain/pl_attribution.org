@@ -293,9 +293,9 @@ Determining the correct deal population for an explain requires care:
 
 * Aggregation and Currency Conversion
 
-P&L is held in its /natural currency/ (the denomination of each cash flow).
-At EOD, all amounts are consolidated into the branch /functional currency/
-(the domestic currency of the branch, e.g. GBP for a London branch).
+P&L is held in its [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][denominated currency]] (the denomination of each [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][cash flow]]).
+At EOD, all amounts are consolidated into the [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]] of the
+[[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][business unit]] (e.g. GBP for a London-based unit).
 
 Any P&L from spot conversion of non-domestic P&L is recorded as a *P&L
 Adjustment* (FX Adjustment). Traders are expected to hedge this FX exposure.
@@ -303,3 +303,10 @@ Adjustment* (FX Adjustment). Traders are expected to hedge this FX exposure.
 The aggregation hierarchy:
 
 : Trade → Structure → Book → Sub-Portfolio → Portfolio → Branch → Firm
+
+* See also
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note for natural, functional, and aggregation
+  currency.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the organisational hierarchy this aggregation
+  rolls up through.

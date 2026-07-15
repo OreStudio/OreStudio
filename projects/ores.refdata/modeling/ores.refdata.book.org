@@ -399,6 +399,15 @@ compositing needed since it's a single column.
 | FunctionalCurrency | currency_flag_icon    | functional_currency |        |
 | RatesCentreCode | business_centre_flag_icon | rates_centre_code  |        |
 
+*** Related entity shortcuts
+
+| signal             | icon | label             | tooltip                         |
+|--------------------+------+-------------------+----------------------------------|
+| BookStatuses        | Flag | Statuses          | Open Book Statuses list          |
+| RegulatoryBookTypes | Flag | Regulatory Types  | Open Regulatory Book Types list  |
+| BookPurposeTypes    | Flag | Purpose Types     | Open Book Purpose Types list     |
+| LedgerFeedTypes     | Flag | Ledger Feed Types | Open Ledger Feed Types list      |
+
 ** Custom repository methods
 
 * See also

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 09213861-5E65-4578-B03B-73A6683C43A9
+:END:
+#+title: Rethink is_sweepable as a sweep-type enum, not a boolean
+#+description: Each sweep type (spot sweep, ledger sweep, future types) needs its own configuration, so a single is_sweepable boolean can't express which sweep(s) a book participates in; likely needs a sweep-type enum with a none/unsweepable sentinel.
+#+type: capture
+#+level: cross
+#+filetags: :book:currency:sweep:data-model:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=book.is_sweepable= is currently a plain boolean, but it only ever
+governed eligibility for one sweep type -- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] -- and says
+nothing about [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][ledger sweep]] (which applies unconditionally to every
+book with a functional currency, regardless of this flag) or any
+future sweep type. A single boolean cannot express "which sweep(s)
+does this book participate in" once more than one sweep type exists
+with its own eligibility rules and configuration (threshold age,
+excluded currencies, etc. for spot sweep; none of that for ledger
+sweep). Rename/replace =is_sweepable= with something that scales:
+most likely a =sweep_type= enum (or a small set of independent
+per-sweep-type flags/config blocks) with an explicit sentinel value
+for "not part of any sweep process" rather than overloading =false=
+to mean that.
+
+* Why
+
+Found while splitting the domain knowledge docs for sweeping
+(=doc/knowledge/domain/sweep.org= being split from the old combined
+page into a
+general [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] concept plus dedicated Spot Sweep and Ledger Sweep
+pages): the domain model already has two structurally different sweep
+processes sharing the word "sweep" but with unrelated eligibility and
+configuration, and only one of them (spot sweep) has a book-level
+flag at all. As soon as a third sweep type is added, or as soon as
+spot-sweep-specific configuration (threshold age, excluded
+currencies) needs its own first-class fields rather than prose-only
+documentation, a boolean will not scale -- this should be addressed
+at the same time as, or before, any such addition, rather than
+patched around it later.
+
+* References
+
+- =book.is_sweepable= (current field, boolean).
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] -- where =is_sweepable= is currently documented
+  alongside =book_purpose_type=.
+
+* See also
+
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] -- the general concept this enum would need to cover every
+  instance of.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] -- hub note.

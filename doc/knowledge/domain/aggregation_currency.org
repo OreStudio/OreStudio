@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: A7338353-8D2F-4784-92C0-B6E338C0D9C4
+:END:
+#+title: Aggregation Currency
+#+description: The currency a risk engine converts every amount into so deals with different denominated currencies can be compared -- a conversion proven to be mathematically non-neutral for capital-adequacy risk metrics, not merely a display choice.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:risk:
+#+created: 2026-07-14
+#+updated: 2026-07-15
+
+* Summary
+
+Aggregation currency -- an older synonym is *accounting currency* --
+is desk-level terminology with no single external standard defining
+the term the way IAS 21 defines functional currency, but the
+phenomenon it names is both well-documented and, as the academic
+literature below shows, mathematically non-trivial: consolidating
+figures denominated in different currencies into one common currency
+creates *translation risk*, real value change purely from the act of
+converting rather than from the underlying position (see
+[[https://en.wikipedia.org/wiki/Foreign_exchange_risk][Wikipedia: Foreign exchange risk]]§"Translation risk"). Aggregation
+currency is the currency into which a risk engine converts every
+amount internally so that deals with different [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][denominated
+currencies]] can be aggregated and compared: a JPY Delta and a BRL
+Delta become comparable only once both are expressed in the same
+aggregation currency, GBP say. What sets aggregation currency apart
+from [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation currency]] is that this conversion is not a display
+convenience -- it *generates real risk* (Delta, Gamma, and Rho
+against the aggregation currency itself), and, as Antal & Koch-Medina
+prove for capital-adequacy metrics below, the choice of aggregation
+currency is not even risk-neutral in the technical sense: changing it
+can change the very shape of the risk measure computed. Aggregation
+currency is normally set equal to a book's [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]],
+which keeps the resulting P&L-adjustment noise small when traders
+have hedged their FX exposure correctly.
+
+* Detail
+
+** The conversion generates real risk, not just a display
+
+An EUR/USD trade sitting in a book whose aggregation currency is GBP
+will show a GBP FX delta and a GBP interest-rate delta purely as a
+consequence of the aggregation step itself, not because the trade was
+ever exposed to GBP in any direct sense. This is treated as a
+desirable side-effect rather than an artefact to be suppressed: it
+keeps traders aware of the FX exposure that aggregating across
+currencies necessarily creates, since that exposure is real and will
+need to be hedged like any other. [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and
+artefacts]] works through the mechanics in full -- recentering the
+cross-rates matrix into a star shape around the aggregation currency
+so that a single rate can move without disturbing every other rate
+reachable through it, the resulting rule that deltas sum to zero
+across currencies, and the spurious sensitivities and theta effects
+that the recentering itself can introduce.
+
+** The conversion is mathematically non-neutral, not merely mechanical
+
+That the conversion "generates real risk" is not just an operational
+observation; it can be made precise. Consider a portfolio holding
+positions of value $\theta_i(t)$ denominated in currencies $C_i$, for
+$i = 1, \dots, N$, and let $C_{\mathrm{agg}}$ be the chosen
+aggregation currency, with $S_i(t)$ the stochastic spot rate
+translating $C_i$ into $C_{\mathrm{agg}}$. The portfolio's value in
+the aggregation currency is
+
+\begin{equation}
+V_{\mathrm{agg}}(t) = \sum_{i=1}^{N} \theta_i(t)\, S_i(t).
+\end{equation}
+
+Because each $S_i(t)$ is itself a stochastic process, any risk metric
+computed on $V_{\mathrm{agg}}(t)$ inherits a direct sensitivity to the
+volatility and correlation structure of the aggregation currency's own
+FX pairs -- an FX delta of $\partial V_{\mathrm{agg}} / \partial S_i =
+\theta_i$ for every foreign currency in the book, plus the
+cross-currency volatility spreads between them. Antal & Koch-Medina
+push this further, past a first-order sensitivity, to a sharper
+non-neutrality result that cuts differently across risk measures: for
+a multi-currency capital position, the *sign* of Value-at-Risk --
+and hence the pass/fail outcome of a capital-adequacy test built on
+it -- is invariant to the choice of aggregation currency, but the sign
+of Expected Shortfall is not, and can flip depending on which currency
+the position is aggregated in. The asymmetry matters precisely because
+it is easy to assume the two measures behave alike here; they do not,
+and a capital-adequacy framework built on Expected Shortfall needs to
+treat aggregation currency as a genuine methodological choice rather
+than an arbitrary convention (see [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2439575][Antal & Koch-Medina, "Value-at-Risk vs.
+Expected Shortfall: Beware of the Aggregation Currency!", SSRN, 2014]]).
+A related applied study works through the same dependency for
+multi-currency Expected Shortfall frameworks directly, comparing how a
+portfolio's risk transforms under a localised aggregation currency
+against a centralised one (see [[https://commerce.uct.ac.za/sites/default/files/media/documents/commerce_uct_ac_za/1961/2014_Financial_Mathematics_Team_Challenge_Research_Reports.pdf][UCT Financial Mathematics Team Challenge
+Research Reports, 2014]]). The choice of aggregation currency is
+therefore not an implementation detail free of consequence: it is a
+genuine methodological parameter of the risk measure itself.
+
+** Usually equal to functional currency
+
+Aggregation currency is normally set equal to a book's [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional
+currency]]. If a book's traders have hedged their FX exposure
+correctly, keeping the two aligned keeps the resulting P&L-adjustment
+noise small, since the risk the aggregation conversion itself
+generates is then largely offset by hedges already in place for the
+same functional-currency translation functional currency's own Ledger
+Sweep performs.
+
+** Used beyond pure market risk
+
+Aggregation currency is not confined to market-risk Greeks, nor is the
+practice unique to bespoke risk engines: enterprise financial systems
+build the same target-currency conversion into their core data
+architecture. Oracle's JD Edwards EnterpriseOne, for instance, exposes
+an explicit currency-processing API whose ~AggregationInfo.CurrencyProcessing~
+class defines a static target conversion currency that every
+calculation over a set of multi-currency fields is compiled against
+before aggregation, precisely so that rounding and numerical integrity
+survive the conversion step (see [[https://docs.oracle.com/en/applications/jd-edwards/development-tools/9.2.x/eotjc/data-service-data-aggregation-currency-decimals-support-api-1-3.html][Oracle JD Edwards EnterpriseOne Tools:
+Currency Processing & Data Aggregation API]]). SAP's treasury and risk
+management architecture draws the same distinction at the desk level
+that this note draws at the book level: local transaction currencies
+are kept separate from a centralised analytical layer specifically so
+that FX translation risk can be isolated from operational risk, with
+local exposures converted into the functional or aggregation currency
+before consolidated hedging proposals and portfolio VaR are computed
+(see [[https://www.sap.com/sea/products/financial-management/treasury-risk-management.html][SAP S/4HANA Cloud for Treasury and Risk Management]]). Within ORE
+Studio's own domain, credit exposure profiles are converted to a
+single accounting currency (GBP in the canonical examples) to measure
+exposure on a consistent basis across counterparties denominated in
+different currencies, and cross-currency swap Monte Carlo valuation
+converts each leg's value to the accounting currency at simulated FX
+rates to produce one consolidated mark-to-market figure rather than
+two figures in two currencies that cannot simply be added together.
+
+** Distinct, configurable parameter from presentation currency
+
+Reports expose both display currency and aggregation currency as
+independent, separately-configurable parameters: display currency
+affects only presentation, while aggregation currency affects the
+actual risk figures computed. See [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Presentation Currency]] for why the two
+are nonetheless best kept equal in practice, even though nothing
+enforces that they must be.
+
+* See also
+
+- [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2439575][Antal & Koch-Medina, "Value-at-Risk vs. Expected Shortfall: Beware of
+  the Aggregation Currency!" (2014)]] -- the proof that Expected
+  Shortfall's sign, unlike Value-at-Risk's, depends on the chosen
+  aggregation currency.
+- [[https://commerce.uct.ac.za/sites/default/files/media/documents/commerce_uct_ac_za/1961/2014_Financial_Mathematics_Team_Challenge_Research_Reports.pdf][UCT Financial Mathematics Team Challenge Research Reports (2014)]] --
+  an applied study of the same dependency for multi-currency Expected
+  Shortfall.
+- [[https://docs.oracle.com/en/applications/jd-edwards/development-tools/9.2.x/eotjc/data-service-data-aggregation-currency-decimals-support-api-1-3.html][Oracle JD Edwards EnterpriseOne Tools: Currency Processing & Data
+  Aggregation API]] -- an enterprise data-processing architecture
+  built around an explicit target aggregation currency.
+- [[https://www.sap.com/sea/products/financial-management/treasury-risk-management.html][SAP S/4HANA Cloud for Treasury and Risk Management]] -- treasury
+  architecture separating local transaction currencies from a
+  centralised aggregation/functional-currency analytical layer.
+- [[https://en.wikipedia.org/wiki/Foreign_exchange_risk][Wikipedia: Foreign exchange risk]] -- translation risk, the
+  externally-documented phenomenon aggregation-currency conversion is
+  a specific instance of.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] -- the star-shaping mechanics,
+  spurious sensitivities, and theta-on-the-spot-roll consequences of
+  aggregation-currency conversion.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the book-level currency aggregation
+  currency is normally set equal to.
+- [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Presentation Currency]] -- the presentational counterpart that generates
+  no risk of its own.
+- [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction Currency and Denominated Currency]] -- the per-deal currency
+  aggregation currency ultimately converts from.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] -- the aggregation-level hierarchy (Trade →
+  Structure → Book → Sub-Portfolio → Portfolio → Branch → Firm) this
+  currency rolls figures up through.

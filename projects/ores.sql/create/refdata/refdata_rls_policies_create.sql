@@ -717,6 +717,45 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Calendar Types
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_types_tbl enable row level security;
+
+create policy calendar_types_tenant_isolation_policy on ores_refdata_calendar_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Calendars
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendars_tbl enable row level security;
+
+create policy calendars_tenant_isolation_policy on ores_refdata_calendars_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Countries
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_countries_tbl enable row level security;
+
+create policy currency_countries_tenant_isolation_policy on ores_refdata_currency_countries_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- CRM topology configs (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_crm_topology_configs_tbl enable row level security;

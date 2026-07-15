@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 2E4294F1-41BD-4680-AB0A-C02706CD31CE
+:END:
+#+title: Ledger Sweep
+#+description: The daily, automated, accounting-layer FX Revaluation process that translates every ledger book's transactional-currency balances into its functional currency.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:currency:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+The ledger sweep is a daily, automated, *ledger-side* process,
+distinct from [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]]. The ledger receives all positions — live
+and settled cash — in [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][transactional currency]]. Once a day, an
+automated process spot-converts these into each book's [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional
+currency]], capturing the resulting P&L into a dedicated *FX
+Revaluation* entry. It is a [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] in the general sense, but unlike
+spot sweep it is not opt-in, applies to every ledger book
+unconditionally, and produces only an unrealised valuation entry
+rather than a real, executed trade.
+
+* Detail
+
+** What it is
+
+The ledger receives all positions — live and settled cash — in
+transactional currency. Once a day, an automated process
+spot-converts these into each book's functional currency, capturing
+the resulting P&L into a dedicated *FX Revaluation* entry — see [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX
+Spot Revaluation Types]] for the three distinct accounting treatments
+(Balance Sheet, Position Account, Forward Position reval) this entry
+can take. This whole daily conversion is what "ledger sweep" refers
+to.
+
+#+BEGIN_EXAMPLE
+  Book positions (transactional ccy) ──► daily spot conversion ──►
+      Functional-currency balance + FX Revaluation P&L entry
+#+END_EXAMPLE
+
+** Unconditional, unlike spot sweep
+
+The ledger separates realised from unrealised P&L; ledger sweep's FX
+Revaluation output is unrealised, reflecting a valuation conversion
+rather than an executed trade. Ledger sweep and [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] share a
+name and a conceptual goal (cleaning up cross-currency exposure) but
+operate at entirely different layers, and =Is Sweepable= governs spot
+sweep eligibility only — it has no bearing on ledger sweep, which
+applies to every book with a functional currency regardless of that
+flag. See [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] for the wider ledger-sweep mechanics
+(functional currency, the daily automated process), and [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] for
+the full comparison table against spot sweep.
+
+* See also
+
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] -- hub note; the general concept this is one of two instances
+  of.
+- [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] -- the periodic, front/middle-office counterpart.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] — functional currency and the ledger sweep
+  mechanics in the context of the wider ledger connection.
+- [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation Types]] — the three accounting treatments ledger
+  sweep's FX Revaluation entry can take.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the currency ledger sweep translates every
+  position into.
+- [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction Currency and Denominated Currency]] -- the currency positions
+  arrive in before ledger sweep translates them.

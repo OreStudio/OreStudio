@@ -36,6 +36,7 @@ namespace ores::qt {
 
 class InstrumentCodeMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -62,6 +63,7 @@ public:
                              ClientManager* clientManager,
                              ChangeReasonCache* changeReasonCache,
                              const QString& username,
+                             BadgeCache* badgeCache,
                              QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -106,6 +108,7 @@ private:
             callback);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     InstrumentCodeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

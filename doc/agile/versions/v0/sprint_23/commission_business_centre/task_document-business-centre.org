@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-business-centre
+#+pr: 1580
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The user manual has a business_centre chapter covering every Qt window, ready fo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -54,18 +54,43 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:2356D96D-2440-41CB-B8FB-9F4448316CAB][Capture screenshots for the Business Centres manual chapter]] | PENDING | |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1580][#1580]] | [doc] Write business_centre manual chapter and overhaul currency knowledge base |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Wrong ledger-sweep link + stale filename in is_sweepable capture | rethink_is_sweepable_flag_as_sweep_type_enum.org | Fixed | 804f04e0e |
+| 2 | Antal & Koch-Medina claim overstated (VaR sign is invariant; ES's is not) | aggregation_currency.org | Fixed | 804f04e0e |
+| 3 | Undefined "business centre's presentation currency" attribute | spot_sweep.org, presentation_currency.org | Fixed | 804f04e0e |
+| 4 | Leftover "reporting"/"natural" terminology from rename | knowledge.org, currency.org | Fixed | 804f04e0e |
+| 5 | ISDA SIMM inference + rooted/unrooted MST analogy mismatch | crm_risk_and_recentering.org | Fixed | 804f04e0e |
+| 6 | Overclaimed "home location... documented in their own chapters" | chapter_6b_business_centres.org | Fixed | 804f04e0e |
+| 7 | "book" anchor text nit on Book Currencies link | currency.org | Fixed | 804f04e0e |
 
 * Result
+
+Added the business_centre entity chapter (=chapter_6b_business_centres.org=)
+to the user manual, covering the list, detail, history, and delete Qt
+windows with real screenshots captured via the QA Validation Runner.
+
+While grounding the chapter's domain-concepts section, corrected
+=business_centre.org= (removed a fictitious "Branch" hierarchy, decoupled
+business-centre assignment from EOD-enablement, removed
+implementation-specific content) and authored a companion
+=business_unit.org= knowledge doc leaning on FpML's =BusinessUnit= type.
+This grew into a wider currency-domain knowledge-base pass: split a
+personal notebook on currency concepts into ~20 new zettelkasten-style
+knowledge docs (money, kinds of money, ISO 4217, currency lifecycle,
+cash/assets/liquidity/cash flow, functional/presentation/denominated/
+aggregation/settlement/premium currency, book currencies, sweep/spot
+sweep/ledger sweep, FX spot revaluation types, closing rates screen),
+cross-linked via org-roam and sourced against external standards (IAS 21,
+ISDA definitions, FpML) where available, and rewrote
+=crm_risk_and_recentering.org= as sourced prose. Site builds cleanly.

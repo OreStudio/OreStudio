@@ -82,10 +82,10 @@ std::optional<QString> pick_crm_name(QWidget* parent, const QStringList& choices
 } // namespace
 
 CrmCrossRatesMatrixController::CrmCrossRatesMatrixController(QMainWindow* mainWindow,
-                                                              QMdiArea* mdiArea,
-                                                              ClientManager* clientManager,
-                                                              ImageCache* imageCache,
-                                                              QObject* parent)
+                                                             QMdiArea* mdiArea,
+                                                             ClientManager* clientManager,
+                                                             ImageCache* imageCache,
+                                                             QObject* parent)
     : QObject(parent)
     , mainWindow_(mainWindow)
     , mdiArea_(mdiArea)
@@ -110,35 +110,35 @@ void CrmCrossRatesMatrixController::showMatrix() {
 
     auto* watcher = new QFutureWatcher<
         std::expected<std::vector<refdata::domain::crm_topology_config>, QString>>(this);
-    connect(watcher,
-            &QFutureWatcher<
-                std::expected<std::vector<refdata::domain::crm_topology_config>, QString>>::
-                finished,
-            this,
-            [self, watcher]() {
-                const auto result = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
+    connect(
+        watcher,
+        &QFutureWatcher<
+            std::expected<std::vector<refdata::domain::crm_topology_config>, QString>>::finished,
+        this,
+        [self, watcher]() {
+            const auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-                QSet<QString> names;
-                if (result) {
-                    for (const auto& config : *result)
-                        names.insert(QString::fromStdString(config.name));
-                }
-                QStringList sorted(names.begin(), names.end());
-                std::sort(sorted.begin(), sorted.end());
+            QSet<QString> names;
+            if (result) {
+                for (const auto& config : *result)
+                    names.insert(QString::fromStdString(config.name));
+            }
+            QStringList sorted(names.begin(), names.end());
+            std::sort(sorted.begin(), sorted.end());
 
-                QStringList choices;
-                choices << all_display_name;
-                choices << sorted;
+            QStringList choices;
+            choices << all_display_name;
+            choices << sorted;
 
-                const auto choice = pick_crm_name(self->mainWindow_, choices);
-                if (!choice)
-                    return;
+            const auto choice = pick_crm_name(self->mainWindow_, choices);
+            if (!choice)
+                return;
 
-                self->openMatrix(*choice == all_display_name ? QString() : *choice);
-            });
+            self->openMatrix(*choice == all_display_name ? QString() : *choice);
+        });
     watcher->setFuture(future);
 }
 
@@ -150,8 +150,8 @@ void CrmCrossRatesMatrixController::openMatrix(const QString& crmName) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Opening CRM cross-rates matrix: " << (crmName.isEmpty() ? "All" : crmName.toStdString());
+    BOOST_LOG_SEV(lg(), info) << "Opening CRM cross-rates matrix: "
+                              << (crmName.isEmpty() ? "All" : crmName.toStdString());
 
     auto* matrixWindow = new CrmCrossRatesMatrixMdiWindow(clientManager_, imageCache_, crmName);
 
@@ -172,14 +172,14 @@ void CrmCrossRatesMatrixController::openMatrix(const QString& crmName) {
                 emit self->errorMessage(err);
             });
 
-    const auto geometryKey =
-        QStringLiteral("CrmCrossRatesMatrixWindow_") + (crmName.isEmpty() ? QStringLiteral("All") : crmName);
+    const auto geometryKey = QStringLiteral("CrmCrossRatesMatrixWindow_") +
+                             (crmName.isEmpty() ? QStringLiteral("All") : crmName);
 
     auto* matrixSubWindow = new DetachableMdiSubWindow(mainWindow_);
     matrixSubWindow->setAttribute(Qt::WA_DeleteOnClose);
     matrixSubWindow->setWidget(matrixWindow);
-    matrixSubWindow->setWindowTitle(crmName.isEmpty() ? tr("Cross-Rates Matrix — All")
-                                                       : tr("Cross-Rates Matrix — %1").arg(crmName));
+    matrixSubWindow->setWindowTitle(crmName.isEmpty() ? tr("Cross-Rates Matrix — All") :
+                                                        tr("Cross-Rates Matrix — %1").arg(crmName));
     matrixSubWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
     matrixSubWindow->setGeometryKey(geometryKey);

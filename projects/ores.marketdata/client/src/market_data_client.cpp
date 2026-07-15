@@ -134,8 +134,8 @@ market_data_client::list_observations(const std::string& series_id) {
 
 std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations_page(const std::string& series_id,
-                                            std::uint32_t offset,
-                                            std::uint32_t limit) {
+                                           std::uint32_t offset,
+                                           std::uint32_t limit) {
     messaging::get_market_observations_request req;
     req.series_id = series_id;
     req.offset = offset;

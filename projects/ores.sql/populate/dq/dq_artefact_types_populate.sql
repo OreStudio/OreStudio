@@ -138,7 +138,7 @@ values
      'dq_market_data_observations_artefact_tbl', 'marketdata_market_observations_tbl', 'marketdata.v1.market-data-observations.publish-from-dq', 37,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'crm_topology_bundles', 0, 'CRM Topology Bundles', 'Named CRM (Cross-Rates Matrix) topology configs, driver pairs, and curated derived pairs (writes crm_topology_configs, crm_driver_pairs, and crm_enabled_derived_pairs)',
-     'dq_crm_topology_bundles_artefact_tbl', 'marketdata_crm_topology_configs_tbl', 'marketdata.v1.crm-topology-bundles.publish-from-dq', 38,
+     'dq_crm_topology_bundles_artefact_tbl', 'refdata_crm_topology_configs_tbl', 'refdata.v1.crm-topology-bundles.publish-from-dq', 38,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'calendar_types', 0, 'Calendar Types', 'Calendar type classification (public holiday, central bank meeting, financial centre, data release, other)',
      'dq_calendar_types_artefact_tbl', 'refdata_calendar_types_tbl', 'refdata.v1.calendar-types.publish-from-dq', 39,
@@ -149,6 +149,29 @@ values
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
+
+-- =============================================================================
+-- Backfill: correct crm_topology_bundles rows seeded before the refdata
+-- reclassification fix (subject/target_table wrongly reverted to
+-- marketdata_* by a later, unrelated commit). The insert above is a
+-- no-op on any database where this row already exists, so any
+-- environment provisioned before this fix landed needs this explicit
+-- correction to actually pick it up.
+-- =============================================================================
+
+insert into ores_dq_artefact_types_tbl (
+    tenant_id, code, version, name, description, artefact_table, target_table, target_subject, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select
+    tenant_id, code, version, name, description, artefact_table,
+    'refdata_crm_topology_configs_tbl', 'refdata.v1.crm-topology-bundles.publish-from-dq', display_order,
+    current_user, current_user, 'system.admin_reset',
+    'Backfill: correct crm_topology_bundles target_table/target_subject reverted to marketdata_* by an unrelated commit'
+from ores_dq_artefact_types_tbl
+where code = 'crm_topology_bundles'
+  and valid_to = ores_utility_infinity_timestamp_fn()
+  and target_subject <> 'refdata.v1.crm-topology-bundles.publish-from-dq';
 
 -- =============================================================================
 -- Summary

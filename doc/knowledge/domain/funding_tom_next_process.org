@@ -120,7 +120,7 @@ stale-data error if underlying deals or rates moved since the dry run.
 - All deals from one funding run must be linked together, and the run
   must be re-runnable/cancellable as a unit.
 - Funding runs require sign-off, alongside brokerage payments and
-  [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][sweep]] runs.
+  [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot sweep]] runs.
 - A funding trade is a canonical *system-generated trade* — booked
   against an internal counterparty, governed by rule-driven
   auto-authorisation rather than manual per-deal sign-off, and — like
@@ -144,7 +144,6 @@ stale-data error if underlying deals or rates moved since the dry run.
   classification axes.
 - [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the same purpose-constrains-deal-types
   mechanism applied to Wash books.
-- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — a related but distinct
-  cash-centralisation process.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — a related but distinct cash-centralisation process.
 - [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]] — the process that moves
   crystallised profit further downstream, past funding.

@@ -159,6 +159,13 @@
 
 #+include: "chapter_6_countries.org" :minlevel 2
 
+* Business Centres
+:PROPERTIES:
+:CUSTOM_ID: chapter_6b_business_centres
+:END:
+
+#+include: "chapter_6b_business_centres.org" :minlevel 2
+
 * Books
 :PROPERTIES:
 :CUSTOM_ID: chapter_7_books

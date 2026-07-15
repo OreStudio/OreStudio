@@ -53,6 +53,7 @@
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
@@ -71,7 +72,6 @@
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.qt/TenorController.hpp"
 #include "ores.qt/TenorConventionController.hpp"
-#include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/TenorKindController.hpp"
 #include "ores.qt/TenorResolutionAlgorithmController.hpp"
 #include "ores.qt/TenorUnitController.hpp"
@@ -315,6 +315,30 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            ctx_.username,
                                                                            this);
     connectControllerSignals(ledgerFeedTypeController_.get());
+
+    // BookController cross-domain relays (within refdata): toolbar buttons
+    // on BookMdiWindow open its lookup children's list windows, mirroring
+    // CurrencyController's RoundingType/MarketTier relay pattern above.
+    connect(bookController_.get(), &BookController::showBookStatusesRequested, this, [this]() {
+        if (bookStatusController_)
+            bookStatusController_->showListWindow();
+    });
+
+    connect(
+        bookController_.get(), &BookController::showRegulatoryBookTypesRequested, this, [this]() {
+            if (regulatoryBookTypeController_)
+                regulatoryBookTypeController_->showListWindow();
+        });
+
+    connect(bookController_.get(), &BookController::showBookPurposeTypesRequested, this, [this]() {
+        if (bookPurposeTypeController_)
+            bookPurposeTypeController_->showListWindow();
+    });
+
+    connect(bookController_.get(), &BookController::showLedgerFeedTypesRequested, this, [this]() {
+        if (ledgerFeedTypeController_)
+            ledgerFeedTypeController_->showListWindow();
+    });
 
     crmTopologyConfigController_ =
         std::make_unique<CrmTopologyConfigController>(ctx_.main_window,
@@ -583,19 +607,20 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(tenorResolutionAlgorithmController_.get());
 
     assetClassCodeController_ = std::make_unique<AssetClassCodeController>(ctx_.main_window,
-                                                                            ctx_.mdi_area,
-                                                                            ctx_.client_manager,
-                                                                            ctx_.change_reason_cache,
-                                                                            ctx_.username,
-                                                                            this);
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(assetClassCodeController_.get());
 
     instrumentCodeController_ = std::make_unique<InstrumentCodeController>(ctx_.main_window,
-                                                                            ctx_.mdi_area,
-                                                                            ctx_.client_manager,
-                                                                            ctx_.change_reason_cache,
-                                                                            ctx_.username,
-                                                                            this);
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           ctx_.badge_cache,
+                                                                           this);
     connectControllerSignals(instrumentCodeController_.get());
 }
 

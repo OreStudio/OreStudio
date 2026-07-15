@@ -30,38 +30,46 @@ specific skill instead.
 
 Run the steps in order; each is idempotent.
 
-1. /Sync the doc indexes/ (=doc-sync-index=):
+1. /Fetch and check out the latest main, detached/ — a stale branch
+   (e.g. one still sitting on an already-merged/deleted feature
+   branch) makes every later step operate on the wrong tree:
+
+   #+begin_src sh :results verbatim
+   git fetch origin main && git checkout --detach origin/main
+   #+end_src
+
+2. /Sync the doc indexes/ (=doc-sync-index=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh index --org-roam-db-sync
    #+end_src
 
-2. /Deploy the skills bundle/ (=devops-deploy-skills=):
+3. /Deploy the skills bundle/ (=devops-deploy-skills=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh build --direct skills
    #+end_src
 
-3. /Deploy Claude Code settings/ (=devops-deploy-settings=):
+4. /Deploy Claude Code settings/ (=devops-deploy-settings=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh build --direct settings
    #+end_src
 
-4. /Initialise the environment/ — .env, certificates, IAM key:
+5. /Initialise the environment/ — .env, certificates, IAM key:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh env configure
    #+end_src
 
-5. /Recreate the database/ (=devops-recreate-db=) — stop services
+6. /Recreate the database/ (=devops-recreate-db=) — stop services
    first if they hold connections:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-6. /Optionally, provision via the shell/ — run a provisioning script
+7. /Optionally, provision via the shell/ — run a provisioning script
    from the generated library (e.g. a full Barclays/GLEIF system, or
    the lightweight bootstrap smoke):
 
@@ -69,7 +77,7 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/barclays_system_provision.ores
    #+end_src
 
-7. /Verify/ — services up, bearings clean:
+8. /Verify/ — services up, bearings clean:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh services start && ./projects/ores.compass/compass.sh bearings
@@ -78,8 +86,8 @@ Run the steps in order; each is idempotent.
 * Recipes
 
 - [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — the verification at the end.
-- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — step 1 in detail.
-- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — step 2 in detail.
+- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — step 2 in detail.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — step 3 in detail.
 
 * Reference
 

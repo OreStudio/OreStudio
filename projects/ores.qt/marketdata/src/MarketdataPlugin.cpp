@@ -111,8 +111,7 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
             feedBindingController_->showListWindow();
     });
 
-    auto* actCrmMatrix =
-        marketDataMenu_->addAction(ico(Icon::Currency), tr("Cross-&Rates Matrix"));
+    auto* actCrmMatrix = marketDataMenu_->addAction(ico(Icon::Currency), tr("Cross-&Rates Matrix"));
     connect(actCrmMatrix, &QAction::triggered, this, [this]() {
         if (crmCrossRatesMatrixController_)
             crmCrossRatesMatrixController_->showMatrix();

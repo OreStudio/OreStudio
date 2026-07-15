@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: DD828FB9-5901-4B9A-A767-71FD88472F0A
+:END:
+#+title: Business Centre
+#+description: The FpML-coded business centre: the holiday calendar and EOD-rates identifier a business unit or book carries, distinct from both a business unit's organisational hierarchy and a book's unrelated cost centre.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:rates:curves:tenors:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+A *business centre* is an FpML-coded identifier for a financial
+trading location's holiday calendar and, more operationally, its
+*rates centre* -- the EOD market-data snapshot a book revalues
+against. It is not itself an organisational-hierarchy node: it is a
+*property* that a [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][business unit]] or a [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] can carry, inherited
+down the business-unit tree by default and overridable at any node --
+see [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] for that hierarchy. Carrying a business centre is
+distinct from actually running an end-of-day process against it: a
+unit may be assigned one purely for inheritance or reporting
+purposes, independent of whether that unit is configured to run its
+own EOD. A business centre's code is FpML-standard and
+coding-scheme-scoped but unique per tenant regardless of scheme. It
+has no relationship to a *cost centre* -- an unrelated, purely accounting
+property tracked on the book itself -- nor to
+[[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], the reporting-rollup property a node in the
+same tree separately carries.
+
+* Detail
+
+** The FpML business centre scheme
+
+Business centre codes follow the FpML =businessCenterScheme=
+([[https://www.fpml.org/coding-scheme/business-center][FpML Business Center Scheme]]): a 4-character code that is either the
+real geographical location whose calendar governs bad-business-day
+adjustment (e.g. =USNY= for New York, =GBLO= for London), or an
+FpML-format rate-publication calendar code used for fixing-day
+offsets. FpML's own description of the scheme draws exactly this
+distinction: the geographical codes are "implicitly locatable and
+used for identifying a bad business day for the purpose of payment
+and rate calculation day adjustments", while the rate-publication
+codes "are used in the context of the fixing day offsets" -- two
+different jobs sharing the same 4-character code shape. A code is
+scoped to a *coding scheme* (=FPML_BUSINESS_CENTER= for the standard
+FpML set, =NONE= for platform-internal centres such as a system-wide
+"World" centre) but is unique per tenant *regardless* of which scheme
+it was sourced from -- two schemes cannot register the same code for
+one tenant.
+
+** Holiday calendars: a consumer, not the definition
+
+A holiday calendar -- together with trading hours, DST rules, and a
+default cut-off timezone -- is reference data *attached to* a
+business centre, not the concept's definition. [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date rolling]] and the
+underlying [[id:267DD5E8-F095-47C1-B42B-733565306776][business-day / settlement-day distinction]] both operate
+against the holiday calendar(s) named by one or more business centre
+codes; resolving a code to its actual holiday set is a downstream
+(pricing/analytics) concern, not something the identifier itself
+stores.
+
+** As a rates centre: the EOD-rates property of the business-unit tree
+
+A business centre's more operationally significant role is as a
+*rates centre*: a location qualifier attached to a book's revaluation,
+treated as a first-class dimension alongside [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][currency pair]] and
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]. The same currency pair can carry different official spot rates in
+different trading locations -- GBP/USD London versus GBP/USD New York
+-- because each business centre applies its own approved rates for
+its own end-of-day run; a book's rates centre code determines which
+snapshot it uses. This property attaches naturally to the
+business-unit tree rather than to the business centre entity itself:
+see [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] for how a business centre assigned to a unit is
+inherited by its books and descendant units by default. Which units
+actually run their own end-of-day process against their assigned
+centre, as opposed to merely inheriting or reporting one, is a
+separate configuration question -- see [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] for that
+distinction. [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] covers the resulting
+book-level mechanics in full: every book sharing a rates centre
+revalues consistently, rates-centre-owned books roll up into book
+groups for consolidated reporting, and centre ownership doubles as an
+access-control boundary.
+
+** Distinct from cost centre and from aggregation currency
+
+A business centre has no relationship to a *cost centre*, an
+unrelated accounting property tracked directly on a book -- see
+[[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]]§"Cost centre" and [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] for that axis in
+full. Nor does it determine [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], the currency a
+business-unit-tree node rolls its figures up in for reporting -- a
+business centre keeps EOD *pricing* location-specific, while
+aggregation currency is what lets already-priced figures be summed
+meaningfully once they leave that location.
+
+* See also
+
+- [[https://www.fpml.org/coding-scheme/business-center][FpML Business Center Scheme]] -- the external code list business
+  centre codes are drawn from.
+- [[https://www.fpml.org/][FpML (Financial products Markup Language)]] -- the standards body
+  publishing the coding scheme.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] -- the organisational-hierarchy node a business
+  centre attaches to, and how a business centre is inherited down that
+  tree by units not separately configured to run their own EOD.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note for aggregation currency and the wider
+  currency-role vocabulary this note distinguishes itself from.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] -- the other first-class dimension, alongside
+  business centre and tenor, a book's revaluation is keyed on.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] -- the third of the three first-class revaluation
+  dimensions.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] -- the book-level rates-centre
+  mechanics, roll-up, and access control.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] -- how a business
+  centre's holiday calendar governs rolling of tenor dates.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] -- the canonical business-day /
+  settlement-day distinction business centre calendars feed into.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] -- hub note.

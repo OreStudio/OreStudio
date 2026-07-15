@@ -55,7 +55,8 @@ public:
      */
     enum Column {
         SequenceIndex,
-        TenorCode,
+        StartTenorCode,
+        EndTenorCode,
         InstrumentCode,
         Version,
         ModifiedBy,

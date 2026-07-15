@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 13341B12-0393-4ECF-B392-CD68A4C0CDFB
+:END:
+#+title: Cash Flow
+#+description: A cash flow as a signed, dated, currency-denominated movement of money, its notional/principal magnitude, and the cash flow stream or leg it belongs to.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+A cash flow is a real or virtual movement of money (see [[https://en.wikipedia.org/wiki/Cash_flow][Wikipedia:
+Cash flow]]) -- a vector quantity carrying both a magnitude (an amount
+in a given [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][currency]]) and a direction (an inflow to, or an outflow
+from, a reference entity). By convention, outflows are signed negative and
+inflows positive, relative to whichever entity is under discussion.
+Cash flows are the fundamental building block from which financial
+[[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][assets]] are constructed: any financial asset can, at least in
+principle, be decomposed into, or replicated by, a stream of cash
+flows.
+
+* Detail
+
+** Magnitude, direction, and sign convention
+
+A cash flow's magnitude is its *notional*, or *principal*, amount --
+the face amount used to calculate payments, which generally stays
+fixed over the life of the instrument even as the payments it
+generates vary from period to period. Its direction is relative: the
+same physical payment is an outflow for the payer and an inflow for
+the payee, and by convention outflows are recorded as negative and
+inflows as positive from the perspective of whichever single entity's
+cash flows are being described.
+
+** Cash flow streams and legs
+
+A related group of cash flows sharing a common purpose is a *cash
+flow stream*, sometimes called a *leg* depending on context -- an
+interest-rate swap's fixed leg, for instance, is the stream of fixed
+cash flows one counterparty pays across the life of the swap. Naming
+the grouping matters because most instruments are better understood
+as a small number of streams than as an undifferentiated list of
+individual payments.
+
+** The building block of financial assets
+
+Cash flows are treated as the fundamental unit financial assets are
+built from: in principle, any financial asset can be decomposed into,
+or equivalently replicated by, a stream of cash flows with the right
+amounts, currencies, and dates. This is what makes cash flow the
+right level of abstraction for valuing and comparing otherwise very
+different instruments -- a bond, a swap, and a deposit all reduce, at
+bottom, to streams of cash flows that can be discounted and compared
+on the same basis.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Cash_flow][Wikipedia: Cash flow]] -- the general definition this note follows.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note; the currency a cash flow's magnitude is
+  denominated in.
+- [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][Assets]] -- financial assets, which cash flows compose.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] -- what a cash flow is ultimately a movement of.

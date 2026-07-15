@@ -20,20 +20,34 @@
 #include "ores.refdata.api/domain/instrument_code_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::refdata::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<instrument_code>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Asset Class" << "Display Order"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Asset Class" << "ORE Trade Type"
+          << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ic : v) {
-        table << ic.code << ic.name << ic.description << ic.asset_class << ic.display_order
-              << ic.modified_by << ic.version << fort::endr;
+        table << ic.code << ic.name << ic.description << ic.asset_class
+              << opt_str(ic.ore_trade_type) << ic.display_order << ic.modified_by << ic.version
+              << fort::endr;
     }
     return table.to_string();
 }

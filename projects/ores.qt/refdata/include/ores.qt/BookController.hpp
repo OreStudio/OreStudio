@@ -81,6 +81,15 @@ signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
+    /**
+     * @brief Relayed from BookMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
+    void showBookStatusesRequested();
+    void showRegulatoryBookTypesRequested();
+    void showBookPurposeTypesRequested();
+    void showLedgerFeedTypesRequested();
+
 protected:
     EntityListMdiWindow* listWindow() const override;
     void notifyOpenDialogs(const QStringList& entityIds) override;

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: D1B2BDB5-D35B-4EF3-9A4D-030CF28BDF83
+:END:
+#+title: ores.refdata.currency_country
+#+description: Codegen junction model for currency_countries.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: currency_countries
+#+name_singular: currency_country
+#+name_title: Currency Country
+#+name_singular_words: currency country assignment
+#+brief: Links a currency to a country that issues it.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+Many-to-many junction between currency and country: a currency can be
+issued by more than one country (e.g. EUR spans DE, FR, IT, ES, ...).
+Independent reference data in its own right, not a prerequisite for
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][the calendar entity]], which
+carries its own country_code rather than deriving a currency's
+calendars transitively through this junction.
+
+* Left
+:PROPERTIES:
+:column:        currency_iso_code
+:column_short:  currency
+:column_title:  Currency
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up countries that issue a currency
+:END:
+
+ISO 4217 alpha-3 code of the currency.
+
+References ores_refdata_currencies_tbl.iso_code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        country_alpha2_code
+:column_short:  country
+:column_title:  Country
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding currencies issued by a country
+:END:
+
+ISO 3166-1 alpha-2 code of the country that issues this currency.
+
+References ores_refdata_countries_tbl.alpha2_code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("DE")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_countries_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: currency_country
+:name_short:          currency_countries
+:name_singular_words: currency country
+:name_words:          currency countries
+:order_column:        country_alpha2_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cc
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| currency_iso_code   | Currency    |
+| country_alpha2_code | Country     |
+| modified_by         | Modified By |
+| version             | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — parent story.

@@ -32,7 +32,7 @@ using ores::analytics::quant::service::hull_white_process;
 using ores::analytics::quant::service::vasicek_process;
 
 TEST_CASE("deposit_rate recovers the rate implied by a known discount factor",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     // P = 1/(1+r*tau) => r = (1/P - 1)/tau
     const double tau = 0.25;
     const double r = 0.03;
@@ -41,7 +41,7 @@ TEST_CASE("deposit_rate recovers the rate implied by a known discount factor",
 }
 
 TEST_CASE("deposit_rate(1.0, tau) is exactly zero (no discounting, zero rate)",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     CHECK(curve_instrument_pricer::deposit_rate(1.0, 1.0) == Catch::Approx(0.0));
 }
 
@@ -55,7 +55,7 @@ TEST_CASE("deposit_rate rejects a non-positive year fraction", "[curve_instrumen
 }
 
 TEST_CASE("fra_rate recovers the forward rate implied by two discount factors",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     // P(start)/P(end) = 1 + F*accrual => F = (P(start)/P(end) - 1)/accrual
     const double accrual = 0.5;
     const double forward = 0.025;
@@ -65,36 +65,38 @@ TEST_CASE("fra_rate recovers the forward rate implied by two discount factors",
 }
 
 TEST_CASE("fra_rate is zero when start and end discount factors are equal",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     CHECK(curve_instrument_pricer::fra_rate(0.95, 0.95, 0.5) == Catch::Approx(0.0));
 }
 
 TEST_CASE("fra_rate rejects non-positive discount factors or accrual fraction",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     CHECK_THROWS_AS(curve_instrument_pricer::fra_rate(0.0, 0.9, 0.5), std::invalid_argument);
     CHECK_THROWS_AS(curve_instrument_pricer::fra_rate(0.9, 0.0, 0.5), std::invalid_argument);
     CHECK_THROWS_AS(curve_instrument_pricer::fra_rate(0.95, 0.9, 0.0), std::invalid_argument);
 }
 
 TEST_CASE("swap_par_rate recovers a known par rate for a single-period swap "
-    "(degenerates to fra_rate)",
-    "[curve_instrument_pricer]") {
+          "(degenerates to fra_rate)",
+          "[curve_instrument_pricer]") {
     const double df_start = 1.0;
     const double df_end = 0.95;
     const double accrual = 1.0;
-    const double par = curve_instrument_pricer::swap_par_rate(df_start, df_end, {df_end}, {accrual});
+    const double par =
+        curve_instrument_pricer::swap_par_rate(df_start, df_end, {df_end}, {accrual});
     const double forward = curve_instrument_pricer::fra_rate(df_start, df_end, accrual);
     CHECK(par == Catch::Approx(forward));
 }
 
 TEST_CASE("swap_par_rate makes the fixed leg PV equal the floating leg's telescoped PV",
-    "[curve_instrument_pricer]") {
+          "[curve_instrument_pricer]") {
     const double df_start = 1.0;
     const std::vector<double> fixed_leg_dfs = {0.99, 0.97, 0.94, 0.90};
     const std::vector<double> accruals = {0.25, 0.25, 0.25, 0.25};
     const double df_end = fixed_leg_dfs.back();
 
-    const double par = curve_instrument_pricer::swap_par_rate(df_start, df_end, fixed_leg_dfs, accruals);
+    const double par =
+        curve_instrument_pricer::swap_par_rate(df_start, df_end, fixed_leg_dfs, accruals);
 
     double annuity = 0.0;
     for (std::size_t i = 0; i < fixed_leg_dfs.size(); ++i)
@@ -105,24 +107,25 @@ TEST_CASE("swap_par_rate makes the fixed leg PV equal the floating leg's telesco
 }
 
 TEST_CASE("swap_par_rate rejects mismatched or empty vectors", "[curve_instrument_pricer]") {
-    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(1.0, 0.9, {}, {}), std::invalid_argument);
-    CHECK_THROWS_AS(
-        curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.95, 0.9}, {0.5}), std::invalid_argument);
+    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(1.0, 0.9, {}, {}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.95, 0.9}, {0.5}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("swap_par_rate rejects non-positive discount factors or accrual fractions",
-    "[curve_instrument_pricer]") {
-    CHECK_THROWS_AS(
-        curve_instrument_pricer::swap_par_rate(0.0, 0.9, {0.9}, {1.0}), std::invalid_argument);
-    CHECK_THROWS_AS(
-        curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.0}, {1.0}), std::invalid_argument);
-    CHECK_THROWS_AS(
-        curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.9}, {0.0}), std::invalid_argument);
+          "[curve_instrument_pricer]") {
+    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(0.0, 0.9, {0.9}, {1.0}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.0}, {1.0}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(curve_instrument_pricer::swap_par_rate(1.0, 0.9, {0.9}, {0.0}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("deposit_rate/fra_rate/swap_par_rate applied to a real hull_white_process "
-    "produce a coherent, monotonically-consistent curve",
-    "[curve_instrument_pricer]") {
+          "produce a coherent, monotonically-consistent curve",
+          "[curve_instrument_pricer]") {
     // Integration check: derive several instrument rates from one process's
     // discount_factor()s at increasing maturities, confirming they compose
     // without contradiction (e.g. the multi-period swap rate should sit
@@ -156,8 +159,8 @@ TEST_CASE("deposit_rate/fra_rate/swap_par_rate applied to a real hull_white_proc
 }
 
 TEST_CASE("vasicek_process (a hull_white_process composition) produces the same "
-    "instrument rates as the equivalent hull_white_process directly",
-    "[curve_instrument_pricer]") {
+          "instrument rates as the equivalent hull_white_process directly",
+          "[curve_instrument_pricer]") {
     vasicek_process vasicek(0.4, 0.025, 0.02, 0.015);
     hull_white_process hull_white(0.4, {0.025}, 0.02, 0.015);
 

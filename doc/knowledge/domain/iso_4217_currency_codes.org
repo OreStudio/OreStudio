@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD
+:END:
+#+title: ISO 4217 Currency Codes
+#+description: The ISO 4217 standard for currency codes, its regular and 'other' code patterns, its numeric codes and minor units, and the non-standard currencies it leaves out.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+[[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217]] is the international standard defining official currency
+codes -- three-letter alphabetic "currency designators" -- alongside a
+numeric code and a minor-unit digit count for each. Most codes follow
+a simple rule (country code plus a currency letter), but a
+substantial "other" bucket, and a handful of codes that fit no
+pattern at all, show that the standard is better read as a pragmatic
+document shaped by geopolitics over time than as a rigorously
+principled taxonomy. Being ISO-standardised is a seal of approval, not
+a precondition for being a currency in the conceptual sense set out
+in [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]]: plenty of non-standard currencies -- smaller-nation
+fiat, cryptocurrency symbols, and the pseudo-codes ORE Studio itself
+uses for onshore/offshore variants -- circulate without one.
+
+* Detail
+
+** Regular fiat currency codes
+
+The common pattern for a regular fiat currency code takes its first
+two letters from the country's ISO 3166-1 alpha-2 code and adds a
+third letter identifying the currency itself -- =GB= + =P= for =GBP=,
+=US= + a designator for the dollar. Exceptions exist even within this
+pattern, such as =USN= ("US dollar, next day"), a settlement-timing
+variant of the US dollar rather than a distinct national currency.
+
+** "Other" currency codes
+
+A block of codes beginning with =X= followed by two further
+characters is reserved for currencies and quasi-currencies that do
+not name a single issuing country, and this bucket is itself a
+grab-bag of otherwise unrelated cases:
+
+- Commodities used as currency, coded by periodic-table element --
+  =XAU= for gold, =XAG= for silver.
+- Currencies of territories rather than countries -- =XPF=, the CFP
+  franc ("franc Pacifique"), used across several French Pacific
+  territories with no single national issuer.
+- Operational and testing codes -- =XTS=, reserved for software
+  testing, and =XXX=, meaning "no currency" is applicable to the
+  transaction at all.
+- Supranational units -- =XDR=, the IMF's Special Drawing Rights, a
+  reserve asset rather than a circulating currency of any single
+  jurisdiction.
+
+** Codes that fit no pattern
+
+A residual set of codes match neither the regular nor the =X=
+pattern. =EUR= is the clearest example: the Eurozone is not a country,
+so the "country code plus currency letter" rule that produces =GBP=
+or =JPY= has no country to start from, and the code exists as its own
+irreducible designator instead.
+
+** Numeric code and minor units
+
+Beyond the alphabetic code, ISO 4217 assigns each currency a
+three-digit numeric code (978 for EUR, 840 for USD) and a count of
+*minor unit digits* -- whether the currency divides into hundredths,
+thousandths, or some other fraction of its major unit. This field is
+the ISO ancestor of what a currency pair's own conventions later call
+decimal places or pip size (see the =decimal_places= field
+documented for currency pairs).
+
+** What the standard leaves out
+
+Being covered by ISO 4217 is a mark of formal recognition, not a
+precondition for behaving as a currency. Fiat currencies of smaller
+nations or territories not (yet) assigned an ISO code, the
+onshore/offshore pseudo-codes ORE Studio constructs for currencies
+with restricted circulation (documented in full for FX pairs, not
+repeated here), and cryptocurrency symbols all sit outside the
+standard while still functioning as currencies in every operational
+sense. Cryptocurrency symbols in particular are informal,
+community-driven conventions rather than a managed standard -- =BTC=
+or =XBT= for Bitcoin, =LTC= for Litecoin, =DOGE= or =XDG= for
+Dogecoin -- and unlike ISO codes they are not guaranteed unique or
+three-lettered; some clash directly with existing ISO 4217 codes,
+a reminder that a currency's code is only ever as authoritative as
+the community or standards body that maintains it (see [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of
+Money]]§"Cryptocurrency").
+
+* See also
+
+- [[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217 Currency Codes]] -- the international standard.
+- [[https://en.wikipedia.org/wiki/ISO_4217][Wikipedia: ISO 4217]] -- independent overview and the full code
+  list.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] -- fiat money and cryptocurrency, the two kinds
+  most relevant to this standard's scope and its gaps.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][FX deliverability and NDFs]] -- the onshore/offshore pseudo-currency
+  codes ORE Studio constructs outside this standard.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][FX currency pair entity fields]] -- where a currency's ISO code and
+  minor-unit-derived decimal places surface as entity fields.

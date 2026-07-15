@@ -27,7 +27,7 @@ It contains no trade or market data. It captures:
 - The report /type/ (which valuation and bumping methodology to use)
 - The /Greek set/ (which measures to compute and in what form)
 - All /configuration parameters/ (bump sizes, smile model, roll method,
-  display currency, aggregation level, etc.)
+  [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][display currency]], aggregation level, etc.)
 
 Report Definitions can have multiple saved configurations. For example, a
 trader may maintain a ".1 Triple — Asia EM" configuration and a ".1 Triple —
@@ -63,8 +63,9 @@ hierarchy:
 
 : Trade → Structure → Book → Sub-Portfolio → Portfolio → Branch → Firm
 
-Each book belongs to one branch and carries one aggregation currency. Risk
-figures at book level and above are converted to the aggregation currency.
+Each book belongs to one [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][business unit]] and carries one [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation
+currency]]. Risk figures at book level and above are converted to the
+aggregation currency.
 
 * Classification Taxonomy
 
@@ -412,7 +413,7 @@ for the base currency and the quote currency.
 | Scope       | trade        |
 | Methodology | numeric-bump |
 
-*Purpose*: Spot ladder at trade level where the premium currency is the
+*Purpose*: Spot ladder at trade level where the [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][premium currency]] is the
 bumped spot underlier. Used for structures where the option premium currency
 differs from the base currency.
 
@@ -560,7 +561,7 @@ batch must complete before the start of the next trading session.
 
 ** Display and Aggregation
 
-- Display currency, aggregation currency, aggregation mode.
+- [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Display currency]], [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], aggregation mode.
 - Summary levels: Book, Sub-Portfolio, Portfolio, Branch.
 - Threshold filters (min/max Greek value) for Headline-style reports.
 
@@ -577,3 +578,12 @@ ORE Studio will need to expose report configuration as domain entities, allow
 users to define Greek sets and report definitions, and display results in the
 Qt UI. The report catalogue above defines the target set of reports for the
 ORE Studio trading desk UI.
+
+* See also
+
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — P&L attribution methodology.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the pricing configuration each report draws on.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note for display/aggregation currency and the
+  wider currency-role vocabulary this document uses.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the organisational hierarchy the aggregation
+  level rolls up through.

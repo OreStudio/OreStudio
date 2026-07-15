@@ -335,8 +335,8 @@ private:
         for (;;) {
             auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
             if (!observations) {
-                error_detail = "Failed to look up observations for '" + ore_key +
-                               "': " + observations.error();
+                error_detail =
+                    "Failed to look up observations for '" + ore_key + "': " + observations.error();
                 return false;
             }
             for (const auto& obs : *observations) {

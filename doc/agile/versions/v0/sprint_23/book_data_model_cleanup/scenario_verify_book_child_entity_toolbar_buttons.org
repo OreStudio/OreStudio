@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: AE9002DF-9138-41D3-9E72-B6EB78593634
+:END:
+#+title: Test Scenario: Verify Book window child-entity toolbar buttons
+#+description: Manual Qt client steps confirming BookMdiWindow's toolbar buttons open the Book Statuses, Regulatory Book Types, Book Purpose Types, and Ledger Feed Types list windows.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:4709CCA3-F181-47FB-8485-37EF7B23BD3C][Add child-entity toolbar buttons to Book window]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:4709CCA3-F181-47FB-8485-37EF7B23BD3C][Add child-entity toolbar buttons to Book window]] |
+| Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
+| Target dialog | BookMdiWindow (Reference Data > Books)  |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A Barclays-provisioned database (already provisioned in this
+  environment; if not, see =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=).
+- A running Qt client, not yet logged in.
+
+* Steps
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Books toolbar shows 4 new buttons after History
+
+Open Reference Data > Books. Confirm the toolbar shows, after a
+separator following History: "Statuses", "Regulatory Types",
+"Purpose Types", "Ledger Feed Types" — each with a tooltip naming the
+list it opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Statuses button opens Book Statuses list
+
+Click "Statuses". Confirm the Book Statuses list window opens (same
+window =Reference Data > Book Statuses= would open), populated with
+records, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Regulatory Types button opens Regulatory Book Types list
+
+Click "Regulatory Types" on the Books toolbar. Confirm the
+Regulatory Book Types list window opens, populated, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Purpose Types button opens Book Purpose Types list
+
+Click "Purpose Types" on the Books toolbar. Confirm the Book Purpose
+Types list window opens, populated, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Ledger Feed Types button opens Ledger Feed Types list
+
+Click "Ledger Feed Types" on the Books toolbar. Confirm the Ledger
+Feed Types list window opens, populated, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-15T07:52:26Z |
+| Branch        | feature/add-book-child-entity-toolbar-buttons |
+| Commit        | 168d1f460 |
+| Worktree      | bright_faraday |
+
+* Notes

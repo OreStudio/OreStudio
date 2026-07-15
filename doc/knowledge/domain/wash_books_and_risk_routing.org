@@ -105,5 +105,5 @@ process]] and sweep runs.
   book carries, of which Wash is one.
 - [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] — the analogous purpose-constrains-deal-types
   mechanism applied to Funding books.
-- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — downstream cash-centralisation once
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — downstream cash-centralisation once
   risk has settled into its owning book.

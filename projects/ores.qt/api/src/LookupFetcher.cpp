@@ -24,7 +24,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/messaging/asset_class_code_protocol.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
-#include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
@@ -33,6 +32,7 @@
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
@@ -411,8 +411,7 @@ fetch_calendar_types(ClientManager* cm) {
     return std::move(response->types);
 }
 
-std::expected<std::vector<refdata::domain::country>, QString>
-fetch_countries(ClientManager* cm) {
+std::expected<std::vector<refdata::domain::country>, QString> fetch_countries(ClientManager* cm) {
     if (!cm)
         return std::unexpected(QStringLiteral("Not connected to server."));
 

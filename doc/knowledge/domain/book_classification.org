@@ -69,7 +69,7 @@ desk structure, capital treatment, and switching restrictions.
   entities restricted to IT users.
 - *Sales books* / desk-specific risk books — e.g. a forward desk's
   risk book, used when routing risk between spot and forward desks.
-- *Central Sweep Book* — the book [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] centralises Sweepable
+- *Central Sweep Book* — the book [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot sweep]] centralises Sweepable
   books' cash balances into.
 - *Central Remittance Book* — the book against which monthly/quarterly
   profit sell-down and remittance trades are booked (see
@@ -89,7 +89,7 @@ A book carries three independent fields for these dimensions, not one
 | =regulatory_book_type= | FK -> lookup entity              | Trading, Banking |
 | =ledger_feed_type=     | FK -> lookup entity (or 3-value enum) | None, Automatic, Manual |
 | =book_purpose_type=    | FK -> lookup entity              | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target |
-| =is_sweepable=         | bool                              | independent of the above; governs [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] eligibility only, not ledger sweep |
+| =is_sweepable=         | bool                              | independent of the above; governs [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot sweep]] eligibility only, not [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][ledger sweep]] |
 
 =book_purpose_type= is a *lookup entity* rather than a set of
 independent booleans, following the same precedent as
@@ -163,7 +163,7 @@ this concrete: despite both being singleton "central" books that other
 books' balances flow into, they are owned by different departments
 (Treasury vs Finance), run on different cadences, and carry different
 P&L treatment (Sweep realises trading P&L; Remittance is deliberately
-balance-sheet-only) — see [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] for the full
+balance-sheet-only) — see [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] for the full
 reasoning. Mixing the two roles on one book would blur exactly the
 audit/reconciliation separation these processes exist to provide, so
 they are modelled as two further mutually-exclusive =book_purpose_type=
@@ -197,8 +197,7 @@ is framed as a book-scoped netting set.
   in.
 - [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the process a Wash-purpose book
   participates in.
-- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — the =is_sweepable= flag and the
-  Sweep-target purpose value, and why it doesn't combine with
-  Remittance target.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — the =is_sweepable= flag and the Sweep-target purpose
+  value, and why it doesn't combine with Remittance target.
 - [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]] — the Remittance-target
   purpose value.

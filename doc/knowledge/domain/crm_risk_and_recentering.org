@@ -2,77 +2,145 @@
 :ID: DC08D216-348D-4511-A42D-4016EBBF38F7
 :END:
 #+title: CRM risk: recentering and artefacts
-#+description: Why bumping one rate is not local, star-shaped recentering on the aggregation currency, deltas summing to zero, multi-hop spot-date mismatch artefacts (spurious Rho), theta on the spot roll, and risk routing.
+#+description: Why the cross-rates matrix's graph topology makes bumping a single rate non-local, how star-shaped recentering on the aggregation currency restores per-pair risk, and the spurious sensitivities and theta effects that recentering itself introduces.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:fx:crm:risk:domain:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-15
 
 * Summary
 
-The [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][CRM]]'s graph topology has subtle consequences for risk. Because paths
-couple rates, you *cannot bump one pair in isolation* — bumping one implies
-bumps to others reachable through it. To get per-pair risk you recenter the CRM
-into a *star-shaped* matrix with the *aggregation currency* (P&L / accounting /
-reporting / functional currency) at the centre, every other currency linked
-directly to it, so a single rate can move without disturbing the rest. Spot-day
-mismatches along multi-hop paths produce *spurious sensitivities* (e.g. a NOK
-Rho on a SEK deal), and aggregation-currency conversion also surfaces *theta on
-the spot roll*.
+A [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] is not a flat table of independent quotes but a
+graph of derived dependencies, and that graph topology has a
+consequence that is easy to overlook until it produces a wrong-looking
+risk number: no rate in the matrix can be bumped in isolation, because
+every rate reachable from it through the graph moves with it. Standard
+regulatory practice for FX risk factors builds on a closely related
+idea: the ISDA SIMM methodology defines the FX delta risk factor as
+the relative change of a foreign-domestic spot rate against a single
+base currency, so that every foreign-foreign rate is represented as
+the ratio of two such rates (see [[https://www.isda.org/a/osMTE/ISDA-SIMM-v2.2-PUBLIC.pdf][ISDA SIMM Methodology v2.2]]§2, "FX
+Risk"). ORE Studio recenters its own cross-rates matrix into that same
+star shape around the [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]], and this note works
+through what that recentering buys, what it costs, and where its
+side-effects surface downstream in a book's risk report.
 
 * Detail
 
-** Bumping a single rate is not local
+** Why a single bumped rate is never local
 
-- Graph paths mean bumping one rate ripples to others; running risk "by crosses"
-  moves many pairs at once, hiding each cross's individual contribution to, say,
-  an overall USD delta.
-- For the fine-grained per-pair view, *switch off the spot-rates graph* so one
-  cross moves alone. Running both modes yields *cross-effects* at the risk level.
+The trouble starts from the CRM's graph structure itself: a cross rate
+is a derived quantity, computed as a ratio or product of other rates
+rather than quoted independently, so a bump to one pair necessarily
+implies bumps to every other pair reachable through it in the graph.
+Running risk "by crosses" -- bumping each quoted cross rate directly,
+in the order the market happens to quote them -- therefore moves many
+pairs at once for every single bump, which hides how much of, say, an
+overall USD delta is really attributable to any one cross rather than
+to the graph coupling between crosses. The fine-grained, per-pair view
+that a trader actually wants requires switching off the CRM's own
+spot-rates graph so that a single cross can be moved in genuine
+isolation; running the two modes side by side and comparing them is
+itself informative, since the difference between them is exactly the
+*cross-effect* the graph coupling was responsible for.
 
 ** Star-shaping around the aggregation currency
 
-- Recenter so every currency connects *directly* to the aggregation currency;
-  bumping one rate then doesn't disturb others — the form required for risk.
-- The *market movement* for a Greek is the percentage move of
-  =(Greek currency)/(reporting currency)= between two dates,
-  $\frac{D_1 - D_0}{D_0}$.
-- Can look odd: for a =EUR/USD= deal with GBP aggregation, movement comes from
-  =EUR/GBP= and =USD/GBP=, not =EUR/USD=.
-- *Deltas sum to zero across currencies*: bumping all crosses also bumps the
-  aggregation currency, so e.g. USD delta = GBP delta + EUR delta for a EUR/USD
-  deal.
-- A cyclic graph *cannot* be auto-reduced to a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning tree]] (no general
-  prune rule) — ensure the tree by construction.
+The fix for this coupling is topological rather than numerical:
+recenter the CRM so that every currency in the matrix connects
+directly to the aggregation currency, forming a star rather than an
+arbitrary graph. In a star, bumping the rate on one spoke leaves every
+other spoke undisturbed, which is exactly the property "per-pair risk"
+requires and the ungraphed matrix does not have. A cyclic graph cannot
+be reduced to this shape automatically -- there is no general rule for
+which edges to prune from a cycle without losing information -- so the
+[[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning tree]] has to be constructed deliberately with the aggregation
+currency as its root, rather than discovered after the fact -- unlike
+the data-driven, unrooted minimal spanning trees academic work on FX
+network structure fits to observed correlations, where reducing a
+dense correlation structure to a tree is itself what exposes a
+market's hierarchical structure to inspection in the first place (see
+[[https://arxiv.org/pdf/0809.0437][Minimal Spanning Tree graphs and power-like scaling in FOREX
+networks]]); the CRM's star is a deliberately-imposed structure rather
+than a discovered one, but the same principle -- that a tree
+representation is what makes a dense, cyclic correlation structure
+tractable -- motivates both. Once the star is built, a Greek's market movement is
+simply the percentage move of the ratio (Greek currency)/([[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation
+currency]]) between two dates -- $\frac{D_1 - D_0}{D_0}$ -- and this can
+look surprising at first glance: for a EUR/USD deal aggregated in GBP,
+the movement driving the reported P&L comes from EUR/GBP and USD/GBP,
+not from EUR/USD directly, because GBP is now the hub every spoke is
+measured against. A further consequence of the star shape is that
+deltas sum to zero across currencies: bumping every cross in the star
+also bumps the aggregation currency itself, so for a EUR/USD deal the
+USD delta is arithmetically equal to the sum of the GBP delta and the
+EUR delta, a triangulation identity rather than a coincidence.
 
-** Multi-hop spot-date mismatch (spurious sensitivities)
+** Spurious sensitivities from multi-hop spot-date mismatch
 
-- A derived rate may route through more than two drivers with *different spot
-  dates*; reconciling needs interest rates + interpolation (see [[id:267DD5E8-F095-47C1-B42B-733565306776][spot date]] and
-  [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][derivation mechanics]]).
-- A spot-day mismatch on a path can surface P&L/IR (Rho) sensitivity on a *far,
-  unrelated* currency — e.g. a *NOK Rho on a SEK deal* — purely from CRM wiring.
-  It is an artefact (for Bump & Run / Reset there is no real spot sensitivity)
-  and must be understood and, where appropriate, suppressed in attribution.
+Star-shaping removes the coupling problem but does not remove every
+artefact the underlying graph can introduce. A derived rate may still
+route through more than two drivers, each with its own [[id:267DD5E8-F095-47C1-B42B-733565306776][spot date]],
+and reconciling those mismatched dates requires interest-rate
+[[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][interpolation]] along the path rather than a single clean conversion.
+When a spot-date mismatch survives along a multi-hop path, it can
+surface as a P&L or interest-rate sensitivity on a currency that has
+no genuine relationship to the deal at all -- a NOK Rho appearing on a
+SEK deal is the canonical example. This is a wiring artefact of the
+CRM's own path structure, not a real sensitivity: for Bump & Run or
+Reset revaluation there is no economic spot-date exposure to speak of,
+so the sensitivity has to be recognised for what it is and, where
+attribution requires a clean answer, suppressed rather than reported
+as if it were real risk.
 
 ** Theta on the spot roll
 
-- Aggregation-currency conversion produces *theta on settled cash*: as spot rolls
-  forward, interest accrues and spot differs, so converting settled cash back to
-  the aggregation currency yields a P&L difference. True for a *Forward Spot
-  Roll*; a *Fixed Roll* does not exhibit it.
+Aggregation-currency conversion introduces one further, related
+artefact once time itself moves rather than a rate. As spot rolls
+forward day to day, interest accrues on settled cash, and the spot rate
+used to convert that cash back into the aggregation currency changes
+with it, so a book can show a P&L difference purely from the passage
+of time -- a genuine theta, but one generated by the aggregation-currency
+conversion of settled cash rather than by any position decay in the
+usual sense. This *theta on the spot roll* is present under a Forward
+Spot Roll convention, where the settlement date genuinely advances each
+day, but absent under a Fixed Roll, where it does not; distinguishing
+the two roll conventions is therefore a prerequisite for attributing
+this theta correctly rather than folding it into some other Greek.
 
-** Risk routing
+** Risk routing to the right desk
 
-- Crosses are *split against the more liquid currency* (which can differ for spot
-  vs forward), mirroring the CRM's [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]] paths — e.g. =SEK/NOK= split by
-  the Forward Desk into EUR legs, by the Spot Desk into USD legs. Routing rules
-  decide how trades are split/aggregated to send risk to the right desk (G11 vs
-  EM desks; see [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][currency conventions]]).
+Recentering answers where a rate's risk is measured from; it does not
+by itself answer which desk within the firm that risk should be sent
+to. Crosses are conventionally split against whichever currency is
+more liquid at a given tenor -- a choice that can differ between spot
+and forward tenors for the very same pair -- mirroring the CRM's own
+[[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]] paths rather than following the star-shaping
+recentering directly. A SEK/NOK cross, for instance, is conventionally
+split by the Forward Desk into its EUR legs but by the Spot Desk into
+its USD legs, because liquidity conventions differ by desk and by
+tenor even for the same underlying pair. These routing rules are what
+ultimately decide whether a given trade's risk lands with a G10 desk or
+an emerging-markets desk (see [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][currency conventions]] for the G10/EM
+distinction the routing rules themselves are built on).
 
 * See also
 
-- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
-- [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]] — star-shaping is a topology change.
-- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the source of spot-day mismatch.
+- [[https://www.isda.org/a/osMTE/ISDA-SIMM-v2.2-PUBLIC.pdf][ISDA SIMM Methodology v2.2]] -- the regulatory-grade definition of an
+  FX delta risk factor as a foreign-domestic rate against a single base
+  currency, the same principle star-shaping applies to the CRM.
+- [[https://arxiv.org/pdf/0809.0437][Minimal Spanning Tree graphs and power-like scaling in FOREX
+  networks]] -- academic treatment of reducing a dense FX correlation
+  structure to a spanning tree.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] -- the hub.
+- [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]] -- star-shaping is a topology
+  change on this structure.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] -- the source of the spot-day mismatch
+  behind spurious sensitivities.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the star-shaping centre and the general
+  concept this note works through the CRM-specific consequences of.
+- [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Presentation Currency]] -- the presentational currency the
+  market-movement formula is expressed against.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][Currency conventions]] -- the G10/EM distinction risk-routing rules
+  are built on.

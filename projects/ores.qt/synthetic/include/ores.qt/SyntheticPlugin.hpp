@@ -32,6 +32,8 @@ namespace ores::qt {
 class MarketDataGenerationConfigController;
 class FxSpotGenerationConfigController;
 class GmmComponentController;
+class IrCurveGenerationConfigController;
+class IrCurveTemplateEntryController;
 
 /**
  * @brief Synthetic plugin: synthetic market data generation configuration.
@@ -69,6 +71,8 @@ private:
     std::unique_ptr<MarketDataGenerationConfigController> configController_;
     std::unique_ptr<FxSpotGenerationConfigController> fxSpotConfigController_;
     std::unique_ptr<GmmComponentController> gmmComponentController_;
+    std::unique_ptr<IrCurveGenerationConfigController> irCurveGenerationConfigController_;
+    std::unique_ptr<IrCurveTemplateEntryController> irCurveTemplateEntryController_;
 };
 
 }

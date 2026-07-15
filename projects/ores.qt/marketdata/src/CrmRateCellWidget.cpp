@@ -74,13 +74,14 @@ void CrmRateCellWidget::setDash() {
 }
 
 void CrmRateCellWidget::setData(const QString& pairCode,
-                                 const QString& rateText,
-                                 const QString& changeText,
-                                 const QColor& changeColor,
-                                 const QColor& rateColor,
-                                 const QColor& pairColor,
-                                 const QString& pairPrefix) {
-    pairLabel_->setText(pairPrefix.isEmpty() ? pairCode : pairPrefix + QStringLiteral(" ") + pairCode);
+                                const QString& rateText,
+                                const QString& changeText,
+                                const QColor& changeColor,
+                                const QColor& rateColor,
+                                const QColor& pairColor,
+                                const QString& pairPrefix) {
+    pairLabel_->setText(pairPrefix.isEmpty() ? pairCode :
+                                               pairPrefix + QStringLiteral(" ") + pairCode);
     set_label_color(pairLabel_, pairColor);
     rateLabel_->setText(rateText);
     set_label_color(rateLabel_, rateColor);
@@ -94,8 +95,7 @@ void CrmRateCellWidget::setPastelBackground(bool on) {
     // dark themes without fighting the app's own accent colours -- a
     // pale lavender, distinct from the stale/unavailable amber/grey text
     // tinting used elsewhere in this cell.
-    setStyleSheet(on ? QStringLiteral("background-color: rgba(180, 160, 220, 60);")
-                     : QString());
+    setStyleSheet(on ? QStringLiteral("background-color: rgba(180, 160, 220, 60);") : QString());
 }
 
 void CrmRateCellWidget::mousePressEvent(QMouseEvent*) {

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 2F7AD024-2CDF-4B31-9845-0879179B0D1A
+:END:
+#+title: Settlement Currency
+#+description: The currency that governs a trade's settlement-day holiday calendar and, for cash-settled instruments, the currency actual settlement payments are made in.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Every trade must have a settlement currency. It plays two related but
+distinct roles: it determines which currency's holiday calendar
+governs settlement-day calculations, and, for cash-settled
+instruments, it is the currency in which the settlement payment
+itself is actually made. Both roles trace back to the same underlying
+requirement -- a trade cannot settle without an agreed currency to
+settle *in*, and without an agreed calendar to decide *when* -- and
+both connect settlement currency to concepts documented in depth
+elsewhere: the calendar side to [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]] and
+[[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][date rolling]], the payment side to the broader
+[[id:267DD5E8-F095-47C1-B42B-733565306776][business-day / settlement-day distinction]] a currency pair's spot
+date itself depends on.
+
+* Detail
+
+** Governing the settlement-day calendar
+
+A trade's settlement currency determines which holiday calendar its
+settlement-day calculations are measured against -- see [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business
+Centre]] for how a calendar is named via a business centre code in
+the first place, and [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] for how a
+calculated date that falls on a non-business day for that calendar is
+rolled to a valid one. For a currency pair specifically, [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date
+and settlement]] documents the further nuance that a *settlement day*
+narrows *business day* to also exclude USD holidays -- USD holidays
+being conventionally treated as ordinary business days for most
+purposes but still blocking settlement -- and how fixing-date and
+settlement-date calendars can genuinely differ for non-deliverable
+instruments.
+
+** Determining the actual payment currency
+
+For a cash-settled instrument, settlement currency is also, directly,
+the currency in which the settlement payment is made: rather than
+delivering the underlying, the two counterparties exchange a single
+payment in the agreed settlement currency reflecting the instrument's
+value. The [[https://en.wikipedia.org/wiki/Non-deliverable_forward][non-deliverable forward]] is the clearest widely-documented
+example of this role: USD is, in practice, the most common settlement
+currency for the net cash payment an NDF uses in place of physical
+delivery of a restricted currency. This is the same distinction [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][FX
+deliverability and NDFs]] draws at
+the currency-pair level between a deliverable pair (physical exchange
+of both currencies) and a non-deliverable forward (a single net cash
+settlement in a third, freely-convertible currency) -- settlement
+currency is the field that carries that choice at the level of an
+individual trade.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Non-deliverable_forward][Wikipedia: Non-deliverable forward]] -- the standard example of a
+  third-currency cash settlement.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- how a settlement calendar is named and
+  identified.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] -- how an invalid
+  settlement date is rolled to a valid one.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] -- the business-day / settlement-day
+  distinction underlying a currency pair's own spot date.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][FX deliverability and NDFs]] -- deliverable versus non-deliverable
+  settlement, and the third-currency cash settlement an NDF uses.
+- [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][Premium Currency]] -- the sibling currency field governing an
+  option's premium payment rather than its underlying settlement.

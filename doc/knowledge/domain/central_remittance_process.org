@@ -15,8 +15,8 @@
 by which crystallised book-level profit is periodically pulled up into
 a designated *Central Remittance Book* and, from there, physically
 remitted to Group via real, settleable cash trades. Unlike the
-[[id:CA299D08-AC97-4A37-B3F2-A5927F379326][ledger sweep]]'s daily unrealised revaluation, remittance produces
-actual cash movements with real settlement, and unlike the [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot
+[[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][ledger sweep]]'s daily unrealised revaluation, remittance produces
+actual cash movements with real settlement, and unlike the [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot
 sweep]]'s realised trading P&L, remittance is deliberately
 balance-sheet-only.
 
@@ -76,7 +76,7 @@ A single book is explicitly designated *the* remittance book — the
 Central Remittance Book. This is a distinct =book_purpose_type= value
 in its own right, structurally similar to =Is Funding Book=/=Is
 Sweepable= but not combinable with the Central Sweep Book role (see
-[[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]], "Sweep target and remittance target are
+[[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]], "Sweep target and remittance target are
 not combinable"). All remittance cash trades are dealt against a
 dedicated internal counterparty, the *Profit Remittance Counterparty*,
 never against any external or trading counterparty.
@@ -126,7 +126,7 @@ executed, timed, and reconciled independently.
   the Central Remittance Book role belongs to.
 - [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] — the ledger context (Ledger Sweep, functional
   currency) this process operates alongside.
-- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — why the Central Remittance Book and
-  Central Sweep Book are distinct, non-combinable roles.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — why the Central Remittance Book and Central Sweep Book
+  are distinct, non-combinable roles.
 - [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] — another book-scoped periodic process with its
   own system-generated trades and audit linkage requirements.

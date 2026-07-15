@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: E95FE89F-E006-46E7-AC98-33406FAB84EF
+:END:
+#+title: Task: Wire generate_short_code into Qt Create dialogs
+#+description: Add a generate/suggest button next to the short code field on generated Create dialogs that calls the existing generate_short_code utility from the entity's full name, for entities whose codegen model marks a natural (non-UUID) is_key field.
+#+type: task
+#+level: s1
+#+filetags: :qt:codegen:ux:party:counterparty:commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today, manually creating a party or counterparty requires typing the
+short code by hand -- =ores::utility::string::generate_short_code()=
+(and its SQL mirror, =ores_utility_generate_short_code_fn=) already
+exists and is used server-side by the GLEIF/synthetic bulk-import
+paths (=refdata_publish_from_dq_create.sql=), but nothing in the Qt
+Create dialog calls it. Add a small "generate" affordance (button or
+icon) next to the short code field that calls it against the current
+Full Name value and fills the field, for entities whose codegen model
+marks a natural (non-UUID) =is_key= field -- i.e. exactly the shape
+party/counterparty have (=short_code= is user-entered/editable, unlike
+an auto-generated UUID =id=).
+
+Scope: extend the =ores.cpp.qt= detail-dialog codegen templates
+(=cpp_qt_detail_dialog.*.mustache=) so this is a generic, declarative
+facet (e.g. a =:short_code_generator: true= flag on the Detail field,
+mirroring how =is_auto_generated_key= is already derived), not a
+one-off hand-wired button on party/counterparty alone -- other
+entities with the same natural-key shape should get it for free on
+next regen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- A "generate" button/icon appears next to the short code field on
+  party and counterparty's Create dialogs (edit mode: field stays
+  locked as today, generator hidden/disabled).
+- Clicking it calls =generate_short_code(fullName)= client-side (Qt
+  links =ores.utility=, no server round-trip needed) and populates the
+  short code field, still editable afterwards.
+- The generator affordance is declarative in the =.org= model (a Qt
+  Detail-field facet), so it round-trips cleanly through
+  =codegen entity generate <entity> --address ores.cpp.qt --diff= with
+  zero unrelated diff, and is available to any future entity with the
+  same natural-key shape without hand-authored code.
+- Builds cleanly; manually verified live for both party and
+  counterparty Create dialogs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

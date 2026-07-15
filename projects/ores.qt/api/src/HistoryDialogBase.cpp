@@ -24,8 +24,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
-#include <QAction>
 #include <QAbstractItemView>
+#include <QAction>
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QHeaderView>
@@ -147,8 +147,10 @@ QLabel* makeTimelineFieldLabel(QWidget* parent,
     widget->setFont(font);
     widget->setText(QString("<span style='color:%1;'>%2:</span> "
                             "<span style='color:%3;'>%4</span>")
-                        .arg(cssRgba(parent->palette().color(QPalette::PlaceholderText)), label,
-                             cssRgba(value_color), value.toHtmlEscaped()));
+                        .arg(cssRgba(parent->palette().color(QPalette::PlaceholderText)),
+                             label,
+                             cssRgba(value_color),
+                             value.toHtmlEscaped()));
     return widget;
 }
 
@@ -209,18 +211,19 @@ QWidget* makeTimelineItemWidget(QWidget* parent, int version, const QStringList&
             makeTimelineFieldLabel(container, QStringLiteral("Modified By"), author, value_color));
 
     if (const QString performed_by = cells.value(2); !performed_by.isEmpty())
-        item_layout->addWidget(makeTimelineFieldLabel(container, QStringLiteral("Performed By"), performed_by,
-                                                       color_constants::timeline_performed_by));
+        item_layout->addWidget(makeTimelineFieldLabel(container,
+                                                      QStringLiteral("Performed By"),
+                                                      performed_by,
+                                                      color_constants::timeline_performed_by));
 
     if (const QString reason = cells.value(3); !reason.isEmpty())
         item_layout->addWidget(makeTimelineReasonBadge(container, reason), 0, Qt::AlignLeft);
 
     if (const QString commentary = cells.value(4); !commentary.isEmpty()) {
-        auto* comment_label = new QLabel(
-            QString("<span style='color:%1;'>“%2”</span>")
-                .arg(cssRgba(color_constants::timeline_commentary),
-                     escapeAndWrapNewlines(commentary)),
-            container);
+        auto* comment_label = new QLabel(QString("<span style='color:%1;'>“%2”</span>")
+                                             .arg(cssRgba(color_constants::timeline_commentary),
+                                                  escapeAndWrapNewlines(commentary)),
+                                         container);
         comment_label->setWordWrap(true);
         QFont comment_font = comment_label->font();
         comment_font.setPointSize(qMax(comment_font.pointSize() - 1, 7));
@@ -366,7 +369,9 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
         onlyChangesGroup_->addButton(widgets_.onlyChangesToggle, 1);
         (onlyChangesMode_ ? widgets_.onlyChangesToggle : widgets_.allFieldsToggle)
             ->setChecked(true);
-        connect(onlyChangesGroup_, &QButtonGroup::idClicked, this,
+        connect(onlyChangesGroup_,
+                &QButtonGroup::idClicked,
+                this,
                 &HistoryDialogBase::onCompareToggled);
     }
 
@@ -727,17 +732,19 @@ void HistoryDialogBase::renderComparePane(const DiffResult& diffs) {
 
         QString value_html;
         if (entry) {
-            value_html = renderDiffCell(entry->old_value, entry->old_spans,
-                                       color_constants::diff_old_line_bg,
-                                       color_constants::diff_old_span_bg) +
-                        renderDiffCell(entry->new_value, entry->new_spans,
-                                       color_constants::diff_new_line_bg,
-                                       color_constants::diff_new_span_bg);
+            value_html = renderDiffCell(entry->old_value,
+                                        entry->old_spans,
+                                        color_constants::diff_old_line_bg,
+                                        color_constants::diff_old_span_bg) +
+                         renderDiffCell(entry->new_value,
+                                        entry->new_spans,
+                                        color_constants::diff_new_line_bg,
+                                        color_constants::diff_new_span_bg);
         } else {
             // Unchanged field (All Fields mode): show the value once,
             // uncoloured — old and new are identical.
-            value_html = QString("<div style=\"padding:2px;\">%1</div>")
-                             .arg(escapeAndWrapNewlines(old_val));
+            value_html =
+                QString("<div style=\"padding:2px;\">%1</div>").arg(escapeAndWrapNewlines(old_val));
         }
         html += QString("<tr><td><b>%1</b></td><td>%2</td></tr>")
                     .arg(field.toHtmlEscaped(), value_html);

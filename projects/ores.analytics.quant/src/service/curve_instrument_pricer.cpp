@@ -42,11 +42,10 @@ double curve_instrument_pricer::fra_rate(double discount_factor_start,
     return (discount_factor_start / discount_factor_end - 1.0) / accrual_fraction;
 }
 
-double curve_instrument_pricer::swap_par_rate(
-    double discount_factor_start,
-    double discount_factor_end,
-    const std::vector<double>& fixed_leg_discount_factors,
-    const std::vector<double>& accrual_fractions) {
+double curve_instrument_pricer::swap_par_rate(double discount_factor_start,
+                                              double discount_factor_end,
+                                              const std::vector<double>& fixed_leg_discount_factors,
+                                              const std::vector<double>& accrual_fractions) {
     if (discount_factor_start <= 0.0 || discount_factor_end <= 0.0)
         throw std::invalid_argument("curve_instrument_pricer: discount factors must be positive");
     if (fixed_leg_discount_factors.empty())

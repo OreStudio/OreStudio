@@ -94,7 +94,11 @@ void IrCurveTemplateEntryDetailDialog::setupConnections() {
             this,
             &IrCurveTemplateEntryDetailDialog::onCloseClicked);
 
-    connect(ui_->tenorCodeEdit,
+    connect(ui_->startTenorCodeEdit,
+            &QLineEdit::textChanged,
+            this,
+            &IrCurveTemplateEntryDetailDialog::onFieldChanged);
+    connect(ui_->endTenorCodeEdit,
             &QLineEdit::textChanged,
             this,
             &IrCurveTemplateEntryDetailDialog::onFieldChanged);
@@ -138,7 +142,8 @@ void IrCurveTemplateEntryDetailDialog::markDirty() {
 
 void IrCurveTemplateEntryDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->tenorCodeEdit->setReadOnly(readOnly);
+    ui_->startTenorCodeEdit->setReadOnly(readOnly);
+    ui_->endTenorCodeEdit->setReadOnly(readOnly);
     ui_->instrumentCodeEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -146,7 +151,9 @@ void IrCurveTemplateEntryDetailDialog::setReadOnly(bool readOnly) {
 
 void IrCurveTemplateEntryDetailDialog::updateUiFromEntry() {
     ui_->sequenceIndexEdit->setValue(ir_curve_template_entry_.sequence_index);
-    ui_->tenorCodeEdit->setText(QString::fromStdString(ir_curve_template_entry_.tenor_code));
+    ui_->startTenorCodeEdit->setText(
+        QString::fromStdString(ir_curve_template_entry_.start_tenor_code));
+    ui_->endTenorCodeEdit->setText(QString::fromStdString(ir_curve_template_entry_.end_tenor_code));
     ui_->instrumentCodeEdit->setText(
         QString::fromStdString(ir_curve_template_entry_.instrument_code));
 
@@ -163,7 +170,9 @@ void IrCurveTemplateEntryDetailDialog::updateUiFromEntry() {
 
 void IrCurveTemplateEntryDetailDialog::updateEntryFromUi() {
     ir_curve_template_entry_.sequence_index = ui_->sequenceIndexEdit->value();
-    ir_curve_template_entry_.tenor_code = ui_->tenorCodeEdit->text().trimmed().toStdString();
+    ir_curve_template_entry_.start_tenor_code =
+        ui_->startTenorCodeEdit->text().trimmed().toStdString();
+    ir_curve_template_entry_.end_tenor_code = ui_->endTenorCodeEdit->text().trimmed().toStdString();
     ir_curve_template_entry_.instrument_code =
         ui_->instrumentCodeEdit->text().trimmed().toStdString();
     ir_curve_template_entry_.modified_by = username_;
@@ -181,10 +190,12 @@ void IrCurveTemplateEntryDetailDialog::updateSaveButtonState() {
 }
 
 bool IrCurveTemplateEntryDetailDialog::validateInput() {
-    const QString tenor_code_val = ui_->tenorCodeEdit->text().trimmed();
+    const QString start_tenor_code_val = ui_->startTenorCodeEdit->text().trimmed();
+    const QString end_tenor_code_val = ui_->endTenorCodeEdit->text().trimmed();
     const QString instrument_code_val = ui_->instrumentCodeEdit->text().trimmed();
 
-    return true && !tenor_code_val.isEmpty() && !instrument_code_val.isEmpty();
+    return true && !start_tenor_code_val.isEmpty() && !end_tenor_code_val.isEmpty() &&
+           !instrument_code_val.isEmpty();
 }
 
 void IrCurveTemplateEntryDetailDialog::onSaveClicked() {

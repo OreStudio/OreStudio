@@ -43,7 +43,8 @@ generate_synthetic_ir_curve_template_entry(utility::generation::generation_conte
     r.party_id = ctx.generate_uuid();
     r.ir_curve_config_id = ctx.generate_uuid();
     r.sequence_index = faker::number::integer(0, 20);
-    r.tenor_code = std::string("1Y");
+    r.start_tenor_code = std::string("SPOT");
+    r.end_tenor_code = std::string("1Y");
     r.instrument_code = std::string("Swap");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

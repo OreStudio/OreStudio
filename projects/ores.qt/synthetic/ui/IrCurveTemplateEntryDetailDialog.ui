@@ -56,27 +56,41 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelTenorCode">
+           <widget class="QLabel" name="labelStartTenorCode">
             <property name="text">
-             <string>Tenor:</string>
+             <string>Start Tenor:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="tenorCodeEdit">
+           <widget class="QLineEdit" name="startTenorCodeEdit">
             <property name="placeholderText">
-             <string>Enter tenor code (e.g. 1Y)</string>
+             <string>Enter start tenor code (e.g. SPOT)</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
+           <widget class="QLabel" name="labelEndTenorCode">
+            <property name="text">
+             <string>End Tenor:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="endTenorCodeEdit">
+            <property name="placeholderText">
+             <string>Enter end tenor code (e.g. 1Y)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
            <widget class="QLabel" name="labelInstrumentCode">
             <property name="text">
              <string>Instrument:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="instrumentCodeEdit">
             <property name="placeholderText">
              <string>Enter instrument code (e.g. Swap)</string>

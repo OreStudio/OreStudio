@@ -21,6 +21,8 @@
 #include "../feed_controller.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
@@ -34,6 +36,7 @@
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
+#include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -51,6 +54,7 @@
 namespace ores::synthetic::service::app {
 
 using namespace ores::logging;
+namespace ev = ores::eventing;
 
 namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
@@ -154,6 +158,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto db_ctx = make_context(cfg.database);
 
+    // =========================================================================
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
+    // =========================================================================
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    auto generated_event_subs =
+        messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
+    event_source.start();
+    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+
     try {
         auto admin = nats.make_admin();
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
@@ -194,6 +208,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         });
 
     ctrl->shutdown();
+    event_source.stop();
     co_return;
 }
 

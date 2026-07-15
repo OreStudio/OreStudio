@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:FFFC881E-D3CD-4FDE-8366-9FF7979DA376][Verify migrated entity history dialogs (book, cds_convention, tenor, currency_group, calendar)]] | PENDING | Awaiting manual execution via QA Validation Runner. |
 
 * PRs
 

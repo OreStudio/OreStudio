@@ -43,11 +43,11 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -125,3 +125,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Confirmed hypothesis (a): the "possibly lost" reports are the
+well-known immer thread-local-allocator-pool false positive, not a
+real leak in =rate_engine=/=vertex_state='s own code. Every reproduced
+run showed 0 bytes definitely/indirectly lost, with every "possibly
+lost" record tracing through the same immer free-list-heap
+=allocate()= chain regardless of whether it originated from a
+single-threaded or worker-thread test path.
+
+Added one targeted entry to =build/valgrind/custom.supp= (already
+wired into nightly's =with_memcheck=1= =CTest.cmake= run), matched on
+the immer allocator's own 5-frame =allocate()= chain for
+=rate_engine='s specific 280-byte/1024-slot =vertex_state= pool
+instantiation, =match-leak-kinds: possible= only -- not a blanket
+=immer::*= suppression, so a genuine definite leak (or a possibly-lost
+report through any other allocation site) still surfaces.
+
+Verified: =valgrind --leak-check=full --show-reachable=yes
+--suppressions=build/valgrind/custom.supp= against the full
+=ores.analytics.quant.tests= suite (147 test cases, all passing) --
+0 definitely/indirectly/possibly lost; 4 hits of the new suppression
+entry correctly bucketed as "suppressed".

@@ -154,8 +154,8 @@ std::string("Swap")
 
 ** Checks
 
-| expression               |
-|---------------------------|
+| expression                |
+|----------------------------|
 | "start_tenor_code" <> '' |
 | "end_tenor_code" <> ''   |
 | "instrument_code" <> ''  |

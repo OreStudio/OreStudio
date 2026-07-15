@@ -764,12 +764,20 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
 {{/combo_display_field}}
         [](const auto& t) { return QString::fromStdString(t.{{combo_tooltip_field}}); },
         [](const auto& t) { return t.{{combo_sort_field}}; },
+{{#is_optional_uuid}}
+        [this]() {
+            const auto& _opt = {{domain_entity.qt.item_var}}_.{{field}};
+            return _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        },
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
 {{#is_uuid}}
         [this]() { return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}_.{{field}})); },
 {{/is_uuid}}
 {{^is_uuid}}
         [this]() { return QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}); },
 {{/is_uuid}}
+{{/is_optional_uuid}}
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load {{combo_label}}: %1").arg(error));
         },
@@ -782,11 +790,22 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
 {{#is_uuid}}
-        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); });
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); },
 {{/is_uuid}}
+{{#is_optional_uuid}}
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); },
+{{/is_optional_uuid}}
 {{^is_uuid}}
-        [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); });
+{{^is_optional_uuid}}
+        [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); },
+{{/is_optional_uuid}}
 {{/is_uuid}}
+{{#is_self_referencing_combo}}
+        [this](const auto& t) { return t.id == {{domain_entity.qt.item_var}}_.id; });
+{{/is_self_referencing_combo}}
+{{^is_self_referencing_combo}}
+        [](const auto&) { return false; });
+{{/is_self_referencing_combo}}
 }
 {{/combo_domain_type}}
 {{^combo_domain_type}}
@@ -946,6 +965,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{#is_dynamic_combo}}
 {{#combo_fetch_fn}}
     {
+{{#is_optional_uuid}}
+        const auto& _opt = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+        const auto val = _opt
+            ? QString::fromStdString(boost::uuids::to_string(*_opt))
+            : QString{};
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
 {{#is_uuid}}
         const auto val = QString::fromStdString(boost::uuids::to_string(
             {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
@@ -954,6 +980,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
         const auto val = QString::fromStdString(
             {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_uuid}}
+{{/is_optional_uuid}}
         const int idx = ui_->{{widget}}->findData(val);
         if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
     }
@@ -1098,8 +1125,41 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
 {{#combo_fetch_fn}}
+{{#is_optional_uuid}}
+    {
+        const auto {{field}}_str = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+        if ({{field}}_str.empty()) {
+            {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = std::nullopt;
+        } else {
+            try {
+                {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+                    boost::uuids::string_generator()({{field}}_str);
+            } catch (const std::exception&) {
+                {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = std::nullopt;
+            }
+        }
+    }
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    {
+        const auto {{field}}_str = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+        if (!{{field}}_str.empty()) {
+            try {
+                {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+                    boost::uuids::string_generator()({{field}}_str);
+            } catch (const std::exception&) {
+                // Leave the field unchanged; validation catches the empty/nil
+                // selection at save time (no combo choice made yet).
+            }
+        }
+    }
+{{/is_uuid}}
+{{^is_uuid}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
         ui_->{{widget}}->currentText().toStdString();
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/combo_fetch_fn}}
 {{^combo_fetch_fn}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =

@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 709B8639-638A-48D5-876C-A460F29B1BCB
+:END:
+#+title: Test Scenario: Verify parent party/counterparty picker on Create
+#+description: Manual verification that Create for party and counterparty now requires and accepts a parent selection, and that creating a second party/counterparty succeeds end to end.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:party:counterparty:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | =PartyDetailDialog= / =CounterpartyDetailDialog= — Menu: *Reference Data > Parties*/*Counterparties* |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=. Select
+the *Barclays Plc* / *BARCLAYS PLC* party.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Party Create shows a required Parent Party combo
+
+Menu: *Reference Data > Parties*, click *Add*. Confirm a new *Parent
+Party* combo is present, populated with existing parties (e.g.
+BARCLAYS PLC and its GLEIF-imported subsidiaries). Leave it unset and
+try to Save -- confirm Save stays disabled (no error dialog, matching
+the existing required-field pattern for Short Code/Full Name).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a second party succeeds with a parent selected
+
+Fill in Short Code =TESTPTY2=, Full Name =Test Party Co 2=, pick a
+*Parent Party* (e.g. BARCLAYS PLC), and fill the other required
+fields. Save. Confirm the new row appears in the Parties list --
+this is the case that previously always failed with a duplicate-key
+error on =parties_root_party_uniq_idx=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Edit round-trips the selected parent
+
+Double-click =TESTPTY2= to reopen it. Confirm the Parent Party combo
+shows the previously-selected parent (not blank).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Counterparty Create shows a required Parent Counterparty combo
+
+Menu: *Reference Data > Counterparties*, click *Add*. Confirm a new
+*Parent Counterparty* combo is present and populated, and that Save
+stays disabled while it's unset.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a second counterparty succeeds with a parent selected
+
+Fill in Short Code =TESTCPTY2=, Full Name =Test Counterparty Co 2=,
+pick a *Parent Counterparty*, and fill the other required fields.
+Save. Confirm the new row appears in the Counterparties list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Cleanup
+
+Delete =TESTPTY2= and =TESTCPTY2= if created, to leave the tenant
+clean for subsequent scenario runs.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-15T22:43:00Z |
+| Branch        | feature/party-create-needs-parent-picker |
+| Commit        | 234bdb7d4 |
+| Worktree      | prime_origin |
+
+* Notes

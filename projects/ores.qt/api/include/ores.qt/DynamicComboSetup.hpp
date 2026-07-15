@@ -97,6 +97,16 @@ namespace detail {
  * the displayed text when set (e.g. a UUID id backing a name-labelled
  * combo). Defaults to @p code_of when unset, preserving the original
  * text-is-the-value behaviour for every existing caller.
+ * @param exclude_if Evaluated on the main thread against each fetched
+ * item after the fetch completes; items for which it returns true are
+ * dropped before sorting/populating. Used by self-referencing combos
+ * (e.g. a party's own parent-party picker) to exclude the entity
+ * currently being edited from its own parent list — both to prevent
+ * self-parenting and because a self-referencing row breaks a
+ * recursive hierarchy CTE (UNION ALL never dedupes a row that matches
+ * itself, so it loops forever). Defaults to a no-op (nothing
+ * excluded), preserving existing behaviour for every non-self-
+ * referencing caller.
  */
 template <typename Entity>
 void populateDynamicCombo(
@@ -113,7 +123,8 @@ void populateDynamicCombo(
     std::function<void()> on_success = []() {},
     const QString& loading_placeholder = QObject::tr("Loading…"),
     const QString& error_placeholder = QObject::tr("Failed to load"),
-    std::function<QString(const Entity&)> value_of = nullptr) {
+    std::function<QString(const Entity&)> value_of = nullptr,
+    std::function<bool(const Entity&)> exclude_if = [](const Entity&) { return false; }) {
     if (!value_of)
         value_of = code_of;
     if (!combo || !owner || !client_manager || !client_manager->isConnected()) {
@@ -162,6 +173,7 @@ void populateDynamicCombo(
          value_of,
          tooltip_of,
          sort_key_of,
+         exclude_if,
          on_error,
          on_success,
          error_placeholder]() {
@@ -187,6 +199,7 @@ void populateDynamicCombo(
             }
 
             auto items = std::move(*result);
+            items.erase(std::remove_if(items.begin(), items.end(), exclude_if), items.end());
             std::sort(items.begin(), items.end(), [&sort_key_of](const auto& a, const auto& b) {
                 return sort_key_of(a) < sort_key_of(b);
             });

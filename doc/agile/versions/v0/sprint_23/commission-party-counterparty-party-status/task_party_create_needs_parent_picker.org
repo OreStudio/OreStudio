@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :qt:codegen:party:counterparty:blocking:commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/party-create-needs-parent-picker
+#+pr: 1594
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,34 +54,77 @@ needs it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
 
-- Party and counterparty Create/Edit dialogs gain a "Parent Party"/
-  "Parent Counterparty" combo, blank-allowed, sourced from the
-  existing entity list.
+- Party and counterparty Create/Edit dialogs gain a required "Parent
+  Party"/"Parent Counterparty" combo, sourced from the existing entity
+  list.
 - Creating a second (non-root) party/counterparty with a parent
-  selected succeeds; leaving it blank on a tenant that already has a
-  root correctly still fails server-side (that constraint is correct
-  behavior, just needs a reachable, non-silent path around it).
-- Self-parenting and cyclic parent chains are rejected with a clear
-  error, not a generic constraint-violation message.
+  selected succeeds; Save stays disabled (consistent with every other
+  required field) until a parent is chosen.
+- Self-parenting is impossible by construction (the new entity's id
+  doesn't exist yet when the combo populates on Create). Descendant-
+  cycle prevention on Edit is explicitly out of scope -- see Notes.
 - Builds cleanly; manually verified live for both party and
   counterparty.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Simplified scope per discussion: the combo is *required*, not
+blank-allowed -- "you must supply a valid parent party" to create one.
+This sidesteps the harder "root party via UI" case entirely (root is
+provisioned via GLEIF publish, never manually).
+
+Found the existing =dynamic_combo= facet mechanism already generalizes
+to a self-referencing UUID-valued combo almost for free:
+- =is_uuid=/=combo_code_field= already drive a UUID-keyed dynamic combo
+  correctly (used for e.g. locked key fields) -- just never combined
+  with =combo_domain_type= pointing at the *same* entity before.
+- =required_dynamic_combo_fields= already generates the
+  =currentIndex() >= 0= check in =validateInput()= generically -- no
+  new validation machinery needed, just mark the field =is_required=.
+- Gap found: the *non-locked* =is_dynamic_combo= branches of
+  =updateUiFromX()=/=updateXFromUi()= (tangled from
+  =ores.cpp.qt.detail_dialog_impl.org=) only handle plain
+  =std::string=-valued combos, not =is_uuid=/=is_optional_uuid=. Since
+  =parent_party_id= is =std::optional<boost::uuids::uuid>= (nullable at
+  the DB/domain level -- the root party genuinely has none), extended
+  both branches to handle =is_optional_uuid= (parse/round-trip through
+  =std::optional=, unset on an empty combo selection).
+- Self-parenting is naturally impossible on Create (the new party's id
+  doesn't exist yet when the combo is populated, so it can't appear in
+  its own parent list); descendant-cycle prevention on Edit is out of
+  scope for this pass (Edit's parent-reassignment isn't exercised by
+  the failing scenario) -- captured as a note below if picked up later.
+
+Steps:
+1. Add =fetch_parties=/=fetch_counterparties= to =LookupFetcher=
+   (same shape as =fetch_party_id_schemes= etc., reusing the existing
+   =get_parties_request=/=get_counterparties_request= with a large
+   limit -- matches =PartyChildEntityTables='s existing =limit=1000=
+   precedent rather than building a searchable/paginated combo).
+2. Extend the =is_dynamic_combo= branches in
+   =ores.cpp.qt.detail_dialog_impl.org= for =is_optional_uuid=.
+3. Add =parent_party_id= as a required =dynamic_combo= Detail field to
+   =party.org=/=counterparty.org='s Qt facet (self-referencing
+   =combo_domain_type=).
+4. Regenerate, build, manually verify Create end-to-end for both.
 
 * Notes
+
+Descendant-cycle prevention on Edit (reassigning an existing party's
+parent to one of its own descendants) is not handled by this task --
+only Create is in scope. If Edit-time parent reassignment is exposed
+later, revisit whether the server needs a cycle check (client-side
+combo filtering alone can't prevent it once any client can call save()
+directly).
 
 * Test Scenarios
 
@@ -92,18 +135,40 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:709B8639-638A-48D5-876C-A460F29B1BCB][Verify parent party/counterparty picker on Create]] | PASSED | All 6 steps PASS: required-combo presence, disabled-Save-when-unset, successful second-party/counterparty Create, edit round-trip, and cleanup. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1594][#1594]] | [codegen,qt] Add required parent picker to party/counterparty Create |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Self-parenting not prevented on Edit; hangs the recursive hierarchy CTE (self-referencing row, UNION ALL never dedupes) | PartyDetailDialog.cpp, CounterpartyDetailDialog.cpp | Fixed | Added a generic =exclude_if= predicate to =populateDynamicCombo= (DynamicComboSetup.hpp) plus an =is_self_referencing_combo= codegen flag (core.py) so the template emits the exclusion only for genuinely self-referencing combos. Commit 88aa06e77. |
+| 2 | Parent picker sorted by =version=, not alphabetically | ores.refdata.party.org, ores.refdata.counterparty.org | Declined | Already documented as a deliberate tradeoff in the PR description -- =populateDynamicCombo='s =sort_key_of= is int-typed and neither entity has a more meaningful int ordinal; not worth widening a widely-shared generic helper's signature for one combo. |
+| 3 | Save may not stay disabled by default once the async fetch completes (QComboBox auto-selects index 0) | PartyDetailDialog.cpp, CounterpartyDetailDialog.cpp | Declined | Pre-existing, shared behavior across 5+ already-shipped entities' required dynamic combos (crm_driver_pair, crm_enabled_derived_pair, tenor_convention x2, business_centre, instrument_code) -- not a regression this PR introduces, and fixing it would change runtime behavior for all of them without a full re-verification pass. Out of scope here. |
+| 4 | =counterparty.hpp= include not alphabetically ordered | LookupFetcher.hpp | Fixed | Commit 88aa06e77. |
 
 * Result
+
+Verified PASSED live against BARCLAYS PLC (scenario
+=709B8639-638A-48D5-876C-A460F29B1BCB=): both Party and Counterparty
+Create dialogs gained a required Parent combo, Save correctly stays
+disabled with no selection, a second party/counterparty was created
+successfully with a parent selected, and reopening it for edit
+correctly round-trips the selected parent. This closes the last
+blocker on the party/counterparty commissioning story's manual Create
+flow.
+
+Implementation reused nearly all existing codegen machinery
+(=is_uuid=/=combo_code_field=, =required_dynamic_combo_fields=) --
+the only real gap was =is_optional_uuid= support in the non-locked
+=is_dynamic_combo= template branches, plus a latent bug the extension
+surfaced (the item-to-combo-value extractor was gated on the wrong
+field's uuid-ness). Fixed at the =ores.cpp.qt.detail_dialog_impl.org=
+tangle source, not the generated output. Zero regression verified via
+=--diff= roundtrip across all 9 other entities using
+=combo_domain_type=.

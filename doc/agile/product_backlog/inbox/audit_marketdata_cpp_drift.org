@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 00AE69E5-61CC-49D0-ADF7-7BFF1D5EAD9F
+:END:
+#+title: Audit and apply safe codegen drift to ores.marketdata
+#+description: The ores.codegen C++ drift catalog (75 models) never audited ores.marketdata; market_fixing regenerates with new untracked files (messaging/presentation registrars), so the component needs the same audit-then-apply-safe-drift treatment as refdata/trading.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:marketdata:tech-debt:drift:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+While regenerating a sample of entities for the "Delete legacy codegen
+profile system" task, =compass codegen entity generate market_fixing=
+(=ores.marketdata=) — run on clean, unmodified =origin/main= to isolate
+the effect of that task's change — produced real, pre-existing drift:
+new untracked files the template wants to generate that don't exist in
+the repo yet (=messaging/market_fixing_registrar.hpp/.cpp=,
+=presentation/market_fixing_history_field_mapper.hpp/.cpp=,
+=service/messaging/market_fixing_event_registrar.hpp=). This is the
+same class of "additive" drift the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++
+generation]] story already catalogues and fixes component-by-component
+(see =task_audit_cpp_drift.org='s drift catalog and the per-component
+=task_apply_safe_drift_<component>.org= tasks, e.g. trading, refdata).
+
+File a new =task_apply_safe_drift_marketdata.org= (and extend the drift
+catalog with a "marketdata" section) in that story, following the same
+pilot-then-apply methodology once the refdata pilot
+([[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]]) unblocks and re-triages.
+
+* Why
+
+The drift catalog's own acceptance criterion was "all 75
+=_domain_entity.json= models processed" — but =ores.marketdata= wasn't
+one of the components in scope at the time the catalog was built, so
+its drift (at least =market_fixing=; possibly other marketdata
+entities too) has never been audited or classified. Left alone, this
+is exactly the kind of silent drift the story exists to eliminate —
+discovered here only by accident, while regenerating something
+unrelated to verify a different change was zero-diff.
+
+* References
+
+- =doc/agile/product_backlog/next/refactor_codegen_cpp/task_audit_cpp_drift.org= — the existing drift catalog (75 models, no marketdata).
+- =doc/agile/product_backlog/next/refactor_codegen_cpp/task_apply_safe_drift_trading.org= — the per-component apply-drift task template to follow.
+- =doc/agile/versions/v0/sprint_23/codegen-retire-legacy-profiles-junction-support/task_delete-legacy-profile-system.org= — the task during which this was discovered.
+
+* See also
+
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the parent story this belongs under.

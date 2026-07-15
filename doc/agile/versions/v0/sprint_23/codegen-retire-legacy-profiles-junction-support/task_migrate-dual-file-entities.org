@@ -5,7 +5,7 @@
 #+description: For each of the 9 dual-file entities (book_status, contact_type, country, currency_market_tier, monetary_nature, party_id_scheme, party_status, party_type, rounding_type), move the * Validation function and * Insert trigger sections from the _table.org file into the entity file. Verify generated SQL is byte-identical to the table-pathway output. Delete the _table.org file. For purpose_type (the sole table-only entity), create a sql_only entity file and delete purpose_type_table.org. For currency, delete currency_table.org directly once commission-currency sync tasks complete — the entity model (ores.refdata.currency.org) already exists with full C++, Qt, and NATS layers. Validate each migrated entity with the domain entity evaluation checklist.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_23:v0:
+#+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ All 11 _table.org files are deleted; their SQL sections live in the correspondin
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

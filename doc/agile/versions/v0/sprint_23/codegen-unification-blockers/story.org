@@ -7,11 +7,13 @@
 #+level: s2
 #+filetags: :tooling:codegen:unification:sprint_23:v0:
 #+created: 2026-06-27
-#+updated: 2026-07-11
+#+updated: 2026-07-15
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+*Merged* into [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] on 2026-07-15: the remaining BACKLOG blockers (B4, B6/archetypes subcommand, B7, B9, B10, B11, plus the two content-migration/table-retirement tasks) are all "retire legacy codegen cruft" work overlapping that story's own scope (in particular B10/B11 duplicated its tasks 1 and 5 almost exactly), so they were relocated there via =compass task move= rather than tracked in two places. This story is closed with the 6 blockers it actually completed (B1, B2, B3, B5, B8, plus the populate-archetypes task); nothing further will land against it.
 
 Carried from [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]], where 8 of 15 tasks were completed (one abandoned, superseded).
 
@@ -39,12 +41,12 @@ The blockers, in implementation order:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | B1, B2, B3, B5, and B8 done; B4 (collapse refdata/refdata-cpp components) is the next open blocker. |
+| Now           | B1, B2, B3, B5, and B8 done. Remaining backlog (B4, B6, B7, B9, B10, B11, content migration, table retirement) moved to [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement B4.                          |
-| Last touched  | 2026-07-06                               |
+| Next          | Nothing — see the target story.        |
+| Last touched  | 2026-07-15                               |
 
 * Acceptance
 
@@ -88,16 +90,8 @@ The blockers, in implementation order:
 | [[id:7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148][B1: Extend entity SQL template to cover full table-template data shape]] | DONE | 2026-06-27 | 2026-06-27 | Extend sql_schema_domain_entity_create.mustache to render coding_scheme columns, image_id, the validation_fn block, and insert_trigger.validations — the sections that previously only sql_schema_create.mustache (table pathway) produced — so a merged entity model generates byte-identical SQL to the table pathway. |
 | [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement element-level physical space binding via ores.* property drawer]] | DONE | 2026-06-27 | 2026-06-29 | Implement ores.{ts}[.{facet}].enabled property-drawer activation with hierarchical override semantics. The generator reads these from each entity's :PROPERTIES: drawer, resolves specificity (more-specific address wins), and skips matching facets. Replaces the ad-hoc #+sql_only and #+has_qt flags. Resolution logic isolated and unit-tested. |
 | [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | ABANDONED | | | Superseded by B5: the generic ores.* property-drawer mechanism covers this use case via :ores.cpp.qt.enabled: false. |
-| [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | BACKLOG | | | Merge the refdata and refdata-cpp entries in the component catalogue into one component with a single discovery glob over ores.refdata.*.org. Remove the dead models_dir entries from both. Update all compass codegen entity commands that reference either component. |
-| [[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]] | BACKLOG | | | New 'archetypes' subcommand lists the full physical space catalogue in ores.ts.facet.archetype notation. With --entity shows the entity's supported set with per-archetype enabled/disabled status. Makes the address system self-documenting. Depends on B5. |
-| [[id:AE754D5A-7C07-490A-A1B4-56CD7E7A3A14][B7: Remove split-model backward-compatibility once all models migrated]] | BACKLOG | | | Retire the dual-pathway scaffolding (table + entity templates, inert defensive defaults) added by B1-B3 for coexistence, once every model is migrated to the unified domain_entity format and verified byte-identical. |
 | [[id:1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62][B8: Fold component-scaffolding archetypes into the physical-space graph]] | DONE | 2026-06-28 | 2026-06-28 | Migrate the component-scope archetypes (cmake_*, cpp_component_*, cpp_service_app_*, sql_service_*, shell_*, the * Component archetypes) into the ores.* physical-space doc graph, after B5 lands the entity-facet graph. |
-| [[id:1BDF8A2E-EC7D-4B54-8949-DF76D4B5A050][B9: Rename .mustache template files to MASD address form]] | BACKLOG | | | Rename the 50 entity-facet .mustache templates to address form (ores_cpp_domain_class_header.mustache) atomically with their :tangle targets, core.py get_schema_template_mappings, and doc-string references; verify byte-identical generation across the graph path and the legacy schema path. |
-| [[id:E286B5ED-6B1C-4738-8E67-8F62F0C1C741][B10: Retire facet_catalogue monolith + legacy literate facet/group docs]] | BACKLOG | | | Delete facet_catalogue.org and the 18 legacy literate facet/facet_group docs (cpp_qt.org, cpp_group.org, sql_schema.org, ...), remove the now-dead load_profiles/resolve_profile_templates/validate_profile_for_model code, and repoint or remove the hundreds of inbound id: links (56 to facet_catalogue alone) across the org-roam graph to the new ores.* nodes. |
-| [[id:DB8433F8-769A-48F6-A8BD-4CFAD1733D7F][B11: Migrate live codegen callers from --profile to --address]] | BACKLOG | | | Switch the live caller surfaces (codegen/qt/sql recipes, skills, runbooks, shell scripts, compass help) from the deprecated --profile to --address; resolve composite-profile cases (all, all-cpp, non-temporal) that have no single-address equivalent; leave historical agile/plan/analysis docs untouched. Then optionally remove the --profile shim. |
 | [[id:2965F6B2-D0B3-44DE-8E9F-C2CC8EBDA556][Generate data-scope populate archetypes from dataset org-models]] | DONE | 2026-06-28 | 2026-06-29 | Migrate populate/seed generation into the ores.* graph: each seeder dataset becomes a literate org model declaring its enabled ores.sql.populate archetypes via the drawer; retire get_template_mappings and the scattered data JSON. |
-| [[id:A64EB006-AE16-411B-8FC5-46A6D37BCBC7][Migrate content: move _table.org sections into entity files and delete table files]] | BACKLOG | | | For each of the 9 dual-file entities, move the Validation function and Insert trigger sections from the _table.org file into the entity file; verify byte-identical generated SQL; delete the _table.org file. Moved in from the now-closed Decommission ores.codegen.table model type story — was originally out of scope here (Step 5 of the migration path), pulled in at sprint 22 close since it's real remaining work with no home elsewhere. |
-| [[id:505820E3-FCB4-4192-AA0F-BDBDC1177088][Retire the table model type: remove the table branch from the generator and profile matrix]] | BACKLOG | | | Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix. Moved in from the now-closed Decommission ores.codegen.table model type story — was originally out of scope here (Step 7), pulled in at sprint 22 close for the same reason. |
 
 * Decisions
 
@@ -133,3 +127,15 @@ of tracked twice — see the Tasks table.)
 - ~~Retiring the =ores.codegen.table= type from =get_model_type()=
   (Step 7): deferred until all table files are gone.~~ Now tracked as
   a task above.
+
+* Result
+
+Closed with the 6 blockers actually completed this story (B1, B2, B3,
+B5, B8, the populate-archetypes migration). The remaining backlog —
+B4, B6 (archetypes subcommand), B7, B9, B10, B11, the =_table.org=
+content migration, and table-model-type retirement — was relocated
+(via =compass task move=, UUIDs intact) to [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen
+profile system; add junction support to physical-space codegen]] on
+2026-07-15, since both stories were converging on the same "retire
+legacy codegen cruft" work — B10 and B11 in particular duplicated that
+story's tasks 1 and 5 almost exactly.

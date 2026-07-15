@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:tooling:tech-debt:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/delete-legacy-profile-system
+#+pr: 1584
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -63,11 +63,11 @@ side effect (see the parent story's Acceptance).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -91,9 +91,57 @@ side effect (see the parent story's Acceptance).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Grepped =_load_profiles_from_org=/=load_profiles=/=facet_catalogue=
+   across =projects/ores.codegen= and =projects/ores.compass=: confirmed
+   =load_profiles()= (and its exclusive helpers =_load_profiles_from_org()=,
+   =_parse_facet_table()=, plus the =_FACET_HEADING_RE=/=_FACET_PROP_KEY_RE=/
+   =_unlink_org=/=_ORG_ID_LINK_RE= symbols only they used) has *zero*
+   callers anywhere in the tree — dead since whenever System 2 replaced it.
+2. Grepped =--profile= in =projects/ores.compass=: the only live
+   =--profile= surfaces are (a) the already-deprecated flag on
+   =compass_codegen_entity.py= (help text already says "DEPRECATED (use
+   --address)" — nothing to fix), and (b) the =compass codegen
+   generate/regenerate= subcommands' =--profile= flag in =compass.py=,
+   which feeds =generate.py='s =resolve_targets()= → its own
+   =_PROFILE_TO_FACETS= backward-compat shim (a *different*, still-live
+   mechanism, unrelated to =facet_catalogue.org=/=_load_profiles_from_org=
+   — migrating its callers to =--address= is task B11's job, not this
+   one). So this task's acceptance criterion ("fix those specific call
+   sites") had nothing to fix: deleting the dead code doesn't touch any
+   working =--profile= call site.
+3. Deleted =load_profiles()=, =_load_profiles_from_org()=,
+   =_parse_facet_table()=, and their exclusive helper symbols from
+   =core.py=. Left =get_cpp_junction_template_mappings()= (~line 1011)
+   untouched, per this task's Goal.
+4. *Did not* delete =facet_catalogue.org= itself. A grep for inbound
+   =id:= links to its file id (A8145FD7-0651-40FD-857E-BC37C9320020)
+   turned up ~80 files across =doc/=, =projects/ores.codegen/library/templates/=,
+   and =projects/modeling/= — real blast radius requiring careful
+   content-porting and link-repointing, which is exactly what task B10
+   ("Retire facet_catalogue.org file + legacy literate facet/group docs",
+   moved into this story from "Resolve codegen model unification
+   blockers" — see below) is already scoped and equipped to do properly.
+   Narrowed B10's own doc to reflect that its Python-deletion half is
+   done here; it now owns only the file + link work.
+5. Verified via =compass codegen entity generate=: regenerated =book=
+   (refdata) with both a narrow =--address ores.cpp.domain= and the full
+   default supported set — zero diff both times. Attempted the same for
+   =floating_index_type= (trading) and =market_fixing= (marketdata) and
+   got real diffs/untracked files — but confirmed by stashing this
+   task's change and regenerating the same two entities against
+   unmodified =HEAD= that the exact same drift is present there too.
+   Pre-existing, unrelated to this deletion; filed as a backlog capture
+   (=audit_marketdata_cpp_drift.org=) rather than fixed ad hoc, since the
+   "Refactor ores.codegen C++ generation" story already owns this class
+   of drift with its own audit-then-apply methodology.
+6. Discovered mid-task that a *different* story, "Resolve codegen model
+   unification blockers", had two BACKLOG tasks (B10, B11) essentially
+   duplicating this task and task 5's scope. Reconciled per user
+   instruction: moved that story's 8 remaining BACKLOG tasks (B4, B6,
+   B7, B9, B10, B11, the =_table.org= content migration, and table-type
+   retirement) into this story via =compass task move=, then closed the
+   donor story DONE with a =* Result= explaining the merge. See this
+   story's own =* Decisions= for the reconciliation notes on B10/B11.
 
 * Notes
 
@@ -112,7 +160,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1584][#1584]] | [codegen] Delete dead legacy profile-resolution code |
 
 * Review
 
@@ -121,3 +169,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=load_profiles()=/=_load_profiles_from_org()=/=_parse_facet_table()=
+and their exclusive helper regexes/functions are deleted from
+=core.py= (confirmed zero live callers before deletion).
+=get_cpp_junction_template_mappings()= is left in place for the next
+task. =facet_catalogue.org= itself is intentionally *not* deleted —
+its ~80 inbound =id:= links make that a separate, properly-scoped
+piece of work, now owned by task B10 in this same story (moved in from
+"Resolve codegen model unification blockers", which this task also
+triggered merging in full — see the parent story's =* Decisions=).
+Regenerating =book= (refdata) confirmed byte-identical output before
+and after the deletion, at both a narrow =--address= and the full
+supported set. Pre-existing drift found while sampling
+=floating_index_type=/=market_fixing= was verified unrelated (present
+on unmodified =HEAD= too) and filed as a backlog capture rather than
+fixed here. No =--profile= call site needed fixing: the only working
+=--profile= surfaces route through a separate, still-live shim in
+=generate.py= that this task's deletion doesn't touch.

@@ -5,7 +5,7 @@
 #+description: Add a new 'archetypes' subcommand to compass codegen entity that lists the physical space catalogue using ores.ts.facet.archetype notation. With --entity, shows the entity's supported set with enabled/disabled status per archetype, making the address system self-documenting for users.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_23:v0:
+#+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -106,7 +106,7 @@ cpp  ✅ [technical space — in supported set]
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
 | Now          | Not yet started.                       |
 | Waiting on   | B5 (physical_space.py must exist first). |
 | Next         | Begin implementation after B5.        |

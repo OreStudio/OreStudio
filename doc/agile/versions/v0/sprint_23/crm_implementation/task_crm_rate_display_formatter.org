@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 17CAD54D-0C46-427F-9117-E2B82346BAE5
 :END:
-#+title: Task: Add a convention-aware CRM rate display formatter
-#+description: A stateless, plain C++ presentation overlay (ores.marketdata.client/presentation) that maps raw CRM rates + FX pair conventions to ready-to-bind display strings, so no UI hand-formats rates.
+#+title: Task: Add ores.refdata.client with a currency_pair_convention cache
+#+description: New thin, DB-free NATS-only component (mirroring ores.marketdata.client's role) housing a currency_pair_convention_cache built on the nats-event-cache codegen facet, so every UI surface (Qt now, shell/Wt later) that needs FX pair conventions shares one cache instead of each hand-rolling its own.
 #+type: task
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
-#+branch: feature/crm-rate-display-formatter
+#+branch: feature/add-refdata-client-currency-pair-convention-cache
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,49 +20,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Today the Qt CRM matrix panel hand-formats rates itself
-(=QString::number(rate, 'f', 5)=, fixed precision, no base/quote
-canonical ordering) -- the same "logic in the UI" problem the sibling
-task [[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's
-numeric logic (inversion, deltas) out of the Qt client]] already fixed
-for inversion and %-change. Formatting (display precision, base/quote
-canonical ordering per the existing currency-pair conventions and
-their per-currency format strings) is the remaining piece.
+The convention-aware CRM rate display formatter
+([[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][a separate task]]) needs
+read access to =currency_pair_convention= rows
+(pip_factor/tick_size/decimal_places) and =currency.base_precedence=
+without a refdata round-trip on every CRM request/reload. The
+project now has a generic caching primitive for exactly this shape
+of problem -- =ores.eventing.core::service::cache::partitioned_cache=
+plus the =nats-event-cache= codegen facet (see =party_cache= in
+=ores.iam.core= for the worked exemplar: generated cache class +
+registrar wiring, populated via a =read_*_for_cache= NATS request at
+startup, refreshed on the entity's changed-event).
 
-Add a stateless, plain C++ presentation overlay -- a new
-=presentation= namespace/subfolder inside the existing
-=ores.marketdata.client= component (not a new top-level component:
-=client= is already the thin, DB-free library every UI links against
-for CRM NATS calls, and matches its own place in the component
-architecture) -- that maps a batch of =crm_rate_item= (or
-=ores.analytics.quant::domain::crm_rate_view=) plus the relevant FX
-pair convention into ready-to-bind display strings (rate text,
-%-change text, tooltip text), so no UI (Qt today, Wt/shell later)
-hand-formats a rate again. Qt's own cell widget already accepts
-=QString=, not a raw double, at its display boundary -- see
-=CrmCrossRatesMatrixMdiWindow::reload()= -- so this is a drop-in
-replacement for that formatting call, not a new UI contract.
+Where the cache should live is the interesting question this task
+resolves: =party_cache= lives in =ores.iam.core=, the specific
+*consumer* of party data for its own authorization logic -- not in
+=ores.refdata= itself (refdata has direct DB access to its own data;
+it has no need to cache itself via NATS). But unlike party's
+single-consumer (IAM authorization) shape, FX pair conventions are a
+cross-UI concern: the CRM matrix needs them in Qt today, and a shell
+CRM view ([[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]], filed as a
+sibling task) will need the same conventions tomorrow. Putting the
+cache inside =ores.qt= would just relocate the duplication problem
+the sibling formatter task's own "presentation lives in
+=ores.marketdata.client=, not =ores.qt=" decision was designed to
+avoid.
 
-Zero NATS and zero Qt/Wt dependency in the formatter itself: it is a
-pure mapper, testable with plain Catch2 cases, decoupled from how the
-caller fetched its raw rates or where it renders the result.
-
-* Server-side caching note
-
-=ores.marketdata.service= will need the FX pair convention rows
-(base/quote canonical order, per-currency format string) to resolve
-this overlay's input on the server side (if formatting ends up
-happening in =crm_handler=) or the client will need them fetched
-once and cached locally (if formatting stays client-side, per the
-"plain C++ layer" design above). Either way this will likely want to
-use the project's new caching infrastructure to keep a local
-in-process cache of the relevant refdata convention rows, refreshed
-on change, rather than a refdata round-trip per CRM request/reload --
-mirroring how =crm_ingest_bridge= already caches
-=crm_topology_config=/=crm_driver_pair= rows and only rebuilds on a
-config-changed event. Confirm the exact caching mechanism to use
-against whatever the new caching infrastructure work lands as, once
-started.
+There is no existing "refdata client" component to mirror
+=ores.marketdata.client='s role (thin, DB-free, NATS-only, shared by
+every UI). Add one -- =ores.refdata.client= -- and put
+=currency_pair_convention_cache= there, generated via the
+=nats-event-cache= facet exactly as =party_cache= was, so any UI
+component (Qt now, shell/Wt later) links one shared cache instead of
+each hand-rolling its own. See
+[[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an
+entity-mirror cache live?]] for the general placement rule this task
+established.
 
 * Status
 
@@ -77,26 +70,31 @@ started.
 
 * Acceptance
 
-- A new =presentation= namespace/subfolder inside
-  =ores.marketdata.client= (e.g.
-  =ores.marketdata.client/presentation/crm_rate_formatter.hpp=)
-  provides a stateless mapper from raw CRM rates + FX pair convention
-  to display-ready strings; no NATS or Qt/Wt dependency in the mapper
-  itself.
-- =CrmCrossRatesMatrixMdiWindow= (and any other CRM display surface
-  built by then) calls this formatter instead of formatting rates
-  itself; the fixed =\'f\', 5= precision and lack of base/quote
-  canonical ordering are replaced by convention-driven formatting.
-- Convention lookup uses the existing currency-pair conventions and
-  their per-currency format strings -- no new convention entity/type
-  is introduced by this task.
-- Whichever side resolves the convention data (client or
-  =ores.marketdata.service=) uses the project's caching infrastructure
-  to avoid a refdata round-trip per CRM request/reload, refreshed on
-  the relevant change event -- not queried fresh every call.
-- Real Catch2 coverage of the formatter itself: precision rounding,
-  base/quote reordering, inverted-pair display, missing/unavailable
-  status, independent of any NATS/Qt harness.
+- The =nats-event-cache= facet's currently-hardcoded
+  =projects/ores.{cached_by}/core/include/ores.{cached_by}.core/...=
+  output path is generalised to accept a configurable subcomponent
+  segment (not a literal =core=), so =cached_by: refdata.client=
+  correctly targets =ores.refdata.client=, not a nonsensical
+  =ores.refdata.client.core=.
+- New =ores.refdata.client= component: thin, DB-free, links only NATS
+  + refdata's own API/protocol types, following
+  =ores.marketdata.client='s existing shape (its CMakeLists, export
+  header, and directory layout are the template).
+- =currency_pair_convention_cache= (+ registrar wiring) generated via
+  the =nats-event-cache= codegen facet, mirroring =party_cache=:
+  populated via a =read_currency_pair_conventions_for_cache= NATS
+  request at startup, refreshed on
+  =currency_pair_convention_changed_event=, partitioned by tenant,
+  keyed by =pair_code=.
+- No refdata round-trip on every lookup -- reads are wait-free
+  =partitioned_cache::get()= calls against the in-process snapshot.
+- Real Catch2 coverage: cache load from a fake/mock NATS reply,
+  lookup hit/miss, refresh-on-changed-event replacing only the
+  affected tenant's partition.
+- =ores.qt= (the CRM matrix's own module) links and instantiates this
+  cache -- actual convention-aware *formatting* using it is the
+  sibling formatter task's job, not this one; this task only needs to
+  prove the cache loads, refreshes, and is queryable end-to-end.
 
 * Plan
 

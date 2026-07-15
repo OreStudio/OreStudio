@@ -148,6 +148,12 @@ How the codebase is put together.
 - [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — Phase 1 (wire and subscribe every subject)
   vs. Phase 2 (mint tokens, warm caches — anything that calls a subject,
   including the service's own), worked through IAM's party_cache.
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — placement rule for the
+  nats-event-cache facet's cached_by target: the entity's own producer never
+  caches itself, a single specific consumer gets the cache in its own
+  component (party_cache in ores.iam.core), multiple UI-layer consumers share
+  a thin *.client component instead of duplicating. Notes the facet's current
+  hardcoded =.core= output-path limitation.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern of a top-level transport
   registrar delegating to per-entity sub-registrars, with a per-transport
   instance section (NATS, HTTP) linking to the codegen archetypes.

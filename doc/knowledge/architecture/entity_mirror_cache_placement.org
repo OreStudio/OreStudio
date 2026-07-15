@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 723B0112-4DDC-4C03-924E-2C90C2F19B5C
+:END:
+#+title: Where should an entity-mirror cache live?
+#+description: Placement rule for the nats-event-cache facet's cached_by target: the entity's own component when there is exactly one consumer, a shared thin *.client component when multiple UI layers need the same cached entity.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:caching:nats:codegen:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+An entity-mirror cache (=partitioned_cache<PartitionKey,Key,Value>=
++ the =nats-event-cache= codegen facet, see
+[[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][the story that introduced
+them]]) is declared with =cached_by: <consumer>= on the *entity's
+own* model, never on a competing model authored inside the consumer
+-- the single source of truth for "who caches this entity" stays
+with the entity, like every other fact about it. Where =<consumer>=
+should point depends on how many things actually need the cached
+data: the entity's own producer component never needs to cache
+itself (it has direct DB access), a single specific consumer gets
+the cache in its own component (e.g. =party_cache= lives in
+=ores.iam.core=, because IAM's authorization logic is party's only
+consumer), and when *multiple* UI-layer components need the same
+cached entity, the cache belongs in a shared thin, DB-free
+=<domain>.client= component (mirroring =ores.marketdata.client='s
+role) rather than being duplicated per UI or arbitrarily parked in
+whichever UI happened to need it first.
+
+* Detail
+
+** The three placement cases
+
+1. *Producer caching itself* -- never. =ores.refdata= (or whichever
+   component owns the entity) has direct DB access; a NATS-fed
+   in-process mirror of its own data buys it nothing.
+2. *Single specific consumer* -- the consumer's own component.
+   =party_cache= lives in =ores.iam.core=, not in =ores.refdata=,
+   because party data is consumed specifically for IAM's own
+   authorization/visibility logic -- a concern that belongs to IAM,
+   not to refdata or to any UI layer.
+3. *Multiple UI-layer consumers* -- a shared thin =<domain>.client=
+   component, created if one doesn't already exist. If a cache were
+   placed inside e.g. =ores.qt= because that's the first UI that
+   needed it, a second UI (=ores.shell=, =ores.wt=, ...) needing the
+   same cached entity would either duplicate the cache class and its
+   NATS wiring, or awkwardly depend on the first UI's component for
+   unrelated code. =ores.marketdata.client= already exists for this
+   exact reason on the CRM side (NATS-only, DB-free, shared by every
+   UI that talks to =ores.marketdata=); the refdata equivalent
+   (=ores.refdata.client=) follows the same shape.
+
+** Current facet limitation: hardcoded =.core= output path
+
+As of the facet's initial implementation, its generated output path
+is =projects/ores.{cached_by}/core/include/ores.{cached_by}.core/service/cache/{entity}_cache.hpp=
+(see the =nats-event-cache= entry in
+[[proj:projects/ores.codegen/library/facet_catalogue.org][the facet
+catalogue]]) -- the =/core/= segment and =.core= suffix are literal,
+not derived from the =cached_by= value. This works cleanly for case 2
+above (=cached_by: iam= → =ores.iam.core=, an already-=.core=-shaped
+component), but does *not* fit a =.client=-shaped component like
+=ores.refdata.client= without also generalising the facet's template
+to accept a configurable subcomponent segment instead of assuming
+=core=. Any task that introduces a new =<domain>.client= cache
+consumer needs to budget for this facet change, not just the new
+component and the =cached_by= wiring.
+
+* See also
+
+- [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache + codegen facet]] -- the story that
+  built =partitioned_cache= and the =nats-event-cache= facet, with
+  =party_cache= as the worked single-consumer exemplar.

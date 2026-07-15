@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 4F2FC58A-D715-4159-A93F-E372AD720D0D
+:END:
+#+title: Task: Add convention-aware CRM rate formatter and wire into Qt matrix
+#+description: Stateless plain C++ formatter (ores.marketdata.client/presentation) mapping raw CRM rates + a resolved currency_pair_convention into display-ready strings, replacing CrmCrossRatesMatrixMdiWindow's hand-formatting. Depends on the currency_pair_convention_cache task for its convention lookups.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]]
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Qt CRM matrix panel hand-formats rates itself
+(=QString::number(rate, 'f', 5)=, fixed precision, no base/quote
+canonical ordering) -- the same "logic in the UI" problem the
+sibling task [[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM
+matrix's numeric logic (inversion, deltas) out of the Qt client]]
+already fixed for inversion and %-change. Formatting is the
+remaining piece.
+
+Add a stateless, plain C++ presentation overlay -- a new
+=presentation= namespace/subfolder inside =ores.marketdata.client=
+(thin, DB-free, matching its existing role) -- that maps a batch of
+=crm_rate_item= (or =ores.analytics.quant::domain::crm_rate_view=)
+plus a resolved =currency_pair_convention= into ready-to-bind
+display strings (rate text, %-change text, tooltip text). The
+formatter itself takes the convention as a plain parameter -- it has
+no NATS/cache dependency of its own; the caller (the Qt window)
+resolves the convention via
+[[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][ores.refdata.client's
+currency_pair_convention_cache]] first. Qt's own cell widget already
+accepts =QString=, not a raw double, at its display boundary -- see
+=CrmCrossRatesMatrixMdiWindow::reload()= -- so this is a drop-in
+replacement for that formatting call, not a new UI contract.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- New =presentation= namespace/subfolder inside
+  =ores.marketdata.client= (e.g.
+  =ores.marketdata.client/presentation/crm_rate_formatter.hpp=)
+  provides a stateless mapper from raw CRM rates + a resolved
+  =currency_pair_convention= to display-ready strings; no NATS or
+  Qt/Wt dependency in the mapper itself.
+- =CrmCrossRatesMatrixMdiWindow= calls
+  =currency_pair_convention_cache= then the formatter instead of
+  formatting rates itself; the fixed ='f', 5= precision and lack of
+  base/quote canonical ordering are replaced by convention-driven
+  formatting (=pip_factor=/=tick_size=/=decimal_places=,
+  =currency.base_precedence=).
+- No new convention entity/type is introduced -- uses the existing
+  =currency_pair_convention=/=currency= fields.
+- Real Catch2 coverage of the formatter itself: precision rounding,
+  base/quote reordering, inverted-pair display, missing/unavailable
+  status, independent of any NATS/Qt harness.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

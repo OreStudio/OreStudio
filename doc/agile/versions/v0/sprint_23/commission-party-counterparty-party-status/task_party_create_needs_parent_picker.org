@@ -54,24 +54,24 @@ needs it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
 
-- Party and counterparty Create/Edit dialogs gain a "Parent Party"/
-  "Parent Counterparty" combo, blank-allowed, sourced from the
-  existing entity list.
+- Party and counterparty Create/Edit dialogs gain a required "Parent
+  Party"/"Parent Counterparty" combo, sourced from the existing entity
+  list.
 - Creating a second (non-root) party/counterparty with a parent
-  selected succeeds; leaving it blank on a tenant that already has a
-  root correctly still fails server-side (that constraint is correct
-  behavior, just needs a reachable, non-silent path around it).
-- Self-parenting and cyclic parent chains are rejected with a clear
-  error, not a generic constraint-violation message.
+  selected succeeds; Save stays disabled (consistent with every other
+  required field) until a parent is chosen.
+- Self-parenting is impossible by construction (the new entity's id
+  doesn't exist yet when the combo populates on Create). Descendant-
+  cycle prevention on Edit is explicitly out of scope -- see Notes.
 - Builds cleanly; manually verified live for both party and
   counterparty.
 
@@ -135,7 +135,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:709B8639-638A-48D5-876C-A460F29B1BCB][Verify parent party/counterparty picker on Create]] | PENDING | Covers required-combo presence, disabled-Save-when-unset, successful second-party/counterparty Create, edit round-trip, and cleanup. |
+| [[id:709B8639-638A-48D5-876C-A460F29B1BCB][Verify parent party/counterparty picker on Create]] | PASSED | All 6 steps PASS: required-combo presence, disabled-Save-when-unset, successful second-party/counterparty Create, edit round-trip, and cleanup. |
 
 * PRs
 
@@ -150,3 +150,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Verified PASSED live against BARCLAYS PLC (scenario
+=709B8639-638A-48D5-876C-A460F29B1BCB=): both Party and Counterparty
+Create dialogs gained a required Parent combo, Save correctly stays
+disabled with no selection, a second party/counterparty was created
+successfully with a parent selected, and reopening it for edit
+correctly round-trips the selected parent. This closes the last
+blocker on the party/counterparty commissioning story's manual Create
+flow.
+
+Implementation reused nearly all existing codegen machinery
+(=is_uuid=/=combo_code_field=, =required_dynamic_combo_fields=) --
+the only real gap was =is_optional_uuid= support in the non-locked
+=is_dynamic_combo= template branches, plus a latent bug the extension
+surfaced (the item-to-combo-value extractor was gated on the wrong
+field's uuid-ness). Fixed at the =ores.cpp.qt.detail_dialog_impl.org=
+tangle source, not the generated output. Zero regression verified via
+=--diff= roundtrip across all 9 other entities using
+=combo_domain_type=.

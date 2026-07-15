@@ -394,6 +394,13 @@ protected:
         return badgeCache_;
     }
 
+    /** @brief The change reason cache injected via setChangeReasonCache(), or
+     * nullptr if none was set -- e.g. for forwarding to a composite child
+     * widget that prompts its own change reasons. */
+    [[nodiscard]] ChangeReasonCache* changeReasonCache() const {
+        return changeReasonCache_;
+    }
+
 private:
     bool closeConfirmed_ = false;
     ChangeReasonCache* changeReasonCache_ = nullptr;

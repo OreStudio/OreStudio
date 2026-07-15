@@ -177,7 +177,7 @@ void PartyDetailDialog::setUsername(const std::string& username) {
 void PartyDetailDialog::setParty(const refdata::domain::party& party) {
     party_ = party;
     updateUiFromParty();
-    childTables_->reload(party_.id, clientManager_, username_, imageCache());
+    childTables_->reload(party_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(party_.id, clientManager_);
 }
 

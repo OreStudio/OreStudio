@@ -181,7 +181,8 @@ void CounterpartyDetailDialog::setUsername(const std::string& username) {
 void CounterpartyDetailDialog::setCounterparty(const refdata::domain::counterparty& counterparty) {
     counterparty_ = counterparty;
     updateUiFromCounterparty();
-    childTables_->reload(counterparty_.id, clientManager_, username_, imageCache());
+    childTables_->reload(
+        counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(counterparty_.id, clientManager_);
 }
 

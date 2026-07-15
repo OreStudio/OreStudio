@@ -446,7 +446,7 @@ generated dialog.
 #+end_src
 
 #+begin_src cpp :name reload_child_tables :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
-    childTables_->reload(counterparty_.id, clientManager_, username_, imageCache());
+    childTables_->reload(counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(counterparty_.id, clientManager_);
 #+end_src
 

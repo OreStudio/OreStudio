@@ -2448,6 +2448,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _is_any_uuid = 'boost::uuids::uuid' in field_cpp
                 f['is_optional_uuid'] = 'std::optional<boost::uuids::uuid>' in field_cpp
                 f['is_uuid'] = _is_any_uuid and not f['is_optional_uuid']
+                # Self-referencing dynamic combo (e.g. party's own
+                # parent_party_id, fetched from the party list itself):
+                # the fetched item's own id can coincide with the
+                # currently-edited entity's own id, which must be excluded
+                # from the combo -- both to prevent self-parenting and
+                # because a self-referencing row breaks the recursive
+                # hierarchy CTE (UNION ALL never dedupes, so it loops
+                # forever). Detected purely by combo_domain_type matching
+                # this entity's own domain_class, no extra model property
+                # needed.
+                f['is_self_referencing_combo'] = (
+                    f.get('combo_domain_type') and
+                    f.get('combo_domain_type') == qt.get('domain_class')
+                )
                 # Tri-state checkbox for optional<bool>; normal two-state
                 # for plain bool. Nullable spin box uses minimum as sentinel.
                 f['is_tristate'] = (

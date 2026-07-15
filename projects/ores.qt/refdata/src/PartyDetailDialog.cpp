@@ -235,7 +235,8 @@ void PartyDetailDialog::populatePartyTypeCombo() {
         [this]() { setup_badge_combo(this, ui_->partyTypeCombo, badgeCache(), "party_type"); },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(t.code); });
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; });
 }
 void PartyDetailDialog::populatePartyStatusCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating status combo";
@@ -255,7 +256,8 @@ void PartyDetailDialog::populatePartyStatusCombo() {
         [this]() { setup_badge_combo(this, ui_->statusCombo, badgeCache(), "party_status"); },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(t.code); });
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; });
 }
 void PartyDetailDialog::populateParentPartyCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating parent_party_id combo";
@@ -278,7 +280,8 @@ void PartyDetailDialog::populateParentPartyCombo() {
         []() {},
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); });
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
+        [this](const auto& t) { return t.id == party_.id; });
 }
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));

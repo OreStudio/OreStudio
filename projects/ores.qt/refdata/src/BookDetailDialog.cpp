@@ -56,6 +56,11 @@ BookDetailDialog::BookDetailDialog(QWidget* parent)
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 BookDetailDialog::~BookDetailDialog() {
@@ -237,7 +242,8 @@ void BookDetailDialog::populateBookStatusCombo() {
         [this]() { setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status"); },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(t.code); });
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; });
 }
 void BookDetailDialog::populateRegulatoryBookTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
@@ -260,7 +266,8 @@ void BookDetailDialog::populateRegulatoryBookTypeCombo() {
         },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(t.code); });
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; });
 }
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));

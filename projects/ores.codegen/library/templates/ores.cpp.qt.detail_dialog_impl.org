@@ -790,16 +790,22 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
 {{#is_uuid}}
-        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); });
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); },
 {{/is_uuid}}
 {{#is_optional_uuid}}
-        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); });
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); },
 {{/is_optional_uuid}}
 {{^is_uuid}}
 {{^is_optional_uuid}}
-        [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); });
+        [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); },
 {{/is_optional_uuid}}
 {{/is_uuid}}
+{{#is_self_referencing_combo}}
+        [this](const auto& t) { return t.id == {{domain_entity.qt.item_var}}_.id; });
+{{/is_self_referencing_combo}}
+{{^is_self_referencing_combo}}
+        [](const auto&) { return false; });
+{{/is_self_referencing_combo}}
 }
 {{/combo_domain_type}}
 {{^combo_domain_type}}

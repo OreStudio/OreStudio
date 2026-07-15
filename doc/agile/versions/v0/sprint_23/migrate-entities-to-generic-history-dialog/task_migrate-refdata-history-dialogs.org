@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-refdata-history-dialogs
-#+pr:
+#+pr: 1595
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1595][#1595]] | [qt,refdata,sql] Migrate 14 more entities onto generic HistoryDialog |
 
 * Review
 

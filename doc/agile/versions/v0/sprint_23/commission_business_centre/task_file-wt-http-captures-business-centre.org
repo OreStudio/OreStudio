@@ -8,7 +8,7 @@
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
 #+branch: feature/file-wt-http-captures-business-centre
-#+pr:
+#+pr: 1582
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1582][#1582]] | [agile] File Wt/HTTP backlog captures, close business_centre story |
 
 * Review
 

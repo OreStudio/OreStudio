@@ -135,7 +135,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:709B8639-638A-48D5-876C-A460F29B1BCB][Verify parent party/counterparty picker on Create]] | PENDING | Covers required-combo presence, disabled-Save-when-unset, successful second-party/counterparty Create, edit round-trip, and cleanup. |
 
 * PRs
 

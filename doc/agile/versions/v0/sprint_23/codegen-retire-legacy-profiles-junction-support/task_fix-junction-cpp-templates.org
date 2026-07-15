@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:tooling:junction:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-junction-cpp-templates
+#+pr: 1586
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -64,11 +64,11 @@ just never finished/tested.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -83,11 +83,139 @@ just never finished/tested.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Found the =`{{#junction}}`= sections already existed in all 14 C++
+domain/generator/repository templates (someone had already done
+approach 1's template branching, evidently alongside the abandoned
+=get_cpp_junction_template_mappings()=, just never finished/tested it)
+-- so this task was mostly about *fixing* that existing branching, not
+writing it from scratch. Iterated: regenerate =tenor_convention_resolution=,
+attempt a real =-fsyntax-only= compile of each generated =.cpp= against
+the project's actual =compile_commands.json= flags, fix what breaks,
+repeat.
+
+1. *=resolve_output_path()='s incomplete junction substitutions* (task
+   2's finding): factored the domain_entity branch's
+   component_dir/component_core_dir/component_include/component_core/
+   component_service/generator_facet_name derivation into a shared
+   =_component_path_vars()= helper, used by both branches. Also added
+   the equivalent derivation to the junction *content*-rendering side
+   (core.py's junction data-enrichment block, ~line 2764) which had the
+   same gap for =#include=/namespace substitution inside file bodies
+   (=resolve_output_path()= only fixes output *paths*, not template
+   content).
+2. *No =subcomponent= mechanism for junction models*:
+   =load_org_junction_model()= never parsed a =* C++ ** Flags= section
+   the way =load_org_model()= does for domain_entity (=:subcomponent:
+   api=, feeding the derivation above). Added that parsing to
+   =org_loader.py=, then added the matching =** Flags= block to
+   =ores.refdata.tenor_convention_resolution.org= (=:subcomponent: api=,
+   matching =book.org='s own pattern).
+3. *Wrong include guard / EXPORT macro* on the entity header and both
+   json_io/table_io headers: the junction sections used
+   =\{\{component_upper\}\}= (=REFDATA=) where domain_entity correctly
+   uses =\{\{component_include_upper\}\}=/=\{\{component_core_upper\}\}=
+   (=REFDATA_API=/=REFDATA_CORE=) -- the entity header's guard mismatch
+   was cosmetic, but the json_io/table_io headers' =ORES_\{\{component_upper\}\}_EXPORT=
+   emitted a macro (=ORES_REFDATA_EXPORT=) that doesn't exist (the real
+   one is =ORES_REFDATA_API_EXPORT=, defined in the component's own
+   =export.hpp=) -- a genuine compile error. Fixed both
+   =ores.cpp.domain.json_io_header.org= and
+   =ores.cpp.domain.table_io_header.org=.
+4. *=db_timestamp= vs raw =sqlgen::Timestamp<...>=*: the entity header's
+   design notes documented this as a deliberate, still-open divergence
+   pending validation. Checked the real, currently-compiling hand-authored
+   =party_currency_entity.hpp=/=party_country_entity.hpp= -- both already
+   use =db_timestamp= and the CORE-prefixed guard in production, which is
+   exactly the validation the note said was missing. Unified the junction
+   section to match (=ores.cpp.repository.entity_header.org=), updated the
+   design-notes section to record this as resolved, and noted capture
+   [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity
+   timestamp type to db_timestamp alias]] can be closed.
+5. *Missing =<chrono>=/=<optional>= includes in the model itself*: the
+   junction model's own "Domain includes" block only declared
+   =#include <string>=, but codegen's boilerplate =recorded_at= field is
+   =std::chrono::system_clock::time_point= and two of the three nullable
+   columns needed =std::optional=. Same pattern as domain_entity models
+   (the include list is the model author's responsibility, not
+   template-injected) -- added =<chrono>=/=<optional>= to the model.
+6. *Two nullable columns typed as plain, non-optional =std::string=*:
+   =anchor_override=/=offset_unit= both declared =:nullable: true= but
+   =:cpp_type: std::string= (not wrapped) -- inconsistent with the third
+   nullable column, =offset_multiplier= (correctly
+   =std::optional<int>=). This is model-authoring, not a codegen bug
+   (=cpp_type= is always hand-specified per column for both domain_entity
+   and junction, no auto-derivation exists) -- corrected both to
+   =std::optional<std::string>=.
+7. *=fort::char_table= streaming had no optional/bool handling for
+   junction* at all: =core.py='s junction column-enrichment block called
+   =_prepare_table_display()= with only =uuid_columns=, never
+   =optional_columns=/=bool_columns= (unlike the domain_entity branch),
+   and the junction section of =cpp_domain_type_table.cpp.mustache=
+   itself had no =\{\{#is_optional\}\}=/=\{\{#is_bool\}\}= branching at
+   all (a simpler, older variant of the streaming line, missing the
+   =opt_str()= helper entirely) -- =offset_multiplier= (=std::optional<int>=)
+   failed to compile outright (no =ostream::operator<<= for
+   =optional<int>=). Fixed both: added the missing
+   optional/bool-detection call in core.py (mirroring the domain_entity
+   branch, using =cpp_type= starting with =std::optional<`= as the
+   signal since junction columns don't carry an =is_nullable_string=
+   flag), and ported the =opt_str()= helper + branching into the
+   junction section of =ores.cpp.domain.table_impl.org=.
+8. Verified each fix by re-running =compass codegen entity generate
+   tenor_convention_resolution= and syntax-checking the regenerated
+   =.cpp= files directly against the project's real
+   =compile_commands.json= flags (=clang++ -fsyntax-only=, swapping in
+   each generated file) -- faster than a full library rebuild per
+   iteration. =_entity.cpp=, =_mapper.cpp=, =_table_io.cpp=,
+   =_json_io.cpp=, and =_table.cpp= all compile clean after the fixes
+   above. =_generator.cpp= does *not* -- see Notes.
+9. Reverted the throwaway =tenor_convention_resolution= generated output
+   (this task fixes templates/model, not the actual switchover -- that's
+   the next task). Regenerating =book= (refdata, domain_entity) still
+   produces zero diff. Built =ores.refdata.core.lib= with the fixes in
+   place and the hand-authored =tenor_convention_resolution= files still
+   in the tree (untouched, since generation output was reverted) --
+   clean build, no regression.
 
 * Notes
+
+*=_generator.cpp= does not compile* -- =tenor_convention_resolution.org=
+has no per-column =#+begin_src generator= blocks, so
+=core.py='s junction generator template emits empty assignment RHS
+(=r.convention_code = ;=) for every column lacking a =generator_expr=.
+This is a model-authoring gap (fill in generator blocks, same as every
+domain_entity model already does), not a template bug -- the template
+correctly emits whatever =generator_expr= a column provides; junction
+models providing none is not something a template fix can paper over.
+Task 4 will need this filled in anyway (a Generators subsystem needs
+synthetic data for the composite left/right key + optional columns) --
+do it there rather than half-guessing plausible values here with no
+manual-QA context to validate them against.
+
+*The generated domain type name collides with existing hand-authored
+=tenor_resolution.hpp='s own =struct tenor_convention_resolution=* when
+both are compiled into the same library (confirmed via a full
+=ores.refdata.core.lib= build attempt with generated output in place).
+This is *expected*, not a bug to fix here: task 4
+("Validate junction codegen against tenor_convention_resolution; retire
+hand-authored code") exists specifically to resolve this by replacing
+the hand-authored reference with the generated one, not by coexisting
+with it. Flagging so task 4 doesn't waste time rediscovering it as a
+surprise.
+
+*Guard-only mismatches left unfixed* (cosmetic, not compile-breaking):
+=ores.cpp.domain.class_header.org=, =ores.cpp.domain.table_header.org=,
+=ores.cpp.generator.generator_header.org=,
+=ores.cpp.repository.mapper_header.org=, and
+=ores.cpp.repository.repository_header.org= all still use
+=\{\{component_upper\}\}= instead of =\{\{component_include_upper\}\}=/
+=\{\{component_core_upper\}\}= in their junction sections' include
+guards -- inconsistent with domain_entity's own convention but not a
+compile error (include guards only need to be unique, and no known
+collision risk currently exists). Left as a minor follow-up rather than
+touched speculatively across 5 more files with no test case forcing the
+issue; a future junction with a real guard collision would surface it
+concretely.
 
 * Test Scenarios
 
@@ -104,12 +232,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1586][#1586]] | [codegen] Fix junction templates for junction-shaped data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction repository class missing EXPORT macro/export.hpp include entirely (link-time bug, not caught by -fsyntax-only) | cpp_domain_type_repository.hpp.mustache | Accepted | Fixed in 2a7b9866b. |
+| 2 | Junction mapper/repository sections used stale component_upper include guards instead of component_core_upper | mapper_header.org, repository_header.org | Accepted | Fixed in 2a7b9866b, matches this PR's own db_timestamp/guard unification goal. |
+| 3 | Junction generator header/impl missing EXPORT/include, hardcoded "generators" guard/namespace instead of generator_facet_name; core.py never computed generator_facet_name_upper for junction | generator_header.org, generator_impl.org, core.py | Accepted | Fixed in 2a7b9866b. |
 
 * Result
+
+The pre-existing (but unfinished/untested) =\{\{#junction\}\}= sections
+across all 14 domain/generator/repository templates now produce
+compilable C++ for =tenor_convention_resolution=: fixed
+=resolve_output_path()='s and the content-rendering side's incomplete
+junction placeholder substitutions (shared with domain_entity via a
+new =_component_path_vars()= helper), added junction subcomponent
+support to =org_loader.py=, fixed a genuinely broken =EXPORT= macro
+name in two headers, unified the entity header's timestamp
+type/include-guard convention with what real production junction
+entities (=party_currency=, =party_country=) already use, and fixed
+=fort::char_table= streaming for optional/bool junction columns
+(missing entirely before this task). Also corrected two mis-typed
+nullable columns and missing includes in the
+=tenor_convention_resolution.org= model itself. =_entity.cpp=,
+=_mapper.cpp=, =_table.cpp=, =_table_io.cpp=, and =_json_io.cpp= all
+verified via direct =-fsyntax-only= compiles against the project's real
+build flags. =_generator.cpp= still needs per-column generator
+expressions filled into the model (a model-authoring gap, left for task
+4). =ores.refdata.core.lib= builds clean with these changes and the
+hand-authored =tenor_convention_resolution= files untouched;
+regenerating =book= still produces zero diff. Investigation output for
+=tenor_convention_resolution= itself was not committed -- task 4 owns
+the actual generate-diff-retire cycle.

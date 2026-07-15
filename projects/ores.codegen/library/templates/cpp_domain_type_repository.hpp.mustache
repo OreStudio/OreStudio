@@ -174,8 +174,8 @@ public:
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
-#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
+#ifndef ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
+#define ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
@@ -186,13 +186,14 @@ public:
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
 
 /**
  * @brief Reads and writes {{name_words}} to data storage.
  */
-class {{name_singular}}_repository {
+class ORES_{{component_core_upper}}_EXPORT {{name_singular}}_repository {
 private:
     inline static std::string_view logger_name =
         "ores.{{component}}.repository.{{name_singular}}_repository";

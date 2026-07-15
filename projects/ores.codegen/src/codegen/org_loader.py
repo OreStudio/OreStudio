@@ -1112,6 +1112,14 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     cpp_section = _section(doc.root, "C++")
     cpp_out: dict[str, Any] = {}
     if cpp_section:
+        # Flags: lift directly onto junction (these are top-level in the
+        # JSON model), matching load_org_model()'s domain_entity Flags
+        # handling -- e.g. :subcomponent: for resolve_output_path()'s
+        # component_dir/component_include/... derivation.
+        flags = _section(cpp_section, "Flags")
+        if flags:
+            for k, v in flags.properties.items():
+                j[k.lower()] = _parse_typed(v)
         dom = _section(cpp_section, "Domain includes")
         ent = _section(cpp_section, "Entity includes")
         if dom or ent:

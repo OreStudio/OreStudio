@@ -64,8 +64,8 @@ public:
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
-#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
+#ifndef ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
+#define ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
 
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"

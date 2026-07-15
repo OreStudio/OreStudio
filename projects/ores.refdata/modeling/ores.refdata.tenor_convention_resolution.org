@@ -72,7 +72,7 @@ References [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor.code]].
 ** anchor_override
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
@@ -84,7 +84,7 @@ different anchor under this specific convention.
 ** offset_unit
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
@@ -122,15 +122,23 @@ CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
 
 * C++
 
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
 #include <string>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 

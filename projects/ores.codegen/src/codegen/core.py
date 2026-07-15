@@ -581,6 +581,57 @@ def compute_view_groups(detail_fields):
     return view_groups
 
 
+def _component_path_vars(entity):
+    """Derive the component/subcomponent path placeholders
+    (``component_dir``, ``component_include``, ``component_core``, ...)
+    shared by ``domain_entity`` and ``junction`` output-path resolution,
+    from a dict carrying ``component``/``subcomponent``/``component_include``/
+    ``component_core``/``component_service``/``generator_facet_name``/
+    ``cached_by`` keys (whichever of those the model set).
+
+    Returns:
+        dict: placeholder name -> resolved value.
+    """
+    component = entity.get('component', 'unknown')
+    subcomponent = entity.get('subcomponent', '')
+    if subcomponent:
+        component_include = f"{component}.{subcomponent}"
+        component_dir = f"ores.{component}/{subcomponent}"
+        component_core = f"{component}.core"
+        component_core_dir = f"ores.{component}/core"
+        component_service = f"{component}.service"
+        component_service_dir = f"ores.{component}/service"
+    else:
+        component_include = entity.get('component_include', component)
+        component_dir = f"ores.{component}"
+        component_core = entity.get('component_core', component)
+        component_core_dir = f"ores.{component}"
+        component_service = entity.get('component_service', component)
+        component_service_dir = f"ores.{component}"
+
+    generator_facet_name = entity.get('generator_facet_name', 'generators')
+
+    # cached_by: the consumer component a nats-event-cache archetype's
+    # output belongs to (e.g. party is defined in refdata but its
+    # generated cache compiles into iam), distinct from the entity's
+    # own component used by every other facet above.
+    cache_component = entity.get('cached_by', component)
+    cache_component_dir = f"ores.{cache_component}"
+
+    return {
+        'component': component,
+        'component_dir': component_dir,
+        'component_core_dir': component_core_dir,
+        'component_service_dir': component_service_dir,
+        'component_include': component_include,
+        'component_core': component_core,
+        'component_service': component_service,
+        'cache_component_dir': cache_component_dir,
+        'cache_component': cache_component,
+        'generator_facet_name': generator_facet_name,
+    }
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -598,57 +649,26 @@ def resolve_output_path(output_pattern, model_data, model_type):
     # Extract values based on model type
     if model_type == 'domain_entity' and 'domain_entity' in model_data:
         entity = model_data['domain_entity']
-        component = entity.get('component', 'unknown')
-        subcomponent = entity.get('subcomponent', '')
-        if subcomponent:
-            component_include = f"{component}.{subcomponent}"
-            component_dir = f"ores.{component}/{subcomponent}"
-            component_core = f"{component}.core"
-            component_core_dir = f"ores.{component}/core"
-            component_service = f"{component}.service"
-            component_service_dir = f"ores.{component}/service"
-        else:
-            component_include = entity.get('component_include', component)
-            component_dir = f"ores.{component}"
-            component_core = entity.get('component_core', component)
-            component_core_dir = f"ores.{component}"
-            component_service = entity.get('component_service', component)
-            component_service_dir = f"ores.{component}"
+        path_vars = _component_path_vars(entity)
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
-        generator_facet_name = entity.get('generator_facet_name', 'generators')
-
-        # cached_by: the consumer component a nats-event-cache archetype's
-        # output belongs to (e.g. party is defined in refdata but its
-        # generated cache compiles into iam), distinct from the entity's
-        # own component used by every other facet above.
-        cache_component = entity.get('cached_by', component)
-        cache_component_dir = f"ores.{cache_component}"
-
-        result = result.replace('{component_dir}', component_dir)
-        result = result.replace('{component_core_dir}', component_core_dir)
-        result = result.replace('{component_service_dir}', component_service_dir)
-        result = result.replace('{component_include}', component_include)
-        result = result.replace('{component_core}', component_core)
-        result = result.replace('{component_service}', component_service)
-        result = result.replace('{cache_component_dir}', cache_component_dir)
-        result = result.replace('{cache_component}', cache_component)
-        result = result.replace('{component}', component)
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
-        result = result.replace('{generator_facet_name}', generator_facet_name)
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
-        component = junction.get('component', 'unknown')
+        path_vars = _component_path_vars(junction)
         junction_name = junction.get('name', 'unknown')
         name_singular = junction.get('name_singular', junction_name.rstrip('s'))
         entity_pascal = snake_to_pascal(name_singular)
 
-        result = result.replace('{component}', component)
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
         result = result.replace('{junction_name}', junction_name)
         result = result.replace('{entity}', name_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
@@ -2689,6 +2709,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Add uppercase versions for C++ include guards
         if 'component' in junction:
             junction['component_upper'] = junction['component'].upper()
+            # Derive component_include/component_core/... for #include lines
+            # and C++ namespacing, mirroring the domain_entity branch above
+            # (see _component_path_vars, shared with resolve_output_path's
+            # equivalent output-path derivation).
+            junction.update(_component_path_vars(junction))
+            junction['component_include_upper'] = (
+                junction['component_include'].replace('.', '_').upper()
+            )
+            junction['component_core_upper'] = (
+                junction['component_core'].replace('.', '_').upper()
+            )
+            junction['component_service_upper'] = (
+                junction['component_service'].replace('.', '_').upper()
+            )
+            junction['cache_component_upper'] = (
+                junction['cache_component'].replace('.', '_').upper()
+            )
+            junction['generator_facet_name_upper'] = (
+                junction['generator_facet_name'].upper()
+            )
         if 'name_singular' in junction:
             junction['name_singular_upper'] = junction['name_singular'].upper()
             # Human-readable version - use explicit value or derive from last word
@@ -2701,17 +2741,33 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction['name_title_lower'] = junction['name_title'].lower()
         # Prepare table display items for C++ templates
         if 'cpp' in junction:
-            # Collect UUID column names for table display
+            # Collect UUID/optional/bool column names for table display,
+            # mirroring the domain_entity branch above (fort::char_table's
+            # operator<< can't stream std::optional<non-string> directly --
+            # bool needs the same true/false ternary treatment).
             uuid_columns = set()
+            optional_columns = set()
+            bool_columns = set()
             if junction.get('left', {}).get('is_uuid'):
                 uuid_columns.add(junction['left']['column'])
             if junction.get('right', {}).get('is_uuid'):
                 uuid_columns.add(junction['right']['column'])
             if 'columns' in junction:
                 for col in junction['columns']:
-                    if col.get('is_uuid'):
+                    if col.get('is_uuid') or col.get('is_optional_uuid'):
                         uuid_columns.add(col['name'])
-            _prepare_table_display(junction['cpp'], uuid_columns)
+                    # A column needs opt_str() wrapping (fort::char_table
+                    # has no operator<< for std::optional<T>) only when its
+                    # cpp_type is genuinely std::optional<...> -- a nullable
+                    # column whose author left cpp_type as a plain (non-
+                    # optional) type streams as-is, same as domain_entity's
+                    # is_nullable_string carve-out.
+                    if (col.get('cpp_type') or '').strip().startswith('std::optional<') \
+                            and not col.get('is_optional_uuid'):
+                        optional_columns.add(col['name'])
+                    if (col.get('cpp_type') or '').strip() == 'bool':
+                        bool_columns.add(col['name'])
+            _prepare_table_display(junction['cpp'], uuid_columns, optional_columns, bool_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in junction:
             for key, value in junction['repository'].items():

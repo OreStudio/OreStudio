@@ -110,14 +110,18 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
-#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
+#ifndef ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
+#define ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
 
 #include <string>
-#include "sqlgen/Timestamp.hpp"
+#include <optional>
+#include <ostream>
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::{{component}}::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a {{name_title_lower}} in the database.
@@ -141,8 +145,8 @@ struct {{name_singular}}_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
@@ -155,52 +159,28 @@ std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
 
 * Design notes
 
-** Domain entity vs junction: =db_timestamp= vs =sqlgen::Timestamp=
+** Domain entity vs junction: unified on =db_timestamp= (2026-07-15)
 
-The ={{#domain_entity}}= section uses the =db_timestamp= type alias
-(=ores::database::repository::db_timestamp=, imported via =db_types.hpp=) for
-=valid_from= and =valid_to=. The ={{#junction}}= section retains the raw
-=sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">= type directly.
+Both the ={{#domain_entity}}= and ={{#junction}}= sections now use the
+=db_timestamp= type alias (=ores::database::repository::db_timestamp=,
+imported via =db_types.hpp=) for =valid_from=/=valid_to=, and both use the
+=component_core_upper=-based include guard.
 
-This divergence is intentional for now but represents a gap that should be
-resolved in a future template cleanup task (see capture linked below).
+This was previously a documented, deliberate divergence (the junction
+section used raw =sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">= and a
+=component_upper=-based guard instead), justified by "the composite-PK
+interaction with =sqlgen='s =db_timestamp= alias has not been validated" —
+but the existing hand-authored =party_currency_entity.hpp=/
+=party_country_entity.hpp= (real, currently-compiling junction entities)
+already use =db_timestamp= and the CORE-prefixed guard in production, which
+is exactly the validation the old note said was missing. Unified the
+template to match what already ships, while adding a codegen junction
+facet for =tenor_convention_resolution= (see the
+[[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile
+system; add junction support to physical-space codegen]] story).
 
-*Why they differ:*
-
-- Domain entities were migrated to =db_timestamp= (PR #1316) because the mapper
-  template passes =valid_from= directly to =timestamp_to_timepoint(v.valid_from)=,
-  which takes a non-optional argument. The =db_timestamp= alias makes the type
-  opaque and consistent with the mapper helper API.
-
-- Junction entities were not migrated at the same time because: (1) the junction
-  mapper template takes a different code path and was not broken in the same way;
-  (2) junctions have a composite PK (left + right + valid_from) where =valid_from=
-  is part of the key, and the interaction between sqlgen's PK mechanism and the
-  timestamp alias was not validated; (3) no junction entity was being actively
-  synced at the time of the fix, so the risk of inadvertently breaking something
-  was not justified.
-
-*Pros of unifying to =db_timestamp= in the junction section:*
-
-- Consistency: both entity kinds would use the same type for temporal columns.
-- Future mapper helpers may depend on the alias.
-- Avoids confusion for readers of the generated code.
-
-*Cons / risks:*
-
-- The composite-PK interaction with sqlgen needs to be verified: sqlgen uses
-  =valid_from= as a PK column in junction tables, and the alias must be
-  transparent to sqlgen's PK deduction logic.
-- Requires validation across all existing junction entities (=party_currency=,
-  =party_country=, etc.) before the template change is safe to merge.
-- A mechanical template change could silently break junction entities that do not
-  have active codegen tests.
-
-*Recommendation:* unify in a dedicated template-cleanup task after verifying
-the sqlgen PK alias behaviour in a test junction entity. Do not do this
-incidentally during an entity-sync task.
-
-Tracked by capture [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity timestamp type to db_timestamp alias]].
+Capture [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity
+timestamp type to db_timestamp alias]] can be closed as done.
 
 * See also
 

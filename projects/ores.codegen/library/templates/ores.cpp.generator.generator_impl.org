@@ -166,14 +166,14 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 }
 {{/domain_entity}}
 {{#junction}}
-#include "ores.{{component_include}}/generators/{{name_singular}}_generator.hpp"
+#include "ores.{{component_include}}/{{generator_facet_name}}/{{name_singular}}_generator.hpp"
 
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_left_or_right}}
 #include "ores.utility/generation/generation_keys.hpp"
 
-namespace ores::{{component}}::generators {
+namespace ores::{{component}}::{{generator_facet_name}} {
 
 using ores::utility::generation::generation_keys;
 

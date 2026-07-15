@@ -143,7 +143,17 @@ begin
                 svc.desired_replicas,
                 'always',
                 3,
-                1,
+                -- ores.wt.service is disabled by default: its Wt httpd
+                -- crashes intermittently on startup with a fatal glibc
+                -- pthread-priority-protect assertion (tpp.c) inside Wt's
+                -- own threading internals, unrelated to ORE Studio code.
+                -- Root cause needs a debugger session to pin down the
+                -- exact call site; until then, avoid the noisy
+                -- crash-loop-and-eventually-recover cycle by not
+                -- launching it. Re-enable with:
+                --   update ores_controller_service_definitions_tbl
+                --   set enabled = 1 where service_name = 'ores.wt.service';
+                case when svc.service_name = 'ores.wt.service' then 0 else 1 end,
                 svc.args_template,
                 svc.description,
                 v_actor,

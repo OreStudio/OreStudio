@@ -18,25 +18,37 @@
  *
  */
 #include "ores.qt/SwapConventionController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/SwapConventionDetailDialog.hpp"
-#include "ores.qt/SwapConventionHistoryDialog.hpp"
 #include "ores.qt/SwapConventionMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/swap_convention_changed_event.hpp"
+#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view sc_event_name =
+    eventing::domain::event_traits<refdata::eventing::swap_convention_changed_event>::name;
+}
 
 SwapConventionController::SwapConventionController(QMainWindow* mainWindow,
                                                    QMdiArea* mdiArea,
                                                    ClientManager* clientManager,
                                                    const QString& username,
                                                    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, sc_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +104,8 @@ void SwapConventionController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -139,6 +153,7 @@ void SwapConventionController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new swap convention requested";
     showAddWindow();
 }
+
 
 void SwapConventionController::onShowHistory(const refdata::domain::swap_convention& sc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << sc.id;
@@ -239,6 +254,7 @@ void SwapConventionController::showDetailWindow(const refdata::domain::swap_conv
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<SwapConventionController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -265,10 +281,14 @@ void SwapConventionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new SwapConventionHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::swap_convention{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &SwapConventionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<SwapConventionController>(this)](const QString& message) {
                 if (!self)
@@ -276,7 +296,7 @@ void SwapConventionController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &SwapConventionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<SwapConventionController>(this)](const QString& message) {
                 if (!self)
@@ -284,13 +304,23 @@ void SwapConventionController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &SwapConventionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &SwapConventionController::onRevertVersion);
+            [self = QPointer<SwapConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &SwapConventionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &SwapConventionController::onOpenVersion);
+            [self = QPointer<SwapConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -301,10 +331,12 @@ void SwapConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Swap Convention History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<SwapConventionController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -376,6 +408,96 @@ void SwapConventionController::onOpenVersion(const refdata::domain::swap_convent
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void SwapConventionController::fetchSwapConventionHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::swap_convention>, QString>)>
+        callback) {
+    refdata::messaging::get_swap_convention_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::swap_convention>, QString>;
+
+    QPointer<SwapConventionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->swap_conventions);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void SwapConventionController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<SwapConventionController> self = this;
+    fetchSwapConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::swap_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void SwapConventionController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<SwapConventionController> self = this;
+    fetchSwapConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::swap_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void SwapConventionController::onRevertVersion(const refdata::domain::swap_convention& sc) {
     BOOST_LOG_SEV(lg(), info) << "Reverting swap convention to version: " << sc.version;
 
@@ -383,8 +505,11 @@ void SwapConventionController::onRevertVersion(const refdata::domain::swap_conve
     auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setConvention(sc);
+    auto reverted_sc = sc;
+    reverted_sc.version = 0;
+    detailDialog->setConvention(reverted_sc);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &SwapConventionDetailDialog::statusMessage,
@@ -422,6 +547,28 @@ void SwapConventionController::onRevertVersion(const refdata::domain::swap_conve
 
 EntityListMdiWindow* SwapConventionController::listWindow() const {
     return listWindow_;
+}
+
+void SwapConventionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

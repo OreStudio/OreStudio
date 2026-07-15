@@ -83,7 +83,7 @@ placeholder text field.
 | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | BACKLOG | | | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
 | [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
-| [[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][Model a currency-country junction]] | BACKLOG | | | Model a many-to-many currency_country junction linking currency to the existing country entity, since a currency can span multiple countries (e.g. EUR -> DE, FR, IT, ...) and calendar.country_code needs a country to FK against. |
+| [[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][Model a currency-country junction]] | DONE | 2026-07-14 | 2026-07-14 | Model a many-to-many currency_country junction linking currency to the existing country entity, since a currency can span multiple countries (e.g. EUR -> DE, FR, IT, ...) and calendar.country_code needs a country to FK against. |
 | [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire calendar, calendar_type, currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline (artefact tables + publish-from-dq functions + NATS handlers), following the existing hand-written pattern used for currency_pairs. |
 
 * Decisions
@@ -108,6 +108,16 @@ placeholder text field.
   DQ-publish task, since it was a natural extension of landing the
   entities cleanly; the junction tables' publish support is still
   pending their own tasks.
+- Junction codegen (=ores.codegen.junction=) only supports the SQL
+  address today — confirmed against =party_country= and
+  =currency_currency_group=, both of which also only have SQL
+  generated. The C++ layer for =currency_country= (and any other
+  junction) is hand-authored, mirroring the closest existing junction.
+- Reference-data seeds that matter beyond synthetic test fixtures
+  (QuantLib calendars, currency-issuing countries) are written twice
+  by design: once as a C++ generator (for programmatic/test use) and
+  once as a matching SQL populate script (so =compass db recreate=
+  seeds them without needing the C++ path to run).
 
 * Out of scope
 

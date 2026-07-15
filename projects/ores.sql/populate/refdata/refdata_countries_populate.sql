@@ -30,10 +30,11 @@
  *
  * Also seeds real ISO 3166-1 country rows for exactly the countries
  * referenced by the QuantLib calendar seed data
- * (refdata_calendars_populate.sql) -- not the full ISO country list,
- * to keep scope proportional to what calendar.country_code actually
- * needs. Extend this list if a future calendar addition references a
- * country not yet present here.
+ * (refdata_calendars_populate.sql) and the currency-country seed data
+ * (refdata_currency_countries_populate.sql) -- not the full ISO
+ * country list, to keep scope proportional to what those two seeds
+ * actually need. Extend this list if a future calendar or currency
+ * addition references a country not yet present here.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE.
  */
@@ -72,6 +73,8 @@ values
     (ores_utility_system_tenant_id_fn(), 'DE', 0, 'DEU', '276', 'Germany', 'Federal Republic of Germany',
      current_user, current_user, 'system.initial_load', 'Initial population of countries'),
     (ores_utility_system_tenant_id_fn(), 'DK', 0, 'DNK', '208', 'Denmark', 'Kingdom of Denmark',
+     current_user, current_user, 'system.initial_load', 'Initial population of countries'),
+    (ores_utility_system_tenant_id_fn(), 'ES', 0, 'ESP', '724', 'Spain', 'Kingdom of Spain',
      current_user, current_user, 'system.initial_load', 'Initial population of countries'),
     (ores_utility_system_tenant_id_fn(), 'FI', 0, 'FIN', '246', 'Finland', 'Republic of Finland',
      current_user, current_user, 'system.initial_load', 'Initial population of countries'),

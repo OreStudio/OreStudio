@@ -134,6 +134,9 @@
 \ir ./refdata_currency_pair_classifications_notify_trigger_drop.sql
 \ir ./refdata_currency_pair_classifications_drop.sql
 
+-- Currency-country issuing junction (depends on currencies and countries; drop before both)
+\ir ./refdata_currency_country_drop.sql
+
 -- Currencies
 \ir ./refdata_currencies_notify_trigger_drop.sql
 \ir ./refdata_currencies_drop.sql

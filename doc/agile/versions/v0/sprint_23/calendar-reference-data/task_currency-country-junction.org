@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-country-junction
+#+pr: 1568
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,19 +35,19 @@ through =currency_country=, since supranational calendars like
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
-- [ ] A =currency_country= junction table links =currency= to
+- [X] A =currency_country= junction table links =currency= to
   =country=, generated via =ores.codegen.junction=, mirroring
   =party_country_junction='s shape.
-- [ ] Existing currencies are seeded with their real issuing
+- [X] Existing currencies are seeded with their real issuing
   countries (EUR -> DE, FR, IT, ES, ...; USD -> US; GBP -> GB; etc.)
   for the currencies already present in synthetic/seed data.
 
@@ -74,12 +74,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1568][#1568]] | [refdata] Model currency_country junction |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing drop script for the new table (all 3 review passes) | projects/ores.sql/drop/refdata/refdata_currency_country_drop.sql | Accepted | Added, mirroring refdata_party_countries_drop.sql; wired into refdata_drop.sql before currencies/countries drop |
+| 2 | generate_synthetic_currency_country hardcodes both composite-key fields, so generate_synthetic_currency_countries(n) produces n identical rows | projects/ores.refdata/api/src/generators/currency_country_generator.cpp | Accepted | Vary currency_iso_code per call via an atomic counter suffix, matching the "X" + counter convention currency's own synthetic generator uses |
+| 3 | Missing repository-level tests vs. the cited party_country precedent | projects/ores.refdata/core/tests/repository_currency_country_repository_tests.cpp | Accepted | Added, mirroring repository_party_country_repository_tests.cpp (write single/multiple, read by currency/country, remove, remove_by_currency, read nonexistent) |
+| 4 | ES breaks alphabetical ordering in the countries seed | projects/ores.sql/populate/refdata/refdata_countries_populate.sql | Accepted | Moved after DK |
 
 * Result
+
+Modelled =currency_country= as an =ores.codegen.junction= (SQL schema
+generated), and hand-authored the full C++ layer — domain struct,
+JSON I/O, table display/table I/O, custom generator, repository
+entity/mapper/repository — since junction codegen currently only
+supports the SQL address (confirmed by checking =party_country= and
+=currency_currency_group=, the two closest precedents: both are also
+SQL-only from codegen, with their C++ hand-authored). Mirrors
+=party_country_junction='s exact shape and conventions throughout.
+
+Seeded 23 real currency-country mappings (EUR spans DE/FR/IT/ES/AT/FI;
+USD/GBP/JPY/CHF/CAD/AUD/SEK/NOK/DKK/CNY/HKD/SGD/ZAR/INR/KRW/MXN/BRL
+each map to one country) via both a =generate_currency_countries()=
+custom generator and a matching SQL populate script
+(=refdata_currency_countries_populate.sql=), following the same
+dual-path pattern established for =calendar='s QuantLib seed in the
+previous task. Discovered =ES= (Spain) wasn't yet in the countries
+seed (only calendar-referenced countries were there) and added it,
+since =EUR -> ES= is in this task's own acceptance criteria.
+
+Wired the generated junction SQL into =refdata_create.sql= (was
+missing, same class of gap as calendar/calendar_type in the previous
+task) at the point after both =currencies= and =countries= exist.
+
+Verified end-to-end: =ores.refdata.api.lib=/=ores.refdata.core.lib=
+build clean; full monorepo build and =ctest= (72/73 passed — the 1
+failure is the same pre-existing, unrelated =contact_type= test seen
+in the previous task's PR, confirmed untouched by any commit here);
+=compass db recreate= runs clean with 23 junction rows present. Note:
+the real ISO currencies (EUR, USD, GBP, ...) these rows reference are
+themselves populated via DQ-publish/tenant provisioning, not
+=db recreate='s foundation layer — a pre-existing characteristic of
+this codebase, not something this task changes.

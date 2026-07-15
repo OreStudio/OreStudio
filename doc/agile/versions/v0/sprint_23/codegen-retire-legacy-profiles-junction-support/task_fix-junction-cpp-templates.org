@@ -238,7 +238,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction repository class missing EXPORT macro/export.hpp include entirely (link-time bug, not caught by -fsyntax-only) | cpp_domain_type_repository.hpp.mustache | Accepted | Fixed in 2a7b9866b. |
+| 2 | Junction mapper/repository sections used stale component_upper include guards instead of component_core_upper | mapper_header.org, repository_header.org | Accepted | Fixed in 2a7b9866b, matches this PR's own db_timestamp/guard unification goal. |
+| 3 | Junction generator header/impl missing EXPORT/include, hardcoded "generators" guard/namespace instead of generator_facet_name; core.py never computed generator_facet_name_upper for junction | generator_header.org, generator_impl.org, core.py | Accepted | Fixed in 2a7b9866b. |
 
 * Result
 

@@ -83,6 +83,7 @@ QVariant ClientZeroConventionModel::data(const QModelIndex& index, int role) con
             case Id:
                 return QString::fromStdString(zc.id);
             case TenorBased:
+                return zc.tenor_based ? tr("true") : tr("false");
             case DayCountFraction:
                 return QString::fromStdString(zc.day_count_fraction);
             case Compounding:

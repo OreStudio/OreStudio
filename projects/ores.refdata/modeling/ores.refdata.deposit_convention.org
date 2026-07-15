@@ -238,7 +238,7 @@ std::nullopt
 | enum_name        | field              | header      | type      | width |
 |------------------+--------------------+-------------+-----------+-------|
 | Id               | id                 | Id          | string    | 200   |
-| IndexBased       | index_based        | Index Based |           | 100   |
+| IndexBased       | index_based        | Index Based | bool      | 100   |
 | Index            | index              | Index       | string    | 140   |
 | Calendar         | calendar           | Calendar    | string    | 120   |
 | DayCountFraction | day_count_fraction | DCF         | string    | 100   |

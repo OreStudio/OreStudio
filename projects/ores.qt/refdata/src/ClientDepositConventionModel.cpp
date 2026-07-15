@@ -84,6 +84,7 @@ QVariant ClientDepositConventionModel::data(const QModelIndex& index, int role) 
             case Id:
                 return QString::fromStdString(dc.id);
             case IndexBased:
+                return dc.index_based ? tr("true") : tr("false");
             case Index:
                 return dc.index ? QString::fromStdString(*dc.index) : QString{};
             case Calendar:

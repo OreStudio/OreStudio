@@ -259,6 +259,7 @@ std::string("Active")
 :settings_group:          CounterpartyListWindow
 :window_title:            Counterparties
 :icon:                    Handshake
+:has_pagination:          true
 :END:
 
 *** Detail fields

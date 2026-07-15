@@ -210,6 +210,8 @@ void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset, std::ui
                 }
 
                 refdata::messaging::get_counterparties_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -240,12 +242,12 @@ void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset, std::ui
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->counterparties.size() << " counterparties";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->counterparties.size());
+                    << "Fetched " << result->counterparties.size()
+                    << " counterparties, total available: " << result->total_available_count;
                 return {.success = true,
                         .counterparties = std::move(result->counterparties),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

@@ -223,6 +223,7 @@ std::nullopt
 :item_var:                zc
 :key_field:               id
 :has_uuid_primary_key:    false
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_zero_conventions_request
 :get_response_class:      refdata::messaging::get_zero_conventions_response
 :get_message_type:        get_zero_conventions_request
@@ -235,6 +236,7 @@ std::nullopt
 :delete_message_type:     delete_zero_convention_request
 :history_request_class:   refdata::messaging::get_zero_convention_history_request
 :history_response_class:  refdata::messaging::get_zero_convention_history_response
+:history_response_data_field: zero_conventions
 :history_message_type:    get_zero_convention_history_request
 :settings_group:          ZeroConventionListWindow
 :window_title:            Zero Conventions

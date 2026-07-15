@@ -114,6 +114,7 @@ std::string("EUR-EURIBOR-6M")
 :item_var:                fc
 :key_field:               id
 :has_uuid_primary_key:    false
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_fra_conventions_request
 :get_response_class:      refdata::messaging::get_fra_conventions_response
 :get_message_type:        get_fra_conventions_request
@@ -126,6 +127,7 @@ std::string("EUR-EURIBOR-6M")
 :delete_message_type:     delete_fra_convention_request
 :history_request_class:   refdata::messaging::get_fra_convention_history_request
 :history_response_class:  refdata::messaging::get_fra_convention_history_response
+:history_response_data_field: fra_conventions
 :history_message_type:    get_fra_convention_history_request
 :settings_group:          FraConventionListWindow
 :window_title:            FRA Conventions

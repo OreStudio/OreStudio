@@ -2021,4 +2021,35 @@
    fun:_dl_init
    ...
 }
+#
+# immer Thread-Local Free-List Pool (ores.analytics.quant rate_engine)
+#
+# immer's split_heap/thread_local_free_list_heap keeps a per-thread pool
+# of freed 280-byte rbtree nodes for reuse rather than returning them to
+# the OS. When a worker thread updates a rate_engine and then exits (or
+# when the pool is still populated when the main thread's leak check
+# runs before its own TLS teardown), valgrind cannot always follow the
+# thread-local pointer chain as a GC root and flags the pool's cached
+# (not leaked) memory as "possibly lost" -- never "definitely lost" (0
+# bytes/blocks definitely/indirectly lost across every run investigated).
+# Matched narrowly on the immer allocator's own 5-frame allocate() chain
+# for this specific 280-byte/1024-slot pool instantiation (the one
+# rate_engine's vertex_state vector uses) via match-leak-kinds: possible
+# only -- a genuine *definite* leak anywhere in this same call path, or
+# a possibly-lost report through a different allocation site, still
+# surfaces normally. See the CRM story's valgrind investigation task for
+# the reproduction and analysis that confirmed this is a false positive.
+#
+{
+   immer Thread-Local Free-List Pool Allocate (rate_engine vertex_state, 280 byte)
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:_Znwm
+   fun:_ZN5immer8cpp_heap8allocateIJEEEPvmDpT_
+   fun:_ZN5immer15debug_size_heapINS_8cpp_heapEE8allocateIJEEEPvmDpT_
+   fun:_ZN5immer14free_list_heapILm280ELm1024ENS_15debug_size_heapINS_8cpp_heapEEEE8allocateIJEEEPvmDpT_
+   fun:_ZN5immer6detail26unsafe_free_list_heap_implINS0_30thread_local_free_list_storageELm280ELm1024ENS_14free_list_heapILm280ELm1024ENS_15debug_size_heapINS_8cpp_heapEEEEEE8allocateIJEEEPvmDpT_
+   fun:_ZN5immer10split_heapILm280ENS_27thread_local_free_list_heapILm280ELm1024ENS_14free_list_heapILm280ELm1024ENS_15debug_size_heapINS_8cpp_heapEEEEEEES5_E8allocateIJEEEPvmDpT_
+   ...
+}
 

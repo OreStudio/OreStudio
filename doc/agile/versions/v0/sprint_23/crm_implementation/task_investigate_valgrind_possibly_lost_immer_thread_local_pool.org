@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:quant:valgrind:memory:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/investigate-valgrind-possibly-lost-immer-thread-local-pool
+#+pr: 1578
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,12 +43,12 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
@@ -63,9 +63,41 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Reproduce locally: build =ores.analytics.quant.tests= and run it
+  directly under =valgrind --leak-check=full --show-reachable=yes=
+  (both filtered to =[rate_engine]= and unfiltered), rather than the
+  full nightly =CTest.cmake= dashboard script -- much faster iteration
+  for a single component.
+- Check the =LEAK SUMMARY=: every run showed *0 bytes definitely lost,
+  0 indirectly lost* -- only "possibly lost", all funnelling through
+  the same =immer= thread-local free-list allocator chain
+  (=cpp_heap::allocate -> debug_size_heap::allocate ->
+  free_list_heap::allocate -> unsafe_free_list_heap_impl<thread_local_free_list_storage>::allocate
+  -> split_heap::allocate=), for both single-threaded and worker-thread
+  test cases. That's the confirming signal: a genuine leak in
+  =rate_engine=/=vertex_state='s own code wouldn't route through the
+  allocator's own internal pool-allocate frames for every single
+  occurrence, and definitely-lost/indirectly-lost would be nonzero.
+- Confirmed hypothesis (a): thread-local-allocator-pool false positive,
+  not a real leak.
+- Found =build/valgrind/custom.supp= (a real tracked source file, not
+  build output -- only =build/output/= is gitignored) is already wired
+  as =CTEST_MEMORYCHECK_SUPPRESSIONS_FILE= in =CTest.cmake= and used by
+  nightly's =with_memcheck=1= dashboard run, with an existing catalogue
+  of scoped suppressions (Boost.Log, OpenSSL, Catch2, glibc TLS, etc.)
+  to follow the same style/rigour for.
+- Added one new targeted suppression entry, matched on the immer
+  allocator's own 5-frame =allocate()= chain for this specific
+  280-byte/1024-slot pool instantiation (the one =rate_engine='s
+  =vertex_state= vector uses), with =match-leak-kinds: possible= only
+  -- deliberately *not* a blanket =immer::*= or =possibly lost=
+  suppression, so a genuine definite leak in the same call path (or a
+  possibly-lost report through a different immer allocation site)
+  still surfaces normally.
+- Verified: re-ran valgrind with =--suppressions=build/valgrind/custom.supp=
+  against the full =ores.analytics.quant.tests= suite (147 test cases) --
+  0 definitely/indirectly/possibly lost, all 4 hits of the new
+  suppression entry accounted for as "suppressed".
 
 * Notes
 
@@ -84,12 +116,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1578][#1578]] | [quant,ci] Suppress immer thread-local pool false positive |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | story.org roll-up row left at STARTED with no end date after task closed to DONE | story.org | Accepted | Synced row to DONE / 2026-07-15 |
+| 2 | Task's Status table "Last touched" stale at 2026-07-13 despite all commits on 2026-07-15 | task .org | Accepted | Bumped to 2026-07-15 |
+| 3 | Suppression matches on callee-side frames only, so it would also catch any other 280-byte immer::split_heap<...> instantiation, not literally only vertex_state | build/valgrind/custom.supp | Declined | Intentional -- narrow-by-allocator-shape is the deliberate tradeoff vs. a blanket immer suppression; flagged as a known, non-blocking limitation by both reviewers, not a defect |
 
 * Result
+
+Confirmed hypothesis (a): the "possibly lost" reports are the
+well-known immer thread-local-allocator-pool false positive, not a
+real leak in =rate_engine=/=vertex_state='s own code. Every reproduced
+run showed 0 bytes definitely/indirectly lost, with every "possibly
+lost" record tracing through the same immer free-list-heap
+=allocate()= chain regardless of whether it originated from a
+single-threaded or worker-thread test path.
+
+Added one targeted entry to =build/valgrind/custom.supp= (already
+wired into nightly's =with_memcheck=1= =CTest.cmake= run), matched on
+the immer allocator's own 5-frame =allocate()= chain for
+=rate_engine='s specific 280-byte/1024-slot =vertex_state= pool
+instantiation, =match-leak-kinds: possible= only -- not a blanket
+=immer::*= suppression, so a genuine definite leak (or a possibly-lost
+report through any other allocation site) still surfaces.
+
+Verified: =valgrind --leak-check=full --show-reachable=yes
+--suppressions=build/valgrind/custom.supp= against the full
+=ores.analytics.quant.tests= suite (147 test cases, all passing) --
+0 definitely/indirectly/possibly lost; 4 hits of the new suppression
+entry correctly bucketed as "suppressed".

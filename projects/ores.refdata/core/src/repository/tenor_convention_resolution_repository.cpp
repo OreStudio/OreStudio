@@ -42,8 +42,9 @@ tenor_convention_resolution_repository::tenor_convention_resolution_repository(c
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("convention_code"_c, "tenor_code"_c);
 
     return execute_read_query<tenor_convention_resolution_entity,
@@ -62,10 +63,11 @@ tenor_convention_resolution_repository::read_latest_by_convention(
                                << convention_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query =
-        sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-        where("convention_code"_c == convention_code && "valid_to"_c == max.value()) |
-        order_by("tenor_code"_c);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("tenor_code"_c);
 
     return execute_read_query<tenor_convention_resolution_entity,
                               domain::tenor_convention_resolution>(
@@ -82,9 +84,11 @@ tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& 
                                << tenor_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenor_code"_c == tenor_code && "valid_to"_c == max.value()) |
-                       order_by("convention_code"_c);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+        where("tenant_id"_c == tid && "tenor_code"_c == tenor_code && "valid_to"_c == max.value()) |
+        order_by("convention_code"_c);
 
     return execute_read_query<tenor_convention_resolution_entity,
                               domain::tenor_convention_resolution>(

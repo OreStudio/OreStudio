@@ -576,9 +576,17 @@ void {{name_singular}}_repository::write(
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("{{left.column}}"_c, "{{order_column}}"_c);
+{{/has_tenant_id}}
 
     return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
@@ -600,12 +608,26 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#left.is_uuid}}
     const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
 {{/left.is_uuid}}
         order_by("{{order_column}}"_c);
 
@@ -629,12 +651,26 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#right.is_uuid}}
     const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
 {{/right.is_uuid}}
 {{^right.is_uuid}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
 {{/right.is_uuid}}
         order_by("{{left.column}}"_c);
 
@@ -667,7 +703,34 @@ void {{name_singular}}_repository::remove(
 {{#right.is_uuid}}
     const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
 {{/right.is_uuid}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+{{/has_tenant_id}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+{{#has_tenant_id}}
+        where("tenant_id"_c == tid &&
+{{#left.is_uuid}}
+{{#right.is_uuid}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}}_str);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+{{#right.is_uuid}}
+              "{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}}_str);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+              "{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
+{{/has_tenant_id}}
+{{^has_tenant_id}}
 {{#left.is_uuid}}
 {{#right.is_uuid}}
         where("{{left.column}}"_c == {{left.column}}_str &&
@@ -688,6 +751,7 @@ void {{name_singular}}_repository::remove(
               "{{right.column}}"_c == {{right.column}});
 {{/right.is_uuid}}
 {{/left.is_uuid}}
+{{/has_tenant_id}}
 
     execute_delete_query(ctx_, query, lg(),
         "removing {{name_singular_words}} from database");
@@ -705,12 +769,26 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
 
 {{#left.is_uuid}}
     const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
         where("{{left.column}}"_c == {{left.column}}_str);
+{{/has_tenant_id}}
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}});
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
         where("{{left.column}}"_c == {{left.column}});
+{{/has_tenant_id}}
 {{/left.is_uuid}}
 
     execute_delete_query(ctx_, query, lg(),

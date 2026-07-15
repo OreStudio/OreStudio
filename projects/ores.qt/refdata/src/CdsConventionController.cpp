@@ -18,25 +18,40 @@
  *
  */
 #include "ores.qt/CdsConventionController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/CdsConventionDetailDialog.hpp"
-#include "ores.qt/CdsConventionHistoryDialog.hpp"
 #include "ores.qt/CdsConventionMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/cds_convention_changed_event.hpp"
+#include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view cc_event_name =
+    eventing::domain::event_traits<refdata::eventing::cds_convention_changed_event>::name;
+}
+
 CdsConventionController::CdsConventionController(QMainWindow* mainWindow,
                                                  QMdiArea* mdiArea,
                                                  ClientManager* clientManager,
+                                                 ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, cc_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +107,8 @@ void CdsConventionController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -140,6 +157,7 @@ void CdsConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CdsConventionController::onShowHistory(const refdata::domain::cds_convention& cc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << cc.id;
     showHistoryWindow(QString::fromStdString(cc.id));
@@ -149,6 +167,8 @@ void CdsConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CDS convention";
 
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -197,6 +217,8 @@ void CdsConventionController::showDetailWindow(const refdata::domain::cds_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << cc.id;
 
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -239,6 +261,7 @@ void CdsConventionController::showDetailWindow(const refdata::domain::cds_conven
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<CdsConventionController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -265,10 +288,14 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new CdsConventionHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::cds_convention{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &CdsConventionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CdsConventionController>(this)](const QString& message) {
                 if (!self)
@@ -276,7 +303,7 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CdsConventionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CdsConventionController>(this)](const QString& message) {
                 if (!self)
@@ -284,13 +311,23 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CdsConventionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CdsConventionController::onRevertVersion);
+            [self = QPointer<CdsConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CdsConventionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CdsConventionController::onOpenVersion);
+            [self = QPointer<CdsConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -301,10 +338,12 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("CDS Convention History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<CdsConventionController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -332,6 +371,8 @@ void CdsConventionController::onOpenVersion(const refdata::domain::cds_conventio
     }
 
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(cc);
@@ -376,15 +417,110 @@ void CdsConventionController::onOpenVersion(const refdata::domain::cds_conventio
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void CdsConventionController::fetchCdsConventionHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::cds_convention>, QString>)>
+        callback) {
+    refdata::messaging::get_cds_convention_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::cds_convention>, QString>;
+
+    QPointer<CdsConventionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->cds_conventions);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CdsConventionController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CdsConventionController> self = this;
+    fetchCdsConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::cds_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CdsConventionController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CdsConventionController> self = this;
+    fetchCdsConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::cds_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void CdsConventionController::onRevertVersion(const refdata::domain::cds_convention& cc) {
     BOOST_LOG_SEV(lg(), info) << "Reverting CDS convention to version: " << cc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setConvention(cc);
+    auto reverted_cc = cc;
+    reverted_cc.version = 0;
+    detailDialog->setConvention(reverted_cc);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &CdsConventionDetailDialog::statusMessage,
@@ -422,6 +558,28 @@ void CdsConventionController::onRevertVersion(const refdata::domain::cds_convent
 
 EntityListMdiWindow* CdsConventionController::listWindow() const {
     return listWindow_;
+}
+
+void CdsConventionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

@@ -18,25 +18,40 @@
  *
  */
 #include "ores.qt/OisConventionController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OisConventionDetailDialog.hpp"
-#include "ores.qt/OisConventionHistoryDialog.hpp"
 #include "ores.qt/OisConventionMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/ois_convention_changed_event.hpp"
+#include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view oc_event_name =
+    eventing::domain::event_traits<refdata::eventing::ois_convention_changed_event>::name;
+}
+
 OisConventionController::OisConventionController(QMainWindow* mainWindow,
                                                  QMdiArea* mdiArea,
                                                  ClientManager* clientManager,
+                                                 ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, oc_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +107,8 @@ void OisConventionController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -140,6 +157,7 @@ void OisConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void OisConventionController::onShowHistory(const refdata::domain::ois_convention& oc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << oc.id;
     showHistoryWindow(QString::fromStdString(oc.id));
@@ -149,6 +167,8 @@ void OisConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new OIS convention";
 
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -197,6 +217,8 @@ void OisConventionController::showDetailWindow(const refdata::domain::ois_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << oc.id;
 
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -239,6 +261,7 @@ void OisConventionController::showDetailWindow(const refdata::domain::ois_conven
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<OisConventionController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -265,10 +288,14 @@ void OisConventionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new OisConventionHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::ois_convention{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &OisConventionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<OisConventionController>(this)](const QString& message) {
                 if (!self)
@@ -276,7 +303,7 @@ void OisConventionController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &OisConventionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<OisConventionController>(this)](const QString& message) {
                 if (!self)
@@ -284,13 +311,23 @@ void OisConventionController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &OisConventionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &OisConventionController::onRevertVersion);
+            [self = QPointer<OisConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &OisConventionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &OisConventionController::onOpenVersion);
+            [self = QPointer<OisConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -301,10 +338,12 @@ void OisConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("OIS Convention History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<OisConventionController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -332,6 +371,8 @@ void OisConventionController::onOpenVersion(const refdata::domain::ois_conventio
     }
 
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(oc);
@@ -376,15 +417,110 @@ void OisConventionController::onOpenVersion(const refdata::domain::ois_conventio
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void OisConventionController::fetchOisConventionHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::ois_convention>, QString>)>
+        callback) {
+    refdata::messaging::get_ois_convention_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::ois_convention>, QString>;
+
+    QPointer<OisConventionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->ois_conventions);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void OisConventionController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<OisConventionController> self = this;
+    fetchOisConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::ois_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void OisConventionController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<OisConventionController> self = this;
+    fetchOisConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::ois_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void OisConventionController::onRevertVersion(const refdata::domain::ois_convention& oc) {
     BOOST_LOG_SEV(lg(), info) << "Reverting OIS convention to version: " << oc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setConvention(oc);
+    auto reverted_oc = oc;
+    reverted_oc.version = 0;
+    detailDialog->setConvention(reverted_oc);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &OisConventionDetailDialog::statusMessage,
@@ -422,6 +558,28 @@ void OisConventionController::onRevertVersion(const refdata::domain::ois_convent
 
 EntityListMdiWindow* OisConventionController::listWindow() const {
     return listWindow_;
+}
+
+void OisConventionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

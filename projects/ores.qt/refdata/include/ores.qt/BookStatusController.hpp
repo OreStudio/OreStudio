@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/book_status.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -80,11 +83,27 @@ private slots:
     void onShowHistory(const refdata::domain::book_status& status);
     void onRevertVersion(const refdata::domain::book_status& status);
     void onOpenVersion(const refdata::domain::book_status& status, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::book_status& status);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed book status history (the
+     * existing per-entity refdata::messaging::get_book_status_history_request/
+     * refdata::messaging::get_book_status_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed book status, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchBookStatusHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::book_status>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     BookStatusMdiWindow* listWindow_;

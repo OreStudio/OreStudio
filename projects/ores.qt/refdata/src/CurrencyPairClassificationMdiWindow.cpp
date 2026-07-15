@@ -131,7 +131,9 @@ void CurrencyPairClassificationMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "CurrencyPairClassificationListWindow",
-                            {ClientCurrencyPairClassificationModel::Description},
+                            {
+                                ClientCurrencyPairClassificationModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -389,5 +391,6 @@ void CurrencyPairClassificationMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

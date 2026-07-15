@@ -88,6 +88,7 @@ public:
      */
     const refdata::domain::ibor_index_convention* getConvention(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

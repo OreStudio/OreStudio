@@ -142,6 +142,8 @@ Number of business days from fixing to value date (usually 0 or 1).
 :item_var:                ni
 :key_field:               id
 :has_uuid_primary_key:    false
+:has_change_reason_cache:     true
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_overnight_index_conventions_request
 :get_response_class:      refdata::messaging::get_overnight_index_conventions_response
 :get_message_type:        get_overnight_index_conventions_request
@@ -154,6 +156,7 @@ Number of business days from fixing to value date (usually 0 or 1).
 :delete_message_type:     delete_overnight_index_convention_request
 :history_request_class:   refdata::messaging::get_overnight_index_convention_history_request
 :history_response_class:  refdata::messaging::get_overnight_index_convention_history_response
+:history_response_data_field: overnight_index_conventions
 :history_message_type:    get_overnight_index_convention_history_request
 :settings_group:          OvernightIndexConventionListWindow
 :window_title:            Overnight Index Conventions

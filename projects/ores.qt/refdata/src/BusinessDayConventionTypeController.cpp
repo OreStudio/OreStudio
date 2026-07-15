@@ -20,16 +20,20 @@
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
-#include "ores.qt/BusinessDayConventionTypeHistoryDialog.hpp"
 #include "ores.qt/BusinessDayConventionTypeMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/business_day_convention_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/business_day_convention_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -154,6 +158,7 @@ void BusinessDayConventionTypeController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new business day convention type requested";
     showAddWindow();
 }
+
 
 void BusinessDayConventionTypeController::onShowHistory(
     const refdata::domain::business_day_convention_type& type) {
@@ -290,11 +295,14 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog =
-        new BusinessDayConventionTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of(refdata::domain::business_day_convention_type{})),
+        code.toStdString(),
+        clientManager_,
+        mainWindow_);
 
     connect(historyDialog,
-            &BusinessDayConventionTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
                 if (!self)
@@ -302,7 +310,7 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &BusinessDayConventionTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
                 if (!self)
@@ -310,13 +318,23 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &BusinessDayConventionTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &BusinessDayConventionTypeController::onRevertVersion);
+            [self = QPointer<BusinessDayConventionTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &BusinessDayConventionTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &BusinessDayConventionTypeController::onOpenVersion);
+            [self = QPointer<BusinessDayConventionTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -327,6 +345,7 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
     historyWindow->setWindowTitle(QString("Business Day Convention Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -405,6 +424,101 @@ void BusinessDayConventionTypeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void BusinessDayConventionTypeController::fetchBusinessDayConventionTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::business_day_convention_type>,
+                                     QString>)> callback) {
+    refdata::messaging::get_business_day_convention_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::business_day_convention_type>, QString>;
+
+    QPointer<BusinessDayConventionTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void BusinessDayConventionTypeController::onOpenHistoryVersion(const QString& entityId,
+                                                               int versionNumber) {
+    QPointer<BusinessDayConventionTypeController> self = this;
+    fetchBusinessDayConventionTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::business_day_convention_type>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void BusinessDayConventionTypeController::onRevertHistoryVersion(const QString& entityId,
+                                                                 int versionNumber) {
+    QPointer<BusinessDayConventionTypeController> self = this;
+    fetchBusinessDayConventionTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::business_day_convention_type>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void BusinessDayConventionTypeController::onRevertVersion(
     const refdata::domain::business_day_convention_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting business day convention type to version: "
@@ -459,6 +573,28 @@ void BusinessDayConventionTypeController::onRevertVersion(
 
 EntityListMdiWindow* BusinessDayConventionTypeController::listWindow() const {
     return listWindow_;
+}
+
+void BusinessDayConventionTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

@@ -223,6 +223,8 @@ std::nullopt
 :item_var:                zc
 :key_field:               id
 :has_uuid_primary_key:    false
+:has_change_reason_cache:     true
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_zero_conventions_request
 :get_response_class:      refdata::messaging::get_zero_conventions_response
 :get_message_type:        get_zero_conventions_request
@@ -235,6 +237,7 @@ std::nullopt
 :delete_message_type:     delete_zero_convention_request
 :history_request_class:   refdata::messaging::get_zero_convention_history_request
 :history_response_class:  refdata::messaging::get_zero_convention_history_response
+:history_response_data_field: zero_conventions
 :history_message_type:    get_zero_convention_history_request
 :settings_group:          ZeroConventionListWindow
 :window_title:            Zero Conventions
@@ -258,7 +261,7 @@ std::nullopt
 | enum_name        | field              | header         | type      | width |
 |------------------+--------------------+----------------+-----------+-------|
 | Id               | id                 | Id             | string    | 200   |
-| TenorBased       | tenor_based        | Tenor Based    |           | 100   |
+| TenorBased       | tenor_based        | Tenor Based    | bool      | 100   |
 | DayCountFraction | day_count_fraction | DCF            | string    | 140   |
 | Compounding      | compounding        | Compounding    | string    | 120   |
 | TenorCalendar    | tenor_calendar     | Tenor Calendar | string    | 130   |

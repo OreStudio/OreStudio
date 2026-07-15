@@ -50,6 +50,9 @@
             <property name="placeholderText">
              <string>Enter convention id</string>
             </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -79,7 +82,7 @@
              <number>0</number>
             </property>
             <property name="maximum">
-             <number>10</number>
+             <number>9999</number>
             </property>
            </widget>
           </item>
@@ -124,7 +127,7 @@
              <number>-1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>9999</number>
             </property>
             <property name="specialValueText">
              <string>(unset)</string>
@@ -214,7 +217,7 @@
              <number>-1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>9999</number>
             </property>
             <property name="specialValueText">
              <string>(unset)</string>

@@ -40,6 +40,11 @@ CurrencyGroupDetailDialog::CurrencyGroupDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 CurrencyGroupDetailDialog::~CurrencyGroupDetailDialog() {
@@ -56,6 +61,10 @@ QWidget* CurrencyGroupDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* CurrencyGroupDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString CurrencyGroupDetailDialog::code() const {
+    return QString::fromStdString(group_.code);
 }
 
 void CurrencyGroupDetailDialog::setupUi() {
@@ -185,6 +194,7 @@ void CurrencyGroupDetailDialog::onSaveClicked() {
         return;
     }
 
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -263,7 +273,8 @@ void CurrencyGroupDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -314,5 +325,6 @@ void CurrencyGroupDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

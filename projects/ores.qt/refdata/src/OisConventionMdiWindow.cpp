@@ -122,6 +122,7 @@ void OisConventionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_, model_, "OisConventionListWindow", {}, {900, 400}, 1);
 }
 
@@ -290,7 +291,7 @@ void OisConventionMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " OIS conventions";
+            << "Making delete request for " << codes.size() << " OIS conventions";
 
         refdata::messaging::delete_ois_convention_request request;
         request.codes = codes;
@@ -361,5 +362,6 @@ void OisConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

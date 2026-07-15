@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SwapConventionDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
@@ -38,6 +39,11 @@ SwapConventionDetailDialog::SwapConventionDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 SwapConventionDetailDialog::~SwapConventionDetailDialog() {
@@ -54,6 +60,10 @@ QWidget* SwapConventionDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* SwapConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString SwapConventionDetailDialog::code() const {
+    return QString::fromStdString(sc_.id);
 }
 
 void SwapConventionDetailDialog::setupUi() {
@@ -126,6 +136,11 @@ void SwapConventionDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void SwapConventionDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -241,6 +256,15 @@ void SwapConventionDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    sc_.change_reason_code = crSel->reason_code;
+    sc_.change_commentary = crSel->commentary;
+
     updateConventionFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving swap convention: " << sc_.id;
@@ -311,6 +335,11 @@ void SwapConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting swap convention: " << sc_.id;
 
     QPointer<SwapConventionDetailDialog> self = this;
@@ -358,5 +387,6 @@ void SwapConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/currency_pair_classification.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -64,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::currency_pair_classification& classification);
@@ -78,11 +83,26 @@ private slots:
     void onRevertVersion(const refdata::domain::currency_pair_classification& classification);
     void onOpenVersion(const refdata::domain::currency_pair_classification& classification,
                        int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::currency_pair_classification& classification);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed currency pair classification history (the
+     * existing per-entity refdata::messaging::get_currency_pair_classification_history_request/
+     * refdata::messaging::get_currency_pair_classification_history_response, unrelated to the
+     * generic history.v1.get subject) and hands it to @p callback on the UI thread. Used to resolve
+     * HistoryDialog's generic (entity_id, version) signals back to a typed currency pair
+     * classification, since the generic dialog holds no typed domain data.
+     */
+    void fetchCurrencyPairClassificationHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::currency_pair_classification>,
+                                         QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     CurrencyPairClassificationMdiWindow* listWindow_;

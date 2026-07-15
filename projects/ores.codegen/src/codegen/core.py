@@ -2607,7 +2607,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     qt['delete_request_id_field'] = f'{pk_col}s'
                 if 'delete_request_id_field' in qt:
                     qt.setdefault('delete_request_id_is_plural', True)
-            # History response data field: protocol always uses 'history'.
+            # History response data field: most protocols use 'history', but
+            # some older ones (predating that convention) name it after the
+            # entity's plural collection instead (e.g. cds_convention's
+            # get_cds_convention_history_response.cds_conventions) -- those
+            # entities set :history_response_data_field: explicitly in their
+            # model to override this default.
             qt.setdefault('history_response_data_field', 'history')
             # Determine if the Qt key field is a UUID (needs to_string wrapping).
             # A key field is UUID when has_uuid_primary_key is true AND the key_field

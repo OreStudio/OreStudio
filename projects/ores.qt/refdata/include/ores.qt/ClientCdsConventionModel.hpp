@@ -87,6 +87,7 @@ public:
      */
     const refdata::domain::cds_convention* getConvention(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

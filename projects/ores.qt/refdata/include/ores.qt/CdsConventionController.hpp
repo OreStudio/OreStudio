@@ -27,11 +27,15 @@
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class CdsConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing CDS convention windows and operations.
@@ -55,6 +59,7 @@ public:
     CdsConventionController(QMainWindow* mainWindow,
                             QMdiArea* mdiArea,
                             ClientManager* clientManager,
+                            ChangeReasonCache* changeReasonCache,
                             const QString& username,
                             QObject* parent = nullptr);
 
@@ -62,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::cds_convention& cc);
@@ -75,12 +82,29 @@ private slots:
     void onShowHistory(const refdata::domain::cds_convention& cc);
     void onRevertVersion(const refdata::domain::cds_convention& cc);
     void onOpenVersion(const refdata::domain::cds_convention& cc, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::cds_convention& cc);
     void showHistoryWindow(const QString& code);
 
+    /**
+     * @brief Fetches the full typed CDS convention history (the
+     * existing per-entity refdata::messaging::get_cds_convention_history_request/
+     * refdata::messaging::get_cds_convention_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed CDS convention, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchCdsConventionHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::cds_convention>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     CdsConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

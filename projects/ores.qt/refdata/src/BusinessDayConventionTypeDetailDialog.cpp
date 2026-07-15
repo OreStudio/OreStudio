@@ -39,6 +39,11 @@ BusinessDayConventionTypeDetailDialog::BusinessDayConventionTypeDetailDialog(QWi
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 BusinessDayConventionTypeDetailDialog::~BusinessDayConventionTypeDetailDialog() {
@@ -55,6 +60,10 @@ QWidget* BusinessDayConventionTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* BusinessDayConventionTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString BusinessDayConventionTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void BusinessDayConventionTypeDetailDialog::setupUi() {
@@ -197,6 +206,7 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
         return;
     }
 
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -277,7 +287,8 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -329,5 +340,6 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

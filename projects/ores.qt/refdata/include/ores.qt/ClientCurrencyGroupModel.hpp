@@ -87,6 +87,7 @@ public:
      */
     const refdata::domain::currency_group* getGroup(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

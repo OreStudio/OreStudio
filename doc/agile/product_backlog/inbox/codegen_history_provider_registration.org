@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 2DFEF8F6-DA10-407B-8A8A-95B938CD673D
+:END:
+#+title: Codegen the history-provider registrar wiring
+#+description: refdata's registrar.cpp is a monolithic hand-maintained file of near-identical register_history_provider() blocks per entity; this should be a codegen archetype instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:history:tech-debt:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.refdata/core/src/messaging/registrar.cpp= has grown
+into a single monolithic hand-maintained file registering NATS CRUD
+handlers, per-entity registrars, and (after wiring history providers
+for the entities migrated in task AA97E310) history providers for
+every refdata entity — 100+ =#include= lines and dozens of
+near-identical =register_history_provider()= lambda blocks, differing
+only by entity name, service method name (=get_<x>_history=, with
+several entity-specific irregular spellings like =get_type_history=
+or =get_centre_history=), and mapper function name
+(=render_<entity>_fields=). This is a clear codegen candidate: a
+per-entity archetype emitting the include/registration snippet
+(matching the =entity_type_of()=/history-field-mapper pattern already
+codegen'd), assembled by the registrar the same way per-entity
+=*_registrar.hpp= handler registrations already are, rather than
+continuing to hand-edit one giant file for every entity that migrates
+onto the generic =HistoryDialog=.
+
+* Why
+
+Found while wiring server-side history providers for the entities
+migrated in
+[[id:AA97E310-F293-46AD-9BE7-C13AD376346C][Delete per-entity history-dialog codegen archetypes and reconcile
+dynamic_combo drift]]: client-side controller migration and
+server-side history-provider registration turned out to be two
+separate, easy-to-miss steps (a migrated entity compiles and opens
+its History window fine, but shows "No history provider registered
+for entity_type: ..." until this file is hand-updated too). As more
+entities migrate, this file keeps growing linearly by hand — exactly
+the kind of repetitive, entity-parameterised boilerplate the rest of
+this story already codegens (client model, controller, detail
+dialog, history-field mapper). Codegen'ing this registration removes
+both the manual toil and the "forgot to wire the server side" failure
+mode entirely.
+
+* References
+
+- =projects/ores.refdata/core/src/messaging/registrar.cpp= — the file
+  in question.
+- =projects/ores.refdata/core/include/ores.refdata.core/presentation/*_history_field_mapper.hpp=
+  — the sibling codegen'd artefact this registration consumes.
+
+* See also
+
+- [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]]
+- [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][Delete per-entity history-dialog codegen archetypes and reconcile dynamic_combo drift]]

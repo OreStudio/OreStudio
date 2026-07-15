@@ -213,6 +213,22 @@ void ClientCdsConventionModel::fetch_cds_conventions(std::uint32_t offset, std::
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .cds_conventions = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->cds_conventions.size() << " CDS conventions";
                 const std::uint32_t count =
@@ -281,6 +297,7 @@ const refdata::domain::cds_convention* ClientCdsConventionModel::getConvention(i
         return nullptr;
     return &cds_conventions_[idx];
 }
+
 
 QVariant ClientCdsConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

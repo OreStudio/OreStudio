@@ -196,6 +196,8 @@ std::nullopt
 :item_var:                sc
 :key_field:               id
 :has_uuid_primary_key:    false
+:has_change_reason_cache:     true
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_swap_conventions_request
 :get_response_class:      refdata::messaging::get_swap_conventions_response
 :get_message_type:        get_swap_conventions_request
@@ -208,6 +210,7 @@ std::nullopt
 :delete_message_type:     delete_swap_convention_request
 :history_request_class:   refdata::messaging::get_swap_convention_history_request
 :history_response_class:  refdata::messaging::get_swap_convention_history_response
+:history_response_data_field: swap_conventions
 :history_message_type:    get_swap_convention_history_request
 :settings_group:          SwapConventionListWindow
 :window_title:            Swap Conventions

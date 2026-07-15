@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/book_purpose_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -80,11 +83,27 @@ private slots:
     void onShowHistory(const refdata::domain::book_purpose_type& type);
     void onRevertVersion(const refdata::domain::book_purpose_type& type);
     void onOpenVersion(const refdata::domain::book_purpose_type& type, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::book_purpose_type& type);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed book purpose type history (the
+     * existing per-entity refdata::messaging::get_book_purpose_type_history_request/
+     * refdata::messaging::get_book_purpose_type_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed book purpose type, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchBookPurposeTypeHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::book_purpose_type>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     BookPurposeTypeMdiWindow* listWindow_;

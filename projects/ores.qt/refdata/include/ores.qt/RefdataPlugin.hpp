@@ -65,6 +65,8 @@ class IborIndexConventionController;
 class OvernightIndexConventionController;
 class CurrencyPairController;
 class CurrencyPairConventionController;
+class CurrencyGroupController;
+class CalendarController;
 class CdsConventionController;
 class PartyTypeController;
 class BusinessCentreController;
@@ -135,6 +137,8 @@ private:
     QAction* act_currency_pairs_{nullptr};
     QAction* act_books_{nullptr};
     QAction* act_business_centres_{nullptr};
+    QAction* act_calendars_{nullptr};
+    QAction* act_currency_groups_{nullptr};
     QAction* act_data_librarian_{nullptr};
 
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)
@@ -168,6 +172,8 @@ private:
     std::unique_ptr<IborIndexConventionController> iborIndexConventionController_;
     std::unique_ptr<OvernightIndexConventionController> overnightIndexConventionController_;
     std::unique_ptr<CurrencyPairController> currencyPairController_;
+    std::unique_ptr<CurrencyGroupController> currencyGroupController_;
+    std::unique_ptr<CalendarController> calendarController_;
     std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;
     std::unique_ptr<CdsConventionController> cdsConventionController_;
     std::unique_ptr<BookController> bookController_;

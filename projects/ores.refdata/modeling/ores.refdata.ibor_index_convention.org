@@ -168,6 +168,8 @@ false
 :item_var:                ic
 :key_field:               id
 :has_uuid_primary_key:    false
+:has_change_reason_cache:     true
+:delete_request_id_field:   codes
 :get_request_class:       refdata::messaging::get_ibor_index_conventions_request
 :get_response_class:      refdata::messaging::get_ibor_index_conventions_response
 :get_message_type:        get_ibor_index_conventions_request
@@ -180,6 +182,7 @@ false
 :delete_message_type:     delete_ibor_index_convention_request
 :history_request_class:   refdata::messaging::get_ibor_index_convention_history_request
 :history_response_class:  refdata::messaging::get_ibor_index_convention_history_response
+:history_response_data_field: ibor_index_conventions
 :history_message_type:    get_ibor_index_convention_history_request
 :settings_group:          IborIndexConventionListWindow
 :window_title:            IBOR Index Conventions

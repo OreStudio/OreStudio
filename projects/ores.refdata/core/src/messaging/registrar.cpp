@@ -28,6 +28,7 @@
 #include "ores.refdata.core/messaging/book_status_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
@@ -36,6 +37,7 @@
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_group_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_classification_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
@@ -98,10 +100,79 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/book_purpose_type.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
+#include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/contact_type.hpp"
+#include "ores.refdata.api/domain/crm_driver_pair.hpp"
+#include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
+#include "ores.refdata.api/domain/crm_topology_config.hpp"
+#include "ores.refdata.api/domain/currency_group.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
+#include "ores.refdata.api/domain/currency_pair_classification.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/domain/zero_convention.hpp"
+#include "ores.refdata.core/presentation/book_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/book_purpose_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/book_status_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/business_centre_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/business_day_convention_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/calendar_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/cds_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/contact_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/country_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/crm_driver_pair_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/crm_enabled_derived_pair_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/crm_topology_config_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/currency_group_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/currency_pair_classification_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/currency_pair_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/deposit_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/fra_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/ibor_index_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/swap_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/tenor_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/tenor_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/zero_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/service/book_purpose_type_service.hpp"
+#include "ores.refdata.core/service/book_service.hpp"
+#include "ores.refdata.core/service/book_status_service.hpp"
+#include "ores.refdata.core/service/business_centre_service.hpp"
+#include "ores.refdata.core/service/business_day_convention_type_service.hpp"
+#include "ores.refdata.core/service/calendar_service.hpp"
+#include "ores.refdata.core/service/cds_convention_service.hpp"
+#include "ores.refdata.core/service/contact_type_service.hpp"
 #include "ores.refdata.core/service/country_service.hpp"
+#include "ores.refdata.core/service/crm_driver_pair_service.hpp"
+#include "ores.refdata.core/service/crm_enabled_derived_pair_service.hpp"
+#include "ores.refdata.core/service/crm_topology_config_service.hpp"
+#include "ores.refdata.core/service/currency_group_service.hpp"
+#include "ores.refdata.core/service/currency_pair_classification_service.hpp"
+#include "ores.refdata.core/service/currency_pair_service.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
+#include "ores.refdata.core/service/deposit_convention_service.hpp"
+#include "ores.refdata.core/service/fra_convention_service.hpp"
+#include "ores.refdata.core/service/ibor_index_convention_service.hpp"
+#include "ores.refdata.core/service/ois_convention_service.hpp"
+#include "ores.refdata.core/service/overnight_index_convention_service.hpp"
+#include "ores.refdata.core/service/swap_convention_service.hpp"
+#include "ores.refdata.core/service/tenor_convention_service.hpp"
+#include "ores.refdata.core/service/tenor_service.hpp"
+#include "ores.refdata.core/service/zero_convention_service.hpp"
 #include <array>
 #include <iterator>
 #include <memory>
@@ -143,6 +214,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_book_status_handlers(nats, ctx, verifier));
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_unit_handlers(nats, ctx, verifier));
+    append(register_calendar_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
@@ -152,6 +224,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
     append(register_crm_topology_config_handlers(nats, ctx, verifier));
     append(register_currency_handlers(nats, ctx, verifier));
+    append(register_currency_group_handlers(nats, ctx, verifier));
     append(register_currency_market_tier_handlers(nats, ctx, verifier));
     append(register_currency_pair_classification_handlers(nats, ctx, verifier));
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));
@@ -357,6 +430,213 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_country_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_country_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.book",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::book_service svc(scoped_ctx);
+                auto versions = svc.get_book_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_book_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.book_purpose_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::book_purpose_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_book_purpose_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.book_status",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::book_status_service svc(scoped_ctx);
+                auto versions = svc.get_status_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_book_status_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.business_centre",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::business_centre_service svc(scoped_ctx);
+                auto versions = svc.get_centre_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_business_centre_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.business_day_convention_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::business_day_convention_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_business_day_convention_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.calendar",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::calendar_service svc(scoped_ctx);
+                auto versions = svc.get_calendar_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_calendar_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.contact_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::contact_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_contact_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.cds_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::cds_convention_service svc(scoped_ctx);
+                auto versions = svc.get_cds_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_cds_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.crm_driver_pair",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::crm_driver_pair_service svc(scoped_ctx);
+                auto versions = svc.get_crm_driver_pair_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_crm_driver_pair_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.crm_enabled_derived_pair",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::crm_enabled_derived_pair_service svc(scoped_ctx);
+                auto versions = svc.get_crm_enabled_derived_pair_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_crm_enabled_derived_pair_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.crm_topology_config",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::crm_topology_config_service svc(scoped_ctx);
+                auto versions = svc.get_crm_topology_config_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_crm_topology_config_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.currency_group",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::currency_group_service svc(scoped_ctx);
+                auto versions = svc.get_group_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_currency_group_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.currency_pair",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::currency_pair_service svc(scoped_ctx);
+                auto versions = svc.get_pair_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_currency_pair_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.currency_pair_classification",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::currency_pair_classification_service svc(scoped_ctx);
+                auto versions = svc.get_classification_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_currency_pair_classification_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.deposit_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::deposit_convention_service svc(scoped_ctx);
+                auto versions = svc.get_deposit_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_deposit_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.fra_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::fra_convention_service svc(scoped_ctx);
+                auto versions = svc.get_fra_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_fra_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.ibor_index_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::ibor_index_convention_service svc(scoped_ctx);
+                auto versions = svc.get_ibor_index_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_ibor_index_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.ois_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::ois_convention_service svc(scoped_ctx);
+                auto versions = svc.get_ois_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_ois_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.overnight_index_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::overnight_index_convention_service svc(scoped_ctx);
+                auto versions = svc.get_overnight_index_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_overnight_index_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.swap_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::swap_convention_service svc(scoped_ctx);
+                auto versions = svc.get_swap_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_swap_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.zero_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::zero_convention_service svc(scoped_ctx);
+                auto versions = svc.get_zero_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_zero_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.tenor",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::tenor_service svc(scoped_ctx);
+                auto versions = svc.get_tenor_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_tenor_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.tenor_convention",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::tenor_convention_service svc(scoped_ctx);
+                auto versions = svc.get_convention_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_tenor_convention_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

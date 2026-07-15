@@ -27,11 +27,15 @@
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class ZeroConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing zero convention windows and operations.
@@ -55,6 +59,7 @@ public:
     ZeroConventionController(QMainWindow* mainWindow,
                              QMdiArea* mdiArea,
                              ClientManager* clientManager,
+                             ChangeReasonCache* changeReasonCache,
                              const QString& username,
                              QObject* parent = nullptr);
 
@@ -62,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::zero_convention& zc);
@@ -75,12 +82,29 @@ private slots:
     void onShowHistory(const refdata::domain::zero_convention& zc);
     void onRevertVersion(const refdata::domain::zero_convention& zc);
     void onOpenVersion(const refdata::domain::zero_convention& zc, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::zero_convention& zc);
     void showHistoryWindow(const QString& code);
 
+    /**
+     * @brief Fetches the full typed zero convention history (the
+     * existing per-entity refdata::messaging::get_zero_convention_history_request/
+     * refdata::messaging::get_zero_convention_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed zero convention, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchZeroConventionHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::zero_convention>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     ZeroConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

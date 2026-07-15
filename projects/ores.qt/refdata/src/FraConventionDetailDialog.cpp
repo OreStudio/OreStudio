@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FraConventionDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/fra_convention_protocol.hpp"
@@ -38,6 +39,11 @@ FraConventionDetailDialog::FraConventionDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 FraConventionDetailDialog::~FraConventionDetailDialog() {
@@ -54,6 +60,10 @@ QWidget* FraConventionDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* FraConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString FraConventionDetailDialog::code() const {
+    return QString::fromStdString(fc_.id);
 }
 
 void FraConventionDetailDialog::setupUi() {
@@ -102,6 +112,11 @@ void FraConventionDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void FraConventionDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -169,6 +184,15 @@ void FraConventionDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    fc_.change_reason_code = crSel->reason_code;
+    fc_.change_commentary = crSel->commentary;
 
     updateConventionFromUi();
 
@@ -240,6 +264,11 @@ void FraConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting FRA convention: " << fc_.id;
 
     QPointer<FraConventionDetailDialog> self = this;
@@ -287,5 +316,6 @@ void FraConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

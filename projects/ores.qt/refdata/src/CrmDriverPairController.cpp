@@ -21,15 +21,20 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CrmDriverPairDetailDialog.hpp"
-#include "ores.qt/CrmDriverPairHistoryDialog.hpp"
 #include "ores.qt/CrmDriverPairMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
+#include "ores.refdata.api/messaging/crm_driver_pair_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -295,11 +300,15 @@ void CrmDriverPairController::showHistoryWindow(const refdata::domain::crm_drive
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << boost::uuids::to_string(pair.id);
 
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(pair.id));
     auto* historyDialog =
-        new CrmDriverPairHistoryDialog(pair.id, code, clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::crm_driver_pair{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &CrmDriverPairHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CrmDriverPairController>(this)](const QString& message) {
                 if (!self)
@@ -307,7 +316,7 @@ void CrmDriverPairController::showHistoryWindow(const refdata::domain::crm_drive
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CrmDriverPairHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CrmDriverPairController>(this)](const QString& message) {
                 if (!self)
@@ -315,13 +324,23 @@ void CrmDriverPairController::showHistoryWindow(const refdata::domain::crm_drive
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CrmDriverPairHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CrmDriverPairController::onRevertVersion);
+            [self = QPointer<CrmDriverPairController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CrmDriverPairHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CrmDriverPairController::onOpenVersion);
+            [self = QPointer<CrmDriverPairController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -410,6 +429,96 @@ void CrmDriverPairController::onOpenVersion(const refdata::domain::crm_driver_pa
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void CrmDriverPairController::fetchCrmDriverPairHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::crm_driver_pair>, QString>)>
+        callback) {
+    refdata::messaging::get_crm_driver_pair_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::crm_driver_pair>, QString>;
+
+    QPointer<CrmDriverPairController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CrmDriverPairController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CrmDriverPairController> self = this;
+    fetchCrmDriverPairHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::crm_driver_pair>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CrmDriverPairController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CrmDriverPairController> self = this;
+    fetchCrmDriverPairHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::crm_driver_pair>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void CrmDriverPairController::onRevertVersion(const refdata::domain::crm_driver_pair& pair) {

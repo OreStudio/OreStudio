@@ -26,7 +26,6 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -88,6 +87,7 @@ public:
      * @return The zero convention, or nullptr if row is invalid.
      */
     const refdata::domain::zero_convention* getConvention(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

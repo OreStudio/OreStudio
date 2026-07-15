@@ -89,6 +89,7 @@ public:
      */
     const refdata::domain::business_day_convention_type* getType(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

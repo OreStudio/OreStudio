@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/DepositConventionDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
@@ -38,6 +39,11 @@ DepositConventionDetailDialog::DepositConventionDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 DepositConventionDetailDialog::~DepositConventionDetailDialog() {
@@ -54,6 +60,10 @@ QWidget* DepositConventionDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* DepositConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString DepositConventionDetailDialog::code() const {
+    return QString::fromStdString(dc_.id);
 }
 
 void DepositConventionDetailDialog::setupUi() {
@@ -84,6 +94,10 @@ void DepositConventionDetailDialog::setupConnections() {
 
     connect(
         ui_->idEdit, &QLineEdit::textChanged, this, &DepositConventionDetailDialog::onCodeChanged);
+    connect(ui_->indexBasedEdit,
+            &QCheckBox::toggled,
+            this,
+            &DepositConventionDetailDialog::onFieldChanged);
     connect(ui_->indexEdit,
             &QLineEdit::textChanged,
             this,
@@ -98,6 +112,10 @@ void DepositConventionDetailDialog::setupConnections() {
             &DepositConventionDetailDialog::onFieldChanged);
     connect(ui_->dayCountFractionEdit,
             &QLineEdit::textChanged,
+            this,
+            &DepositConventionDetailDialog::onFieldChanged);
+    connect(ui_->endOfMonthEdit,
+            &QCheckBox::toggled,
             this,
             &DepositConventionDetailDialog::onFieldChanged);
 }
@@ -121,6 +139,11 @@ void DepositConventionDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void DepositConventionDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -238,6 +261,15 @@ void DepositConventionDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    dc_.change_reason_code = crSel->reason_code;
+    dc_.change_commentary = crSel->commentary;
+
     updateConventionFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving deposit convention: " << dc_.id;
@@ -310,6 +342,11 @@ void DepositConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting deposit convention: " << dc_.id;
 
     QPointer<DepositConventionDetailDialog> self = this;
@@ -357,5 +394,6 @@ void DepositConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

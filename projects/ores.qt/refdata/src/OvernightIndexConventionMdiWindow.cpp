@@ -128,6 +128,7 @@ void OvernightIndexConventionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(
         tableView_, model_, "OvernightIndexConventionListWindow", {}, {900, 400}, 1);
 }
@@ -308,7 +309,7 @@ void OvernightIndexConventionMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " overnight index conventions";
+            << "Making delete request for " << codes.size() << " overnight index conventions";
 
         refdata::messaging::delete_overnight_index_convention_request request;
         request.codes = codes;
@@ -381,5 +382,6 @@ void OvernightIndexConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -70,7 +70,7 @@ hardcoded field count.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction insert trigger uses current_timestamp (version-collision risk); entity template already fixed to clock_timestamp() | projects/ores.sql/create/refdata/refdata_currency_calendar_create.sql | Declined (captured) | Inherited unchanged from the currency_country junction template, not a regression from this PR; filed as [[id:D97BB18F-61F6-4FD1-921E-D2062705F85D][a backlog capture]] to fix the shared junction codegen template and regenerate both affected junctions together |
 
 * Result
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-refdata-history-dialogs
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,22 +20,48 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Retire the remaining hand-rolled per-entity =*HistoryDialog= classes
+in =projects/ores.qt/refdata=, migrating each entity's controller
+onto the generic =HistoryDialog= via full codegen regeneration (same
+process as [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]], which already migrated 26 of the ~43 original
+entities). 30 entities remain with a =*HistoryDialog.cpp= on disk;
+14 of those have a codegen model and can be migrated the same way as
+AA97E310. The other 16 ( =catalog=, =change_reason=,
+=change_reason_category=, =code_domain=, =coding_scheme=,
+=coding_scheme_authority_type=, =data_domain=, =dataset=,
+=dataset_bundle=, =floating_index_type=, =leg_type=, =methodology=,
+=nature_dimension=, =origin_dimension=, =payment_frequency_type=,
+=subject_area=, =treatment_dimension=) have no codegen model at all —
+hand-crafted data-catalogue and change-reason-system infrastructure —
+and need a different, non-codegen migration approach or explicit
+scoping-out; not attempted in this pass.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| Now          | Migrating the 14 codegen-model-backed entities via full regeneration, one at a time, per the AA97E310 process. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Next         | After the 14, decide how (or whether) to handle the 16 non-codegen entities. |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
--
+- All 14 codegen-model-backed entities (=asset_class_code=,
+  =currency_market_tier=, =currency_pair_convention=,
+  =day_count_fraction_type=, =ledger_feed_type=, =monetary_nature=,
+  =party_type=, =purpose_type=, =regulatory_book_type=,
+  =rounding_type=, =tenor_anchor=, =tenor_kind=,
+  =tenor_resolution_algorithm=, =tenor_unit=) migrated onto the
+  generic =HistoryDialog= via full, unmodified codegen regeneration;
+  legacy =*HistoryDialog.{hpp,cpp,ui}= files deleted per entity.
+- Each entity's server-side history-provider registration added to
+  =registrar.cpp=, following the AA97E310 pattern.
+- No selective/hand-patched regeneration — full generator output per
+  entity, diffs reviewed before applying, anything unexpected flagged
+  rather than silently forced through or silently reverted.
 
 * Plan
 

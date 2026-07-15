@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/delete-history-dialog-archetypes-and-combo-drift
-#+pr: 1571
+#+pr: 1590
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -188,6 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1590][#1590]] | [qt,refdata] Migrate 19 more entities onto generic HistoryDialog; fix change-reason/menu/registrar gaps |
 | [[https://github.com/OreStudio/OreStudio/pull/1571][#1571]] | [qt,codegen] Delete legacy history-dialog archetypes; reconcile dynamic_combo drift (7 entities) |
 
 * Review

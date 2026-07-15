@@ -132,7 +132,9 @@ void BusinessDayConventionTypeMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "BusinessDayConventionTypeListWindow",
-                            {ClientBusinessDayConventionTypeModel::Description},
+                            {
+                                ClientBusinessDayConventionTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -389,5 +391,6 @@ void BusinessDayConventionTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

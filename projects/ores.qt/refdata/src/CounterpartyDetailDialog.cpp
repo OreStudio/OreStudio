@@ -33,6 +33,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 
@@ -122,6 +123,10 @@ void CounterpartyDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CounterpartyDetailDialog::onFieldChanged);
+    connect(ui_->parentCounterpartyCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CounterpartyDetailDialog::onFieldChanged);
 }
 
 void CounterpartyDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -130,6 +135,7 @@ void CounterpartyDetailDialog::setClientManager(ClientManager* clientManager) {
     setup_badge_combo(this, ui_->partyTypeCombo, badgeCache(), "party_type");
     populatePartyStatusCombo();
     setup_badge_combo(this, ui_->statusCombo, badgeCache(), "party_status");
+    populateParentCounterpartyCombo();
     populateBusinessCenterCodeCombo();
 }
 
@@ -210,6 +216,7 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterCombo->setEnabled(!readOnly);
+    ui_->parentCounterpartyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     childTables_->setReadOnly(readOnly);
@@ -255,6 +262,29 @@ void CounterpartyDetailDialog::populatePartyStatusCombo() {
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); });
 }
+void CounterpartyDetailDialog::populateParentCounterpartyCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating parent_counterparty_id combo";
+    populateDynamicCombo<refdata::domain::counterparty>(
+        ui_->parentCounterpartyCombo,
+        this,
+        clientManager_,
+        &fetch_counterparties,
+        "parentCounterpartyWatcher",
+        [](const auto& t) { return QString::fromStdString(t.full_name); },
+        [](const auto& t) { return QString::fromStdString(t.short_code); },
+        [](const auto& t) { return t.version; },
+        [this]() {
+            const auto& _opt = counterparty_.parent_counterparty_id;
+            return _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load counterparties: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); });
+}
 void CounterpartyDetailDialog::updateUiFromCounterparty() {
     ui_->codeEdit->setText(QString::fromStdString(counterparty_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(counterparty_.full_name));
@@ -274,6 +304,13 @@ void CounterpartyDetailDialog::updateUiFromCounterparty() {
         const auto val = QString::fromStdString(counterparty_.business_center_code);
         const int idx = ui_->businessCenterCombo->findText(val);
         ui_->businessCenterCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto& _opt = counterparty_.parent_counterparty_id;
+        const auto val = _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        const int idx = ui_->parentCounterpartyCombo->findData(val);
+        if (idx >= 0)
+            ui_->parentCounterpartyCombo->setCurrentIndex(idx);
     }
 
     populateProvenance(counterparty_.version,
@@ -295,6 +332,20 @@ void CounterpartyDetailDialog::updateCounterpartyFromUi() {
     counterparty_.party_type = ui_->partyTypeCombo->currentText().toStdString();
     counterparty_.status = ui_->statusCombo->currentText().toStdString();
     counterparty_.business_center_code = ui_->businessCenterCombo->currentText().toStdString();
+    {
+        const auto parent_counterparty_id_str =
+            ui_->parentCounterpartyCombo->currentData().toString().trimmed().toStdString();
+        if (parent_counterparty_id_str.empty()) {
+            counterparty_.parent_counterparty_id = std::nullopt;
+        } else {
+            try {
+                counterparty_.parent_counterparty_id =
+                    boost::uuids::string_generator()(parent_counterparty_id_str);
+            } catch (const std::exception&) {
+                counterparty_.parent_counterparty_id = std::nullopt;
+            }
+        }
+    }
     counterparty_.modified_by = username_;
 }
 
@@ -316,8 +367,10 @@ void CounterpartyDetailDialog::updateSaveButtonState() {
 bool CounterpartyDetailDialog::validateInput() {
     const QString short_code_val = ui_->codeEdit->text().trimmed();
     const QString full_name_val = ui_->nameEdit->text().trimmed();
+    const bool parent_counterparty_id_selected = ui_->parentCounterpartyCombo->currentIndex() >= 0;
 
-    return true && !short_code_val.isEmpty() && !full_name_val.isEmpty();
+    return true && !short_code_val.isEmpty() && !full_name_val.isEmpty() &&
+           parent_counterparty_id_selected;
 }
 
 void CounterpartyDetailDialog::onSaveClicked() {

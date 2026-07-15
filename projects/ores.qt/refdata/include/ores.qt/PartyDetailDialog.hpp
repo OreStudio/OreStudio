@@ -107,6 +107,8 @@ private:
 
     void populatePartyStatusCombo();
 
+    void populateParentPartyCombo();
+
 
     void populateBusinessCenterCodeCombo();
 

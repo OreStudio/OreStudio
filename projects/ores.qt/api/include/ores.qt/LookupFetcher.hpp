@@ -30,7 +30,9 @@
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"
@@ -318,6 +320,33 @@ fetch_party_id_schemes(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::contact_type>, QString>
 fetch_contact_types(ClientManager* cm);
+
+/**
+ * @brief Fetches parties from the server for use as a parent-party picker.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Party's (and Book's org-hierarchy) parent party combo. Fetches
+ * a large-but-bounded page (matching PartyChildEntityTables' existing
+ * limit=1000 precedent) rather than building a searchable/paginated
+ * combo. Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::party>, QString>
+fetch_parties(ClientManager* cm);
+
+/**
+ * @brief Fetches counterparties from the server for use as a
+ * parent-counterparty picker.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Counterparty's parent counterparty combo. Fetches a
+ * large-but-bounded page (matching PartyChildEntityTables' existing
+ * limit=1000 precedent) rather than building a searchable/paginated
+ * combo. Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::counterparty>, QString>
+fetch_counterparties(ClientManager* cm);
 
 /**
  * @brief Fetches all CRM topology configs from the server.

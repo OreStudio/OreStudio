@@ -174,11 +174,11 @@ drop function if exists ores_refdata_validate_rounding_type_fn;
 :delete_request_class:    refdata::messaging::delete_rounding_type_request
 :delete_response_class:   refdata::messaging::delete_rounding_type_response
 :delete_message_type:     delete_rounding_type_request
-:delete_request_id_field: type
+:delete_request_id_field: codes
 :history_request_class:       refdata::messaging::get_rounding_type_history_request
 :history_response_class:      refdata::messaging::get_rounding_type_history_response
 :history_message_type:        get_rounding_type_history_request
-:history_request_id_field:    type
+:history_request_id_field:    code
 :history_response_data_field: history
 :settings_group:         RoundingTypeListWindow
 :window_title:           Rounding Types

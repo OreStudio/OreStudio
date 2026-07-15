@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/rounding_type_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing rounding types.
+ *
+ * Provides a higher-level interface for rounding type operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT rounding_type_service {
 private:
@@ -47,20 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a rounding_type_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit rounding_type_service(context ctx);
 
-    std::vector<domain::rounding_type> list_types();
+    /**
+     * @brief Lists rounding types with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of rounding types for the requested page.
+     */
+    std::vector<domain::rounding_type> list_types(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::rounding_type> find_type(const std::string& code);
+    /**
+     * @brief Gets the total count of active rounding types.
+     *
+     * @return Total number of active rounding types.
+     */
+    std::uint32_t count_types();
 
-    void save_type(const domain::rounding_type& v);
+    /**
+     * @brief Retrieves a single rounding type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the rounding type.
+     * @param version The version to fetch.
+     * @return The rounding type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::rounding_type> get_type_at_version(const std::string& code,
+                                                             std::uint32_t version);
 
+    /**
+     * @brief Retrieves a single rounding type by its code.
+     *
+     * @param code The code of the rounding type.
+     * @return The rounding type if found, std::nullopt otherwise.
+     */
+    std::optional<domain::rounding_type> get_type(const std::string& code);
+
+    /**
+     * @brief Saves a rounding type (creates or updates).
+     *
+     * @param type The rounding type to save.
+     * @throws std::exception on failure.
+     */
+    void save_type(const domain::rounding_type& type);
+
+    /**
+     * @brief Saves a batch of rounding types.
+     *
+     * @param types The rounding types to save.
+     * @throws std::exception on failure.
+     */
     void save_types(const std::vector<domain::rounding_type>& types);
 
-    void remove_type(const std::string& code);
+    /**
+     * @brief Deletes a rounding type by its code.
+     *
+     * @param code The code of the rounding type to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_type(const std::string& code);
 
-    void remove_types(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes rounding types by their codes.
+     */
+    void delete_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a rounding type.
+     */
     std::vector<domain::rounding_type> get_type_history(const std::string& code);
 
 private:

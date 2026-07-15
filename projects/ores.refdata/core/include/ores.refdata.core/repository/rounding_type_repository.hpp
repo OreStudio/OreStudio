@@ -24,6 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,15 +49,64 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes rounding types to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::rounding_type& v);
     void write(context ctx, const std::vector<domain::rounding_type>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest rounding types, possibly filtered by code.
+     */
+    /**@{*/
     std::vector<domain::rounding_type> read_latest(context ctx);
     std::vector<domain::rounding_type> read_latest(context ctx, const std::string& code);
+    /**@}*/
+
+    /**
+     * @brief Reads all rounding types, possibly filtered by code.
+     */
     std::vector<domain::rounding_type> read_all(context ctx, const std::string& code);
 
+    /**
+     * @brief Reads a single rounding type as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param code The code to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::rounding_type>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest rounding types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::rounding_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active rounding types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active rounding types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a rounding type by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& code);
 
     /**

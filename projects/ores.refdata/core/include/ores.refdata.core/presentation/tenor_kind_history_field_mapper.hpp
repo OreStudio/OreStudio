@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/currency_market_tier_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_REFDATA_CORE_PRESENTATION_TENOR_KIND_HISTORY_FIELD_MAPPER_HPP
+#define ORES_REFDATA_CORE_PRESENTATION_TENOR_KIND_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::refdata::repository {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.refdata.api/domain/tenor_kind.hpp"
+#include "ores.refdata.core/export.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const currency_market_tier_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::refdata::presentation {
+
+/**
+ * @brief Renders a tenor_kind to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_tenor_kind_fields(const domain::tenor_kind& v);
+
 }
 
-}
+#endif

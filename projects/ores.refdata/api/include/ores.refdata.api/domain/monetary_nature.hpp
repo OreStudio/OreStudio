@@ -20,8 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_MONETARY_NATURE_HPP
 #define ORES_REFDATA_API_DOMAIN_MONETARY_NATURE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -36,6 +38,11 @@ struct monetary_nature final {
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique monetary nature code.
@@ -86,6 +93,16 @@ struct monetary_nature final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for monetary_nature, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const monetary_nature&) {
+    return "ores.refdata.monetary_nature";
+}
 
 }
 

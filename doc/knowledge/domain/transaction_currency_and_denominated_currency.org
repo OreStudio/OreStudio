@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 4ADDDA46-21CE-4C94-9F22-F66805B13891
+:END:
+#+title: Transaction Currency and Denominated Currency
+#+description: Finance's transaction currency, and the standard finance concept of denominated currency -- the currency in which a deal's cash flows or results are properly expressed before any aggregation takes place -- with a per-instrument-type determination rule.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-15
+
+* Summary
+
+A deal's cash flows and results are properly expressed in its
+*denominated currency* -- the standard finance concept a monetary
+item is said to be "denominated in" (IAS 21 defines a monetary item
+this way; see [[https://www.ebc.com/forex/what-does-denominated-currency-mean][EBC Financial Group: What Is Denominated Currency?]] for
+a practitioner-level definition) -- before any cross-currency
+[[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation]] is performed. *Transaction currency* is Finance's
+closely related term (see [[https://www.netsuite.com/portal/resource/articles/accounting/transaction-currency.shtml][NetSuite: What Is Transaction Currency?]]) for
+the native currency of an accounting entry actually posted to the
+ledger. The two coincide whenever a genuine transactional currency
+exists for the instrument -- a forward, a deposit, cash -- and only
+diverge where no single transactional currency applies, such as a
+vanilla option, whose actual "transaction" is the premium rather than
+the notional; for those cases, the denominated currency has to be
+determined from the instrument's own characteristics instead of read
+off a single fixed field.
+
+* Detail
+
+** Transaction currency
+
+A forward, to take the canonical example, has two legs and therefore
+two transactional currencies, one per leg; the ledger receives every
+position -- live and settled cash alike -- expressed in transaction
+currency, since that is simply the currency the underlying accounting
+entry was actually posted in. Transaction currency is not inferred;
+it is a direct property of the entry itself, which is what makes it
+the more concrete of the two concepts and the one Finance reaches for
+first.
+
+** Determining denominated currency per instrument type
+
+Not every instrument has a single, self-evident transactional
+currency to fall back on, so the denominated currency has to be
+determined from a per-instrument-type rule instead:
+
+| Instrument type       | Denominated currency      |
+|-----------------------+---------------------------|
+| Cash                  | Cash currency             |
+| Repo                  | Repo currency             |
+| Option                | Premium currency          |
+| Forward               | Base currency             |
+| Cross-currency swap   | Base currency             |
+| Other                 | Principal currency        |
+
+The same logic extends to the deal's Greeks: Delta is expressed in
+base currency, P&L in the denominated currency, so that a report
+reader sees each measure in the currency where it is genuinely most
+legible rather than in whatever currency happened to be aggregated to
+first. Where a transactional currency genuinely exists for the
+instrument -- forwards, deposits, cash -- it is used directly, and
+the table above is needed only for the remaining cases, a vanilla
+option being the clearest: there, the "transaction" is really the
+premium, so [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][premium currency]] is what supplies the currency of
+denomination rather than any notional currency the option is written
+against.
+
+** Why the distinction exists at all
+
+Transaction currency and denominated currency matter as separate
+concepts because a single product can generate cash flows in more
+than one currency at once -- a cross-currency swap's two legs, an FX
+forward's base and quote sides -- and normalising each deal down to
+one currency per deal is what makes its results comparable to another
+deal's before any full, cross-currency aggregation is attempted.
+[[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]]'s other spokes pick up from here: once a deal's currency of
+denomination is settled, [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]] governs how its
+book-level accounting entry is translated, and [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation currency]]
+governs how it is combined with every other deal's figure for risk
+and reporting purposes.
+
+* See also
+
+- [[https://www.netsuite.com/portal/resource/articles/accounting/transaction-currency.shtml][NetSuite: What Is Transaction Currency?]] -- practitioner reference
+  for transaction currency.
+- [[https://www.ebc.com/forex/what-does-denominated-currency-mean][EBC Financial Group: What Is Denominated Currency?]] -- the standard
+  finance term this note follows for denominated currency.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- what a deal's denominated currency is
+  converted into for cross-deal comparison.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the book-level accounting currency
+  transaction currency is eventually translated into.
+- [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][Premium Currency]] -- an option's denominated currency, the
+  clearest case where no single transactional currency exists.

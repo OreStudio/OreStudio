@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: E4FC332F-C404-4408-8E10-586FAF4ECCFC
+:END:
+#+title: Functional Currency
+#+description: The accounting currency of a book or entity -- the currency its P&L and Balance Sheet are expressed in, the functional currency balance, and facility/utilisation currency.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Functional currency is not house jargon: it is a term of art defined
+by international accounting standards -- [[https://www.ifrs.org/issued-standards/list-of-standards/ias-21-the-effects-of-changes-in-foreign-exchange-rates/][IAS 21, /The Effects of
+Changes in Foreign Exchange Rates/]] and its US GAAP counterpart, ASC
+830 (originally SFAS 52) -- as "the currency of the primary economic
+environment in which the entity operates" (see [[https://en.wikipedia.org/wiki/Functional_currency][Wikipedia: Functional
+currency]] for an accessible overview). This note follows that
+external definition and applies it at book level: the functional
+currency is the accounting currency of a book, or more precisely of
+the accounting entity and legal jurisdiction the book belongs to --
+the currency in which that book's P&L and Balance Sheet are expressed
+in the ledger. Every ledger book carries exactly one,
+because the legal jurisdiction a book belongs to mandates a reporting
+currency of its own -- a UK-domiciled book must submit accounts in
+GBP regardless of what currencies its trades are actually denominated
+in -- which forces every non-functional-currency position to be
+periodically converted, with the resulting movement booked as a
+distinct adjustment rather than silently absorbed. This is one of
+several distinct currency roles a book or trade carries at once; see
+[[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] for how it relates to the others.
+
+* Detail
+
+** The currency of the ledger's own books
+
+A book's functional currency is set by the currency of the accounting
+book to which it reports its financial statements, which is in turn
+dictated by the legal jurisdiction that book belongs to: an entity
+domiciled in the UK must submit its accounts in GBP, one domiciled in
+the US in USD, and so on, independent of which currencies the book's
+underlying trades happen to be denominated in. This is why a book's
+functional currency is not a free per-book choice but a consequence
+of where, legally, that book's records are reported -- see [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and
+the ledger]] for the fuller accounting hierarchy a book sits within,
+and [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] for the organisational placement that ultimately
+determines it.
+
+** Converting non-functional-currency positions
+
+Because trades happen in whatever currency the market quotes them in
+-- their [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][transactional currency]] -- every non-functional-currency
+position a book holds must be periodically translated into functional
+currency for accounting purposes. A *Functional Currency Balance* is
+precisely this: a transactional-currency balance translated into the
+book's functional currency, typically using the London Closing Rate
+or another Close-of-Business rate determined by Head of Treasury --
+itself anchored to a particular [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][business centre]]'s own end-of-day
+cut-off, not a single global moment shared by every book. The
+daily, automated mechanism that performs this translation is the
+[[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]], documented there in full; the P&L movement the
+translation itself generates is booked as a distinct entry rather
+than blended into trading P&L, since it arises from currency
+translation rather than from any new economic event.
+
+** Facility and utilisation currency
+
+A *Facility Currency* is the currency in which a functional-currency
+lending limit is set for a given entity; the corresponding
+*Utilisation Currency* is the currency, or currencies, in which that
+facility is actually drawn down. The two need not coincide: a facility
+denominated in one functional currency can, in practice, be utilised
+in whatever currency the borrowing actually takes place in, which is
+why utilisation is tracked as its own field rather than assumed to
+equal the facility's own currency.
+
+* See also
+
+- [[https://www.ifrs.org/issued-standards/list-of-standards/ias-21-the-effects-of-changes-in-foreign-exchange-rates/][IAS 21, The Effects of Changes in Foreign Exchange Rates]] -- the
+  IFRS standard defining functional currency.
+- [[https://en.wikipedia.org/wiki/Functional_currency][Wikipedia: Functional currency]] -- accessible overview, including the
+  US GAAP (ASC 830 / SFAS 52) definition.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] -- the accounting hierarchy and Ledger Sweep
+  mechanics functional currency is embedded in.
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- the location a Close-of-Business revaluation
+  rate is anchored to.
+- [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] -- the daily automated translation
+  process that produces a Functional Currency Balance.
+- [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction Currency and Denominated Currency]] -- the currency a position is
+  denominated in before translation into functional currency.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-engine counterpart, normally set
+  equal to a book's functional currency.

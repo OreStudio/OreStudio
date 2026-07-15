@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: C52FF609-FCFD-4F7D-8F5F-121212132ADB
+:END:
+#+title: Money
+#+description: Money as a social convention verified by record rather than substance, and the four functions that qualify anything as money.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Money is best understood not as a substance but as a social
+convention: any item or verifiable record that a sufficiently large
+group of people accept, by shared belief, as payment for goods and
+services and as settlement of debt. It ceases to function the moment
+that belief collapses, which places money closer to a construct of
+sociology and law than to a physical thing. What qualifies something
+as money is not its material form but whether it performs four
+functions -- medium of exchange, unit of account, store of value, and
+standard of deferred payment -- and this functional definition is
+what admits records, not just notes and coins, as money. See
+[[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] for the narrower systemic sense this concept feeds into,
+and [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] for the historical forms money has taken.
+
+* Detail
+
+** A social convention, not a substance
+
+The definition that best survives scrutiny -- money as /any item or
+verifiable record that is generally accepted as payment for goods and
+services and repayment of debts, in a particular country or
+socio-economic context/ (see [[https://en.wikipedia.org/wiki/Money][Wikipedia: Money]]) -- makes belief, not
+matter, the load-bearing ingredient. A banknote is not valuable
+because paper is scarce; it is valuable because a large enough
+population continues to treat it as a valid claim, and the arrangement
+unravels precisely when that population stops believing the claim is
+good -- a currency collapse or a bank run being the clearest examples
+of belief failing and the money built on it failing with it. This is
+why money sits more comfortably among the
+constructs of philosophy, sociology, and law than among physical
+commodities, even when a particular kind of money happens to have a
+physical form.
+
+** Any verifiable record can be money
+
+Because the defining property is acceptance rather than substance,
+nothing in the definition restricts money to physical notes and coins.
+A verifiable record -- a ledger entry, a bank deposit, a cryptographic
+token -- can satisfy the same role as long as it is trusted and
+transferable. This is the conceptual door through which *bank money*
+enters (see [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]]): the overwhelming majority of the money
+supply in a modern economy exists only as such records, not as
+circulating cash.
+
+** The four functions of money
+
+Money's role is captured by four functions, and anything that
+fulfils them can be considered money regardless of its physical form:
+
+- A *medium of exchange* -- an efficient alternative to barter, letting
+  a seller accept a single universally-wanted instrument instead of
+  needing to want, specifically, whatever the buyer happens to offer.
+- A *unit of account* -- a common numerical scale in which the value
+  of otherwise incommensurable goods can be expressed and compared.
+- A *store of value* -- a way of holding purchasing power across time,
+  from one transaction to a later one.
+- A *standard of deferred payment* -- an amount agreed today should
+  retain roughly the same value when it is actually paid in the
+  future, which is what makes credit and forward-dated obligations
+  practical.
+
+A form of value that satisfies only some of these functions is
+usually a weaker or more specialised kind of money -- a store of value
+with poor liquidity, or a unit of account with no wide acceptance as
+payment -- rather than a disqualification; the four functions are a
+lens for evaluating candidates, not a rigid checklist every one must
+pass equally well.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Money][Wikipedia: Money]] -- the general definition this note follows.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note; money narrowed to a system in common use
+  within an area of circulation.
+- [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] -- the historical forms (commodity, fiat, bank,
+  crypto) money has taken.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] -- the most liquid instance of a currency, narrowing the
+  concept further still.

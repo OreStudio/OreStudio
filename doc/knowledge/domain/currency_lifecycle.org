@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 6AC99797-D97B-463C-9351-4946DC80D91C
+:END:
+#+title: Currency Lifecycle
+#+description: A currency's own birth-to-retirement lifecycle -- creation, circulation, and withdrawal -- and why redenomination and monetary-union events matter operationally.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+startup: inlineimages
+
+* Summary
+
+A [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][currency]] has a lifecycle of its own, at a level of abstraction above
+the individual banknotes and coins that circulate within it: it is
+"born" when created and put into circulation, "lives" while in
+general use, and "dies" when formally withdrawn, though transaction
+records made during its life must still be retained afterward. The
+pattern is fractal, repeating at the level of the currency itself, at
+the level of its denominations, and at the level of individual
+note/coin instances. It is tempting to treat this as too slow-moving
+to matter for a trading or booking system, but redenominations,
+currency replacements, and the forming or dissolving of monetary
+unions occur more often than expected and rarely leave time for
+careful operational planning, so a system that has not anticipated
+them can be significantly disrupted when one occurs.
+
+* Detail
+
+** Birth, life, and death of a currency
+
+#+caption: Currency lifecycle: creation, circulation (looping through redenomination and monetary-union events), and eventual withdrawal.
+[[proj:doc/knowledge/domain/currency_lifecycle.png]]
+
+Source: [[./currency_lifecycle.puml][=currency_lifecycle.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/currency_lifecycle.puml=.
+
+A currency is created and enters circulation, remains in general use
+for as long as its issuing authority and the public that accepts it
+sustain the underlying convention described in [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]], and is
+eventually withdrawn -- whether replaced by a successor currency,
+absorbed into a monetary union, or simply discontinued. Unlike the
+practical, day-to-day questions [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]]'s other spokes address
+(which currency a book revalues in, which currency an option premium
+is paid in), this lifecycle operates at the level of the currency as
+a whole rather than any single position denominated in it -- yet its
+consequences reach every position outstanding at the moment of
+transition.
+
+** A fractal pattern
+
+The same birth-life-death shape recurs at three nested levels: the
+currency itself (introduced, circulated, withdrawn), its
+denominations (a given note or coin value introduced or discontinued
+independently of the currency surviving), and individual physical
+instances (a specific note or coin entering circulation, changing
+hands, and eventually being retired or destroyed). Recognising the
+pattern as fractal is what keeps "currency lifecycle" from being
+mistaken for a single, currency-wide, all-or-nothing event -- a
+currency can retire one denomination while continuing to exist, just
+as it can survive a redenomination that changes every denomination at
+once.
+
+** Why this matters operationally
+
+Currency-lifecycle events are easy to dismiss as too rare and
+too slow-moving to warrant deliberate handling in a trading or
+accounting system, but redenominations, currency replacements, and
+monetary unions forming or dissolving happen with more regularity
+than that dismissal assumes, and they rarely come with enough advance
+notice for careful operational planning. A system not designed to
+anticipate such an event -- positions, reference data, and historical
+records all still keyed to a currency code that has just been
+withdrawn or redefined -- can be significantly disrupted precisely
+when it occurs. The comparison worth holding onto is the [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][book
+lifecycle]]: both a currency and a book move through an
+open/active/closed-or-retired progression, but at very different
+levels of the domain -- one describing an accounting entity's life,
+the other describing the life of the unit of value that entity's
+records are expressed in.
+
+* See also
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] -- the underlying convention that a currency's "life" depends
+  on staying credible.
+- [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency Codes]] -- the standard whose code assignments
+  this lifecycle can outlive or invalidate.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] -- the parallel open/active/closed progression at
+  the level of a trading book rather than a currency.

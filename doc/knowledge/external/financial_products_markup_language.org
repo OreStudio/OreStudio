@@ -37,6 +37,21 @@ and FIX because it does not specify a network or transport
 mechanism.
 #+end_quote
 
+* Where it lives
+
+- /Standard home/ — [[https://www.fpml.org/][fpml.org]], maintained by ISDA.
+- /In this repo/ — vendored under [[proj:external/fpml][=external/fpml/=]]: the version 5.13
+  XSD schemas, split by view ([[proj:external/fpml/5.13/confirmation][=confirmation/=]], [[proj:external/fpml/5.13/reporting][=reporting/=]],
+  [[proj:external/fpml/5.13/legal][=legal/=]], [[proj:external/fpml/5.13/recordkeeping][=recordkeeping/=]], [[proj:external/fpml/5.13/pretrade][=pretrade/=]],
+  [[proj:external/fpml/5.13/transparency][=transparency/=]] — each with its own =business-processes/=,
+  =products/=, and =validation/= subtrees plus a =changes.pdf=), and
+  the [[proj:external/fpml/codelist][=codelist/=]] directory of OASIS Genericode XML code lists (the
+  coding schemes, business centre scheme, and other enumerations
+  reference data is generated from). This is a /reference copy/ our
+  codegen pipeline reads from, not a fork. [[proj:external/fpml/methodology.txt][=methodology.txt=]]
+  documents how the vendored copy is refreshed and how the FpML
+  reference-data SQL is regenerated from it.
+
 * See also
 
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — the FpML mechanism we use most directly.

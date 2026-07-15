@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: A281A64C-5A52-4747-BBDD-3CECB7A72F3C
+:END:
+#+title: Cash
+#+description: Cash as the most liquid form of a currency: physical notes and coins, plus currency-equivalent financial assets accessible immediately or near-immediately.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+Cash narrows [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][currency]] down further still: in its everyday sense it is
+physical banknotes and coins, but the bookkeeping and finance sense
+this note follows is broader -- the class of current [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][assets]]
+comprising currency or currency equivalents accessible immediately or
+near-immediately, which includes highly [[id:0F727383-5B40-4366-91EF-36319F215997][liquid]] financial assets such
+as bank deposits alongside physical notes -- the standard accounting
+category of "cash and cash equivalents" (see [[https://en.wikipedia.org/wiki/Cash_and_cash_equivalents][Wikipedia: Cash and cash
+equivalents]]).
+
+* Detail
+
+** Cash as the liquid end of a currency
+
+Cash is money in its most liquid form for a given currency: physical
+notes and coins, and -- in the financial rather than purely
+physical sense -- any currency-equivalent asset that converts to
+physical currency immediately or near-immediately, such as an
+on-demand bank deposit. This is the narrowest of the concepts
+[[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]]'s foundation rests on: not all money is a currency in the
+standardised, systemic sense, and not all currency holdings are cash,
+since a currency can equally be held in a comparatively illiquid
+financial-asset form.
+
+** Cash is an asset
+
+Cash is, trivially, itself an [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][asset]] -- the maximally liquid one, the
+point every other asset's [[id:0F727383-5B40-4366-91EF-36319F215997][liquidity]] is ultimately measured against.
+Framing cash this way is what makes "liquidity" a coherent, comparable
+spectrum rather than a vague qualitative label: an asset's liquidity
+is, precisely, how close it sits to behaving like cash itself.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Cash_and_cash_equivalents][Wikipedia: Cash and cash equivalents]] -- the standard accounting
+  category this note follows.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note; cash is the liquid end of the currency
+  concept this note narrows.
+- [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][Assets]] -- the general category cash belongs to.
+- [[id:0F727383-5B40-4366-91EF-36319F215997][Liquidity]] -- the spectrum cash sits at the extreme end of.
+- [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] -- the broadest concept in the money → currency → cash
+  chain.
+- [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] -- why not all money is cash-liquid, and why not
+  all currency is standardised.

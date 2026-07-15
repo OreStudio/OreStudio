@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522
+:END:
+#+title: Premium Currency
+#+description: The currency an option premium is paid in -- defaulted per currency pair, but overridable to a third currency outside the pair.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Premium currency is the currency an option's premium is actually paid
+in. The concept it names is standard market practice, codified in the
+[[https://www.isda.org/book/1998-fx-and-currency-option-definitions/][ISDA 1998 FX and Currency Option Definitions]] (the industry-standard
+confirmation template for FX options), which requires every Currency
+Option Transaction's Premium to be specified against a currency
+amount in the trade confirmation -- "premium currency" itself is not
+a term ISDA names as such, but the underlying requirement that every
+premium payment specify its own currency, independent of the option's
+Call and Put currencies, is exactly the field this note documents.
+Every currency pair has a default premium currency, but the
+default can be overridden, and the overriding currency need not be
+either leg of the underlying pair at all -- a third currency,
+unrelated to both, is a legitimate choice. Premium currency matters
+beyond the mechanics of a single payment: for an option, where no
+single transactional currency naturally applies, premium currency is
+precisely what [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][denominated currency]] resolves to under its
+per-instrument determination rule.
+
+* Detail
+
+** A per-pair default, overridable to a third currency
+
+Each currency pair carries a conventional default premium currency --
+typically one of its two legs, following market convention for that
+pair -- but the default is not binding. A counterparty can agree to
+pay an option's premium in a currency that is neither the base nor the
+quote currency of the underlying pair, a genuinely third currency
+chosen for reasons unrelated to the option's own underlying (investor
+preference, funding considerations, or simply matching a broader
+portfolio's own currency). Because the override is unconstrained by
+the pair itself, premium currency has to be modelled as an explicit
+field on the trade rather than derived automatically from the
+currency pair's convention.
+
+** Why premium currency is an option's denominated currency
+
+An option is the clearest case in which no single transactional
+currency naturally exists: the underlying pair has two legs, neither
+of which is, by itself, "the" currency the option's economics are
+paid in. What actually changes hands is the premium, and so [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction
+Currency and Denominated Currency]]'s per-instrument-type table
+resolves an option's denominated currency directly to its premium
+currency, rather than to either leg of the underlying pair. This is
+the sharpest illustration of why denominated currency needs a
+per-instrument-type determination rule in the first place: without
+it, an option's Greeks and P&L would have no principled currency to
+be reported in.
+
+* See also
+
+- [[https://www.isda.org/book/1998-fx-and-currency-option-definitions/][ISDA 1998 FX and Currency Option Definitions]] -- the industry-standard
+  confirmation template requiring a specified premium currency.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction Currency and Denominated Currency]] -- the
+  per-instrument-type rule premium currency feeds directly into for
+  options.
+- [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][Settlement Currency]] -- the sibling currency field governing an
+  underlying's settlement rather than an option's premium payment.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] -- the per-pair conventions premium currency
+  defaults from.

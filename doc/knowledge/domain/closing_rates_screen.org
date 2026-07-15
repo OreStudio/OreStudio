@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 10E36403-847A-4D0A-B532-E7DA0EE0B670
+:END:
+#+title: Closing Rates Screen
+#+description: The screen letting Traders and Finance review and, if needed, override the End-of-Day revaluation rate used to convert positions into functional currency before EOD reports are generated.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+The Closing Rates Screen is the point at which the automated End-of-Day
+revaluation rate -- the rate the [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] would otherwise apply
+unattended to convert positions into [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional currency]] -- meets human
+judgement before EOD reports are generated. It shows Traders and
+Finance the original sourced rate, any override already applied, and
+the current live market rate side by side, so that a rate which looks
+wrong or stale relative to the live market can be caught and corrected
+before it propagates into every downstream EOD figure that depends on
+it.
+
+* Detail
+
+** Reviewing before the rate propagates
+
+Every currency's End-of-Day revaluation rate is sourced automatically
+ahead of the EOD run, but an automatically-sourced rate can be stale,
+misquoted, or simply out of line with a fast-moving market at the
+moment EOD is about to be struck. The Closing Rates Screen exists to
+put that rate in front of a human -- Trader or Finance -- before it is
+baked into every book's revaluation, rather than only discovering an
+error after EOD reports have already been produced and distributed
+downstream.
+
+** Three rates shown side by side
+
+The screen presents, for each currency, the original rate as sourced,
+any override a user has already applied, and the current market rate
+as observed live. Showing all three together is what makes the review
+actionable: a user can see at a glance whether the sourced rate has
+already drifted from the market, whether someone has already
+intervened, and by how much an override (existing or proposed)
+differs from where the market currently sits, rather than having to
+cross-reference three separate places to reconstruct the same
+picture.
+
+** Overriding the rate
+
+Where the sourced rate is judged wrong or unsuitable, a Trader or
+Finance user can override it directly on this screen. The override
+then becomes the rate the EOD revaluation actually uses -- flowing
+into the [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation types]] the Ledger Sweep applies -- in
+place of the originally-sourced value, and it is this overridden rate,
+not the raw sourced one, that subsequent EOD reports will reflect.
+
+* See also
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] -- the automated process this screen's rate feeds into.
+- [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation Types]] -- the three revaluation types that
+  consume the reviewed or overridden rate.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the currency positions are converted into
+  using this rate.

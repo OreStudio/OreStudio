@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 3407B8DF-D446-4658-8B5D-3368FFA44AD8
+:END:
+#+title: Currency
+#+description: Hub note for currency in ORE Studio's domain model: the money-currency-cash foundation, the ISO 4217 standard and currency lifecycle, and the distinct currency roles a book or trade carries.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:trading:book:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Currency, in ORE Studio's domain model, rests on a conceptual
+foundation before it becomes a system of ISO-coded, trading-desk
+reference data: [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][money]] as a social convention, narrowed to a [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][kind]]
+and a standardised or non-standardised code, and narrowed further
+still to [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][cash]] at the liquid end of the spectrum. A currency also has
+its own [[id:6AC99797-D97B-463C-9351-4946DC80D91C][lifecycle]], independent of any position denominated in it.
+Once a trading system is layered on top, a single trade or book does
+not carry just one "currency" -- the same position is described in
+several different currencies at once, each serving a distinct
+purpose: a [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][functional]] currency for the ledger, a [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][presentation]]
+currency for display, a [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][transaction currency / denominated currency]]
+for a deal's own cash flows, an [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][aggregation]] currency for cross-currency risk
+comparison, and narrower roles still for [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][settlement]], [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][premium]], and
+which [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][currencies a book]] is even permitted to hold. The mechanisms that
+convert and reconcile between these roles -- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][sweeps]],
+[[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX spot revaluation]], and the [[id:10E36403-847A-4D0A-B532-E7DA0EE0B670][closing rates screen]] that reviews the
+rate they use -- are what keep this multiplicity of currencies
+tractable rather than a source of silent inconsistency.
+
+* Detail
+
+** The conceptual foundation: money, currency, cash
+
+Before currency becomes trading-system reference data, it is a
+narrowing chain of three related but distinct concepts. [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] is
+the broadest: any generally-accepted, verifiable record of value,
+defined by the four functions it performs rather than by its physical
+form. [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] surveys the historical forms that convention has
+taken -- commodity, fiat, bank money, and the modern, deliberately
+ambiguous case of cryptocurrency. Currency itself narrows money down
+to a system of money in common use within an area of circulation,
+standardised by [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217]] or left outside that standard entirely, and
+possessing its own [[id:6AC99797-D97B-463C-9351-4946DC80D91C][lifecycle]] of creation, circulation, and eventual
+withdrawal. [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] narrows the chain a final step, to the most liquid
+instances of a currency, and brings with it the broader vocabulary of
+[[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][assets]], [[id:0F727383-5B40-4366-91EF-36319F215997][liquidity]], and [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][cash flow]] that cash sits within.
+
+** Currency as a role: what a book or trade actually carries
+
+A single position is never described by only one currency once a
+booking, ledger, and risk system is layered on top of the
+conceptual foundation above. [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional currency]] is the ledger's own
+accounting currency, dictated by a book's legal jurisdiction rather
+than freely chosen. [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Presentation currency]] is a purely presentational,
+live-spot conversion with no risk consequence of its own, best kept
+equal to aggregation currency for consistency. [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction currency]]
+and *denominated currency* describe the currency in which a
+deal's own cash flows or results are properly expressed before any
+cross-currency comparison is attempted. [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation currency]] is what a
+risk engine converts every amount into so that deals with different
+denominated currencies become comparable -- a conversion that, unlike
+presentation currency's, generates real risk rather than merely
+displaying a number differently. Two narrower roles round out the
+set: [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][settlement currency]] governs a trade's settlement-day calendar
+and cash-settlement payment, and [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][premium currency]] governs the currency
+an option's premium is paid in -- itself the denominated currency
+an option resolves to, since no single transactional currency
+otherwise applies. [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book currencies]] sits apart from the rest of this list: rather
+than describing how a position is expressed, it constrains which
+currencies a book may hold an instrument in at all.
+
+** Conversion and reconciliation mechanics
+
+A system carrying this many simultaneous currency roles needs
+mechanisms that keep them converted and reconciled against one
+another rather than silently drifting apart. [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] documents the
+two distinct sweep mechanisms: a periodic,
+front/middle-office spot sweep crystallising non-presentation-currency
+profit, and a daily, automated, accounting-layer ledger sweep
+translating transactional balances into functional currency. [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX
+Spot Revaluation Types]] breaks that ledger-sweep translation down
+further into the three accounting treatments settled and unsettled FX
+require -- Balance Sheet, Position Account, and Forward Position
+reval. [[id:10E36403-847A-4D0A-B532-E7DA0EE0B670][Closing Rates Screen]] is where the automated End-of-Day rate
+these mechanisms depend on meets human review, letting a stale or
+misquoted rate be caught and, if needed, overridden before it
+propagates into every downstream EOD figure. Beyond the currency
+cluster itself, [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] and [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and
+the ledger]] work through the fuller consequences of aggregation
+currency and functional currency respectively, at the level of an
+entire cross-rates matrix and an entire accounting hierarchy.
+
+* See also
+
+- [[id:C52FF609-FCFD-4F7D-8F5F-121212132ADB][Money]] -- the broadest concept in the foundational chain.
+- [[id:C17C8215-DB6C-4E1A-BF88-63ABB7E145E0][Kinds of Money]] -- commodity, fiat, bank money, and cryptocurrency.
+- [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency Codes]] -- the standard and its non-standard
+  exceptions.
+- [[id:6AC99797-D97B-463C-9351-4946DC80D91C][Currency Lifecycle]] -- a currency's own birth-to-retirement
+  progression.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] -- the liquid end of the currency concept.
+- [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][Assets]] -- the general category cash belongs to.
+- [[id:0F727383-5B40-4366-91EF-36319F215997][Liquidity]] -- the spectrum measuring how close an asset sits to
+  cash.
+- [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash Flow]] -- the building block any financial asset can be
+  decomposed into.
+- [[id:E4FC332F-C404-4408-8E10-586FAF4ECCFC][Functional Currency]] -- the ledger's own accounting currency.
+- [[id:ACB7ED8A-0E01-47D5-8A3B-FE59FDF7C000][Presentation Currency]] -- the presentational display currency.
+- [[id:4ADDDA46-21CE-4C94-9F22-F66805B13891][Transaction Currency and Denominated Currency]] -- the per-deal currency
+  before cross-currency comparison.
+- [[id:A7338353-8D2F-4784-92C0-B6E338C0D9C4][Aggregation Currency]] -- the risk-generating convert-and-compare
+  currency.
+- [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][Settlement Currency]] -- settlement-day calendar and payment
+  currency.
+- [[id:1E27EF8E-FBA2-4D3F-B4E5-5B1C81F07522][Premium Currency]] -- an option's premium payment currency.
+- [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book Currencies]] -- which currencies a book may hold at all.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] -- hub note for the two sweep mechanisms.
+- [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] -- the periodic, front/middle-office sweep type.
+- [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] -- the daily, automated, accounting-layer sweep type.
+- [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation Types]] -- the three ledger reval treatments.
+- [[id:10E36403-847A-4D0A-B532-E7DA0EE0B670][Closing Rates Screen]] -- reviewing and overriding the EOD rate.
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] -- aggregation currency's
+  consequences across a full cross-rates matrix.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] -- functional currency's consequences across
+  a full accounting hierarchy.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] -- the organisational hierarchy a book's currency
+  roles sit within.
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] -- the location/calendar identifier a book's
+  settlement and revaluation depend on.

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 0F727383-5B40-4366-91EF-36319F215997
+:END:
+#+title: Liquidity
+#+description: Liquidity as the ease of converting an asset into cash -- a dynamic spectrum, not a binary -- and its extension to an entity's own ability to pay debts as they fall due.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:currency:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+Liquidity is the ease, or conversely the friction, of converting an
+[[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][asset]] into [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][cash]] without a significant discount to its price (see
+[[https://en.wikipedia.org/wiki/Market_liquidity][Wikipedia: Market liquidity]]). It is a spectrum rather than a yes/no property, and
+it is dynamic: the same asset's liquidity can change over time. The
+same word extends, by a natural analogy, from assets to entities: an
+entity's own (accounting) liquidity is its ability to pay its debts as
+they fall due, a related but distinct notion from the liquidity of any
+single asset it holds.
+
+* Detail
+
+** A spectrum, not a binary
+
+Liquidity does not sort assets into two bins, "liquid" and
+"illiquid"; it ranks them along a continuum from cash itself (already
+maximally liquid) through assets that take progressively longer, or
+cost progressively more, to convert into cash without a discount. A
+listed government bond and an unlisted private loan might both
+eventually be sold, but at very different speeds and with very
+different certainty about the price achieved -- the difference is one
+of degree along the same spectrum, not a difference in kind.
+
+** Dynamic, not fixed
+
+An asset's liquidity is a property of the current market and
+institutional conditions around it, not a permanent label. A bank
+deposit is ordinarily as liquid as cash -- withdrawable on demand --
+but a bank under stress that restricts withdrawals makes that same
+deposit markedly less liquid without the deposit itself having
+changed at all. Liquidity, in other words, can move even while the
+underlying asset does not.
+
+** Entity liquidity
+
+The same word is applied, by extension, to entities rather than
+assets: an entity's liquidity is its ability to pay its debts as they
+fall due. This is related to, but distinct from, the liquidity of any
+single asset the entity holds -- an entity can hold perfectly liquid
+assets and still face a liquidity problem if its liabilities fall due
+faster than those assets can be realised and applied against them.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Market_liquidity][Wikipedia: Market liquidity]] -- the general definition this note
+  follows.
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] -- the liquid end of the spectrum every asset is measured
+  against.
+- [[id:AC6DAC84-8BFA-4E3A-BEF9-D747D920E7AB][Assets]] -- what liquidity is a property of.

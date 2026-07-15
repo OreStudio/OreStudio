@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 17F85A71-2186-490A-B9CE-C9937A3FF16A
+:END:
+#+title: Business Centres
+#+description: Business centre management in ORE Studio: the FpML standard, holiday calendar identification, the Qt UI, history and revert, shell and CLI commands.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:business-centres:refdata:user_guide:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /business centre/ as a
+reference-data entity in ORE Studio. Business centres are identified by
+the FpML =businessCenterScheme= code list; the chapter sets out that
+standard, the role a business centre plays in identifying a holiday
+calendar, and the complete lifecycle of managing business centre
+records — viewing, editing, deleting, and auditing them — through the
+Qt interface.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that managing a business centre well
+means first understanding what it identifies, then the interface that
+governs its lifecycle. It begins by establishing the identity of a
+business centre in [[*The FpML business centre scheme][The FpML business centre scheme]], which sets out the
+4-character codes that name a business centre and the coding-scheme
+scoping that governs their uniqueness; this is the premise the rest of
+the chapter builds on. From there it surveys the body of records in
+[[*The Business Centres window][The Business Centres window]], explaining the list view, paging, and
+reloading, before narrowing to a single record in
+[[*Business Centre Details][Business Centre Details]] and its General and Provenance tabs. It then
+turns to changing a record under audit — [[*Editing a business centre][Editing]],
+[[*Deleting a business centre][Deleting]], and [[*Business centre history][Business centre history]] — culminating in
+reverting to an earlier version, the point at which the bitemporal
+audit trail does its work. Finally the [[*Conclusion][Conclusion]] draws these steps
+together and names what is deliberately still missing.
+
+** The FpML business centre scheme
+
+A business centre is a 4-character code drawn from the FpML
+=businessCenterScheme= code list (=http://www.fpml.org/coding-scheme/business-center=):
+either the real geographical location whose calendar governs a bad
+business day (=USNY= for New York, =GBLO= for London), or an
+FpML-format rate-publication calendar code used for fixing-day
+offsets. The scheme's own description is precise about the
+distinction: the geographical codes are "implicitly locatable and
+used for identifying a bad business day for the purpose of payment
+and rate calculation day adjustments", while the rate-publication
+codes "are used in the context of the fixing day offsets" — two
+different jobs sharing the same 4-character code shape.
+
+A business centre's defining role in ORE Studio is exactly the one
+the FpML description names: it identifies *which* holiday calendar a
+[[*Business Centre Details][business day-adjustment]] is performed against. The business centre
+itself is only the identifier — resolving a code to its actual set of
+holiday dates is a downstream concern the pricing/analytics layer
+carries out, not something the business centre record stores. Every
+code belongs to a *coding scheme* — =FPML_BUSINESS_CENTER= for the
+standard FpML set, or =NONE= for platform-internal centres such as
+the system's own =WRLD= ("World") centre, used for entities not tied
+to a specific geographic location. Unlike some coding-scheme-scoped
+reference data, a business centre's code is unique per tenant
+*regardless* of which scheme it came from: two schemes cannot both
+register the same code for one tenant.
+
+ORE Studio layers one further, optional extension on top of the FpML
+fields: a link to a *country*, used purely to render a flag icon next
+to the centre in the Qt UI. This link plays no role in calendar
+resolution — a centre with no natural country mapping, such as a
+rate-publication-calendar code or the system's =WRLD= centre, simply
+has no flag.
+
+Two other entities reference a business centre by its code rather
+than embedding calendar logic of their own: a book's *rates centre*,
+which determines which set of end-of-day revaluation market data the
+book uses, and a business unit, which may itself carry a business
+centre assignment (see [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] in the domain knowledge base; a
+dedicated manual chapter for business units does not exist yet). This
+chapter documents only the business centre record itself.
+
+With the underlying identity and scoping rules in place, the rest of
+the chapter turns from what a business centre record contains to
+where you go to work with one.
+
+** The Business Centres window
+
+Open the Business Centres window from the /Reference Data/ menu. It
+lists all business centres defined in the tenant, one row per centre,
+each row carrying the code, source, description, city, coding
+scheme, country (with its flag), version, last modifier, and when the
+record was last recorded.
+
+#+caption[The Business Centres window]: The Business Centres window, showing a page of business centres imported from the FpML reference data. Each row shows the code, source, city, coding scheme, country flag, version, last modifier, and when the record was last recorded; the status bar shows the current page and total record count.
+[[proj:assets/images/business_centres_main_dialog.png]]
+
+The list is paginated; use the page controls at the bottom right to
+navigate the full set of business centres. The toolbar buttons reload
+the list and open the add, edit, delete, and history actions.
+
+Double-clicking a row opens the *Business Centre Details* dialog.
+
+** Business Centre Details
+
+The Business Centre Details dialog has two tabs — *General* and
+*Provenance*. The three action buttons at the bottom — *Delete*,
+*Close*, and *Save* — apply to the business centre as a whole.
+
+*** General
+
+#+caption[Business Centre Details — General tab]: The General tab for business centre =AEDU= (Dubai), showing its code, source, description, city, the populated Coding Scheme combo, and the flagged Country combo.
+[[proj:assets/images/business_centre_details_general.png]]
+
+The General tab carries the core identity of the business centre:
+
+- *Code* — the FpML business centre code (e.g. =USNY=). This is the
+  primary key and cannot be changed after creation.
+- *Source* — the data source identifier (e.g. /FpML/, /ISDA/,
+  /Internal/ for platform-seeded centres).
+- *Description* — a short human-readable description of the centre.
+- *City* — the city name, derived from the description for centres
+  imported from the FpML reference data.
+- *Coding Scheme* — the coding scheme this centre's code belongs to,
+  chosen from a combo populated with every coding scheme known to the
+  system (e.g. =FPML_BUSINESS_CENTER=, =NONE=). A value is required —
+  the server rejects a save with no coding scheme selected.
+- *Country* — an optional link to a country, chosen from a flagged
+  combo. Selecting a country renders its flag both in this combo and
+  in the *Country* column of the list window.
+
+*** Provenance
+
+The Provenance tab is read-only and shows the audit metadata for the
+current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the provenance fields common to all reference data
+entities.
+
+** Editing a business centre
+
+To edit a business centre, open it in the Business Centre Details
+dialog, make your changes, and click *Save*. Before the record is
+written, ORE Studio prompts for a change reason — the same /Change
+Reason Required/ dialog shown in the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] chapter, and not
+repeated here. Select a *Reason* from the drop-down and add optional
+*Commentary*, then confirm. Every save creates a new version; the
+previous version is never overwritten.
+
+** Deleting a business centre
+
+To delete a business centre, open it and click *Delete*. ORE Studio
+asks for confirmation before the record is closed off.
+
+#+caption[The delete confirmation dialog]: The confirmation prompt shown before business centre =AEDU= is deleted.
+[[proj:assets/images/business_centre_details_delete_confirmation.png]]
+
+Deletion is a soft close — the record's history is preserved and
+remains visible in the History dialog.
+
+** Business centre history
+
+To view the full change history, open the details dialog and click
+the history icon in the title bar, or right-click the row and choose
+*History*.
+
+#+caption[The Business Centre History dialog]: The History dialog for business centre =AEAB= (Abu Dhabi), listing both versions newest-first. The Changes tab shows the field-level diff between the selected version and its predecessor — here, a correction to the Description field.
+[[proj:assets/images/business_centre_history_dialog.png]]
+
+Select a version to populate the detail panel. The *Changes* tab
+shows which fields changed between the selected version and its
+predecessor. The *Revert* button reinstates any historical version as
+a *new* version, preserving the full audit chain — the old version is
+never rewritten. Reverting a business centre follows exactly the same
+confirm-then-save-with-a-reason flow described for [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]]; it is
+not repeated here.
+
+** Conclusion
+
+The chapter set out to show that managing a business centre well
+follows from understanding what it identifies before turning to its
+interface, and it has traced exactly that path. The FpML
+=businessCenterScheme= supplies the identity — a 4-character code
+naming either a real geographical calendar location or a
+rate-publication calendar, scoped to a coding scheme but unique per
+tenant regardless of which scheme it came from — while ORE Studio's
+own country link adds a purely cosmetic flag icon on top. Building on
+that, the Qt interface took the record from the list view down to a
+single detail dialog and through the editing, deletion, and history
+workflows, where reverting to an earlier version demonstrated the
+same bitemporal audit trail already familiar from the Currencies and
+Countries chapters. Business centre does not yet have shell or
+command-line equivalents, nor Wt web UI or HTTP REST API support;
+those gaps are tracked as backlog work rather than glossed over here.
+
+** See also
+
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the domain-knowledge hub this chapter draws on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors.
+- [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] — the country a business centre may optionally link to
+  for its flag icon.
+- [[id:35A268FD-D06D-4D7E-9E46-EEBB8B719728][Books]] — a book's rates centre is a business centre, referenced by
+  code.

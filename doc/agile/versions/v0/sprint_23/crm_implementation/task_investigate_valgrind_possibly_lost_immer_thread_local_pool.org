@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:quant:valgrind:memory:
 #+owner: marco
 #+branch: feature/investigate-valgrind-possibly-lost-immer-thread-local-pool
-#+pr:
+#+pr: 1578
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1578][#1578]] | [quant,ci] Suppress immer thread-local pool false positive |
 
 * Review
 

@@ -21,9 +21,18 @@ This page documents a test scenario verifying [[id:32700602-1610-4F40-9914-E7044
 |---------------+------------------------------------------|
 | Verifies task | [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] |
 | Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
-| Target dialog | =PartyDetailDialog= / =PartyHistoryDialog= — Menu: *Reference Data > Parties* |
+| Target dialog | =PartyDetailDialog= / generic =HistoryDialog= — Menu: *Reference Data > Parties* |
 | Clients       | blue, red                               |
 | State         | PENDING                               |
+
+*Re-run notes (2026-07-15):* identifiers and contact information now
+open their own generated =PartyIdentifierDetailDialog=/
+=PartyContactInformationDetailDialog= with an explicit *Save* button
+(no more implicit-save-on-add confusion); the country combo on contact
+information shows flag icons; =party_category= now defaults server-side
+so Create no longer fails on it; the per-entity =PartyHistoryDialog=
+is gone, replaced by the shared =HistoryDialog= widget (same UX, opened
+the same way from the *History* button/menu).
 
 * Steps
 
@@ -74,8 +83,7 @@ Save. Confirm the new row appears in the list.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - still can't add identifiers or contacts, button does not appear clickable.; - on save, get Repository error: Executing INSERT failed: ERROR:  Invalid party_category: value cannot be null or empty; CONTEXT:  PL/pgSQL function ores_refdata_validate_party_category_fn(uuid,text) line 5 at RAISE; PL/pgSQL function ores_refdata_parties_insert_fn() line 9 at assignment |
+| Status | PENDING |
 
 *** Read
 
@@ -88,35 +96,43 @@ every field round-trips exactly as saved.
 |--------+-------|
 | Status | PENDING |
 
-*** Identifiers tab: add, view, delete
+*** Identifiers tab: add, view, edit, delete
 
-Open the *Identifiers* tab. Click *Add Identifier*, enter a scheme and
-value, save. Confirm the new row appears in the table. Select it and
-click *Delete Identifier*; confirm it disappears.
+Open the *Identifiers* tab. Click *Add Identifier* — a
+=PartyIdentifierDetailDialog= opens with the =id= field disabled (it's
+a generated UUID) and everything else editable; the row is *not*
+written until you press *Save* in that dialog (cancel it and confirm
+nothing was added). Enter a scheme and value, click *Save*. Confirm the
+new row appears in the parent's Identifiers table immediately (no
+manual reload needed). Double-click the row to reopen it for edit;
+confirm the =id= is shown but disabled, change the value, save, confirm
+it round-trips. Select the row and click *Delete Identifier*; confirm
+it disappears.
 
 **** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - can add identifier, added BIC. however, does not show up in the dialog. seems like identifier is immediately saved. on reload, can see new identifier. flow is just a bit confusing. |
+| Status | PENDING |
 
 *** Contact Information tab: add, edit, delete
 
-Open the *Contact Information* tab. Click *Add Contact*, fill in type/
-street/city/country/phone, save. Confirm the row appears. Double-click
-the row to reopen the full edit dialog (all 10 fields: type, street
-line 1/2, city, state, country code, postal code, phone, email, web
-page); change a field and save via *Save*. Confirm the change persists
-on reopen. Select the row and click *Delete Contact*; confirm it
-disappears.
+Open the *Contact Information* tab. Click *Add Contact* — a
+=PartyContactInformationDetailDialog= opens (id disabled, same pattern
+as Identifiers); confirm the *Country* combo shows flag icons next to
+each code. Fill in type/street/city/country/phone, click *Save* in the
+dialog. Confirm the row appears in the parent's table immediately.
+Double-click the row to reopen the full edit dialog (all 10 fields:
+type, street line 1/2, city, state, country code, postal code, phone,
+email, web page); change a field and save via *Save*. Confirm the
+change persists on reopen. Select the row and click *Delete Contact*;
+confirm it disappears.
 
 **** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - adding seems to corectly show the contact, but again, immediately saves the contact.  |
+| Status | PENDING |
 
 *** Hierarchy tab
 

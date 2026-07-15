@@ -56,11 +56,11 @@ fix is the next task's job.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -79,11 +79,74 @@ fix is the next task's job.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Added =junction= to =#+model_types:= on the three facet =.org= files
+   (now =schema domain_entity junction=, matching the space-separated
+   format used by =ores.sql.schema.org=).
+2. Re-tangled via =compass build --direct tangle_codegen_templates= —
+   confirmed the sibling =.mustache= files came out byte-identical (the
+   =.org= keyword edit doesn't touch the mustache source block).
+3. Note: the junction model this task's own Goal points at,
+   =tenor_convention_resolution=, now lives under
+   =projects/ores.refdata/modeling/= (id E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48)
+   — it moved from =ores.marketdata= to =ores.refdata= sometime after
+   this task was scoped. Same id, so no ambiguity, just a stale path in
+   the Goal text.
+4. Ran =compass codegen entity generate tenor_convention_resolution
+   --dry-run=, then (to see actual rendered content, not just target
+   paths) without =--dry-run= too. *The model_types gate was the only
+   blocker* — the graph now happily selects domain/generator/repository
+   for a junction and mustache renders every template without error.
+   But the *output paths and several includes came out literally
+   containing unresolved =\{component_dir\}=/=\{component_core_dir\}=/
+   =\{component_include\}=/=\{component_core\}=/
+   =\{generator_facet_name\}= placeholders* — e.g. the repository header
+   landed at literal path
+   =projects/\{component_core_dir\}/include/ores.\{component_core\}/repository/...=
+   and contains =#include "ores./domain/tenor_convention_resolution.hpp"=
+   (empty component segment).
+5. Root-caused in =core.py='s =resolve_output_path()=: it has two
+   separate branches keyed on =model_type= — the =domain_entity= branch
+   (line ~687) computes and substitutes all of =\{component_dir\}=,
+   =\{component_core_dir\}=, =\{component_service_dir\}=,
+   =\{component_include\}=, =\{component_core\}=, =\{component_service\}=,
+   =\{cache_component*\}=, =\{generator_facet_name\}=, plus the common
+   =\{component\}=/=\{entity_plural\}=/=\{entity\}=/=\{EntityPascal\}=
+   ones; the =junction= branch (line ~732) only substitutes
+   =\{component\}=/=\{junction_name\}=/=\{entity\}=/=\{EntityPascal\}=.
+   The domain/generator/repository facet templates' output-path patterns
+   and =#include= lines use the richer placeholder set the junction
+   branch never fills in, so they survive =str.replace()= untouched and
+   land literally in the output. *Field-level content otherwise looked
+   correct* (the domain struct's members, doc comments, and the
+   repository's natural-key-based finder/remove methods — no
+   =primary_key=-shaped single-id method appeared, which is right for a
+   junction with no synthetic PK) — this is a path/include-substitution
+   gap specifically, not a wholesale template-shape mismatch. Reverted
+   the throwaway generated output (all of it landed under the literal
+   =projects/\{component_dir\}=/=\{component_core_dir\}= paths, easy to
+   spot and =rm -rf=) — this task is investigation-only, not the fix.
+6. Regenerated =book= (refdata, domain_entity) after the =.org= change:
+   zero diff, confirming this task didn't perturb existing
+   domain_entity generation.
 
 * Notes
+
+=resolve_output_path()='s junction branch needing the same
+component_dir/component_core_dir/component_service_dir/component_include/
+component_core/component_service/generator_facet_name substitutions as
+the domain_entity branch (reading them off the junction model's own
+=component=/=subcomponent=/=component_include=/etc. keys, same as
+domain_entity does) is the concrete, scoped fix for the next task
+("Fix domain/generator/repository Mustache templates for junction-shaped
+data") to make first — it's a Python data-plumbing gap, not a Mustache
+template-content gap, and looks like a small, mechanical change (the
+domain_entity branch's logic can likely be shared/factored rather than
+duplicated, since junction models can carry the same
+=component=/=subcomponent= shape). Whether the templates then also need
+Mustache-level branching for junction-specific fields (composite
+left/right key, no synthetic id) is a separate question that task
+should still verify once paths/includes resolve correctly and the
+output can actually be diffed against something meaningful.
 
 * Test Scenarios
 
@@ -109,3 +172,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=junction= added to =#+model_types:= on =ores.cpp.domain.org=,
+=ores.cpp.generator.org=, =ores.cpp.repository.org=; re-tangled with no
+mustache-content diff. The physical-space graph now selects these three
+facets for a junction model, and generation against
+=tenor_convention_resolution= renders every template without error —
+proving the =model_types= gate was the only thing stopping generation
+from being *attempted*. It found a real, precisely-scoped gap instead:
+=resolve_output_path()='s =junction= branch in =core.py= doesn't
+substitute =\{component_dir\}=/=\{component_core_dir\}=/
+=\{component_include\}=/=\{component_core\}=/=\{generator_facet_name\}=
+the way the =domain_entity= branch does, so those placeholders survive
+literally into output paths and =#include= lines. Field-level content
+(struct members, natural-key-based finder methods, no spurious
+synthetic-PK method) otherwise looked correct. Investigation output
+reverted — not committed. Regenerating =book= confirms zero diff for
+existing =domain_entity= generation. Full detail in =* Plan=/=* Notes=
+above for the next task to pick up directly.

@@ -22,22 +22,31 @@ This page documents a test scenario verifying [[id:98AC38DD-E800-4961-A6BE-9F018
 | Verifies task | [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] |
 | Parent story  | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]   |
 | Target dialog | BadgeMappingBrowserWindow                |
-| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
+| Clients       |                                          |
 | State         | PENDING                               |
 
-* Steps
+* Prerequisites
 
-Each step is its own heading — the title should be short (it's shown
-as a single list entry in the QA Validation Runner); put any longer
-instructions in the body below the title. The panel writes each
-step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
-child heading directly under it.
+- Services running: =compass services start=.
+- A Barclays-provisioned database (already provisioned in this
+  environment; if not, see =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=).
+- A running Qt client, not yet logged in.
+
+* Steps
 
 ** Log in and open Badge Mappings
 
 Log in as normal (Barclays Plc tenant). Go to System > Configuration >
 Badge Mappings. Confirm the window opens without error and a code
 domain is pre-selected in the picker with a populated table below it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | combo box is not our "bounded combo" with a fixed size, it spans the entire screen. look for examples. screen looks very different from all existing codegen screens. why can't we just have a list of badge mappings, double click on it and then see the mappings. this could be a hand crafted widget that is inserted via a paste block, we must do this already somewhere - parties_ |
 
 ** Confirm a known domain's mappings
 
@@ -47,11 +56,24 @@ and rendered with the badge's actual background/text colour (not
 plain text) — colours should match what the Book list's Status column
 already shows for these same values.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | the colours do appear but it would be much better to render it as a badge; [[file:scenario_verify-badge-mapping-browser_step2_20260715_235145.png]] |
+
 ** Confirm the boolean-column convention
 
 Select =is_sweepable= from the domain picker. Confirm two rows appear
 (=true=, =false=), each rendered as a badge (reusing the shared
 active/inactive colours), matching what Book's Sweepable column shows.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm domain picker completeness
 
@@ -59,20 +81,32 @@ Open the domain picker's dropdown. Confirm it lists multiple domains
 (not just the two above) — every =code_domain_code= with at least one
 seeded mapping should appear, sorted alphabetically.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Re-open behaviour
 
 Close the window, then reopen it from the menu. Confirm it reopens
 cleanly (no crash, no stale/empty state) and shows the same data as
 before.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-15T22:52:28Z |
+| Branch        | feature/badge-mapping-browser-ui |
+| Commit        | 4d42283e4 |
+| Worktree      | bright_faraday |
 
 * Notes

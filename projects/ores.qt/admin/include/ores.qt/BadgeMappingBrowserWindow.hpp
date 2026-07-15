@@ -21,20 +21,22 @@
 #define ORES_QT_BADGE_MAPPING_BROWSER_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include <QComboBox>
 #include <QLabel>
+#include <QListWidget>
 #include <QTableWidget>
-#include <QVBoxLayout>
 #include <QWidget>
 
 namespace ores::qt {
 
 class BadgeCache;
+class EntityItemDelegate;
 
 /**
  * @brief Read-only browser for badge_mapping: shows every
  * (code_domain, entity_code) -> badge_definition linkage, grouped by
- * code_domain, with each badge rendered as an actual colour pill.
+ * code_domain, with each badge rendered as an actual badge pill (the
+ * same rendering every other badge column in the app uses, via
+ * EntityItemDelegate).
  *
  * badge_mapping has no CRUD UI (populated via seed scripts only), so
  * unlike every other admin window this one is a plain QWidget reading
@@ -42,6 +44,12 @@ class BadgeCache;
  * no EntityController machinery. Its purpose is purely to make badge
  * source self-use, adoption coverage, and colour-semantic misuse
  * reviewable in the UI instead of grep-only.
+ *
+ * Deliberately a list-of-domains + table-of-mappings split (like
+ * AccountPartiesWidget's list-driven layout), not a combo-box filter --
+ * a combo box here misbehaved badly on Linux (unbounded popup width)
+ * and a bounded list reads more naturally as "pick a domain, see its
+ * mappings" anyway.
  */
 class BadgeMappingBrowserWindow final : public QWidget {
     Q_OBJECT
@@ -60,23 +68,24 @@ public:
 
 public slots:
     /**
-     * @brief Repopulates the domain picker and current table from
+     * @brief Repopulates the domain list and current table from
      * BadgeCache's currently-loaded data. Safe to call before the cache
      * has finished loading (renders nothing until it has).
      */
     void reload();
 
 private slots:
-    void onDomainChanged(int index);
+    void onDomainSelectionChanged();
 
 private:
     void setupUi();
-    void populateDomainPicker();
+    void populateDomainList();
     void populateTable(const QString& codeDomainCode);
 
     BadgeCache* badgeCache_;
-    QComboBox* domainPicker_;
+    QListWidget* domainList_;
     QTableWidget* table_;
+    EntityItemDelegate* badgeDelegate_;
     QLabel* emptyLabel_;
 };
 

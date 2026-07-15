@@ -51,8 +51,6 @@ DepositConventionMdiWindow::DepositConventionMdiWindow(ClientManager* clientMana
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void DepositConventionMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -124,6 +123,7 @@ void DepositConventionMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+
 
     initializeTableSettings(tableView_, model_, "DepositConventionListWindow", {}, {900, 400}, 1);
 }
@@ -298,7 +298,7 @@ void DepositConventionMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " deposit conventions";
+            << "Making delete request for " << codes.size() << " deposit conventions";
 
         refdata::messaging::delete_deposit_convention_request request;
         request.codes = codes;
@@ -371,5 +371,6 @@ void DepositConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

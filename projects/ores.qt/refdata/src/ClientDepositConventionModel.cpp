@@ -84,7 +84,6 @@ QVariant ClientDepositConventionModel::data(const QModelIndex& index, int role) 
             case Id:
                 return QString::fromStdString(dc.id);
             case IndexBased:
-                return dc.index_based ? tr("true") : tr("false");
             case Index:
                 return dc.index ? QString::fromStdString(*dc.index) : QString{};
             case Calendar:
@@ -220,6 +219,22 @@ void ClientDepositConventionModel::fetch_deposit_conventions(std::uint32_t offse
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .deposit_conventions = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->deposit_conventions.size() << " deposit conventions";
                 const std::uint32_t count =
@@ -289,6 +304,7 @@ ClientDepositConventionModel::getConvention(int row) const {
         return nullptr;
     return &deposit_conventions_[idx];
 }
+
 
 QVariant ClientDepositConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

@@ -19,11 +19,18 @@
  */
 #include "ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
+#include "ores.ore.core/market/market_data_serializer.hpp"
+#include "ores.ore.core/market/market_datum.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/CrmRateCellWidget.hpp"
 #include "ores.qt/CrmRateSparklineWidget.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QFile>
+#include <QFileDialog>
 #include <QFrame>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
@@ -32,12 +39,14 @@
 #include <QMessageBox>
 #include <QSet>
 #include <QSettings>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cmath>
 #include <map>
+#include <sstream>
 
 namespace ores::qt {
 
@@ -63,6 +72,33 @@ struct RatesResult {
     QString error;
     std::vector<marketdata_msg::crm_rate_item> rates;
 };
+
+/// Parses the "YYYY-MM-DD" prefix of an ISO-8601 as_of string (e.g.
+/// "2026-07-15T09:34:00Z") into a year_month_day for market_datum::date.
+/// Returns today's date (in the absence of a more meaningful fallback --
+/// this is only ever reached for a rate that's already fresh/stale, i.e.
+/// as_of is never empty here) if the string is malformed.
+std::chrono::year_month_day parse_as_of_date(const std::string& as_of) {
+    if (as_of.size() >= 10) {
+        try {
+            const int year = std::stoi(as_of.substr(0, 4));
+            const unsigned month = static_cast<unsigned>(std::stoi(as_of.substr(5, 2)));
+            const unsigned day = static_cast<unsigned>(std::stoi(as_of.substr(8, 2)));
+            return std::chrono::year_month_day{
+                std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
+        } catch (const std::exception&) {
+            // fall through to today's date below
+        }
+    }
+    const auto today = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
+    return std::chrono::year_month_day{today};
+}
+
+/// Compact ISO-8601 UTC timestamp (no colons -- filesystem-safe) for
+/// default export filenames, e.g. "20260715T131530Z".
+QString export_timestamp() {
+    return QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd'T'HHmmss'Z'"));
+}
 
 } // namespace
 
@@ -265,6 +301,23 @@ void CrmCrossRatesMatrixMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Reload the cross-rates matrix"));
     connect(reloadAction_, &QAction::triggered, this, &CrmCrossRatesMatrixMdiWindow::reload);
+
+    toolbar_->addSeparator();
+
+    exportCsvAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportCsv, IconUtils::DefaultIconColor),
+        tr("Export CSV"));
+    exportCsvAction_->setToolTip(tr("Export the displayed rates to CSV"));
+    connect(
+        exportCsvAction_, &QAction::triggered, this, &CrmCrossRatesMatrixMdiWindow::exportToCsv);
+
+    exportOreAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportOre, IconUtils::DefaultIconColor),
+        tr("Export ORE"));
+    exportOreAction_->setToolTip(
+        tr("Export the displayed rates as an ORE market data file"));
+    connect(
+        exportOreAction_, &QAction::triggered, this, &CrmCrossRatesMatrixMdiWindow::exportToOre);
 }
 
 void CrmCrossRatesMatrixMdiWindow::onRefreshIntervalChanged() {
@@ -472,6 +525,8 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             self->table_->setVerticalHeaderItem(i, vHeader);
         }
 
+        std::vector<marketdata_msg::crm_rate_item> exportedRates;
+
         for (int row = 0; row < rowCurrencies.size(); ++row) {
             for (int col = 0; col < allCurrencies.size(); ++col) {
                 if (rowCurrencies[row] == allCurrencies[col]) {
@@ -487,6 +542,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 }
 
                 const auto& item = it->second;
+                exportedRates.push_back(item);
                 auto* cellWidget = new CrmRateCellWidget(self->table_);
                 cellWidget->setPastelBackground(item.inverted);
 
@@ -551,6 +607,8 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             }
         }
 
+        self->displayedRates_ = std::move(exportedRates);
+
         self->footerLabel_->setText(tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
 
         BOOST_LOG_SEV(lg(), debug) << "CRM cross-rates matrix: " << result.rates.size()
@@ -559,6 +617,106 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             tr("Cross-rates matrix updated: %1 rate(s)").arg(result.rates.size()));
     });
     watcher->setFuture(future);
+}
+
+QString CrmCrossRatesMatrixMdiWindow::exportFileNameSlug() const {
+    QStringList parts;
+    parts << QStringLiteral("crm_rates");
+    parts << (crmName_.isEmpty() ? QStringLiteral("all") : crmName_);
+
+    const auto baseFilter = baseCurrencyCombo_->currentData().toString();
+    if (!baseFilter.isEmpty())
+        parts << baseFilter;
+
+    if (showInvertedButton_->isChecked())
+        parts << QStringLiteral("inverted");
+    if (hideEmptyButton_->isChecked())
+        parts << QStringLiteral("hideempty");
+
+    return parts.join(QStringLiteral("_"));
+}
+
+void CrmCrossRatesMatrixMdiWindow::exportToCsv() {
+    if (displayedRates_.empty()) {
+        QMessageBox::information(this, tr("No Data"), tr("There are no rates to export."));
+        return;
+    }
+
+    const QString fileName = QFileDialog::getSaveFileName(
+        this, tr("Export to CSV"),
+        QStringLiteral("%1_%2.csv").arg(exportFileNameSlug(), export_timestamp()),
+        tr("CSV Files (*.csv);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+
+    std::ostringstream out;
+    out << "base,quote,rate,status,as_of\n";
+    for (const auto& r : displayedRates_) {
+        out << r.base_currency_code << ',' << r.quote_currency_code << ',' << r.rate << ','
+            << r.status << ',' << r.as_of << '\n';
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        MessageBoxHelper::critical(
+            this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+        return;
+    }
+    const auto csvData = out.str();
+    file.write(csvData.c_str(), static_cast<qint64>(csvData.size()));
+    file.close();
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+    emit statusChanged(tr("Successfully exported CRM rates to %1").arg(fileName));
+}
+
+void CrmCrossRatesMatrixMdiWindow::exportToOre() {
+    if (displayedRates_.empty()) {
+        QMessageBox::information(this, tr("No Data"), tr("There are no rates to export."));
+        return;
+    }
+
+    const QString fileName = QFileDialog::getSaveFileName(
+        this, tr("Export to ORE Market Data"),
+        QStringLiteral("%1_%2.txt").arg(exportFileNameSlug(), export_timestamp()),
+        tr("Text Files (*.txt);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+
+    std::vector<ores::ore::market::market_datum> data;
+    data.reserve(displayedRates_.size());
+    for (const auto& r : displayedRates_) {
+        if (r.status == "unavailable")
+            continue; // no rate value to export
+
+        ores::ore::market::market_datum datum;
+        datum.date = parse_as_of_date(r.as_of);
+        datum.key = "FX/RATE/" + r.base_currency_code + "/" + r.quote_currency_code;
+        datum.value = std::to_string(r.rate);
+        data.push_back(std::move(datum));
+    }
+
+    if (data.empty()) {
+        QMessageBox::information(
+            this, tr("No Data"), tr("There are no fresh/stale rates to export."));
+        return;
+    }
+
+    std::ostringstream out;
+    ores::ore::market::serialize_market_data(out, data);
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        MessageBoxHelper::critical(
+            this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+        return;
+    }
+    const auto textData = out.str();
+    file.write(textData.c_str(), static_cast<qint64>(textData.size()));
+    file.close();
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+    emit statusChanged(tr("Successfully exported CRM rates to %1").arg(fileName));
 }
 
 }

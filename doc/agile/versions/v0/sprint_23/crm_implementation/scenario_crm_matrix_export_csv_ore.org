@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 8A6BA0B5-7F41-44F9-87FA-7AA25420F032
+:END:
+#+title: Test Scenario: Verify CRM cross-rates matrix CSV and ORE market data export
+#+description: Manual QA scenario for the CRM cross-rates matrix's export toolbar actions: CSV and ORE market-data text file, respecting the current filters.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow            |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, party BARCLAYS PLC
+
+If the DB was recreated since, re-run
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+via =compass shell -f <path>= to restore this account, party, and its
+CRM data first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Market Data > Cross-Rates Matrix, select "majors", Reload
+
+Confirm the toolbar now shows a Reload button followed by two export
+actions (Export CSV, Export ORE) after a separator, and the grid
+populates with the majors CRM's currencies.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Export CSV with the full unfiltered grid
+
+Click "Export CSV", save to a temp path. Open the file and confirm:
+one header row (=base,quote,rate,status,as_of=), one data row per
+non-dash cell actually shown in the grid (diagonal and "no data"
+dash cells excluded), values match what's on screen.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Export ORE with the full unfiltered grid
+
+Click "Export ORE", save to a temp path. Open the file and confirm:
+tab-delimited =DATE KEY VALUE= lines, one per fresh/stale cell shown
+in the grid (unavailable-status cells excluded), key format
+=FX/RATE/<BASE>/<QUOTE>=, date matches the cell's as_of date, value
+matches the displayed rate.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Toggle "Show Inverted" on, Reload, then export both formats again
+
+Confirm both exports now include the newly-appeared inverted cells
+too (the export reflects the filtered/inverted view actually on
+screen, not a fresh unfiltered fetch) -- check at least one inverted
+pair's row/line is present with the correct (already-inverted) rate.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Toggle "Hide Empty" on and set Base Currency to a single currency, Reload, then export CSV
+
+Confirm the export now contains only the rows for the currently
+narrowed grid (single base row), not the full matrix -- exports
+respect Base Currency/Hide Empty exactly like Show Inverted above.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Export with no data loaded yet (before the first Reload, or after clearing filters to an empty result if reachable)
+
+Confirm both export actions show a "No Data" message box instead of
+writing an empty/malformed file.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-15T12:45:41Z |
+| Branch        | feature/crm-matrix-export-csv-ore |
+| Commit        | 0b11c4323 |
+| Worktree      | clever_dijkstra |
+
+* Notes

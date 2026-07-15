@@ -8,7 +8,7 @@
 #+filetags: :codegen:tooling:junction:tech-debt:sprint_23:v0:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -28,7 +28,7 @@ codegen gap.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started — discovered and scoped while building the tenor management UI ([[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]]) needed a read path for =tenor_convention_resolution=, a junction, and found codegen can't produce one. |
 | Waiting on    | Nothing.                               |
@@ -173,7 +173,7 @@ just flipping =model_types=.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:386BED71-A76B-43EF-8A72-0D19704C5151][Delete legacy codegen profile system (facet_catalogue.org, core.py profile path)]] | BACKLOG | | | Delete facet_catalogue.org and core.py's _load_profiles_from_org()/--profile code path outright. Keep all existing org models and generated code untouched; regenerate a sample of existing entities to confirm no diff. |
+| [[id:386BED71-A76B-43EF-8A72-0D19704C5151][Delete legacy codegen profile system (facet_catalogue.org, core.py profile path)]] | STARTED | 2026-07-15 | | Delete facet_catalogue.org and core.py's _load_profiles_from_org()/--profile code path outright. Keep all existing org models and generated code untouched; regenerate a sample of existing entities to confirm no diff. |
 | [[id:B3F8CC1B-75C4-4AEF-8185-BBC3F11FA1A9][Add junction to model_types on ores.cpp.domain/generator/repository.org]] | BACKLOG | | | Add junction to #+model_types: on the three physical-space facet node docs, re-tangle, and attempt generation against tenor_convention_resolution to surface what breaks. |
 | [[id:987FD4D9-7293-4E27-8688-6466A7FA4211][Fix domain/generator/repository Mustache templates for junction-shaped data]] | BACKLOG | | | Adapt the three facets' templates so junction generation (composite left/right key, no single primary_key) produces compilable, correct C++ -- template branching or a data-normalisation shim in core.py. |
 | [[id:5E74A27E-15BE-47CB-BDF1-B359AC35DB65][Validate junction codegen against tenor_convention_resolution; retire hand-authored code]] | BACKLOG | | | Regenerate tenor_convention_resolution, diff against the hand-authored reference files, build, then delete the hand-authored entity/repository and repoint the hand-authored service/protocol/handler/registrar at the generated repository. |

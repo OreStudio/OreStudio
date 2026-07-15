@@ -47,7 +47,8 @@ struct ir_curve_template_entry_entity {
 
     int sequence_index = 0;
 
-    std::string tenor_code;
+    std::string start_tenor_code;
+    std::string end_tenor_code;
     std::string instrument_code;
     std::string modified_by;
     std::string performed_by;

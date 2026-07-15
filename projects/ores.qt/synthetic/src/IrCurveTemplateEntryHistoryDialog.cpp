@@ -109,7 +109,8 @@ HistoryDialogBase::DiffResult IrCurveTemplateEntryHistoryDialog::calculateDiffAt
     const auto& prev = versions_[pi];
 
     checkInt(diffs, tr("Sequence Index"), curr.sequence_index, prev.sequence_index);
-    checkString(diffs, tr("Tenor"), curr.tenor_code, prev.tenor_code);
+    checkString(diffs, tr("Start Tenor"), curr.start_tenor_code, prev.start_tenor_code);
+    checkString(diffs, tr("End Tenor"), curr.end_tenor_code, prev.end_tenor_code);
     checkString(diffs, tr("Instrument"), curr.instrument_code, prev.instrument_code);
     return diffs;
 }
@@ -121,7 +122,8 @@ void IrCurveTemplateEntryHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->sequenceIndexValue->setText(QString::number(version.sequence_index));
-    ui_->tenorCodeValue->setText(QString::fromStdString(version.tenor_code));
+    ui_->startTenorCodeValue->setText(QString::fromStdString(version.start_tenor_code));
+    ui_->endTenorCodeValue->setText(QString::fromStdString(version.end_tenor_code));
     ui_->instrumentCodeValue->setText(QString::fromStdString(version.instrument_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));

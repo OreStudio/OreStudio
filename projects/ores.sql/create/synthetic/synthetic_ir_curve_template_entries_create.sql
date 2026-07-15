@@ -25,16 +25,30 @@
  * IR Curve Template Entry Table
  *
  * One row of the raw instrument grid (the "Curve Template") an
- * ir_curve_generation_config publishes: which tenor, priced as which
- * instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent --
- * see ores.refdata.instrument_code), in what order. Entries belong to a
- * parent config via ir_curve_config_id, the same
- * one-config-many-children shape fx_spot_generation_config's
- * gmm_component rows use. Every entry's published rate is derived from
- * the parent config's short-rate process's discount_factor() at the
- * tenor's maturity -- never an independently-noised value -- so the
- * published tick batch is, by construction, a slice of one internally
- * consistent curve. Party- and tenant-scoped.
+ * ir_curve_generation_config publishes: which tenor period, priced as
+ * which instrument type (deposit-equivalent, FRA-equivalent,
+ * swap-equivalent -- see ores.refdata.instrument_code), in what order.
+ * Every entry is modelled as a genuine [start, end) period rather than
+ * a single maturity label: start_tenor_code/end_tenor_code are both
+ * ordinary tenor references resolved through the same
+ * ores::refdata::domain::resolve_window/resolve_end_date machinery
+ * (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments
+ * (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine
+ * zero-duration PERIOD/DAY tenor already in the catalog, resolving
+ * directly to the horizon's spot date -- not a null/sentinel hack);
+ * interval instruments (FRAs) set it to the period's own front tenor
+ * (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This
+ * symmetric shape is what lets the tenor-collision validator
+ * (validate_curve_template in ores.synthetic.api) detect genuine
+ * period overlaps via plain windows_overlap(), without a special case
+ * for point vs. interval instruments. Entries belong to a parent config
+ * via ir_curve_config_id, the same one-config-many-children shape
+ * fx_spot_generation_config's gmm_component rows use. Every entry's
+ * published rate is derived from the parent config's short-rate
+ * process's discount_factor() at the tenor's maturity -- never an
+ * independently-noised value -- so the published tick batch is, by
+ * construction, a slice of one internally consistent curve. Party- and
+ * tenant-scoped.
  */
 
 create table if not exists "ores_synthetic_ir_curve_template_entries_tbl" (
@@ -44,7 +58,8 @@ create table if not exists "ores_synthetic_ir_curve_template_entries_tbl" (
     "party_id" uuid not null,
     "ir_curve_config_id" uuid not null,
     "sequence_index" integer not null,
-    "tenor_code" text not null,
+    "start_tenor_code" text not null,
+    "end_tenor_code" text not null,
     "instrument_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -60,7 +75,8 @@ create table if not exists "ores_synthetic_ir_curve_template_entries_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("tenor_code" <> ''),
+    check ("start_tenor_code" <> ''),
+    check ("end_tenor_code" <> ''),
     check ("instrument_code" <> '')
 );
 

@@ -43,7 +43,8 @@ ir_curve_template_entry_mapper::map(const ir_curve_template_entry_entity& v) {
 
     r.sequence_index = v.sequence_index;
 
-    r.tenor_code = v.tenor_code;
+    r.start_tenor_code = v.start_tenor_code;
+    r.end_tenor_code = v.end_tenor_code;
     r.instrument_code = v.instrument_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,7 +71,8 @@ ir_curve_template_entry_mapper::map(const domain::ir_curve_template_entry& v) {
 
     r.sequence_index = v.sequence_index;
 
-    r.tenor_code = v.tenor_code;
+    r.start_tenor_code = v.start_tenor_code;
+    r.end_tenor_code = v.end_tenor_code;
     r.instrument_code = v.instrument_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

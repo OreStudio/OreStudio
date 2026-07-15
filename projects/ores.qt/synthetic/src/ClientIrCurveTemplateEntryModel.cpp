@@ -85,8 +85,10 @@ QVariant ClientIrCurveTemplateEntryModel::data(const QModelIndex& index, int rol
         switch (index.column()) {
             case SequenceIndex:
                 return static_cast<qlonglong>(ir_curve_template_entry.sequence_index);
-            case TenorCode:
-                return QString::fromStdString(ir_curve_template_entry.tenor_code);
+            case StartTenorCode:
+                return QString::fromStdString(ir_curve_template_entry.start_tenor_code);
+            case EndTenorCode:
+                return QString::fromStdString(ir_curve_template_entry.end_tenor_code);
             case InstrumentCode:
                 return QString::fromStdString(ir_curve_template_entry.instrument_code);
             case Version:
@@ -116,8 +118,10 @@ QVariant ClientIrCurveTemplateEntryModel::headerData(int section,
     switch (section) {
         case SequenceIndex:
             return tr("Sequence Index");
-        case TenorCode:
-            return tr("Tenor");
+        case StartTenorCode:
+            return tr("Start Tenor");
+        case EndTenorCode:
+            return tr("End Tenor");
         case InstrumentCode:
             return tr("Instrument");
         case Version:

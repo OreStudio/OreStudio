@@ -152,6 +152,8 @@ validator, which has not yet been started.
 | 3 | 13 templated instrument descriptions carry grammar bugs (stray "the", wrong plurals) | refdata_instrument_codes_populate.sql | Accepted | Fixed in 31fe486be. |
 | 4 | crm_topology_bundles subject fix is a no-op against already-provisioned databases (ON CONFLICT DO NOTHING) | dq_artefact_types_populate.sql | Accepted | Fixed in 31fe486be — added an idempotent backfill INSERT that corrects any existing row still carrying the old marketdata_* values; verified against a simulated pre-fix row. |
 | 5 | Two remaining "basket of the commodity prices" rows inconsistent with sibling FX/Equity fixes (non-blocking) | refdata_instrument_codes_populate.sql | Accepted | Fixed in c91d981ae. |
+| 6 | Dead IrCurveTemplateEntryHistoryDialog left in place instead of deleted (controller already uses generic HistoryDialog, matching PR #1571's consolidation) | IrCurveTemplateEntryHistoryDialog.{hpp,cpp,ui} | Accepted | Fixed in 3ca572a7a — deleted, following the same pattern PR #1571 applied to sibling entities. |
+| 7 | Checks table separator row a couple characters wider than the header (cosmetic) | ores.synthetic.ir_curve_template_entry.org | Accepted | Fixed in 3ca572a7a. |
 
 * Result
 

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 1744E882-3141-4EAE-ABC0-C79CD3DA0767
+:END:
+#+title: Story: Improve badge colour scheme support
+#+description: Analyze how badge colours are currently determined across the codebase (hardcoded in Qt model/table code vs data-driven) and design a path to store badge colour schemes properly -- for table-enum-type-backed entities potentially alongside the enum's own row data, and for other cases (e.g. booleans) as a system-level property/setting.
+#+type: story
+#+level: s2
+#+filetags: :qt:badges:ui:design:refdata:sprint_23:v0:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-15                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:20EA48C7-C375-446E-A006-9D51D5BCD117][Scaffold story: Improve badge colour scheme support]] | STARTED | 2026-07-15 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D8A976B3-993F-48A9-87DC-1D3D7461223F][Analyze current badge colour determination and design improved storage]] | STARTED | 2026-07-15 | | Initial task for: Improve badge colour scheme support |
+
+* Decisions
+
+* Out of scope
+
+-

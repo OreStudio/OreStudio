@@ -29,11 +29,11 @@ Expose Book's lookup children (=book_status=, =regulatory_book_type=,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Implemented via codegen facet, built clean, manual QA PASSED. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
-| Next         | Close task.                              |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:AE9002DF-9138-41D3-9E72-B6EB78593634][Verify Book window child-entity toolbar buttons]] | PASSED | 6/6 steps, no log errors |
 
 * PRs
 
@@ -143,3 +143,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Book's toolbar buttons for its 4 lookup children (Statuses,
+Regulatory Types, Purpose Types, Ledger Feed Types) are now shipped
+via the existing =*** Related entity shortcuts= codegen facet in
+=ores.refdata.book.org= -- no hand-written toolbar code, matching the
+exact pattern the task description named (Currency's RoundingType/
+MarketTier toolbar) rather than a parallel hand-rolled copy of it.
+All acceptance items met; manual QA PASSED (6/6 steps, no log
+errors); =ores.refdata.core.tests= 205/205; =validate_schemas.sh=
+clean against the fully-rebased tree.

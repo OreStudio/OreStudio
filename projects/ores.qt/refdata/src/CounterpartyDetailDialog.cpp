@@ -187,7 +187,7 @@ void CounterpartyDetailDialog::setCounterparty(const refdata::domain::counterpar
 
 void CounterpartyDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->codeEdit->setReadOnly(true);
+    ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {

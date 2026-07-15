@@ -2536,9 +2536,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     # (has_uuid_primary_key's random_generator() block
                     # below), so it must stay read-only even while
                     # createMode is true -- not just after create like
-                    # every other locked field.
+                    # every other locked field. Must match on the field
+                    # actually being the entity's own UUID primary key
+                    # column (like key_field_is_uuid below), not merely
+                    # "some is_key field on an entity that happens to
+                    # have a UUID primary key" -- otherwise a natural/
+                    # business key field (e.g. party's short_code, which
+                    # is user-entered, not generated) on an entity that
+                    # separately has a UUID id gets wrongly locked for
+                    # the entire lifetime of the Create dialog instead of
+                    # just after create.
                     'is_auto_generated_key': (
-                        f['is_key'] and qt.get('has_uuid_primary_key', False)
+                        f['is_key'] and qt.get('has_uuid_primary_key', False) and
+                        f.get('field') == domain_entity.get('primary_key', {}).get('column', '')
                     ),
                 }
                 for f in detail_fields if f['is_locked_after_create']

@@ -4,7 +4,7 @@
 #+title: ores.cpp.generator
 #+description: Fake-data generators for testing.
 #+type: facet
-#+model_types: schema domain_entity
+#+model_types: schema domain_entity junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

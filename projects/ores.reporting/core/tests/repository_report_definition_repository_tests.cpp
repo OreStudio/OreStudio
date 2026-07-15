@@ -43,8 +43,8 @@ const std::string tags("[repository]");
  * need a real party that was seeded by the test infrastructure.
  */
 boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
-    ores::refdata::repository::party_repository party_repo(h.context());
-    auto parties = party_repo.read_latest();
+    ores::refdata::repository::party_repository party_repo;
+    auto parties = party_repo.read_latest(h.context());
     REQUIRE(!parties.empty());
     return parties.front().id;
 }

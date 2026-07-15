@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:quant:valgrind:memory:
 #+owner: marco
-#+branch:
+#+branch: feature/investigate-valgrind-possibly-lost-immer-thread-local-pool
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,7 +43,7 @@ than a genuine leak in =rate_engine=/=vertex_state='s own use of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

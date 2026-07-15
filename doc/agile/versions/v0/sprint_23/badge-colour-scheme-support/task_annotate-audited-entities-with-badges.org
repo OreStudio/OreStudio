@@ -1,41 +1,44 @@
 :PROPERTIES:
-:ID: 20EA48C7-C375-446E-A006-9D51D5BCD117
+:ID: 08547F5A-B07C-4429-9EA5-022ACDC882C9
 :END:
-#+title: Task: Scaffold story: Improve badge colour scheme support
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Annotate audited entities with badge_key and regenerate
+#+description: Consume the coverage audit's list: add badge_key to the identified FK/boolean columns, author any missing badge_definition/badge_mapping rows the audit flagged as needed, and regenerate. Depends on the coverage audit task's output.
 #+type: task
 #+level: s1
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
-#+branch: feature/badge-colour-scheme-support
+#+branch: feature/annotate-audited-entities-with-badges
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment: bright_faraday
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every column the audit flagged as a badge candidate either renders as a badge, or has an explicit, documented reason it doesn't (e.g. too many distinct values for a badge to be useful).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
 
--
+- Every 'ready-to-annotate' entry from the audit gets badge_key added to its model and is regenerated.
+- Every 'needs new badge_definition data' entry gets its badge_definition/badge_mapping rows authored, following the established colour-semantic convention (grey=disabled/no, green=good, red=bad, yellow=warning).
+- Any audit entry deliberately skipped has a one-line reason recorded in this task's Result.
+- Zero diff on entities not touched by this task; build clean; existing badge-related tests still pass.
 
 * Plan
 
@@ -69,8 +72,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-Story, sprint wiring, and 6 tasks scaffolded (this scaffold task,
-the analysis task, and 5 follow-on implementation tasks scoped after
-the analysis surfaced the real, narrower problem — see the story's
-own Goal/Decisions for the corrected scope).

@@ -15,7 +15,37 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Analysis (task 2, done) found the badge system the story assumed
+didn't exist already does: a database-driven
+=badge_severity=/=code_domain=/=badge_definition=/=badge_mapping=
+catalogue in =ores.dq=, a client-side =BadgeCache=, and codegen
+support (=badge_key= column annotation) that generates the delegate
+wiring automatically. Booleans already badge correctly via the same
+=(code_domain, entity_code)= mapping =is_sweepable= uses — no new
+storage design is needed.
+
+The story's remaining scope is four concrete problems, not a
+redesign:
+
+1. An entity that *is* a badge source doesn't badge itself on its own
+   list — only consumers do.
+2. No audit of where else badges should apply but don't (candidates:
+   any FK/soft-FK to an already-badged entity, and any boolean
+   column).
+3. No visual palette review — =badge_definition=/=badge_severity=
+   already have admin UI, but colours render as hex text, not
+   swatches, so misuse of the grey=disabled/green=good/red=bad/
+   yellow=warning convention can't be eyeballed.
+4. =badge_mapping= (the actual linkage data) has no UI at all —
+   invisible, so 1-3 are grep-only today. Fixing this is the
+   highest-leverage single piece of work, since it makes the other
+   three reviewable.
+
+Also folds in: the unmapped-value fallback colour is currently a
+Qt-only hardcoded constant, not a real =badge_definition= row — fixed
+alongside the palette-swatch work so any future client (Wt, out of
+scope to build here, but checked for architectural soundness) inherits
+the same fallback automatically instead of re-hardcoding it.
 
 * Status
 
@@ -23,24 +53,72 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | Analysis done; 5 follow-on tasks scoped (mapping browser, palette swatch + fallback, badge-source self-annotation, coverage audit, annotation). |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start the badge_mapping browser UI task (highest leverage, makes the rest reviewable). |
 | Last touched  | 2026-07-15                               |
 
 * Acceptance
 
--
+- A =badge_mapping= browser exists (System > Configuration), grouped/
+  filterable by =code_domain=, with a colour swatch per mapped badge.
+- =badge_definition=/=badge_severity= admin UI renders colours as
+  swatches (not hex text), with a colour picker in the detail dialog.
+- The unmapped-value fallback is a real, reserved =badge_definition=
+  row, resolved through =BadgeCache= like any other badge, visually
+  distinct from a legitimate grey/inactive badge.
+- At least one badge-source entity (e.g. =book_status=) badges itself
+  on its own list, via an explicit codegen model annotation (not DB
+  introspection).
+- A written coverage audit exists (FK-to-badged-entity and boolean
+  columns across all =domain_entity= models), split into
+  ready-to-annotate vs needs-new-badge-definition-data.
+- Every audit candidate is either annotated and regenerated, or has a
+  one-line documented reason it was skipped.
+- No regression to any currently-working badge rendering (existing
+  entities' generated files stay zero-diff except where this story
+  deliberately changes them).
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:20EA48C7-C375-446E-A006-9D51D5BCD117][Scaffold story: Improve badge colour scheme support]] | STARTED | 2026-07-15 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:D8A976B3-993F-48A9-87DC-1D3D7461223F][Analyze current badge colour determination and design improved storage]] | STARTED | 2026-07-15 | | Initial task for: Improve badge colour scheme support |
+| [[id:20EA48C7-C375-446E-A006-9D51D5BCD117][Scaffold story: Improve badge colour scheme support]] | DONE | 2026-07-15 | 2026-07-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D8A976B3-993F-48A9-87DC-1D3D7461223F][Analyze current badge colour determination and design improved storage]] | DONE | 2026-07-15 | 2026-07-15 | Initial task for: Improve badge colour scheme support |
+| [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] | BACKLOG | | | badge_mapping (the actual code_domain->entity_code->badge_definition linkage) has no UI at all today -- populated via seed scripts only. Add a read-only browser, grouped/filterable by code_domain, showing entity_code -> badge_definition with a colour swatch. This is the highest-leverage single piece of work: it makes badge source self-use, coverage gaps, and colour-semantic misuse all reviewable instead of grep-only. |
+| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | BACKLOG | | | Badge Definitions/Severities admin UI shows colours as plain hex text, so semantic misuse (grey/green/red/yellow used for something other than their reserved meaning) can't be eyeballed. Add a colour-swatch delegate (and ideally a colour-picker in the detail dialog) to the badge_definition list/detail views. Separately, replace the hardcoded Qt-only fallback constant (color_constants::badge_fallback) with a real, reserved badge_definition row so any future client inherits the same fallback automatically instead of re-hardcoding it, and so the fallback is visually distinct from a legitimate grey/inactive badge. |
+| [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | An entity that IS a code_domain (e.g. book_status, whose code column other entities' badge_key columns reference) doesn't badge itself on its own list -- only consumers do. Add a codegen mechanism (explicit model annotation, not DB introspection) so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
+| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit badge adoption coverage across domain_entity models]] | BACKLOG | | | Only 10 of 108 domain_entity models use badge_key today. Audit candidates: any column that is a foreign key (soft or real) to an entity already used as a badge source elsewhere (we know both ends), and any boolean column (is_sweepable is the established pattern). Produce a list of candidate columns/entities not yet badged, cross-referenced against existing code_domain/badge_definition rows (already-covered vs needs-new-badge-definition), to drive follow-up annotation work -- this task is the audit/list, not annotating all of them. |
+| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Annotate audited entities with badge_key and regenerate]] | BACKLOG | | | Consume the coverage audit's list: add badge_key to the identified FK/boolean columns, author any missing badge_definition/badge_mapping rows the audit flagged as needed, and regenerate. Depends on the coverage audit task's output. |
 
 * Decisions
 
+- *Do not move badge colour onto each "table enum type"'s own row*
+  (the story's original hypothesis). The current normalised
+  =(code_domain, entity_code) -> badge_definition= mapping's whole
+  value is letting many entity types share one badge definition
+  (=active=/=inactive= alone is reused by =book_status=,
+  =regulatory_book_type=, =is_sweepable=, =tenant_status=,
+  =workspace_status=, ...); per-table colour columns would fragment
+  that reuse and lose the single catalogue the admin UI manages. Keep
+  the architecture, close the visibility/adoption/self-use gaps
+  instead.
+- *=badge_mapping= browser first, ahead of the audit/annotation
+  work*, because it's the tool that makes the audit and the
+  colour-semantic review possible in the first place, not just a
+  nice-to-have alongside them.
+- *Wt is explicitly out of scope* for this story's tasks (user
+  instruction), but the data/protocol layer was checked for
+  architectural soundness first: =badge_definition= already carries
+  both raw hex colours and an unused =css_class= Wt hint, so a future
+  Wt client isn't blocked by anything here — only the fallback-colour
+  hardcoding needed fixing to keep that promise, which this story
+  does as part of the palette-swatch task.
+
 * Out of scope
 
--
+- Wt-side badge rendering (=account_list_widget.cpp= still hardcodes
+  Bootstrap CSS classes directly) — real, confirmed gap, but explicit
+  user instruction to ignore it for this story.
+- Moving badge colour storage onto individual lookup tables — see
+  Decisions above.

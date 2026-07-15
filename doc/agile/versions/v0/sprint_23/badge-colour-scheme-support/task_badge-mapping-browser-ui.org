@@ -1,41 +1,43 @@
 :PROPERTIES:
-:ID: 20EA48C7-C375-446E-A006-9D51D5BCD117
+:ID: 98AC38DD-E800-4961-A6BE-9F018097DAB2
 :END:
-#+title: Task: Scaffold story: Improve badge colour scheme support
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Add a badge_mapping browser UI
+#+description: badge_mapping (the actual code_domain->entity_code->badge_definition linkage) has no UI at all today -- populated via seed scripts only. Add a read-only browser, grouped/filterable by code_domain, showing entity_code -> badge_definition with a colour swatch. This is the highest-leverage single piece of work: it makes badge source self-use, coverage gaps, and colour-semantic misuse all reviewable instead of grep-only.
 #+type: task
 #+level: s1
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
-#+branch: feature/badge-colour-scheme-support
+#+branch: feature/badge-mapping-browser-ui
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment: bright_faraday
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A user can open a screen (System > Configuration, alongside Badge Definitions/Severities) and see every (code_domain, entity_code) -> badge mapping, grouped by code_domain, with each badge rendered as an actual colour swatch -- not just hex text.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
 
--
+- New read-only list window shows all badge_mapping rows grouped/filterable by code_domain_code, each row showing entity_code and its resolved badge_definition (label + colour swatch).
+- Wired into the System > Configuration menu alongside the existing Badge Definitions/Severities windows.
+- Manual QA: opening the screen for a known code_domain (e.g. book_status) shows the same mappings seeded in dq_badge_system_populate.sql.
 
 * Plan
 
@@ -69,8 +71,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-Story, sprint wiring, and 6 tasks scaffolded (this scaffold task,
-the analysis task, and 5 follow-on implementation tasks scoped after
-the analysis surfaced the real, narrower problem — see the story's
-own Goal/Decisions for the corrected scope).

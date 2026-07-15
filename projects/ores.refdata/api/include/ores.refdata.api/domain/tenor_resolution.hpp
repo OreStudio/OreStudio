@@ -22,40 +22,13 @@
 
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/export.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
 
 namespace ores::refdata::domain {
-
-/**
- * @brief One row of the ores_refdata_tenor_convention_resolutions_tbl join table (see
- * ores.refdata.tenor_convention_resolution.org). Hand-authored: codegen's junction profile
- * generates SQL only, no C++ struct, since a junction has no domain-object identity of its own —
- * this is the resolver's own reading of that row's meaningful columns, not a generated artefact.
- */
-struct tenor_convention_resolution final {
-    std::string convention_code;
-    std::string tenor_code;
-
-    /**
-     * @brief References tenor_anchor.code. Empty when the tenor resolves from the convention's own
-     * measured_from.
-     */
-    std::optional<std::string> anchor_override;
-
-    /**
-     * @brief One of DAY, WEEK, MONTH, YEAR, or ROLL_QUARTER. Required when the referenced tenor is
-     * SPECIAL; unused when it is PERIOD (the tenor's own unit applies instead).
-     */
-    std::optional<std::string> offset_unit;
-
-    /**
-     * @brief The count paired with offset_unit. Same nullability rule as offset_unit.
-     */
-    std::optional<int> offset_multiplier;
-};
 
 /**
  * @brief A half-open date window [start, end) anchored to a horizon date and a resolved tenor.

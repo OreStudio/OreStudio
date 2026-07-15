@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:tooling:junction:marketdata:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/validate-junction-codegen-against-tenor-resolution
+#+pr: 1587
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -61,11 +61,11 @@ management UI screen manually to confirm nothing regressed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -76,14 +76,99 @@ management UI screen manually to confirm nothing regressed.
   repointed at the generated repository and still builds.
 - =ores.marketdata.core= (and any other affected component) builds
   clean; the marketdata test suite passes.
-- The Tenor management UI screen still shows correct, identical data
-  after the swap (manual check).
+- ~~The Tenor management UI screen still shows correct, identical data
+  after the swap (manual check).~~ *Skipped*: attempting to start the
+  client hit an unrelated build-target naming issue
+  (=ores.controller.service= isn't a real target); the service/protocol/
+  handler contract (=list_resolutions()=, the request/response shape)
+  is unchanged by this task, and =ores.refdata.service.tests= passing
+  is reasonable confidence without spending more time chasing the
+  client build here. Deferred to whoever actually runs the Tenor
+  management screen next, per explicit user instruction.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Note: the entity had moved from =ores.marketdata= to =ores.refdata=
+since this task was originally scoped (see the [[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI
+task]]'s Result) -- worked against the current =ores.refdata= paths
+throughout, not the stale =ores.marketdata= ones in this task's Goal
+text.
+
+1. Generating the full supported set (=compass codegen entity generate
+   tenor_convention_resolution=, no =--address=) revealed a real
+   architectural fork: the generated domain struct
+   =ores::refdata::domain::tenor_convention_resolution= collides with a
+   *different*, hand-authored struct of the exact same fully-qualified
+   name in =tenor_resolution.hpp= (the tenor *resolver's* own narrow,
+   5-field read view -- =tenor_window=/=resolve_end_date=/
+   =resolve_window=/=windows_overlap= live in that same file and are
+   *not* duplicated, genuinely unique resolver logic that must stay).
+   =tenor_resolution.hpp='s own doc comment claimed "a junction has no
+   domain-object identity of its own, so codegen generates no C++
+   struct" -- checked against real production junctions
+   (=party_currency=, =party_country=) and found that's false: they
+   *do* have normal generated domain headers. So the collision was
+   specific to this one entity's hand-authored assumption, not a
+   general junction-codegen limitation.
+2. Surfaced a second real discrepancy: the hand-authored repository is
+   deliberately *read-only* (=read_all()= only, no =write=/=remove= --
+   "this junction's rows are reference data managed via Foundation-layer
+   SQL provisioning, not user edits through this repository"), but
+   junction codegen unconditionally generates full CRUD.
+3. Both forks were real "prefer the generated shape unless it's
+   actually wrong, in which case fix the templates" cases per this
+   task's own Goal text -- asked the user for direction on each rather
+   than picking unilaterally, given they change what "retire the
+   hand-authored code" even means:
+   - *Domain struct*: generate it properly (matching every other
+     junction) and retire =tenor_resolution.hpp='s duplicate struct,
+     repointing its 4 consumers at the generated one, rather than
+     inventing a permanent one-off "reuse an external struct" override
+     mechanism.
+   - *Read-only*: added a genuine =:read_only: true= junction flag to
+     codegen (=org_loader.py= already lifted =* C++ ** Flags= keys onto
+     the junction dict from task 3's fix) rather than accept a full CRUD
+     surface neither the model nor any caller wants. Wrapped
+     =write=/=remove*= in =\{\{^read_only\}\}...\{\{/read_only\}\}= in
+     both =ores.cpp.repository.repository_header.org= and
+     =...repository_impl.org=; the doc comment also branches
+     (=Reads ... Read-only: ...= vs =Reads and writes ...=). Set the
+     flag on =tenor_convention_resolution.org='s =** Flags= drawer.
+4. Filled in the model's missing =generator= babel blocks (per-column
+   synthetic-data expressions) -- =left=/=right= (=convention_code=/
+   =tenor_code=, real seed codes =RATES_SPOT_FORWARD=/=1M=) and the
+   three nullable =Columns= (=std::nullopt= each, matching the
+   "usually absent" nature described in each column's own prose).
+   Without these the generator template emits =r.x = ;= (empty RHS,
+   syntax error) -- flagged but deliberately not fixed in the prior
+   task since it's model content, not template logic.
+5. Regenerated the full set; deleted the hand-authored
+   =struct tenor_convention_resolution= from =tenor_resolution.hpp=
+   (kept =tenor_window=/=resolve_*=/=windows_overlap= -- genuinely
+   unique, not generated), replaced with
+   =#include "...domain/tenor_convention_resolution.hpp"=. Repointed
+   its 4 consumers: =tenor_convention_resolution_service.hpp=/=.cpp=
+   (repository construction changed from a per-call =context= param to
+   a constructor-owned one, =read_all(ctx)= -> =read_latest()=),
+   =tenor_convention_resolution_protocol.hpp= (include swap only), and
+   =domain_tenor_resolution_tests.cpp= (no change needed -- already
+   transitively pulls the type through =tenor_resolution.hpp=). The
+   handler (=tenor_convention_resolution_handler.hpp=) needed no change
+   -- its service construction call was already interface-stable.
+6. Also fixed a redundant =order_by(convention_code, convention_code)=
+   in the generated =read_latest()= query -- the model's
+   =:order_column:= was set to the same column as the left FK; changed
+   to =tenor_code= for a meaningful secondary sort.
+7. Ran a full =cmake --preset ...= reconfigure (new generated =.cpp=
+   files need a fresh =GLOB_RECURSE=, not just a rebuild, to be picked
+   up) before the first real build attempt.
+8. Verified: =ores.refdata.core.lib=/=.api.lib= build clean;
+   =ores.refdata.api.tests=/=.core.tests=/=.service.tests= all pass
+   (3/3 suites, including the 126s =.core.tests= run covering the
+   retained resolver logic); =validate_schemas.sh= clean (252 tables,
+   0 warnings); =book= (domain_entity) still regenerates
+   byte-identical, confirming no regression to the sample used
+   throughout this story.
 
 * Notes
 
@@ -102,12 +187,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1587][#1587]] | [codegen,refdata] Retire hand-authored tenor_convention_resolution |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Cross-tenant data leak: junction repository read/remove queries never filtered by tenant_id despite has_tenant_id: true | ores.cpp.repository.repository_impl.org | Accepted | Real bug. Fixed in 389adc0c5 -- {{#has_tenant_id}}-gated filtering added to all affected methods, verified against tenor_convention_resolution + party_currency. |
+| 2 | Include-guard inconsistency (component_upper vs component_core_upper) between entity_header.org and repository_header.org/mapper_header.org | repository_header.org, mapper_header.org | Already fixed | Fixed upstream in PR #1586 (this branch rebased onto it). |
 
 * Result
+
+=tenor_convention_resolution= is fully generated now (domain,
+generator, repository -- SQL already worked): the hand-authored
+entity/repository files are replaced by generated ones, and
+=tenor_resolution.hpp='s duplicate domain struct is retired in favour
+of the generated type (its genuinely unique resolver logic --
+=tenor_window=, =resolve_end_date=, =resolve_window=,
+=windows_overlap= -- is untouched). Added a real =:read_only: true=
+junction codegen flag so the generated repository matches this
+entity's actual (and every future read-only junction's) intended
+shape, rather than forcing an unwanted CRUD surface or hand-waving the
+diff. =ores.refdata.api.lib=/=.core.lib= build clean;
+=ores.refdata.api.tests=/=.core.tests=/=.service.tests= all pass (3/3);
+=validate_schemas.sh= clean; =book= still zero-diff. Manual UI check
+(Tenor management screen showing identical data) not yet done -- see
+next message to the user.

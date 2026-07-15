@@ -20,7 +20,9 @@
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
+#include "ores.refdata.core/repository/tenor_convention_resolution_mapper.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -30,42 +32,71 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-namespace {
-
-std::vector<domain::tenor_convention_resolution>
-map(const std::vector<tenor_convention_resolution_entity>& entities) {
-    std::vector<domain::tenor_convention_resolution> r;
-    r.reserve(entities.size());
-    for (const auto& e : entities) {
-        r.push_back(domain::tenor_convention_resolution{
-            .convention_code = e.convention_code,
-            .tenor_code = e.tenor_code,
-            .anchor_override = e.anchor_override,
-            .offset_unit = e.offset_unit,
-            .offset_multiplier = e.offset_multiplier,
-        });
-    }
-    return r;
+std::string tenor_convention_resolution_repository::sql() {
+    return generate_create_table_sql<tenor_convention_resolution_entity>(lg());
 }
 
-}
+tenor_convention_resolution_repository::tenor_convention_resolution_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::tenor_convention_resolution>
-tenor_convention_resolution_repository::read_all(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor convention resolutions.";
+tenor_convention_resolution_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("convention_code"_c, "tenor_code"_c);
 
     return execute_read_query<tenor_convention_resolution_entity,
                               domain::tenor_convention_resolution>(
-        ctx,
+        ctx_,
         query,
-        [](const auto& entities) { return map(entities); },
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
         lg(),
-        "Reading all tenor convention resolutions.");
+        "Reading latest tenor convention resolutions");
+}
+
+std::vector<domain::tenor_convention_resolution>
+tenor_convention_resolution_repository::read_latest_by_convention(
+    const std::string& convention_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Convention: "
+                               << convention_code;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("tenor_code"_c);
+
+    return execute_read_query<tenor_convention_resolution_entity,
+                              domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolutions by convention.");
+}
+
+std::vector<domain::tenor_convention_resolution>
+tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& tenor_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Tenor: "
+                               << tenor_code;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+        where("tenant_id"_c == tid && "tenor_code"_c == tenor_code && "valid_to"_c == max.value()) |
+        order_by("convention_code"_c);
+
+    return execute_read_query<tenor_convention_resolution_entity,
+                              domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolutions by tenor.");
 }
 
 }

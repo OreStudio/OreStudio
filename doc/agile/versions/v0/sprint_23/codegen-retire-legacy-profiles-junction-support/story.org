@@ -28,12 +28,12 @@ codegen gap.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started — discovered and scoped while building the tenor management UI ([[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]]) needed a read path for =tenor_convention_resolution=, a junction, and found codegen can't produce one. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Confirm the "delete legacy, let things break" scope (below) with the user, then start with the deletion task so its blast radius is known before building anything new on top. |
-| Last touched  | 2026-07-13                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-15                               |
 
 * Analysis: two parallel codegen systems
 
@@ -176,7 +176,7 @@ just flipping =model_types=.
 | [[id:386BED71-A76B-43EF-8A72-0D19704C5151][Delete legacy codegen profile system (facet_catalogue.org, core.py profile path)]] | DONE | 2026-07-15 | 2026-07-15 | Delete facet_catalogue.org and core.py's _load_profiles_from_org()/--profile code path outright. Keep all existing org models and generated code untouched; regenerate a sample of existing entities to confirm no diff. |
 | [[id:B3F8CC1B-75C4-4AEF-8185-BBC3F11FA1A9][Add junction to model_types on ores.cpp.domain/generator/repository.org]] | DONE | 2026-07-15 | 2026-07-15 | Add junction to #+model_types: on the three physical-space facet node docs, re-tangle, and attempt generation against tenor_convention_resolution to surface what breaks. |
 | [[id:987FD4D9-7293-4E27-8688-6466A7FA4211][Fix domain/generator/repository Mustache templates for junction-shaped data]] | DONE | 2026-07-15 | 2026-07-15 | Adapt the three facets' templates so junction generation (composite left/right key, no single primary_key) produces compilable, correct C++ -- template branching or a data-normalisation shim in core.py. |
-| [[id:5E74A27E-15BE-47CB-BDF1-B359AC35DB65][Validate junction codegen against tenor_convention_resolution; retire hand-authored code]] | BACKLOG | | | Regenerate tenor_convention_resolution, diff against the hand-authored reference files, build, then delete the hand-authored entity/repository and repoint the hand-authored service/protocol/handler/registrar at the generated repository. |
+| [[id:5E74A27E-15BE-47CB-BDF1-B359AC35DB65][Validate junction codegen against tenor_convention_resolution; retire hand-authored code]] | DONE | 2026-07-15 | 2026-07-15 | Regenerate tenor_convention_resolution, diff against the hand-authored reference files, build, then delete the hand-authored entity/repository and repoint the hand-authored service/protocol/handler/registrar at the generated repository. |
 | [[id:05C64B72-418A-45E7-BBD2-2E91FD69DE45][Sweep docs/skills/recipes for stale legacy-profile-system references]] | BACKLOG | | | Correct any remaining doc/knowledge/skill/recipe text describing the deleted facet_catalogue.org/--profile system, so documentation matches the physical-space system only. |
 | [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | BACKLOG | | | Merge the refdata and refdata-cpp entries in the component catalogue into one component with a single discovery glob over ores.refdata.*.org. Remove the dead models_dir entries from both. Update all compass codegen entity commands that reference either component. |
 | [[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]] | BACKLOG | | | New 'archetypes' subcommand lists the full physical space catalogue in ores.ts.facet.archetype notation. With --entity shows the entity's supported set with per-archetype enabled/disabled status. Makes the address system self-documenting. Depends on B5. |
@@ -245,3 +245,29 @@ just flipping =model_types=.
   hand-authored service/protocol/handler as a stopgap, per the user's
   explicit "continue your work manually" instruction, and switch to the
   generated repository once this story lands).
+
+* Result
+
+Closed DONE: this story's own Acceptance is fully met by tasks 1-4.
+System 1 (=facet_catalogue.org='s dead resolution code) is deleted;
+=junction= C++ generation (domain/generator/repository) works and is
+validated end-to-end against a real junction
+(=tenor_convention_resolution=), which now runs on generated code with
+the hand-authored stopgap retired; no regression to any existing
+=domain_entity=/=junction= model's generated output (=book= verified
+zero-diff throughout, plus the full =ores.refdata= test suite passing).
+Task 4's manual Tenor management UI screen check was skipped per
+explicit user instruction (an unrelated build-target issue interrupted
+starting the client; the service/protocol contract is unchanged by
+this story's work, so the risk is low) -- left for whoever next runs
+that screen to confirm.
+
+*Deferred, left BACKLOG under this story*: task 5 (sweep docs/skills/
+recipes for stale legacy-profile-system references) and the 8 tasks
+merged in from "Resolve codegen model unification blockers" (B4, B6,
+B7, B9, B10, B11, the =_table.org= content migration, table-model-type
+retirement). None of these are required by this story's own Acceptance
+criteria -- B10/B11 in particular were near-duplicates of tasks 1/5's
+scope, and the rest were merged in for tracking convenience when the
+donor story was closed, not because this story's goal depends on them.
+Real, tracked follow-up work; just not this story's own finish line.

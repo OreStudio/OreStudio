@@ -20,7 +20,7 @@
 #ifndef ORES_REFDATA_API_MESSAGING_TENOR_CONVENTION_RESOLUTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_TENOR_CONVENTION_RESOLUTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include <string>
 #include <string_view>
 #include <vector>

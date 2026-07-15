@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include <vector>
@@ -58,7 +58,6 @@ public:
     std::vector<domain::tenor_convention_resolution> list_resolutions();
 
 private:
-    context ctx_;
     repository::tenor_convention_resolution_repository repo_;
 };
 

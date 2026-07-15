@@ -17,19 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
+#include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-namespace ores::refdata::service {
+namespace ores::refdata::repository {
 
-using namespace ores::logging;
-
-tenor_convention_resolution_service::tenor_convention_resolution_service(context ctx)
-    : repo_(std::move(ctx)) {}
-
-std::vector<domain::tenor_convention_resolution>
-tenor_convention_resolution_service::list_resolutions() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor convention resolutions";
-    return repo_.read_latest();
+std::ostream& operator<<(std::ostream& s, const tenor_convention_resolution_entity& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
 }

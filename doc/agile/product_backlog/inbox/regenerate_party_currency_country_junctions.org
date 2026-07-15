@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 409CAF6D-90F1-4222-B6D4-4AE9BAA5A364
+:END:
+#+title: Regenerate party_currency/party_country junction repository layer
+#+description: Now that junction codegen works end-to-end (tenor_convention_resolution story), regenerate party_currency/party_country's entity/mapper/repository files to converge on generated code, matching what was just done for tenor_convention_resolution.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:junction:drift:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+While fixing a cross-tenant data-leak bug in junction codegen's
+=repository_impl.org= (surfaced by review on the "Retire hand-authored
+=tenor_convention_resolution=" PR), discovered =party_currency_junction.org=/
+=party_country_junction.org= were both missing the =* C++ ** Flags
+:subcomponent: api= block that =tenor_convention_resolution.org= now
+has. Without it, regenerating either junction's repository facet lands
+at the wrong path (=projects/ores.refdata/include/...= instead of the
+real =projects/ores.refdata/core/include/ores.refdata.core/...=) since
+=component_core_dir= falls back to the no-subcomponent branch. Added
+the missing =Flags= block to both models (safe, path-affecting only)
+but did *not* regenerate/commit the actual entity/mapper/repository
+=.hpp=/=.cpp= files for either junction -- that's real, separate
+scope: confirmed via a throwaway regen that the generated shape now
+matches the real hand-authored files closely (a few added includes/doc
+comments, cosmetic), but committing that swap deserves its own task
+with proper build+test verification, same as the
+=tenor_convention_resolution= work did.
+
+* Why
+
+=party_currency=/=party_country= are the other two production
+junctions besides =tenor_convention_resolution=, and now that junction
+C++ codegen genuinely works (this sprint's story), they're candidates
+for the same hand-authored-to-generated convergence. Filing this so
+the work isn't lost/forgotten, and so the =:subcomponent:= fix (already
+landed) doesn't sit unexploited.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.party_currency_junction.org=
+- =projects/ores.refdata/modeling/ores.refdata.party_country_junction.org=
+- =projects/ores.refdata/core/include/ores.refdata.core/repository/party_currency_entity.hpp= — the hand-authored reference to diff against.
+
+* See also
+
+- [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] — the story that made this possible.

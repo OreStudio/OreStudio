@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tenor-collision-validation
-#+pr:
+#+pr: 1583
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -140,6 +140,7 @@ validator, which has not yet been started.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1583][#1583]] | [synthetic,qt] Tenor-collision validator, [start,end) period model, eventing infra |
 | [[https://github.com/OreStudio/OreStudio/pull/1572][#1572]] | [refdata,synthetic,dq,qt] Instrument code shorthand, asset_class badge, CRM subject fix |
 
 * Review

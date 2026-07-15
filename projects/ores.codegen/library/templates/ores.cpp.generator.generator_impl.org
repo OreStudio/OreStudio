@@ -117,8 +117,13 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{^is_timestamp}}
 {{^is_date}}
 {{#generator_expr}}
+{{#no_generator_suffix}}
+    r.{{column}} = {{{generator_expr}}};
+{{/no_generator_suffix}}
+{{^no_generator_suffix}}
     r.{{column}} = {{{generator_expr}}} + "-"
         + std::to_string(idx);
+{{/no_generator_suffix}}
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{column}} = std::string(faker::word::noun()) + "-"

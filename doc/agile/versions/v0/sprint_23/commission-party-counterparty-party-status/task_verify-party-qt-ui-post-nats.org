@@ -31,9 +31,9 @@ hierarchy facet in place; fix regressions found.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Verified live against BARCLAYS PLC: list, read, update, delete, identifiers tab, contact information tab, hierarchy tab, and history all PASS. Along the way, found and fixed several real regressions (see Notes) rather than test-scenario mistakes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None -- Create against a *second* party is separately tracked ([[id:F3F5B88E-4119-436C-8418-CAE34DEC2C9F][Party/counterparty Create dialog cannot set parent_party_id]]), not a blocker for this task. |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -104,3 +104,22 @@ via its "Verifies task" field.
 | 5 | Minor: ClientCounterpartyModel dropped the Transliterated Name column | ClientCounterpartyModel.cpp | Declined (captured) | Pre-existing gap, not introduced by this PR; captured separately as [[id:7AB584B7-DB3B-4F7E-B6DC-72BA3EF139F2][party_grid_ignores_transliterated_name]]. |
 
 * Result
+
+Verified live against BARCLAYS PLC in two Qt client instances (blue/
+red): list, read, update, delete, identifiers tab (add/edit/delete),
+contact information tab (add/edit/delete, country flag combo),
+hierarchy tab, generic history dialog, and cross-client eventing all
+PASS. Along the way, found and fixed a string of real regressions
+rather than working around them: missing =entity_type_of(party)=,
+=crm_topology_bundles= seed data hanging tenant provisioning, an
+=is_auto_generated_key= codegen bug wrongly locking =short_code=
+permanently read-only, party/counterparty pagination reporting page
+size as total (in both the parent lists and the four standalone child
+list models found during PR review), missing =changeReasonCache=
+wiring blocking every LEI/contact-information save, and 8 stale
+=ores.refdata.core.tests= files plus 4 more across =ores.reporting=/
+=ores.iam=/=ores.synthetic= (pre-context-refactor repository
+signatures) with 2 synthetic-generator bugs the fix surfaced. Create
+against a *second* party/counterparty remains blocked on a real,
+separately-tracked gap (no UI path to set =parent_party_id=) --
+intentionally out of scope for this task. Merged via PR #1581.

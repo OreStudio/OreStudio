@@ -75,11 +75,11 @@ rather than re-deriving them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-14                               |
 
 * Acceptance
@@ -132,3 +132,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landed the split proposed during planning:
+
+- =ores.analytics.quant= gained =domain::crm_rate_view= plus two new,
+  NATS/Qt-free services: =rate_inverter= (stateless -- resolves a
+  requested pair against a batch of =derived_rate=s, falling back to
+  the reverse pair's inverse when no direct entry exists and guarding
+  the zero-rate division case) and =rate_delta_tracker= (a thin
+  stateful decorator, mutex-guarded, keyed by the displayed
+  (base, quote) pair -- deliberately layered on top of =rate_engine=
+  rather than folded into it, so its own immer-based concurrency model
+  stays untouched). 16 new Catch2 cases cover both, independent of
+  NATS/Qt.
+- =ores.marketdata=: =crm_ingest_bridge= now owns one
+  =rate_delta_tracker= per (tenant, party, crm_name) alongside its
+  =rate_engine=, and exposes =resolved_rates()= combining both new
+  quant services. =crm_protocol='s =get_crm_rates_request= gained an
+  =inverted= flag; =crm_rate_item= gained =inverted= and
+  =delta_pct=. =crm_handler= maps the resolved views straight onto the
+  wire.
+- =CrmCrossRatesMatrixMdiWindow= no longer computes inversion or
+  %-change itself -- =previousRates_= is gone entirely, and the
+  "Show Inverted" toggle now just sets the request flag instead of
+  post-processing the response.
+- Convention-aware formatting (display precision, base/quote canonical
+  ordering) was scoped out during planning: neither the original Qt
+  code nor the CRM protocol ever implemented it, so there was nothing
+  to extract -- filed separately as
+  [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][a follow-up task]] for a
+  plain C++ presentation overlay in =ores.marketdata.client=.
+
+All acceptance criteria met; =ores.analytics.quant.tests= (147 cases,
+11674 assertions) and =ores.marketdata.service.lib=/=ores.qt.marketdata.lib=
+build clean.

@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: E6902594-0075-4B66-ADDC-4D79622CCF41
+:END:
+#+title: Root-cause ores.wt.service's intermittent glibc pthread crash
+#+description: ores.wt.service was disabled by default (hotfix, PR #1592) after its Wt httpd crashed intermittently on startup with a fatal glibc pthread-priority-protect assertion. Needs a debugger session to find the exact call site inside Wt/Boost's compiled internals and either fix it or work around it properly, then re-enable the service.
+#+type: capture
+#+level: cross
+#+filetags: :controller:wt:glibc:crash:tech-debt:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.wt.service='s Wt httpd crashed intermittently on startup with a
+fatal glibc error:
+
+#+begin_example
+Fatal glibc error: tpp.c:83 (__pthread_tpp_change_priority): assertion
+failed: new_prio == -1 || (new_prio >= fifo_min_prio && new_prio <= fifo_max_prio)
+#+end_example
+
+This fires deep inside glibc's priority-protected mutex code
+(=PTHREAD_PRIO_PROTECT=/=INHERIT=) — nothing in ORE Studio's own code
+sets thread priorities, so this is coming from Wt's compiled httpd or a
+Boost internal it depends on. The =bright_faraday= environment where
+this was diagnosed has =ulimit -r= (real-time priority) at =0=, both
+soft and hard limit, which is exactly the condition that trips this
+specific assertion — but it's unconfirmed whether that ulimit is
+specific to that sandbox or also true on regular dev machines, since
+the reporting user says the service "seems to have this problem
+frequently" more broadly.
+
+The controller's existing restart/backoff (=retry_strategy=) already
+self-heals eventually (it did recover after ~8 attempts in the
+diagnosed case), so this isn't a hard outage — just a noisy,
+minutes-long crash-loop on every environment boot where it's hit.
+
+As a stopgap (PR #1592), =ores.wt.service= is disabled by default in
+=controller_service_definitions_populate.sql= (=enabled = 0=), so fresh
+environments no longer hit this crash loop at all. Re-enabling is a
+one-line SQL update, documented inline in that file.
+
+* Why
+
+Root-causing needs an actual debugger session (attach gdb, or enable
+core dumps and inspect a captured crash) against Wt/Boost's compiled
+internals to find the exact call site — that's not something safely
+doable from static analysis alone, and wasn't in scope for the
+hotfix. Until it's done, =ores.wt.service= (the Wt-framework web UI)
+stays off by default, which is an acceptable stopgap but not a
+permanent state — someone should either fix the actual crash or
+determine it's an environment-only quirk (e.g. sandbox-specific
+=RLIMIT_RTPRIO=) that doesn't affect real deployments, and re-enable
+accordingly.
+
+* References
+
+- =projects/ores.sql/populate/controller/controller_service_definitions_populate.sql= — the =enabled = 0= hotfix and its inline comment.
+- =projects/ores.controller/core/src/service/process_supervisor.cpp= — the restart/backoff logic that currently papers over the crash.
+- =projects/ores.utility/include/ores.utility/concurrency/retry_strategy.hpp= — the exponential-backoff calculator in play.
+
+* See also
+
+-

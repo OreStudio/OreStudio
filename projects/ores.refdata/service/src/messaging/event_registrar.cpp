@@ -40,14 +40,17 @@
 #include "ores.refdata.service/messaging/crm_enabled_derived_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_topology_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_event_registrar.hpp"
+#include "ores.refdata.service/messaging/currency_market_tier_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/monetary_nature_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/rounding_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
@@ -81,14 +84,17 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_crm_enabled_derived_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_topology_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_currency_market_tier_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_day_count_fraction_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_instrument_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_monetary_nature_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_rounding_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_anchor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_convention_event_mapping(event_source, event_bus, nats));

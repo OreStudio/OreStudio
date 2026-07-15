@@ -31,7 +31,7 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a currency asset class in the database.
+ * @brief Represents a monetary nature in the database.
  */
 struct monetary_nature_entity {
     constexpr static const char* schema = "public";
@@ -40,9 +40,11 @@ struct monetary_nature_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
-    int display_order;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

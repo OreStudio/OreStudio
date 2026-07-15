@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_MARKET_TIER_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,20 +29,26 @@ namespace ores::refdata::messaging {
 
 struct get_currency_market_tiers_request {
     using response_type = struct get_currency_market_tiers_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_market_tiers.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_currency_market_tiers_response {
-    std::vector<ores::refdata::domain::currency_market_tier> currency_market_tiers;
+    std::vector<ores::refdata::domain::currency_market_tier> types;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_currency_market_tier_request {
     using response_type = struct save_currency_market_tier_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_market_tiers.save";
     ores::refdata::domain::currency_market_tier data;
+
+    static save_currency_market_tier_request from(ores::refdata::domain::currency_market_tier v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_currency_market_tier_response {
@@ -51,8 +58,8 @@ struct save_currency_market_tier_response {
 
 struct delete_currency_market_tier_request {
     using response_type = struct delete_currency_market_tier_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.delete";
-    std::string tier;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_market_tiers.delete";
+    std::vector<std::string> codes;
 };
 
 struct delete_currency_market_tier_response {
@@ -62,14 +69,14 @@ struct delete_currency_market_tier_response {
 
 struct get_currency_market_tier_history_request {
     using response_type = struct get_currency_market_tier_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.history";
-    std::string tier;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_market_tiers.history";
+    std::string code;
 };
 
 struct get_currency_market_tier_history_response {
+    std::vector<ores::refdata::domain::currency_market_tier> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::currency_market_tier> history;
 };
 
 }

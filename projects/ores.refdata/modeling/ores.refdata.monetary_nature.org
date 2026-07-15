@@ -171,11 +171,11 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 :delete_request_class:    refdata::messaging::delete_monetary_nature_request
 :delete_response_class:   refdata::messaging::delete_monetary_nature_response
 :delete_message_type:     delete_monetary_nature_request
-:delete_request_id_field: nature
+:delete_request_id_field: codes
 :history_request_class:       refdata::messaging::get_monetary_nature_history_request
 :history_response_class:      refdata::messaging::get_monetary_nature_history_response
 :history_message_type:        get_monetary_nature_history_request
-:history_request_id_field:    nature
+:history_request_id_field:    code
 :history_response_data_field: history
 :settings_group:         MonetaryNatureListWindow
 :window_title:           Monetary Natures

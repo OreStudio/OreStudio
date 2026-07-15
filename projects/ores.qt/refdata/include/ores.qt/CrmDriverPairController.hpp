@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -84,11 +87,27 @@ private slots:
     void onShowHistory(const refdata::domain::crm_driver_pair& pair);
     void onRevertVersion(const refdata::domain::crm_driver_pair& pair);
     void onOpenVersion(const refdata::domain::crm_driver_pair& pair, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::crm_driver_pair& pair);
     void showHistoryWindow(const refdata::domain::crm_driver_pair& pair);
+
+    /**
+     * @brief Fetches the full typed CRM driver pair history (the
+     * existing per-entity refdata::messaging::get_crm_driver_pair_history_request/
+     * refdata::messaging::get_crm_driver_pair_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed CRM driver pair, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchCrmDriverPairHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::crm_driver_pair>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;

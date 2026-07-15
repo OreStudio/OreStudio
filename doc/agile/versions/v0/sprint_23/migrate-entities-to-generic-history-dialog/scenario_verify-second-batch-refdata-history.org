@@ -36,6 +36,12 @@ run =./compass.sh shell -f
 projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 to reprovision it.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check asset class code history
 
 Reference Data > Classifications > Asset Class Codes. Open an
@@ -43,6 +49,12 @@ existing code's history. Confirm the History Timeline shows its
 versions and the diff pane renders without a "No history provider
 registered" error — this entity never had a history field mapper
 generated before this batch.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check currency market tier history, list, save, and delete
 
@@ -52,21 +64,46 @@ regenerated). Create or edit an entry providing a change reason,
 confirm it saves, then open its history and confirm it loads. Delete
 an entry and confirm it disappears from the list.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check rounding type history, list, save, and delete
 
 Reference Data > Currency Codes > Rounding Types (or wherever wired).
 Same checks as currency market tier above — list loads, save with
 change reason succeeds, history loads, delete works.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no eventing on save. everything else worked correctly. |
+
 ** Check monetary nature history, list, save, and delete
 
 Same checks as currency market tier above, for Monetary Natures.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check tenor kind history
 
 Reference Data > Tenors > Tenor Kinds. Open an existing kind's
 history. Confirm it loads correctly — this entity never had a history
 field mapper generated before this batch.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check Open and Revert still work on one entity
 
@@ -76,14 +113,20 @@ detail view opens correctly. Close it, select an older version, and
 click Revert — confirm the confirmation dialog appears and (on
 confirming) the editable revert dialog opens pre-populated.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-15T22:36:40Z |
+| Branch        | feature/migrate-refdata-history-dialogs |
+| Commit        | 49b702c38 |
+| Worktree      | brave_hopper |
 
 * Notes

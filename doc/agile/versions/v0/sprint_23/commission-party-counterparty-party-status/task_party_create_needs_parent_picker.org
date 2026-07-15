@@ -8,7 +8,7 @@
 #+filetags: :qt:codegen:party:counterparty:blocking:commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
 #+branch: feature/party-create-needs-parent-picker
-#+pr:
+#+pr: 1594
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
@@ -141,7 +141,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1594][#1594]] | [codegen,qt] Add required parent picker to party/counterparty Create |
 
 * Review
 

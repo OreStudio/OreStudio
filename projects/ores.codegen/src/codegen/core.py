@@ -2726,6 +2726,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction['cache_component_upper'] = (
                 junction['cache_component'].replace('.', '_').upper()
             )
+            junction['generator_facet_name_upper'] = (
+                junction['generator_facet_name'].upper()
+            )
         if 'name_singular' in junction:
             junction['name_singular_upper'] = junction['name_singular'].upper()
             # Human-readable version - use explicit value or derive from last word

@@ -55,25 +55,26 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 #endif
 {{/domain_entity}}
 {{#junction}}
-#ifndef ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
-#define ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
+#ifndef ORES_{{component_include_upper}}_{{generator_facet_name_upper}}_{{name_singular_upper}}_GENERATOR_HPP
+#define ORES_{{component_include_upper}}_{{generator_facet_name_upper}}_{{name_singular_upper}}_GENERATOR_HPP
 
 #include <vector>
+#include "ores.{{component_include}}/export.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::{{component}}::generators {
+namespace ores::{{component}}::{{generator_facet_name}} {
 
 /**
  * @brief Generates a synthetic {{name_singular}}.
  */
-domain::{{name_singular}} generate_synthetic_{{name_singular}}(
+ORES_{{component_include_upper}}_EXPORT domain::{{name_singular}} generate_synthetic_{{name_singular}}(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic {{name}}.
  */
-std::vector<domain::{{name_singular}}>
+ORES_{{component_include_upper}}_EXPORT std::vector<domain::{{name_singular}}>
 generate_synthetic_{{name}}(std::size_t n,
     utility::generation::generation_context& ctx);
 

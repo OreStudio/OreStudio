@@ -125,6 +125,7 @@ void IborIndexConventionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_, model_, "IborIndexConventionListWindow", {}, {900, 400}, 1);
 }
 
@@ -302,7 +303,7 @@ void IborIndexConventionMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " IBOR index conventions";
+            << "Making delete request for " << codes.size() << " IBOR index conventions";
 
         refdata::messaging::delete_ibor_index_convention_request request;
         request.codes = codes;
@@ -375,5 +376,6 @@ void IborIndexConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

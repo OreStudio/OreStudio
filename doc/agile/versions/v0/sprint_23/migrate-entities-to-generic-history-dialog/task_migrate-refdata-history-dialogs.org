@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-14
 #+updated: 2026-07-14
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,12 +40,12 @@ scoping-out; not attempted in this pass.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | All 14 codegen-model-backed entities migrated. Awaiting manual QA (scenario 44064405) before closing this batch. |
-| Waiting on   | Manual QA run of scenario 44064405.    |
-| Next         | After QA passes, decide how (or whether) to handle the 16 non-codegen entities (separate scope). |
-| Last touched | 2026-07-15                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
@@ -106,19 +106,34 @@ picked up by an incremental build) and a hand-fix to
 =fetch_rounding_types=/=fetch_monetary_natures=/
 =fetch_currency_market_tiers= referenced the old response field names.
 
+Manual QA (scenario 44064405) caught one further real bug: saving a
+=rounding_type= record didn't fire a live-eventing notification.
+Root cause: =refdata_rounding_types_notify_trigger_create.sql=
+existed on disk (correctly codegen-generated) but was never
+=\ir=-included in =create/refdata/refdata_create.sql= — a pre-existing
+gap unrelated to this session's other changes, so no environment ever
+had the trigger. Applied the trigger directly to the running DB and
+fixed the missing include for future recreations. While investigating
+also found (and fixed, drive-by) 15 more refdata entities entirely
+missing from =refdata_drop.sql='s narrower per-table teardown list
+(their create side was fine, confirmed live in the DB) and captured
+the root cause — =validate_schemas.sh= discovers SQL files via a
+filesystem glob rather than walking the actual =\ir= chain, so a
+missing include is invisible to it — as its own backlog item, since
+it already does this reachability check for RLS policy files
+specifically and just needs generalizing.
+
 * Notes
 
-*Scope note*: 16 entities under =projects/ores.qt/refdata= have a
-=*HistoryDialog.cpp= but no codegen model at all (=catalog=,
-=change_reason=, =change_reason_category=, =code_domain=,
-=coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
-=dataset=, =dataset_bundle=, =floating_index_type=, =leg_type=,
-=methodology=, =nature_dimension=, =origin_dimension=,
-=payment_frequency_type=, =subject_area=, =treatment_dimension=) —
-hand-crafted data-catalogue and change-reason-system infrastructure.
-Not attempted in this pass; needs its own migration approach (or an
-explicit decision to leave them on the legacy dialog) before this
-task can be considered fully done.
+*Scope note*: the remaining 17 entities under =projects/ores.qt/refdata=
+with a =*HistoryDialog.cpp= but no codegen model reachable from
+=ores.refdata= itself are tracked by the follow-on task
+[[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][Migrate remaining ores.qt.refdata entities without a codegen model
+onto the generic HistoryDialog]], not this one. 5 of those 17 turned
+out to actually have a codegen model under a different owning
+component (=ores.trading=, =ores.dq=) once investigated properly; the
+other 12 are hand-crafted change-reason/coding-scheme/data-catalogue
+infrastructure needing a scoping decision before any migration.
 
 * Test Scenarios
 
@@ -129,7 +144,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:44064405-FBA7-42B6-A831-4FEABD683321][Verify second batch of migrated refdata history dialogs]] | PENDING | Awaiting manual execution via QA Validation Runner. |
+| [[id:44064405-FBA7-42B6-A831-4FEABD683321][Verify second batch of migrated refdata history dialogs]] | PASSED | First run FAILED on rounding_type eventing (missing NOTIFY trigger include); fixed and re-run PASSED. |
 
 * PRs
 
@@ -144,3 +159,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+14 codegen-model-backed entities migrated onto the generic
+=HistoryDialog= via full, unmodified codegen regeneration:
+=asset_class_code=, =currency_market_tier=,
+=currency_pair_convention=, =day_count_fraction_type=,
+=ledger_feed_type=, =monetary_nature=, =party_type=, =purpose_type=,
+=regulatory_book_type=, =rounding_type=, =tenor_anchor=,
+=tenor_kind=, =tenor_resolution_algorithm=, =tenor_unit=. Fixed 7
+missing history field mappers, brought 3 significantly stale
+entities' full backend stack in line with codegen conventions (no
+schema migration needed), fixed 3 more stale
+=delete_request_id_field=/=history_request_id_field= overrides, and
+fixed a pre-existing, unrelated SQL gap (=rounding_type='s missing
+NOTIFY trigger include) that manual QA surfaced. QA scenario 44064405
+PASSED after all fixes.
+
+Remaining 17 non-codegen-backed entities tracked separately by
+[[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][Migrate remaining ores.qt.refdata entities without a codegen model
+onto the generic HistoryDialog]].

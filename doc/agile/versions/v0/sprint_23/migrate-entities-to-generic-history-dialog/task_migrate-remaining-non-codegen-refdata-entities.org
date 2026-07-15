@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: EE0459FE-8AC1-4D7B-99C2-747FCF0E4499
+:END:
+#+title: Task: Migrate remaining ores.qt.refdata entities without a codegen model onto the generic HistoryDialog
+#+description: 17 ores.qt.refdata entities still on the legacy per-entity *HistoryDialog have no codegen model reachable from ores.refdata's own codegen -- 5 actually have a model under a different owning component (ores.trading, ores.dq) and can migrate the same way once addressed correctly; the other 12 are hand-crafted Data Catalogue / Change Reason / Coding Scheme cross-cutting infrastructure with no codegen model anywhere and need a scoping decision before any migration.
+#+type: task
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Retire the last 17 hand-rolled per-entity =*HistoryDialog= classes
+left in =projects/ores.qt/refdata= once [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][the codegen-model-backed
+batch]] closed. None of these 17 have a codegen model reachable from
+=ores.refdata='s own codegen, which split into two genuinely
+different sub-problems investigated when this task was created:
+
+1. *5 entities actually have a codegen model, just under a different
+   owning component* — =floating_index_type=, =leg_type=,
+   =payment_frequency_type= (=ores.trading=), and =code_domain=,
+   =dataset_bundle= (=ores.dq=). Their Qt controller happens to live
+   in =ores.qt/refdata= (same organizational pattern as =Book=/
+   =BusinessCentre=, whose backend lives elsewhere too), but the
+   entity itself is addressable via
+   =compass codegen entity generate <entity> --address ores.cpp.qt=
+   once invoked with the right model file — these can migrate via the
+   exact same full-regeneration process as every other entity in this
+   story, no scoping decision needed.
+2. *The other 12 entities have no codegen model anywhere in the
+   codebase* — =catalog=, =change_reason=, =change_reason_category=,
+   =coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
+   =dataset=, =methodology=, =nature_dimension=, =origin_dimension=,
+   =subject_area=, =treatment_dimension=. These are hand-crafted,
+   cross-cutting infrastructure in three families:
+   - *Change Reason* (=change_reason=, =change_reason_category=): the
+     change-reason-cache system itself, used to audit every other
+     entity's save/delete. Self-referential — codegen-ing these would
+     need to special-case (or omit) =has_change_reason_cache= on the
+     entity that backs that very cache.
+   - *Coding Scheme / classification* (=coding_scheme=,
+     =coding_scheme_authority_type=, =code_domain= is the one exception
+     with a model, above): used to validate other entities'
+     classification codes.
+   - *Data Catalogue* (=catalog=, =data_domain=, =dataset=,
+     =methodology=, =nature_dimension=, =origin_dimension=,
+     =subject_area=, =treatment_dimension=): a data-governance/catalogue
+     metadata subsystem (subject areas, methodologies, dimensions)
+     that may have bespoke domain logic not captured by the generic
+     entity model.
+
+   Whether these 12 warrant becoming codegen models (eliminating this
+   exact class of bug — a human forgetting a wiring step that codegen
+   would emit automatically) or are legitimately bespoke enough to stay
+   hand-authored is a real product/architecture decision, not
+   something to default silently either way. This task's first job is
+   making that decision (or handing it back to the story owner with a
+   recommendation per family) before any migration work on the 12
+   starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Migrate the 5 already-codegen-model-backed entities first (straightforward, same process as every other entity); then get a decision on whether/how to codegen the other 12 before touching them. |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- =floating_index_type=, =leg_type=, =payment_frequency_type=,
+  =code_domain=, =dataset_bundle= migrated onto the generic
+  =HistoryDialog= via full, unmodified codegen regeneration (addressed
+  via their real owning component), following the same process as
+  task 9605CFDB.
+- A decision is recorded (in this task's =* Notes= and distilled into
+  the parent story's =* Decisions=) for each of the 12 non-codegen
+  entities: codegen them, or explicitly leave them on the legacy
+  dialog with a documented reason.
+- Zero remaining =*HistoryDialog.{hpp,cpp,ui}= files in
+  =projects/ores.qt/refdata= once every entity that's getting migrated
+  has migrated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

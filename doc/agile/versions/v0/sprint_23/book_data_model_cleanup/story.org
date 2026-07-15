@@ -27,16 +27,31 @@ enrichment).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | 10/13 tasks done. book_purpose_type, ledger_feed_type, and is_sweepable shipped and QA'd; hierarchy docs, legal-entity/branch investigation, allowed-lists analysis, and Wash paired-risk-book sizing closed as a doc-only batch (PR #1546). |
+| Now           | 13/13 tasks done. All data-modeling bugs fixed, classification lookup entities shipped, hierarchy/legal-entity/allowed-lists/Wash-link questions resolved (implementation or sizing, as appropriate), rates centre and functional_currency rename shipped, manual chapter enriched, and Book window toolbar buttons added via the existing codegen facet. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the next BACKLOG task: rates centre, the ledger_ccy rename, or the Book window toolbar buttons. |
-| Last touched  | 2026-07-13                               |
+| Next          | Nothing -- story complete.              |
+| Last touched  | 2026-07-15                               |
 
 * Acceptance
 
--
+- Every data-modeling bug surfaced by the original book.org review
+  (book_status, is_trading_book/regulatory_book_type) is fixed.
+- book_purpose_type, ledger_feed_type, is_sweepable, and
+  rates_centre_code are shipped as proper lookup-entity/soft-FK
+  fields, each manually QA'd.
+- Domain-fit questions raised by the review (book-to-book hierarchy,
+  legal entity/branch, allowed-currency/product lists, Wash
+  paired-risk-book link) are each resolved: either implemented, or
+  explicitly sized/analysed with a written recommendation and a
+  follow-up capture where implementation was out of scope.
+- =ledger_ccy= renamed to =functional_currency= end to end (domain
+  model, SQL, C++, Qt, and living documentation).
+- Books manual chapter enriched with domain concepts, not just UI
+  mechanics.
+- Book window exposes its lookup children via toolbar buttons,
+  mirroring Currency's existing pattern.
 
 * Tasks
 
@@ -54,7 +69,7 @@ enrichment).
 | [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]] | DONE | 2026-07-13 | 2026-07-13 | Replace the originally-scoped is_ledger_book/is_manual_ledger_book boolean pair with one 3-state ledger_feed_type field (None/Automatic/Manual), following the regulatory_book_type lookup-entity pattern -- removes the invalid state where manual=true but ledger=false. |
 | [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] | DONE | 2026-07-13 | 2026-07-13 | Add the is_sweepable boolean (spot-sweep eligibility only, unrelated to ledger sweep), rendered as a yes/no badge in the Book list consistent with the regulatory_book_type badge combo. |
 | [[id:077F2C20-50AE-4E23-A4E1-0FC053854313][Add paired risk-book link for Wash-purpose books]] | DONE | 2026-07-13 | 2026-07-13 | A Wash-purpose book needs a nullable self-referencing FK to its designated risk book, since every wash back-to-back trade needs a routing target. Design validation (only settable when book_purpose_type = Wash) and scope size before pulling into a sprint -- discovered during the book_purpose_type design, not in original ask. |
-| [[id:4709CCA3-F181-47FB-8485-37EF7B23BD3C][Add child-entity toolbar buttons to Book window]] | BACKLOG | | | Book's MDI window should expose its lookup children (book_status, regulatory_book_type, book_purpose_type, ledger_feed_type) as toolbar buttons that open their respective list windows, mirroring CurrencyMdiWindow's RoundingType/MarketTier toolbar pattern. |
+| [[id:4709CCA3-F181-47FB-8485-37EF7B23BD3C][Add child-entity toolbar buttons to Book window]] | DONE | 2026-07-14 | 2026-07-15 | Book's MDI window should expose its lookup children (book_status, regulatory_book_type, book_purpose_type, ledger_feed_type) as toolbar buttons that open their respective list windows, mirroring CurrencyMdiWindow's RoundingType/MarketTier toolbar pattern. |
 
 * Decisions
 

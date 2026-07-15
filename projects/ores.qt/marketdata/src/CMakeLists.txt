@@ -67,7 +67,10 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt.
         ores.qt.lib
-        ores.synthetic.api.lib)
+        ores.synthetic.api.lib
+        # ore::market::serialize_market_data for the CRM matrix's ORE
+        # market-data export.
+        ores.ore.core.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

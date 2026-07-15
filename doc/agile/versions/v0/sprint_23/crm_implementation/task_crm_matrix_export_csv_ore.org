@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/crm-matrix-export-csv-ore
+#+pr: 1589
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
 #+updated: 2026-07-14
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +38,11 @@ necessarily the full unfiltered response) to a file, in two formats:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-14                               |
 
 * Acceptance
@@ -55,15 +55,44 @@ necessarily the full unfiltered response) to a file, in two formats:
 - CSV export: one row per currently-visible cell (base, quote, rate,
   status, as_of) -- respects the current Base Currency filter, Hide
   Empty toggle, and Show Inverted toggle (exports what's on screen).
-- ORE XML export: reuses the app's existing ORE market-data export
-  convention/helper rather than a new one-off implementation.
+- ORE market-data export: reuses =ore::market::serialize_market_data=
+  (ORE's real FX-spot market-data text convention, keyed
+  =FX/RATE/<BASE>/<QUOTE>=) rather than a new one-off implementation
+  or forcing the data into the unrelated config-entity XML exporter.
 - Manual QA scenario covering both export formats against real data.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *Which "ORE export" convention.* The app actually has two distinct
+  ones: =ore::xml::exporter= (paired with =Icon::ExportOre=, used by
+  e.g. =CurrencyMdiWindow=) produces ORE *XML* config files for
+  reference-data entities (currencies, calendars, conventions,
+  portfolios); =ore::market::serialize_market_data= produces ORE's
+  real market-data format, flat tab-delimited text
+  (=DATE\tKEY\tVALUE=, e.g. =20260101\tFX/RATE/EUR/CHF\t1.10=), the
+  format ORE actually consumes for FX spot rates
+  (=market::market_datum{date, key, value}=). CRM rates are quote
+  data, not a config entity, so the fitting convention is the latter
+  (text, keyed =FX/RATE/<BASE>/<QUOTE>=) even though the task's own
+  title says "ORE XML" -- confirmed with the story owner before
+  implementing.
+- *Export scope.* Only cells actually rendered with a
+  =CrmRateCellWidget= (i.e. a real quote/derived rate, direct or
+  inverted) go into the export; the diagonal and dash ("no data")
+  cells are plain =QTableWidgetItem=s with nothing to export and are
+  skipped, for both CSV and market-data output. Whatever the current
+  Base Currency / Hide Empty / Show Inverted filters produced on
+  screen is exactly what gets exported -- no separate unfiltered
+  fetch.
+- *CSV*: one row per exported cell -- base, quote, rate, status,
+  as_of -- RFC 4180-ish plain write (this data has no fields needing
+  escaping, so no need to pull in
+  =ores.refdata.api/csv/exporter='s escaping helper for this).
+- *Market data text*: builds one =ore::market::market_datum= per
+  exported cell -- =date= parsed from the =as_of= ISO-8601 date
+  portion, =key= = ="FX/RATE/" + base + "/" + quote=, =value= = the
+  rate formatted full precision -- then
+  =ore::market::serialize_market_data()=.
 
 * Notes
 
@@ -76,18 +105,52 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:8A6BA0B5-7F41-44F9-87FA-7AA25420F032][Verify CRM cross-rates matrix CSV and ORE market data export]] | PASSED | All 7 steps passed against Barclays Plc majors/exotics CRM data |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1589][#1589]] | [qt,agile] Add CSV/ORE export to CRM cross-rates matrix |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CSV export truncates rate precision for pairs >= 100 (default ostream<< is 6 sig figs, not decimal places) | CrmCrossRatesMatrixMdiWindow.cpp | Accepted | Real bug, flagged by two independent reviewers; fixed with std::fixed << std::setprecision(5), matching the grid's own display precision. Re-verified live: JPY crosses now show 5 dp in the exported CSV |
+| 2 | exportToCsv/exportToOre lack the try/catch-around-export-call pattern CurrencyMdiWindow's sibling exports use | CrmCrossRatesMatrixMdiWindow.cpp | Accepted | Added, wrapping the serialize/write logic and reporting via MessageBoxHelper::critical, matching the established convention |
 
 * Result
+
+Added two toolbar export actions to =CrmCrossRatesMatrixMdiWindow=
+(=Export CSV=/=Export ORE=, using the existing
+=Icon::ExportCsv=/=Icon::ExportOre= icons), backed by
+=displayedRates_= -- exactly the cells actually rendered in the
+current grid (respecting Base Currency/Hide Empty/Show Inverted),
+captured at the end of each =reload()=, so export never re-fetches
+or shows data the user isn't currently looking at.
+
+- *CSV*: plain =base,quote,rate,status,as_of= rows, one per exported
+  cell.
+- *ORE market data*: builds one =ore::market::market_datum= per
+  fresh/stale exported cell (=unavailable= cells skipped -- no rate
+  value to export), keyed =FX/RATE/<BASE>/<QUOTE>=, via the real
+  =ore::market::serialize_market_data()= convention -- not the
+  unrelated config-entity XML exporter the task's own title
+  originally implied (see =* Plan= for that scoping decision).
+- Default export filenames encode the CRM name, active Base Currency
+  filter, and which of Show Inverted/Hide Empty are on, plus a
+  filesystem-safe ISO-8601 UTC timestamp (e.g.
+  =crm_rates_majors_inverted_hideempty_20260715T131751Z.csv=) --
+  added after initial manual testing showed two exports taken under
+  different filters were otherwise indistinguishable in a file
+  listing.
+- =ores.qt.marketdata= gained a private link to =ores.ore.core.lib=
+  for =ore::market::serialize_market_data=/=market_datum=.
+
+Verified manually against live Barclays Plc CRM data (majors/exotics,
+seeded via the standard provisioning script) through the QA
+Validation Runner -- see the linked scenario, all 7 steps PASSED,
+including inspecting the actual exported CSV/text file contents
+(row counts, reciprocal inverted rates, Hide Empty narrowing) outside
+the app.

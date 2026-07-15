@@ -21,6 +21,7 @@
 #define ORES_QT_CRM_CROSS_RATES_MATRIX_MDI_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
 #include <QLabel>
@@ -98,11 +99,19 @@ private slots:
     void onRefreshIntervalChanged();
     void onHideEmptyToggled(bool checked);
     void onShowInvertedToggled(bool checked);
+    void exportToCsv();
+    void exportToOre();
 
 private:
     void setupUi();
     void setupToolbar();
     void updateOverviewPanel(const std::string& base, const std::string& quote);
+
+    /// Descriptive slug for export default filenames -- CRM name, Base
+    /// Currency filter, and which of Show Inverted/Hide Empty are on --
+    /// so two exports taken under different filters (e.g. inverted vs.
+    /// not) never look identical in a file listing/downloads folder.
+    QString exportFileNameSlug() const;
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
@@ -118,6 +127,8 @@ private:
     QComboBox* baseCurrencyCombo_;
     QComboBox* refreshIntervalCombo_;
     QAction* reloadAction_;
+    QAction* exportCsvAction_;
+    QAction* exportOreAction_;
     QPushButton* hideEmptyButton_;
     QPushButton* showInvertedButton_;
     QTimer* autoRefreshTimer_;
@@ -144,6 +155,14 @@ private:
     /// reload -- feeds the overview panel's sparkline. Capped so an
     /// all-day session doesn't grow this unbounded.
     std::map<std::pair<std::string, std::string>, std::deque<double>> rateHistory_;
+
+    /// Exactly the cells actually rendered as a real quote/derived rate
+    /// in the most recent reload (respecting the current Base
+    /// Currency/Hide Empty/Show Inverted filters) -- diagonal and dash
+    /// ("no data") cells are excluded. Export actions (CSV, ORE market
+    /// data) work from this: what's on screen, not a fresh unfiltered
+    /// fetch.
+    std::vector<ores::marketdata::messaging::crm_rate_item> displayedRates_;
 };
 
 }

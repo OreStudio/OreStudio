@@ -67,7 +67,7 @@ needing an explicit =history_response_data_field= override
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | cant save cds convention, missing change reasons. check all conventions |
 
 ** Check tenor history
@@ -79,7 +79,7 @@ loads correctly.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 
 ** Check currency group history
 
@@ -90,7 +90,7 @@ history. Confirm it loads correctly.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | cannot find in menus |
 
 ** Check calendar history
@@ -102,7 +102,7 @@ Confirm it loads correctly.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | cannot see in menu |
 
 ** Check Open and Revert still work on one entity
@@ -123,10 +123,10 @@ confirming) the editable revert dialog opens pre-populated.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-15T12:31:20Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-15T13:58:52Z |
 | Branch        | feature/delete-history-dialog-archetypes-and-combo-drift |
-| Commit        | 6bb442299 |
+| Commit        | 154f8f0fe |
 | Worktree      | brave_hopper |
 
 * Notes

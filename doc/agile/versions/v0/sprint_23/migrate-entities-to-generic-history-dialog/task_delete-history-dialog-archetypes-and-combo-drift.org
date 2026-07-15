@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-07-15
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -47,11 +47,11 @@ HistoryDialog"):
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Item 1 (archetype deletion) done. Item 2 (dynamic_combo drift) partially done: country, currency, tenor_convention, instrument_code, tenor, business_centre, book only. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Continue the dynamic_combo review across the remaining refdata entities and every other component (party, admin, compute, analytics, marketdata, synthetic, trading, workspace). |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -104,23 +104,74 @@ once an actual UUID-keyed entity (=book=) was regenerated through
 this path; fixed with =boost::uuids::to_string()=.
 
 Completed for: country, currency, tenor_convention, instrument_code,
-tenor, business_centre, book (7 of the many =dynamic_combo=/
-history-eligible entities across the codebase). Rebasing onto latest
+tenor, business_centre, book (7, in PR #1571). Rebasing onto latest
 main surfaced one further trivial drift line on =book=
 (=idEdit->setReadOnly=), reconciled the same way.
 
+Follow-on batch (this branch, post-#1571): book_purpose_type,
+book_status, business_day_convention_type, calendar, contact_type,
+cds_convention, crm_driver_pair, crm_enabled_derived_pair,
+crm_topology_config, currency_group, currency_pair,
+currency_pair_classification, deposit_convention, fra_convention,
+ibor_index_convention, ois_convention, overnight_index_convention,
+swap_convention, zero_convention (19 more, 26 total). Full,
+unmodified generator output per entity throughout, per the story
+owner's explicit "no selective regeneration" direction.
+
+Full regeneration across this batch surfaced two further genuine
+codegen/model bugs (beyond the UUID-string-conversion one from
+PR #1571), both pre-existing and unrelated to this task's own changes:
+
+- =history_response_data_field= mismatch: 8 =*_convention= entities'
+  actual protocol field is the pluralized collection name (e.g.
+  =cds_conventions=), not the codegen default of =history=. Fixed via
+  explicit per-entity model overrides.
+- =delete_request_id_field= mismatch: same 8 entities' actual
+  =delete_<entity>_request= field is a natural/display-key name (e.g.
+  =codes=), not the codegen default of =ids=. Fixed the same way for
+  these 8; a broader ~22-entity instance of the same mismatch exists
+  elsewhere in the codebase but is out of this task's scope.
+
+Manual QA testing (scenario [[id:FFFC881E-D3CD-4FDE-8366-9FF7979DA376][FFFC881E]]) surfaced two more real bugs,
+also fixed on this branch:
+
+- All 8 =*_convention= entities above were additionally missing
+  =:has_change_reason_cache: true=, despite their schema requiring
+  =change_reason_code= — saves failed with an empty change-reason
+  dropdown. Fixed by adding the model flag and regenerating.
+- =currency_group= and =calendar= had controllers but were never
+  wired into =RefdataPlugin='s menu, and neither had its NATS CRUD
+  subject registration wired into =registrar.cpp= server-side
+  (=currency_group= didn't even have its =*_registrar.{hpp,cpp}=
+  generated yet). Fixed by generating the missing registrar,
+  instantiating both controllers, adding menu entries, and wiring
+  both into =registrar.cpp='s =append(register_..._handlers(...))=
+  list.
+
+Also discovered and fixed (mid-migration, server-side): the generic
+=history.v1.get= NATS subject requires a *separate*,
+hand-maintained server-side history-provider registration in
+=registrar.cpp= (independent of the client-side controller wiring
+above) — without it, the History dialog compiles and opens but the
+server returns "No history provider registered for entity_type:
+...". Registered all 23 mapper-ready migrated entities (excluding
+=instrument_code=, which has no history field mapper).
+
 * Notes
 
-*Scope note*: this PR/commit set covers only the 7 entities listed
-above, deliberately kept small to avoid conflicting with other
-environments' in-flight work on other entities. The remaining
-=dynamic_combo= entities (most of =ores.refdata=, plus =party=,
-=admin=, =compute=, =analytics=, =marketdata=, =synthetic=,
-=trading=, =workspace=) still need the same treatment — continue
-picking entities and regenerating one at a time, same process, in a
-follow-up pass. Do not close this task or the
-[[id:BE3DEB46-1022-4A68-A1CD-7575CF6CDC33][Reconcile dynamic_combo detail-dialog codegen drift]] capture until
-that's done.
+*Scope note*: this task's scope is the 26 =ores.refdata= entities
+listed above (=counterparty=, =counterparty_contact_information= and
+=counterparty_identifier= deliberately excluded — active work in
+another environment). The remaining =ores.refdata= entities and every
+other component (=party=, =admin=, =compute=, =analytics=,
+=marketdata=, =synthetic=, =trading=, =workspace=) are tracked by the
+parent story's own per-component tasks, not by this one — closing
+this task does not imply the parent story is done.
+
+=registrar.cpp='s growth from adding 24 history-provider registrations
+by hand (100+ includes, dozens of near-identical blocks) was captured
+separately as a codegen candidate:
+[[id:2DFEF8F6-DA10-407B-8A8A-95B938CD673D][Codegen the history-provider registrar wiring]].
 
 * Test Scenarios
 
@@ -131,7 +182,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:FFFC881E-D3CD-4FDE-8366-9FF7979DA376][Verify migrated entity history dialogs (book, cds_convention, tenor, currency_group, calendar)]] | PENDING | Awaiting manual execution via QA Validation Runner. |
+| [[id:FFFC881E-D3CD-4FDE-8366-9FF7979DA376][Verify migrated entity history dialogs (book, cds_convention, tenor, currency_group, calendar)]] | PASSED | First run FAILED (schema drift, missing change-reason wiring, missing menu entries); all fixed and re-run PASSED. |
 
 * PRs
 
@@ -149,3 +200,18 @@ via its "Verifies task" field.
 | 4 | Stale PlantUML diagrams still declare deleted BookHistoryDialog/BusinessCentreHistoryDialog classes | ores.qt.trading.puml / ores.qt.party.puml | Declined | Generated artifacts from a separate, out-of-scope archetype; reviewer flagged as informational only ("not a blocker"), and the diagrams already have pre-existing structural staleness (mis-scoped component placement) unrelated to this PR. |
 
 * Result
+
+Both goal items shipped for this task's scope (26 =ores.refdata=
+entities): the deprecated per-entity history-dialog archetypes are
+deleted outright (PR #1571), and the =dynamic_combo= drift is
+reconciled for all 26 entities via full, unmodified codegen
+regeneration (7 in #1571, 19 in this follow-on batch). Manual QA
+scenario [[id:FFFC881E-D3CD-4FDE-8366-9FF7979DA376][FFFC881E]] PASSED after fixing everything it surfaced:
+missing server-side history-provider registrations (23 entities),
+=history_response_data_field=/=delete_request_id_field= model
+mismatches (8 =*_convention= entities), missing
+=has_change_reason_cache= wiring (same 8), and missing
+Currency Group/Calendar menu + NATS CRUD wiring.
+
+Remaining =ores.refdata= entities and every other component remain
+out of scope, tracked by the parent story's per-component tasks.

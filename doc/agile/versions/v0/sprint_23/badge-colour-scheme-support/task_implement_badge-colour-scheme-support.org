@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: D8A976B3-993F-48A9-87DC-1D3D7461223F
+:END:
+#+title: Task: Analyze current badge colour determination and design improved storage
+#+description: Initial task for: Improve badge colour scheme support
+#+type: task
+#+level: s1
+#+filetags: :badge-colour-scheme-support:sprint_23:v0:
+#+owner: marco
+#+branch: feature/implement-badge-colour-scheme-support
+#+pr: 1593
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine how badge colours are currently determined across the
+codebase, and whether/how to move toward storing colour schemes in
+the database — either alongside a "table enum type"'s own row data,
+or as a system-level property for cases like booleans, per the
+story's framing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- Establishes, with evidence (grep/file references, not guesswork),
+  whether badge colours are currently hardcoded or data-driven.
+- If a data-driven mechanism already exists, assesses how complete its
+  rollout is (adoption coverage, remaining hardcoded stragglers,
+  Qt-vs-Wt parity) rather than assuming it needs to be built from
+  scratch.
+- Produces a concrete recommendation: either a design for new storage,
+  or a scoped list of gaps to close in an already-adequate design —
+  written into this task's =* Result= and reflected in the story's
+  =* Decisions=/=* Tasks=.
+
+* Plan
+
+1. Searched for any existing badge-related infrastructure before
+   assuming none exists — found a full, already-implemented,
+   database-driven badge system, designed in
+   =doc/plans/2026-03-28-badge-system-design.org= (2026-03-28) and
+   substantially built out since: four =ores.dq= entities
+   (=badge_severity=, =code_domain=, =badge_definition=,
+   =badge_mapping=), a client-side =BadgeCache= (loaded once at
+   startup, synchronous =resolve(code_domain, entity_code)=), and
+   codegen support (a =badge_key= column annotation that generates the
+   delegate wiring automatically — see
+   =ores.cpp.qt.mdi_window_impl.org='s =\{\{#is_badge\}\}= section).
+2. Verified the design doc's own success criteria against the current
+   tree rather than trusting the doc alone:
+   - =BadgeColors.hpp= is gone; =ColorConstants.hpp= no longer has a
+     =badge_colors= struct — Phase 3 cleanup of the *old* hardcoded
+     path is done.
+   - Sampled every file =grep= found still calling
+     =set_badge_color_resolver= (the delegate API, ~19 files:
+     =BookMdiWindow.cpp=, =TenantMdiWindow.cpp=,
+     =ComputeConsoleWindow.cpp=, =WorkspaceMdiWindow.cpp=, others) —
+     every one of them resolves through =BadgeCache::resolve()=
+     already; none hardcode a colour inline. The Phase-2 delegate
+     migration described in the design doc is, as far as this sample
+     shows, complete for the entities that have adopted badges at all.
+   - Confirmed =BookMdiWindow.cpp='s badge wiring
+     (=set_badge_color_resolver(...)= calling
+     =cache->resolve("book_status", ...)=,
+     =cache->resolve("is_sweepable", ...)=, etc.) is =\{\{#is_badge\}\}=
+     *codegen output*, not hand-written — matches the =badge_key=
+     column annotation on =ores.refdata.book.org=.
+3. *Directly tested the story's own hypothesis* ("for booleans it is a
+   system property"): =is_sweepable= (a boolean column) already
+   renders as a badge, via the *exact same* =(code_domain,
+   entity_code)= mapping mechanism as any enum — =code_domain =
+   "is_sweepable"=, =entity_code = "true"/"false"=, seeded as two
+   ordinary =badge_mapping= rows
+   (=dq_badge_system_populate.sql:502,504=), reusing the shared
+   =active=/=inactive= badge definitions. There is *no* separate
+   "system property" mechanism for booleans, and no gap here — the
+   hypothesis in the story's own framing turned out to be already
+   answered, just not the way it assumed. A code comment at
+   =dq_badge_system_populate.sql:725= documents this as a repeatable
+   convention ("same convention as =is_sweepable="), so it is not a
+   one-off hack either.
+4. Checked adoption breadth, not just depth: =badge_key= is used in
+   only *10 of 108* =domain_entity= models
+   (=book=, =currency=, =currency_pair=, =currency_pair_convention=,
+   =calendar=, =tenor=, =instrument_code=, =crm_topology_config=,
+   =crm_driver_pair=, =crm_enabled_derived_pair=). 58 badge
+   definitions are already seeded. This says the *infrastructure* is
+   done but *rollout* is early — most status/enum/boolean columns
+   elsewhere in the codebase presumably still render as plain text,
+   not badges, simply because nobody has annotated their model yet
+   (a rollout/toil gap, not a design gap).
+5. Checked Wt parity, since the design doc's own "Open Questions"
+   flagged this as unscoped: =projects/ores.wt.service/src/app/
+   account_list_widget.cpp= is the only Wt file touching badges at
+   all, and it hardcodes Bootstrap =css_class= strings
+   (="badge bg-danger"=/="badge bg-success"=/="badge bg-secondary"=)
+   directly in C++ — it does *not* go through =badge_definition=/
+   =css_class= from the DB at all. This is a real, confirmed gap: Wt
+   badge rendering was never actually migrated to the data-driven
+   system the design doc planned for it.
+6. Evaluated the story's other implicit hypothesis — storing colour
+   directly on a "table enum type"'s own row (e.g. a =colour= column
+   on =book_status=) instead of the current normalised
+   =(code_domain, entity_code) -> badge_definition= indirection.
+   *Recommend against changing this*: the current design's whole
+   point is that many entity types share one =badge_definition= (e.g.
+   =active=/=inactive= is reused by =book_status=,
+   =regulatory_book_type=, =is_sweepable=, =tenant_status=,
+   =workspace_status=, ...) — moving colour onto each lookup table
+   would fragment that reuse, force every table to duplicate colour
+   choices, and lose the central catalogue (58 definitions, one
+   source of truth) the =BadgeSeverityMdiWindow=/
+   =BadgeDefinitionMdiWindow= admin UI already manages. The existing
+   architecture is the right one; it just needs wider adoption.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1593][#1593]] | [agile] Scaffold badge colour scheme support story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+*Badge colours are already database-driven, not hardcoded* — a
+complete system (=badge_severity=/=code_domain=/=badge_definition=/
+=badge_mapping= in =ores.dq=, a client-side =BadgeCache=, and codegen
+support via a =badge_key= column annotation) was designed
+2026-03-28 and has since been substantially built and rolled out for
+every entity that uses it. Sampled ~19 files still calling the
+delegate's =set_badge_color_resolver= API and every one resolves
+through =BadgeCache= — no hardcoded stragglers found. The story's own
+"booleans need a system property" hypothesis is already answered by
+the existing =(code_domain, entity_code)= mapping (=is_sweepable= is a
+live example, documented as a repeatable convention) — no new storage
+design needed there.
+
+Confirmed real gaps instead of a from-scratch design (full writeup in
+the conversation that produced this task; distilled into the story's
+=* Decisions= and the four follow-on tasks below):
+
+1. An entity that *is* a badge source (e.g. =book_status=) doesn't
+   badge itself on its own list — only consumers do.
+2. Adoption is narrow (10/108 =domain_entity= models use =badge_key=)
+   with no audit of where else it should apply.
+3. No visual palette review: =badge_definition=/=badge_severity= have
+   list/detail UI (System > Configuration, =AdminPlugin.cpp:182=)
+   but colours render as plain hex text, not swatches — misuse of
+   the greyy/green/red/yellow semantic convention can't be eyeballed.
+4. =badge_mapping= (the actual linkage data) has no UI at all — "no
+   management UI, populated via seed scripts" was true then and still
+   is. This is the single highest-leverage gap: a mapping browser
+   would make 1, 2, and 3 reviewable instead of grep-only.
+5. The unmapped-value fallback colour
+   (=color_constants::badge_fallback=, orange) is a Qt-only hardcoded
+   constant, indistinguishable in principle from a legitimate grey
+   "inactive" badge, and would need re-duplicating in any future
+   non-Qt client rather than being inherited from the shared data
+   model.
+
+Explicitly recommend *against* moving colour storage onto each "table
+enum type"'s own row — the current normalised mapping's whole value
+is letting many entity types share one badge definition; per-table
+colour columns would fragment that and lose the central catalogue.
+Keep the architecture, close the gaps above.
+
+Wt support is explicitly out of scope for the follow-on tasks (per
+explicit instruction) but was checked for architectural soundness:
+the data/protocol layer is genuinely client-agnostic already
+(=badge_definition= carries both raw hex and an unused =css_class=
+Wt hint); the one piece that wasn't was the fallback colour (#5
+above), folded into its own task so any future client inherits it
+automatically instead of re-hardcoding it.

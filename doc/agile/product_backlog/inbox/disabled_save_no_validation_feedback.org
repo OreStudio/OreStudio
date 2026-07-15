@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: DFD0364A-0D62-4513-B5C1-20E0D55161EE
+:END:
+#+title: Generated detail dialogs disable Save silently instead of showing validation errors
+#+description: Detail dialogs (e.g. PartyDetailDialog) disable the Save button when required fields are empty, but give no visible reason why -- clicking a disabled button does nothing, reading as broken rather than blocked. Should either always enable Save and show a specific 'X is required' message on click, or add a tooltip/inline hint on the disabled state.
+#+type: capture
+#+level: cross
+#+filetags: :qt:codegen:ux:validation:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Found while running the "Verify party Qt UI end-to-end post-NATS"
+scenario, reported as "cannot save party": =PartyDetailDialog::
+updateSaveButtonState()= gates the Save button on
+=hasChanges_ && validateInput() && !readOnly_=, and
+=validateInput()= just returns false when required fields (e.g.
+Short Code) are empty -- no message, no tooltip. Clicking a disabled
+button does nothing and doesn't even reach =onSaveClicked()=, so the
+tester sees Save silently refuse to do anything with no clue why.
+This is the standard codegen'd detail-dialog pattern, so it's not
+party-specific.
+
+* Why
+
+A disabled control with no explanation reads as a bug, not a guardrail
+-- the fix is cheap (either keep Save always enabled and have
+=onSaveClicked()= report exactly which fields are missing via
+=MessageBoxHelper::warning=, or set a dynamic tooltip on the disabled
+button listing the missing fields) and would remove a recurring
+false-positive in manual QA across every codegen'd entity, not just
+party/counterparty.
+
+* References
+
+- =projects/ores.qt/refdata/src/PartyDetailDialog.cpp= (=validateInput=/
+  =updateSaveButtonState=/=onSaveClicked=)
+- =ores.codegen= Qt detail-dialog template (same pattern generated for
+  every entity)
+
+* See also
+
+- [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]

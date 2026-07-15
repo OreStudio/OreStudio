@@ -35,12 +35,12 @@ instrument's active delivery window), using the new tenor type.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
@@ -60,6 +60,67 @@ instrument's active delivery window), using the new tenor type.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Design discussion up front, before touching schema or code (see the
+parent story's =* Decisions= for the full reasoning): the original
+acceptance criteria describe checking "a swap tenor whose start falls
+inside a futures instrument's active delivery window," but
+=ir_curve_template_entry= only stored a single =tenor_code= per row —
+no data to express a period's start distinct from "now." Rejected two
+alternatives (a bolt-on nullable =period_start_tenor_code=; deriving
+periods implicitly from =sequence_index= adjacency) in favour of
+making every entry a genuine =[start, end)= period:
+=tenor_code= renamed to =end_tenor_code=, plus a new required
+=start_tenor_code=. Point instruments (deposits, swaps) set
+=start_tenor_code= to ='SPOT'= — a real, already-catalogued
+zero-duration =PERIOD/DAY= tenor (multiplier 0), already a member of
+=RATES_SPOT_FORWARD='s tenor set — rather than inventing a
+null-means-horizon sentinel. Interval instruments (FRAs) set
+=start_tenor_code= to the period's own front tenor. Both fields
+resolve through the exact same
+=ores::refdata::domain::resolve_end_date()= machinery the "Lightweight
+QuantLib-free tenor type" task already built — no new anchor/sum-type
+concept needed at the entry level.
+
+While wiring the validator's dependency on =ores.refdata.api='s tenor
+resolution, discovered =ores.synthetic.service= had no
+=postgres_event_source=/=event_bus= pipeline at all — a pre-existing
+gap across every entity in the component, not something introduced by
+prior work. Wired it following the exact pattern already established
+in =ores.refdata.service= (hand-maintained =event_registrar=
+aggregator + per-entity generated =register_<entity>_event_mapping()=
+functions) before continuing, since "most services need eventing" and
+leaving synthetic entities without live change events indefinitely
+wasn't a good default to leave in place. Fixed for all five
+=ores.synthetic= entities in one pass: =market_data_generation_config=,
+=fx_spot_generation_config=, =gmm_component=,
+=ir_curve_generation_config=, =ir_curve_template_entry=.
+
+The validator itself (=ores::synthetic::domain::validate_curve_template=
+in =ores.synthetic.api=) resolves every entry's
+=start_tenor_code=/=end_tenor_code= to concrete dates, represents point
+instruments (=start_tenor_code == "SPOT"=) as a degenerate
+=[maturity, maturity)= window (so multiple deposits/swaps at different
+maturities never trivially "collide" merely by sharing =SPOT= as their
+start — placing several maturity nodes from now is exactly how a curve
+is built, not a collision), represents interval instruments as their
+genuine =[start, end)= period, and checks every pair via the existing
+=windows_overlap()=. Touching endpoints are not a collision
+(back-to-back FRA periods are exactly how a bootstrappable strip is
+built). Never throws — exceptions from the underlying tenor resolver
+are caught and turned into the ok/error-message result pair the
+acceptance criteria call for.
+
+Live wiring into an actual save handler (UI or server-side) was
+considered and deliberately deferred: doing so would require resolving
+a currency's spot-day convention into a concrete horizon/spot date pair
+and fetching sibling entries for the same =ir_curve_config_id= — real
+design work with no natural call site yet, since there's no combined
+Curve Template editor UI (deferred out of scope by the parent Curve
+Template task itself, same reasoning as =FxSpotRateEditor='s combined
+editor for FX). The pure, tested, exported function satisfies this
+task's acceptance criteria as written; wiring it into a save path is a
+natural follow-up once that editor exists.
 
 * Notes
 
@@ -92,3 +153,29 @@ validator, which has not yet been started.
 | 5 | Two remaining "basket of the commodity prices" rows inconsistent with sibling FX/Equity fixes (non-blocking) | refdata_instrument_codes_populate.sql | Accepted | Fixed in c91d981ae. |
 
 * Result
+
+Delivered =ores::synthetic::domain::validate_curve_template= in
+=ores.synthetic.api= (=curve_template_validation.hpp=/=.cpp=): a pure,
+never-throwing function taking a Curve Template's entries plus the
+tenor catalog/convention/resolution rows and a horizon/spot date pair,
+returning an ok/error-message result. Covered by 9 test cases (13
+assertions) including the two acceptance-criteria scenarios (two
+overlapping periods; a point instrument's maturity falling strictly
+inside an interval instrument's active period) plus the two properties
+that make the model correct (point instruments never collide with
+each other; touching endpoints are not a collision).
+
+Required two prerequisite changes, both completed in this task:
+- =ir_curve_template_entry= remodelled with =start_tenor_code=/
+  =end_tenor_code= (was a single =tenor_code=), so a genuine =[start,
+  end)= period is representable at all — see =* Plan= for the design
+  discussion and rejected alternatives.
+- =ores.synthetic.service= wired with the =postgres_event_source=/
+  =event_bus= live-eventing pipeline it was entirely missing, across
+  all five entities in the component.
+
+Local build (=linux-clang-debug-make=) clean; full =ctest= suite
+73/73 passed after a =db recreate= (schema-only change, no
+provisioning re-run needed for this PR). Live wiring into a save
+handler is deferred (see =* Plan=) as a follow-up once a combined
+Curve Template editor UI exists to call it from.

@@ -201,6 +201,8 @@ void ClientCounterpartyIdentifierModel::fetch_counterparty_identifiers(std::uint
                 }
 
                 refdata::messaging::get_counterparty_identifiers_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -231,12 +233,12 @@ void ClientCounterpartyIdentifierModel::fetch_counterparty_identifiers(std::uint
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->counterparty_identifiers.size()
-                                           << " counterparty identifiers";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->counterparty_identifiers.size());
+                                           << " counterparty identifiers, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .counterparty_identifiers = std::move(result->counterparty_identifiers),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

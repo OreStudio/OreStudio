@@ -20,11 +20,9 @@
 #include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
-#include <string_view>
 #include <unordered_set>
 
 namespace ores::refdata::generators {
@@ -45,21 +43,22 @@ generate_synthetic_party_identifier(utility::generation::generation_context& ctx
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    // Rotate through valid schemes: a party may have at most one identifier
-    // per scheme (see ores_refdata_party_identifiers_insert_fn), so callers
-    // that generate several identifiers for the same party need distinct
-    // schemes, not just distinct ids.
-    static constexpr std::array<std::string_view, 10> valid_schemes{"LEI",
-                                                                     "BIC",
-                                                                     "MIC",
-                                                                     "NATIONAL_ID",
-                                                                     "CEDB",
-                                                                     "NATURAL_PERSON",
-                                                                     "ACER",
-                                                                     "DTCC_PARTICIPANT_ID",
-                                                                     "MPID",
-                                                                     "INTERNAL"};
-    r.id_scheme = std::string(valid_schemes[idx % valid_schemes.size()]);
+    r.id_scheme = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
+        // Rotate so a batch of several identifiers for one party gets distinct
+        // schemes (max one identifier per scheme per party).
+        [idx] {
+            static constexpr const char* schemes[] = {"LEI",
+                                                      "BIC",
+                                                      "MIC",
+                                                      "NATIONAL_ID",
+                                                      "CEDB",
+                                                      "NATURAL_PERSON",
+                                                      "ACER",
+                                                      "DTCC_PARTICIPANT_ID",
+                                                      "MPID",
+                                                      "INTERNAL"};
+            return std::string(schemes[idx % 10]);
+        }();
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;

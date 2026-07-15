@@ -220,6 +220,8 @@ void ClientPartyContactInformationModel::fetch_party_contact_informations(std::u
                 }
 
                 refdata::messaging::get_party_contact_informations_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -251,12 +253,12 @@ void ClientPartyContactInformationModel::fetch_party_contact_informations(std::u
 
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->party_contact_informations.size()
-                    << " party contact informations";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->party_contact_informations.size());
+                    << " party contact informations, total available: "
+                    << result->total_available_count;
                 return {.success = true,
                         .party_contact_informations = std::move(result->party_contact_informations),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

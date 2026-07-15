@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A user can open a screen (System > Configuration, alongside Badge Definitions/Se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

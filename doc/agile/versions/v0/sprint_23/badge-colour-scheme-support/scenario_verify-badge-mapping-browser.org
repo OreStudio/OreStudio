@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E48D0363-5192-48B7-A73B-56494E0AE7C0
+:END:
+#+title: Test Scenario: Verify badge mapping browser
+#+description: Manual QA for the new Badge Mappings browser window (System > Configuration).
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:badges:admin:badge-colour-scheme-support:sprint_23:v0:
+#+target_dialog: BadgeMappingBrowserWindow (System > Configuration > Badge Mappings)
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] in [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] |
+| Parent story  | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]   |
+| Target dialog | BadgeMappingBrowserWindow                |
+| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and open Badge Mappings
+
+Log in as normal (Barclays Plc tenant). Go to System > Configuration >
+Badge Mappings. Confirm the window opens without error and a code
+domain is pre-selected in the picker with a populated table below it.
+
+** Confirm a known domain's mappings
+
+Select =book_status= from the domain picker. Confirm three rows
+appear (=Active=, =Closed=, =Frozen=), each showing the badge's label
+and rendered with the badge's actual background/text colour (not
+plain text) — colours should match what the Book list's Status column
+already shows for these same values.
+
+** Confirm the boolean-column convention
+
+Select =is_sweepable= from the domain picker. Confirm two rows appear
+(=true=, =false=), each rendered as a badge (reusing the shared
+active/inactive colours), matching what Book's Sweepable column shows.
+
+** Confirm domain picker completeness
+
+Open the domain picker's dropdown. Confirm it lists multiple domains
+(not just the two above) — every =code_domain_code= with at least one
+seeded mapping should appear, sorted alphabetically.
+
+** Re-open behaviour
+
+Close the window, then reopen it from the menu. Confirm it reopens
+cleanly (no crash, no stale/empty state) and shows the same data as
+before.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

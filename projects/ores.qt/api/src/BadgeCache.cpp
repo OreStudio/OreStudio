@@ -19,6 +19,7 @@
  */
 #include "ores.qt/BadgeCache.hpp"
 #include <QtConcurrent>
+#include <set>
 
 namespace ores::qt {
 
@@ -205,6 +206,16 @@ BadgeCache::list_by_domain(const std::string& code_domain_code) const {
             result.emplace_back(m.entity_code, &definitions_[it->second]);
     }
     return result;
+}
+
+std::vector<std::string> BadgeCache::list_code_domains() const {
+    if (!is_loaded_)
+        return {};
+
+    std::set<std::string> domains;
+    for (const auto& m : mappings_)
+        domains.insert(m.code_domain_code);
+    return {domains.begin(), domains.end()};
 }
 
 const dq::domain::badge_definition* BadgeCache::resolve(const std::string& code_domain_code,

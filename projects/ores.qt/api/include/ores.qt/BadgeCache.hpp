@@ -105,6 +105,17 @@ public:
     std::vector<std::pair<std::string, const dq::domain::badge_definition*>>
     list_by_domain(const std::string& code_domain_code) const;
 
+    /**
+     * @brief Returns every distinct code_domain_code present in the loaded
+     * mappings, sorted alphabetically.
+     *
+     * Returns empty if the cache is not yet loaded. Intended for a badge
+     * mapping browser to populate a domain picker without a separate
+     * network fetch -- every domain listed here is guaranteed to have at
+     * least one mapping.
+     */
+    std::vector<std::string> list_code_domains() const;
+
 signals:
     /**
      * @brief Emitted when both definitions and mappings are loaded.

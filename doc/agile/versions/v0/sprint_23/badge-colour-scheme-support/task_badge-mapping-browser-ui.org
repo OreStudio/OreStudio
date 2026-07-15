@@ -41,9 +41,45 @@ A user can open a screen (System > Configuration, alongside Badge Definitions/Se
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Investigated whether a network round-trip was needed: =BadgeCache=
+   already loads *all* =badge_definition=/=badge_mapping= rows once at
+   startup and exposes =list_by_domain(code_domain_code)= — exactly the
+   query this browser needs. No new protocol/service/handler work
+   required; this is a pure client-side, already-cached read.
+2. Added one small public method to =BadgeCache=:
+   =list_code_domains()= — every distinct =code_domain_code= present
+   in the loaded mappings, sorted. Feeds the domain picker without a
+   separate fetch, and guarantees every listed domain has at least one
+   mapping (no empty-picker entries).
+3. =badge_mapping= is a junction model with no existing Qt facet (the
+   prior junction-codegen story deliberately scoped junctions to
+   domain/generator/repository only, not service/protocol/qt) — and no
+   other junction in the codebase has *any* Qt UI yet, generated or
+   hand-written. Rather than force this through the CRUD-shaped
+   =EntityController=/=EntityListMdiWindow= machinery built for
+   network-backed, writable entities, built a plain =QWidget=
+   (=BadgeMappingBrowserWindow=: a domain-picker =QComboBox= + a
+   two-column =QTableWidget=) that reads directly from the already-
+   injected =BadgeCache*=. Matches the established simpler pattern
+   already used for =TelemetryMdiWindow=/=ShellMdiWindow=/etc.
+   (plain widget wrapped in a hand-constructed
+   =DetachableMdiSubWindow=, added via =mdiArea_->addSubWindow()=
+   directly in the plugin) rather than inventing a new abstraction.
+4. Badge cells render with the resolved =badge_definition='s actual
+   =background_colour=/=text_colour= set directly as the
+   =QTableWidgetItem='s background/foreground brush — a real colour
+   swatch, not hex text (task 2's swatch/picker work is for the
+   =BadgeDefinition= admin screens specifically; this task's own
+   badge cells needed *a* swatch to be useful at all, so did the
+   minimal version inline rather than block on task 2).
+5. Wired into =AdminPlugin=: new =Badge &Mappings= action under
+   System > Configuration, alongside the existing Badge
+   Definitions/Severities actions; window tracked directly (no
+   controller) and closed on logout, mirroring the existing
+   Badge Definitions/Severities lifecycle pattern at the level of
+   detail this simpler window actually needs.
+6. Verified: =ores.qt.admin.lib= and the full =ores.qt.exe= build
+   clean; =clang-format --dry-run --Werror= clean on the new files.
 
 * Notes
 
@@ -56,7 +92,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E48D0363-5192-48B7-A73B-56494E0AE7C0][Verify badge mapping browser]] | PENDING | |
 
 * PRs
 

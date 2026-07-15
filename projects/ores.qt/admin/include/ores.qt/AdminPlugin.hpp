@@ -96,6 +96,14 @@ private:
     std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
 
     /**
+     * @brief The badge_mapping browser -- a plain read-only window (no
+     * controller, no CRUD), so it's tracked directly rather than via an
+     * EntityController like the two above. See
+     * BadgeMappingBrowserWindow's own doc comment for why.
+     */
+    DetachableMdiSubWindow* badgeMappingBrowserSubWindow_{nullptr};
+
+    /**
      * @brief The QA Validation Runner's dock, built in setup_menus()
      * (not on_login()) since it must stay usable before login — see
      * shared_menus_context::main_window/client_manager.

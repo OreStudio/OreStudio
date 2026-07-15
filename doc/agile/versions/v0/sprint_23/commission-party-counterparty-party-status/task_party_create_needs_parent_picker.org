@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :qt:codegen:party:counterparty:blocking:commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/party-create-needs-parent-picker
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,7 +54,7 @@ needs it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -77,11 +77,54 @@ needs it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Simplified scope per discussion: the combo is *required*, not
+blank-allowed -- "you must supply a valid parent party" to create one.
+This sidesteps the harder "root party via UI" case entirely (root is
+provisioned via GLEIF publish, never manually).
+
+Found the existing =dynamic_combo= facet mechanism already generalizes
+to a self-referencing UUID-valued combo almost for free:
+- =is_uuid=/=combo_code_field= already drive a UUID-keyed dynamic combo
+  correctly (used for e.g. locked key fields) -- just never combined
+  with =combo_domain_type= pointing at the *same* entity before.
+- =required_dynamic_combo_fields= already generates the
+  =currentIndex() >= 0= check in =validateInput()= generically -- no
+  new validation machinery needed, just mark the field =is_required=.
+- Gap found: the *non-locked* =is_dynamic_combo= branches of
+  =updateUiFromX()=/=updateXFromUi()= (tangled from
+  =ores.cpp.qt.detail_dialog_impl.org=) only handle plain
+  =std::string=-valued combos, not =is_uuid=/=is_optional_uuid=. Since
+  =parent_party_id= is =std::optional<boost::uuids::uuid>= (nullable at
+  the DB/domain level -- the root party genuinely has none), extended
+  both branches to handle =is_optional_uuid= (parse/round-trip through
+  =std::optional=, unset on an empty combo selection).
+- Self-parenting is naturally impossible on Create (the new party's id
+  doesn't exist yet when the combo is populated, so it can't appear in
+  its own parent list); descendant-cycle prevention on Edit is out of
+  scope for this pass (Edit's parent-reassignment isn't exercised by
+  the failing scenario) -- captured as a note below if picked up later.
+
+Steps:
+1. Add =fetch_parties=/=fetch_counterparties= to =LookupFetcher=
+   (same shape as =fetch_party_id_schemes= etc., reusing the existing
+   =get_parties_request=/=get_counterparties_request= with a large
+   limit -- matches =PartyChildEntityTables='s existing =limit=1000=
+   precedent rather than building a searchable/paginated combo).
+2. Extend the =is_dynamic_combo= branches in
+   =ores.cpp.qt.detail_dialog_impl.org= for =is_optional_uuid=.
+3. Add =parent_party_id= as a required =dynamic_combo= Detail field to
+   =party.org=/=counterparty.org='s Qt facet (self-referencing
+   =combo_domain_type=).
+4. Regenerate, build, manually verify Create end-to-end for both.
 
 * Notes
+
+Descendant-cycle prevention on Edit (reassigning an existing party's
+parent to one of its own descendants) is not handled by this task --
+only Create is in scope. If Edit-time parent reassignment is exposed
+later, revisit whether the server needs a cycle check (client-side
+combo filtering alone can't prevent it once any client can call save()
+directly).
 
 * Test Scenarios
 

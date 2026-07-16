@@ -57,7 +57,13 @@ instructions in the body below the title. The panel writes each
 step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
 child heading directly under it.
 
-,** (First manual step the tester should perform.)
+,** Connect to tenant Barclays Plc
+
+Log in against the =prime_origin= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+,** (Next manual step the tester should perform.)
 
 (Optional longer instructions for this step.)
 

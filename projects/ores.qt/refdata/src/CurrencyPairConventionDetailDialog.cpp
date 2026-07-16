@@ -51,6 +51,11 @@ CurrencyPairConventionDetailDialog::CurrencyPairConventionDetailDialog(QWidget* 
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 CurrencyPairConventionDetailDialog::~CurrencyPairConventionDetailDialog() {

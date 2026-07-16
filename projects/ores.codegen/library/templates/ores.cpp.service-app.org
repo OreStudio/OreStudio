@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.service-app= facet of the
 codegen template library. Each section documents one template and
@@ -23,22 +23,23 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Twelve templates scaffolding a service component: application, host,
+config options/parser with their exceptions, =main.cpp= and the stub
+test. All =component-service= profile, generated once per service
+component. (The per-entity NATS service pair lives in the messaging
+facets, not here.)
 
 * The ores.cpp.service-app facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The service projection of the /component/: a generated service binary
+is =main.cpp= → host (lifecycle, signals) → application (wiring) →
+config parser/options (CLI + file), each with its exception type.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+Component-level templates render inside ={{#component}}= with
+=full_name=/=full_name_upper= for include guards and namespaces.
+Standard constructs otherwise.
 
 * Templates
 

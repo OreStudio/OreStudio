@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the node for the =ores.doc= technical space in the codegen
 physical-space address graph. Its title is its MASD address; it gathers the
@@ -17,8 +17,22 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-(Two to four sentences: what kind of artefacts this technical space covers
-and which model elements drive them.)
+Org-mode document scaffolds — the machinery behind =compass add=,
+split across four facets by document family (agile, knowledge,
+modeling, template). Unusually for this technical space the renderer
+escapes nothing (=pystache.Renderer(escape=identity)=), and outputs
+are org files whose own structure must round-trip the literate
+escaping.
+
+* Shared conventions
+
+- Every scaffold opens with the =:PROPERTIES:/:ID:= drawer and the
+  =#+title/#+description/#+type/#+level/#+filetags/#+created/#+updated=
+  frontmatter contract.
+- Stateful types render =#+todo:= vocabularies and a =* Status=
+  table at the type's default state.
+- Composition types receive =parent_id=/=parent_title= for the
+  glossary-linked blurb.
 
 * Facets
 
@@ -27,10 +41,14 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 0 | Agile artefact scaffolds: task, story, sprint, version. |
-| [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 0 | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook. |
-| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 0 | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset_overview. |
-| [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 0 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
+| [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 0* | Agile artefact scaffolds: task, story, sprint, version. |
+| [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 0* | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook. |
+| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 0* | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset_overview. |
+| [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 4 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
+
+(* archetype docs for these facets have not yet been migrated onto the
+physical-space graph; their templates still live as flat,
+=#+type: knowledge=-tagged docs pending that follow-up.)
 
 * See also
 

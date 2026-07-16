@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.nats-handler= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,16 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+One template: the subject-handler skeleton dispatching an entity's
+protocol messages to its service. =nats-handler= profile.
 
 * The ores.cpp.nats-handler facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The dispatch point of the entity's NATS surface: receives
+[[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] messages on the entity's subjects and routes them
+to [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]. Wired to its subjects by
+[[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]]; the component-side host that runs the
+handler lives in [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]].
 
 * Mustache incantations
 

@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.generator= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,15 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Two templates: the faker-based test-data generator for an entity's
+value type — declaration and faker-cxx implementation — one synthetic
+instance per call. =generator= profile.
 
 * The ores.cpp.generator facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Sibling to [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]: produces synthetic instances of the
+domain class for tests. Column loops dispatch on per-field type flags
+to choose the matching faker-cxx call and any generation constraints.
 
 * Mustache incantations
 

@@ -10,7 +10,7 @@
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.sql.populate= facet of the
 codegen template library. Each section documents one template and
@@ -24,15 +24,30 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Reference-data INSERT templates: dataset and catalog registration, ISO
+and non-ISO currencies, countries, flag SVGs, methodologies, tags, the
+FPML refdata artefact/function pair, and the batch-execute master
+include. *None belongs to a profile* — all are invoked directly by
+=generator.py='s dataset pipeline (the slovaris dataset and FPML
+reference data now owned by =ores.seeder=).
 
 * The ores.sql.populate facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The data projection: where [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] renders an entity's /shape/,
+these templates render its /contents/ — typed datasets (ISO 4217, ISO
+3166, FPML coding schemes, …) traced back to their source via dataset
+rows, dependency links, catalogs and methodologies. The recurring
+pattern is one INSERT block per item inside a dataset section, each
+row carrying the dataset code for provenance.
+
+* Mustache incantations
+
+Several templates predate the standard header and open with their own
+={{! purpose }}= comment plus an =AUTO-GENERATED= SQL banner — both
+preserved verbatim. FPML templates branch on optional fields with
+={{#field}}/{{^field}}= pairs (e.g. =publication_date=,
+=description=); the flag-populate template inlines whole SVG documents
+via ={{generated_svg}}=. Otherwise the group's standard constructs.
 
 * Mustache incantations
 

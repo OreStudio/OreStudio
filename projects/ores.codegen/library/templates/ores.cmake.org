@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:physical-space:cmake:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-16
 
 This page is the node for the =ores.cmake= technical space in the codegen
 physical-space address graph. Its title is its MASD address; it gathers the
@@ -17,8 +17,22 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-(Two to four sentences: what kind of artefacts this technical space covers
-and which model elements drive them.)
+The build system of a component: the root =CMakeLists.txt=, the
+flavour-specific =src/= file, the Catch2 test wiring, and the PlantUML
+modeling target. Driven by the /component/ model element (not
+entities), following the api/core/service split of the
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]].
+
+* Shared conventions
+
+- ={{{cmake_license}}}= triple-stache injects the licence header
+  verbatim from the generator's standard data; it is not part of the
+  component model.
+- Everything renders inside a ={{#component}}= section providing
+  =full_name=, =full_name_upper= and, for split components,
+  =api_full_name= / =core_full_name=.
+- CMake's =${var}= syntax passes through Mustache untouched — braces
+  are only magic when doubled.
 
 * Facets
 

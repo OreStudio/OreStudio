@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.agile= facet of the
 codegen template library. Each section documents one template and
@@ -22,22 +22,33 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+The agile composition tree: version, sprint, story, task. Each
+scaffold carries a =#+todo:= vocabulary and a =* Status= table at its
+default state, plus parent links for the glossary-linked blurb. No
+profile involvement — =doc_generate.py='s =TYPE_TO_TEMPLATE= maps type
+→ template directly.
 
 * The ores.doc.agile facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+These templates are /self-hosting/: mustache sources that render to
+org-mode documents, themselves owned by an org-mode document (this
+one). The model element is =doc_generate='s variables dict — =id=,
+=title=, =description=, =filetags=, =date=, =state=, plus parent links
+for the agile composition tree (story → task, sprint → story, version
+→ sprint). The rendered artefacts follow the project document
+contract: =:PROPERTIES:/:ID:= drawer, =#+keyword= frontmatter,
+glossary-linked blurb, skeleton sections (task adds =* PRs=/=* Review=
+tables and =#+branch:=/=#+pr:= keywords that drive =compass pr=
+matching; story adds a =* Tasks= table compass wires rows into).
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+=doc_generate= renders with =pystache.Renderer(escape=identity)=, so
+double-stache is effectively triple-stache here — titles and bodies
+land verbatim, HTML-escaping never applies. List sections
+(={{#acceptance}}=, ={{#see_also}}=) render repeatable bullets, with
+={{#has_acceptance}}=-style guards selecting placeholder text when
+empty.
 
 * Templates
 
@@ -54,8 +65,11 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * Archetypes
 
-| Archetype | Description |
-|-----------+-------------|
+Per-template archetype docs for this facet have not yet been migrated
+onto the physical-space graph — the four templates (=doc_version=,
+=doc_sprint=, =doc_story=, =doc_task=) still live as flat,
+=#+type: knowledge=-tagged docs in this directory pending that
+follow-up.
 
 * See also
 

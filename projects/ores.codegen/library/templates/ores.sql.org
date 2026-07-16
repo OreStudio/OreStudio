@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:physical-space:sql:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the node for the =ores.sql= technical space in the codegen
 physical-space address graph. Its title is its MASD address; it gathers the
@@ -17,8 +17,22 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-(Two to four sentences: what kind of artefacts this technical space covers
-and which model elements drive them.)
+The SQL projection of the system: DDL for entity and junction tables
+(=ores.sql.schema=), IAM artefacts from the service registry
+(=ores.sql.service=), and reference-data INSERTs
+(=ores.sql.populate=). Schema and service facets are profile-driven
+with outputs under =projects/ores.sql/=; the populate family is
+invoked directly by =generator.py='s dataset pipeline.
+
+* Shared conventions
+
+- ={{{sql_license}}}= triple-stache injects the SQL licence header
+  verbatim; many templates also keep a pre-literate ={{! purpose }}=
+  comment and an =AUTO-GENERATED= SQL banner.
+- Column/list loops use ={{^last}},{{/last}}= inverted sections for
+  comma placement.
+- File naming follows ={component}_{entity_plural}_<verb>.sql= under
+  =projects/ores.sql/create|drop|populate/=.
 
 * Facets
 

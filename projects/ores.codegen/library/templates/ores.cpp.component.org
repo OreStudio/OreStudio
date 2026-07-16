@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.component= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,18 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Six templates forming a new component's C++ skeleton: the component
+header and export macros (all four component profiles), the stub
+header/impl/test trio that gives an empty component something to
+compile and test (=component=, =component-api=, =component-core=),
+and the Catch2 =test_main= (all four profiles).
 
 * The ores.cpp.component facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The minimal C++ presence of a /component/: enough generated source
+that CMake targets build and the test runner passes before any real
+code exists. Stubs are deleted as real entities arrive; the component
+header and test main remain.
 
 * Mustache incantations
 

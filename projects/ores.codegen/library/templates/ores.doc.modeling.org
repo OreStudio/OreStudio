@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.modeling= facet of the
 codegen template library. Each section documents one template and
@@ -22,22 +22,26 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Codegen model-authoring scaffolds: entity_org (the literate codegen
+entity model — frontmatter plus the section/table skeleton the
+org_loader parses), field_group, table (SQL-only), junction,
+lookup_entity (batch-loaded), service_registry, and dataset_overview.
+No profile involvement.
 
 * The ores.doc.modeling facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Scaffolds for the source-of-truth org files that drive the rest of
+codegen — these are inputs, not generated outputs, of the entity
+facets in [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] and [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]]. Each scaffold matches the section/table
+shape its own loader parses (Primary key, Columns, Left/Right FK
+sections for junctions, one section per service for the registry).
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+Same identity-escape rendering as the rest of the group. The junction
+and lookup-entity scaffolds carry frontmatter flags
+(={{#has_tenant_id}}=-style) mirroring the flags their generated SQL
+branches on.
 
 * Templates
 
@@ -54,8 +58,10 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * Archetypes
 
-| Archetype | Description |
-|-----------+-------------|
+Per-template archetype docs for this facet have not yet been migrated
+onto the physical-space graph — the templates still live as flat,
+=#+type: knowledge=-tagged docs in this directory pending that
+follow-up.
 
 * See also
 

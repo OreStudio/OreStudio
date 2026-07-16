@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.knowledge= facet of the
 codegen template library. Each section documents one template and
@@ -22,22 +22,26 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture,
+runbook — plus component, investigation, product identity, and
+release notes. No profile involvement; =doc_generate.py='s
+=TYPE_TO_TEMPLATE= maps type → template directly.
 
 * The ores.doc.knowledge facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Self-hosting mustache sources rendering to org-mode documents, driven
+by =doc_generate='s variables dict (=id=, =title=, =description=,
+=filetags=, =date=, plus type-specific extras — recipe section bodies
+via =--question=/=--answer=/=--script=/=--tested-by=, memory subtype
+fields, component name/brief). Recipe, runbook and skill compose other
+prose docs by reference rather than by structure.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+=doc_generate= renders with =pystache.Renderer(escape=identity)= — see
+the group doc's shared conventions. List sections
+(={{#acceptance}}=, ={{#see_also}}=) render repeatable bullets with
+={{#has_acceptance}}=-style empty-state guards.
 
 * Templates
 
@@ -54,8 +58,10 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * Archetypes
 
-| Archetype | Description |
-|-----------+-------------|
+Per-template archetype docs for this facet have not yet been migrated
+onto the physical-space graph — the templates still live as flat,
+=#+type: knowledge=-tagged docs in this directory pending that
+follow-up.
 
 * See also
 

@@ -9,7 +9,7 @@
 #+facet_group: ores.cmake
 #+filetags: :codegen:physical-space:cmake:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cmake.service= facet of the
 codegen template library. Each section documents one template and
@@ -23,22 +23,26 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+One template: =src/CMakeLists.txt= for a =.service= component
+(=component-service= profile). Splits sources into a library
+(everything except =main.cpp=, linking the sibling core via
+={{core_full_name}}.lib=) and the service executable (=main.cpp= only).
 
 * The ores.cmake.service facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+A sibling variant of [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]'s =src= archetype, split out
+because the service flavour has a two-target shape (library + exe)
+the others don't. Note: an earlier, standalone-service =src=
+variant with no sibling-core dependency
+(=cmake_service_src.mustache=, the pre-regroup shape) still exists in
+this directory but is referenced by no profile or code — it has no
+node in this graph and is a dead-code-audit candidate, not part of
+this facet.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+No constructs beyond the group's shared conventions and the
+={{core_full_name}}= interpolation for the sibling-core link.
 
 * Templates
 

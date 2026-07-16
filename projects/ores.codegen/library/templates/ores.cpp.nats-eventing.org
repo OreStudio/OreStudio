@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.nats-eventing= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,15 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+One template: the entity-changed event type published by the notify
+pipeline. =nats-eventing= profile.
 
 * The ores.cpp.nats-eventing facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Part of the entity's NATS surface: the event type that travels when
+the entity changes, published by the Postgres-notify pipeline and
+consumed downstream by [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] wiring. Event
+class names arrive as explicit model fields.
 
 * Mustache incantations
 

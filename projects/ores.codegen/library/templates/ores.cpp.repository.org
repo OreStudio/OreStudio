@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.repository= facet of the
 codegen template library. Each section documents one template and
@@ -23,22 +23,26 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Six templates — three hpp/cpp pairs — forming the entity's persistence
+triplet: the sqlgen entity struct mirroring the table, the mapper
+converting domain ↔ entity, and the repository exposing CRUD and
+temporal queries. =repository= profile.
 
 * The ores.cpp.repository facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The persistence layer of the /entity/ projection: the database
+round-trip entity ↔ mapper ↔ repository over sqlgen. Declarations in
+=.hpp=, out-of-class implementations in =.cpp=, with custom-method
+paste points from the entity org-model where the generated default is
+not enough.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+Column loops dispatch on per-field type flags (=is_string=,
+=is_boolean=, =is_timestamp=, …) to choose C++ types and defaults;
+={{^last}}= drives comma placement. Custom-method injection points
+reference the org entity meta-model's paste markers. Otherwise the
+group's standard constructs.
 
 * Templates
 

@@ -9,7 +9,7 @@
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.sql.service= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,27 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Four templates projecting the /service registry/ onto IAM SQL: one
+PostgreSQL login role per service, the DML grants those roles need,
+and the matching IAM application accounts with their role assignments.
+All four belong to the =service-registry= profile, with outputs under
+=projects/ores.sql/create/iam/= and =populate/iam/=.
 
 * The ores.sql.service facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Driven by the /service registry/ model — a =services= list carrying
+=name=, =description=, =env_key=, =iam_role= and =psql_var= per
+service — rather than by entities. Together the four artefacts give
+every backend service a database identity (users + grants) and an
+application identity (accounts + roles); [[id:7E13F164-80A9-46CC-8186-EB11FE1333F7][ores.shell.service]] is the
+shell projection of the same registry.
+
+* Mustache incantations
+
+Passwords are never inlined: ={{psql_var}}= emits a psql =:variable=
+reference resolved at execution time from the environment
+(={{env_key}}=). The DB-grants template uses the ={{^last}}= comma
+idiom for the grant lists. Otherwise the group's standard constructs.
 
 * Mustache incantations
 

@@ -9,7 +9,7 @@
 #+facet_group: ores.shell
 #+filetags: :codegen:physical-space:shell:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.shell.service= facet of the
 codegen template library. Each section documents one template and
@@ -23,15 +23,17 @@ Output paths and profile membership come from
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+One template: a sourced shell fragment enumerating the service
+registry, one variable per service. Its output,
+=projects/ores.sql/service_vars.sh=, is read by the compass
+environment tooling (=env_init.py= / =compass_db.py=) to provision
+services.
 
 * The ores.shell.service facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Projects the /service registry/ model onto a sourced shell fragment: a
+={{#services}}= loop emitting one variable per service ={{name}}=
+inside the ={{#service_registry}}= section.
 
 * Mustache incantations
 

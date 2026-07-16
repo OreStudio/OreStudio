@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: FFA8F092-AC73-464B-B3F7-47409895E9E9
+:END:
+#+title: Story: Commission ores.qt.dq — full-stack codegen for the DQ component
+#+description: ores.dq has grown a mix of hand-written and partially-generated entities (badge_severity/badge_definition/code_domain were regenerated onto the standard core/repository stack but still route through a hand-written combined handler/service/protocol, and their Qt layer -- plus data_domain/subject_area/catalog/change_reason/change_reason_category -- is entirely hand-written with no .org model at all). Commission this properly: author codegen models for every DQ entity that doesn't have one, retire all hand-written core/service/handler/protocol code in favour of generated equivalents, and stand up a proper ores.qt.dq Qt library (CMakeLists + DqPlugin) so every DQ entity's Qt controller/dialog/window is generated, not hand-written.
+#+type: story
+#+level: s2
+#+filetags: :codegen:dq:qt:refactor:sprint_23:v0:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every DQ entity ends up with a real =.org= codegen model and standard
+generated core/service/handler/protocol/repository/Qt files -- zero
+hand-written entity-specific code anywhere in the DQ stack (server or
+Qt). Concretely:
+
+- Retire the hand-written combined =badge_handler.hpp=/
+  =badge_service.hpp=/=badge_service.cpp=/=badge_protocol.hpp= (in
+  =ores.dq.core=/=ores.dq.api=), replacing =badge_severity=/
+  =badge_definition=/=code_domain='s list/save/delete/history routing
+  with the already-generated, currently-unwired per-entity handlers
+  (=badge_severity_handler.hpp=, etc.), each registered via the
+  standard =register_<entity>_handlers()= sub-registrar pattern (see
+  =ores.refdata.core='s =registrar.cpp= for the convention this
+  component should follow). =badge_mapping= (a junction) needs its
+  own investigation first -- see
+  [[id:4AB2C99D-AF27-479E-842F-B223E28D0BCA][the junction codegen path/namespace drift capture]] filed during the
+  badge migration work.
+- Author =.org= models (none exist today) for =data_domain=,
+  =subject_area=, =catalog=, =change_reason=, and
+  =change_reason_category= -- currently entirely hand-written,
+  including their Qt layer, living in =ores.qt.refdata=.
+- Stand up =ores.qt.dq= as a real, built Qt library: add its
+  =CMakeLists.txt= (the directory and 3 entities' generated files
+  already exist from the badge migration work, just never wired into
+  the build), wire it into =projects/ores.qt/CMakeLists.txt=, and
+  create a new =DqPlugin= (mirroring =RefdataPlugin=/=AdminPlugin=)
+  that owns it and contributes the =Data &Quality= menu (see the
+  sibling [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] story for the menu structure
+  this feeds into -- that story owns the overall menu redesign
+  decision; this story only needs to land Data Quality's own menu
+  correctly).
+- Retire the hand-written =BadgeDefinitionController=/
+  =BadgeSeverityController= (in =ores.qt.admin=) and
+  =CodeDomainController= (in =ores.qt.refdata=, including its
+  hand-wired =BadgeMappingsTab=, which needs to move to a real paste
+  block on the regenerated =CodeDomainDetailDialog= once it's
+  actually generated rather than hand-written), replacing them with
+  the generated controllers already sitting in =ores.qt/dq=.
+- Along the way, this closes the two bugs found while testing the
+  badge migration: Code Domain saves not prompting for a change
+  reason (hand-written dialogs never got the standard
+  =promptChangeReason()= call every generated dialog has), and not
+  eventing (the old hand-written handler never published an
+  entity-change event, unlike what codegen generates by default).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-16                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2590F0EB-007D-4AD2-98E2-27A6AB957555][Scaffold story: Commission ores.qt.dq — full-stack codegen for the DQ component]] | STARTED | 2026-07-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:206FCFAE-6617-4FEE-BE81-9DC7468FAE1A][Inventory all DQ entities and their current codegen/hand-written status]] | BACKLOG | | | Initial task for: Commission ores.qt.dq — full-stack codegen for the DQ component |
+
+* Decisions
+
+- Task breakdown: one task per DQ entity (=badge_severity=,
+  =badge_definition=, =code_domain=, =badge_mapping=, =data_domain=,
+  =subject_area=, =catalog=, =change_reason=,
+  =change_reason_category=, plus any others the inventory task
+  turns up), each covering that entity's full switchover (retire
+  hand-written code, wire in generated code, author a model first if
+  none exists) end to end -- not split by layer (e.g. not "all
+  handlers" then "all Qt" as separate tasks). The =ores.qt.dq=
+  library/=DqPlugin= scaffolding itself is a one-time prerequisite,
+  its own task, done once before the first entity that needs it.
+
+* Out of scope
+
+-

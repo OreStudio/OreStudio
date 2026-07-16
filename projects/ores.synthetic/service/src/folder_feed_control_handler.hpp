@@ -118,6 +118,13 @@ public:
         start_feeds_under_folder_response resp;
         resp.success = true;
 
+        // Forwarded so the vintage-availability check (inside ctrl_->start)
+        // runs in the caller's own tenant/party context -- without it, the
+        // check silently runs as this service's own system-tenant identity,
+        // which cannot see another tenant's market_observation rows (RLS),
+        // and every vintage-sourced feed is wrongly rejected as missing.
+        const auto bearer = ores::nats::service::extract_bearer(msg);
+
         namespace repo = ores::synthetic::repository;
         repo::fx_spot_generation_config_repository fx_repo;
         repo::gmm_component_repository comp_repo;
@@ -146,6 +153,7 @@ public:
                 stdevs.push_back(c.stdev);
                 weights.push_back(c.weight);
             }
+            std::string error_detail;
             const auto r = ctrl_->start(fx.ore_key,
                                         fx.source_name,
                                         std::move(means),
@@ -155,12 +163,19 @@ public:
                                         static_cast<double>(fx.ticks_per_hour),
                                         fx.process_type,
                                         fx.vintage_source,
-                                        fx.vintage_date);
+                                        fx.vintage_date,
+                                        &error_detail,
+                                        bearer);
             using sr = feed_controller::start_result;
             switch (r) {
                 case sr::started: ++resp.started; break;
                 case sr::already_running: ++resp.already_running; break;
-                case sr::vintage_data_missing: ++resp.skipped; break;
+                case sr::vintage_data_missing:
+                    ++resp.skipped;
+                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+                        << "Skipping " << fx.ore_key << " under folder " << req->folder_id
+                        << " — " << error_detail;
+                    break;
             }
         }
 

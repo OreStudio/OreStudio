@@ -34,6 +34,7 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
+#include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
@@ -68,6 +69,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <functional>
 #include <memory>
 #include <rfl/json.hpp>
 #include <set>
@@ -81,6 +83,11 @@ namespace {
 // Tree item roles.
 constexpr int NodeTypeRole = Qt::UserRole + 1;
 constexpr int NodeIdRole = Qt::UserRole + 2;
+// The backing ores.synthetic.folder id for every non-Feed node (Root,
+// Collection, Group) -- distinct from NodeIdRole, which for a Collection is
+// the market_data_generation_config id (needed for edit/delete/new-fx-rate).
+// Used to cascade start/stop via the folder-scoped backend request.
+constexpr int FolderIdRole = Qt::UserRole + 3;
 
 boost::uuids::uuid uuid_from_string(const std::string& s) {
     try {
@@ -519,6 +526,7 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::market_data_generation_config> feeds;
         std::vector<synthetic::domain::fx_spot_generation_config> fxPairs;
         std::vector<synthetic::domain::gmm_component> components;
+        std::vector<synthetic::domain::folder> folders;
         std::unordered_map<std::string, std::string> currencyNames;
         std::vector<std::string> runningSourceNames;
         QString error;
@@ -555,6 +563,14 @@ void MarketSimulatorWindow::reload() {
         }
         r.components = std::move(compResp->gmm_components);
 
+        auto folderResp =
+            cm->process_authenticated_request(m::get_folders_request{.offset = 0, .limit = 1000});
+        if (!folderResp) {
+            r.error = QString::fromStdString(folderResp.error());
+            return r;
+        }
+        r.folders = std::move(folderResp->folders);
+
         // Currency display names (best-effort; an empty map just falls back to
         // ISO codes in the hero title).
         r.currencyNames = fetch_currency_names(cm);
@@ -589,6 +605,7 @@ void MarketSimulatorWindow::reload() {
         self->feeds_.clear();
         self->fxPairs_.clear();
         self->components_.clear();
+        self->folders_.clear();
         self->currencyNames_ = std::move(result.currencyNames);
         self->runningSourceNames_ = {result.runningSourceNames.begin(),
                                      result.runningSourceNames.end()};
@@ -599,10 +616,13 @@ void MarketSimulatorWindow::reload() {
             self->fxPairs_[boost::uuids::to_string(fx.id)] = std::move(fx);
         for (auto& c : result.components)
             self->components_[boost::uuids::to_string(c.id)] = std::move(c);
+        for (auto& f : result.folders)
+            self->folders_[boost::uuids::to_string(f.id)] = std::move(f);
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << self->feeds_.size() << " feeds, "
                                   << self->fxPairs_.size() << " fx pairs, "
-                                  << self->components_.size() << " components.";
+                                  << self->components_.size() << " components, "
+                                  << self->folders_.size() << " folders.";
 
         self->buildTree();
         self->updateStatusCounts();
@@ -639,43 +659,27 @@ static QIcon feedStatusIcon(bool running) {
     return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
 }
 
-// Pretty display name for an asset-class/instrument-type slug parsed out of
-// a source_name. Hardcoded since FX spot is the only instrument type
-// modelled today; extend this map when a second one is added.
-static QString prettyGroupName(const std::string& slug) {
-    static const std::map<std::string, QString> names = {
-        {"fx", QStringLiteral("FX")},
-        {"fxrates", QStringLiteral("FX Rates")},
-        {"uncategorized", QStringLiteral("Uncategorized")},
-    };
-    auto it = names.find(slug);
-    if (it != names.end())
-        return it->second;
-    QString s = QString::fromStdString(slug);
-    if (!s.isEmpty())
-        s[0] = s[0].toUpper();
-    return s;
-}
-
-// Parses (asset class, instrument type) out of a source_name shaped
-// synthetic.<collection>.<asset class>.<instrument type>.<pair>. Falls back
-// to a single "Uncategorized" bucket for anything that doesn't match (e.g.
-// data predating the namespacing) so old rows still render, just ungrouped.
-static std::pair<std::string, std::string> parseGroup(const std::string& sourceName) {
-    std::vector<std::string> parts;
-    std::string cur;
-    for (char c : sourceName) {
-        if (c == '.') {
-            parts.push_back(cur);
-            cur.clear();
-        } else {
-            cur += c;
-        }
+std::pair<QStandardItem*, QStandardItem*>
+MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
+                                     ImageCache* imageCache,
+                                     const std::set<std::string>& runningSourceNames) {
+    const auto fxId = boost::uuids::to_string(fx.id);
+    const bool fxRunning = runningSourceNames.count(fx.source_name) > 0;
+    QString fxText = QString::fromStdString(fx.base_currency_code + "/" + fx.quote_currency_code);
+    auto* fxItem = new QStandardItem(fxText);
+    fxItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+    fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
+    if (imageCache) {
+        fxItem->setIcon(currency_flag_icon(*imageCache, fx.base_currency_code, fx.quote_currency_code));
+    } else {
+        fxItem->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
     }
-    parts.push_back(cur);
-    if (parts.size() != 5 || parts[0] != "synthetic")
-        return {"uncategorized", "uncategorized"};
-    return {parts[2], parts[3]};
+
+    auto* fxStatus = new QStandardItem();
+    fxStatus->setIcon(feedStatusIcon(fxRunning));
+    fxStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+    fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
+    return {fxItem, fxStatus};
 }
 
 void MarketSimulatorWindow::buildTree() {
@@ -683,18 +687,93 @@ void MarketSimulatorWindow::buildTree() {
     treeModel_->setColumnCount(2);
     auto* root = treeModel_->invisibleRootItem();
 
-    // Root node: selecting/starting/stopping it cascades to every feed across
-    // every collection.
-    auto* rootItem = new QStandardItem(tr("Synthetic"));
-    rootItem->setData(static_cast<int>(NodeType::Root), NodeTypeRole);
-    rootItem->setData(QString(), NodeIdRole);
-    rootItem->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
-    auto* rootStatus = new QStandardItem();
-    rootStatus->setData(static_cast<int>(NodeType::Root), NodeTypeRole);
-    rootStatus->setData(QString(), NodeIdRole);
-    root->appendRow({rootItem, rootStatus});
+    // Feed pairs grouped by their owning folder.
+    std::map<std::string, std::vector<const synthetic::domain::fx_spot_generation_config*>>
+        pairsByFolder;
+    std::set<std::string> collectionsWithFolder;
+    for (const auto& [fxId, fx] : fxPairs_)
+        if (fx.folder_id.has_value())
+            pairsByFolder[boost::uuids::to_string(*fx.folder_id)].push_back(&fx);
 
+    // Folders grouped by parent ("" key = roots).
+    std::map<std::string, std::vector<const synthetic::domain::folder*>> childrenByParent;
+    for (const auto& [id, f] : folders_) {
+        const auto parentKey =
+            f.parent_id.has_value() ? boost::uuids::to_string(*f.parent_id) : std::string();
+        childrenByParent[parentKey].push_back(&f);
+        if (f.kind == "collection" && f.collection_id.has_value())
+            collectionsWithFolder.insert(boost::uuids::to_string(*f.collection_id));
+    }
+
+    // Recursively builds folder -> children (sub-folders, then Feed leaves).
+    std::function<void(const std::string&, QStandardItem*)> addFolderChildren =
+        [&](const std::string& parentKey, QStandardItem* parentItem) {
+            auto it = childrenByParent.find(parentKey);
+            if (it == childrenByParent.end())
+                return;
+            auto children = it->second;
+            std::sort(children.begin(), children.end(), [](const auto* a, const auto* b) {
+                return a->name < b->name;
+            });
+            for (const auto* f : children) {
+                const auto folderId = boost::uuids::to_string(f->id);
+                const auto type = f->kind == "root"       ? NodeType::Root :
+                                  f->kind == "collection" ? NodeType::Collection :
+                                                            NodeType::Group;
+
+                QString text = QString::fromStdString(f->name);
+                std::string nodeId = folderId;
+                if (type == NodeType::Collection && f->collection_id.has_value()) {
+                    const auto configId = boost::uuids::to_string(*f->collection_id);
+                    auto cit = feeds_.find(configId);
+                    if (cit != feeds_.end())
+                        text = feedItemText(cit->second);
+                    nodeId = configId;
+                }
+
+                auto* item = new QStandardItem(text);
+                item->setData(static_cast<int>(type), NodeTypeRole);
+                item->setData(QString::fromStdString(nodeId), NodeIdRole);
+                item->setData(QString::fromStdString(folderId), FolderIdRole);
+                item->setIcon(
+                    IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+
+                auto* status = new QStandardItem();
+                status->setData(static_cast<int>(type), NodeTypeRole);
+                status->setData(QString::fromStdString(nodeId), NodeIdRole);
+                status->setData(QString::fromStdString(folderId), FolderIdRole);
+
+                parentItem->appendRow({item, status});
+
+                addFolderChildren(folderId, item);
+
+                auto pit = pairsByFolder.find(folderId);
+                if (pit != pairsByFolder.end()) {
+                    auto pairs = pit->second;
+                    std::sort(pairs.begin(), pairs.end(), [](const auto* a, const auto* b) {
+                        return a->base_currency_code + a->quote_currency_code <
+                              b->base_currency_code + b->quote_currency_code;
+                    });
+                    for (const auto* fx : pairs) {
+                        auto [fxItem, fxStatus] =
+                            buildFeedItem(*fx, imageCache_, runningSourceNames_);
+                        item->appendRow({fxItem, fxStatus});
+                    }
+                }
+            }
+        };
+
+    addFolderChildren(std::string(), root);
+
+    // Collections with no backing folder row yet (e.g. just created via "New
+    // Collection" -- only publish-from-dq creates folders today, see the
+    // folder_id follow-up note on fx_spot_generation_config's model) --
+    // surfaced directly under the tree root so they aren't silently
+    // invisible; no FolderIdRole, so start/stop on them falls back to
+    // per-feed enumeration instead of the folder-scoped request.
     for (const auto& [feedId, feed] : feeds_) {
+        if (collectionsWithFolder.contains(feedId))
+            continue;
         auto* collectionItem = new QStandardItem(feedItemText(feed));
         collectionItem->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
         collectionItem->setData(QString::fromStdString(feedId), NodeIdRole);
@@ -704,71 +783,11 @@ void MarketSimulatorWindow::buildTree() {
         collectionStatus->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
         collectionStatus->setData(QString::fromStdString(feedId), NodeIdRole);
 
-        // Group this collection's pairs by (asset class, instrument type).
-        std::map<std::string, std::map<std::string, std::vector<const synthetic::domain::fx_spot_generation_config*>>>
-            byAssetClass;
         for (const auto& [fxId, fx] : fxPairs_) {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
-            const auto [assetClass, instrumentType] = parseGroup(fx.source_name);
-            byAssetClass[assetClass][instrumentType].push_back(&fx);
-        }
-
-        for (const auto& [assetClass, byInstrumentType] : byAssetClass) {
-            auto* assetClassItem = new QStandardItem(prettyGroupName(assetClass));
-            assetClassItem->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
-            assetClassItem->setData(
-                QString::fromStdString(feedId + "|" + assetClass), NodeIdRole);
-            assetClassItem->setIcon(
-                IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
-            auto* assetClassStatus = new QStandardItem();
-            assetClassStatus->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
-            assetClassStatus->setData(
-                QString::fromStdString(feedId + "|" + assetClass), NodeIdRole);
-
-            for (const auto& [instrumentType, pairs] : byInstrumentType) {
-                auto* instrumentTypeItem = new QStandardItem(prettyGroupName(instrumentType));
-                instrumentTypeItem->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
-                instrumentTypeItem->setData(
-                    QString::fromStdString(feedId + "|" + assetClass + "|" + instrumentType),
-                    NodeIdRole);
-                instrumentTypeItem->setIcon(
-                    IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
-                auto* instrumentTypeStatus = new QStandardItem();
-                instrumentTypeStatus->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
-                instrumentTypeStatus->setData(
-                    QString::fromStdString(feedId + "|" + assetClass + "|" + instrumentType),
-                    NodeIdRole);
-
-                for (const auto* fxPtr : pairs) {
-                    const auto& fx = *fxPtr;
-                    const auto fxId = boost::uuids::to_string(fx.id);
-                    const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
-                    QString fxText = QString::fromStdString(
-                        fx.base_currency_code + "/" + fx.quote_currency_code);
-                    auto* fxItem = new QStandardItem(fxText);
-                    fxItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-                    fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
-                    if (imageCache_) {
-                        fxItem->setIcon(currency_flag_icon(
-                            *imageCache_, fx.base_currency_code, fx.quote_currency_code));
-                    } else {
-                        fxItem->setIcon(IconUtils::createRecoloredIcon(
-                            Icon::Currency, IconUtils::DefaultIconColor));
-                    }
-
-                    auto* fxStatus = new QStandardItem();
-                    fxStatus->setIcon(feedStatusIcon(fxRunning));
-                    fxStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-                    fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
-
-                    instrumentTypeItem->appendRow({fxItem, fxStatus});
-                }
-
-                assetClassItem->appendRow({instrumentTypeItem, instrumentTypeStatus});
-            }
-
-            collectionItem->appendRow({assetClassItem, assetClassStatus});
+            auto [fxItem, fxStatus] = buildFeedItem(fx, imageCache_, runningSourceNames_);
+            collectionItem->appendRow({fxItem, fxStatus});
         }
 
         root->appendRow({collectionItem, collectionStatus});
@@ -851,6 +870,16 @@ MarketSimulatorWindow::selectedFxPairs() const {
         }
     }
     return result;
+}
+
+std::string MarketSimulatorWindow::selectedFolderId() const {
+    const auto indexes = feedsTree_->selectionModel()->selectedRows(0);
+    if (indexes.size() != 1)
+        return {};
+    const auto& idx = indexes.front();
+    if (static_cast<NodeType>(idx.data(NodeTypeRole).toInt()) == NodeType::Feed)
+        return {}; // a single Feed leaf: per-feed request, not folder-scoped
+    return idx.data(FolderIdRole).toString().toStdString();
 }
 
 std::string MarketSimulatorWindow::resolveFeedId() const {
@@ -1418,9 +1447,51 @@ void MarketSimulatorWindow::updateToolbarState() {
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {
-    // selectedFxPairs() already cascades through Root/Collection/Group nodes
-    // to their descendant Feeds, so no special-casing is needed here.
-    startPairsAsync(selectedFxPairs());
+    // A single non-Feed node selected (Root/Collection/Group with a real
+    // backing folder) cascades via one folder-scoped backend request instead
+    // of enumerating and firing one request per feed client-side. Anything
+    // else (a Feed leaf, a multi-selection, or a folder-less Collection)
+    // falls back to the per-feed path, which already cascades correctly.
+    const auto folderId = selectedFolderId();
+    if (!folderId.empty())
+        startFolderAsync(folderId);
+    else
+        startPairsAsync(selectedFxPairs());
+}
+
+void MarketSimulatorWindow::startFolderAsync(const std::string& folderId) {
+    QPointer<MarketSimulatorWindow> self = this;
+    auto* cm = clientManager_;
+    using Req = ores::marketdata::messaging::start_feeds_under_folder_request;
+    using Resp = ores::marketdata::messaging::start_feeds_under_folder_response;
+
+    auto task = [cm, folderId]() -> std::optional<Resp> {
+        auto resp = cm->process_authenticated_request(Req{.folder_id = folderId});
+        if (!resp)
+            return std::nullopt;
+        return *resp;
+    };
+
+    auto* watcher = new QFutureWatcher<std::optional<Resp>>(self);
+    connect(watcher, &QFutureWatcher<std::optional<Resp>>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        if (!result || !result->success) {
+            const auto msg = result ? QString::fromStdString(result->message) :
+                                      self->tr("Request failed.");
+            BOOST_LOG_SEV(lg(), error) << "Start folder failed: " << msg.toStdString();
+            emit self->errorOccurred(msg);
+            QMessageBox::critical(self, self->tr("Start failed"), msg);
+            return;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Start folder: " << result->message;
+        self->statusLabel_->setText(QString::fromStdString(result->message));
+        emit self->statusChanged(QString::fromStdString(result->message));
+        self->reload(); // running-state is now stale; refresh from the service
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void MarketSimulatorWindow::startPairsAsync(
@@ -1571,7 +1642,46 @@ void MarketSimulatorWindow::startPairsAsync(
 }
 
 void MarketSimulatorWindow::onStopFeedClicked() {
-    stopPairsAsync(selectedFxPairs());
+    const auto folderId = selectedFolderId();
+    if (!folderId.empty())
+        stopFolderAsync(folderId);
+    else
+        stopPairsAsync(selectedFxPairs());
+}
+
+void MarketSimulatorWindow::stopFolderAsync(const std::string& folderId) {
+    QPointer<MarketSimulatorWindow> self = this;
+    auto* cm = clientManager_;
+    using Req = ores::marketdata::messaging::stop_feeds_under_folder_request;
+    using Resp = ores::marketdata::messaging::stop_feeds_under_folder_response;
+
+    auto task = [cm, folderId]() -> std::optional<Resp> {
+        auto resp = cm->process_authenticated_request(Req{.folder_id = folderId});
+        if (!resp)
+            return std::nullopt;
+        return *resp;
+    };
+
+    auto* watcher = new QFutureWatcher<std::optional<Resp>>(self);
+    connect(watcher, &QFutureWatcher<std::optional<Resp>>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        if (!result || !result->success) {
+            const auto msg = result ? QString::fromStdString(result->message) :
+                                      self->tr("Request failed.");
+            BOOST_LOG_SEV(lg(), error) << "Stop folder failed: " << msg.toStdString();
+            emit self->errorOccurred(msg);
+            QMessageBox::critical(self, self->tr("Stop failed"), msg);
+            return;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Stop folder: " << result->message;
+        self->statusLabel_->setText(QString::fromStdString(result->message));
+        emit self->statusChanged(QString::fromStdString(result->message));
+        self->reload();
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void MarketSimulatorWindow::stopPairsAsync(

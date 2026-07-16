@@ -44,6 +44,16 @@ This page documents a test scenario verifying [[id:E3DEBE80-3B35-42D4-97B6-F1994
     '<tenant_id>'::uuid, 'upsert',
     jsonb_build_object('party_id', '<party_id>'));" | compass db sql
   #+end_src
+- Every Basic/Realistic feed has =price_source = vintage= against
+  =fed.h10.2016-02-05=, guarded by the vintage-availability check in
+  =feed_controller= -- without this import, *every* start attempt
+  (single-feed or folder-cascaded) is correctly rejected as "no vintage
+  data found", which reads as a false failure of the Start/stop step
+  below. Import it after provisioning:
+  #+begin_src sh :results verbatim
+  compass shell -u tenant_admin@barclays_plc -p Secure-Password-123 \
+    -f projects/ores.shell/scripts/library/marketdata/import_legacy_example_56.ores
+  #+end_src
 - A running Qt client (not yet logged in — see first step below).
 
 * Steps
@@ -53,11 +63,23 @@ This page documents a test scenario verifying [[id:E3DEBE80-3B35-42D4-97B6-F1994
 Username: =tenant_admin@barclays_plc=. Password: =Secure-Password-123=.
 Confirm the =BARCLAYS PLC= party is active after login.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Market Simulator
 
 Menu: *Market Data > Synthetic > Market Simulator*. Confirm the Market
 Data Feeds tree shows *two top-level nodes*, one named =Basic= and one
 named =Realistic= — not a single flat list of feed-source labels.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Each collection contains its own pairs
 
@@ -66,20 +88,34 @@ Expand both top-level nodes. Confirm =Realistic= lists its FX pairs
 configured), with no pair from one collection appearing nested under
 the other.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_market_simulator_tree_grouping_step3_20260716_151138.png]] |
+
 ** Start/stop status is tracked per collection
 
 Start a feed under =Basic=. Confirm only that collection's status icon
 and the specific pair's status icon change — the =Realistic= node and
 its pairs remain unaffected. Stop the feed afterwards.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | - i've added more data from librarian. that worked well.; - clicking start at FX Rates level did not start. ; - start at the feed level works. ; - start at FX or basic level does not work; - start at synthatic level does not work.; ;  |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-16T14:14:30Z |
+| Branch        | feature/feed-namespacing |
+| Commit        | 32c37e19d |
+| Worktree      | solid_dirac |
 
 * Notes

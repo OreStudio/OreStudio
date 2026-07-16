@@ -25,6 +25,7 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
+#include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
@@ -61,15 +62,24 @@ class ChangeReasonCache;
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
- * The Market Simulator presents a tree, on the left, mirroring the feed
- * namespace path (synthetic.<collection>.<asset class>.<instrument type>.
- * <pair>): Synthetic (root) > Collection (market_data_generation_config,
- * e.g. Basic/Realistic) > asset class > instrument type > Feed (the leaf
- * currency pair, fx_spot_generation_config, e.g. GBP/USD). The tree is the
- * browser; the right panel is a read-only summary of the selected node.
- * Collections are created/edited in a modal FeedDialog; Feeds (with their GMM
- * price model) are created/edited in the FxSpotRateEditor, shown as a
- * non-modal MDI sub-window.
+ * The Market Simulator presents a tree, on the left, built directly from
+ * real ores.synthetic.folder rows (a generic, party-scoped, self-referencing
+ * hierarchy -- see that entity's model doc) rather than parsed out of a
+ * feed's source_name string: Synthetic (root) > Collection
+ * (market_data_generation_config, e.g. Basic/Realistic, linked via
+ * folder.collection_id) > asset class > instrument type > Feed (the leaf
+ * currency pair, fx_spot_generation_config, linked via its own folder_id,
+ * e.g. GBP/USD). The tree is the browser; the right panel is a read-only
+ * summary of the selected node. Collections are created/edited in a modal
+ * FeedDialog; Feeds (with their GMM price model) are created/edited in the
+ * FxSpotRateEditor, shown as a non-modal MDI sub-window.
+ *
+ * Starting/stopping a non-leaf node (Root/Collection/Group) sends a single
+ * folder-scoped request (start_feeds_under_folder_request /
+ * stop_feeds_under_folder_request) that the server resolves and fans out --
+ * the same capability ores.shell or a wt workflow step can call directly,
+ * rather than this client enumerating every feed itself. A Feed leaf (or a
+ * mixed/multi-selection) still uses the original per-feed request.
  *
  * Modelled on DataLibrarianWindow's composition pattern.
  */
@@ -175,9 +185,16 @@ private:
     // All Feed-leaf pairs nested under the given index (itself if it's a Feed).
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
     pairsUnderIndex(const QModelIndex& idx) const;
+    // The single folder id to cascade start/stop through via the backend
+    // folder-scoped request, if the current selection is exactly one
+    // non-Feed node; empty otherwise (Feed leaf, mixed, or multi-selection --
+    // those fall back to the per-feed request via selectedFxPairs()).
+    [[nodiscard]] std::string selectedFolderId() const;
 
     void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
+    void startFolderAsync(const std::string& folderId);
+    void stopFolderAsync(const std::string& folderId);
 
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
@@ -190,6 +207,11 @@ private:
     // Recursively collects the ids of every Feed-leaf descendant of item
     // (including item itself, if it's already a Feed).
     static void collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids);
+    // Builds one Feed-leaf tree item pair (columns 0/1) for a single fx pair.
+    static std::pair<QStandardItem*, QStandardItem*>
+    buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
+                 ImageCache* imageCache,
+                 const std::set<std::string>& runningSourceNames);
 
     ClientManager* clientManager_;
     QString username_;
@@ -243,6 +265,7 @@ private:
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
+    std::map<std::string, synthetic::domain::folder> folders_;
 
     // source_names of feeds the client has successfully started this session.
     std::set<std::string> runningSourceNames_;

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 11A68F2B-684C-465E-AACD-1881CE2211C7
+:END:
+#+title: populateDynamicCombo cannot distinguish never-selected from blank-selected
+#+description: previous_selection is empty both when nothing has been selected yet and when the user deliberately picked the blank/No-Parent item, so a future repopulate could silently revert an in-progress No Parent choice back to the last-saved parent.
+#+type: capture
+#+level: cross
+#+filetags: :qt:dynamiccombo:party:counterparty:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+In =projects/ores.qt/api/include/ores.qt/DynamicComboSetup.hpp=,
+=populateDynamicCombo<Entity>()= derives whether a prior selection
+existed from =combo->currentData().toString().isEmpty()=. That string
+is empty both when nothing has ever been selected *and* when the
+user has deliberately picked the blank/"No Parent" item (its
+=Qt::UserRole= data is set to =QString()=), so both cases fall
+through to =fallback_selection()=, which reflects the last-saved
+model state rather than the user's in-progress UI choice. Fix by
+tracking whether a real prior selection existed independent of its
+value string, e.g. check =combo->count() > 0 && combo->currentIndex()
+>= 0= before =clear()=, or an explicit =combo->property(...)= flag.
+Also worth covering: if a stored parent id isn't found in the
+freshly fetched list (=findData= returns -1, e.g. the parent was
+deleted), the combo silently falls back to "No Parent" selected
+rather than preserving the previous highlight — same failure shape.
+
+* Why
+
+Flagged during PR #1605 review of the No Parent combo fix. Currently
+latent: both call sites (=CounterpartyDetailDialog::setClientManager()=,
+=PartyDetailDialog::setClientManager()=) invoke the populate function
+exactly once, so it can't trigger today. But =populateDynamicCombo= is
+a shared =ores.qt/api= helper other dialogs will reuse, and it would
+be easy to add a refresh path later without recalling this
+constraint — reproducing exactly the silent-corruption bug this PR
+set out to fix.
+
+* References
+
+- [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] — PR #1605 introduced the blank_label mechanism this refines.
+
+* See also
+
+-

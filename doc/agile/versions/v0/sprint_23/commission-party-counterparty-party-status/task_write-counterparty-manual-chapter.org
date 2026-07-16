@@ -96,6 +96,7 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:F424E50D-B24D-40FA-B28A-76FD21F058E4][Capture counterparty manual chapter screenshots]] | PASSED | All 7 steps passed. |
+| [[id:6D240444-D835-44C3-8660-F68727CB0883][Verify the No Parent combo entry for party and counterparty]] | PASSED | All 5 steps passed. |
 
 * PRs
 
@@ -107,7 +108,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Latent blank-vs-never-selected ambiguity in populateDynamicCombo | DynamicComboSetup.hpp | Declined (follow-up) | Latent, unreachable via current call sites; filed as dynamic_combo_blank_vs_unselected_ambiguity capture |
+| 2 | Scenario step "Edit an existing standalone counterparty from GLEIF data" left PENDING under overall PASSED | scenario_no-parent-combo-verification.org | Fixed | Step actually run; status corrected to PASS |
+| 3 | Screenshot recapture claim in PR description didn't match reality | PR #1605 description | Fixed | PR body corrected; screenshots remain outdated pending recapture, filed as recapture_parent_combo_screenshots capture |
+| 4 | New verification scenario not linked from task's Test Scenarios table | task_write-counterparty-manual-chapter.org | Fixed | Row added |
 
 * Result
 

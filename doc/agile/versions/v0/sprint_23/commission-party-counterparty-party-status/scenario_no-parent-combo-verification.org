@@ -88,7 +88,7 @@ you intend to, since this row is real GLEIF data.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm a second rootless party is rejected
 

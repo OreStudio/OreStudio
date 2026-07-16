@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 

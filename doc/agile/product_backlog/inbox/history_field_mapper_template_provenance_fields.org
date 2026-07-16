@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 3F3559A2-5E98-44EA-A87A-E5DA7CF5BA23
+:END:
+#+title: Update history field mapper codegen template to use provenance_fields constants
+#+description: cpp_history_field_mapper.cpp.mustache hardcodes audit-column labels ("Modified By", etc.) as string literals, but currency_history_field_mapper.cpp on main uses the shared ores::history::domain::provenance_fields constants instead -- the template needs to be updated to match and every entity's generated mapper regenerated.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:history:refdata:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=cpp_history_field_mapper.cpp.mustache= (the =ores.codegen.entity=
+template that produces every entity's =render_{entity}_fields()=
+history/diff mapper) hardcodes the four audit-column field labels as
+string literals inside its =has_audit_columns= block: ="Modified
+By"=, ="Performed By"=, ="Change Reason Code"=, ="Change Commentary"=.
+On =main=, =projects/ores.refdata/core/src/presentation/currency_history_field_mapper.cpp=
+is currently committed in a state the template cannot produce: it uses
+=ores::history::domain::provenance_fields::modified_by= etc. (a
+shared constants struct in =ores.history.api/domain/provenance_fields.hpp=)
+instead of the literals, with the matching =#include=. Every other
+entity's generated mapper (=country=, and everything else) still has
+the hardcoded literals, since regenerating any of them via =compass
+codegen entity generate <entity>= reproduces the literal-string
+version, not the constants version. Update the template's
+=has_audit_columns= block to emit =provenance_fields::modified_by=
+etc. plus the necessary =#include "ores.history.api/domain/provenance_fields.hpp"=,
+then regenerate every entity's =*_history_field_mapper.cpp= so they
+are all consistent with the (now-corrected) template.
+
+* Why
+
+Discovered while rebasing
+[[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][the currency-calendar FK
+task]]'s PR onto =main=: the rebase hit a real merge conflict in
+=currency_history_field_mapper.cpp= because =main='s committed content
+had drifted from what the template currently produces. Using shared
+=provenance_fields= constants rather than repeating the same four
+label strings across every entity's generated mapper is the direction
+we want — it is a single source of truth for these labels and avoids
+typo-drift between entities (e.g. "Change Reason Code" spelled two
+different ways somewhere down the line). The template needs to catch
+up to how =currency='s mapper already looks on =main=, and every other
+entity's mapper needs to be regenerated to match once the template is
+fixed, so the whole codebase converges on one pattern instead of one
+entity being silently exempt from regeneration.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_history_field_mapper.cpp.mustache= — the template to update.
+- =projects/ores.history.api/include/ores.history.api/domain/provenance_fields.hpp= — the shared constants struct.
+- =projects/ores.refdata/core/src/presentation/currency_history_field_mapper.cpp= — the one entity currently (accidentally) matching the desired end state.
+
+* See also
+
+- [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] — task where the drift was discovered.

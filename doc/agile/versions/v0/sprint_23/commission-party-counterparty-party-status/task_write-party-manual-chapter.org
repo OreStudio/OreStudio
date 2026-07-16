@@ -80,12 +80,37 @@ markers.
 
 - Counterparty and party_status get their own, separate manual-chapter
   tasks on this story; this task covers only the Party entity.
-- Screenshots referenced by this chapter (=parties_main_dialog.png=,
-  =party_details_general.png=, =party_parent_party_combo.png=,
-  =party_details_identifiers.png=, =party_details_contact_information.png=,
-  =party_details_hierarchy.png=, =party_history_dialog.png=) do not
-  yet exist under =doc/manual/user_guide/assets/images/= — capturing
-  them is follow-up work, not part of this task's acceptance.
+- All 7 screenshots captured, cropped to just the dialog/window (no QA
+  Validation Runner chrome in frame — see [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][how do I capture manual
+  screenshots?]]), and committed under
+  =doc/manual/user_guide/assets/images/=.
+- Real bugs found and fixed while running the screenshot scenario
+  (not pre-existing acceptance criteria, but directly blocking it):
+  - *Missing party history provider*: =ores.refdata.core/src/messaging/registrar.cpp=
+    had no =register_history_provider("ores.refdata.party", ...)= (nor
+    =counterparty=) entry, and =party_history_field_mapper.hpp/.cpp=
+    didn't exist at all (=counterparty='s did, confirmed zero-diff on
+    regen). Regenerated the missing presentation files via
+    =compass codegen entity generate party --address ores.cpp.presentation=
+    and hand-added both entities' registrar wiring (this aggregator
+    file is hand-maintained, not itself codegen'd) alongside their
+    =#include=s, matching every other refdata entity's pattern.
+  - *party_type badge colour collisions*: =Internal=/=Corporate= both
+    mapped to the same teal (=#14b8a6=), and =Bank=/=CorporateGroup=
+    both mapped to the same blue (=#3b82f6=), in
+    =projects/ores.sql/populate/dq/dq_badge_system_populate.sql=.
+    Remapped =Corporate= → =asset_class_bond= and =CorporateGroup= →
+    =account_type_algorithm= (both otherwise-unused-by-party_type
+    colours); applied live via the bitemporal close-old/insert-new
+    pattern (not a raw =UPDATE=) so existing rows keep proper history.
+  - *Stale generator-test expectations*: =party_contact_information_generator_produces_valid_instance=
+    and its counterparty equivalent in
+    =ores.refdata/api/tests/generators_tests.cpp= asserted
+    =version == 1= / =change_reason_code == "system.new"=, but the
+    generators (confirmed zero-diff against current codegen templates
+    via =compass codegen entity generate ... --diff=) correctly
+    produce =version == 0= / =\"system.test\"=. Fixed the test
+    expectations, not the generators.
 
 * Test Scenarios
 
@@ -96,7 +121,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:00832CCC-F7A4-49FB-9041-BC35978B2605][Capture party manual chapter screenshots]] | PASSED | All 8 steps passed; also surfaced and drove the fix for the missing party history provider registration (real bug, see Notes). |
+| [[id:510B6314-197D-482B-A3E5-ABA0A2E90779][Recapture party_details_hierarchy.png with a non-root party]] | PASSED | Redo of one screenshot on a non-root party so both ancestors and descendants are visible. |
 
 * PRs
 
@@ -119,5 +145,10 @@ Parent Party combo is required, the Parties window, and all five
 Party Details tabs (General, Identifiers, Contact Information,
 Hierarchy, Provenance), plus editing/deleting/history and a
 Conclusion naming the still-missing shell/CLI access and the
-not-yet-written Counterparty chapter. Screenshots are placeholders,
-pending a follow-up capture pass.
+not-yet-written Counterparty chapter. All 7 screenshots captured
+against a live Barclays Plc (GLEIF) environment, cropped to the
+dialog/window, and wired in. Along the way, running the screenshot
+scenario surfaced and drove the fix for a real bug (party/counterparty
+had no history provider registered, so History always failed) plus a
+party_type badge colour-collision fix and two stale generator-test
+assertions — see =* Notes= for detail.

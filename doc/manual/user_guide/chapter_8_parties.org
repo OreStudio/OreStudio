@@ -228,14 +228,15 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption[The Party History dialog]: The History dialog for a party, listing every version newest-first. Selecting a version populates the detail panel; the Changes tab shows which fields changed between the selected version and its predecessor, rendered as a field-level diff.
+#+caption[The Party History dialog]: The History dialog for party BARCLAYS BANK PLC, comparing version 44 against version 45. The *Only Changes* toggle narrows the field list to what actually differs between the two selected versions.
 [[proj:assets/images/party_history_dialog.png]]
 
-Select a version to populate the detail panel. The *Changes* tab
-shows which fields changed between the selected version and its
-predecessor. The *Revert* button reinstates any historical version as
-a *new* version, preserving the full audit chain — the old version is
-never rewritten.
+Pick the two versions to compare from the *Compare* drop-downs on the
+right. The *All Fields*/*Only Changes* toggle switches between showing
+every field and showing only the fields that differ between the two
+selected versions. The *Revert* button reinstates any historical
+version as a *new* version, preserving the full audit chain — the old
+version is never rewritten.
 
 ** Conclusion
 

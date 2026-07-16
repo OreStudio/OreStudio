@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CodeDomainDetailDialog.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.qt/BadgeMappingsTab.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ui_CodeDomainDetailDialog.h"
@@ -39,6 +40,9 @@ CodeDomainDetailDialog::CodeDomainDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+
+    badgeMappingsTab_ = new BadgeMappingsTab(this);
+    badgeMappingsTab_->attachTo(tabWidget());
 }
 
 CodeDomainDetailDialog::~CodeDomainDetailDialog() {
@@ -125,6 +129,8 @@ void CodeDomainDetailDialog::updateUiFromDomain() {
                        domain_.recorded_at,
                        domain_.change_reason_code,
                        domain_.change_commentary);
+
+    badgeMappingsTab_->reload(domain_.code, badgeCache());
 
     hasChanges_ = false;
     updateSaveButtonState();

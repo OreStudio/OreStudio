@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 1FCD0C68-A7C2-49D8-856B-1D049EB5EE8D
+:END:
+#+title: Test Scenario: Verify badge mappings tab on Code Domain detail dialog
+#+description: Manual QA for the Badge Mappings tab embedded in CodeDomainDetailDialog.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:badges:refdata:badge-colour-scheme-support:sprint_23:v0:
+#+target_dialog: CodeDomainDetailDialog (System > Configuration > Code Domains > double-click a row)
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] in [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] |
+| Parent story  | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]   |
+| Target dialog | CodeDomainDetailDialog                  |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A Barclays-provisioned database (already provisioned in this
+  environment).
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and open a known code domain's detail dialog
+
+Log in as normal (Barclays Plc tenant). Go to System > Configuration
+> Code Domains, double-click =book_status= to open its detail dialog.
+Confirm a "Badge Mappings" tab appears alongside the existing tabs
+(e.g. Provenance), inserted before Provenance rather than after it.
+
+** Confirm the tab's content for book_status
+
+Click the "Badge Mappings" tab. Confirm three rows appear (=ACTIVE=,
+=CLOSED=, =FROZEN=), each rendered as an actual badge pill (not plain
+text or a flat background fill) with colours matching what the Book
+list's Status column already shows for these same values.
+
+** Confirm a boolean-backed domain
+
+Close the dialog, open =is_sweepable='s detail dialog instead. Confirm
+its Badge Mappings tab shows two rows (=true=, =false=), each rendered
+as a badge, matching what Book's Sweepable column shows.
+
+** Confirm a domain with no mappings (fallback)
+
+Open a code domain that has no seeded badge_mapping rows (e.g. create
+a throwaway one via "Add Code Domain", or pick one known to have
+none). Confirm the Badge Mappings tab shows cleanly with zero rows
+(no crash, no stale data from the previously-viewed domain).
+
+** Re-open behaviour
+
+Close book_status's detail dialog, then reopen it. Confirm the tab
+reappears with the same three rows, not duplicated or stale.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

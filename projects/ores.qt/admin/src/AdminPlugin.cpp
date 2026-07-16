@@ -21,7 +21,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/BadgeDefinitionController.hpp"
-#include "ores.qt/BadgeMappingBrowserWindow.hpp"
 #include "ores.qt/BadgeSeverityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -192,28 +191,9 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
             badgeSeverityController_->showListWindow();
     });
 
-    auto* actBadgeMappings = config->addAction(tr("Badge &Mappings"));
-    connect(actBadgeMappings, &QAction::triggered, this, [this]() {
-        if (badgeMappingBrowserSubWindow_) {
-            badgeMappingBrowserSubWindow_->showNormal();
-            ctx_.mdi_area->setActiveSubWindow(badgeMappingBrowserSubWindow_);
-            return;
-        }
-
-        auto* browser = new BadgeMappingBrowserWindow(ctx_.badge_cache);
-        badgeMappingBrowserSubWindow_ = new DetachableMdiSubWindow();
-        badgeMappingBrowserSubWindow_->setWidget(browser);
-        badgeMappingBrowserSubWindow_->setWindowTitle(tr("Badge Mappings"));
-        badgeMappingBrowserSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
-        badgeMappingBrowserSubWindow_->resize(600, 500);
-
-        connect(badgeMappingBrowserSubWindow_, &QObject::destroyed, this, [this]() {
-            badgeMappingBrowserSubWindow_ = nullptr;
-        });
-
-        ctx_.mdi_area->addSubWindow(badgeMappingBrowserSubWindow_);
-        badgeMappingBrowserSubWindow_->show();
-    });
+    // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
+    // Domain's detail dialog (see BadgeMappingsTab in ores.qt.refdata),
+    // not a standalone window here.
 
     // ---- System > Administration (appended at end, admin-only) -----------
     smc.system_menu->addSeparator();
@@ -450,8 +430,6 @@ void AdminPlugin::on_logout() {
     tenantController_.reset();
     roleController_.reset();
     accountController_.reset();
-    if (badgeMappingBrowserSubWindow_)
-        badgeMappingBrowserSubWindow_->close();
     ctx_ = {};
 
     if (configMenu_)

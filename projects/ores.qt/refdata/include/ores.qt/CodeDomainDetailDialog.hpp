@@ -31,6 +31,8 @@ class CodeDomainDetailDialog;
 
 namespace ores::qt {
 
+class BadgeMappingsTab;
+
 /**
  * @brief Detail dialog for viewing and editing code domain records.
  *
@@ -93,6 +95,10 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+
+    // Not codegen'd: hand-written once in BadgeMappingsTab, wired in here
+    // directly (this dialog is itself hand-maintained, not generated).
+    BadgeMappingsTab* badgeMappingsTab_{nullptr};
 };
 
 }

@@ -9,35 +9,36 @@
 #+owner: marco
 #+branch: feature/badge-mapping-browser-ui
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
+#+blocked_since: 2026-07-16
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-07-16
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A user can open a screen (System > Configuration, alongside Badge Definitions/Severities) and see every (code_domain, entity_code) -> badge mapping, grouped by code_domain, with each badge rendered as an actual colour swatch -- not just hex text.
+A user viewing a Code Domain's detail dialog can see every entity_code -> badge mapping registered for that domain, on a "Badge Mappings" tab, with each badge rendered as an actual badge pill -- not just hex text. (Originally scoped as a standalone System > Configuration window; redesigned mid-task to a detail-dialog tab -- see Plan and Review.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| Now          | BadgeMappingsTab built and embedded in CodeDomainDetailDialog (see Plan/Review); blocked because badge_definition/badge_severity/code_domain data is only ever seeded under the system tenant, and their admin CRUD list windows filter strictly by caller tenant -- so no tenant can currently see the data this tab depends on. |
+| Waiting on   | [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] |
+| Next         | Resume once tenants can publish/see their own badge catalogue data; re-run manual QA against real tenant-scoped rows. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
-- New read-only list window shows all badge_mapping rows grouped/filterable by code_domain_code, each row showing entity_code and its resolved badge_definition (label + colour swatch).
-- Wired into the System > Configuration menu alongside the existing Badge Definitions/Severities windows.
-- Manual QA: opening the screen for a known code_domain (e.g. book_status) shows the same mappings seeded in dq_badge_system_populate.sql.
+- CodeDomainDetailDialog gains a read-only "Badge Mappings" tab showing every badge_mapping row for the displayed code_domain, each row showing entity_code and its resolved badge_definition rendered as a real badge pill.
+- Follows the established hand-written-tab-embedded-in-a-generated-dialog pattern (PartyHierarchyTab in PartyDetailDialog), not a standalone top-level window.
+- Manual QA: opening a known code_domain's detail dialog (e.g. book_status) shows the same mappings seeded in dq_badge_system_populate.sql.
 
 * Plan
 
@@ -80,6 +81,31 @@ A user can open a screen (System > Configuration, alongside Badge Definitions/Se
    detail this simpler window actually needs.
 6. Verified: =ores.qt.admin.lib= and the full =ores.qt.exe= build
    clean; =clang-format --dry-run --Werror= clean on the new files.
+7. **Redesigned mid-task** (see Review #4): the standalone window above
+   was scrapped. Instead, following the =PartyHierarchyTab= pattern
+   (a hand-written tab embedded in a generated detail dialog via a
+   paste block), added =BadgeMappingsTab= and wired it into
+   =CodeDomainDetailDialog=. Two wrinkles specific to this case:
+   - =CodeDomainDetailDialog= (and its sibling =CodeDomainController=)
+     turned out to be *hand-maintained*, not codegen'd from
+     =ores.dq.code_domain.org= -- there's a separate, unused generated
+     scaffold under the never-wired =projects/ores.qt/dq= component
+     (no CMakeLists, not built; pre-existing drift, not touched here).
+     So no paste block was used; =BadgeMappingsTab= is wired directly
+     into the hand-written =.cpp=.
+   - =BadgeCache*= reaches =CodeDomainDetailDialog= via a new
+     constructor parameter on =CodeDomainController= (mirroring the
+     =has_badge_columns= codegen pattern, applied by hand since
+     =code_domain= has no badge columns of its own) threaded from
+     =RefdataPlugin='s =plugin_context=. =BadgeMappingsTab::reload()=
+     takes the cache as a parameter (not stored at construction) since
+     the tab is attached during the dialog's own constructor, before
+     =setBadgeCache()= runs.
+8. Removed the standalone =BadgeMappingBrowserWindow= (files, System >
+   Configuration menu action, =AdminPlugin= wiring) entirely.
+9. Re-verified: =ores.qt.refdata.lib=, =ores.qt.admin.lib=, and the
+   full =ores.qt.exe= build clean; =clang-format --dry-run --Werror=
+   clean on all touched files.
 
 * Notes
 
@@ -92,7 +118,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:E48D0363-5192-48B7-A73B-56494E0AE7C0][Verify badge mapping browser]] | PENDING | |
+| [[id:E48D0363-5192-48B7-A73B-56494E0AE7C0][Verify badge mapping browser]] | FAILED | Targeted the scrapped standalone window; superseded by the scenario below after the tab-embedding redesign. |
+| [[id:1FCD0C68-A7C2-49D8-856B-1D049EB5EE8D][Verify badge mappings tab on Code Domain detail dialog]] | PENDING | |
 
 * PRs
 
@@ -107,5 +134,6 @@ via its "Verifies task" field.
 | 1 | Domain picker QComboBox spanned the entire screen width on Linux; wrong widget shape for "pick a domain, see its mappings" | BadgeMappingBrowserWindow.{hpp,cpp} | Accepted | Redesigned as a bounded QListWidget (list of domains) + QTableWidget (mappings), split view -- matches AccountPartiesWidget's list-driven layout instead of a combo filter. |
 | 2 | Badge cells rendered as plain background-coloured text, not an actual badge pill | BadgeMappingBrowserWindow.cpp | Accepted | Now uses EntityItemDelegate with column_style::badge_centered (the same delegate every other badge column in the app uses), resolving colours via BadgeCache::resolve() at paint time. |
 | 3 | Badge Definitions screen needs a related-entity toolbar link to Severities/Mappings; Severity linkage to Definitions not visible; Definitions' own colours should render as colour, not hex text | BadgeDefinitionMdiWindow, BadgeSeverityMdiWindow | Accepted, folded into task 2 | Out of scope for this task (targets BadgeDefinition/BadgeSeverity screens, not badge_mapping); added to task_badge-palette-swatch-and-fallback.org's Acceptance. |
+| 4 | Should not be a standalone window -- should show up as a tab in the notebook, like PartyHierarchyTab does for party's detail dialog | BadgeMappingBrowserWindow (whole approach) | Accepted | Scrapped the standalone window; added BadgeMappingsTab embedded in CodeDomainDetailDialog. See Plan items 7-9. |
 
 * Result

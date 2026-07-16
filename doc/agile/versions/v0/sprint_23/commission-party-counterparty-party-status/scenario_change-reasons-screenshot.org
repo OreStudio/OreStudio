@@ -39,14 +39,21 @@ and status bar. Save as =change_reasons_main_window.png=
 (repo-root =assets/images/=, not =doc/manual/user_guide/assets/images/=
 — the =proj:= link type resolves against the repo root).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_change-reasons-screenshot_step1_20260716_102632.png]]; ; ; ; [[file:scenario_change-reasons-screenshot_step1_20260716_102652.png]] |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T09:26:55Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | 08864b5ae |
+| Worktree      | prime_origin |
 
 * Notes

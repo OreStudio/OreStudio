@@ -39,14 +39,21 @@ duplicate-tenant artifact from the earlier long-lived dev database.
 Screenshot the full window. Save as =rounding_types_main_window.png=
 (repo-root =assets/images/=, overwriting the existing file).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_rounding-types-screenshot-redo_step1_20260716_104353.png]] |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T09:43:55Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | c6d376ee9 |
+| Worktree      | prime_origin |
 
 * Notes

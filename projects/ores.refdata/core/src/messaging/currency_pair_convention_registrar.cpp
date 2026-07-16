@@ -49,6 +49,10 @@ std::vector<ores::nats::service::subscription> register_currency_pair_convention
         nats.queue_subscribe(get_currency_pair_convention_history_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(read_currency_pair_conventions_for_cache_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
     return subs;
 }
 

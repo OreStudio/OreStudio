@@ -59,7 +59,9 @@ engine the architecture relies on.
 | [[id:4F67DD95-2002-40AC-BBF2-5D3F6A5419EC][Market Data > FX menu with named-CRM quick-open shortcuts]] | ABANDONED | | 2026-07-14 | Superseded by a picker-on-open redesign of the matrix panel itself -- see its Result. |
 | [[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's numeric logic (inversion, deltas) out of the Qt client]] | DONE | 2026-07-15 | 2026-07-15 | The cross-rates matrix UI panel currently computes inverted rates and %-change deltas client-side; this logic belongs in ores.analytics.quant (self-contained, unit-tested), exposed via NATS protocol additions (current+previous price with delta, an inverted-quote flag), with FX spot convention fields taken as caller-supplied input, not a class dependency. |
 | [[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]] | DONE | 2026-07-15 | 2026-07-15 | Add an export button to the CRM cross-rates matrix UI panel to save the currently displayed rates as CSV, and as an ORE-format market data export (matching the existing ExportOre convention used elsewhere in the app). |
-| [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add a convention-aware CRM rate display formatter]] | BACKLOG | | | A stateless, plain C++ presentation overlay (ores.marketdata.client/presentation) that maps raw CRM rates + FX pair conventions to ready-to-bind display strings, so no UI hand-formats rates. |
+| [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]] | DONE | 2026-07-15 | 2026-07-16 | New thin, DB-free NATS-only component housing a currency_pair_convention_cache built on the nats-event-cache codegen facet, so every UI surface (Qt now, shell/Wt later) shares one cache instead of each hand-rolling its own. |
+| [[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][Add convention-aware CRM rate formatter and wire into Qt matrix]] | BACKLOG | | | Stateless plain C++ formatter (ores.marketdata.client/presentation) mapping raw CRM rates + a resolved currency_pair_convention into display-ready strings, replacing CrmCrossRatesMatrixMdiWindow's hand-formatting. Depends on the currency_pair_convention_cache task for its convention lookups. |
+| [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] | BACKLOG | | | Shell command(s) to view a party's CRM cross-rates matrix (or a single pair), reusing the resolved-rates NATS request and, once available, the convention-aware display formatter -- so ores.shell isn't stuck re-deriving inversion/delta/formatting itself. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
 model's concept map:
@@ -186,6 +188,31 @@ model's concept map:
   task for a plain C++ presentation overlay in
   =ores.marketdata.client=, since it is net-new functionality with its
   own design questions (server- vs. client-side convention caching).
+- The FX pair convention cache this formatter needs lives in a new
+  =ores.refdata.client= component, not inside =ores.qt= or
+  =ores.marketdata.client= -- =client= is a documented, catalogue-level
+  specialist sub-component role (=projects/modeling/component_architecture.org=,
+  "consumer-facing API without coupling consumers to core internals"),
+  used the same way =party_cache= uses =ores.iam.core= for its own
+  single-consumer case. The general placement rule (producer never
+  caches itself; single consumer gets the cache in its own component;
+  multiple UI-layer consumers share a thin =*.client= component) is
+  captured as its own knowledge doc,
+  [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an
+  entity-mirror cache live?]], for future =cached_by= decisions to
+  reference rather than re-litigate.
+- Generalised the =nats-event-cache= codegen facet's =cached_by= flag
+  to accept the existing =component.subcomponent= dotted form
+  (=cached_by: refdata.client=) instead of hardcoding a =.core=
+  subcomponent -- no new model flag, purely derived, verified
+  byte-identical regeneration of the one prior consumer
+  (=party_cache=). Also fixed two facet-level bugs this new second
+  consumer surfaced that =party_cache= had only ever avoided by
+  accident: a missing =reflectors.hpp= include needed for
+  =rfl::json= on any =tenant_id=/=uuid=-bearing entity, and
+  =load()= silently swallowing failures instead of returning them
+  (now =[[nodiscard]] std::string=, empty on success) so a UI
+  consumer isn't stuck tailing logs to find out why nothing loaded.
 
 * Out of scope
 

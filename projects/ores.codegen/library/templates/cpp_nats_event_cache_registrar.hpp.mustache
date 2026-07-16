@@ -1,13 +1,13 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.registrar_wiring.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
-#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
+#include "ores.{{cache_component}}.{{cache_subcomponent}}/service/cache/{{entity_singular}}_cache.hpp"
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
 #include "ores.nats/service/client.hpp"
 #include <memory>
@@ -41,7 +41,7 @@ inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_
     BOOST_LOG_SEV({{entity_singular}}_cache_registrar_lg(), debug)
         << "Warming {{entity_singular}} cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
-        cache->load(tenant_id);
+        (void)cache->load(tenant_id); // warm-up failure is logged; nothing here can react to it
 
     using ores::eventing::domain::event_traits;
     using ores::{{component}}::eventing::{{entity_singular}}_changed_event;
@@ -53,7 +53,7 @@ inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_
             if (evt && !evt->tenant_id.empty()) {
                 // Offload to a detached thread: load() calls request_sync,
                 // which would block the NATS callback thread if called inline.
-                std::thread([cache, tid = evt->tenant_id]() { cache->load(tid); }).detach();
+                std::thread([cache, tid = evt->tenant_id]() { (void)cache->load(tid); }).detach();
             }
         });
 }

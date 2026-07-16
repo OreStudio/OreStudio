@@ -355,6 +355,25 @@ public:
     }
 
     /**
+     * @brief Get the current session's bearer JWT (empty if not logged in).
+     *
+     * For a consumer that needs to attach its own Authorization header
+     * on a request issued outside process_authenticated_request's own
+     * automatic attach-and-retry-on-expiry handling -- e.g. a
+     * nats-event-cache facet's token_provider constructor parameter,
+     * which this class's own shape (`std::function<std::string(bool)>`)
+     * matches directly (the `force` parameter is ignored: this session
+     * has no separate "discard and re-authenticate" path for a single
+     * background caller to trigger, unlike the service-token-provider
+     * path a NATS *service* uses).
+     */
+    std::string currentAuthToken() const {
+        if (!session_.is_logged_in())
+            return {};
+        return session_.auth().jwt;
+    }
+
+    /**
      * @brief Get the name of the currently selected party.
      */
     QString currentPartyName() const {

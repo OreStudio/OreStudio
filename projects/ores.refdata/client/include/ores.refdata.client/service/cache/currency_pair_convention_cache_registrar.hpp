@@ -17,52 +17,53 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_REGISTRAR_HPP
-#define ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_REGISTRAR_HPP
+#ifndef ORES_REFDATA_CLIENT_SERVICE_CACHE_CURRENCY_PAIR_CONVENTION_CACHE_REGISTRAR_HPP
+#define ORES_REFDATA_CLIENT_SERVICE_CACHE_CURRENCY_PAIR_CONVENTION_CACHE_REGISTRAR_HPP
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
-#include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.refdata.api/eventing/party_changed_event.hpp"
+#include "ores.refdata.api/eventing/currency_pair_convention_changed_event.hpp"
+#include "ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
 #include <memory>
 #include <rfl/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>
 
-namespace ores::iam::service::cache {
+namespace ores::refdata::service::cache {
 
 namespace {
-inline auto& party_cache_registrar_lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.iam.service.cache.party_cache_registrar");
+inline auto& currency_pair_convention_cache_registrar_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.refdata.service.cache.currency_pair_convention_cache_registrar");
     return instance;
 }
 } // namespace
 
 /**
- * @brief Warms party_cache for every given tenant, then
- * subscribes to the party changed-event subject so each
+ * @brief Warms currency_pair_convention_cache for every given tenant, then
+ * subscribes to the currency_pair_convention changed-event subject so each
  * affected tenant is reloaded on any mutation. Call once at service
  * startup and keep the returned subscription alive for the service's
  * lifetime.
  */
-inline ores::nats::service::subscription
-warm_and_subscribe_party_cache(ores::nats::service::client& nats,
-                               std::shared_ptr<party_cache> cache,
-                               const std::vector<std::string>& tenant_ids) {
+inline ores::nats::service::subscription warm_and_subscribe_currency_pair_convention_cache(
+    ores::nats::service::client& nats,
+    std::shared_ptr<currency_pair_convention_cache> cache,
+    const std::vector<std::string>& tenant_ids) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(party_cache_registrar_lg(), debug)
-        << "Warming party cache for " << tenant_ids.size() << " tenant(s)";
+    BOOST_LOG_SEV(currency_pair_convention_cache_registrar_lg(), debug)
+        << "Warming currency_pair_convention cache for " << tenant_ids.size() << " tenant(s)";
     for (const auto& tenant_id : tenant_ids)
         (void)cache->load(tenant_id); // warm-up failure is logged; nothing here can react to it
 
     using ores::eventing::domain::event_traits;
-    using ores::refdata::eventing::party_changed_event;
+    using ores::refdata::eventing::currency_pair_convention_changed_event;
     return nats.subscribe(
-        std::string(event_traits<party_changed_event>::name), [cache](ores::nats::message msg) {
+        std::string(event_traits<currency_pair_convention_changed_event>::name),
+        [cache](ores::nats::message msg) {
             using ores::eventing::domain::entity_change_event;
             auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
             if (evt && !evt->tenant_id.empty()) {
@@ -73,6 +74,6 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
         });
 }
 
-} // namespace ores::iam::service::cache
+} // namespace ores::refdata::service::cache
 
 #endif

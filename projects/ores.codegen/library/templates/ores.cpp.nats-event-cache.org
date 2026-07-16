@@ -42,13 +42,21 @@ of party data), then enabling the facet itself via
 
 Model flags consumed by these templates:
 
-- =cached_by= (string, Flags) — the consumer component. Resolved by
-  =resolve_output_path= into the ={cache_component}= /
-  ={cache_component_dir}= output-path tokens (distinct from
-  ={component}= / ={component_dir}=, which stay the entity's own),
-  and exposed to templates as =cache_component= /
-  =cache_component_upper=. Requires =read_for_cache=; validated by
-  =validate_cached_by= in =core.py=.
+- =cached_by= (string, Flags) — the consumer component, e.g.
+  =cached_by: iam=. Also accepts the same =component.subcomponent=
+  dotted form =component_include= already uses, e.g.
+  =cached_by: refdata.client=, for a consumer whose cache doesn't
+  land in its default =core= subcomponent (every existing consumer
+  is =core=-shaped; a thin, DB-free =*.client= consumer is not).
+  Resolved by =resolve_output_path= into the ={cache_component}= /
+  ={cache_component_dir}= / ={cache_subcomponent}= output-path
+  tokens (distinct from ={component}= / ={subcomponent}=, which stay
+  the entity's own), and exposed to templates as =cache_component= /
+  =cache_component_upper= / =cache_subcomponent= /
+  =cache_subcomponent_upper=. There is no separate
+  =cache_subcomponent= model flag -- both are purely derived from
+  splitting =cached_by= on its (optional) dot. Requires
+  =read_for_cache=; validated by =validate_cached_by= in =core.py=.
 
 The cache class picks a =boost::hash<...>= specialisation for its key
 type when the entity's primary key is a UUID

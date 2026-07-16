@@ -95,7 +95,7 @@ auth_ensure_parties_cached(service::cache::party_cache& cache,
     for (const auto& ap : account_parties) {
         if (!cache.lookup(tenant_id, ap.party_id)) {
             // Cache miss: reload from refdata (handles bootstrap and startup race).
-            cache.load(tenant_id);
+            (void)cache.load(tenant_id);
             break;
         }
     }

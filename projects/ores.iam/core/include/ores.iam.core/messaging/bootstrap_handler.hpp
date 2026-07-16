@@ -141,7 +141,7 @@ public:
             // the system party and associated it with the admin account, but
             // no NATS event is published for bootstrap SQL operations.
             std::thread([pc = party_cache_]() {
-                pc->load(ores::database::service::tenant_context::system_tenant_id);
+                (void)pc->load(ores::database::service::tenant_context::system_tenant_id);
             }).detach();
 
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
@@ -230,7 +230,9 @@ public:
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.
-            std::thread([pc = party_cache_, tid = tenant_id_str]() { pc->load(tid); }).detach();
+            std::thread(
+                [pc = party_cache_, tid = tenant_id_str]() { (void)pc->load(tid); })
+                .detach();
 
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

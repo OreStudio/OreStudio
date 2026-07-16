@@ -1,8 +1,8 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.cache_header.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
-#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+#ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+#define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
 
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -23,6 +23,7 @@
 #include <immer/map_transient.hpp>
 #include <vector>
 {{/cache_aux_type}}
+#include "ores.utility/rfl/reflectors.hpp"
 #include <functional>
 #include <optional>
 #include <rfl/json.hpp>
@@ -95,7 +96,20 @@ public:
         token_provider_ = std::move(token_provider);
     }
 
-    void load(const std::string& tenant_id) {
+    /**
+     * @brief Loads (or reloads) one tenant's partition.
+     *
+     * @return An empty string on success. On failure, a human-readable
+     * message describing what went wrong -- the failure is still logged
+     * (@c warn) either way, but callers that can surface it to a user
+     * (e.g. a UI's status/error signal) need it returned, not just
+     * buried in a log a user never sees. Silently-swallowed background
+     * failures are the right default for the warm-up/refresh path
+     * (@c nats-event-cache.registrar_wiring calls this fire-and-forget
+     * from a detached thread), but the return value lets any caller
+     * that *can* react to a failure opt in.
+     */
+    [[nodiscard]] std::string load(const std::string& tenant_id) {
         using namespace ores::logging;
         try {
             const auto req_json = rfl::json::write(
@@ -112,10 +126,10 @@ public:
                 rfl::json::read<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
                     ores::nats::as_string_view(reply.data));
             if (!resp || !resp->success) {
-                const auto msg = resp ? resp->message : "parse error";
+                const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
                 BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
                     << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": " << msg;
-                return;
+                return msg;
             }
             auto entries_t = cache_t::entries_map{}.transient();
             const auto count = resp->{{entity_plural_short}}.size();
@@ -126,10 +140,12 @@ public:
             cache_.replace_partition(tenant_id, entries{{#cache_aux_type}}, aux{{/cache_aux_type}});
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
                 << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
+            return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
                 << "{{entity_pascal}} cache load exception for tenant " << tenant_id << ": "
                 << e.what();
+            return e.what();
         }
     }
 

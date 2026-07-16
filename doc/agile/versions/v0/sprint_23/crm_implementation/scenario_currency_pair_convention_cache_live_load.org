@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: B5632854-1CE5-4839-9D56-53A8CA0AD112
+:END:
+#+title: Test Scenario: Verify currency_pair_convention_cache loads end-to-end from the CRM matrix
+#+description: Manual QA scenario: opening the CRM cross-rates matrix panel warms currency_pair_convention_cache via a live NATS round trip to ores.refdata.service, confirmed via service logs.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow            |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, party BARCLAYS PLC
+
+If the DB was recreated since, re-run
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+via =compass shell -f <path>= to restore this account, party, and its
+CRM data first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Market Data > Cross-Rates Matrix, select "majors"
+
+Opening the window constructs a =currency_pair_convention_cache= and
+fires a background =load()= for the current tenant -- nothing in the
+UI displays its result yet (that's a separate, sibling task), so
+there's nothing to see in the window itself. This step only needs to
+get the window open so the constructor runs.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check ores.refdata.service's log for the cache's NATS round trip
+
+Tail (or open) the service log --
+=build/output/<preset>/publish/log/ores.refdata.service.log= -- and
+confirm a =read_currency_pair_conventions_for_cache= (or
+=CurrencyPairConvention=/=currency_pair_convention=-mentioning) log
+line appears around the time the window was opened, at =debug=
+level, and the request did not error (no exception/warn-level log
+tied to it).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Qt client's own log for the load's outcome
+
+Tail (or open) the client log --
+=build/output/<preset>/publish/log/ores.qt.<colour>.log= -- and
+confirm a =CurrencyPairConvention cache load= line (either "Loaded N
+currency_pair_conventions for tenant ..." or the failure-path
+message, since none may be seeded yet -- either is an acceptable
+PASS for *this* task, which only needs to prove the round trip
+completes without crashing or hanging, not that data exists) appears
+shortly after the window opens, with no unhandled exception/crash in
+the client.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-15T22:39:35Z |
+| Branch        | feature/add-refdata-client-currency-pair-convention-cache |
+| Commit        | 15d2f6519 |
+| Worktree      | clever_dijkstra |
+
+* Notes

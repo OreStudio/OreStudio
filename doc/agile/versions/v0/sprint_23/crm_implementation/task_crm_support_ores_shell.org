@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: F4D45153-D81E-464D-8D9B-2DBFEE7CB670
+:END:
+#+title: Task: Add CRM support to ores.shell
+#+description: Shell command(s) to view a party's CRM cross-rates matrix (or a single pair), reusing the resolved-rates NATS request and, once available, the convention-aware display formatter -- so ores.shell isn't stuck re-deriving inversion/delta/formatting itself.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.shell= has no command exposing the CRM cross-rates matrix
+(=marketdata.v1.crm.rates=) at all today -- every other consumer
+(Qt) had to be built first before this was viable. Add a shell
+command (e.g. =crm rates <crm-name>= / =crm rates --all=) that
+issues the same NATS request as the Qt matrix panel, prints the
+resolved rates (base/quote/rate/status/as_of, inverted flag,
+delta_pct), and -- once
+[[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][the convention-aware
+formatter]] exists -- reuses it for display formatting instead of
+ad hoc =printf=-style formatting, so =ores.shell= doesn't repeat the
+inversion/delta/formatting mistakes the Qt client already had fixed.
+This is the second real consumer of both
+[[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][the resolved-rates NATS
+response]] and the formatter, concretely validating the "shared
+across UIs" design those tasks were built for rather than leaving it
+theoretical.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- A shell command lists CRM rates for a party (all enabled CRMs, or
+  one by name), via the existing =get_crm_rates_request=/=response=
+  protocol -- no new NATS subject.
+- Output uses the convention-aware formatter (once available) for
+  display; falls back to a plain numeric dump only if this task lands
+  before the formatter task, with a follow-up note to switch over.
+- Manual QA scenario or shell integration test covering at least one
+  named CRM and the "all enabled CRMs" case.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

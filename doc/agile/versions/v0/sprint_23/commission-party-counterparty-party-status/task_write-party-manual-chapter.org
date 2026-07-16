@@ -7,43 +7,85 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-party-manual-chapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a Parties chapter to the user manual, documenting the party
+entity's hierarchy rule and its Qt UI (list window, General,
+Identifiers, Contact Information, Hierarchy, and Provenance tabs) in
+the same style as the existing reference-data chapters.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Nothing. |
+| Waiting on   | Screenshots (tracked as outstanding, not blocking). |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                              |
 
 * Acceptance
 
--
+- A new =chapter_8_parties.org= exists under =doc/manual/user_guide/=,
+  wired into =user_manual.org='s table of contents after the Books
+  chapter.
+- The chapter explains what a party is, the single-root-per-tenant
+  hierarchy rule, and why the Parent Party combo in the Create/Edit
+  dialog is required rather than optional.
+- The chapter documents the Parties window and all five Party Details
+  tabs (General, Identifiers, Contact Information, Hierarchy,
+  Provenance), following the structure established by
+  =chapter_7_books.org= and =chapter_6b_business_centres.org=.
+- Cross-references to Reference Data, Currencies, Business Centres,
+  Standard Financial Identifiers, and Temporal Composite Entity
+  Versioning are in place.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modelled the chapter on the two closest existing precedents:
+=chapter_7_books.org= (a composite/hierarchical entity, for the
+overall shape — Overview, concept section(s), list window, detail
+dialog with tabs, editing/deleting/history, Conclusion, See also) and
+=chapter_6b_business_centres.org= (a shorter reference-data chapter,
+for tone and the flagged-combo/Change-Reason-Required
+cross-reference pattern). Read =ores.refdata.party.org='s Detail
+fields table and the =party_identifier=/=party_contact_information=
+models directly to get field lists, combo semantics (Parent Party
+required, Business Center flagged, Country Code flagged-and-optional)
+and enum values (identifier schemes, contact types) right, rather
+than inferring them from the UI alone. Confirmed no dedicated
+domain-knowledge hub doc exists yet for Party (unlike Book's
+=book.org=), so the chapter's "See also" links to Reference Data,
+Currencies, Business Centres, Standard Financial Identifiers, and
+Temporal Composite Entity Versioning instead. Screenshots are left as
+placeholders (=#+caption= + image link, no accompanying capture
+note/todo) since no running client capture was taken as part of this
+task — flagged in Status as outstanding, not blocking, matching how
+=chapter_7_books.org= itself still carries "[SCREENSHOT OUTDATED]"
+markers.
 
 * Notes
+
+- Counterparty and party_status get their own, separate manual-chapter
+  tasks on this story; this task covers only the Party entity.
+- Screenshots referenced by this chapter (=parties_main_dialog.png=,
+  =party_details_general.png=, =party_parent_party_combo.png=,
+  =party_details_identifiers.png=, =party_details_contact_information.png=,
+  =party_details_hierarchy.png=, =party_history_dialog.png=) do not
+  yet exist under =doc/manual/user_guide/assets/images/= — capturing
+  them is follow-up work, not part of this task's acceptance.
 
 * Test Scenarios
 
@@ -69,3 +111,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =doc/manual/user_guide/chapter_8_parties.org= and wired it into
+=user_manual.org= after the Books chapter. The chapter covers what a
+party is, the single-root-per-tenant hierarchy rule and why the
+Parent Party combo is required, the Parties window, and all five
+Party Details tabs (General, Identifiers, Contact Information,
+Hierarchy, Provenance), plus editing/deleting/history and a
+Conclusion naming the still-missing shell/CLI access and the
+not-yet-written Counterparty chapter. Screenshots are placeholders,
+pending a follow-up capture pass.

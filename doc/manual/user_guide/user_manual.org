@@ -172,3 +172,10 @@
 :END:
 
 #+include: "chapter_7_books.org" :minlevel 2
+
+* Parties
+:PROPERTIES:
+:CUSTOM_ID: chapter_8_parties
+:END:
+
+#+include: "chapter_8_parties.org" :minlevel 2

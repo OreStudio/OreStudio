@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C
+:END:
+#+title: Story: Clean up application menus
+#+description: The application's menu structure has grown organically and is now inconsistent: Reference Data menu is a grab-bag, System menu mixes app-chrome with operational concerns (Telemetry, Message Queue, Administration), Data Management menu is misleadingly named for what's actually transfer/import actions, and there's no coherent home for DQ metadata entities (change reasons, code domains, badges, etc.). Redesign the menu structure from first principles: System = app chrome only (Testing, Reset); Operations = Jobs, Workflows, Data Transfer, Data Catalogue, Telemetry, Message Queue, Administration; Reference Data = cleaned up; Data Quality = new menu for DQ metadata entities.
+#+type: story
+#+level: s2
+#+filetags: :qt:menus:ux:refactor:sprint_23:v0:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Redesign the application's menu structure from first principles so
+each top-level menu has a coherent, single purpose instead of today's
+organic grab-bags:
+
+- =System= — app chrome only (Testing/QA runner, Reset System).
+- =Operations= — everything operational: Jobs (Scheduler), Workflows,
+  Data Transfer (renamed from =Data Management=; Data Librarian moves
+  here from Data Transfer's current misleading role), Data Catalogue
+  (Data Domains/Subject Areas/Catalogues), Telemetry, Message Queue,
+  Administration (Accounts/Roles/Tenants).
+- =Reference Data= — cleaned up (current contents audited as part of
+  this story).
+- =Data &Quality= (new) — DQ metadata entities (Change Reasons, Change
+  Reason Categories, Code Domains, Badge Definitions, Badge
+  Severities now; Data Domains/Subject Areas/Catalogues migrate in
+  once [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] gets them onto codegen).
+
+Note: Data &Quality's own menu items (and the =ores.qt.dq= library
+they live in) are being stood up incrementally by the badge migration
+work in
+[[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
+and the sibling
+[[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story — this story owns the *menu structure*
+decision and the non-DQ menu cleanup (System/Operations/Reference
+Data), not the DQ entity migration itself.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-16                               |
+
+* Acceptance
+
+-
+
+* Decisions
+
+- Task breakdown: one task per top-level menu (=System=,
+  =Operations=, =Reference Data=; =Data &Quality= is owned by the
+  sibling [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story instead, since standing up that
+  menu is inseparable from the DQ entities landing in
+  =ores.qt.dq=). Each task audits that menu's current contents,
+  decides what moves in/out per this story's target structure, and
+  does the actual =QMenu=/plugin rewiring for everything that ends up
+  there.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Design target menu structure and inventory current state]] | BACKLOG | | | Initial task for: Clean up application menus |
+
+* Out of scope
+
+-

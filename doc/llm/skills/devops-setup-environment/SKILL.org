@@ -74,7 +74,7 @@ Run the steps in order; each is idempotent.
    the lightweight bootstrap smoke):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/barclays_system_provision.ores
+   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
    #+end_src
 
 8. /Verify/ — services up, bearings clean:

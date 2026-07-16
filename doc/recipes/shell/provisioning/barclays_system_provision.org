@@ -64,7 +64,7 @@ EOF
 
 * Script
 
-=projects/ores.shell/scripts/library/barclays_system_provision.ores= —
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores= —
 generated from this recipe's =ores-shell= block by
 =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
 

@@ -51,7 +51,7 @@ tangles each recipe's =ores-shell= block into =library/<name>.ores=
 
 #+begin_src sh
 ores.shell
-ores-shell> load projects/ores.shell/scripts/library/barclays_system_provision.ores
+ores-shell> load projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
 #+end_src
 
 or, with the connection inherited from the environment:

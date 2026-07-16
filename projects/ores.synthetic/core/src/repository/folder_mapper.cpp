@@ -36,6 +36,9 @@ domain::folder folder_mapper::map(const folder_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.parent_id = v.parent_id.has_value() ?
+                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_id)) :
+                      std::nullopt;
     r.name = v.name;
     r.kind = v.kind;
     r.collection_id = v.collection_id.has_value() ?
@@ -59,6 +62,8 @@ folder_entity folder_mapper::map(const domain::folder& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
+    r.parent_id = v.parent_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_id)) :
+                                            std::nullopt;
     r.name = v.name;
     r.kind = v.kind;
     r.collection_id = v.collection_id.has_value() ?

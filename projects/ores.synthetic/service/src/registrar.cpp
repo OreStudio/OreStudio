@@ -18,6 +18,7 @@
  *
  */
 #include "registrar.hpp"
+#include "folder_feed_control_handler.hpp"
 #include "market_feed_config_handler.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
@@ -70,6 +71,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) {
             simulate_handler h(nats, ctx, verifier);
             h.simulate(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(start_feeds_under_folder_request::nats_subject),
+        queue,
+        [&nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            folder_feed_control_handler h(nats, ctrl, ctx, verifier);
+            h.start(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(stop_feeds_under_folder_request::nats_subject),
+        queue,
+        [&nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            folder_feed_control_handler h(nats, ctrl, ctx, verifier);
+            h.stop(std::move(msg));
         }));
 
     return subs;

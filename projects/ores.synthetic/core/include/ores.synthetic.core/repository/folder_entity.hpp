@@ -41,6 +41,7 @@ struct folder_entity {
     std::string tenant_id;
     int version = 0;
     std::string party_id;
+    std::optional<std::string> parent_id;
     std::string name;
     std::string kind;
     std::optional<std::string> collection_id;

@@ -69,6 +69,19 @@ beyond the surrogate =id=.
 ctx.generate_uuid()
 #+end_src
 
+** parent_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Parent folder, for the tree hierarchy. Null for the root folder.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** name
 :PROPERTIES:
 :type:     text
@@ -123,6 +136,23 @@ std::nullopt
 |----------------------------------------------------------------------|
 | "name" <> ''                                                        |
 | "kind" in ('root', 'collection', 'asset_class', 'instrument_type')  |
+
+* Foreign keys
+
+** parent_id
+:PROPERTIES:
+:table:         ores_synthetic_folders_tbl
+:error_message: Invalid parent_id: %. No active folder found with this id.
+:nullable:      true
+:prevent_cycle: true
+:END:
+
+** collection_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid collection_id: %. No active market_data_generation_config found with this id.
+:nullable:      true
+:END:
 
 * Validation function
 :PROPERTIES:

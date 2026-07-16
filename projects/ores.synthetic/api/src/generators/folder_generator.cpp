@@ -40,6 +40,7 @@ domain::folder generate_synthetic_folder(utility::generation::generation_context
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
+    r.parent_id = std::nullopt;
     r.name = std::string(faker::word::noun());
     r.kind = std::string("root");
     r.collection_id = std::nullopt;

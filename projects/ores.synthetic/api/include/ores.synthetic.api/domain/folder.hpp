@@ -74,6 +74,11 @@ struct folder final {
     boost::uuids::uuid party_id;
 
     /**
+     * @brief Parent folder, for the tree hierarchy. Null for the root folder.
+     */
+    std::optional<boost::uuids::uuid> parent_id;
+
+    /**
      * @brief Display name of this folder (e.g. "Synthetic", "Basic", "FX", "FX Rates").
      */
     std::string name;

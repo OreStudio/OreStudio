@@ -17,29 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/currency_pair_convention_mapper.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.refdata.api/domain/currency_pair_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_pair_convention_calendar_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::currency_pair_convention
-currency_pair_convention_mapper::map(const currency_pair_convention_entity& v) {
+domain::currency_pair_convention_calendar
+currency_pair_convention_calendar_mapper::map(const currency_pair_convention_calendar_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::currency_pair_convention r;
+    domain::currency_pair_convention_calendar r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.pair_code = v.pair_code.value();
-    r.pip_factor = v.pip_factor;
-    r.tick_size = v.tick_size;
-    r.decimal_places = v.decimal_places;
-    r.business_day_convention = v.business_day_convention;
-    r.spot_relative = v.spot_relative;
-    r.end_of_month = v.end_of_month;
+    r.calendar_code = v.calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -50,20 +45,15 @@ currency_pair_convention_mapper::map(const currency_pair_convention_entity& v) {
     return r;
 }
 
-currency_pair_convention_entity
-currency_pair_convention_mapper::map(const domain::currency_pair_convention& v) {
+currency_pair_convention_calendar_entity
+currency_pair_convention_calendar_mapper::map(const domain::currency_pair_convention_calendar& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    currency_pair_convention_entity r;
+    currency_pair_convention_calendar_entity r;
     r.pair_code = v.pair_code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
+    r.calendar_code = v.calendar_code;
     r.version = v.version;
-    r.pip_factor = v.pip_factor;
-    r.tick_size = v.tick_size;
-    r.decimal_places = v.decimal_places;
-    r.business_day_convention = v.business_day_convention;
-    r.spot_relative = v.spot_relative;
-    r.end_of_month = v.end_of_month;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -73,15 +63,18 @@ currency_pair_convention_mapper::map(const domain::currency_pair_convention& v) 
     return r;
 }
 
-std::vector<domain::currency_pair_convention>
-currency_pair_convention_mapper::map(const std::vector<currency_pair_convention_entity>& v) {
-    return map_vector<currency_pair_convention_entity, domain::currency_pair_convention>(
+std::vector<domain::currency_pair_convention_calendar>
+currency_pair_convention_calendar_mapper::map(
+    const std::vector<currency_pair_convention_calendar_entity>& v) {
+    return map_vector<currency_pair_convention_calendar_entity,
+                      domain::currency_pair_convention_calendar>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<currency_pair_convention_entity>
-currency_pair_convention_mapper::map(const std::vector<domain::currency_pair_convention>& v) {
-    return map_vector<domain::currency_pair_convention, currency_pair_convention_entity>(
+std::vector<currency_pair_convention_calendar_entity> currency_pair_convention_calendar_mapper::map(
+    const std::vector<domain::currency_pair_convention_calendar>& v) {
+    return map_vector<domain::currency_pair_convention_calendar,
+                      currency_pair_convention_calendar_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

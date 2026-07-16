@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-pair-convention-calendar-migration
+#+pr: 1612
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,28 +32,51 @@ idiomatic name for this field, or should it just be
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
-- [ ] A junction table links =currency_pair_convention= to one or more
+- [X] A junction table links =currency_pair_convention= to one or more
   =calendar= rows, replacing the free-text =advance_calendar= column.
-- [ ] Naming decision made and recorded in this story's =* Decisions=;
+- [X] Naming decision made and recorded in this story's =* Decisions=;
   applied consistently across domain/SQL/UI.
-- [ ] Existing seeded data (from
+- [X] Existing seeded data (from
   [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]]) migrated onto the new
   model.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modelled =currency_pair_convention_calendar= as an
+=ores.codegen.junction= and, for the first time in this story,
+generated the full C++ layer (domain/generator/repository) via codegen
+rather than hand-authoring it — the parent story's junction-codegen
+gap ([[id:987FD4D9-7293-4E27-8688-6466A7FA4211][Fix domain/generator/repository
+Mustache templates for junction-shaped data]]) was closed by a separate
+story between task 3 and this one. Required adding a =* C++ ** Flags=
+block with =:subcomponent: api= to the model (mirroring
+=tenor_convention_resolution.org=) to get the generated files into the
+correct =api=/=core= path split.
+
+Naming decision: kept =advance_calendar= rather than renaming to
+=calendar=/=holiday_calendar=, since it matches ORE's own
+=AdvanceCalendar= XML field verbatim and denotes a distinct concept
+(date-advancing via =Calendar::advance()=, not business/settlement-day
+membership) per the existing
+[[id:7316C20B-1C0D-4BE3-A994-1957C7595771][AdvanceCalendar knowledge doc]].
+
+Retiring the free-text column broke =ores.ore='s =conventions_mapper=
+(XML export/import), which read/wrote =convention.advance_calendar=
+directly. Fixed by carrying the calendar codes on =mapped_fx= instead
+(same pattern already established for =spot_days=: the mapper has no
+database access), building/parsing the comma-joined XML value at the
+mapper boundary — this substantially delivers
+[[id:78A340FA-94F0-49F4-B521-89950A32B1F1][task 6's]] goal for the FX
+convention case specifically.
 
 * Notes
 
@@ -61,7 +84,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1612][#1612]] | [refdata,ore] Migrate currency_pair_convention.advance_calendar onto the calendar model |
 
 * Review
 
@@ -70,3 +93,48 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Modelled =currency_pair_convention_calendar= as an
+=ores.codegen.junction=, generated end-to-end via codegen (domain,
+JSON/table I/O, generator, repository entity/mapper/repository) rather
+than hand-authored — the first junction in this story to use the
+newly-completed junction C++ codegen path. Wired create/drop scripts
+into the manifests (depends on both =currency_pair_conventions= and
+=calendars=, so creates after both, drops before both) and added its
+RLS tenant-isolation policy up front.
+
+Seeded 16 real pair-to-calendar mappings (e.g. EUR/USD -> TARGET,
+UnitedStates.Settlement) via a SQL populate script only —
+=ores.codegen.junction= doesn't yet support a "real data" custom
+generator section the way =ores.codegen.entity= does, so the dual
+C++-generator-plus-SQL-populate seed pattern from tasks 2/3 couldn't
+be fully replicated here; captured as a gap for a future
+=ores.codegen.junction= enhancement rather than hand-editing the
+generated generator file.
+
+Retired =currency_pair_convention.advance_calendar= by removing the
+field from its org model and regenerating the entity via codegen.
+Fixed the one non-codegen-owned consumer this broke:
+=ores.ore='s =conventions_mapper=, whose =mapped_fx= struct now
+carries =advance_calendars= (a =std::vector<std::string>=) instead of
+reading/writing the retired domain field, following the same
+"mapper has no DB access" pattern already used for =spot_days=.
+=xml_fx_convention_mapper_roundtrip_tests.cpp='s round-trip test
+(comparing the raw XML =AdvanceCalendar= string before/after
+=map_fx=/=reverse=) continues to exercise this path unchanged.
+
+Verified locally before the final sync: full monorepo build clean;
+=ctest= — =ores.refdata.core.tests= (includes the new junction's
+repository tests), =ores.ore.core.tests=, =ores.ore.api.tests=, and
+=ores.ore.service.tests= all passed; the only failure across the
+whole suite was the same pre-existing, unrelated =contact_type=
+generator test seen throughout this sprint; =validate_schemas.sh=
+clean (0 warnings); =compass db recreate= verified with 16
+=currency_pair_convention_calendars= rows seeded. The branch was
+re-synced twice more after that verification pass to keep up with a
+fast-moving =main= (each rebase was a clean, conflict-free replay);
+the full suite was not re-run to completion after the final sync
+before this push, per explicit instruction to push without
+re-verifying — the specific suites this change touches were last
+confirmed green pre-sync, and both rebases were clean fast-forward
+replays with no conflicting hunks in the touched files.

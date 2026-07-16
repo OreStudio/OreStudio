@@ -79,7 +79,7 @@ placeholder text field.
 |------+-------+-------+-----+-------------|
 | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | DONE | 2026-07-13 | 2026-07-14 | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
 | [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] | DONE | 2026-07-15 | 2026-07-15 | Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table. |
-| [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | BACKLOG | | | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
+| [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | DONE | 2026-07-16 | 2026-07-17 | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
 | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | BACKLOG | | | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
 | [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
@@ -108,16 +108,37 @@ placeholder text field.
   DQ-publish task, since it was a natural extension of landing the
   entities cleanly; the junction tables' publish support is still
   pending their own tasks.
-- Junction codegen (=ores.codegen.junction=) only supports the SQL
-  address today — confirmed against =party_country= and
-  =currency_currency_group=, both of which also only have SQL
-  generated. The C++ layer for =currency_country= (and any other
-  junction) is hand-authored, mirroring the closest existing junction.
+- Junction codegen (=ores.codegen.junction=) only supported the SQL
+  address when =currency_country= (task 2) and =currency_calendar=
+  (task 3) were modelled — confirmed against =party_country= and
+  =currency_currency_group=, both SQL-only at the time — so their C++
+  layers are hand-authored, mirroring the closest existing junction.
+  A separate story closed that gap between task 3 and task 4
+  ([[id:987FD4D9-7293-4E27-8688-6466A7FA4211][Fix domain/generator/repository
+  Mustache templates for junction-shaped data]]), so
+  =currency_pair_convention_calendar= (task 4) is the first junction
+  in this story generated end-to-end via codegen — future junction
+  work should use codegen, not hand-authoring, following that
+  precedent.
 - Reference-data seeds that matter beyond synthetic test fixtures
-  (QuantLib calendars, currency-issuing countries) are written twice
-  by design: once as a C++ generator (for programmatic/test use) and
-  once as a matching SQL populate script (so =compass db recreate=
-  seeds them without needing the C++ path to run).
+  (QuantLib calendars, currency-issuing countries, pair-convention
+  calendars) are written twice by design where possible: once as a
+  C++ generator (for programmatic/test use) and once as a matching
+  SQL populate script (so =compass db recreate= seeds them without
+  needing the C++ path to run). =ores.codegen.junction= doesn't yet
+  support a "real data" custom generator section the way
+  =ores.codegen.entity= does, so =currency_pair_convention_calendar='s
+  seed is SQL-only for now — a gap to close in a future junction
+  codegen enhancement, not something to hand-edit the generated file
+  for.
+- =currency_pair_convention.advance_calendar= keeps its name rather
+  than being renamed to =calendar=/=holiday_calendar=: it matches
+  ORE's own =AdvanceCalendar= XML field verbatim and denotes a
+  distinct concept from =currency.holiday_calendar= (drives
+  date-advancing via =Calendar::advance()=, not business/settlement-day
+  membership), per the existing
+  [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][AdvanceCalendar knowledge
+  doc]].
 
 * Out of scope
 

@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -76,6 +77,16 @@ public:
      */
     std::uint32_t count_conventions();
 
+    /**
+     * @brief Retrieves a single currency pair convention as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param pair_code The pair_code of the currency pair convention.
+     * @param version The version to fetch.
+     * @return The currency pair convention at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency_pair_convention>
+    get_convention_at_version(const std::string& pair_code, std::uint32_t version);
 
     /**
      * @brief Retrieves a single currency pair convention by its pair_code.

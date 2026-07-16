@@ -98,41 +98,27 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="labelAdvanceCalendar">
-            <property name="text">
-             <string>Advance Calendar:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="advanceCalendarEdit">
-            <property name="placeholderText">
-             <string>e.g. TARGET</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
            <widget class="QLabel" name="labelBusinessDayConvention">
             <property name="text">
              <string>Business Day Convention:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="ores::qt::OreBadgeComboBox" name="businessDayConventionCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelSpotRelative">
             <property name="text">
              <string>Spot Relative:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="5" column="1">
            <widget class="QCheckBox" name="spotRelativeCheckBox">
             <property name="text">
              <string/>
@@ -142,14 +128,14 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelEndOfMonth">
             <property name="text">
              <string>End Of Month:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="6" column="1">
            <widget class="QCheckBox" name="endOfMonthCheckBox">
             <property name="text">
              <string/>

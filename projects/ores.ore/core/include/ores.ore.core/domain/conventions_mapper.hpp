@@ -33,6 +33,7 @@
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -41,15 +42,21 @@ namespace ores::ore::domain {
  * @brief A currency_pair identity paired with its 1:1 convention record, as produced by mapping a
  * single ORE XML <FX> element.
  *
- * @c spot_days is carried here rather than on @c currency_pair or @c currency_pair_convention: it
- * is not persisted on either (see the currency-pair-refdata story — spot days is derived from the
- * two legs' currency.spot_days at read time), but this mapper has no database access and must
- * still round-trip the value byte-for-byte between ORE XML import and export.
+ * @c spot_days and @c advance_calendars are carried here rather than on @c currency_pair or
+ * @c currency_pair_convention: neither is persisted on either domain type (spot days is derived
+ * from the two legs' currency.spot_days at read time; advance calendars live in the
+ * currency_pair_convention_calendar junction, not a column), but this mapper has no database
+ * access and must still round-trip both values byte-for-byte between ORE XML import and export.
+ * @c advance_calendars holds the individual calendar codes ORE's comma-joined
+ * <AdvanceCalendar> element names (e.g. {"TARGET", "UnitedKingdom"}); building/parsing the
+ * comma-joined string itself, and resolving it against the junction table, is the caller's
+ * responsibility.
  */
 struct mapped_fx {
     refdata::domain::currency_pair pair;
     refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
+    std::vector<std::string> advance_calendars;
 };
 
 /**

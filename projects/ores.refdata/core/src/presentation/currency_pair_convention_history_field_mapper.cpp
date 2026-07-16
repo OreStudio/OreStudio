@@ -31,8 +31,6 @@ render_currency_pair_convention_fields(const domain::currency_pair_convention& v
     fields.push_back({.name = "Pip Factor", .value = std::to_string(v.pip_factor)});
     fields.push_back({.name = "Tick Size", .value = std::to_string(v.tick_size)});
     fields.push_back({.name = "Decimal Places", .value = std::to_string(v.decimal_places)});
-    fields.push_back(
-        {.name = "Advance Calendar", .value = v.advance_calendar.value_or(std::string{})});
     fields.push_back({.name = "Business Day Convention",
                       .value = v.business_day_convention.value_or(std::string{})});
     fields.push_back(

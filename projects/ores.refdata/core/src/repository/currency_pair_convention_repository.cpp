@@ -95,7 +95,7 @@ currency_pair_convention_repository::read_all(context ctx, const std::string& pa
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_convention_entity>> |
                        where("tenant_id"_c == tid && "pair_code"_c == pair_code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<currency_pair_convention_entity, domain::currency_pair_convention>(
         ctx,
@@ -105,6 +105,30 @@ currency_pair_convention_repository::read_all(context ctx, const std::string& pa
         "Reading all currency pair convention versions by pair_code.");
 }
 
+std::optional<domain::currency_pair_convention>
+currency_pair_convention_repository::read_at_version(context ctx,
+                                                     const std::string& pair_code,
+                                                     std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair convention at version. pair_code: "
+                               << pair_code << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<currency_pair_convention_entity>> |
+        where("tenant_id"_c == tid && "pair_code"_c == pair_code && "version"_c == version) |
+        sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<currency_pair_convention_entity, domain::currency_pair_convention>(
+            ctx,
+            query,
+            [](const auto& entities) { return currency_pair_convention_mapper::map(entities); },
+            lg(),
+            "Reading currency pair convention at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 void currency_pair_convention_repository::remove(context ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention: " << pair_code;

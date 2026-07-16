@@ -42,7 +42,6 @@ create table if not exists "ores_refdata_currency_pair_conventions_tbl" (
     "pip_factor" double precision not null,
     "tick_size" double precision not null,
     "decimal_places" integer not null default 4,
-    "advance_calendar" text null,
     "business_day_convention" text null,
     "spot_relative" boolean null,
     "end_of_month" boolean null,
@@ -86,8 +85,10 @@ begin
     -- Validate pair_code
     NEW.pair_code := ores_refdata_validate_currency_pair_fn(NEW.tenant_id, NEW.pair_code);
 
-    -- Validate business_day_convention
-    NEW.business_day_convention := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention);
+    -- Validate business_day_convention (optional field -- skip validation when null)
+    if NEW.business_day_convention is not null then
+        NEW.business_day_convention := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention);
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -108,17 +109,22 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_currency_pair_conventions_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and pair_code = NEW.pair_code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -132,12 +138,13 @@ before insert on "ores_refdata_currency_pair_conventions_tbl"
 for each row execute function ores_refdata_currency_pair_conventions_insert_fn();
 
 create or replace rule ores_refdata_currency_pair_conventions_delete_rule as
-on delete to "ores_refdata_currency_pair_conventions_tbl" do instead
+on delete to "ores_refdata_currency_pair_conventions_tbl" do instead (
     update "ores_refdata_currency_pair_conventions_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and pair_code = OLD.pair_code
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Validation function for currency_pair_convention

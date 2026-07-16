@@ -58,7 +58,6 @@ public:
         PipFactor,
         TickSize,
         DecimalPlaces,
-        AdvanceCalendar,
         BusinessDayConvention,
         SpotRelative,
         EndOfMonth,

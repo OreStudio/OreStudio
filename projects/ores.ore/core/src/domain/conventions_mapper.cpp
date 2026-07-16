@@ -392,9 +392,15 @@ fxType reverse_fx(const domain::mapped_fx& v) {
     r.SourceCurrency = parse_currency_code(v.pair.base_currency);
     r.TargetCurrency = parse_currency_code(v.pair.quote_currency);
     r.PointsFactor = v.convention.pip_factor != 0.0 ? 1.0 / v.convention.pip_factor : 0.0;
-    if (v.convention.advance_calendar) {
+    if (!v.advance_calendars.empty()) {
+        std::string joined;
+        for (const auto& code : v.advance_calendars) {
+            if (!joined.empty())
+                joined += ",";
+            joined += code;
+        }
         fxType_AdvanceCalendar_t ac;
-        static_cast<std::string&>(ac) = *v.convention.advance_calendar;
+        static_cast<std::string&>(ac) = joined;
         r.AdvanceCalendar = ac;
     }
     if (v.convention.spot_relative)
@@ -881,8 +887,19 @@ mapped_fx conventions_mapper::map_fx(const fxType& v) {
     convention.decimal_places =
         v.PointsFactor > 0.0 ? static_cast<int>(std::lround(std::log10(v.PointsFactor))) : 0;
 
-    if (v.AdvanceCalendar)
-        convention.advance_calendar = std::string(*v.AdvanceCalendar);
+    if (v.AdvanceCalendar) {
+        const std::string joined = *v.AdvanceCalendar;
+        std::size_t start = 0;
+        while (start <= joined.size()) {
+            const auto comma = joined.find(',', start);
+            const auto end = comma == std::string::npos ? joined.size() : comma;
+            if (end > start)
+                r.advance_calendars.push_back(joined.substr(start, end - start));
+            if (comma == std::string::npos)
+                break;
+            start = comma + 1;
+        }
+    }
 
     if (v.SpotRelative)
         convention.spot_relative = parse_bool(*v.SpotRelative);

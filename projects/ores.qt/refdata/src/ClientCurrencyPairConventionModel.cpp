@@ -92,10 +92,6 @@ QVariant ClientCurrencyPairConventionModel::data(const QModelIndex& index, int r
                 return convention.tick_size;
             case DecimalPlaces:
                 return static_cast<qlonglong>(convention.decimal_places);
-            case AdvanceCalendar:
-                return convention.advance_calendar ?
-                           QString::fromStdString(*convention.advance_calendar) :
-                           QString{};
             case BusinessDayConvention:
                 return convention.business_day_convention ?
                            QString::fromStdString(*convention.business_day_convention) :
@@ -142,8 +138,6 @@ QVariant ClientCurrencyPairConventionModel::headerData(int section,
             return tr("Tick Size");
         case DecimalPlaces:
             return tr("Decimal Places");
-        case AdvanceCalendar:
-            return tr("Advance Calendar");
         case BusinessDayConvention:
             return tr("Business Day Convention");
         case SpotRelative:

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_ENTITY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -31,21 +31,18 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a currency pair convention in the database.
+ * @brief Represents a currency pair convention calendar in the database.
+ *
+ * Junction table with composite primary key (pair_code, calendar_code, valid_from).
  */
-struct currency_pair_convention_entity {
+struct currency_pair_convention_calendar_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_refdata_currency_pair_conventions_tbl";
+    constexpr static const char* tablename = "ores_refdata_currency_pair_convention_calendars_tbl";
 
     sqlgen::PrimaryKey<std::string> pair_code;
     std::string tenant_id;
+    std::string calendar_code;
     int version = 0;
-    double pip_factor;
-    double tick_size;
-    int decimal_places = 0;
-    std::optional<std::string> business_day_convention;
-    std::optional<bool> spot_relative;
-    std::optional<bool> end_of_month;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -54,7 +51,7 @@ struct currency_pair_convention_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const currency_pair_convention_entity& v);
+std::ostream& operator<<(std::ostream& s, const currency_pair_convention_calendar_entity& v);
 
 }
 

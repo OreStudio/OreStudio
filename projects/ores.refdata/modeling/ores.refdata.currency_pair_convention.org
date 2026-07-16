@@ -92,20 +92,6 @@ Decimal places for rate display.
 4
 #+end_src
 
-** advance_calendar
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Calendar used advancing spot→forward. Free-text pending
-[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
-
-#+begin_src cpp :name generator
-std::string("TARGET")
-#+end_src
-
 ** business_day_convention
 :PROPERTIES:
 :type:     text
@@ -219,7 +205,6 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 | pip_factor               | Pip Factor               |
 | tick_size                | Tick Size                |
 | decimal_places           | Decimal Places           |
-| advance_calendar         | Advance Calendar         |
 | business_day_convention  | Business Day Convention |
 | spot_relative            | Spot Relative            |
 | end_of_month             | End Of Month             |
@@ -264,7 +249,6 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 | PipFactor              | pip_factor                | Pip Factor               | double    | 90    |          |                                                     |                |                            |
 | TickSize                | tick_size                 | Tick Size                | double    | 90    |          |                                                     |                |                            |
 | DecimalPlaces           | decimal_places             | Decimal Places           | int       | 100   |          |                                                     |                |                            |
-| AdvanceCalendar         | advance_calendar           | Advance Calendar         | string    | 130   |          |                                                     |                |                            |
 | BusinessDayConvention   | business_day_convention    | Business Day Convention | string    | 150   | true     | currency_pair_convention_business_day_convention   |                |                            |
 | SpotRelative            | spot_relative              | Spot Relative             | bool      | 100   | true     | currency_pair_convention_spot_relative             | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
 | EndOfMonth              | end_of_month               | End Of Month              | bool      | 100   | true     | currency_pair_convention_end_of_month              | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
@@ -290,7 +274,6 @@ entity has no separate base/quote fields of its own.
 | pip_factor               | Pip Factor                | pipFactorEdit               | line_edit |        | true        | e.g. 0.0001                          |                                                                                                |                                                       |
 | tick_size                | Tick Size                 | tickSizeEdit                 | line_edit |        | true        | e.g. 0.1                             |                                                                                                |                                                       |
 | decimal_places           | Decimal Places            | decimalPlacesSpinBox         | spin_box  |        | true        |                                       |                                                                                                |                                                       |
-| advance_calendar         | Advance Calendar          | advanceCalendarEdit          | line_edit |        |             | e.g. TARGET                          |                                                                                                |                                                       |
 | business_day_convention  | Business Day Convention   | businessDayConventionCombo  | static_combo |     |             |                                       | Following,ModifiedFollowing,Preceding,ModifiedPreceding,Unadjusted,HalfMonthModifiedFollowing,Nearest | currency_pair_convention_business_day_convention |
 | spot_relative            | Spot Relative              | spotRelativeCheckBox         | check_box |        |             |                                       |                                                                                                |                                                       |
 | end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |                                                                                                |                                                       |

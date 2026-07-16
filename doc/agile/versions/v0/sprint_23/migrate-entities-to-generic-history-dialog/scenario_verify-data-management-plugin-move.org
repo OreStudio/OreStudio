@@ -36,6 +36,12 @@ run =./compass.sh shell -f
 projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 to reprovision it.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check Data Management menu exists with all submenus
 
 Confirm the top-level "Data Management" menu appears, containing:
@@ -45,6 +51,12 @@ Reasons), Data Catalogue (Data Domains, Subject Areas, Catalogues,
 Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
 Dimensions), and Data Librarian.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check Reference Data menu no longer has the moved entities
 
 Confirm Reference Data > Classifications now shows only Asset Class
@@ -52,35 +64,65 @@ Codes and Instrument Codes (Coding Schemes/Code Domains/Coding Scheme
 Authority Types should no longer appear there), and there is no
 "Audit Trail" submenu under Reference Data any more.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open one Data Catalogue window
 
 Data Management > Data Catalogue > Data Domains (or any other entry
 in this submenu). Confirm the list window opens and loads without
 error.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open one Classifications window
 
 Data Management > Classifications > Coding Schemes. Confirm the list
 window opens and loads without error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Open one Audit Trail window
 
 Data Management > Audit Trail > Change Reasons. Confirm the list
 window opens and loads without error.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the Data Librarian
 
 Data Management > Data Librarian. Confirm the window opens without
 error.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T07:22:50Z |
+| Branch        | feature/move-dq-entities-to-data-management-plugin |
+| Commit        | 5bca72d2f |
+| Worktree      | brave_hopper |
 
 * Notes

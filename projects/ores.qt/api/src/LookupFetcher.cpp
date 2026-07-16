@@ -23,6 +23,7 @@
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/messaging/asset_class_code_protocol.hpp"
+#include "ores.refdata.api/messaging/curve_role_protocol.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
@@ -458,6 +459,18 @@ fetch_asset_class_codes(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->asset_classes);
+}
+
+std::expected<std::vector<refdata::domain::curve_role>, QString>
+fetch_curve_roles(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_curve_roles_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->roles);
 }
 
 std::expected<std::vector<refdata::domain::instrument_code>, QString>

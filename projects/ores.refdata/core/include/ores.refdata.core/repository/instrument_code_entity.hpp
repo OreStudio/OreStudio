@@ -47,6 +47,7 @@ struct instrument_code_entity {
     std::string asset_class;
     std::optional<std::string> ore_trade_type;
     int display_order = 0;
+    std::string curve_role = "NONE";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

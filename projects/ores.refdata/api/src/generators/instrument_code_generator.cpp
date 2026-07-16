@@ -47,6 +47,7 @@ generate_synthetic_instrument_code(utility::generation::generation_context& ctx)
     r.asset_class = std::string("rates");
     r.ore_trade_type = std::string("ForwardRateAgreement");
     r.display_order = faker::number::integer(1, 100);
+    r.curve_role = std::string("NONE");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

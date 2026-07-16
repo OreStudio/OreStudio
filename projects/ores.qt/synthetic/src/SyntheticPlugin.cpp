@@ -26,6 +26,7 @@
 #include "ores.qt/IrCurveTemplateEntryController.hpp"
 #include "ores.qt/MarketDataGenerationConfigController.hpp"
 #include "ores.qt/MarketSimulatorWindow.hpp"
+#include "ores.qt/YieldCurveProcessTypeController.hpp"
 #include <QAction>
 #include <QMdiArea>
 #include <QMdiSubWindow>
@@ -150,6 +151,29 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             this,
             &PluginBase::windowDestroyed);
 
+    yieldCurveProcessTypeController_ =
+        std::make_unique<YieldCurveProcessTypeController>(ctx_.main_window,
+                                                           ctx_.mdi_area,
+                                                           ctx_.client_manager,
+                                                           ctx_.change_reason_cache,
+                                                           ctx_.username);
+    connect(yieldCurveProcessTypeController_.get(),
+            &YieldCurveProcessTypeController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(yieldCurveProcessTypeController_.get(),
+            &YieldCurveProcessTypeController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(yieldCurveProcessTypeController_.get(),
+            &YieldCurveProcessTypeController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(yieldCurveProcessTypeController_.get(),
+            &YieldCurveProcessTypeController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
+
     irCurveTemplateEntryController_ =
         std::make_unique<IrCurveTemplateEntryController>(ctx_.main_window,
                                                          ctx_.mdi_area,
@@ -261,6 +285,13 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
         if (irCurveTemplateEntryController_)
             irCurveTemplateEntryController_->showListWindow();
     });
+
+    auto* actYieldCurveProcessTypes =
+        advancedMenu->addAction(ico(Icon::Tag), tr("&Yield Curve Process Types"));
+    connect(actYieldCurveProcessTypes, &QAction::triggered, this, [this]() {
+        if (yieldCurveProcessTypeController_)
+            yieldCurveProcessTypeController_->showListWindow();
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +315,7 @@ void SyntheticPlugin::on_logout() {
         marketSimulatorWindow_ = nullptr;
     }
     irCurveTemplateEntryController_.reset();
+    yieldCurveProcessTypeController_.reset();
     irCurveGenerationConfigController_.reset();
     gmmComponentController_.reset();
     fxSpotConfigController_.reset();

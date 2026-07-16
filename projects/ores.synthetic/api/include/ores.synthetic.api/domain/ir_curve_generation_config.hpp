@@ -79,11 +79,12 @@ struct ir_curve_generation_config final {
     std::string index_name;
 
     /**
-     * @brief Short-rate process engine driving this curve: "vasicek", "cir", or "hull_white" --
-     * selects among ores.analytics.quant's IYieldCurveProcess engines via process_factory::
-     * make_yield_curve_process().
+     * @brief Short-rate process engine driving this curve (references
+     * yield_curve_process_type.code: VASICEK, CIR, or HULL_WHITE) -- selects among
+     * ores.analytics.quant's IYieldCurveProcess engines via
+     * process_factory::make_yield_curve_process().
      */
-    std::string process_type = "vasicek";
+    std::string process_type = "VASICEK";
 
     /**
      * @brief Mean-reversion speed parameter.
@@ -118,6 +119,14 @@ struct ir_curve_generation_config final {
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;
+
+    /**
+     * @brief Payment frequency for a Swap curve-template entry's fixed leg (references
+     * ores.refdata.payment_frequency.code), used to build the strip of intermediate payment dates
+     * between spot and maturity that curve_instrument_pricer::swap_par_rate() needs. Not consulted
+     * for Deposit/FRA entries, which have no intermediate schedule.
+     */
+    std::string fixed_leg_payment_frequency_code = "Annual";
 
     /**
      * @brief Username of the person who last modified this IR curve generation config.

@@ -46,6 +46,11 @@ IrCurveGenerationConfigDetailDialog::IrCurveGenerationConfigDetailDialog(QWidget
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 IrCurveGenerationConfigDetailDialog::~IrCurveGenerationConfigDetailDialog() {
@@ -122,6 +127,10 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->fixedLegPaymentFrequencyEdit,
+            &QLineEdit::textChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->enabledCheck,
             &QCheckBox::toggled,
             this,
@@ -169,6 +178,7 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->thetaEdit->setReadOnly(readOnly);
     ui_->sigmaEdit->setReadOnly(readOnly);
     ui_->initialRateEdit->setReadOnly(readOnly);
+    ui_->fixedLegPaymentFrequencyEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -182,6 +192,8 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->sigmaEdit->setText(QString::number(ir_curve_generation_config_.sigma));
     ui_->initialRateEdit->setText(QString::number(ir_curve_generation_config_.initial_rate));
     ui_->ticksPerHourEdit->setValue(ir_curve_generation_config_.ticks_per_hour);
+    ui_->fixedLegPaymentFrequencyEdit->setText(
+        QString::fromStdString(ir_curve_generation_config_.fixed_leg_payment_frequency_code));
     ui_->enabledCheck->setChecked(ir_curve_generation_config_.enabled);
 
     populateProvenance(ir_curve_generation_config_.version,
@@ -204,6 +216,8 @@ void IrCurveGenerationConfigDetailDialog::updateConfigFromUi() {
     ir_curve_generation_config_.sigma = ui_->sigmaEdit->text().trimmed().toDouble();
     ir_curve_generation_config_.initial_rate = ui_->initialRateEdit->text().trimmed().toDouble();
     ir_curve_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
+    ir_curve_generation_config_.fixed_leg_payment_frequency_code =
+        ui_->fixedLegPaymentFrequencyEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.enabled = ui_->enabledCheck->isChecked();
     ir_curve_generation_config_.modified_by = username_;
 }
@@ -227,10 +241,13 @@ bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const QString theta_val = ui_->thetaEdit->text().trimmed();
     const QString sigma_val = ui_->sigmaEdit->text().trimmed();
     const QString initial_rate_val = ui_->initialRateEdit->text().trimmed();
+    const QString fixed_leg_payment_frequency_code_val =
+        ui_->fixedLegPaymentFrequencyEdit->text().trimmed();
 
     return true && !currency_code_val.isEmpty() && !index_name_val.isEmpty() &&
            !process_type_val.isEmpty() && !kappa_val.isEmpty() && !theta_val.isEmpty() &&
-           !sigma_val.isEmpty() && !initial_rate_val.isEmpty();
+           !sigma_val.isEmpty() && !initial_rate_val.isEmpty() &&
+           !fixed_leg_payment_frequency_code_val.isEmpty();
 }
 
 void IrCurveGenerationConfigDetailDialog::onSaveClicked() {

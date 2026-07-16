@@ -59,6 +59,7 @@ create table if not exists "ores_refdata_instrument_codes_tbl" (
     "asset_class" text not null,
     "ore_trade_type" text null,
     "display_order" integer not null default 0,
+    "curve_role" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -103,6 +104,9 @@ begin
 
     -- Validate asset_class
     NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
+
+    -- Validate curve_role
+    NEW.curve_role := ores_refdata_validate_curve_role_fn(NEW.tenant_id, NEW.curve_role);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

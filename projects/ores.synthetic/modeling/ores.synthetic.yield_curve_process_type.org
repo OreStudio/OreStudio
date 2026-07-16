@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: B6FDABE7-C146-4B63-9C87-B18DEA09D27A
+:END:
+#+title: ores.synthetic.yield_curve_process_type
+#+description: Reference data table classifying which short-rate process engine (vasicek, cir, hull_white) an ir_curve_generation_config uses to drive its curve.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: yield_curve_process_type
+#+entity_plural: yield_curve_process_types
+#+entity_title: Yield Curve Process Type
+#+brief: Short-rate process engine selector for IR curve generation: vasicek, cir, or hull_white.
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+Reference data table enumerating the =IYieldCurveProcess= engines
+=ores.analytics.quant='s =process_factory::make_yield_curve_process()=
+can construct: =VASICEK=, =CIR=, =HULL_WHITE=. Replaces an inline
+=CHECK ("process_type" in ('vasicek', 'cir', 'hull_white'))= constraint
+on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
+catalogue row per engine -- same reasoning as promoting
+=instrument_code= from a hardcoded list to a real reference-data table.
+Scoped to =ores.synthetic= (not =ores.refdata=) since
+=IYieldCurveProcess= engine selection is specific to synthetic IR curve
+generation, its only consumer today; not promoted to shared refdata
+until it is genuinely shared by something else, per this story's own
+=payment_frequency= precedent. Managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique yield curve process type code.
+
+Examples: 'VASICEK', 'CIR', 'HULL_WHITE'.
+
+#+begin_src cpp :name generator
+std::string("YieldCurveProcessType")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the process type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Process"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the process type and its dynamics.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_yield_curve_process_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_synthetic_validate_yield_curve_process_type_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: process_type
+:entity_plural_short:   process_types
+:entity_singular_words: yield curve process type
+:entity_plural_words:   yield curve process types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pt
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.synthetic.api/domain/yield_curve_process_type.hpp
+:domain_class:           synthetic::domain::yield_curve_process_type
+:protocol_include:       ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp
+:collection_name:        process_types
+:item_var:               process_type
+:key_field:              code
+:has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
+:get_request_class:      synthetic::messaging::get_yield_curve_process_types_request
+:get_response_class:     synthetic::messaging::get_yield_curve_process_types_response
+:get_message_type:       get_yield_curve_process_types_request
+:save_request_class:     synthetic::messaging::save_yield_curve_process_type_request
+:save_response_class:    synthetic::messaging::save_yield_curve_process_type_response
+:save_message_type:      save_yield_curve_process_type_request
+:delete_request_class:   synthetic::messaging::delete_yield_curve_process_type_request
+:delete_response_class:  synthetic::messaging::delete_yield_curve_process_type_response
+:delete_message_type:    delete_yield_curve_process_type_request
+:history_request_class:  synthetic::messaging::get_yield_curve_process_type_history_request
+:history_response_class: synthetic::messaging::get_yield_curve_process_type_history_response
+:history_message_type:   get_yield_curve_process_type_history_request
+:settings_group:         YieldCurveProcessTypeListWindow
+:window_title:           Yield Curve Process Types
+:icon:                   Tag
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder              |
+|---------------+---------------+-----------------+-----------+--------+-------------+---------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter process type code  |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name                |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version      | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By    | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][IR Curve Generation Config]] -- the entity this classifies.
+- [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][Tenor Unit]] -- the entity whose NONE-sentinel/code-table pattern this follows.

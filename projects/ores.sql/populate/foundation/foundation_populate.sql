@@ -103,6 +103,7 @@
 \ir ../refdata/refdata_tenor_anchors_populate.sql
 \ir ../refdata/refdata_tenor_resolution_algorithms_populate.sql
 \ir ../refdata/refdata_payment_frequencies_populate.sql
+\ir ../synthetic/synthetic_yield_curve_process_types_populate.sql
 \ir ../refdata/refdata_tenors_populate.sql
 \ir ../refdata/refdata_tenor_conventions_populate.sql
 \ir ../refdata/refdata_tenor_convention_resolutions_populate.sql
@@ -125,8 +126,9 @@
 \ir ../refdata/refdata_book_purpose_types_populate.sql
 \ir ../refdata/refdata_ledger_feed_types_populate.sql
 
--- Product catalogue: asset_class_codes before instrument_codes (FK).
+-- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ../refdata/refdata_asset_class_codes_populate.sql
+\ir ../refdata/refdata_curve_roles_populate.sql
 \ir ../refdata/refdata_instrument_codes_populate.sql
 
 \ir ../refdata/refdata_business_unit_types_populate.sql

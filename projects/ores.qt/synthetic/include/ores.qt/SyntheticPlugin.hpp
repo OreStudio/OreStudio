@@ -34,6 +34,7 @@ class FxSpotGenerationConfigController;
 class GmmComponentController;
 class IrCurveGenerationConfigController;
 class IrCurveTemplateEntryController;
+class YieldCurveProcessTypeController;
 
 /**
  * @brief Synthetic plugin: synthetic market data generation configuration.
@@ -73,6 +74,7 @@ private:
     std::unique_ptr<GmmComponentController> gmmComponentController_;
     std::unique_ptr<IrCurveGenerationConfigController> irCurveGenerationConfigController_;
     std::unique_ptr<IrCurveTemplateEntryController> irCurveTemplateEntryController_;
+    std::unique_ptr<YieldCurveProcessTypeController> yieldCurveProcessTypeController_;
 };
 
 }

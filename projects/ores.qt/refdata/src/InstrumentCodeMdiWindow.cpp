@@ -134,6 +134,7 @@ void InstrumentCodeMdiWindow::setupTable() {
             cs::text_left,
             cs::badge_centered,
             cs::text_left,
+            cs::badge_centered,
             cs::mono_center,
             cs::mono_center,
             cs::text_left,
@@ -147,6 +148,18 @@ void InstrumentCodeMdiWindow::setupTable() {
             if (!cache)
                 return fallback;
             auto* def = cache->resolve("asset_class", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("curve_role", value.toStdString());
             if (!def)
                 return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),

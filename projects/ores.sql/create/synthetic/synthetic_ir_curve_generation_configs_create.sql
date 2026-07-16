@@ -49,6 +49,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "initial_rate" double precision not null,
     "ticks_per_hour" integer not null,
     "enabled" boolean not null,
+    "fixed_leg_payment_frequency_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -65,10 +66,9 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
     check ("index_name" <> ''),
-    check ("process_type" in ('vasicek', 'cir', 'hull_white')),
     check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
-    check ("process_type" <> 'cir' or "initial_rate" >= 0)
+    check ("process_type" <> 'CIR' or "initial_rate" >= 0)
 );
 
 -- Composite natural key: unique combination for active records
@@ -107,6 +107,12 @@ begin
         raise exception 'Invalid config_id: %. No active market_data_generation_config found with this id.', NEW.config_id
             using errcode = '23503';
     end if;
+
+    -- Validate process_type
+    NEW.process_type := ores_synthetic_validate_yield_curve_process_type_fn(NEW.tenant_id, NEW.process_type);
+
+    -- Validate fixed_leg_payment_frequency_code
+    NEW.fixed_leg_payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.fixed_leg_payment_frequency_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

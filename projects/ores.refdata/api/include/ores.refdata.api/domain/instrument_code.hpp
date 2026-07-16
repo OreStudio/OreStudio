@@ -108,6 +108,16 @@ struct instrument_code final {
     int display_order = 0;
 
     /**
+     * @brief Role this instrument plays when deriving a rate from a curve (references
+     * curve_role.code): DEPOSIT, FRA, or SWAP for the instrument types the IR Curve Template uses,
+     * NONE for every other instrument code (the great majority of the catalogue). Determines which
+     * curve_instrument_pricer derivation applies -- simple rate, implied forward, or par-rate solve
+     * -- when this instrument's tenor entry is priced from a short-rate process's
+     * discount_factor().
+     */
+    std::string curve_role = "NONE";
+
+    /**
      * @brief Username of the person who last modified this instrument code.
      */
     std::string modified_by;

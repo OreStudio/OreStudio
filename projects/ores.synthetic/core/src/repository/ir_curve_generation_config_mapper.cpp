@@ -53,6 +53,7 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
+    r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -88,6 +89,7 @@ ir_curve_generation_config_mapper::map(const domain::ir_curve_generation_config&
     r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
+    r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

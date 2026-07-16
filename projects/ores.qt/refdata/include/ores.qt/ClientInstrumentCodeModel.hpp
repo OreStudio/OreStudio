@@ -59,6 +59,7 @@ public:
         Description,
         AssetClass,
         OreTradeType,
+        CurveRole,
         DisplayOrder,
         Version,
         ModifiedBy,

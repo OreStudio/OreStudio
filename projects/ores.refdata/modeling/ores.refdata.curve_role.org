@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: D9A9B2C5-2C22-456A-851F-B458E0568CD3
+:END:
+#+title: ores.refdata.curve_role
+#+description: Reference data table classifying an instrument_code by its role when deriving a rate from a curve: deposit, fra, swap, or NONE for non-curve instruments.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_role
+#+entity_plural: curve_roles
+#+entity_title: Curve Role
+#+brief: Instrument classification for curve-role derivation: deposit, fra, swap, or none.
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+Reference data table defining the valid [[id:4A02B9BB-B4B5-45DE-9036-C81EAEE3E921][instrument_code]] curve-role
+values: =DEPOSIT=, =FRA=, =SWAP= -- the three pricing derivations
+=ores.analytics.quant='s =curve_instrument_pricer= implements (simple
+rate, implied forward, par-rate solve respectively) -- and the sentinel
+=NONE= for the great majority of =instrument_code= rows that are not
+curve instruments at all (options, credit, equity, and so on). =NONE=
+exists so =instrument_code.curve_role= can stay a required, FK-validated
+column rather than nullable free text, the same pattern
+[[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit.NONE]] already
+establishes for =tenor.unit=. Managed by the system tenant, like other
+refdata code tables.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique curve role code.
+
+Examples: 'DEPOSIT', 'FRA', 'SWAP', 'NONE'.
+
+#+begin_src cpp :name generator
+std::string("CurveRole")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the curve role.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Role"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the curve role.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_roles_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_curve_role_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: role
+:entity_plural_short:   roles
+:entity_singular_words: curve role
+:entity_plural_words:   curve roles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cr
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/curve_role.hpp
+:domain_class:           refdata::domain::curve_role
+:protocol_include:       ores.refdata.api/messaging/curve_role_protocol.hpp
+:collection_name:        roles
+:item_var:               role_
+:key_field:              code
+:has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
+:get_request_class:      refdata::messaging::get_curve_roles_request
+:get_response_class:     refdata::messaging::get_curve_roles_response
+:get_message_type:       get_curve_roles_request
+:save_request_class:     refdata::messaging::save_curve_role_request
+:save_response_class:    refdata::messaging::save_curve_role_response
+:save_message_type:      save_curve_role_request
+:delete_request_class:   refdata::messaging::delete_curve_role_request
+:delete_response_class:  refdata::messaging::delete_curve_role_response
+:delete_message_type:    delete_curve_role_request
+:history_request_class:  refdata::messaging::get_curve_role_history_request
+:history_response_class: refdata::messaging::get_curve_role_history_response
+:history_message_type:   get_curve_role_history_request
+:settings_group:         CurveRoleListWindow
+:window_title:           Curve Roles
+:icon:                   Tag
+:has_export_macro:       true
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder            |
+|---------------+---------------+-----------------+-----------+--------+-------------+-------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter curve role code   |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name              |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description     |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                         |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version      | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By    | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:4A02B9BB-B4B5-45DE-9036-C81EAEE3E921][Instrument Code]] -- the entity this classifies.
+- [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][Tenor Unit]] -- the entity whose NONE-sentinel pattern this follows.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

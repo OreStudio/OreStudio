@@ -25,7 +25,11 @@
 \ir ./synthetic_gmm_components_create.sql
 \ir ./synthetic_gmm_components_notify_trigger_create.sql
 
--- IR curve generation: config before the template entries that reference it.
+-- IR curve generation: yield_curve_process_types before the config that
+-- FK-validates against it; config before the template entries that
+-- reference it.
+\ir ./synthetic_yield_curve_process_types_create.sql
+\ir ./synthetic_yield_curve_process_types_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_generation_configs_create.sql
 \ir ./synthetic_ir_curve_generation_configs_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_template_entries_create.sql

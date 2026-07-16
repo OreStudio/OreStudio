@@ -88,6 +88,18 @@
 \ir dq/dq_badge_severities_artefact_populate.sql
 
 -- =============================================================================
+-- Badge Definitions Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge definitions catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Definitions Dataset ---'
+\ir dq/dq_badge_definitions_dataset_populate.sql
+\ir dq/dq_badge_definitions_artefact_populate.sql
+
+-- =============================================================================
 -- Reporting Layer
 -- =============================================================================
 

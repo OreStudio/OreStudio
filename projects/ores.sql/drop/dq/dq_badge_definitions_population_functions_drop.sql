@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,25 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.api/domain/badge_definition_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
-
-namespace ores::dq::domain {
-
-
-std::string convert_to_table(const std::vector<badge_definition>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Code" << "Name" << "Background" << "Text" << "Severity" << "Order"
-          << "Modified By" << "Version" << fort::endr;
-
-    for (const auto& bd : v) {
-        table << bd.code << bd.name << bd.background_colour << bd.text_colour << bd.severity_code
-              << bd.display_order << bd.modified_by << bd.version << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+drop function if exists ores_dq_badge_definition_preview_fn;
+drop function if exists ores_dq_badge_definitions_publish_fn;

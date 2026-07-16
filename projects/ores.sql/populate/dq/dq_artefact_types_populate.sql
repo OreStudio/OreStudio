@@ -151,6 +151,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'badge_severities', 0, 'Badge Severities', 'Badge severity levels (secondary/info/success/warning/danger/primary), self-published into DQ''s own table like coding_schemes',
      'dq_badge_severities_artefact_tbl', 'dq_badge_severities_tbl', 'dq.v1.badge-severities.publish-from-dq', 50,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'badge_definitions', 0, 'Badge Definitions', 'Visual badge definitions (colour, severity, CSS class), self-published into DQ''s own table like coding_schemes/badge_severities',
+     'dq_badge_definitions_artefact_tbl', 'dq_badge_definitions_tbl', 'dq.v1.badge-definitions.publish-from-dq', 51,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

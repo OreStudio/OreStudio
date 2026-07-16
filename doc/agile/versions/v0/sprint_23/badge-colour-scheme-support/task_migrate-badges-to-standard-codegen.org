@@ -136,6 +136,55 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
    =ores.dq.core.lib= rebuild clean; =ores.dq.core.tests= still green
    (318 assertions, 104 cases); SQL convention checker
    (=fix_sql_conventions.py=) clean.
+9. Repeated the same treatment for =badge_definition=: regenerated it
+   onto the standard codegen stack via
+   =compass codegen entity generate badge_definition=. This surfaced
+   two real bugs in the model's own hand-written =:name generator=
+   snippets (never caught before because =badge_definition= had never
+   actually been regenerated): =faker::string::hexadecimal(...)=
+   doesn't exist (should be =faker::number::hexadecimal=, and
+   =faker::HexPrefix::NoPrefix= should be =faker::HexPrefix::None=),
+   and the nullable =css_class= column's generator assigned
+   =std::optional<std::string>{}= to what codegen actually generates
+   as a plain =std::string= field for =nullable: true= (confirmed
+   against the convention used across the other 15+ nullable-string
+   fields in the codebase, none of which wrap in =std::optional=).
+   Fixed both in =ores.dq.badge_definition.org= directly; regenerated
+   cleanly after.
+10. Wired =badge_definition= into the publish-from-dq pipeline the
+    same way as =badge_severity=: new artefact table
+    (=dq_badge_definitions_artefact_create.sql=), preview/publish
+    function pair modeled on =ores_dq_badge_severities_publish_fn=,
+    dataset+artefact-type+bundle-member registration (same catalog
+    =ORE=, subject area =General=, methodology =ORE Internal=, =base=
+    bundle -- consistent with =badge_severity='s choices, not
+    reinvented per-entity), and a new subject
+    (=dq.v1.badge-definitions.publish-from-dq=) added to the same
+    shared generic =publish_from_dq_handler=. The 57 seed rows for the
+    artefact populate script were extracted programmatically from
+    =dq_badge_system_populate.sql= (regex over the existing
+    =ores_dq_badge_definitions_upsert_fn= calls) rather than
+    hand-transcribed, to avoid transcription errors across that many
+    rows.
+11. Noted (not enforced at the DB level -- =severity_code= is a soft
+    FK, no constraint): =badge_severities= should be published to a
+    tenant before =badge_definitions=, so resolved badges aren't left
+    referencing a severity the tenant doesn't have yet. Documented in
+    the dataset populate script's own header comment.
+12. Verified end-to-end again: freshly recreated database, artefact
+    table populated (57 rows), publish function works directly via
+    SQL (57/57 updated against the system tenant's own rows). Then,
+    on a second fresh recreate + full Barclays provisioning run,
+    found =badge_severities=/=badge_definitions= were *already*
+    published for Barclays automatically -- confirming the =base=
+    bundle-member wiring (Plan item 7) actually fires during real
+    tenant provisioning, not just via a manual SQL call: Barclays
+    ended up with all 6 severities and all 57 definitions, spot-
+    checked (=active= badge: =#22c55e= background, =success=
+    severity, matches the source seed exactly). Full stack rebuild
+    (=ores.dq.core.lib=, =ores.dq.core.tests=, =ores.dq.service.lib=,
+    the full =ores.qt.exe=) clean; =ores.dq.core.tests= still green
+    (318 assertions, 104 cases).
 
 * Notes
 
@@ -145,12 +194,21 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
   and the reason this task exists. Fixed by wiring =badge_severity=
   into the DQ publish-from-dq pipeline (Plan items 6-8) rather than
   reverting or leaving the gap open.
-- =badge_definition= and =code_domain= still need the same treatment
-  (regenerate + publish-from-dq wiring); =badge_mapping= (a junction)
-  has no core-layer divergence to fix but will need its own
-  publish-from-dq artefact once =code_domain=/=badge_definition= are
-  done, since mappings reference both. Not started in this session --
-  scope for this task's next round.
+- =badge_definition= is now done too (Plan items 9-12). =code_domain=
+  still needs the same treatment (regenerate + publish-from-dq
+  wiring); =badge_mapping= (a junction) has no core-layer divergence
+  to fix but will need its own publish-from-dq artefact once
+  =code_domain=/=badge_definition= are both tenant-scoped, since
+  mappings reference both. Not started in this session -- scope for
+  this task's next round.
+- The orphaned, unbuilt =projects/ores.qt/dq= scaffold (no
+  CMakeLists.txt) grew two more entities' worth of generated-but-dead
+  Qt files this round (=BadgeDefinitionController=/
+  =BadgeDefinitionDetailDialog=/=BadgeDefinitionMdiWindow=/
+  =ClientBadgeDefinitionModel=), on top of =badge_severity='s from the
+  prior round. Same pre-existing drift noted for =code_domain=; still
+  out of scope to fix here, but worth flagging that it's accumulating
+  across every entity this task regenerates.
 - The =coding_schemes= precedent this was modeled on is itself only
   ever published once, unconditionally, to the system tenant at DB
   build time (per a comment in

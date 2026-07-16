@@ -33,7 +33,9 @@ domain::badge_definition badge_definition_mapper::map(const badge_definition_ent
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
+
     r.name = v.name;
+
     r.description = v.description;
     r.background_colour = v.background_colour;
     r.text_colour = v.text_colour;
@@ -57,7 +59,9 @@ badge_definition_entity badge_definition_mapper::map(const domain::badge_definit
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.background_colour = v.background_colour;
     r.text_colour = v.text_colour;

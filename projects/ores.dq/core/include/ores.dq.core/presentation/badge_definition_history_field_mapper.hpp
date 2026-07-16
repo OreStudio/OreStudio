@@ -17,25 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.api/domain/badge_definition_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_DQ_CORE_PRESENTATION_BADGE_DEFINITION_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_BADGE_DEFINITION_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::dq::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.core/export.hpp"
+#include <vector>
 
+namespace ores::dq::presentation {
 
-std::string convert_to_table(const std::vector<badge_definition>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Code" << "Name" << "Background" << "Text" << "Severity" << "Order"
-          << "Modified By" << "Version" << fort::endr;
-
-    for (const auto& bd : v) {
-        table << bd.code << bd.name << bd.background_colour << bd.text_colour << bd.severity_code
-              << bd.display_order << bd.modified_by << bd.version << fort::endr;
-    }
-    return table.to_string();
-}
+/**
+ * @brief Renders a badge_definition to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_badge_definition_fields(const domain::badge_definition& v);
 
 }
+
+#endif

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: F07B50E2-0B51-4230-8D0D-F0587663BC9F
+:END:
+#+title: Random Walk
+#+description: The discrete-time process of summing independent steps — its defining properties, why it already has the Markov property, and how it relates to the Wiener process as a continuous-time limit.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+A *random walk* is the simplest possible stochastic process: a sequence
+formed by summing independent, identically-distributed steps, one per
+discrete time period. It predates the
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]] both
+historically and conceptually — the Wiener process is what a random walk
+becomes in the limit of infinitely many, infinitesimally small steps —
+and it already has the [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov
+property]] every process in the
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] cluster
+relies on, in its plainest possible form.
+
+* Layperson's mental model
+
+Imagine flipping a coin once per second, stepping one pace right for
+heads and one pace left for tails, and tracking where you end up. That's
+a random walk: the running total of a string of independent, identical
+random steps. There is no rule pulling you back toward where you
+started — after enough flips you could, in principle, be anywhere.
+
+#+begin_src cpp
+double position = 0.0;
+for (int i = 0; i < n_steps; ++i) {
+    position += (coin_flip() ? +1.0 : -1.0);   // one independent step
+}
+#+end_src
+
+Shrink each step and speed up the flips — smaller paces, more of them
+per second — and, in the limit, this discrete jittery path becomes the
+smooth-looking (but still nowhere-differentiable) continuous path of a
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]].
+
+* Detail
+
+** The definition
+
+A random walk $S_n$ is defined by:
+
+\begin{equation}
+S_n = S_0 + \sum_{i=1}^{n} X_i
+\end{equation}
+
+where $X_1, X_2, \ldots$ are independent, identically-distributed random
+steps. The *simple* random walk takes each $X_i = \pm 1$ with equal
+probability — the textbook coin-flip walk — but the step distribution
+need not be so restricted: any independent, identically-distributed
+sequence of steps produces a random walk in this general sense.
+
+** Already Markov, already no-memory
+
+Because each step $X_i$ is drawn independently of every earlier step,
+$S_{n+1} = S_n + X_{n+1}$ depends only on the current position $S_n$ (and
+the fresh draw $X_{n+1}$), never on how $S_n$ was reached — the
+[[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov property]] holds
+trivially for a random walk, and is easiest to see directly here, before
+any continuous-time subtlety is introduced.
+
+** The continuous-time limit
+
+Rescale a simple random walk so that each step has size $1/\sqrt{n}$ and
+steps occur every $1/n$ of a unit of time, then let $n \to \infty$: the
+rescaled walk converges to the
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]] (Donsker's
+theorem, also called the functional central limit theorem). This is the
+precise sense in which the Wiener process *is* a continuous-time random
+walk: not merely an analogy, but a rigorously defined limit of the
+discrete object. Practically, it also runs the other way: simulating a
+Wiener process on a computer, which necessarily advances in discrete
+ticks, is already an approximating random walk that targets the
+continuous idealisation, not the continuous process itself.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the continuous-time limit this document's random walk converges to.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the "no memory" property stated here in its simplest, discrete-time form.
+
+** Further reading
+
+- Pearson, K. (1905). "The Problem of the Random Walk." /Nature/,
+  72(1865), 294. The paper that coined the term "random walk", posed as
+  an open problem about a drunkard's path.
+- Donsker, M. D. (1951). "An Invariance Principle for Certain
+  Probability Limit Theorems." /Memoirs of the American Mathematical
+  Society/, 6, 1-12. The rigorous proof that a rescaled random walk
+  converges to the Wiener process — the theorem this document's
+  continuous-time limit section refers to.
+- Feller, W. (1968). /An Introduction to Probability Theory and Its
+  Applications/, Vol. 1 (3rd ed.). Wiley. The standard classical
+  treatment of random walks, including the simple $\pm 1$ walk and its
+  key combinatorial results.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Random_walk][Random walk]].

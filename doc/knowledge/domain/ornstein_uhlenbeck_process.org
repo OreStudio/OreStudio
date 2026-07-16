@@ -25,35 +25,55 @@ variation on a constant mean-reversion target or the volatility term.
 the exact per-tick discretisation it uses is the same one the Vasicek and
 Hull-White processes reduce to.
 
+* Layperson's mental model
+
+Think of a stretched elastic band instead of a free-floating cork: the
+further the current value drifts from its resting length =theta= (θ), the
+harder the band pulls it back. Push it away and let go — it springs back
+toward =theta= (θ), with some random jitter added on top of the pull each
+tick. How stiff the band is (how fast it snaps back) is =kappa= (κ); how
+much random jitter is added on top is =sigma= (σ).
+
+#+begin_src cpp
+double ou_process::next() {
+    const double z = normal_(rng_);
+    const double decay = std::exp(-kappa_);
+    const double var = (1.0 - decay * decay) / (2.0 * kappa_);
+    // pulled toward theta_ by `decay`, then jittered by sigma_ * z
+    price_ = theta_ + (price_ - theta_) * decay + sigma_ * std::sqrt(var) * z;
+    return price_;
+}
+#+end_src
+
 * Detail
 
 ** The SDE
 
-#+begin_example
-dX = kappa * (theta - X) * dt + sigma * dW
-#+end_example
+\begin{equation}
+dX = \kappa(\theta - X)\, dt + \sigma\, dW
+\end{equation}
 
-=theta= is the long-run level =X= reverts toward; =kappa= (also called
+$\theta$ is the long-run level $X$ reverts toward; $\kappa$ (also called
 the *speed of mean reversion*) controls how strongly and how fast it
-pulls back — a larger =kappa= means a shorter half-life for any
-deviation from =theta=, and =kappa <= 0= degenerates the process to a
-driftless random walk with no mean reversion at all (the =kappa -> 0=
+pulls back — a larger $\kappa$ means a shorter half-life for any
+deviation from $\theta$, and $\kappa \le 0$ degenerates the process to a
+driftless random walk with no mean reversion at all (the $\kappa \to 0$
 limit of the variance term below).
 
 ** The exact discretisation
 
 Unlike [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]]'s log-price
 update, which is exact only after the Ito-lemma change of variables to
-=log(S)=, the OU SDE above admits a genuinely *exact* (not
-Euler-approximated) closed-form solution directly in =X=, since the SDE
-is linear in =X=:
+$\log S$, the OU SDE above admits a genuinely *exact* (not
+Euler-approximated) closed-form solution directly in $X$, since the SDE
+is linear in $X$:
 
-#+begin_example
-X_{t+1} = theta + (X_t - theta) * e^{-kappa}
-          + sigma * sqrt((1 - e^{-2*kappa}) / (2*kappa)) * Z,  Z ~ N(0, 1)
-#+end_example
+\begin{equation}
+X_{t+1} = \theta + (X_t - \theta) e^{-\kappa}
+          + \sigma \sqrt{\frac{1 - e^{-2\kappa}}{2\kappa}}\, Z, \quad Z \sim N(0, 1)
+\end{equation}
 
-(with a unit tick, =dt = 1=, matching the per-update convention the
+(with a unit tick, $dt = 1$, matching the per-update convention the
 [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]]/
 [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic]] processes use for
 their increments). This is why =ou_process= never needs to fall back on
@@ -64,22 +84,23 @@ tick size, not just in the limit of small ticks.
 ** How the specialisations build on this
 
 - [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]]: OU applied to a
-  short rate =r= with a constant =theta=. Identical SDE, different
+  short rate $r$ with a constant $\theta$. Identical SDE, different
   application domain.
-- [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]: OU's =theta=
-  replaced with a piecewise-constant, time-varying =theta(t)=, letting
+- [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]: OU's $\theta$
+  replaced with a piecewise-constant, time-varying $\theta(t)$, letting
   the model fit an observed initial yield curve exactly rather than
   reverting to one fixed level.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][CIR]]: keeps OU's drift
-  shape =kappa*(theta-r)= but replaces the constant volatility =sigma=
-  with a state-dependent =sigma*sqrt(r)=, which is what breaks the
+  shape $\kappa(\theta-r)$ but replaces the constant volatility $\sigma$
+  with a state-dependent $\sigma\sqrt{r}$, which is what breaks the
   closed-form Gaussian transition above and forces the more involved
   non-central-chi-squared construction CIR actually uses.
 
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub, including the comparison table across all four mean-reverting processes.
-- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the =dW= term OU is driven by.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the $dW$ term OU is driven by.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the "no memory" property this process inherits from its Wiener-process driver.
 - [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — OU applied to a short rate.
 - [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]] — OU with a time-varying reversion target.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — OU with a state-dependent volatility term.
@@ -95,3 +116,4 @@ tick size, not just in the limit of small ticks.
   /Annals of Mathematics/, 43(2), 351-369. Gave the rigorous mathematical
   treatment (including the exact transition density used above) that put
   Uhlenbeck and Ornstein's physical argument on solid footing.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process][Ornstein-Uhlenbeck process]].

@@ -20,26 +20,44 @@ per tick, not the percentage change, is normally distributed.
 as the direct counterpart to =gmm_process=, generalised the same way to a
 K-component Gaussian mixture rather than a single Normal shock.
 
+* Layperson's mental model
+
+Same idea as a bank balance you top up or draw down by a random amount
+each day — never a random *percentage*, always a random flat *amount*,
+regardless of how big the balance already is. A withdrawal of 50 is
+exactly as likely whether the balance is 100 or 100,000. This is the
+whole difference from
+[[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]]'s
+"random percentage" framing — and it's also why, unlike GBM, this
+process has no floor: enough unlucky flat withdrawals in a row and the
+balance genuinely goes negative.
+
+#+begin_src cpp
+const double increment = std::normal_distribution<double>(mean, sd)(rng_);
+price_ += increment;      // a random flat amount, added
+#+end_src
+
 * Detail
 
 ** The SDE and its discretisation
 
 ABM follows:
 
-#+begin_example
-dS = mu * dt + sigma * dW
-#+end_example
+\begin{equation}
+dS = \mu\, dt + \sigma\, dW
+\end{equation}
 
 Unlike [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]], neither the drift
-nor the diffusion scales with the current level =S= — a wiggle of a given
-size is exactly as likely whether =S= is currently 10 or 10,000. This SDE
-is already exact (no Ito correction is needed, since =S= itself, not
-=log(S)=, is the variable of interest), so the per-tick update
+nor the diffusion scales with the current level $S$ — a wiggle of a given
+size is exactly as likely whether $S$ is currently 10 or 10,000. This SDE
+is already exact (no Ito correction is needed, since $S$ itself, not
+$\log S$, is the variable of interest), so the per-tick update
 =arithmetic_gmm_process= implements is a direct discretisation:
 
-#+begin_example
-price += increment,  increment ~ N(mu*dt, sigma^2*dt)
-#+end_example
+\begin{equation}
+S_{t+1} = S_t + \text{increment}, \quad
+\text{increment} \sim N(\mu\, dt,\, \sigma^2 dt)
+\end{equation}
 
 generalised the same way as =gmm_process= to a K-component Gaussian
 mixture for the increment, rather than a single Normal draw.
@@ -60,7 +78,7 @@ strictly-better-or-worse ranking of the two processes.
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
-- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the =dW= term ABM is driven by.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the $dW$ term ABM is driven by.
 - [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] — the multiplicative counterpart that stays strictly positive.
 
 ** Further reading
@@ -76,3 +94,4 @@ strictly-better-or-worse ranking of the two processes.
   22(2), 165-171. Historical context on why Bachelier's largely
   unrecognised 1900 thesis anticipated much of modern quantitative
   finance by decades.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Brownian_motion_model_of_financial_markets][Brownian motion model of financial markets]].

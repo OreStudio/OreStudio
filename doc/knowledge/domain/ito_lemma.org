@@ -13,7 +13,7 @@
 
 *Ito's lemma* is the stochastic-calculus counterpart of the ordinary
 chain rule: it tells you the stochastic differential equation (SDE)
-followed by =f(X_t, t)=, a function of a process =X_t= that is itself
+followed by $f(X_t, t)$, a function of a process $X_t$ that is itself
 driven by a [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]].
 The ordinary chain rule from calculus is not enough here, because a
 Wiener-driven path is not differentiable — but Ito's lemma supplies the
@@ -23,22 +23,53 @@ a *function of* the short rate, so deriving the bond price's own
 dynamics from the short rate's SDE is exactly the kind of change of
 variables Ito's lemma makes possible.
 
+* Layperson's mental model
+
+Ordinary calculus's chain rule says: if you know how fast $X$ changes,
+you can work out how fast any smooth function $f(X)$ of it changes, just
+by multiplying by $f$'s slope. That works fine for a smooth path. But a
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener-driven]] path is not
+smooth — it's jagged at every scale, no matter how far you zoom in — and
+that jaggedness means an extra correction term has to be added or the
+chain rule silently gives the wrong answer. Ito's lemma is that corrected
+chain rule.
+
+There is no direct C++ analogue to show here — Ito's lemma is a paper-and-
+pencil derivation tool, not something the codebase computes at runtime.
+What *is* in the codebase is one of its results: =cir_process.hpp='s
+closed-form bond price formula only exists because someone applied Ito's
+lemma to the short-rate SDE to derive it, once, offline — the code below
+just evaluates the closed-form result Ito's lemma made possible:
+
+#+begin_src cpp
+// cir_process::discount_factor -- the *result* of applying Ito's lemma
+// to the CIR short-rate SDE, evaluated directly; the derivation itself
+// happened on paper, not in this function.
+const double gamma = std::sqrt(kappa_ * kappa_ + 2.0 * sigma_ * sigma_);
+// ... B(tau), A(tau) computed from gamma, kappa_, theta_, sigma_ ...
+return A * std::exp(-B * rate_);
+#+end_src
+
 * Detail
 
 ** The statement
 
-If =X_t= follows the SDE =dX = mu(X,t) dt + sigma(X,t) dW=, and =f(X, t)=
-is twice-differentiable in =X= and once in =t=, then =f(X_t, t)= follows:
+If $X_t$ follows the SDE $dX = \mu(X,t)\, dt + \sigma(X,t)\, dW$, and
+$f(X, t)$ is twice-differentiable in $X$ and once in $t$, then $f(X_t,
+t)$ follows:
 
-#+begin_example
-df = ( ∂f/∂t + mu * ∂f/∂X + (1/2) * sigma^2 * ∂²f/∂X² ) dt
-     + sigma * ∂f/∂X dW
-#+end_example
+\begin{equation}
+df = \left( \frac{\partial f}{\partial t} + \mu \frac{\partial f}{\partial X}
+     + \frac{1}{2} \sigma^2 \frac{\partial^2 f}{\partial X^2} \right) dt
+     + \sigma \frac{\partial f}{\partial X}\, dW
+\end{equation}
 
 Compare this to the ordinary chain rule, which would give only the first
-two terms of the drift (=∂f/∂t + mu * ∂f/∂X=) and the diffusion term. The
-extra piece — =(1/2) * sigma^2 * ∂²f/∂X²=, the *Ito correction term* — is
-the entire reason a dedicated lemma is needed at all.
+two terms of the drift ($\partial f/\partial t + \mu\, \partial
+f/\partial X$) and the diffusion term. The extra piece —
+$\frac{1}{2} \sigma^2 \frac{\partial^2 f}{\partial X^2}$, the *Ito
+correction term* — is the entire reason a dedicated lemma is needed at
+all.
 
 ** Why the ordinary chain rule fails
 
@@ -46,12 +77,13 @@ The ordinary chain rule assumes second-order terms in a Taylor expansion
 vanish faster than first-order terms as the step size shrinks. For an
 ordinary (differentiable) path that is true. For a
 [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]] it is not:
-because =Var(dW) = dt=, the *square* of the increment, =dW^2=, is itself
-of order =dt=, not negligible next to it — informally, =dW^2 -> dt= as
-the step size shrinks (this is "Ito's multiplication table": =dW*dt = 0=,
-=dt^2 = 0=, but =dW^2 = dt=). Keeping that second-order term through the
-Taylor expansion, instead of discarding it as ordinary calculus would, is
-precisely what produces the =(1/2) sigma^2 ∂²f/∂X²= correction above.
+because $\mathrm{Var}(dW) = dt$, the *square* of the increment, $dW^2$,
+is itself of order $dt$, not negligible next to it — informally, $dW^2
+\to dt$ as the step size shrinks (this is "Ito's multiplication table":
+$dW \cdot dt = 0$, $dt^2 = 0$, but $dW^2 = dt$). Keeping that
+second-order term through the Taylor expansion, instead of discarding it
+as ordinary calculus would, is precisely what produces the
+$\frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial X^2}$ correction above.
 
 ** Where this cluster uses it
 
@@ -61,7 +93,7 @@ exact transition density, and the closed-form zero-coupon bond price
 implied by the [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]
 and [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] short-rate SDEs,
 are both derived by applying Ito's lemma to change variables from the
-short rate =r= to the quantity actually wanted (a bond price, or a
+short rate $r$ to the quantity actually wanted (a bond price, or a
 transition density) — this codebase consumes those closed-form results
 rather than re-deriving them at runtime, but the results themselves only
 exist because Ito's lemma makes the change of variables valid.
@@ -69,7 +101,7 @@ exist because Ito's lemma makes the change of variables valid.
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
-- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the =dW= term Ito's lemma's correction term arises from.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the $dW$ term Ito's lemma's correction term arises from.
 - [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — one of the short-rate models whose closed-form bond price is an Ito's-lemma result.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — its exact transition density is likewise an Ito's-lemma-derived result.
 
@@ -84,3 +116,4 @@ exist because Ito's lemma makes the change of variables valid.
 - Hull, J. C. (2018). /Options, Futures, and Other Derivatives/ (10th
   ed.). Pearson. Chapter 14 gives the standard, accessible derivation and
   worked examples this note's statement follows.
+- Wikipedia: [[https://en.wikipedia.org/wiki/It%C3%B4%27s_lemma][Itô's lemma]].

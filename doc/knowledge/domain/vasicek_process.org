@@ -14,24 +14,52 @@
 The *Vasicek* (1977) model was the first mean-reverting short-rate model
 in the finance literature — applying the
 [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck process]]
-to a short rate =r= with a *constant* long-run level =theta=.
+to a short rate $r$ with a *constant* long-run level $\theta$.
 =ores::analytics::quant::service::vasicek_process= implements it, not by
 reimplementing the OU mathematics again, but by *composing*
-=hull_white_process= with a constant =theta(t)=: Vasicek is the special
+=hull_white_process= with a constant $\theta(t)$: Vasicek is the special
 case of [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]] where the
 mean-reversion target does not vary over time.
+
+* Layperson's mental model
+
+Vasicek is the [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][elastic-band
+mental model]] applied to an interest rate specifically: the rate is
+pulled back toward a single, fixed long-run level whenever it wanders
+away, with random jitter layered on top. Nothing about the mental model
+changes from the general OU picture — only the label on the quantity
+being modelled changes, from "some quantity $X$" to "the short rate $r$".
+
+#+begin_src cpp
+vasicek_process::vasicek_process(
+    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed)
+    // Hull-White takes a *path* of targets, one per tick; wrapping a single
+    // theta in a length-1 vector is what turns "the general, time-varying
+    // model" into "the constant-target special case" -- Vasicek.
+    : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, seed) {}
+
+double vasicek_process::next() {
+    return inner_.next();     // delegates straight to hull_white_process
+}
+#+end_src
+
+The constructor is where the actual point lives, not =next()=: Vasicek's
+single =theta= is wrapped as a one-element =theta_path=, so every tick
+Hull-White looks up "the target for this tick" and always finds the same
+value. Vasicek isn't a distinct simulation at all — it's Hull-White,
+configured with a target schedule that never changes.
 
 * Detail
 
 ** The SDE
 
-#+begin_example
-dr = kappa * (theta - r) * dt + sigma * dW
-#+end_example
+\begin{equation}
+dr = \kappa(\theta - r)\, dt + \sigma\, dW
+\end{equation}
 
 identical in shape to
-[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][OU's]] SDE, with =r= (the
-short rate) in place of the general state variable =X=. The exact
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][OU's]] SDE, with $r$ (the
+short rate) in place of the general state variable $X$. The exact
 per-tick discretisation is therefore the same closed-form OU update —
 =vasicek_process= gets it for free from =hull_white_process= rather than
 re-deriving it.
@@ -39,17 +67,23 @@ re-deriving it.
 ** The closed-form bond price
 
 Vasicek's defining contribution beyond the SDE itself is a closed-form
-zero-coupon bond price =P(t,T) = A(t,T) * exp(-B(t,T) * r_t)=, derived by
-applying [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] to the
+zero-coupon bond price, derived by applying
+[[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] to the
 short-rate SDE above to obtain the bond price's own dynamics, then
-solving the resulting PDE. This closed form is what made Vasicek
-practical to use for pricing before Monte Carlo simulation was cheap: the
-whole term structure implied by a given =(kappa, theta, sigma, r_0)= can
-be computed analytically, with no simulation at all.
+solving the resulting PDE:
+
+\begin{equation}
+P(t,T) = A(t,T)\, e^{-B(t,T)\, r_t}
+\end{equation}
+
+This closed form is what made Vasicek practical to use for pricing
+before Monte Carlo simulation was cheap: the whole term structure
+implied by a given $(\kappa, \theta, \sigma, r_0)$ can be computed
+analytically, with no simulation at all.
 
 ** The trade-off: rates can go negative
 
-Because Vasicek's volatility term =sigma= (constant, not
+Because Vasicek's volatility term $\sigma$ (constant, not
 state-dependent) is inherited unchanged from
 [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][OU]], the short rate it
 generates is Gaussian and can go negative with positive probability, no
@@ -65,7 +99,7 @@ out, at the cost of losing Vasicek's simple Gaussian transition.
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub, including the comparison table across all four mean-reverting processes.
 - [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the general process Vasicek specialises.
-- [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]] — the time-varying generalisation Vasicek is the constant-=theta= special case of, and which =vasicek_process= is implemented in terms of.
+- [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]] — the time-varying generalisation Vasicek is the constant-$\theta$ special case of, and which =vasicek_process= is implemented in terms of.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — the non-negative alternative addressing Vasicek's main criticised weakness.
 
 ** Further reading
@@ -80,3 +114,4 @@ out, at the cost of losing Vasicek's simple Gaussian transition.
   property in the context of later model choices, including
   [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][CIR]] and
   [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]].
+- Wikipedia: [[https://en.wikipedia.org/wiki/Vasicek_model][Vasicek model]].

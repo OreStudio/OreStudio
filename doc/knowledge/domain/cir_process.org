@@ -26,64 +26,88 @@ implements the *exact* (non-approximated) transition via the standard
 Poisson-mixture-of-central-chi-squared construction, not an Euler
 discretisation.
 
+* Layperson's mental model
+
+Same elastic band as Vasicek, pulling the rate back toward a resting
+level — but now the jitter added each tick *shrinks* as the rate gets
+close to zero, and vanishes entirely exactly at zero. That single change
+is what keeps the rate from ever crossing into negative territory: right
+at the boundary, there is no randomness left to push it over, only the
+band's steady pull back up. The cost is that the maths describing "how
+big is the next jump" is no longer the plain bell-curve (Normal)
+distribution Vasicek uses — it becomes a different, more intricate
+distribution that itself has to be sampled correctly, not approximated.
+
+#+begin_src cpp
+double cir_process::next_stochastic() {
+    const double decay = std::exp(-kappa_);
+    const double c = sigma_ * sigma_ * (1.0 - decay) / (4.0 * kappa_);
+    const double d = 4.0 * kappa_ * theta_ / (sigma_ * sigma_);
+    const double lambda = rate_ * decay / c;      // shrinks toward 0 as rate_ -> 0
+    const int n = std::poisson_distribution<int>(lambda / 2.0)(rng_);
+    std::chi_squared_distribution<double> chi2(d + 2.0 * n);
+    return c * chi2(rng_);
+}
+#+end_src
+
 * Detail
 
 ** The SDE
 
-#+begin_example
-dr = kappa * (theta - r) * dt + sigma * sqrt(r) * dW
-#+end_example
+\begin{equation}
+dr = \kappa(\theta - r)\, dt + \sigma\sqrt{r}\, dW
+\end{equation}
 
 identical to [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]] drift,
-=kappa*(theta-r)=, with the volatility term changed from a constant
-=sigma= to =sigma*sqrt(r)=. As =r -> 0=, the volatility term vanishes
-too, which is exactly the mechanism keeping =r= from crossing zero: the
+$\kappa(\theta-r)$, with the volatility term changed from a constant
+$\sigma$ to $\sigma\sqrt{r}$. As $r \to 0$, the volatility term vanishes
+too, which is exactly the mechanism keeping $r$ from crossing zero: the
 closer the rate gets to zero, the less randomness is left to push it
-further down, leaving the positive drift term =kappa*theta*dt= to pull
+further down, leaving the positive drift term $\kappa\theta\, dt$ to pull
 it back up.
 
 ** The Feller condition
 
-Whether =r= can ever *touch* zero (as opposed to merely staying close to
-it) depends on the *Feller condition*: =2*kappa*theta >= sigma^2=. When
-it holds, =r= stays strictly positive for all time; when it does not,
-=r= can touch zero (but never go negative) before being pulled back up by
+Whether $r$ can ever *touch* zero (as opposed to merely staying close to
+it) depends on the *Feller condition*: $2\kappa\theta \ge \sigma^2$. When
+it holds, $r$ stays strictly positive for all time; when it does not,
+$r$ can touch zero (but never go negative) before being pulled back up by
 the drift term. This makes CIR's non-negativity guarantee genuinely
 stronger than Vasicek's total absence of one, but not an unconditional
 "always strictly positive" guarantee independent of parameter choice —
 the guarantee's strength depends on which side of the Feller condition
-the chosen =(kappa, theta, sigma)= fall on.
+the chosen $(\kappa, \theta, \sigma)$ fall on.
 
 ** The exact transition
 
-Because the SDE above is nonlinear in =r= (via =sqrt(r)=), it has no
+Because the SDE above is nonlinear in $r$ (via $\sqrt{r}$), it has no
 closed-form solution the way [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]]
 linear SDE does — but the exact *transition distribution* from one tick
 to the next is still known in closed form, as a Poisson mixture of
 central chi-squared distributions (Glasserman, 2003, section 3.4):
 
-#+begin_example
-c      = sigma^2 * (1 - e^{-kappa}) / (4 * kappa)
-d      = 4 * kappa * theta / sigma^2               (degrees of freedom)
-lambda = r_t * e^{-kappa} / c                       (non-centrality)
-N      ~ Poisson(lambda / 2)
-r_{t+1} = c * X,  X ~ chi-squared(d + 2*N)
-#+end_example
+\begin{align}
+c &= \frac{\sigma^2 (1 - e^{-\kappa})}{4\kappa} \\
+d &= \frac{4\kappa\theta}{\sigma^2} \quad \text{(degrees of freedom)} \\
+\lambda &= \frac{r_t e^{-\kappa}}{c} \quad \text{(non-centrality)} \\
+N &\sim \mathrm{Poisson}(\lambda/2) \\
+r_{t+1} &= c X, \quad X \sim \chi^2(d + 2N)
+\end{align}
 
 =cir_process= draws this transition exactly, tick by tick, rather than
 approximating it via an Euler scheme (which for CIR specifically can
 produce negative simulated rates — the very defect the model was
 designed to avoid — unless a more careful discretisation is used; drawing
-the exact transition sidesteps that problem entirely). =kappa= must be
-strictly positive for this construction (=c= above divides by =kappa=)
+the exact transition sidesteps that problem entirely). $\kappa$ must be
+strictly positive for this construction ($c$ above divides by $\kappa$)
 — unlike [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] and
 [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], which tolerate
-=kappa <= 0= as a degenerate driftless case, CIR has no such fallback
-since the =sqrt(r)= volatility term makes a non-mean-reverting CIR
-process ill-posed. The =sigma == 0= edge case is likewise handled
+$\kappa \le 0$ as a degenerate driftless case, CIR has no such fallback
+since the $\sqrt{r}$ volatility term makes a non-mean-reverting CIR
+process ill-posed. The $\sigma = 0$ edge case is likewise handled
 separately, as the deterministic mean-reversion ODE
-=dr = kappa*(theta-r)*dt=, since both the transition formulas above and
-the closed-form bond price below divide by =sigma=.
+$dr = \kappa(\theta-r)\, dt$, since both the transition formulas above and
+the closed-form bond price below divide by $\sigma$.
 
 ** The closed-form bond price
 
@@ -93,13 +117,13 @@ the same way as Vasicek's — applying
 to obtain the bond's own dynamics — despite the SDE itself having no
 closed-form path solution:
 
-#+begin_example
-gamma  = sqrt(kappa^2 + 2*sigma^2)
-B(tau) = 2*(e^{gamma*tau} - 1) / ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)
-A(tau) = [2*gamma*e^{(kappa+gamma)*tau/2} /
-          ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)] ^ (2*kappa*theta/sigma^2)
-P(tau) = A(tau) * e^{-B(tau)*r_t}
-#+end_example
+\begin{align}
+\gamma &= \sqrt{\kappa^2 + 2\sigma^2} \\
+B(\tau) &= \frac{2(e^{\gamma\tau} - 1)}{(\gamma+\kappa)(e^{\gamma\tau}-1) + 2\gamma} \\
+A(\tau) &= \left[ \frac{2\gamma\, e^{(\kappa+\gamma)\tau/2}}
+          {(\gamma+\kappa)(e^{\gamma\tau}-1) + 2\gamma} \right]^{2\kappa\theta/\sigma^2} \\
+P(\tau) &= A(\tau)\, e^{-B(\tau)\, r_t}
+\end{align}
 
 * See also
 
@@ -121,3 +145,4 @@ P(tau) = A(tau) * e^{-B(tau)*r_t}
 - Glasserman, P. (2003). /Monte Carlo Methods in Financial Engineering/.
   Springer. Section 3.4 gives the Poisson-mixture-of-chi-squared exact
   simulation scheme =cir_process= implements directly.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model][Cox-Ingersoll-Ross model]].

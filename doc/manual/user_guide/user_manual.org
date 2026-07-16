@@ -191,3 +191,10 @@
 :END:
 
 #+include: "chapter_8_parties.org" :minlevel 2
+
+* Counterparties
+:PROPERTIES:
+:CUSTOM_ID: chapter_9_counterparties
+:END:
+
+#+include: "chapter_9_counterparties.org" :minlevel 2

@@ -7,43 +7,82 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-counterparty-manual-chapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a Counterparties chapter to the user manual, mirroring the Parties
+chapter for the entity's Qt UI (General/Identifiers/Contact
+Information/Hierarchy/Provenance tabs) while documenting the real
+structural differences between the two entities rather than
+duplicating shared content.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Chapter written; screenshots pending.  |
+| Waiting on   | Screenshot capture.                    |
+| Next         | Capture the 7 counterparty screenshots. |
+| Last touched | 2026-07-16                              |
 
 * Acceptance
 
--
+- A new =chapter_9_counterparties.org= exists under
+  =doc/manual/user_guide/=, wired into =user_manual.org='s table of
+  contents after the Parties chapter.
+- The chapter documents what a counterparty is by referencing the
+  Parties chapter for everything shared (legal-entity identification,
+  GLEIF/LEI, identifier schemes) rather than duplicating it, and
+  clearly explains the two real differences: no =codename=, and a
+  hierarchy with no single-root constraint (unlike a party's).
+- The chapter documents the Counterparties window and all five
+  Counterparty Details tabs, following the structure established by
+  =chapter_8_parties.org=.
+- Parties' Conclusion/See-also updated to link to the new chapter
+  instead of saying it doesn't exist yet.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read =ores.refdata.counterparty.org='s Detail fields table and Flags
+directly (not inferred from the party model) to confirm the real
+differences before writing: no =codename= field, no =party_category=
+(System/Operational) distinction, =full_name= explicitly *not*
+unique (has a non-unique search index rather than a uniqueness
+constraint, since the same external legal name can recur across
+branches), and critically — =parent_counterparty_id= has no
+database-level uniqueness-on-null constraint at all, unlike a
+party's =parties_root_party_uniq_idx=. The Qt Create dialog's Parent
+Counterparty field is still marked required (mirroring the party
+fix), but this is a UI policy choice, not a reflection of any DB
+invariant about roots — the chapter is explicit about that
+distinction so it doesn't read as a duplicated, over-general "single
+root" claim. Cross-referenced the Parties chapter throughout instead
+of re-explaining identifiers/GLEIF/contact information, per the
+dedup lesson learned writing that chapter.
 
 * Notes
+
+- Screenshots referenced by this chapter (=counterparties_main_dialog.png=,
+  =counterparty_details_general.png=,
+  =counterparty_parent_counterparty_combo.png=,
+  =counterparty_details_identifiers.png=,
+  =counterparty_details_contact_information.png=,
+  =counterparty_details_hierarchy.png=,
+  =counterparty_history_dialog.png=) do not yet exist under
+  =assets/images/= (repo root, not =doc/manual/user_guide/assets/=) —
+  capturing them is the next step, via a test scenario.
 
 * Test Scenarios
 

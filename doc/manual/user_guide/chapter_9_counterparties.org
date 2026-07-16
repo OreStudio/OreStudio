@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D
+:END:
+#+title: Counterparties
+#+description: Counterparty management in ORE Studio: what an external trading partner represents, how its hierarchy differs from a party's, the Qt UI, identifiers, contact information, and history and revert.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:counterparties:refdata:user_guide:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /counterparty/ as a
+reference-data entity in ORE Studio. A counterparty is the external
+mirror of a [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][party]] — sharing almost the same shape but modelling the
+opposite side of a relationship — and the chapter sets out where the
+two genuinely diverge, the identifiers and contact information a
+counterparty carries, and the complete lifecycle of managing
+counterparty records through the Qt interface.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that managing a counterparty well
+means first understanding how it differs from the party chapter this
+one mirrors, then the interface that governs its lifecycle. It begins
+by establishing what a counterparty is in [[*What is a Counterparty?][What is a Counterparty?]],
+leaning on the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] chapter for everything the two entities share
+rather than repeating it. From there it sets out [[*The counterparty hierarchy][The counterparty
+hierarchy]] — a real structural difference from a party's single
+house-root rule — before surveying the body of records in
+[[*The Counterparties window][The Counterparties window]] and narrowing to a single record in
+[[*Counterparty Details][Counterparty Details]] and its General, Identifiers, Contact
+Information, Hierarchy, and Provenance tabs. It then turns to
+changing a record under audit — [[*Editing a counterparty][Editing]], [[*Deleting a counterparty][Deleting]], and
+[[*Counterparty history][Counterparty history]] — culminating in reverting to an earlier
+version, the point at which the bitemporal audit trail does its
+work. The [[*Conclusion][Conclusion]] draws these steps together.
+
+** What is a Counterparty?
+
+A /counterparty/ is an external legal entity the organisation trades
+with — a bank, a broker-dealer, a corporate, a fund — as distinct
+from a [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][party]], which represents the organisation's own internal
+structure. The two entities are deliberately near-identical in shape
+— full name, short code, party type, status, business center,
+identifiers, contact information, a hierarchy field — because both
+are answering the same underlying question (what legal entity is
+this, and how do we recognise it consistently), just for opposite
+sides of a trade. Everything about legal-entity identification —
+GLEIF, the LEI standard, why identification is hard, the identifier
+schemes OreStudio recognises — is covered once in the Parties
+chapter's [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][What is a Party?]] section and not repeated here.
+
+Two field-level differences are worth calling out because they
+reflect a genuine modelling choice, not an oversight. First, a
+counterparty has no =codename= — the auto-generated, immutable,
+per-party message-queue and scheduled-job identifier a party carries
+— because that machinery exists to namespace a party's *own*
+processing (its queues, its scheduled reports), and a counterparty
+has none of its own to namespace. Second, a counterparty's *full
+name* is explicitly **not** unique within a tenant, unlike a party's:
+the same external legal name can legitimately recur across distinct
+branches or booking entities of the same institution, each with its
+own short code, so OreStudio indexes full name for search without
+constraining it to be distinct.
+
+** The counterparty hierarchy
+
+A counterparty's =parent_counterparty_id= lets counterparties form
+group structures too — a subsidiary counterparty pointing at its
+parent institution — but the resemblance to a [[*The party hierarchy][party's hierarchy]]
+ends there. A party's hierarchy is a single tree per tenant with
+exactly one designated house root, enforced by a database constraint;
+a counterparty's hierarchy has no such constraint at all. Any number
+of counterparties may have no parent, because each represents an
+independent external organisation — Barclays' counterparties include
+many unrelated banks and corporates, and there is no reason to force
+them into one shared tree the way a tenant's own internal structure
+is.
+
+The Parent Counterparty field on the Create dialog is nonetheless
+*required*, exactly like a party's Parent Party field — but here that
+requirement is purely a UI-level policy (always attach a new
+counterparty under an existing one when creating it by hand), not a
+reflection of any database invariant about roots. In practice this
+means a counterparty that should genuinely have no parent — the
+first counterparty ever onboarded for a tenant, or an independent
+institution with no group structure to nest under — has to arrive
+through the shell-driven GLEIF import pipeline (see [[*The party hierarchy][The party
+hierarchy]]'s discussion of the equivalent party pipeline) rather than
+through this dialog, which cannot leave the field blank.
+
+** The Counterparties window
+
+Open the Counterparties window from the /Reference Data/ menu. It
+lists all counterparties defined in the tenant, one row per
+counterparty, each row carrying the short code, full name, party
+type, status, business center, version, last modifier, and when the
+record was last recorded — the same column layout as the Parties
+window.
+
+#+caption[The Counterparties window]: The Counterparties window, showing a page of counterparties. Each row shows the short code, name, party type and status badges, business center, version, last modifier, and when the record was last recorded; the status bar shows the current page and total record count.
+[[proj:assets/images/counterparties_main_dialog.png]]
+
+The list is paginated; use the page controls at the bottom right to
+navigate. The toolbar buttons reload the list and open the add, edit,
+delete, and history actions. Double-clicking a row opens the
+*Counterparty Details* dialog.
+
+** Counterparty Details
+
+The Counterparty Details dialog has five tabs — *General*,
+*Identifiers*, *Contact Information*, *Hierarchy*, and *Provenance*
+— the same set as Party Details. The three action buttons at the
+bottom — *Delete*, *Close*, and *Save* — apply to the counterparty as
+a whole.
+
+*** General
+
+#+caption[Counterparty Details — General tab]: The General tab for a counterparty, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the required Parent Counterparty combo.
+[[proj:assets/images/counterparty_details_general.png]]
+
+The General tab carries the core fields of the counterparty:
+
+- *Short Code* — a brief mnemonic code. This is part of the natural
+  key and cannot be changed after creation.
+- *Full Name* — the counterparty's registered legal name. Unlike a
+  party's, this is not required to be unique — see
+  [[*What is a Counterparty?][What is a Counterparty?]] above.
+- *Party Type* — the counterparty's classification, chosen from the
+  same tenant-configured party types a party uses, shown as a
+  colour-coded badge once selected.
+- *Status* — the counterparty's operational status, chosen from the
+  same tenant-configured party statuses a party uses, shown as a
+  colour-coded badge once selected.
+- *Business Center* — the counterparty's primary location, chosen
+  from a flagged combo of business center codes (see
+  [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]]).
+- *Parent Counterparty* — the counterparty's immediate parent, chosen
+  from a combo listing every other counterparty by full name. This
+  field is *required*: the combo has no blank option, and — when
+  editing an existing counterparty — the counterparty being edited is
+  excluded from its own list of candidate parents. See
+  [[*The counterparty hierarchy][The counterparty hierarchy]] above for why this field cannot be left
+  empty, and how that differs from a party's required-parent rule.
+
+  #+caption[The Parent Counterparty combo]: The Parent Counterparty combo open, listing candidate parent counterparties by full name.
+  [[proj:assets/images/counterparty_parent_counterparty_combo.png]]
+
+*** Identifiers
+
+#+caption[Counterparty Details — Identifiers tab]: The Identifiers tab, listing the external identifiers held against a counterparty.
+[[proj:assets/images/counterparty_details_identifiers.png]]
+
+The Identifiers tab works exactly as a party's does — the same
+editable table, the same *Identification Scheme*/*Identifier
+Value*/*Description* fields, the same ten schemes (LEI, BIC, and so
+on) — see [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]]' [[*Identifiers][Identifiers]] section for the full scheme
+table; it is not repeated here. A counterparty may hold at most one
+identifier per scheme, but as many different schemes as apply to it.
+
+*** Contact Information
+
+#+caption[Counterparty Details — Contact Information tab]: The Contact Information tab, listing the addresses and contact points held against a counterparty.
+[[proj:assets/images/counterparty_details_contact_information.png]]
+
+The Contact Information tab is, again, identical in shape to a
+party's: *Contact Type*, an optional street address, city, state,
+postal code, phone, and email, plus an optional flagged *Country*
+combo. A counterparty may hold more than one contact record, one per
+contact type.
+
+*** Hierarchy
+
+#+caption[Counterparty Details — Hierarchy tab]: The Hierarchy tab for a counterparty, showing its chain of ancestors (if any) and its immediate children (if any).
+[[proj:assets/images/counterparty_details_hierarchy.png]]
+
+The Hierarchy tab is read-only and shows this counterparty's position
+in whatever group structure it belongs to, if any — its chain of
+ancestor counterparties and its immediate children. Unlike a party's
+Hierarchy tab, there is no guarantee of a single connected tree
+reaching back to one root: an unrelated counterparty with no parent
+simply shows no ancestors at all. See [[*The counterparty hierarchy][The counterparty hierarchy]]
+above for why.
+
+*** Provenance
+
+The Provenance tab is read-only and shows the audit metadata for the
+current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the provenance fields common to all reference data
+entities.
+
+** Editing a counterparty
+
+To edit a counterparty, open it in the Counterparty Details dialog,
+make your changes, and click *Save*. Before the record is written,
+ORE Studio prompts for a change reason — the same /Change Reason
+Required/ dialog shown in the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] chapter, and not repeated
+here. Select a *Reason* from the drop-down and add optional
+*Commentary*, then confirm. Every save creates a new version; the
+previous version is never overwritten.
+
+** Deleting a counterparty
+
+To delete a counterparty, open it and click *Delete*. ORE Studio asks
+for confirmation before the record is closed off. Deletion is a soft
+close — the record's history is preserved and remains visible in the
+History dialog.
+
+** Counterparty history
+
+To view the full change history, open the details dialog and click
+the history icon in the title bar, or right-click the row and choose
+*History*.
+
+#+caption[The Counterparty History dialog]: The History dialog for a counterparty, comparing two versions. The All Fields/Only Changes toggle narrows the field list to what actually differs between the two selected versions.
+[[proj:assets/images/counterparty_history_dialog.png]]
+
+Pick the two versions to compare from the *Compare* drop-downs. The
+*All Fields*/*Only Changes* toggle switches between showing every
+field and showing only the fields that differ between the two
+selected versions. The *Revert* button reinstates any historical
+version as a *new* version, preserving the full audit chain — the old
+version is never rewritten.
+
+** Conclusion
+
+The chapter set out to show that managing a counterparty well
+follows from understanding how it differs from the party it mirrors,
+and it has traced exactly that path. A counterparty shares a party's
+full name, short code, type, status, business center, identifiers,
+and contact information almost verbatim, but diverges in two real
+ways: it carries no codename, since it has no processing of its own
+to namespace, and its hierarchy has no single-root constraint, since
+each counterparty represents an independent external organisation
+rather than a branch of the tenant's own structure. Building on that,
+the Qt interface took the record from the list view through its
+General, Identifiers, Contact Information, Hierarchy, and Provenance
+tabs, and through the editing, deleting, and history workflows, where
+reverting to an earlier version demonstrated the same bitemporal
+audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. Shell and
+command-line access to counterparties is not yet implemented beyond
+the =provision tenant= GLEIF import path.
+
+** See also
+
+- [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] — the internal mirror of this chapter; legal-entity
+  identification, GLEIF/LEI, and the full identifier scheme table all
+  live there rather than being duplicated here.
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors, including the Change Reason Required dialog.
+- [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the business center a counterparty links to.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning]] — the architecture behind the Identifiers and Contact Information child tables.

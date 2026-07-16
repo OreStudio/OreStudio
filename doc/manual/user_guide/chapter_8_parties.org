@@ -322,10 +322,9 @@ audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Referenc
 =provision party= command covers bulk/GLEIF onboarding (see
 [[*The party hierarchy][The party hierarchy]] above), but general-purpose shell/CLI commands
 for adding, editing, deleting, or viewing the history of an
-individual party are not yet implemented, and a dedicated manual
-chapter for counterparties — the external-facing mirror of this one
-— does not yet exist; both are tracked separately rather than glossed
-over here.
+individual party are not yet implemented — tracked separately rather
+than glossed over here. See the [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] chapter for the
+external-facing mirror of this one.
 
 ** See also
 
@@ -334,5 +333,6 @@ over here.
   this chapter assumes and builds on.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
 - [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors, including the Change Reason Required dialog.
+- [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] — the external-facing mirror of this chapter.
 - [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the business center a party links to, and the country flag a contact record may carry.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning]] — the architecture behind the Identifiers and Contact Information child tables.

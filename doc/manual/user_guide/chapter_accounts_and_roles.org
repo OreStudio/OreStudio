@@ -151,6 +151,13 @@ An account with no party assignment cannot log in to any party
 context — the dialog warns you if you try to save one (see the
 new-account flow below).
 
+For an account assigned to more than one party, the *Default Party*
+combo below the list picks which of the assigned parties is offered
+automatically at login — the party the *Log in to default party*
+checkbox on the login dialog selects without prompting (see
+[[id:DF779317-BDEB-49E4-E9AB-48C46615D0CF][Connecting to ORE Studio]]). Leaving it unset falls back to the
+manual [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Select Party]] dialog every time.
+
 *** Provenance
 
 #+caption[Account details — Provenance tab]: The Provenance tab for =super_admin= at version 1: modified by =super_admin=, performed by the IAM service, with the =system.initial_load= change reason and the bootstrap commentary.

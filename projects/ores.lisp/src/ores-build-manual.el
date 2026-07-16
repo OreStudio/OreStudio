@@ -32,6 +32,15 @@
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
 
+;; Render #+begin_src blocks via the listings package (background
+;; colour and breaklines configured in user_manual.org's latex_header)
+;; rather than plain verbatim. ores-shell is a custom babel language
+;; name with no listings definition of its own; map it to bash, same
+;; as org's own default mapping for sh.
+(setq org-latex-listings t)
+(setq org-latex-listings-langs
+      (append '((ores-shell "bash")) org-latex-listings-langs))
+
 ;; Cap figures at 60% of the text width but never upscale: \maxwidth
 ;; (defined in user_manual.org) yields the image's natural width when it
 ;; is smaller than 0.6\linewidth, and 0.6\linewidth otherwise. Large

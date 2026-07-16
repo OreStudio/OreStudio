@@ -26,8 +26,7 @@ using domain::crm_rate_view;
 using domain::derived_rate;
 using domain::rate_status;
 
-rate_inverter::rate_lookup
-rate_inverter::make_lookup(const std::vector<derived_rate>& rates) {
+rate_inverter::rate_lookup rate_inverter::make_lookup(const std::vector<derived_rate>& rates) {
     rate_lookup lookup;
     for (const auto& r : rates)
         lookup[{r.base_code, r.quote_code}] = r;
@@ -40,14 +39,13 @@ crm_rate_view rate_inverter::resolve(const std::string& base_code,
                                      bool allow_invert) {
     if (const auto it = lookup.find({base_code, quote_code}); it != lookup.end()) {
         const auto& r = it->second;
-        return crm_rate_view{
-            .base_code = base_code,
-            .quote_code = quote_code,
-            .rate = r.rate,
-            .status = r.status,
-            .as_of = r.as_of,
-            .inverted = false,
-            .delta_pct = std::nullopt};
+        return crm_rate_view{.base_code = base_code,
+                             .quote_code = quote_code,
+                             .rate = r.rate,
+                             .status = r.status,
+                             .as_of = r.as_of,
+                             .inverted = false,
+                             .delta_pct = std::nullopt};
     }
 
     if (allow_invert) {
@@ -55,14 +53,13 @@ crm_rate_view rate_inverter::resolve(const std::string& base_code,
             const auto& r = it->second;
             const bool can_divide =
                 r.status != rate_status::unavailable && std::isfinite(r.rate) && r.rate != 0.0;
-            return crm_rate_view{
-                .base_code = base_code,
-                .quote_code = quote_code,
-                .rate = can_divide ? 1.0 / r.rate : 0.0,
-                .status = can_divide ? r.status : rate_status::unavailable,
-                .as_of = r.as_of,
-                .inverted = true,
-                .delta_pct = std::nullopt};
+            return crm_rate_view{.base_code = base_code,
+                                 .quote_code = quote_code,
+                                 .rate = can_divide ? 1.0 / r.rate : 0.0,
+                                 .status = can_divide ? r.status : rate_status::unavailable,
+                                 .as_of = r.as_of,
+                                 .inverted = true,
+                                 .delta_pct = std::nullopt};
         }
     }
 

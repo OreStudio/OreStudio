@@ -36,9 +36,8 @@ ChildEntityTableWidget::ChildEntityTableWidget(const QStringList& columnHeaders,
     , table_(new QTableWidget(this)) {
 
     toolbar_->setIconSize(QSize(16, 16));
-    auto* addAction =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-                            addLabel);
+    auto* addAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), addLabel);
     auto* deleteAction = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), deleteLabel);
     connect(addAction, &QAction::triggered, this, &ChildEntityTableWidget::addRequested);

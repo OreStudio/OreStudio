@@ -28,13 +28,13 @@
 #include <QDialog>
 #include <QFutureWatcher>
 #include <QPointer>
-#include <QTableWidget>
 #include <QTabWidget>
+#include <QTableWidget>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -43,9 +43,10 @@ PartyChildEntityTables::PartyChildEntityTables(QWidget* dialogParent)
     , dialogParent_(dialogParent)
     , identifierTable_(new ChildEntityTableWidget(
           {"Scheme", "Value", "Description"}, "Add Identifier", "Delete Identifier", dialogParent))
-    , contactTable_(new ChildEntityTableWidget(
-          {"Type", "Country", "Street", "City", "Phone"}, "Add Contact", "Delete Contact",
-          dialogParent)) {
+    , contactTable_(new ChildEntityTableWidget({"Type", "Country", "Street", "City", "Phone"},
+                                               "Add Contact",
+                                               "Delete Contact",
+                                               dialogParent)) {
 
     connect(identifierTable_,
             &ChildEntityTableWidget::addRequested,
@@ -142,8 +143,8 @@ void PartyChildEntityTables::onAddIdentifier() {
     if (readOnly_)
         return;
     if (partyId_.is_nil()) {
-        MessageBoxHelper::warning(dialogParent_, "Save Required",
-                                  "Save the party first, then add identifiers.");
+        MessageBoxHelper::warning(
+            dialogParent_, "Save Required", "Save the party first, then add identifiers.");
         return;
     }
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -248,7 +249,8 @@ void PartyChildEntityTables::loadContacts() {
         return result->party_contact_informations;
     };
 
-    auto* watcher = new QFutureWatcher<std::vector<refdata::domain::party_contact_information>>(this);
+    auto* watcher =
+        new QFutureWatcher<std::vector<refdata::domain::party_contact_information>>(this);
     connect(watcher,
             &QFutureWatcher<std::vector<refdata::domain::party_contact_information>>::finished,
             this,
@@ -276,8 +278,8 @@ void PartyChildEntityTables::onAddContact() {
     if (readOnly_)
         return;
     if (partyId_.is_nil()) {
-        MessageBoxHelper::warning(dialogParent_, "Save Required",
-                                  "Save the party first, then add contact information.");
+        MessageBoxHelper::warning(
+            dialogParent_, "Save Required", "Save the party first, then add contact information.");
         return;
     }
     if (!clientManager_ || !clientManager_->isConnected()) {

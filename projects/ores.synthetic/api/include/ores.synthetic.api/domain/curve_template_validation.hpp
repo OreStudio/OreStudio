@@ -95,14 +95,13 @@ struct curve_template_entry_ref final {
  * from the underlying tenor resolution are caught and reported through
  * the result instead, so callers get a friendly ok/error-message pair.
  */
-ORES_SYNTHETIC_API_EXPORT curve_template_validation_result
-validate_curve_template(const std::vector<curve_template_entry_ref>& entries,
-                        const std::vector<ores::refdata::domain::tenor>& tenors,
-                        const ores::refdata::domain::tenor_convention& convention,
-                        const std::vector<ores::refdata::domain::tenor_convention_resolution>&
-                            resolutions,
-                        std::chrono::year_month_day horizon,
-                        std::chrono::year_month_day spot);
+ORES_SYNTHETIC_API_EXPORT curve_template_validation_result validate_curve_template(
+    const std::vector<curve_template_entry_ref>& entries,
+    const std::vector<ores::refdata::domain::tenor>& tenors,
+    const ores::refdata::domain::tenor_convention& convention,
+    const std::vector<ores::refdata::domain::tenor_convention_resolution>& resolutions,
+    std::chrono::year_month_day horizon,
+    std::chrono::year_month_day spot);
 
 }
 

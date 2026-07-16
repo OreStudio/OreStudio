@@ -170,8 +170,7 @@ private:
     /// consulted yet -- proves the cache loads/is queryable end-to-end
     /// against a live environment. Actual convention-aware formatting
     /// using it is the sibling formatter task's job, not this one.
-    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache>
-        conventionCache_;
+    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache> conventionCache_;
 };
 
 }

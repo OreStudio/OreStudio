@@ -26,9 +26,9 @@
 #include "ores.refdata.core/repository/crm_enabled_derived_pair_repository.hpp"
 #include "ores.refdata.core/repository/crm_topology_config_repository.hpp"
 #include "ores.testing/database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -272,7 +272,7 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
 }
 
 TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse isn't configured",
-         tags) {
+          tags) {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -305,7 +305,7 @@ TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse 
 }
 
 TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itself configured",
-         tags) {
+          tags) {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;

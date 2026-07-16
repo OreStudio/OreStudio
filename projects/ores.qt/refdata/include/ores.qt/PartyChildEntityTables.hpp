@@ -69,7 +69,8 @@ public:
                 ImageCache* imageCache = nullptr,
                 ChangeReasonCache* changeReasonCache = nullptr);
 
-    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
+    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history).
+     */
     void setReadOnly(bool readOnly);
 
 private:

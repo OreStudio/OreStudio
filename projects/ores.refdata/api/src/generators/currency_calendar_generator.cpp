@@ -75,14 +75,29 @@ generate_currency_calendars(utility::generation::generation_context& ctx) {
     // Mirrors the holiday_calendar values previously seeded directly on
     // ores_refdata_currencies_tbl (iso_currencies_artefact_populate.sql),
     // now expressed as currency->calendar junction rows.
-    struct row { const char* currency; const char* calendar; };
+    struct row {
+        const char* currency;
+        const char* calendar;
+    };
     static constexpr row rows[] = {
-        {"USD", "UnitedStates.Settlement"}, {"CAD", "Canada.Settlement"}, {"MXN", "Mexico"}, {"BRL", "Brazil"},
-        {"EUR", "TARGET"}, {"GBP", "UnitedKingdom.Settlement"}, {"CHF", "Switzerland"},
-        {"NOK", "Norway"}, {"SEK", "Sweden"}, {"DKK", "Denmark"},
-        {"JPY", "Japan"}, {"CNY", "China.SSE"}, {"HKD", "HongKong"}, {"KRW", "SouthKorea.Settlement"},
-        {"SGD", "Singapore"}, {"INR", "India"},
-        {"AUD", "Australia"}, {"NZD", "NewZealand"},
+        {"USD", "UnitedStates.Settlement"},
+        {"CAD", "Canada.Settlement"},
+        {"MXN", "Mexico"},
+        {"BRL", "Brazil"},
+        {"EUR", "TARGET"},
+        {"GBP", "UnitedKingdom.Settlement"},
+        {"CHF", "Switzerland"},
+        {"NOK", "Norway"},
+        {"SEK", "Sweden"},
+        {"DKK", "Denmark"},
+        {"JPY", "Japan"},
+        {"CNY", "China.SSE"},
+        {"HKD", "HongKong"},
+        {"KRW", "SouthKorea.Settlement"},
+        {"SGD", "Singapore"},
+        {"INR", "India"},
+        {"AUD", "Australia"},
+        {"NZD", "NewZealand"},
         {"ZAR", "SouthAfrica"},
     };
 

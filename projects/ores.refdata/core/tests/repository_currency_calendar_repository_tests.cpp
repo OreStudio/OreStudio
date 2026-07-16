@@ -55,8 +55,8 @@ const std::string tags("[repository][currency_calendar]");
 constexpr std::size_t total_slots = 10;
 
 currency_calendar make_currency_calendar(scoped_database_helper& h,
-                                       const std::string& currency_iso_code,
-                                       const std::string& calendar_code) {
+                                         const std::string& currency_iso_code,
+                                         const std::string& calendar_code) {
     currency_calendar cc;
     cc.tenant_id = h.tenant_id();
     cc.currency_iso_code = currency_iso_code;
@@ -73,7 +73,7 @@ currency_calendar make_currency_calendar(scoped_database_helper& h,
 // validates country_code against the countries table -- so the ZZ row
 // must exist before any calendar can be written.
 void write_zz_country_sentinel(scoped_database_helper& h,
-                                ores::utility::generation::generation_context& gctx) {
+                               ores::utility::generation::generation_context& gctx) {
     country_repository cty_repo;
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }

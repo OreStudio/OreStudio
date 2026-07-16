@@ -93,9 +93,9 @@ validate_curve_template(const std::vector<curve_template_entry_ref>& entries,
 
         if (!(start_date < end_date)) {
             return {.valid = false,
-                   .message = describe(e) + ": start tenor '" + e.start_tenor_code +
-                              "' does not resolve to a date before end tenor '" +
-                              e.end_tenor_code + "'"};
+                    .message = describe(e) + ": start tenor '" + e.start_tenor_code +
+                               "' does not resolve to a date before end tenor '" +
+                               e.end_tenor_code + "'"};
         }
 
         const bool is_point = e.start_tenor_code == "SPOT";
@@ -111,10 +111,10 @@ validate_curve_template(const std::vector<curve_template_entry_ref>& entries,
             const auto& b = resolved[j];
             if (windows_overlap(tenor_window{a.start, a.end}, tenor_window{b.start, b.end})) {
                 return {.valid = false,
-                       .message = "entry " + std::to_string(a.sequence_index) + " (" +
-                                  a.instrument_code + ") collides with entry " +
-                                  std::to_string(b.sequence_index) + " (" + b.instrument_code +
-                                  ")"};
+                        .message = "entry " + std::to_string(a.sequence_index) + " (" +
+                                   a.instrument_code + ") collides with entry " +
+                                   std::to_string(b.sequence_index) + " (" + b.instrument_code +
+                                   ")"};
             }
         }
     }

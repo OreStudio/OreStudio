@@ -20,21 +20,21 @@
 #include "ores.qt/CounterpartyChildEntityTables.hpp"
 #include "ores.qt/ChildEntityTableWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/CounterpartyContactInformationDetailDialog.hpp"
 #include "ores.qt/CounterpartyIdentifierDetailDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
 #include <QDialog>
 #include <QFutureWatcher>
 #include <QPointer>
-#include <QTableWidget>
 #include <QTabWidget>
+#include <QTableWidget>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -43,9 +43,10 @@ CounterpartyChildEntityTables::CounterpartyChildEntityTables(QWidget* dialogPare
     , dialogParent_(dialogParent)
     , identifierTable_(new ChildEntityTableWidget(
           {"Scheme", "Value", "Description"}, "Add Identifier", "Delete Identifier", dialogParent))
-    , contactTable_(new ChildEntityTableWidget(
-          {"Type", "Country", "Street", "City", "Phone"}, "Add Contact", "Delete Contact",
-          dialogParent)) {
+    , contactTable_(new ChildEntityTableWidget({"Type", "Country", "Street", "City", "Phone"},
+                                               "Add Contact",
+                                               "Delete Contact",
+                                               dialogParent)) {
 
     connect(identifierTable_,
             &ChildEntityTableWidget::addRequested,
@@ -82,10 +83,10 @@ void CounterpartyChildEntityTables::attachTo(QTabWidget* tabWidget) {
 }
 
 void CounterpartyChildEntityTables::reload(const boost::uuids::uuid& counterpartyId,
-                                    ClientManager* clientManager,
-                                    const std::string& username,
-                                    ImageCache* imageCache,
-                                    ChangeReasonCache* changeReasonCache) {
+                                           ClientManager* clientManager,
+                                           const std::string& username,
+                                           ImageCache* imageCache,
+                                           ChangeReasonCache* changeReasonCache) {
     counterpartyId_ = counterpartyId;
     clientManager_ = clientManager;
     username_ = username;
@@ -142,8 +143,8 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     if (readOnly_)
         return;
     if (counterpartyId_.is_nil()) {
-        MessageBoxHelper::warning(dialogParent_, "Save Required",
-                                  "Save the counterparty first, then add identifiers.");
+        MessageBoxHelper::warning(
+            dialogParent_, "Save Required", "Save the counterparty first, then add identifiers.");
         return;
     }
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -171,7 +172,10 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     newIdent.counterparty_id = counterpartyId_;
     dialog->setIdentifier(newIdent);
 
-    connect(dialog, &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved, &wrapper, &QDialog::accept);
+    connect(dialog,
+            &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved,
+            &wrapper,
+            &QDialog::accept);
 
     if (wrapper.exec() == QDialog::Accepted)
         loadIdentifiers();
@@ -227,7 +231,10 @@ void CounterpartyChildEntityTables::onEditIdentifier(int row) {
     dialog->setReadOnly(readOnly_ || !clientManager_ || !clientManager_->isConnected());
     dialog->setIdentifier(ident);
 
-    connect(dialog, &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved, &wrapper, &QDialog::accept);
+    connect(dialog,
+            &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved,
+            &wrapper,
+            &QDialog::accept);
 
     if (wrapper.exec() == QDialog::Accepted)
         loadIdentifiers();
@@ -238,7 +245,9 @@ void CounterpartyChildEntityTables::loadContacts() {
     auto* cm = clientManager_;
     const auto counterpartyIdStr = boost::uuids::to_string(counterpartyId_);
 
-    auto task = [cm, counterpartyIdStr]() -> std::vector<refdata::domain::counterparty_contact_information> {
+    auto task =
+        [cm,
+         counterpartyIdStr]() -> std::vector<refdata::domain::counterparty_contact_information> {
         refdata::messaging::get_counterparty_contact_informations_by_counterparty_id_request req;
         req.counterparty_id = counterpartyIdStr;
         req.limit = 1000;
@@ -248,27 +257,29 @@ void CounterpartyChildEntityTables::loadContacts() {
         return result->counterparty_contact_informations;
     };
 
-    auto* watcher = new QFutureWatcher<std::vector<refdata::domain::counterparty_contact_information>>(this);
-    connect(watcher,
-            &QFutureWatcher<std::vector<refdata::domain::counterparty_contact_information>>::finished,
-            this,
-            [self, watcher]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                self->contacts_ = std::move(result);
-                std::vector<QStringList> rows;
-                rows.reserve(self->contacts_.size());
-                for (const auto& c : self->contacts_) {
-                    rows.push_back({QString::fromStdString(c.contact_type),
-                                    QString::fromStdString(c.country_code),
-                                    QString::fromStdString(c.street_line_1),
-                                    QString::fromStdString(c.city),
-                                    QString::fromStdString(c.phone)});
-                }
-                self->contactTable_->setRows(rows);
-            });
+    auto* watcher =
+        new QFutureWatcher<std::vector<refdata::domain::counterparty_contact_information>>(this);
+    connect(
+        watcher,
+        &QFutureWatcher<std::vector<refdata::domain::counterparty_contact_information>>::finished,
+        this,
+        [self, watcher]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+            self->contacts_ = std::move(result);
+            std::vector<QStringList> rows;
+            rows.reserve(self->contacts_.size());
+            for (const auto& c : self->contacts_) {
+                rows.push_back({QString::fromStdString(c.contact_type),
+                                QString::fromStdString(c.country_code),
+                                QString::fromStdString(c.street_line_1),
+                                QString::fromStdString(c.city),
+                                QString::fromStdString(c.phone)});
+            }
+            self->contactTable_->setRows(rows);
+        });
     watcher->setFuture(QtConcurrent::run(task));
 }
 
@@ -276,7 +287,8 @@ void CounterpartyChildEntityTables::onAddContact() {
     if (readOnly_)
         return;
     if (counterpartyId_.is_nil()) {
-        MessageBoxHelper::warning(dialogParent_, "Save Required",
+        MessageBoxHelper::warning(dialogParent_,
+                                  "Save Required",
                                   "Save the counterparty first, then add contact information.");
         return;
     }

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.qt/PartyHierarchyTab.hpp"
+#include "ores.qt.headless/HierarchyModelBuilder.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HierarchyTreeWidget.hpp"
-#include "ores.qt.headless/HierarchyModelBuilder.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <QFutureWatcher>
 #include <QPointer>
@@ -28,14 +28,14 @@
 #include <QTabWidget>
 #include <QTreeView>
 #include <QtConcurrent/QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
 namespace {
-QModelIndex find_node_by_id(QAbstractItemModel* model, const QModelIndex& parent,
-                            const QString& id) {
+QModelIndex
+find_node_by_id(QAbstractItemModel* model, const QModelIndex& parent, const QString& id) {
     const int rows = model->rowCount(parent);
     for (int row = 0; row < rows; ++row) {
         const auto index = model->index(row, 0, parent);
@@ -66,8 +66,7 @@ void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager*
     QPointer<PartyHierarchyTab> self = this;
     const auto rootIdStr = boost::uuids::to_string(partyId);
 
-    auto task = [clientManager,
-                 rootIdStr]() -> std::vector<ores::utility::domain::hierarchy_node> {
+    auto task = [clientManager, rootIdStr]() -> std::vector<ores::utility::domain::hierarchy_node> {
         refdata::messaging::get_party_hierarchy_request req;
         req.root_id = rootIdStr;
         req.from_root = true;
@@ -90,8 +89,7 @@ void PartyHierarchyTab::reload(const boost::uuids::uuid& partyId, ClientManager*
                 model->setParent(self->tree_);
                 self->tree_->setModel(model);
                 self->tree_->expandAll();
-                const auto current =
-                    find_node_by_id(model, {}, QString::fromStdString(rootIdStr));
+                const auto current = find_node_by_id(model, {}, QString::fromStdString(rootIdStr));
                 if (current.isValid())
                     self->tree_->treeView()->setCurrentIndex(current);
             });

@@ -159,10 +159,9 @@ public:
 
     /// Resolved views (see above) across every enabled CRM for a party,
     /// each tagged with which CRM produced it.
-    [[nodiscard]] std::vector<named_rate_view>
-    resolved_rates(const std::string& tenant_id_str,
-                   const std::string& party_id_str,
-                   bool inverted) const;
+    [[nodiscard]] std::vector<named_rate_view> resolved_rates(const std::string& tenant_id_str,
+                                                              const std::string& party_id_str,
+                                                              bool inverted) const;
 
 private:
     using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)

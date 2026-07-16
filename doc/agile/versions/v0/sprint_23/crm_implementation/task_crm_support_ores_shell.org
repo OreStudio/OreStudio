@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-support-ores-shell
-#+pr:
+#+pr: 1613
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
@@ -159,7 +159,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1613][#1613]] | [marketdata,qt,shell] Add CRM support to ores.shell |
 
 * Review
 

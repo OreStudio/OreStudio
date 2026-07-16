@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-rate-formatter-and-qt-wiring
-#+pr:
+#+pr: 1603
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1603][#1603]] | [marketdata,qt] Add convention-aware CRM rate formatter and wire into Qt matrix |
 
 * Review
 

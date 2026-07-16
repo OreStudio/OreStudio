@@ -152,8 +152,8 @@ How the codebase is put together.
   nats-event-cache facet's cached_by target: the entity's own producer never
   caches itself, a single specific consumer gets the cache in its own
   component (party_cache in ores.iam.core), multiple UI-layer consumers share
-  a thin *.client component instead of duplicating. Notes the facet's current
-  hardcoded =.core= output-path limitation.
+  a thin *.client component instead of duplicating. Covers cached_by's
+  component.subcomponent dotted form for targeting a non-=.core= consumer.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern of a top-level transport
   registrar delegating to per-entity sub-registrars, with a per-transport
   instance section (NATS, HTTP) linking to the codegen archetypes.

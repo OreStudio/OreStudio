@@ -59,21 +59,20 @@ whichever UI happened to need it first.
    =ores.iam.client=; a cache is one concrete shape that role can
    take, not a reason to invent a separate =.cache= suffix.
 
-** Current facet limitation: hardcoded =.core= output path
+** Targeting a non-=.core= subcomponent: =cached_by='s dotted form
 
-As of the facet's initial implementation, its generated output path
-is =projects/ores.{cached_by}/core/include/ores.{cached_by}.core/service/cache/{entity}_cache.hpp=
+The facet's generated output path is
+=projects/ores.{cache_component}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache.hpp=
 (see the =nats-event-cache= entry in
 [[proj:projects/ores.codegen/library/facet_catalogue.org][the facet
-catalogue]]) -- the =/core/= segment and =.core= suffix are literal,
-not derived from the =cached_by= value. This works cleanly for case 2
-above (=cached_by: iam= → =ores.iam.core=, an already-=.core=-shaped
-component), but does *not* fit a =.client=-shaped component like
-=ores.refdata.client= without also generalising the facet's template
-to accept a configurable subcomponent segment instead of assuming
-=core=. Any task that introduces a new =<domain>.client= cache
-consumer needs to budget for this facet change, not just the new
-component and the =cached_by= wiring.
+catalogue]]). =cache_subcomponent= defaults to =core= (case 2 above:
+=cached_by: iam= → =ores.iam.core=, every consumer's shape until
+=ores.refdata.client= existed) but is derived from =cached_by= itself
+whenever it carries a dot -- =cached_by: refdata.client= splits into
+=cache_component: refdata=, =cache_subcomponent: client=, the same
+="component.subcomponent"= convention =component_include= already
+uses elsewhere. No separate model flag: both are purely derived, like
+every other =_upper=/=_dir= variable the facet exposes.
 
 * See also
 

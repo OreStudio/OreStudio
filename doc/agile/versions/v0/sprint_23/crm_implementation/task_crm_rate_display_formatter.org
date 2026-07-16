@@ -131,7 +131,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Knowledge doc's "current facet limitation" section already fixed by this same PR but not updated | entity_mirror_cache_placement.org, knowledge.org | Accepted | Rewrote the section to describe cached_by's dotted-form resolution as the current, working mechanism |
+| 2 | component_architecture.org's client specialist-roles "Used in" row missing ores.refdata | component_architecture.org | Accepted | Added |
+| 3 | cache_subcomponent_upper never derived for junction models (dormant, facet excludes junctions today) | core.py | Accepted | Added alongside the existing cache_component_upper derivation, for consistency |
+| 4 | _component_path_vars/generate_from_model duplicate the same cached_by dot-split logic | core.py | Declined | Pre-existing seam (same duplication already existed for plain cached_by pre-PR); not introduced here, flagged by reviewer as non-blocking |
 
 * Result
 

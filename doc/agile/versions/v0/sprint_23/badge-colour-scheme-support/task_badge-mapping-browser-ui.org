@@ -8,7 +8,7 @@
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/badge-mapping-browser-ui
-#+pr:
+#+pr: 1599
 #+blocked_on: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
 #+blocked_since: 2026-07-16
 #+created: 2026-07-15
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1599][#1599]] | [refdata,qt,admin] Embed badge mappings tab in Code Domain detail dialog |
 
 * Review
 

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F1D3700E-F200-41DF-A760-6C20E8254473
+:END:
+#+title: Test Scenario: Capture the Change Reasons list window screenshot
+#+description: Capture the never-taken Change Reasons list window screenshot referenced by chapter_4_reference_data.org.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:reference-data:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: ChangeReasonMdiWindow
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | ChangeReasonMdiWindow                   |
+| Clients       |                                          |
+| State         | PENDING                                 |
+
+* Steps
+
+Log in against =prime_origin= as =tenant_admin@barclays_plc= /
+=Secure-Password-123= and select *BARCLAYS PLC*.
+
+** Capture change_reasons_main_window.png
+
+Open /Reference Data → Audit Trail → Change Reasons/. Confirm at
+least one change reason row is visible for each of the built-in
+category groups. Screenshot the full window including the toolbar
+and status bar. Save as =change_reasons_main_window.png=
+(repo-root =assets/images/=, not =doc/manual/user_guide/assets/images/=
+— the =proj:= link type resolves against the repo root).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_change-reasons-screenshot_step1_20260716_102632.png]]; ; ; ; [[file:scenario_change-reasons-screenshot_step1_20260716_102652.png]] |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T09:26:55Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | 08864b5ae |
+| Worktree      | prime_origin |
+
+* Notes

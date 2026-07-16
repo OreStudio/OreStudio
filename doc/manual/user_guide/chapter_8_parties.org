@@ -1,0 +1,338 @@
+:PROPERTIES:
+:ID: 4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C
+:END:
+#+title: Parties
+#+description: Party management in ORE Studio: what an internal legal entity represents, legal-entity identification, the party hierarchy and its house-root rule, the Qt UI, identifiers, contact information, and history and revert.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:parties:refdata:user_guide:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /party/ as a
+reference-data entity in ORE Studio. A party is an internal legal
+entity — the organisation itself and each of its subsidiaries — and,
+barring the tenant's own house root, every party sits somewhere
+beneath another in a single corporate hierarchy tree; the chapter
+sets out that hierarchy rule, the identifiers and contact information
+a party carries, and the complete lifecycle of managing party records
+through the Qt interface.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that managing a party well means
+first understanding what it represents and how it fits into the
+organisation's structure, then the interface that governs its
+lifecycle. It begins by establishing what a party is in
+[[*What is a Party?][What is a Party?]], and by working through the [[*The party hierarchy][The party
+hierarchy]] rule that every party but the tenant's house root must
+supply a parent — the premise the rest of the chapter builds on. From
+there it surveys the
+body of records in [[*The Parties window][The Parties window]] before narrowing to a single
+record in [[*Party Details][Party Details]] and its General, Identifiers, Contact
+Information, Hierarchy, and Provenance tabs. It then turns to
+changing a record under audit — [[*Editing a party][Editing]], [[*Deleting a party][Deleting]], and
+[[*Party history][Party history]] — culminating in reverting to an earlier version, the
+point at which the bitemporal audit trail does its work. The
+[[*Conclusion][Conclusion]] draws these steps together and names what is
+deliberately still missing.
+
+** What is a Party?
+
+A /party/ is an internal legal entity participating in financial
+transactions — the organisation's own top-level entity and each of
+its subsidiaries, branches, and other group-structure members. See
+[[id:E8393440-D821-4A24-AE27-DD0917F125EB][the Tenants chapter's Parties section]] for the conceptual model this
+chapter builds on: the house/counterparty distinction, the
+administrative system party, and how a user's position in the party
+hierarchy determines their data visibility. This chapter does not
+repeat that model; it picks up from it to document the Qt interface
+for managing individual party records.
+
+A party is, first and foremost, a stand-in for a real legal entity —
+a registered company, a bank, a branch — and real legal entities are
+notoriously hard to identify consistently: the same organisation can
+appear under different names, registration numbers, and codes across
+different jurisdictions, counterparties, and vendor systems, with no
+single authority reconciling them all.
+
+#+begin_tangent
+*GLEIF and the Legal Entity Identifier (LEI)*
+
+The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
+not-for-profit organisation that oversees the global LEI system on
+behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
+20-character alphanumeric code that uniquely identifies a legal entity
+participating in financial markets — a bank, a corporation, a fund, a
+branch. LEIs are mandated by major regulatory frameworks including
+MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
+counterparty identification.
+
+GLEIF publishes the full registry of LEI entities and their corporate
+hierarchies (parent-child relationships) as open data. OreStudio uses
+the GLEIF dataset to seed counterparties and, when a party's root LEI
+is selected during tenant provisioning, to populate the initial party
+hierarchy from real organisational data — see [[*The party hierarchy][The party hierarchy]]
+below.
+
+A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
+identifying a specific financial institution, used in SWIFT messaging
+for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
+that OreStudio also imports, allowing settlement systems to resolve a
+counterparty's BIC from its LEI.
+#+end_tangent
+
+Because no single identifier scheme covers every counterpart a party
+might need to be recognised by, a party can carry more than one — see
+[[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
+recognises.
+
+Every party carries a *full name* (its official registered legal
+name) and a *short code* (a brief mnemonic used elsewhere in the
+system for quick reference), both of which participate in the
+party's natural key alongside its surrogate id. A party also carries
+a *codename* — a globally unique, immutable, human-readable
+identifier (adjective_noun, e.g. =swift_falcon=) auto-generated on
+creation and used internally as the party's per-party message-queue
+prefix and scheduled-job namespace; it plays no role in the Qt UI and
+is not user-editable.
+
+A party's *type* classifies what kind of entity it is (e.g.
+/Corporate/), chosen from the tenant's configured party types, and
+its *status* tracks where it sits in its own operational lifecycle
+(e.g. /Active/), chosen from the tenant's configured party statuses —
+both shown as colour-coded badges once selected. A party also carries
+a *business center* — an FpML business center code identifying the
+entity's primary location, the same code list documented in the
+[[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] chapter.
+
+** The party hierarchy
+
+Every tenant has, at most, two parties with no parent: the
+[[id:E8393440-D821-4A24-AE27-DD0917F125EB][system party]] created automatically during provisioning
+(administrative only, never part of the business hierarchy), and —
+among the /operational/ parties that actually own trades, books, and
+analytics results — exactly one *house root*, the organisation's own
+top-level legal entity. This is enforced structurally, not just by
+convention: the database carries a unique index that permits at most
+one operational party per tenant with no parent. Once that one slot
+is taken by the house root, every other operational party must supply
+a parent — a second attempt to create a rootless operational party is
+rejected outright.
+
+The practical consequence for the Party Details dialog covered later
+in this chapter is that the Parent Party field is *required*: there
+is no way to leave it blank. This is deliberate: a business entity
+newly onboarded into ORE Studio, however it arrives, must attach
+somewhere in the one tree that already exists for its tenant. Note
+that this required-parent rule is specific to this dialog, not a
+general rule about how parties come to exist in OreStudio — a party
+can also be created from the shell's =provision party= command,
+which is not bound by any particular UI's field requirements.
+
+In practice, most parties never go through this manual Create dialog
+at all: the shell-driven GLEIF (Global Legal Entity Identifier
+Foundation) reference data pipeline resolves an entity's real-world
+corporate-hierarchy relationships and assigns each imported party's
+parent automatically, level by level, from that external data. The
+manual Create dialog described in this chapter exists for the
+smaller number of parties added or corrected by hand outside that
+pipeline.
+
+The [[*Hierarchy][Hierarchy]] tab, described under Party Details below, is where
+this tree becomes visible for a given party — its ancestors up to the
+root and its immediate children.
+
+With the concept and its hierarchy rule established, the rest of this
+chapter turns to the interface OreStudio provides for it — starting
+with the Parties window, which lists every party in the tenant.
+
+** The Parties window
+
+Open the Parties window from the /Reference Data/ menu. It lists all
+parties defined in the tenant, one row per party, each row carrying
+the short code, full name, party type, status, business center,
+version, last modifier, and when the record was last recorded.
+
+#+caption[The Parties window]: The Parties window, showing a page of parties. Each row shows the short code, name, party type and status badges, business center, version, last modifier, and when the record was last recorded; the status bar shows the current page and total record count.
+[[proj:assets/images/parties_main_dialog.png]]
+
+The list is paginated; use the page controls at the bottom right to
+navigate. The toolbar buttons reload the list and open the add, edit,
+delete, and history actions. Double-clicking a row opens the *Party
+Details* dialog.
+
+** Party Details
+
+The Party Details dialog has five tabs — *General*, *Identifiers*,
+*Contact Information*, *Hierarchy*, and *Provenance*. The three
+action buttons at the bottom — *Delete*, *Close*, and *Save* — apply
+to the party as a whole.
+
+*** General
+
+#+caption[Party Details — General tab]: The General tab for a party, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the required Parent Party combo.
+[[proj:assets/images/party_details_general.png]]
+
+The General tab carries the core fields of the party:
+
+- *Short Code* — a brief mnemonic code. This is part of the natural
+  key and cannot be changed after creation.
+- *Full Name* — the party's official registered legal name.
+- *Party Type* — the party's classification, chosen from a combo
+  populated from the tenant's configured party types and shown as a
+  colour-coded badge once selected.
+- *Status* — the party's operational status, chosen from a combo
+  populated from the tenant's configured party statuses and shown as
+  a colour-coded badge once selected.
+- *Business Center* — the party's primary location, chosen from a
+  flagged combo of business center codes (see [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]]).
+- *Parent Party* — the party's immediate parent in the hierarchy,
+  chosen from a combo listing every other party by full name. This
+  field is *required*: the combo has no blank option, and — when
+  editing an existing party — the party being edited is excluded from
+  its own list of candidate parents, since a party can never be its
+  own ancestor. See [[*The party hierarchy][The party hierarchy]] above for why this field
+  cannot be left empty.
+
+  #+caption[The Parent Party combo]: The Parent Party combo open, listing candidate parent parties by full name.
+  [[proj:assets/images/party_parent_party_combo.png]]
+
+*** Identifiers
+
+#+caption[Party Details — Identifiers tab]: The Identifiers tab, listing the external identifiers held against a party.
+[[proj:assets/images/party_details_identifiers.png]]
+
+The Identifiers tab is an editable table of external identifiers held
+against the party. Each row carries an *Identification Scheme*
+(chosen from the tenant's configured schemes), an *Identifier Value*
+(the actual code or string within that scheme), and an optional
+free-text *Description*. A party may hold at most one identifier per
+scheme, but may hold identifiers under as many different schemes as
+apply to it. Use the row toolbar to add, edit, or remove identifier
+rows; changes to this tab are saved together with the rest of the
+party record when *Save* is clicked.
+
+The ten schemes OreStudio recognises span a spectrum from globally
+standardised to purely internal, reflecting how fragmented legal
+entity identification remains in practice: even the LEI, the closest
+thing to a universal answer, only reaches back to 2012 and still
+leaves gaps that jurisdiction-specific and venue-specific schemes
+fill.
+
+#+attr_latex: :environment tabularx :width \linewidth :align lp{2.7cm}X
+| Scheme                | Standard / issuer          | What it identifies                                  |
+|------------------------+-----------------------------+------------------------------------------------------|
+| =LEI=                  | ISO 17442 / GLEIF           | Any legal entity, globally, mandated for MiFID II/EMIR/Dodd-Frank/Basel III reporting. |
+| =BIC=                  | ISO 9362 / SWIFT            | Banks and financial institutions on the SWIFT network. |
+| =MIC=                  | ISO 10383 / SWIFT           | Trading venues (e.g. =XNYS=, =XLON=), where a party also acts as a venue. |
+| =NATIONAL_ID=          | Jurisdiction-specific        | Passport, tax ID, or national ID card — covers MiFID II client identification. |
+| =CEDB=                 | CFTC (US)                   | CFTC Entity Directory code for non-LEI entities in swap data reporting. |
+| =NATURAL_PERSON=       | Not standardised            | Individuals (employee ID, trader ID); value interpreted contextually. |
+| =ACER=                 | EU Agency for Energy Regulation | Non-LEI energy market participants, for REMIT reporting. |
+| =DTCC_PARTICIPANT_ID=  | DTCC (US)                   | Member firms in US clearing and settlement systems. |
+| =MPID=                 | FINRA (US)                  | Broker-dealers and ATSs in US equities markets (also known as AII). |
+| =INTERNAL=             | Proprietary                 | A party's own OMS, CRM, or clearing-system client ID. |
+
+*** Contact Information
+
+#+caption[Party Details — Contact Information tab]: The Contact Information tab, listing the addresses and contact points held against a party.
+[[proj:assets/images/party_details_contact_information.png]]
+
+The Contact Information tab is an editable table of addresses and
+contact points held against the party. Each row carries a *Contact
+Type* (e.g. /Legal/, /Operations/, /Settlement/, /Billing/ —
+distinguishing, for instance, a registered legal address from an
+operational one) and an optional street address, city, state, postal
+code, phone, and email, plus an optional *Country* chosen from a
+flagged combo of ISO 3166-1 alpha-2 country codes. A party may hold
+more than one contact record, one per contact type. Use the row
+toolbar to add, edit, or remove rows; changes to this tab are saved
+together with the rest of the party record when *Save* is clicked.
+
+*** Hierarchy
+
+#+caption[Party Details — Hierarchy tab]: The Hierarchy tab for a party, showing its chain of ancestors up to the tenant's root party and its immediate children.
+[[proj:assets/images/party_details_hierarchy.png]]
+
+The Hierarchy tab is read-only and shows this party's position in
+the tenant's single corporate tree: its chain of ancestor parties up
+to the root, and its immediate children, if any. See [[*The party
+hierarchy][The party hierarchy]] above for the rule this tab visualises.
+
+*** Provenance
+
+The Provenance tab is read-only and shows the audit metadata for the
+current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the provenance fields common to all reference data
+entities.
+
+** Editing a party
+
+To edit a party, open it in the Party Details dialog, make your
+changes, and click *Save*. Before the record is written, ORE Studio
+prompts for a change reason — the same /Change Reason Required/
+dialog shown in the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] chapter, and not repeated here. Select
+a *Reason* from the drop-down and add optional *Commentary*, then
+confirm. Every save creates a new version; the previous version is
+never overwritten.
+
+** Deleting a party
+
+To delete a party, open it and click *Delete*. ORE Studio asks for
+confirmation before the record is closed off. Deletion is a soft
+close — the record's history is preserved and remains visible in the
+History dialog.
+
+** Party history
+
+To view the full change history, open the details dialog and click
+the history icon in the title bar, or right-click the row and choose
+*History*.
+
+#+caption[The Party History dialog]: The History dialog for party BARCLAYS BANK PLC, comparing version 44 against version 45. The *Only Changes* toggle narrows the field list to what actually differs between the two selected versions.
+[[proj:assets/images/party_history_dialog.png]]
+
+Pick the two versions to compare from the *Compare* drop-downs on the
+right. The *All Fields*/*Only Changes* toggle switches between showing
+every field and showing only the fields that differ between the two
+selected versions. The *Revert* button reinstates any historical
+version as a *new* version, preserving the full audit chain — the old
+version is never rewritten.
+
+** Conclusion
+
+The chapter set out to show that managing a party well follows from
+understanding what it represents and how it fits into the
+organisation's structure, and it has traced exactly that path. A
+party is an internal legal entity identified by a short code and full
+name, carrying a type and status, and sitting beneath a parent party
+in a single corporate hierarchy tree — with the sole exception of the
+tenant's own house root; the Parent Party combo on the General tab is
+a required field precisely because that exception is so narrow.
+Building on that, the Qt interface took the record from the list view
+through its General, Identifiers, Contact Information, Hierarchy, and
+Provenance tabs, and through the editing, deleting, and history workflows, where
+reverting to an earlier version demonstrated the same bitemporal
+audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. The shell's
+=provision party= command covers bulk/GLEIF onboarding (see
+[[*The party hierarchy][The party hierarchy]] above), but general-purpose shell/CLI commands
+for adding, editing, deleting, or viewing the history of an
+individual party are not yet implemented, and a dedicated manual
+chapter for counterparties — the external-facing mirror of this one
+— does not yet exist; both are tracked separately rather than glossed
+over here.
+
+** See also
+
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — the multi-tenant, multi-party conceptual model (house vs
+  counterparty, the system party, hierarchy-based data visibility)
+  this chapter assumes and builds on.
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors, including the Change Reason Required dialog.
+- [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the business center a party links to, and the country flag a contact record may carry.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning]] — the architecture behind the Identifiers and Contact Information child tables.

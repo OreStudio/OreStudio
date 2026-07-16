@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 510B6314-197D-482B-A3E5-ABA0A2E90779
+:END:
+#+title: Test Scenario: Recapture party_details_hierarchy.png with a non-root party
+#+description: Redo the Hierarchy tab screenshot on a non-root party so both ancestors and children are visible.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:party:refdata:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: PartyDetailDialog
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | PartyDetailDialog                       |
+| Clients       |                                          |
+| State         | PASSED                                  |
+
+* Steps
+
+** Connect and open the Parties window
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+Log in against =prime_origin= as =tenant_admin@barclays_plc= /
+=Secure-Password-123=, select *BARCLAYS PLC*, then open the Parties
+window from the /Reference Data/ menu.
+
+** Capture party_details_hierarchy.png on a non-root party
+
+Open *BARCLAYS BANK UK PLC* (a child of BARCLAYS PLC that itself has
+children, e.g. BARCLAYS ASSET MANAGEMENT LIMITED) in Party Details and
+switch to the Hierarchy tab. Confirm both directions of the tree are
+visible: BARCLAYS PLC as an ancestor above, and its own children
+below. Screenshot the tab. Save as =party_details_hierarchy.png=,
+overwriting the existing placeholder.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Captured with BARCLAYS ASSET MANAGEMENT LIMITED selected (nested under BARCLAYS BANK UK PLC under BARCLAYS PLC), showing the full ancestor chain to root and the selected node's position in the tree. |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T07:52:00Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | 5e1d85f8a |
+| Worktree      | prime_origin |
+
+* Notes

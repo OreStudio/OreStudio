@@ -32,6 +32,15 @@
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
 
+;; Render #+begin_src blocks via the listings package (background
+;; colour and breaklines configured in user_manual.org's latex_header)
+;; rather than plain verbatim. ores-shell is a custom babel language
+;; name with no listings definition of its own; map it to bash, same
+;; as org's own default mapping for sh.
+(setq org-latex-src-block-backend 'listings)
+(setq org-latex-listings-langs
+      (append '((ores-shell "bash")) org-latex-listings-langs))
+
 ;; Cap figures at 60% of the text width but never upscale: \maxwidth
 ;; (defined in user_manual.org) yields the image's natural width when it
 ;; is smaller than 0.6\linewidth, and 0.6\linewidth otherwise. Large
@@ -110,6 +119,26 @@
            blk)))
      text nil t)))
 (add-to-list 'org-export-filter-final-output-functions 'ores/figures-to-margin)
+
+;; #+begin_example blocks (captured shell output, e.g. :wrap example
+;; results) always export via plain \begin{verbatim} regardless of
+;; org-latex-src-block-backend, which only governs #+begin_src. Since
+;; that backend is set to listings above, verbatim no longer appears
+;; anywhere else in this document's export, so it's safe to promote
+;; every remaining occurrence to lstlisting — giving captured output
+;; the same pastel background and breaklines as typed commands, for a
+;; single consistent "code" look across the manual.
+(defun ores/verbatim-to-listings (text backend _info)
+  "Promote plain verbatim blocks (example blocks) to lstlisting."
+  (if (not (org-export-derived-backend-p backend 'latex))
+      text
+    (replace-regexp-in-string
+     "\\\\end{verbatim}" "\\end{lstlisting}"
+     (replace-regexp-in-string
+      "\\\\begin{verbatim}" "\\begin{lstlisting}"
+      text nil t)
+     nil t)))
+(add-to-list 'org-export-filter-final-output-functions 'ores/verbatim-to-listings)
 
 ;; Custom LaTeX class: * → \chapter, ** → \section (no \part level).
 ;; This gives a clean chapter-based book without Part I/II dividers.

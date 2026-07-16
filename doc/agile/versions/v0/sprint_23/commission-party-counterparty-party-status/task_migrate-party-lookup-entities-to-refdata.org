@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: C5825F59-3E1A-4E81-98E5-9F9FE8674BF0
+:END:
+#+title: Task: Migrate party_status/party_id_scheme/business_unit/business_unit_type from ores.qt.party to ores.qt.refdata
+#+description: Move the remaining lookup/related entities in ores.qt.party (PartyStatus, PartyIdScheme, BusinessUnit, BusinessUnitType) over to ores.qt.refdata, matching the earlier party/counterparty migration, and regenerate them against current codegen templates.
+#+type: task
+#+level: s1
+#+filetags: :qt:party:refdata:codegen:commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=party= and =counterparty= themselves were already migrated from
+=ores.qt.party= to =ores.qt.refdata= earlier in this story (see
+=Bring party under codegen= and =Regenerate counterparty under
+codegen=), but =ores.qt.party= still hosts four related/lookup
+entities that were never moved: =PartyStatus=, =PartyIdScheme=,
+=BusinessUnit=, and =BusinessUnitType=. Migrate these to
+=ores.qt.refdata= for consistency, and regenerate each against the
+current codegen templates while doing so — the fact they were never
+moved strongly suggests they haven't been regenerated recently either
+and may carry the same kind of template drift party/counterparty had
+accumulated.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- Discovered while writing the party manual chapter: asked "what's
+  left in ores.qt/party now" and found =PartyStatus=, =PartyIdScheme=,
+  =BusinessUnit=, =BusinessUnitType= still living there.
+- Check each of these four against current codegen templates with
+  =--diff= before regenerating, the same way party/counterparty were
+  checked, since they may carry unrelated hand-patches that need
+  reconciling first.
+- =BusinessUnit=/=BusinessUnitType= are not part of this story's
+  =party=/=counterparty=/=party_status= scope as originally framed —
+  confirm whether they belong here or should be split into their own
+  story before starting.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

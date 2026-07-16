@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 00832CCC-F7A4-49FB-9041-BC35978B2605
+:END:
+#+title: Test Scenario: Capture party manual chapter screenshots
+#+description: Capture all screenshots referenced by the new Parties manual chapter.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:party:refdata:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: PartyDetailDialog
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | PartyDetailDialog                       |
+| Clients       |                                          |
+| State         | PENDING                                 |
+
+* Steps
+
+Each step captures one screenshot referenced by
+=doc/manual/user_guide/chapter_8_parties.org=. Save every capture into
+=doc/manual/user_guide/assets/images/= under the exact filename given,
+overwriting any placeholder that may already exist. Use the Barclays
+Plc (GLEIF) environment so the parties list has real, varied data —
+several rows with distinct Party Type and Status badges, and at least
+one party several levels deep in the hierarchy for the Hierarchy tab.
+
+** Connect and open the Parties window
+
+Start the client, log in against the =prime_origin= environment, and
+open the Parties window from the /Reference Data/ menu. Let it load a
+full page of parties with at least two different Party Type values
+and two different Status values visible, so both badge colours show.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step1_20260716_023435.png]] |
+
+** Capture parties_main_dialog.png
+
+With the Parties window populated as above, screenshot the full
+window including the toolbar and status bar (page controls, total
+record count). Save as =parties_main_dialog.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step2_20260716_020138.png]] |
+
+** Capture party_details_general.png
+
+Double-click any party to open Party Details. On the General tab,
+make sure Party Type, Status, Business Center, and Parent Party all
+show real, non-blank values. Screenshot the General tab in full. Save
+as =party_details_general.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step2_20260716_020050.png]] |
+
+** Capture party_parent_party_combo.png
+
+Still on the General tab, click the Parent Party combo to open its
+dropdown, showing the list of candidate parent parties by full name.
+Screenshot it open. Save as =party_parent_party_combo.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | ./tmp/Screenshot from 2026-07-16 02-02-44.png |
+
+** Capture party_details_identifiers.png
+
+Switch to the Identifiers tab. If the selected party has no
+identifier rows yet, add one or two (e.g. an LEI and a BIC) via the
+row toolbar first, so the table isn't empty. Screenshot the tab.
+Save as =party_details_identifiers.png=. If you added rows purely for
+the screenshot, you may discard them afterwards (Close without Save,
+or delete the rows and save) rather than leaving test data behind.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step5_20260716_020450.png]] |
+
+** Capture party_details_contact_information.png
+
+Switch to the Contact Information tab. If empty, add a row (e.g.
+contact type /Legal/, with city, country, and phone filled in) via
+the row toolbar so the flagged Country combo is visible with a flag
+rendered. Screenshot the tab. Save as
+=party_details_contact_information.png=. As above, feel free to
+discard any rows added only for the capture.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step6_20260716_020617.png]] |
+
+** Capture party_details_hierarchy.png
+
+Switch to the Hierarchy tab. Pick a party (or navigate to one) that
+has both a chain of ancestors up to the tenant's root and at least one
+child, so both directions of the tree are visible. Screenshot the
+tab. Save as =party_details_hierarchy.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step7_20260716_020633.png]] |
+
+** Capture party_history_dialog.png
+
+Close the detail dialog, right-click a party row with more than one
+version (or edit-and-save a party first to create a second version),
+and choose *History*. Select a version so the Changes tab shows a
+field-level diff against its predecessor. Screenshot the History
+dialog. Save as =party_history_dialog.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_party-manual-chapter-screenshots_step8_20260716_023511.png]] |
+
+** Update the manual chapter with the captured images
+
+Edit =doc/manual/user_guide/chapter_8_parties.org= and confirm each
+=[[proj:assets/images/...png]]= link matches a file that now exists;
+the filenames above were chosen to match exactly, so no text changes
+should be needed — just verify.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T01:35:14Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | 5e1d85f8a |
+| Worktree      | prime_origin |
+
+* Notes

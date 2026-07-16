@@ -491,11 +491,11 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_type', 'Bank', 'classification_major');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'party_type', 'CorporateGroup', 'origin_primary');
+        'party_type', 'CorporateGroup', 'account_type_algorithm');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_type', 'HedgeFund', 'classification_exotic');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'party_type', 'Corporate', 'classification_minor');
+        'party_type', 'Corporate', 'asset_class_bond');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_type', 'CentralBank', 'treatment_enriched');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

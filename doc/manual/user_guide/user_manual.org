@@ -4,7 +4,7 @@
 #+title: ORE Studio User Manual
 #+author: Marco Craveiro
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
-#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
+#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations, backed by a set of headless services and a database.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:
@@ -18,11 +18,23 @@
 # would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{lettrine}
+# Footnoted reference URLs are typeset and line-broken via \url{};
+# hyperref loads url internally but we depend on its macros directly,
+# so load it explicitly rather than relying on that transitively.
+#+latex_header: \usepackage{url}
 # Drop caps: oversize the letter slightly so its top aligns with the cap
 # height of the first line rather than falling short of it.
 #+latex_header: \renewcommand{\DefaultLoversize}{0.12}
 #+latex_header: \setlength{\DefaultFindent}{2pt}
 #+latex_header: \usepackage{tabularx}
+# Shell/ores-shell snippets: pastel-yellow background so they read as
+# distinct "type this" blocks rather than body text, with breaklines
+# so a long command wraps inside the box instead of overflowing the
+# narrow Tufte text column (no manual line-continuation needed in the
+# org source — the copy-pasteable command stays on one logical line).
+#+latex_header: \usepackage{listings}
+#+latex_header: \definecolor{shellbg}{RGB}{255,251,214}
+#+latex_header: \lstset{backgroundcolor=\color{shellbg},basicstyle=\ttfamily\small,breaklines=true,breakatwhitespace=false,columns=fullflexible,frame=single,framerule=0pt,rulecolor=\color{shellbg},xleftmargin=6pt,xrightmargin=6pt,framexleftmargin=6pt,framextopmargin=4pt,framexbottommargin=4pt,showstringspaces=false,keepspaces=true}
 # placeins [section] is passed via \PassOptionsToPackage in ores-build-manual.el
 # before \documentclass, so tufte-book picks it up without an option clash.
 # Float tuning: keep figures on text pages instead of banking them onto
@@ -172,3 +184,10 @@
 :END:
 
 #+include: "chapter_7_books.org" :minlevel 2
+
+* Parties
+:PROPERTIES:
+:CUSTOM_ID: chapter_8_parties
+:END:
+
+#+include: "chapter_8_parties.org" :minlevel 2

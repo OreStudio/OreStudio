@@ -14,7 +14,7 @@
 session, and the subject of this chapter. It traces the path from
 launching the application in its disconnected state to an authenticated
 session against a running backend. Along the way it sets out the
-Connection Manager and the full lifecycle of connection definitions —
+Connection Browser and the full lifecycle of connection definitions —
 adding, editing, organising, securing, and storing them — the
 connect-and-login sequence and the ways it can fail, the status bar's
 account of the live connection, and the supporting material around a
@@ -33,7 +33,7 @@ state — and it proceeds in that order. It begins with [[*Getting started][Gett
 which launches the application and explains the /disconnected/ state in
 which it first appears, and [[*The main window before login][The main window before login]], which describes
 what is and is not available until a login succeeds. From there it turns
-to [[*The Connection Manager][The Connection Manager]], the central place where backends are defined,
+to [[*The Connection Browser][The Connection Browser]], the central place where backends are defined,
 walking through adding, editing, and deleting a connection, organising
 connections into folders, protecting credentials with a master password,
 grouping by environments and tags, and where the connection store lives
@@ -63,18 +63,6 @@ established a connection to the backend service that performs
 calculations. Before you can work with trades, market data, or analytics,
 you need to connect to a running ORE Studio backend.
 
-This chapter covers:
-
-- What the main window looks like before a connection is established.
-- How to open the Connection Manager and configure one or more backends.
-- How to log in once a connection is active.
-- How to manage your saved connections — adding, editing, deleting,
-  organising by environment and tag.
-- How to read the status bar and understand what each zone shows.
-- How to launch ORE Studio from the command line with options for
-  telling windows apart, configuration directory, auto-connect, and
-  diagnostics.
-
 ** The main window before login
 
 #+caption[The ORE Studio main window immediately after launch]: The ORE Studio main window immediately after launch, in the disconnected state. The toolbar shows the Connect and Connections buttons; the workspace area is empty until you log in.
@@ -87,15 +75,15 @@ toolbar buttons are always accessible:
 
 - *Connect* — opens the login dialog for the currently selected
   connection.
-- *Connections* — opens the Connection Manager, where you configure
+- *Connections* — opens the Connection Browser, where you configure
   the list of backends ORE Studio knows about.
 
-** The Connection Manager
+** The Connection Browser
 
-The Connection Manager is the central place where you maintain the list
+The Connection Browser is the central place where you maintain the list
 of ORE Studio backends the application can connect to. You might have a
 local development backend, a shared team backend, and a staging backend
-— each appears as a separate entry here. The manager lets you add, edit,
+— each appears as a separate entry here. It lets you add, edit,
 delete, and organise those entries before you attempt a login.
 
 Open it at any time from the toolbar *Connections* button or from the
@@ -128,7 +116,7 @@ in the fields:
 [[proj:assets/images/connection_manager_new_connection.png]]
 
 Click *Save* (or *OK*) to add the connection to the list. The new entry
-appears immediately in the Connection Manager list. No network contact
+appears immediately in the Connection Browser list. No network contact
 is made at this point — ORE Studio simply stores the configuration.
 
 *** Editing a connection
@@ -153,6 +141,9 @@ Deleting a connection removes only the saved configuration; it has no
 effect on the running backend or any data stored there.
 
 *** Organising connections into folders
+
+#+caption[A populated Connection Browser]: A populated Connection Browser. Connections are grouped under folders (here =Development → Dev → Local1…Local4=) and each carries coloured chips — the environment and tags — making the tier and purpose of every entry obvious at a glance.
+[[proj:assets/images/connection_manager_with_connections.png]]
 
 When the list grows, /folders/ keep it manageable. A folder is a named
 container you can nest, grouping related connections — by team, by
@@ -207,11 +198,12 @@ to connect to. This is a safety feature: it is easy to accidentally
 connect to production when you meant staging; a clearly labelled
 environment badge prevents that.
 
-#+caption[A populated Connection Browser]: A populated Connection Browser. Connections are grouped under folders (here =Development → Dev → Local1…Local4=) and each carries coloured chips — the environment and tags — making the tier and purpose of every entry obvious at a glance.
-[[proj:assets/images/connection_manager_with_connections.png]]
+See the populated Connection Browser figure under
+[[*Organising connections into folders][Organising connections into folders]] above — the same coloured chips
+shown there are the environment and tag labels described below.
 
 To manage the available environment names, open the /Environments/
-section within the Connection Manager settings (or the dedicated menu
+section within the Connection Browser settings (or the dedicated menu
 item). From there you can:
 
 - *Add* a new environment name and choose its display colour.
@@ -244,7 +236,7 @@ single tier), a connection can carry any number of tags. Examples:
 =personal=, =client-acme=, =read-only=, =high-memory=.
 
 Tags are displayed inline with the connection name in the list. The
-Connection Manager provides a tag filter bar at the top of the list: type
+Connection Browser provides a tag filter bar at the top of the list: type
 or select a tag to show only the connections that carry it.
 
 To add or remove tags, open the Edit form for the entry and use the
@@ -274,7 +266,7 @@ Neither leaves your machine.
    - database at =%APPDATA%\ores.qt\connections.db=.
 
 If =connections.db= is missing when ORE Studio starts, it creates a new
-empty one — so the Connection Manager simply opens with no entries.
+empty one — so the Connection Browser simply opens with no entries.
 
 *** Backing up and restoring your connections
 
@@ -300,7 +292,7 @@ Once you have at least one connection configured, you can log in.
 
 *** Selecting the active connection
 
-In the Connection Manager, select the connection you want to use and
+In the Connection Browser, select the connection you want to use and
 click *Set as active* (or double-click it). The selected connection
 becomes the target for the *Connect* button in the main toolbar. The
 status bar at the bottom of the main window shows the name of the active
@@ -316,7 +308,11 @@ With an active connection selected, click *Connect*. ORE Studio
 attempts to reach the backend. If the backend is reachable, the /Login/
 dialog appears.
 
-#+caption[The login dialog]: The login dialog. Below the credentials it shows the connection /Label/, a /Quick Connect/ selector, and the /Server/, /Port/ and /Namespace/ the login will target; the footer carries the /Register/ link and the build version.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The login dialog. Below the credentials it shows /Show password/, /Remember me/, and /Log in to default party/ (ticked by default); further down, the connection /Label/, a /Quick Connect/ selector, and the /Server/, /Port/ and /Namespace/ the login will target; the footer carries the /Register/ link and the build version.
+# Capture: open the login dialog for an account with more than one party, so
+# "Log in to default party" is visible alongside Show password/Remember me.
+# Save as login_dialog.png (overwrite the existing file, which predates this
+# checkbox).
 [[proj:assets/images/login_dialog.png]]
 
 Enter your *username* and *password* and click *Login*. Tick /Remember
@@ -325,6 +321,11 @@ authenticates against the backend's user database. On success the dialog
 closes and the main window transitions to the /connected/ state: the
 workspace panels become active, the menu bar is fully enabled, and the
 status bar shows your username and the connected backend name.
+
+If your account spans more than one party, *Log in to default party*
+(ticked by default) skips the party-selection step and logs you
+straight in to the party configured as your account's default. Untick
+it if you want to choose the party explicitly on this login instead.
 
 The fields below the credentials describe /which/ backend you are logging
 in to:
@@ -441,8 +442,7 @@ default account]]).
 Account registration currently fails with =Account creation failed: NATS
 connect failed: SSL Error= — the registration path's NATS/TLS connection
 does not succeed. Until this is fixed, ask an administrator to create your
-account. The fix is tracked in the story /Fix account registration NATS
-SSL error/.
+account. The fix is tracked in [[id:5B7C4B18-3CF2-4546-A73E-95F46228DBD2][Fix account registration NATS SSL error]].
 #+end_note
 
 ** Connection status and reconnection
@@ -457,7 +457,7 @@ ORE Studio does not yet reliably detect a backend that drops /while you are
 logged in/. If the messaging server (NATS) or the services behind it are stopped
 mid-session, the client may keep looking connected until your next action fails
 or hangs. Detecting the drop and showing a clear connection-lost state is
-planned work, tracked in the story /Detect and report NATS disconnection/.
+planned work, tracked in [[id:CC7CEDA1-A3F1-4E4E-BDE9-5DAF0D5BCD23][Detect and report NATS disconnection]].
 #+end_note
 
 ** The status bar
@@ -472,8 +472,8 @@ visible regardless of what is open in the workspace.
 The status bar is divided into zones from left to right:
 
 - *Connection name* — the name of the active connection as entered in
-  the Connection Manager (e.g. "Local dev"). Clicking this zone opens
-  the Connection Manager directly.
+  the Connection Browser (e.g. "Local dev"). Clicking this zone opens
+  the Connection Browser directly.
 - *Environment badge* — the coloured environment label (e.g.
   =Production= in red) if one is assigned to the active connection.
   Absent when no environment is set. This is the most prominent safety
@@ -541,6 +541,12 @@ This is /not/ a light/dark theme; it is purely a per-window marker.
 ores --instance-name "Local dev" --instance-color 2196F3
 #+end_src
 
+=--instance-name= does more than label the window: it also sets the
+login dialog's /Label/ field on start-up, pre-filtering /Quick
+Connect/ down to just that label's connections instead of showing
+every saved connection across every environment — see [[*Filtering Quick Connect with labels][Filtering Quick
+Connect with labels]] above.
+
 The colour and the name are independent: the colour is only a visual
 marker, and the name is what identifies the instance. If you launch via
 =compass client start=, its =--colour red|green|blue|<hex>=
@@ -568,7 +574,7 @@ configuration under version control for team-shared settings.
 
 *** Selecting a connection at startup
 
-To bypass the Connection Manager and connect immediately to a named
+To bypass the Connection Browser and connect immediately to a named
 connection:
 
 #+begin_src sh
@@ -577,7 +583,7 @@ ores --connection "Local dev"
 
 ORE Studio will start, set the named connection as active, and open the
 login dialog automatically. The connection name must match exactly
-(case-sensitive) a saved entry in the Connection Manager.
+(case-sensitive) a saved entry in the Connection Browser.
 
 *** Logging and diagnostics
 
@@ -659,7 +665,7 @@ starting the application, defining the backends it may talk to,
 authenticating against one, and reading the session's state in turn, and
 it has traced exactly that path. It began at the disconnected main
 window, where nothing but the Connect and Connections actions is
-available, and used the Connection Manager to build up the set of known
+available, and used the Connection Browser to build up the set of known
 backends — adding and editing entries, organising them into folders,
 sealing their credentials behind a master password, and grouping them by
 environment and tag, all held in a single local store that travels with a

@@ -7,43 +7,139 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-party-manual-chapter
+#+pr: 1602
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a Parties chapter to the user manual, documenting the party
+entity's hierarchy rule and its Qt UI (list window, General,
+Identifiers, Contact Information, Hierarchy, and Provenance tabs) in
+the same style as the existing reference-data chapters.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Nothing. |
+| Waiting on   | Screenshots (tracked as outstanding, not blocking). |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                              |
 
 * Acceptance
 
--
+- A new =chapter_8_parties.org= exists under =doc/manual/user_guide/=,
+  wired into =user_manual.org='s table of contents after the Books
+  chapter.
+- The chapter explains what a party is, the single-root-per-tenant
+  hierarchy rule, and why the Parent Party combo in the Create/Edit
+  dialog is required rather than optional.
+- The chapter documents the Parties window and all five Party Details
+  tabs (General, Identifiers, Contact Information, Hierarchy,
+  Provenance), following the structure established by
+  =chapter_7_books.org= and =chapter_6b_business_centres.org=.
+- Cross-references to Reference Data, Currencies, Business Centres,
+  Standard Financial Identifiers, and Temporal Composite Entity
+  Versioning are in place.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modelled the chapter on the two closest existing precedents:
+=chapter_7_books.org= (a composite/hierarchical entity, for the
+overall shape — Overview, concept section(s), list window, detail
+dialog with tabs, editing/deleting/history, Conclusion, See also) and
+=chapter_6b_business_centres.org= (a shorter reference-data chapter,
+for tone and the flagged-combo/Change-Reason-Required
+cross-reference pattern). Read =ores.refdata.party.org='s Detail
+fields table and the =party_identifier=/=party_contact_information=
+models directly to get field lists, combo semantics (Parent Party
+required, Business Center flagged, Country Code flagged-and-optional)
+and enum values (identifier schemes, contact types) right, rather
+than inferring them from the UI alone. Confirmed no dedicated
+domain-knowledge hub doc exists yet for Party (unlike Book's
+=book.org=), so the chapter's "See also" links to Reference Data,
+Currencies, Business Centres, Standard Financial Identifiers, and
+Temporal Composite Entity Versioning instead. Screenshots are left as
+placeholders (=#+caption= + image link, no accompanying capture
+note/todo) since no running client capture was taken as part of this
+task — flagged in Status as outstanding, not blocking, matching how
+=chapter_7_books.org= itself still carries "[SCREENSHOT OUTDATED]"
+markers.
 
 * Notes
+
+- Counterparty and party_status get their own, separate manual-chapter
+  tasks on this story; this task covers only the Party entity.
+- All 7 screenshots captured, cropped to just the dialog/window (no QA
+  Validation Runner chrome in frame — see [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][how do I capture manual
+  screenshots?]]), and committed under
+  =doc/manual/user_guide/assets/images/=.
+- Real bugs found and fixed while running the screenshot scenario
+  (not pre-existing acceptance criteria, but directly blocking it):
+  - *Missing party history provider*: =ores.refdata.core/src/messaging/registrar.cpp=
+    had no =register_history_provider("ores.refdata.party", ...)= (nor
+    =counterparty=) entry, and =party_history_field_mapper.hpp/.cpp=
+    didn't exist at all (=counterparty='s did, confirmed zero-diff on
+    regen). Regenerated the missing presentation files via
+    =compass codegen entity generate party --address ores.cpp.presentation=
+    and hand-added both entities' registrar wiring (this aggregator
+    file is hand-maintained, not itself codegen'd) alongside their
+    =#include=s, matching every other refdata entity's pattern.
+  - *party_type badge colour collisions*: =Internal=/=Corporate= both
+    mapped to the same teal (=#14b8a6=), and =Bank=/=CorporateGroup=
+    both mapped to the same blue (=#3b82f6=), in
+    =projects/ores.sql/populate/dq/dq_badge_system_populate.sql=.
+    Remapped =Corporate= → =asset_class_bond= and =CorporateGroup= →
+    =account_type_algorithm= (both otherwise-unused-by-party_type
+    colours); applied live via the bitemporal close-old/insert-new
+    pattern (not a raw =UPDATE=) so existing rows keep proper history.
+  - *Stale generator-test expectations*: =party_contact_information_generator_produces_valid_instance=
+    and its counterparty equivalent in
+    =ores.refdata/api/tests/generators_tests.cpp= asserted
+    =version == 1= / =change_reason_code == "system.new"=, but the
+    generators (confirmed zero-diff against current codegen templates
+    via =compass codegen entity generate ... --diff=) correctly
+    produce =version == 0= / =\"system.test\"=. Fixed the test
+    expectations, not the generators.
+- Review round (chapter content, not code): converted the inline
+  =http://www.fpml.org/coding-scheme/business-center= URL in
+  =chapter_6b_business_centres.org= into a footnote using =\url{}=
+  and added =\usepackage{url}= to =user_manual.org='s LaTeX preamble;
+  audited the rest of the manual and found no other inline-URL-clutter
+  offenders (chapter_1's URLs are already footnoted; every other
+  manual URL is already a proper =[[url][label]]= "See also" link, not
+  clutter). Added a Tenants cross-link and rewrote "What is a Party?"
+  / "The party hierarchy" to (a) not duplicate the Tenants chapter's
+  house/counterparty/system-party model, just point at it; (b) add
+  the legal-entity-identification domain framing (LEI/GLEIF, linking
+  [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]]); (c) fix a real contradiction found
+  against the DB (confirmed live: BARCLAYS PLC's own =parent_party_id=
+  is genuinely null, i.e. the house root, not the system party as a
+  screenshot misleadingly suggested via the known pre-existing
+  QComboBox auto-select-index-0 bug) — a tenant has *two* possible
+  parentless parties (the system party and one operational house
+  root), not one, and the chapter previously only described one; (d)
+  drop the "through the Qt UI" qualifier on required-parent-on-create,
+  since the shell's =provision party= command can also create parties
+  (Conclusion's "shell access not yet implemented" caveat corrected to
+  scope that to general-purpose CRUD commands, not the existing
+  provisioning-level command).
+- Filed [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history
+  dialog screenshots]] to fix an unrelated gap surfaced during review:
+  the regulatory book type combo screenshot in =chapter_7_books.org=
+  was never captured, and the History dialogs in
+  =chapter_6_countries.org=/=chapter_5_currencies.org=/=chapter_7_books.org=/=chapter_6b_business_centres.org=
+  likely predate the current All Fields/Only Changes toggle UI.
 
 * Test Scenarios
 
@@ -54,18 +150,41 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:00832CCC-F7A4-49FB-9041-BC35978B2605][Capture party manual chapter screenshots]] | PASSED | All 8 steps passed; also surfaced and drove the fix for the missing party history provider registration (real bug, see Notes). |
+| [[id:510B6314-197D-482B-A3E5-ABA0A2E90779][Recapture party_details_hierarchy.png with a non-root party]] | PASSED | Redo of one screenshot on a non-root party so both ancestors and descendants are visible. |
+| [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history dialog screenshots]] | PASSED | All 9 steps passed; unrelated gap fix surfaced during review, spanning Books/Countries/Currencies/Business Centres chapters. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1602][#1602]] | [docs] Write party manual chapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | counterparty_contact_information generator test was not actually fixed (still asserted version==1/"system.new") | =projects/ores.refdata/api/tests/generators_tests.cpp= | Fixed | Mirrored the party-side fix: version==0, change_reason_code=="system.test", matching the actual generator output. |
+| 2 | Conclusion's tab recap omits Provenance (Overview correctly lists all five) | =doc/manual/user_guide/chapter_8_parties.org= | Fixed | Added Provenance to the Conclusion's tab list. |
+| 3 | Three party_type badge colours (HedgeFund/Corporate/CentralBank) sit in the same violet/indigo family — technically distinct hex, may be hard to tell apart at a glance | =projects/ores.sql/populate/dq/dq_badge_system_populate.sql= | Declined | Nit-level per reviewer's own note; the literal duplicate-hex bug this PR fixes is resolved, and re-tuning hue distinctiveness across all 8 codes is a separate, broader design pass. |
 
 * Result
+
+Added =doc/manual/user_guide/chapter_8_parties.org= and wired it into
+=user_manual.org= after the Books chapter. The chapter covers what a
+party is, the single-root-per-tenant hierarchy rule and why the
+Parent Party combo is required, the Parties window, and all five
+Party Details tabs (General, Identifiers, Contact Information,
+Hierarchy, Provenance), plus editing/deleting/history and a
+Conclusion naming the still-missing shell/CLI access and the
+not-yet-written Counterparty chapter. All 7 screenshots captured
+against a live Barclays Plc (GLEIF) environment, cropped to the
+dialog/window, and wired in. Along the way, running the screenshot
+scenario surfaced and drove the fix for a real bug (party/counterparty
+had no history provider registered, so History always failed) plus a
+party_type badge colour-collision fix and two stale generator-test
+assertions — see =* Notes= for detail. A review round also fixed URL
+clutter (footnoted), added a Tenants cross-link and legal-entity
+identification framing (inlined, not linked out, per feedback) to
+chapter_8_parties.org, and captured/refreshed 9 unrelated Books and
+History-dialog screenshots across four other chapters.

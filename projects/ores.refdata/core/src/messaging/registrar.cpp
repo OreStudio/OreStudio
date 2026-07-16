@@ -144,6 +144,7 @@
 #include "ores.refdata.core/presentation/calendar_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/cds_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/contact_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/counterparty_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/country_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/crm_driver_pair_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/crm_enabled_derived_pair_history_field_mapper.hpp"
@@ -162,6 +163,7 @@
 #include "ores.refdata.core/presentation/monetary_nature_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/party_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/party_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/payment_frequency_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/purpose_type_history_field_mapper.hpp"
@@ -184,6 +186,7 @@
 #include "ores.refdata.core/service/calendar_service.hpp"
 #include "ores.refdata.core/service/cds_convention_service.hpp"
 #include "ores.refdata.core/service/contact_type_service.hpp"
+#include "ores.refdata.core/service/counterparty_service.hpp"
 #include "ores.refdata.core/service/country_service.hpp"
 #include "ores.refdata.core/service/crm_driver_pair_service.hpp"
 #include "ores.refdata.core/service/crm_enabled_derived_pair_service.hpp"
@@ -202,6 +205,7 @@
 #include "ores.refdata.core/service/monetary_nature_service.hpp"
 #include "ores.refdata.core/service/ois_convention_service.hpp"
 #include "ores.refdata.core/service/overnight_index_convention_service.hpp"
+#include "ores.refdata.core/service/party_service.hpp"
 #include "ores.refdata.core/service/party_type_service.hpp"
 #include "ores.refdata.core/service/payment_frequency_service.hpp"
 #include "ores.refdata.core/service/purpose_type_service.hpp"
@@ -502,6 +506,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             });
 
         hist_registry.register_history_provider(
+            "ores.refdata.counterparty",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::counterparty_service svc(scoped_ctx);
+                auto versions = svc.get_counterparty_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_counterparty_fields);
+            });
+
+        hist_registry.register_history_provider(
             "ores.refdata.cds_convention",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
                 service::cds_convention_service svc(scoped_ctx);
@@ -607,6 +620,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_overnight_index_convention_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_overnight_index_convention_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.party",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::party_service svc(scoped_ctx);
+                auto versions = svc.get_party_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_party_fields);
             });
 
         hist_registry.register_history_provider(

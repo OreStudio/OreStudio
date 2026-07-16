@@ -231,6 +231,7 @@ or to assemble a custom flow. Each =provision= phase prints which of
 these it is performing, so a failed run tells you where to pick up by
 hand.
 
+#+attr_latex: :environment tabularx :width \linewidth :align p{5.2cm}X
 | Command | Purpose |
 |---------+---------|
 | =bundles list= | The reference data catalogues available for publication. |

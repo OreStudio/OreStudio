@@ -41,23 +41,28 @@ was produced. The [[*Conclusion][Conclusion]] draws these steps together.
 ** What is ORE Studio?
 
 ORE Studio is a desktop application for exploring, configuring, and running
-quantitative finance calculations. It provides a graphical environment built
-around the /Open Source Risk Engine/ (ORE)[fn:ore_home][fn:ore_src], a
-widely-used open-source library for pricing derivatives and measuring
-financial risk, which is itself built on QuantLib[fn:quantlib_home][fn:quantlib_src].
-ORE Studio handles the data — storing trades,
-market data, and model configurations, and presenting the results — while ORE
-and QuantLib provide the mathematics. You cannot understand ORE Studio without
-understanding these two engines beneath it, so it is worth being precise about
-what each one is and where ORE Studio sits relative to them.
+quantitative finance calculations, backed by a set of headless services and a
+database rather than doing any of that work itself. The Qt client you interact
+with is a thin presentation layer: it renders what you see and forwards every
+action to the appropriate backend service, which does the actual work and
+persists the result. It provides a graphical environment built around the
+/Open Source Risk Engine/ (ORE)[fn:ore_home][fn:ore_src], a widely-used
+open-source library for pricing derivatives and measuring financial risk,
+which is itself built on QuantLib[fn:quantlib_home][fn:quantlib_src]. ORE
+Studio handles the data — storing trades, market data, and model
+configurations, and presenting the results — while ORE and QuantLib provide
+the mathematics. You cannot understand ORE Studio without understanding these
+two engines beneath it, so it is worth being precise about what each one is
+and where ORE Studio sits relative to them.
 
-#+caption[ORE Studio v0.0.17]: ORE Studio v0.0.17 — the main workspace showing the instrument and trade management views.
-[[proj:assets/images/ore_studio-v0.0.17.png]]
+#+caption[ORE Studio v0.0.22]: ORE Studio v0.0.22 — the main workspace showing the instrument and trade management views.
+[[proj:assets/images/ore_studio-v0.0.22.png]]
 
 *** The Open Source Risk Engine
 
 The /Open Source Risk Engine/ is a C++ library for pricing and risk analytics
-maintained by Acadia[fn:acadia]. It builds on QuantLib and extends it with
+maintained by Acadia, an LSEG (London Stock Exchange Group)
+business[fn:acadia]. It builds on QuantLib and extends it with
 industry-grade valuation adjustments (XVA), sensitivities, regulatory
 scenarios, and a broad set of financial instruments, together with interfaces
 for trade and market data and system configuration via API and XML. ORE Studio
@@ -86,7 +91,7 @@ limitations as-is.
 [fn:ore_src] Open Source Risk Engine, source: https://github.com/OpenSourceRisk/Engine.
 [fn:quantlib_home] QuantLib, project home: https://www.quantlib.org/.
 [fn:quantlib_src] QuantLib, source: https://github.com/lballabio/QuantLib.
-[fn:acadia] Acadia, which maintains ORE: https://acadia.inc/.
+[fn:acadia] Acadia, an LSEG business, which maintains ORE: https://acadia.inc/.
 
 ** Audience
 
@@ -134,10 +139,13 @@ saved, revisited, and reused across sessions.
 
 ORE Studio is a learning and exploration environment, not a production trading
 or risk system. It is independent of and unaffiliated with ORE, QuantLib, or
-any financial institution. All quantitative mathematics are provided by ORE and
-QuantLib; ORE Studio is the surface through which they are configured and their
-results explored. Users who need production-grade performance, real-time market
-data feeds, or regulatory reporting should look to enterprise risk platforms.
+any financial institution. For the key valuation cases, the quantitative
+mathematics are provided by ORE and QuantLib; ORE Studio is the surface
+through which they are configured and their results explored. ORE Studio does
+reimplement a small subset of QuantLib for its own internal purposes, but that
+reimplementation is not used by the engine's valuation code. Users who need
+production-grade performance, real-time market data feeds, or regulatory
+reporting should look to enterprise risk platforms.
 
 ** How This Manual Is Organised
 

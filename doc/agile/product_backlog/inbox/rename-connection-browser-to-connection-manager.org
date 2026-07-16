@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5EF281FD-E034-4688-B70D-4181A6F4DB88
+:END:
+#+title: Consider renaming Connection Browser to Connection Manager
+#+description: The Qt window (ConnectionBrowserMdiWindow, titled "Connection Browser") actively manages connections (add/edit/delete/organise/secure), which arguably makes "Connection Manager" the more accurate name; the user manual was made consistent with the current code name in the meantime.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ui:naming:connections:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

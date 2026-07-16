@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 60E39BDA-A2F3-4A1D-BEF0-36D9C3827593
+:END:
+#+title: Test Scenario: Recapture Rounding Types screenshot (legacy dev-DB duplicate-tenant artifact)
+#+description: Retake the Rounding Types list window screenshot against the current clean environment; the previous capture showed 255 duplicate rows accumulated from a long-lived dev database, not a live bug.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:currencies:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: RoundingTypeMdiWindow
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | RoundingTypeMdiWindow                   |
+| Clients       |                                          |
+| State         | PENDING                                 |
+
+* Steps
+
+Log in against =prime_origin= as =tenant_admin@barclays_plc= /
+=Secure-Password-123= and select *BARCLAYS PLC*.
+
+** Capture rounding_types_main_window.png
+
+Open /Reference Data → Currency Codes → Rounding Types/. Confirm the
+list shows a small, sane number of rows (the current environment has
+only 2 tenants, so at most ~10 rows) rather than the 255-row
+duplicate-tenant artifact from the earlier long-lived dev database.
+Screenshot the full window. Save as =rounding_types_main_window.png=
+(repo-root =assets/images/=, overwriting the existing file).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_rounding-types-screenshot-redo_step1_20260716_104353.png]] |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T09:43:55Z |
+| Branch        | feature/write-party-manual-chapter |
+| Commit        | c6d376ee9 |
+| Worktree      | prime_origin |
+
+* Notes

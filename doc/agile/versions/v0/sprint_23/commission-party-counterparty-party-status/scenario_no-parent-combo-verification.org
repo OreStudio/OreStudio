@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:568153AE-7709-45CD-8807-63649
 | Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
 | Target dialog | CounterpartyDetailDialog / PartyDetailDialog |
 | Clients       |                                          |
-| State         | PENDING                                 |
+| State         | PASSED                                  |
 
 * Steps
 
@@ -73,7 +73,7 @@ this is the bug the fix addresses. Close without changes.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Edit an existing standalone counterparty from GLEIF data
 
@@ -105,16 +105,16 @@ or corrupting the record.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-16T15:30:46Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T17:15:00Z |
 | Branch        | feature/write-counterparty-manual-chapter |
-| Commit        | ef107498b |
+| Commit        | 095a79c77 |
 | Worktree      | prime_origin |
 
 * Notes

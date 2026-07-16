@@ -292,10 +292,8 @@ are organised into categories accessible from
 #+caption[Change Reason Categories]: The Change Reason Categories window showing the three built-in category groups and their regulatory alignment.
 [[proj:assets/images/change_reasons_categories_main_window.png]]
 
-#+begin_note
-Screenshot pending: the Change Reasons list window
-(Reference Data → Audit Trail → Change Reasons).
-#+end_note
+#+caption[The Change Reasons list window]: The Change Reasons list window (Reference Data → Audit Trail → Change Reasons), showing change reason codes across the built-in category groups.
+[[proj:assets/images/change_reasons_main_window.png]]
 
 #+caption[Change Reason Category detail]: The detail dialog for the =trade= category, showing its regulatory description.
 [[proj:assets/images/change_reasons_categories_details.png]]

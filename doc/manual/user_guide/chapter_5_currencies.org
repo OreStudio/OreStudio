@@ -30,8 +30,10 @@ lifecycle, and the programmatic equivalents — and it proceeds in that
 order. It begins with the conceptual foundation in [[*Money, currency, and cash][Money, currency,
 and cash]], distinguishing three terms routinely conflated in casual
 usage; this framing is what makes the rest of the chapter's choices
-legible, not just a list of fields. From there it establishes identity
-in [[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
+legible, not just a list of fields. It then turns to a currency's own
+birth-to-retirement [[*Currency lifecycle][Currency lifecycle]], background the chapter
+draws on without OreStudio exposing it as a field. From there it
+establishes identity in [[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
 currency and the gaps that motivate ORE Studio's extensions. It then
 surveys the body of records in [[*The Currencies window][The Currencies window]] before
 narrowing to a single record in [[*Currency Details][Currency Details]] and its General,
@@ -98,15 +100,7 @@ standard, and cryptocurrencies, which rely on informal,
 community-driven symbols such as =BTC= or =XBT= for Bitcoin rather
 than an assigned ISO code, are no less currencies for lacking one. A
 currency also has a lifecycle of its own, distinct from the lifecycle
-of any individual note or coin: it is born when created and put into
-circulation, lives while in general use, and dies when eventually
-withdrawn, though records of transactions conducted during its life
-must still be retained long after that withdrawal. Redenominations,
-currency replacements, and monetary unions forming or dissolving
-occur more often than a system designer might expect, and rarely
-afford the luxury of careful advance planning; a system not built to
-anticipate such events can find itself significantly disrupted when
-one eventually occurs.
+of any individual note or coin — see [[*Currency lifecycle][Currency lifecycle]] below.
 
 Cash narrows the concept furthest of the three. It is money in the
 physical form of banknotes and coins, or, in the bookkeeping sense
@@ -131,6 +125,37 @@ not attempt to model money in the abstract, nor the accounting
 concept of cash; those notions are drawn upon, where relevant, by the
 trading and booking chapters that build upon the currency reference
 data documented here.
+
+** Currency lifecycle
+
+A currency is born when created and put into circulation, lives
+while in general use, and dies when eventually withdrawn — whether
+replaced by a successor currency, absorbed into a monetary union, or
+simply discontinued — though records of transactions conducted
+during its life must still be retained long after that withdrawal.
+This is background the rest of the chapter builds on, not a field
+OreStudio exposes directly: unlike [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][a book]], a currency record carries
+no =status= column of its own; a withdrawn currency simply stops
+being referenced in new records; its history remains intact under
+the same bitemporal audit trail as any other change.
+
+#+caption[The currency lifecycle]: Currency lifecycle: creation, circulation (looping through redenomination and monetary-union events), and eventual withdrawal.
+[[proj:doc/knowledge/domain/currency_lifecycle.png]]
+
+The same birth-life-death shape recurs at three nested levels: the
+currency itself, its individual denominations (a given note or coin
+value can be introduced or discontinued independently of the
+currency surviving), and individual physical instances. Recognising
+the pattern as fractal is what keeps "currency lifecycle" from being
+mistaken for a single, currency-wide, all-or-nothing event.
+
+Redenominations, currency replacements, and monetary unions forming
+or dissolving occur more often than a system designer might expect,
+and rarely afford the luxury of careful advance planning; a system
+not built to anticipate such events — positions, reference data, and
+historical records all still keyed to a code that has just been
+withdrawn or redefined — can find itself significantly disrupted
+when one eventually occurs.
 
 ** ISO 4217 and its limitations
 
@@ -510,7 +535,8 @@ ores.cli refdata currencies export --tenant "$ORES_TENANT" --output currencies.j
 The chapter set out to show that managing a currency well follows from
 understanding its identity, the extensions that make it usable, its
 interface, and its programmatic equivalents in turn, and it has traced
-exactly that path. ISO 4217 supplies the standard identity — code,
+exactly that path. Its own birth-to-retirement lifecycle set the
+background the rest of the chapter operates against. ISO 4217 supplies the standard identity — code,
 numeric code, name, and minor units — while ORE Studio's extensions cover
 what the standard leaves out: market tiers, monetary natures for digital
 assets, display formatting, and rounding conventions. Building on that,
@@ -524,6 +550,7 @@ template: subsequent entity chapters follow this same progression.
 
 ** See also
 
+- [[id:6AC99797-D97B-463C-9351-4946DC80D91C][Currency Lifecycle]] — the domain-knowledge note this chapter's Currency lifecycle section is drawn from.
 - [[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217 Currency Codes]] — the international standard for currency identification.
 - [[https://www.six-group.com/en/products-services/financial-information/data-standards.html][SIX Financial Information]] — the ISO 4217 maintenance agency.
 - [[https://www.msci.com/our-solutions/indexes/market-classification][MSCI Market Classification]] — framework for developed, emerging, and frontier market designations.

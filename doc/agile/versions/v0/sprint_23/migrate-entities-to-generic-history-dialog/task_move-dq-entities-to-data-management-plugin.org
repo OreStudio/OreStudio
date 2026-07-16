@@ -116,9 +116,13 @@ stale comment in =MainWindow.cpp=. Updated
 (=ores.qt.refdata=, =ores.qt.trading=, =ores.qt.application=,
 =ores.qt.workspace=, plus the two system-level architecture docs).
 
-QA scenario 0161889E PASSED: Data Management menu has all submenus
-and every moved window opens correctly from its new home; Reference
-Data no longer shows the moved entities.
+QA scenario 0161889E: Data Management menu has all submenus and
+every moved window opens correctly from its new home; Reference Data
+no longer shows the moved entities. A later re-run added a Badge
+Mappings tab check, whose step FAILed only because the environment's
+Code Domains table was empty at the time — not a defect in the move
+— leaving the scenario's overall status FAILED pending a retest with
+seeded data.
 
 * Notes
 
@@ -138,7 +142,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | PASSED | All steps passed on first run. |
+| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | FAILED | All steps passed except the Badge Mappings tab check, which FAILed due to an empty Code Domains table in the test environment (data gap, not a defect). |
 
 * PRs
 
@@ -150,7 +154,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate backlog table row for EE0459FE | story.org | Accepted | Removed the duplicate row. |
+| 2 | Stale DataTransferPlugin name/contributor list | qt_plugin_architecture.org | Accepted | Renamed to DataManagementPlugin; dropped RefdataPlugin from data_management_menu contributors. |
+| 3 | Leftover ores.dq.api.lib link in ores.qt.refdata | CMakeLists.txt | Accepted | Removed; refdata no longer references ores.dq. |
+| 4 | PR description over-claims a BadgeCache change not in this diff | PR body | Accepted | Corrected PR description; that change belongs to PR #1599. |
+| 5 | Missing rendered diagram PNG for data_management | component_overview.org | Accepted | Generated and committed ores.qt.data_management.png. |
+| 6 | Task doc still says QA scenario PASSED after it was later amended to FAILED | task doc | Accepted | Updated Plan/Result prose and Test Scenarios table to reflect the FAILED status and data-gap caveat. |
+| 7 | New Datasets menu item is a scope addition beyond a pure move | DataManagementPlugin.cpp | Declined | Intentional fix for a pre-existing dead controller (DatasetController had no menu entry); low-risk, already documented in the task Result. |
 
 * Result
 
@@ -160,6 +170,7 @@ controllers, dialogs, MDI windows, client models, and the Data
 Librarian window there from =RefdataPlugin=, correcting the
 component-ownership mismatch. Fixed a genuine dead-code bug found
 along the way (=DatasetController= had no menu entry). QA scenario
-0161889E PASSED end-to-end. [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]] can now proceed with these
-entities' actual HistoryDialog migration against their corrected
-home.
+0161889E covered every moved menu and window; its one FAIL (Badge
+Mappings tab, step 8) was an empty-database data gap rather than a
+defect. [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]] can now proceed with these entities' actual
+HistoryDialog migration against their corrected home.

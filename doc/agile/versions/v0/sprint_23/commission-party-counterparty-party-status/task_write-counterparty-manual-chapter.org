@@ -8,7 +8,7 @@
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
 #+branch: feature/write-counterparty-manual-chapter
-#+pr:
+#+pr: 1605
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1605][#1605]] | [qt,docs] Write counterparty manual chapter; add No Parent combo entry |
 
 * Review
 

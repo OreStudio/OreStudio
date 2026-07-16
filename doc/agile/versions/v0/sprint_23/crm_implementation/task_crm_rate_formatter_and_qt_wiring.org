@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:7F8A32C1-98D8-4CF7-9927-F8A62C3C3626][Verify CRM rate formatter and Qt matrix wiring]] | FAILED (fix landed, re-run pending) | First run caught a real bug: reversed-convention cells (e.g. JPY/AUD, convention only stored as AUD/JPY) collapsed to a flat "0.01" -- decimal_places doesn't transfer across a reciprocal. Fixed by deriving reciprocal decimal_places that preserve significant figures instead of reusing the convention's own verbatim, covered by new Catch2 cases; scenario itself not yet re-run against a live client. |
 
 * PRs
 
@@ -150,3 +150,26 @@ direct/reverse pair-code lookup. 10 new Catch2 cases (precision
 rounding, default-precision fallback, fresh/inverted/stale/
 unavailable tooltips, up/down/none/negligible delta text); local
 build clean, =ores.marketdata.client.tests= 100% passed.
+
+Follow-up commits added =crm_client= (thin authenticated facade over
+=marketdata.v1.crm.rates=) and =crm_rate_display_service= (facade over
+=crm_client= + =currency_pair_convention_cache= + =crm_rate_formatter=,
+one =rates()= call per reload instead of the window driving each
+piece itself), and refined the formatter's request shape to a batch
+=crm_rate_format_request= list.
+
+Manual QA (=Test Scenarios= above) caught a real bug the unit tests
+hadn't covered: =currency_pair_convention= is 1:1 per pair-code
+direction (matching real FX market convention -- only one direction
+is ever quoted/stored), so when the display service falls back to
+the *reverse* direction's convention, its =decimal_places=/
+=tick_size= don't transfer to the reciprocal's magnitude. Fixed by
+adding =crm_rate_format_request::convention_reversed= and having
+=format_rate= derive decimal_places that preserve the convention's
+significant figures across the inversion
+(=order(1/rate) + 1 + decimal_places_direct - 1 - order(rate)=)
+instead of reusing them verbatim, and skipping tick-snapping
+(calibrated for the other direction) for reversed cells. 4 new
+Catch2 cases; =ores.marketdata.client.tests= 39/39 passed after the
+fix. Scenario step 3 not yet re-run against a live client since the
+fix landed -- see PR for the rebuild/re-verify follow-up.

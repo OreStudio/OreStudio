@@ -8,7 +8,7 @@
 #+filetags: :codegen:physical-space:cleanup:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/retire-facet-catalogue-monolith
-#+pr:
+#+pr: 1604
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -131,7 +131,7 @@ in the graph before removing the source.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1604][#1604]] | [codegen] Retire facet_catalogue.org and legacy literate facet/group docs |
 
 * Review
 

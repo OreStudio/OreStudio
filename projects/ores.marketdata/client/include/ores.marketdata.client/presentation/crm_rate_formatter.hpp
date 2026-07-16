@@ -22,8 +22,10 @@
 
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::client::presentation {
 
@@ -39,26 +41,37 @@ struct crm_rate_display {
 };
 
 /**
- * @brief Stateless mapper from a raw crm_rate_item to display-ready strings.
- * No NATS or Qt/Wt dependency -- the caller resolves the convention (via
- * ores.refdata.client's currency_pair_convention_cache, trying both
- * pair-code directions since a convention may only be stored in one) and
- * passes its decimal_places down.
+ * @brief One crm_rate_item paired with its already-resolved convention
+ * (std::nullopt when none is available for either pair-code direction),
+ * ready to hand to crm_rate_formatter::format() in a batch.
+ */
+struct crm_rate_format_request {
+    const ores::marketdata::messaging::crm_rate_item* item;
+    std::optional<ores::refdata::domain::currency_pair_convention> convention;
+};
+
+/**
+ * @brief Stateless, batch mapper from raw CRM rates + resolved conventions
+ * to display-ready strings. No NATS or Qt/Wt dependency. Batched rather
+ * than one call per cell -- a CRM matrix can have hundreds of cells per
+ * reload, and formatting them as a single pass avoids per-cell call
+ * overhead and lets the output vector be sized once.
  */
 class ORES_MARKETDATA_CLIENT_EXPORT crm_rate_formatter final {
 public:
     /**
-     * @brief Formats one CRM rate. decimal_places comes from the resolved
-     * currency_pair_convention; pass std::nullopt when no convention is
-     * available for either direction of the pair, in which case a fixed
-     * default precision is used.
+     * @brief Formats a batch of CRM rates, one crm_rate_display per input
+     * request, in the same order. Each rate is snapped to its convention's
+     * nearest tick (tick_size * pip_factor) before being rendered at
+     * decimal_places precision; a request with no convention is shown
+     * unsnapped at a fixed default precision.
      */
-    static crm_rate_display
-    format(const ores::marketdata::messaging::crm_rate_item& item,
-        std::optional<int> decimal_places);
+    static std::vector<crm_rate_display>
+    format(const std::vector<crm_rate_format_request>& requests);
 
 private:
-    static std::string format_rate(double rate, int decimal_places);
+    static std::string format_rate(double rate,
+        const std::optional<ores::refdata::domain::currency_pair_convention>& convention);
 };
 
 }

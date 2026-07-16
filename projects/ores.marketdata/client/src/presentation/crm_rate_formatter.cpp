@@ -18,9 +18,8 @@
  *
  */
 #include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
+#include <charconv>
 #include <cmath>
-#include <iomanip>
-#include <sstream>
 
 namespace ores::marketdata::client::presentation {
 
@@ -29,41 +28,68 @@ namespace {
 /// Matches the pre-formatter Qt default of QString::number(rate, 'f', 5).
 constexpr int default_decimal_places = 5;
 
+/// Allocation-free fixed-precision double->string, used instead of
+/// ostringstream/iomanip -- this runs once per CRM cell per reload (up to
+/// hundreds per call), and stream construction/imbue is a real cost at
+/// that scale that to_chars avoids entirely.
+std::string to_fixed_string(double value, int precision) {
+    char buf[64];
+    const auto res =
+        std::to_chars(buf, buf + sizeof(buf), value, std::chars_format::fixed, precision);
+    return std::string(buf, res.ptr);
 }
 
-std::string crm_rate_formatter::format_rate(double rate, int decimal_places) {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(decimal_places) << rate;
-    return oss.str();
 }
 
-crm_rate_display crm_rate_formatter::format(
-    const ores::marketdata::messaging::crm_rate_item& item,
-    std::optional<int> decimal_places) {
-    crm_rate_display result;
-    result.rate_text =
-        format_rate(item.rate, decimal_places.value_or(default_decimal_places));
+std::string crm_rate_formatter::format_rate(double rate,
+    const std::optional<ores::refdata::domain::currency_pair_convention>& convention) {
+    if (!convention)
+        return to_fixed_string(rate, default_decimal_places);
 
-    if (item.status == "stale") {
-        result.tooltip_text = "Stale as of " + item.as_of;
-    } else if (item.status == "unavailable") {
-        result.tooltip_text = "Unavailable";
-    } else {
-        result.tooltip_text = item.inverted ?
-            "Computed inverse (1/rate); fresh as of " + item.as_of :
-            "Fresh as of " + item.as_of;
+    // Snap to the pair's minimum tick (tick_size is in pips; pip_factor
+    // converts pips to an absolute rate move) before rendering, rather
+    // than just truncating decimal_places -- a rate whose last digit
+    // doesn't fall on a real tick is not a value the pair can actually
+    // quote.
+    const double absolute_tick = convention->tick_size * convention->pip_factor;
+    double snapped = rate;
+    if (absolute_tick > 0.0)
+        snapped = std::round(rate / absolute_tick) * absolute_tick;
+
+    return to_fixed_string(snapped, convention->decimal_places);
+}
+
+std::vector<crm_rate_display>
+crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests) {
+    std::vector<crm_rate_display> results;
+    results.reserve(requests.size());
+
+    for (const auto& request : requests) {
+        const auto& item = *request.item;
+        crm_rate_display display;
+        display.rate_text = format_rate(item.rate, request.convention);
+
+        if (item.status == "stale") {
+            display.tooltip_text = "Stale as of " + item.as_of;
+        } else if (item.status == "unavailable") {
+            display.tooltip_text = "Unavailable";
+        } else {
+            display.tooltip_text = item.inverted ?
+                "Computed inverse (1/rate); fresh as of " + item.as_of :
+                "Fresh as of " + item.as_of;
+        }
+
+        display.change_text = "—";
+        if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
+            const auto pct = *item.delta_pct;
+            display.change_text =
+                (pct >= 0 ? "▲ +" : "▼ ") + to_fixed_string(pct, 3) + "%";
+        }
+
+        results.push_back(std::move(display));
     }
 
-    result.change_text = "—";
-    if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
-        const auto pct = *item.delta_pct;
-        std::ostringstream oss;
-        oss << (pct >= 0 ? "▲ +" : "▼ ") << std::fixed << std::setprecision(3)
-            << pct << "%";
-        result.change_text = oss.str();
-    }
-
-    return result;
+    return results;
 }
 
 }

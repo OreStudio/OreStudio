@@ -43,6 +43,8 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.nats.lib
         ores.marketdata.api.lib
+        ores.refdata.api.lib
+        ores.refdata.client.lib
     PRIVATE
         ores.logging.lib
         ores.utility.lib)

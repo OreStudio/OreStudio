@@ -20,8 +20,11 @@
 #include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
 #include <catch2/catch_test_macros.hpp>
 
+using ores::marketdata::client::presentation::crm_rate_display;
+using ores::marketdata::client::presentation::crm_rate_format_request;
 using ores::marketdata::client::presentation::crm_rate_formatter;
 namespace marketdata_msg = ores::marketdata::messaging;
+namespace refdata_domain = ores::refdata::domain;
 
 namespace {
 
@@ -37,37 +40,67 @@ marketdata_msg::crm_rate_item make_item() {
     return item;
 }
 
+refdata_domain::currency_pair_convention make_convention(
+    double pip_factor, double tick_size, int decimal_places) {
+    refdata_domain::currency_pair_convention convention;
+    convention.pair_code = "EUR/USD";
+    convention.pip_factor = pip_factor;
+    convention.tick_size = tick_size;
+    convention.decimal_places = decimal_places;
+    return convention;
 }
 
-TEST_CASE("crm_rate_formatter rounds rate to the convention's decimal_places",
+std::vector<crm_rate_display> format_one(
+    const marketdata_msg::crm_rate_item& item,
+    std::optional<refdata_domain::currency_pair_convention> convention) {
+    return crm_rate_formatter::format({crm_rate_format_request{&item, std::move(convention)}});
+}
+
+}
+
+TEST_CASE("crm_rate_formatter rounds rate to the nearest tick and decimal_places",
           "[crm_rate_formatter]") {
     auto item = make_item();
-    const auto display = crm_rate_formatter::format(item, 3);
-    REQUIRE(display.rate_text == "1.103");
+    // pip_factor 0.0001, tick_size 1 pip -> absolute tick 0.0001;
+    // 1.10285123 snaps to 1.1029 at the nearest 0.0001, shown to 3dp.
+    const auto convention = make_convention(0.0001, 1.0, 3);
+    const auto displays = format_one(item, convention);
+    REQUIRE(displays[0].rate_text == "1.103");
 }
 
 TEST_CASE("crm_rate_formatter falls back to a fixed default precision "
           "when no convention is available",
           "[crm_rate_formatter]") {
     auto item = make_item();
-    const auto display = crm_rate_formatter::format(item, std::nullopt);
-    REQUIRE(display.rate_text == "1.10285");
+    const auto displays = format_one(item, std::nullopt);
+    REQUIRE(displays[0].rate_text == "1.10285");
+}
+
+TEST_CASE("crm_rate_formatter snaps to a coarser half-pip tick",
+          "[crm_rate_formatter]") {
+    auto item = make_item();
+    item.rate = 1.10287;
+    // absolute tick = 0.5 * 0.0001 = 0.00005; nearest multiple of 0.00005
+    // to 1.10287 is 1.10285.
+    const auto convention = make_convention(0.0001, 0.5, 5);
+    const auto displays = format_one(item, convention);
+    REQUIRE(displays[0].rate_text == "1.10285");
 }
 
 TEST_CASE("crm_rate_formatter reports an inverted-pair tooltip",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.inverted = true;
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.tooltip_text ==
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].tooltip_text ==
         "Computed inverse (1/rate); fresh as of 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports a fresh, non-inverted tooltip",
           "[crm_rate_formatter]") {
     auto item = make_item();
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.tooltip_text == "Fresh as of 2026-07-16T10:00:00Z");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].tooltip_text == "Fresh as of 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports a stale tooltip and does not print a change",
@@ -75,8 +108,8 @@ TEST_CASE("crm_rate_formatter reports a stale tooltip and does not print a chang
     auto item = make_item();
     item.status = "stale";
     item.delta_pct = 1.5;
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports an unavailable tooltip",
@@ -84,37 +117,55 @@ TEST_CASE("crm_rate_formatter reports an unavailable tooltip",
     auto item = make_item();
     item.status = "unavailable";
     item.as_of = "";
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.tooltip_text == "Unavailable");
+    const auto displays = format_one(item, std::nullopt);
+    REQUIRE(displays[0].tooltip_text == "Unavailable");
 }
 
 TEST_CASE("crm_rate_formatter renders an up delta with the up glyph",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = 0.123;
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.change_text == "▲ +0.123%");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].change_text == "▲ +0.123%");
 }
 
 TEST_CASE("crm_rate_formatter renders a down delta with the down glyph",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = -0.045;
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.change_text == "▼ -0.045%");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].change_text == "▼ -0.045%");
 }
 
 TEST_CASE("crm_rate_formatter renders a placeholder when there is no delta",
           "[crm_rate_formatter]") {
     auto item = make_item();
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.change_text == "—");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].change_text == "—");
 }
 
 TEST_CASE("crm_rate_formatter renders a placeholder for a negligible delta",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = 1e-10;
-    const auto display = crm_rate_formatter::format(item, 5);
-    REQUIRE(display.change_text == "—");
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].change_text == "—");
+}
+
+TEST_CASE("crm_rate_formatter formats a batch of requests in one call, "
+          "preserving order",
+          "[crm_rate_formatter]") {
+    auto eurusd = make_item();
+    auto gbpusd = make_item();
+    gbpusd.base_currency_code = "GBP";
+    gbpusd.rate = 1.27134;
+
+    const auto displays = crm_rate_formatter::format({
+        crm_rate_format_request{&eurusd, make_convention(0.0001, 1.0, 3)},
+        crm_rate_format_request{&gbpusd, std::nullopt},
+    });
+
+    REQUIRE(displays.size() == 2);
+    REQUIRE(displays[0].rate_text == "1.103");
+    REQUIRE(displays[1].rate_text == "1.27134");
 }

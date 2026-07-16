@@ -18,8 +18,6 @@
  *
  */
 #include "ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
-#include "ores.marketdata.api/messaging/crm_protocol.hpp"
-#include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -53,7 +51,6 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace marketdata_msg = ores::marketdata::messaging;
 namespace marketdata_client = ores::marketdata::client;
 
 namespace {
@@ -69,12 +66,6 @@ QTableWidgetItem* make_dash_item() {
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     return item;
 }
-
-struct RatesResult {
-    bool success{false};
-    QString error;
-    std::vector<marketdata_msg::crm_rate_item> rates;
-};
 
 /// Parses the "YYYY-MM-DD" prefix of an ISO-8601 as_of string (e.g.
 /// "2026-07-15T09:34:00Z") into a year_month_day for market_datum::date.
@@ -142,7 +133,19 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         const auto authToken = clientManager_->currentAuthToken();
         conventionCache_ =
             std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
-                clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
+                clientManager_->nats_client(),
+                [authToken](bool /*force*/) { return authToken; });
+        crmClient_ = std::make_unique<marketdata_client::crm_client>(
+            clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
+        auto* crmClient = crmClient_.get();
+        auto conventionCache = conventionCache_;
+        displayService_ =
+            std::make_unique<marketdata_client::presentation::crm_rate_display_service>(
+                [crmClient](const std::string& party_id, const std::string& crm_name,
+                    bool inv) { return crmClient->rates(party_id, crm_name, inv); },
+                [conventionCache](const std::string& tenant_id, const std::string& key) {
+                    return conventionCache->lookup(tenant_id, key);
+                });
         // load() is a blocking NATS round trip -- run it off the UI
         // thread, but surface a failure visibly rather than only
         // logging it: reload() falls back to default formatting on a
@@ -426,19 +429,6 @@ void CrmCrossRatesMatrixMdiWindow::updateOverviewPanel(const std::string& base,
     overviewSparkline_->setValues(history_it->second);
 }
 
-std::optional<int> CrmCrossRatesMatrixMdiWindow::resolveDecimalPlaces(
-    const std::string& base, const std::string& quote) const {
-    if (!conventionCache_ || !clientManager_)
-        return std::nullopt;
-
-    const auto tenantId = clientManager_->currentTenantId();
-    if (const auto direct = conventionCache_->lookup(tenantId, base + "/" + quote))
-        return direct->decimal_places;
-    if (const auto reverse = conventionCache_->lookup(tenantId, quote + "/" + base))
-        return reverse->decimal_places;
-    return std::nullopt;
-}
-
 void CrmCrossRatesMatrixMdiWindow::reload() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit statusChanged(tr("Not connected"));
@@ -448,38 +438,22 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     reloadAction_->setEnabled(false);
     emit statusChanged(tr("Loading cross-rates matrix..."));
 
+    const auto tenant_id = clientManager_->currentTenantId();
     const auto party_id = boost::uuids::to_string(clientManager_->currentPartyId());
     const auto crm_name = crmName_.toStdString();
     QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
     const bool inverted = showInvertedButton_->isChecked();
 
-    QFuture<RatesResult> future =
-        QtConcurrent::run([self, party_id, crm_name, inverted]() -> RatesResult {
-            if (!self || !self->clientManager_)
+    using DisplayResult = marketdata_client::presentation::crm_rate_display_service::result;
+    QFuture<DisplayResult> future =
+        QtConcurrent::run([self, tenant_id, party_id, crm_name, inverted]() -> DisplayResult {
+            if (!self || !self->displayService_)
                 return {};
-
-            marketdata_msg::get_crm_rates_request req;
-            req.party_id = party_id;
-            req.crm_name = crm_name;
-            req.inverted = inverted;
-            auto resp = self->clientManager_->process_authenticated_request(req);
-
-            RatesResult r;
-            if (!resp) {
-                r.error = QStringLiteral("Failed to communicate with server");
-                return r;
-            }
-            if (!resp->success) {
-                r.error = QString::fromStdString(resp->message);
-                return r;
-            }
-            r.success = true;
-            r.rates = resp->rates;
-            return r;
+            return self->displayService_->rates(tenant_id, party_id, crm_name, inverted);
         });
 
-    auto* watcher = new QFutureWatcher<RatesResult>(this);
-    connect(watcher, &QFutureWatcher<RatesResult>::finished, this, [self, watcher]() {
+    auto* watcher = new QFutureWatcher<DisplayResult>(this);
+    connect(watcher, &QFutureWatcher<DisplayResult>::finished, this, [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
         if (!self)
@@ -488,8 +462,8 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         self->reloadAction_->setEnabled(true);
 
         if (!result.success) {
-            const QString msg =
-                result.error.isEmpty() ? tr("Failed to load cross-rates matrix") : result.error;
+            const QString msg = result.error.empty() ? tr("Failed to load cross-rates matrix") :
+                                                        QString::fromStdString(result.error);
             BOOST_LOG_SEV(lg(), error) << msg.toStdString();
             emit self->errorOccurred(msg);
             self->footerLabel_->setText(tr("DISCONNECTED"));
@@ -499,7 +473,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         // Currencies are whatever the response actually covers, in
         // alphabetical order -- never a hardcoded/curated list.
         QSet<QString> currencySet;
-        for (const auto& rate : result.rates) {
+        for (const auto& rate : result.rows) {
             currencySet.insert(QString::fromStdString(rate.base_currency_code));
             currencySet.insert(QString::fromStdString(rate.quote_currency_code));
         }
@@ -527,8 +501,9 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         const auto baseFilter = self->baseCurrencyCombo_->currentData().toString();
         QStringList rowCurrencies = baseFilter.isEmpty() ? allCurrencies : QStringList{baseFilter};
 
-        std::map<std::pair<QString, QString>, marketdata_msg::crm_rate_item> byPair;
-        for (const auto& rate : result.rates) {
+        using DisplayRow = marketdata_client::presentation::crm_rate_display_service::row;
+        std::map<std::pair<QString, QString>, DisplayRow> byPair;
+        for (const auto& rate : result.rows) {
             byPair[{QString::fromStdString(rate.base_currency_code),
                     QString::fromStdString(rate.quote_currency_code)}] = rate;
         }
@@ -542,7 +517,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         if (self->hideEmptyButton_->isChecked()) {
             QSet<QString> basesSeen;
             QSet<QString> quotesSeen;
-            for (const auto& rate : result.rates) {
+            for (const auto& rate : result.rows) {
                 basesSeen.insert(QString::fromStdString(rate.base_currency_code));
                 quotesSeen.insert(QString::fromStdString(rate.quote_currency_code));
             }
@@ -587,7 +562,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             self->table_->setVerticalHeaderItem(i, vHeader);
         }
 
-        std::vector<marketdata_msg::crm_rate_item> exportedRates;
+        std::vector<DisplayRow> exportedRates;
 
         for (int row = 0; row < rowCurrencies.size(); ++row) {
             for (int col = 0; col < allCurrencies.size(); ++col) {
@@ -636,19 +611,14 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                                                           color_constants::level_error;
                 }
 
-                const auto decimalPlaces =
-                    self->resolveDecimalPlaces(item.base_currency_code, item.quote_currency_code);
-                const auto display =
-                    marketdata_client::presentation::crm_rate_formatter::format(item, decimalPlaces);
-
                 cellWidget->setData(rowCurrencies[row] + QStringLiteral("/") + allCurrencies[col],
-                                    QString::fromStdString(display.rate_text),
-                                    QString::fromStdString(display.change_text),
+                                    QString::fromStdString(item.display.rate_text),
+                                    QString::fromStdString(item.display.change_text),
                                     changeColor,
                                     rateColor,
                                     pairColor,
                                     pairPrefix);
-                cellWidget->setToolTip(QString::fromStdString(display.tooltip_text));
+                cellWidget->setToolTip(QString::fromStdString(item.display.tooltip_text));
                 connect(cellWidget, &CrmRateCellWidget::clicked, self, [self, row, col]() {
                     self->onCellSelected(row, col);
                 });
@@ -665,10 +635,10 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
 
         self->footerLabel_->setText(tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
 
-        BOOST_LOG_SEV(lg(), debug) << "CRM cross-rates matrix: " << result.rates.size()
+        BOOST_LOG_SEV(lg(), debug) << "CRM cross-rates matrix: " << result.rows.size()
                                    << " rate(s), " << allCurrencies.size() << " currencies";
         emit self->statusChanged(
-            tr("Cross-rates matrix updated: %1 rate(s)").arg(result.rates.size()));
+            tr("Cross-rates matrix updated: %1 rate(s)").arg(result.rows.size()));
     });
     watcher->setFuture(future);
 }

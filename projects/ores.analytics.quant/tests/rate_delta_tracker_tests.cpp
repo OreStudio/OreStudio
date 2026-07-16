@@ -101,7 +101,8 @@ TEST_CASE("distinct pairs are tracked independently", "[rate_delta_tracker]") {
     CHECK(*second[1].delta_pct == Catch::Approx(-5.0));
 }
 
-TEST_CASE("an unavailable observation gets no delta and is not remembered", "[rate_delta_tracker]") {
+TEST_CASE("an unavailable observation gets no delta and is not remembered",
+          "[rate_delta_tracker]") {
     rate_delta_tracker tracker;
 
     std::vector<crm_rate_view> first = {make_view("EUR", "USD", 1.00)};
@@ -121,7 +122,7 @@ TEST_CASE("an unavailable observation gets no delta and is not remembered", "[ra
 }
 
 TEST_CASE("the very first observation being unavailable leaves nothing to diff against later",
-         "[rate_delta_tracker]") {
+          "[rate_delta_tracker]") {
     rate_delta_tracker tracker;
 
     std::vector<crm_rate_view> first = {make_view("EUR", "USD", 0.0, rate_status::unavailable)};
@@ -134,7 +135,7 @@ TEST_CASE("the very first observation being unavailable leaves nothing to diff a
 }
 
 TEST_CASE("an inverted pair is tracked by its own (base, quote) display key",
-         "[rate_delta_tracker]") {
+          "[rate_delta_tracker]") {
     rate_delta_tracker tracker;
 
     crm_rate_view v1 = make_view("CAD", "EUR", 1.0 / 1.50);
@@ -153,7 +154,7 @@ TEST_CASE("an inverted pair is tracked by its own (base, quote) display key",
 }
 
 TEST_CASE("repeated identical rates produce a zero delta, not a missing one",
-         "[rate_delta_tracker]") {
+          "[rate_delta_tracker]") {
     rate_delta_tracker tracker;
 
     std::vector<crm_rate_view> first = {make_view("EUR", "USD", 1.10)};

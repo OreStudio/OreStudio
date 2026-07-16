@@ -61,7 +61,7 @@ TEST_CASE("a direct entry with unavailable status is still returned as-is", "[ra
 }
 
 TEST_CASE("a missing pair falls back to the reverse pair's inverse when allowed",
-         "[rate_inverter]") {
+          "[rate_inverter]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::fresh, epoch(200)},
     };
@@ -112,7 +112,7 @@ TEST_CASE("an unavailable reverse pair does not divide by its zero rate", "[rate
 }
 
 TEST_CASE("neither direction present is unavailable regardless of allow_invert",
-         "[rate_inverter]") {
+          "[rate_inverter]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "USD", 1.10, rate_status::fresh, epoch(100)},
     };

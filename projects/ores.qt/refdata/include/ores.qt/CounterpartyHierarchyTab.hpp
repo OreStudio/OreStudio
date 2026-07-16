@@ -50,7 +50,8 @@ public:
     /** @brief Add the tab to the dialog's tab widget. Call once, from the constructor. */
     void attachTo(QTabWidget* tabWidget);
 
-    /** @brief Re-fetch and redisplay the subtree rooted at counterpartyId. No-op if counterpartyId is nil. */
+    /** @brief Re-fetch and redisplay the subtree rooted at counterpartyId. No-op if counterpartyId
+     * is nil. */
     void reload(const boost::uuids::uuid& counterpartyId, ClientManager* clientManager);
 
 private:

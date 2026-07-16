@@ -243,6 +243,7 @@ TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
     CHECK(identifiers_at_v2[0].id == pi.id);
 
     // Fetching a nonexistent version returns nullopt rather than throwing.
-    const auto missing = party_repo.read_at_version(h.context(), boost::uuids::to_string(party.id), 999);
+    const auto missing =
+        party_repo.read_at_version(h.context(), boost::uuids::to_string(party.id), 999);
     CHECK_FALSE(missing.has_value());
 }

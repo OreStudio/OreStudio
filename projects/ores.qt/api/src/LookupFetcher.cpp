@@ -338,8 +338,7 @@ fetch_contact_types(ClientManager* cm) {
     return std::move(response->types);
 }
 
-std::expected<std::vector<refdata::domain::party>, QString>
-fetch_parties(ClientManager* cm) {
+std::expected<std::vector<refdata::domain::party>, QString> fetch_parties(ClientManager* cm) {
     if (!cm)
         return std::unexpected(QStringLiteral("Not connected to server."));
 

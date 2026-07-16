@@ -44,8 +44,8 @@ generate_synthetic_counterparty_contact_information(utility::generation::generat
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.counterparty_id = ctx.generate_uuid();
     r.contact_type = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
-        // Rotate so a batch of several contact rows for one counterparty gets
-        // distinct types (max one contact row per type per counterparty).
+                     // Rotate so a batch of several contact rows for one counterparty gets
+                     // distinct types (max one contact row per type per counterparty).
         [idx] {
             static constexpr const char* types[] = {"Legal", "Operations", "Settlement", "Billing"};
             return std::string(types[idx % 4]);
@@ -55,7 +55,7 @@ generate_synthetic_counterparty_contact_information(utility::generation::generat
     r.city = std::string("New York");
     r.state = std::string("NY");
     r.country_code = // Left blank: validated against the tenant-scoped countries table, which
-        // isolated test tenants don't seed; empty skips validation.
+                     // isolated test tenants don't seed; empty skips validation.
         std::string("");
     r.postal_code = std::string("10001");
     r.phone = std::string("+1 212 555 0100");

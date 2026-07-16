@@ -54,7 +54,8 @@ public:
     std::vector<domain::currency_calendar> read_latest();
     std::vector<domain::currency_calendar>
     read_latest_by_currency(const std::string& currency_iso_code);
-    std::vector<domain::currency_calendar> read_latest_by_calendar(const std::string& calendar_code);
+    std::vector<domain::currency_calendar>
+    read_latest_by_calendar(const std::string& calendar_code);
 
     void remove(const std::string& currency_iso_code, const std::string& calendar_code);
     void remove_by_currency(const std::string& currency_iso_code);

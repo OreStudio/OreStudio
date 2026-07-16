@@ -45,8 +45,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <iomanip>
+#include <map>
 #include <sstream>
 
 namespace ores::qt {
@@ -140,8 +140,7 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         const auto authToken = clientManager_->currentAuthToken();
         conventionCache_ =
             std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
-                clientManager_->nats_client(),
-                [authToken](bool /*force*/) { return authToken; });
+                clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
         // load() is a blocking NATS round trip -- run it off the UI
         // thread, but surface a failure visibly rather than only
         // logging it: nothing reads from conventionCache_ yet (that's
@@ -161,8 +160,8 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
             cacheWatcher->deleteLater();
             if (!self || error.isEmpty())
                 return;
-            BOOST_LOG_SEV(lg(), warn) << "Currency pair convention cache load failed: "
-                                      << error.toStdString();
+            BOOST_LOG_SEV(lg(), warn)
+                << "Currency pair convention cache load failed: " << error.toStdString();
             MessageBoxHelper::critical(
                 self,
                 tr("FX Pair Conventions"),
@@ -363,8 +362,7 @@ void CrmCrossRatesMatrixMdiWindow::setupToolbar() {
     exportOreAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::ExportOre, IconUtils::DefaultIconColor),
         tr("Export ORE"));
-    exportOreAction_->setToolTip(
-        tr("Export the displayed rates as an ORE market data file"));
+    exportOreAction_->setToolTip(tr("Export the displayed rates as an ORE market data file"));
     connect(
         exportOreAction_, &QAction::triggered, this, &CrmCrossRatesMatrixMdiWindow::exportToOre);
 }
@@ -692,7 +690,8 @@ void CrmCrossRatesMatrixMdiWindow::exportToCsv() {
     }
 
     const QString fileName = QFileDialog::getSaveFileName(
-        this, tr("Export to CSV"),
+        this,
+        tr("Export to CSV"),
         QStringLiteral("%1_%2.csv").arg(exportFileNameSlug(), export_timestamp()),
         tr("CSV Files (*.csv);;All Files (*)"));
     if (fileName.isEmpty())
@@ -732,7 +731,8 @@ void CrmCrossRatesMatrixMdiWindow::exportToOre() {
     }
 
     const QString fileName = QFileDialog::getSaveFileName(
-        this, tr("Export to ORE Market Data"),
+        this,
+        tr("Export to ORE Market Data"),
         QStringLiteral("%1_%2.txt").arg(exportFileNameSlug(), export_timestamp()),
         tr("Text Files (*.txt);;All Files (*)"));
     if (fileName.isEmpty())

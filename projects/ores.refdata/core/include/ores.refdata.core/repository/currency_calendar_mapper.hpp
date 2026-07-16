@@ -41,8 +41,10 @@ public:
     static domain::currency_calendar map(const currency_calendar_entity& v);
     static currency_calendar_entity map(const domain::currency_calendar& v);
 
-    static std::vector<domain::currency_calendar> map(const std::vector<currency_calendar_entity>& v);
-    static std::vector<currency_calendar_entity> map(const std::vector<domain::currency_calendar>& v);
+    static std::vector<domain::currency_calendar>
+    map(const std::vector<currency_calendar_entity>& v);
+    static std::vector<currency_calendar_entity>
+    map(const std::vector<domain::currency_calendar>& v);
 };
 
 }

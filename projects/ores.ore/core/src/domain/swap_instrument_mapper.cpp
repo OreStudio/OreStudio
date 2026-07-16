@@ -613,8 +613,8 @@ legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
     if (tm.notional != 0.0)
         ld.Notionals = make_notionals(tm.notional);
 
-    ld.ScheduleData =
-        make_schedule(start_date, maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
+    ld.ScheduleData = make_schedule(
+        start_date, maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
 
     legDataType_group_t ldt;
     if (ld.LegType == legType::Fixed && tm.fixed_rate != 0.0) {
@@ -718,8 +718,10 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
         cf.LegData.DayCounter = dayCounter::ACT_365;
-        cf.LegData.ScheduleData = make_schedule(
-            instr.start_date, instr.maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
+        cf.LegData.ScheduleData =
+            make_schedule(instr.start_date,
+                          instr.maturity_date,
+                          payment_frequency_to_tenor(tm.payment_frequency_code));
         if (tm.notional != 0.0) {
             legData_capfloor_Notionals_t_Notional_t nv;
             static_cast<float&>(nv) = static_cast<float>(tm.notional);

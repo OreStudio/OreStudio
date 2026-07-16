@@ -114,7 +114,7 @@ currency_calendar_repository::read_latest_by_calendar(const std::string& calenda
 }
 
 void currency_calendar_repository::remove(const std::string& currency_iso_code,
-                                         const std::string& calendar_code) {
+                                          const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency calendar from database: " << currency_iso_code
                                << "/" << calendar_code;
 

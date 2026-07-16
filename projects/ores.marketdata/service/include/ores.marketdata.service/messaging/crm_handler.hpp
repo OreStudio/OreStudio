@@ -183,7 +183,8 @@ public:
         resp.success = true;
         if (req->crm_name.empty()) {
             // No CRM selected -- every enabled CRM the party has, tagged.
-            const auto results = bridge_->resolved_rates(tenant_id_str, req->party_id, req->inverted);
+            const auto results =
+                bridge_->resolved_rates(tenant_id_str, req->party_id, req->inverted);
             resp.rates.reserve(results.size());
             for (const auto& r : results)
                 resp.rates.push_back(to_item(r.crm_name, r.view));

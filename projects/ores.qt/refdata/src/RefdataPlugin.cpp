@@ -34,7 +34,6 @@
 #include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
-#include "ores.qt/PartyController.hpp"
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/CrmDriverPairController.hpp"
 #include "ores.qt/CrmEnabledDerivedPairController.hpp"
@@ -64,6 +63,7 @@
 #include "ores.qt/OisConventionController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/OvernightIndexConventionController.hpp"
+#include "ores.qt/PartyController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
@@ -207,13 +207,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(floatingIndexTypeController_.get());
 
-    paymentFrequencyController_ = std::make_unique<PaymentFrequencyController>(ctx_.main_window,
-                                                                               ctx_.mdi_area,
-                                                                               ctx_.client_manager,
-                                                                               ctx_.change_reason_cache,
-                                                                               ctx_.username,
-                                                                               ctx_.badge_cache,
-                                                                               this);
+    paymentFrequencyController_ =
+        std::make_unique<PaymentFrequencyController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     ctx_.badge_cache,
+                                                     this);
     connectControllerSignals(paymentFrequencyController_.get());
 
     legTypeController_ = std::make_unique<LegTypeController>(
@@ -420,40 +421,71 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(businessCentreController_.get());
 
     calendarController_ = std::make_unique<CalendarController>(ctx_.main_window,
-                                                                ctx_.mdi_area,
-                                                                ctx_.client_manager,
-                                                                ctx_.change_reason_cache,
-                                                                ctx_.username,
-                                                                ctx_.badge_cache,
-                                                                this);
+                                                               ctx_.mdi_area,
+                                                               ctx_.client_manager,
+                                                               ctx_.change_reason_cache,
+                                                               ctx_.username,
+                                                               ctx_.badge_cache,
+                                                               this);
     connectControllerSignals(calendarController_.get());
 
-    zeroConventionController_ = std::make_unique<ZeroConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    zeroConventionController_ = std::make_unique<ZeroConventionController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(zeroConventionController_.get());
 
-    depositConventionController_ = std::make_unique<DepositConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    depositConventionController_ =
+        std::make_unique<DepositConventionController>(ctx_.main_window,
+                                                      ctx_.mdi_area,
+                                                      ctx_.client_manager,
+                                                      ctx_.change_reason_cache,
+                                                      ctx_.username,
+                                                      this);
     connectControllerSignals(depositConventionController_.get());
 
-    swapConventionController_ = std::make_unique<SwapConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    swapConventionController_ = std::make_unique<SwapConventionController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(swapConventionController_.get());
 
-    oisConventionController_ = std::make_unique<OisConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    oisConventionController_ = std::make_unique<OisConventionController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(oisConventionController_.get());
 
-    fraConventionController_ = std::make_unique<FraConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    fraConventionController_ = std::make_unique<FraConventionController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(fraConventionController_.get());
 
-    iborIndexConventionController_ = std::make_unique<IborIndexConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    iborIndexConventionController_ =
+        std::make_unique<IborIndexConventionController>(ctx_.main_window,
+                                                        ctx_.mdi_area,
+                                                        ctx_.client_manager,
+                                                        ctx_.change_reason_cache,
+                                                        ctx_.username,
+                                                        this);
     connectControllerSignals(iborIndexConventionController_.get());
 
-    overnightIndexConventionController_ = std::make_unique<OvernightIndexConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    overnightIndexConventionController_ =
+        std::make_unique<OvernightIndexConventionController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username,
+                                                             this);
     connectControllerSignals(overnightIndexConventionController_.get());
 
     currencyPairController_ = std::make_unique<CurrencyPairController>(ctx_.main_window,
@@ -484,12 +516,20 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                            this);
     connectControllerSignals(currencyPairConventionController_.get());
 
-    currencyGroupController_ = std::make_unique<CurrencyGroupController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    currencyGroupController_ = std::make_unique<CurrencyGroupController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(currencyGroupController_.get());
 
-    cdsConventionController_ = std::make_unique<CdsConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache, ctx_.username, this);
+    cdsConventionController_ = std::make_unique<CdsConventionController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(cdsConventionController_.get());
 
     // Data Catalogue controllers
@@ -1115,8 +1155,8 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_
-        || !act_business_centres_ || !act_parties_ || !act_counterparties_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
+        !act_business_centres_ || !act_parties_ || !act_counterparties_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_currencies_,
             act_countries_,

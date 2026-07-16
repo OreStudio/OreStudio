@@ -129,10 +129,10 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
 
     irCurveGenerationConfigController_ =
         std::make_unique<IrCurveGenerationConfigController>(ctx_.main_window,
-                                                             ctx_.mdi_area,
-                                                             ctx_.client_manager,
-                                                             ctx_.change_reason_cache,
-                                                             ctx_.username);
+                                                            ctx_.mdi_area,
+                                                            ctx_.client_manager,
+                                                            ctx_.change_reason_cache,
+                                                            ctx_.username);
     connect(irCurveGenerationConfigController_.get(),
             &IrCurveGenerationConfigController::statusMessage,
             this,
@@ -152,10 +152,10 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
 
     irCurveTemplateEntryController_ =
         std::make_unique<IrCurveTemplateEntryController>(ctx_.main_window,
-                                                          ctx_.mdi_area,
-                                                          ctx_.client_manager,
-                                                          ctx_.change_reason_cache,
-                                                          ctx_.username);
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username);
     connect(irCurveTemplateEntryController_.get(),
             &IrCurveTemplateEntryController::statusMessage,
             this,

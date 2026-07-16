@@ -290,8 +290,8 @@ crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
 }
 
 std::vector<named_rate_view> crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
-                                                                const std::string& party_id_str,
-                                                                bool inverted) const {
+                                                               const std::string& party_id_str,
+                                                               bool inverted) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())

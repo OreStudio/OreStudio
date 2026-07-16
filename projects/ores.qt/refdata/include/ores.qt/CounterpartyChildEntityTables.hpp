@@ -62,14 +62,16 @@ public:
     /** @brief Add both tabs to the dialog's tab widget. Call once, from the constructor. */
     void attachTo(QTabWidget* tabWidget);
 
-    /** @brief Re-fetch and repopulate both tables for the given counterparty. No-op if counterpartyId is nil. */
+    /** @brief Re-fetch and repopulate both tables for the given counterparty. No-op if
+     * counterpartyId is nil. */
     void reload(const boost::uuids::uuid& counterpartyId,
                 ClientManager* clientManager,
                 const std::string& username,
                 ImageCache* imageCache = nullptr,
                 ChangeReasonCache* changeReasonCache = nullptr);
 
-    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
+    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history).
+     */
     void setReadOnly(bool readOnly);
 
 private:

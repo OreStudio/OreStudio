@@ -61,9 +61,9 @@ public:
     ///  - otherwise returns an unavailable view with a default-constructed
     ///    as_of.
     [[nodiscard]] static domain::crm_rate_view resolve(const std::string& base_code,
-                                                        const std::string& quote_code,
-                                                        const rate_lookup& lookup,
-                                                        bool allow_invert);
+                                                       const std::string& quote_code,
+                                                       const rate_lookup& lookup,
+                                                       bool allow_invert);
 };
 
 } // namespace ores::analytics::quant::service

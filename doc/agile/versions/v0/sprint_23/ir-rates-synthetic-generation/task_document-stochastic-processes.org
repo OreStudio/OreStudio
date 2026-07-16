@@ -142,7 +142,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.analytics.quant link uses wrong ID (points at ORE Studio hub, not the component doc) | stochastic_processes.org | Accepted | Fixed in 86c2633b8 |
+| 2 | CIR snippet elides the lambda==0 guard, tied to the Feller-condition section discussed nearby | cir_process.org | Accepted | Fixed in 86c2633b8 |
+| 3 | GBM/ABM snippets elide the sd==0 degenerate-mixture-component guard | geometric_brownian_motion.org, arithmetic_brownian_motion.org | Accepted | Fixed in 86c2633b8 |
+| 4 | OU/Hull-White snippets elide kappa<=0, note for future maintenance re: OU's only-short-rate consumption | ornstein_uhlenbeck_process.org, hull_white_process.org, stochastic_processes.org | Declined | kappa<=0 already discussed in adjacent prose (no reader confusion per reviewer); OU-consumption note is a future-maintenance observation, not a defect |
 
 * Result
 

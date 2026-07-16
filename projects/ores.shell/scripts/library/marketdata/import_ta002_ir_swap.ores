@@ -1,7 +1,7 @@
 # How do I import the TA002 IR Swap example market data?
 # Import the small TA002 IR Swap ORE example's market data and fixings via ores.shell's marketdata import command.
 #
-# GENERATED from doc/recipes/shell/marketdata/import_ta002_ir_swap.org — do not edit by hand.
+# GENERATED from doc/recipes/shell/marketdata/import/import_ta002_ir_swap.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 marketdata import --file external/ore/examples/Academy/TA002_IR_Swap/Input/market.txt --fixings external/ore/examples/Academy/TA002_IR_Swap/Input/fixings.txt --source ore.reference

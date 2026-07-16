@@ -273,7 +273,8 @@ void ShellMdiWindow::start_shell() {
                         .jwt = resp->token,
                         .username = resp->username,
                         .tenant_id = resp->tenant_id,
-                        .tenant_name = resp->tenant_name});
+                        .tenant_name = resp->tenant_name,
+                        .default_party_id = resp->default_party_id});
                 }
             } catch (const std::exception& e) {
                 auto qmsg =

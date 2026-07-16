@@ -111,11 +111,10 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
                 "Fresh as of " + item.as_of;
         }
 
-        display.change_text = "—";
+        display.change_text = "-";
         if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
             const auto pct = *item.delta_pct;
-            display.change_text =
-                (pct >= 0 ? "▲ +" : "▼ ") + to_fixed_string(pct, 3) + "%";
+            display.change_text = (pct >= 0 ? "+" : "") + to_fixed_string(pct, 3) + "%";
         }
 
         results.push_back(std::move(display));

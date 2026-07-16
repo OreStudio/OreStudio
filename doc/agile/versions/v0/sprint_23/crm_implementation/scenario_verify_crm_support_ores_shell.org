@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 24321F8D-B6EE-4EEA-81C2-24FF980D42F8
+:END:
+#+title: Test Scenario: Verify CRM support in ores.shell
+#+description: Verifies the crm rates shell command against a named CRM and against all enabled CRMs, reusing the convention-aware formatter.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog: N/A -- CLI feature (ores.shell `crm rates` command, not a Qt dialog)
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | N/A -- CLI feature (ores.shell `crm rates` command) |
+| Clients       |                                          |
+| State         | PASSED                                   |
+
+* Steps
+
+** Connect and log in
+
+Start =ores.shell= (or =compass shell=), connect to the running NATS
+instance, and log in as =tenant_admin@barclays_plc= /
+=Secure-Password-123= (from =barclays_system_provision.ores=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Run the CRM rates recipe script
+
+Run the generated =crm_rates.ores= script (=compass shell -u
+tenant_admin@barclays_plc -p Secure-Password-123 -f
+projects/ores.shell/scripts/library/marketdata/crm_rates.ores=), or
+type the commands directly: =crm rates majors --party "BARCLAYS
+PLC"=, then =crm rates exotics --party "BARCLAYS PLC"=, then =crm
+rates scandies --party "BARCLAYS PLC"=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Each named CRM printed its own table (CRM, Pair, Rate, Change, Status, As Of columns), scoped to just that CRM's pairs. |
+
+** Run with no CRM name (all enabled CRMs)
+
+=crm rates --party "BARCLAYS PLC"= (no positional).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Returned the union of majors/exotics/scandies rows in one table, each correctly tagged in the CRM column with which CRM it came from. |
+
+** Resolve --party by name instead of UUID
+
+Confirm =--party "BARCLAYS PLC"= resolves correctly without needing
+the party's UUID (same convention as =provision party <party>=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16 |
+| Branch        | feature/crm-support-ores-shell |
+| Commit        |  |
+| Worktree      | clever_dijkstra |
+
+* Notes
+
+Rows showed =unavailable= status throughout since this environment's
+market-data feed had no ticks yet at the time of testing -- expected
+(the rate_engine has no data to serve), not a defect in the shell
+command or formatter. Re-run once the Qt client's Market Simulator
+has ticked a feed to visually confirm live rate/change values too.

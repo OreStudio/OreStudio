@@ -164,27 +164,27 @@ TEST_CASE("crm_rate_formatter reports an unavailable tooltip",
     REQUIRE(displays[0].tooltip_text == "Unavailable");
 }
 
-TEST_CASE("crm_rate_formatter renders an up delta with the up glyph",
+TEST_CASE("crm_rate_formatter renders a positive delta with a plus sign",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = 0.123;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].change_text == "▲ +0.123%");
+    REQUIRE(displays[0].change_text == "+0.123%");
 }
 
-TEST_CASE("crm_rate_formatter renders a down delta with the down glyph",
+TEST_CASE("crm_rate_formatter renders a negative delta with a minus sign",
           "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = -0.045;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].change_text == "▼ -0.045%");
+    REQUIRE(displays[0].change_text == "-0.045%");
 }
 
 TEST_CASE("crm_rate_formatter renders a placeholder when there is no delta",
           "[crm_rate_formatter]") {
     auto item = make_item();
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].change_text == "—");
+    REQUIRE(displays[0].change_text == "-");
 }
 
 TEST_CASE("crm_rate_formatter renders a placeholder for a negligible delta",
@@ -192,7 +192,7 @@ TEST_CASE("crm_rate_formatter renders a placeholder for a negligible delta",
     auto item = make_item();
     item.delta_pct = 1e-10;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].change_text == "—");
+    REQUIRE(displays[0].change_text == "-");
 }
 
 TEST_CASE("crm_rate_formatter formats a batch of requests in one call, "

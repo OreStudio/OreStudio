@@ -1,0 +1,8 @@
+# How do I view scandies CRM rates from the shell?
+# List a party's 'scandies' FX cross-rates matrix (CRM) rates from ores.shell.
+#
+# GENERATED from doc/recipes/shell/marketdata/crm/crm_rates_scandies.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm rates scandies
+logout

@@ -59,6 +59,7 @@ crm_rate_display_service::rates(const std::string& tenant_id, const std::string&
     for (std::size_t i = 0; i < fetched.rates.size(); ++i) {
         const auto& item = fetched.rates[i];
         row r;
+        r.crm_name = item.crm_name;
         r.base_currency_code = item.base_currency_code;
         r.quote_currency_code = item.quote_currency_code;
         r.status = item.status;

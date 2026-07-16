@@ -105,6 +105,7 @@ bool auto_login(ores::nats::service::nats_client& session,
         info.account_id = result->account_id;
         info.tenant_id = result->tenant_id;
         info.tenant_name = result->tenant_name;
+        info.default_party_id = result->default_party_id;
         session.set_auth(std::move(info));
         out << "✓ Logged in as: " << result->username << std::endl;
         out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;

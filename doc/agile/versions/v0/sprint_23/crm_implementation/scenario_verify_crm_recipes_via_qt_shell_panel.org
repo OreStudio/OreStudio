@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: DF7EDAB0-14E5-4191-ABDE-5833989F2644
+:END:
+#+title: Test Scenario: Verify CRM shell recipes and --matrix from the Qt Shell panel
+#+description: Verifies the crm_rates.ores recipe and the crm rates --matrix grid view run correctly from the Qt client's embedded Shell window/script library panel.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog: ShellMdiWindow (embedded shell + script library) — Menu: System > Telemetry > Shell
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | ShellMdiWindow (embedded shell + script library) — Menu: System > Telemetry > Shell |
+| Clients       |                                          |
+| State         | PENDING                                  |
+
+* Steps
+
+** Connect and log in
+
+Open the client and log in as =tenant_admin@barclays_plc= /
+=Secure-Password-123= (from =barclays_system_provision.ores=),
+tenant *Barclays Plc*, party *BARCLAYS PLC*. No =--party= needed on
+any =crm rates= command below -- the account's own default party is
+now used automatically.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Shell window and its script library
+
+Menu: *System > Telemetry > Shell*. Confirm a script library panel is
+visible alongside the shell input/output, and that it lists, under
+=marketdata/=: =crm_rates_majors.ores=, =crm_rates_exotics.ores=,
+=crm_rates_scandies.ores=, =crm_rates_matrix.ores= (one recipe per
+CRM, plus the matrix one -- matching
+=doc/recipes/shell/marketdata/crm/=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Run each crm_rates_<crm> recipe from the script library
+
+Double-click (or otherwise trigger "run") each of
+=crm_rates_majors.ores=, =crm_rates_exotics.ores=,
+=crm_rates_scandies.ores= from the library panel in turn. Confirm
+each executes in the embedded shell without needing to retype the
+=connect=/=login= steps (session is already authenticated), prints
+one aligned table (CRM, Pair, Rate, Change, Status, As Of) scoped to
+just that CRM, and ends in a clean =logout=. Change values should
+show a plain =+0.123%=/=-0.045%= sign, no stray glyphs breaking
+column alignment.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Run the crm_rates_matrix recipe and verify the grid view
+
+Run =crm_rates_matrix.ores= from the library panel. Confirm the
+output is an NxN grid (base currencies as rows, quote currencies as
+columns, dash on the diagonal) rather than the flat table, and that
+it renders correctly in the Shell window's monospace output area
+(columns aligned, no wrapping/corruption).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Verify --matrix rejects the all-CRMs case
+
+Type directly into the shell input: =crm rates --matrix= (no CRM
+name). Confirm this is rejected with a clear error ("--matrix
+requires a named CRM...") rather than silently mixing rows from
+different CRMs into one grid.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T23:13:18Z |
+| Branch        | feature/crm-support-ores-shell |
+| Commit        | 846904dd3 |
+| Worktree      | clever_dijkstra |
+
+* Notes
+
+Previous run (2026-07-16T21:12:02Z, commit 846904dd3) failed on two
+points, both fixed since: the single =crm_rates.ores= recipe has been
+split into per-CRM recipes (=crm_rates_majors=/=exotics=/=scandies=)
+plus a dedicated =crm_rates_matrix= recipe; the flat table's
+misalignment was Unicode arrow glyphs (▲/▼/—) breaking libfort's
+byte-based column-width calculation in =crm_rate_formatter= --
+replaced with plain ASCII +/- signs. Also dropped the =--party=
+requirement entirely: =nats_client::login_info= now carries
+=default_party_id= from the login response, populated at all three
+places a shell session authenticates -- =accounts_commands::process_login=,
+=application.cpp::auto_login=, and (found by this scenario's first
+re-run) =ShellMdiWindow='s own internal re-login for the Qt-embedded
+shell, which was still missing it -- so =crm rates= (and any future
+party-scoped command) uses the logged-in account's own party by
+default everywhere, matching Qt's =ClientManager::currentPartyId()=.
+=--party= is now purely an override for an account managing more
+than one party.

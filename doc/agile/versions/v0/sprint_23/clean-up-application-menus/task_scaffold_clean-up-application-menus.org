@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded: docs, sprint wiring. Goal and task-breakdown
+decision (one task per top-level menu) written into =story.org=,
+including cross-links to the sibling
+[[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story (which owns the Data &Quality menu
+specifically) and the badge migration task that's standing up
+=ores.qt.dq= incrementally.

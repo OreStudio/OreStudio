@@ -38,7 +38,6 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
-#include <array>
 #include <deque>
 #include <map>
 #include <optional>
@@ -218,12 +217,11 @@ private:
     // Recursively collects the ids of every Feed-leaf descendant of item
     // (including item itself, if it's already a Feed).
     static void collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids);
-    // Builds one Feed-leaf tree item triple (columns 0/1/2) for a single fx pair.
-    static std::array<QStandardItem*, 3>
-    buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
-                 ImageCache* imageCache,
-                 const std::set<std::string>& runningSourceNames,
-                 const std::map<std::string, bool>& vintageValidByFx);
+    // Builds one Feed-leaf tree item for a single fx pair. Its running and
+    // vintage status are composited as small badges by refreshTreeItemStatus,
+    // not here -- this only sets the plain base icon (see BaseIconRole).
+    static QStandardItem* buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
+                                        ImageCache* imageCache);
 
     ClientManager* clientManager_;
     QString username_;

@@ -88,6 +88,10 @@ constexpr int NodeIdRole = Qt::UserRole + 2;
 // the market_data_generation_config id (needed for edit/delete/new-fx-rate).
 // Used to cascade start/stop via the folder-scoped backend request.
 constexpr int FolderIdRole = Qt::UserRole + 3;
+// The node's plain icon (folder or currency-pair flags), stored so
+// refreshTreeItemStatus can always recomposite badges fresh onto it rather
+// than stacking new badges on top of a previously-badged icon.
+constexpr int BaseIconRole = Qt::UserRole + 4;
 
 boost::uuids::uuid uuid_from_string(const std::string& s) {
     try {
@@ -653,27 +657,20 @@ static QString feedItemText(const synthetic::domain::market_data_generation_conf
     return text;
 }
 
-// Returns the coloured status icon given running/total counts (used for
-// every non-leaf node: Root, Collection, Group).
-static QIcon folderStatusIcon(int running, int total) {
+// Small badge icon for the running/stopped state, composited onto the
+// bottom-left corner of every node's icon (folder or feed).
+static QIcon runningBadge(int running, int total) {
     if (running == 0)
         return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
     if (running == total)
-        return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(60, 180, 80));
-    // Partially running
-    return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(200, 160, 40));
+        return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(60, 180, 80));
+    return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(200, 160, 40)); // partially running
 }
 
-// Returns the coloured status icon for a single Feed (leaf).
-static QIcon feedStatusIcon(bool running) {
-    if (running)
-        return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(60, 180, 80));
-    return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
-}
-
-// Vintage-status icon: green tick, red cross, or no icon at all for a node
-// with no vintage-applicable descendant (fixed-price feeds only).
-static QIcon vintageStatusIcon(bool anyInvalid, bool anyApplicable) {
+// Small badge icon for the vintage-validity state, composited onto the
+// bottom-right corner -- null (no badge) when nothing in scope is
+// vintage-applicable (all feeds are fixed-price).
+static QIcon vintageBadge(bool anyInvalid, bool anyApplicable) {
     if (!anyApplicable)
         return {};
     if (anyInvalid)
@@ -681,41 +678,48 @@ static QIcon vintageStatusIcon(bool anyInvalid, bool anyApplicable) {
     return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(60, 180, 80));
 }
 
-std::array<QStandardItem*, 3>
+// Composites small badge icons onto the bottom-left/bottom-right corners of
+// a base icon -- e.g. a folder or currency-pair icon with a running-status
+// and a vintage-validity emblem, instead of separate tree columns full of
+// repeated full-size icons (which reads as noise at a glance: see the
+// "Vintage-validity indicator and folder-cascade start/stop" scenario's
+// step-2 failure).
+static QIcon composeBadgedIcon(const QIcon& base, const QIcon& bottomLeft, const QIcon& bottomRight) {
+    // Matches feedsTree_'s iconSize (44x22, sized for the two-flag currency
+    // pair icon) so folder/feed icons keep their existing aspect ratio.
+    constexpr int w = 44, h = 22, badgeSize = 12;
+    QPixmap canvas(w, h);
+    canvas.fill(Qt::transparent);
+    QPainter painter(&canvas);
+    painter.drawPixmap(0, 0, base.pixmap(w, h));
+    if (!bottomLeft.isNull())
+        painter.drawPixmap(0, h - badgeSize, bottomLeft.pixmap(badgeSize, badgeSize));
+    if (!bottomRight.isNull())
+        painter.drawPixmap(w - badgeSize, h - badgeSize, bottomRight.pixmap(badgeSize, badgeSize));
+    painter.end();
+    return QIcon(canvas);
+}
+
+QStandardItem*
 MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
-                                     ImageCache* imageCache,
-                                     const std::set<std::string>& runningSourceNames,
-                                     const std::map<std::string, bool>& vintageValidByFx) {
+                                     ImageCache* imageCache) {
     const auto fxId = boost::uuids::to_string(fx.id);
-    const bool fxRunning = runningSourceNames.count(fx.source_name) > 0;
     QString fxText = QString::fromStdString(fx.base_currency_code + "/" + fx.quote_currency_code);
     auto* fxItem = new QStandardItem(fxText);
     fxItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
     fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
-    if (imageCache) {
-        fxItem->setIcon(currency_flag_icon(*imageCache, fx.base_currency_code, fx.quote_currency_code));
-    } else {
-        fxItem->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
-    }
 
-    auto* fxStatus = new QStandardItem();
-    fxStatus->setIcon(feedStatusIcon(fxRunning));
-    fxStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-    fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
-
-    auto* fxVintage = new QStandardItem();
-    const auto vit = vintageValidByFx.find(fxId);
-    fxVintage->setIcon(
-        vintageStatusIcon(vit != vintageValidByFx.end() && !vit->second, vit != vintageValidByFx.end()));
-    fxVintage->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-    fxVintage->setData(QString::fromStdString(fxId), NodeIdRole);
-
-    return {fxItem, fxStatus, fxVintage};
+    const QIcon base = imageCache ?
+        currency_flag_icon(*imageCache, fx.base_currency_code, fx.quote_currency_code) :
+        IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
+    fxItem->setData(QVariant::fromValue(base), BaseIconRole);
+    fxItem->setIcon(base); // refreshTreeItemStatus composites badges on top
+    return fxItem;
 }
 
 void MarketSimulatorWindow::buildTree() {
     treeModel_->clear();
-    treeModel_->setColumnCount(3);
+    treeModel_->setColumnCount(1);
     auto* root = treeModel_->invisibleRootItem();
 
     // Feed pairs grouped by their owning folder.
@@ -762,24 +766,16 @@ void MarketSimulatorWindow::buildTree() {
                     nodeId = configId;
                 }
 
+                const QIcon folderIcon =
+                    IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor);
                 auto* item = new QStandardItem(text);
                 item->setData(static_cast<int>(type), NodeTypeRole);
                 item->setData(QString::fromStdString(nodeId), NodeIdRole);
                 item->setData(QString::fromStdString(folderId), FolderIdRole);
-                item->setIcon(
-                    IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+                item->setData(QVariant::fromValue(folderIcon), BaseIconRole);
+                item->setIcon(folderIcon);
 
-                auto* status = new QStandardItem();
-                status->setData(static_cast<int>(type), NodeTypeRole);
-                status->setData(QString::fromStdString(nodeId), NodeIdRole);
-                status->setData(QString::fromStdString(folderId), FolderIdRole);
-
-                auto* vintage = new QStandardItem();
-                vintage->setData(static_cast<int>(type), NodeTypeRole);
-                vintage->setData(QString::fromStdString(nodeId), NodeIdRole);
-                vintage->setData(QString::fromStdString(folderId), FolderIdRole);
-
-                parentItem->appendRow({item, status, vintage});
+                parentItem->appendRow(item);
 
                 addFolderChildren(folderId, item);
 
@@ -790,11 +786,8 @@ void MarketSimulatorWindow::buildTree() {
                         return a->base_currency_code + a->quote_currency_code <
                               b->base_currency_code + b->quote_currency_code;
                     });
-                    for (const auto* fx : pairs) {
-                        auto row =
-                            buildFeedItem(*fx, imageCache_, runningSourceNames_, vintageValidByFx_);
-                        item->appendRow({row[0], row[1], row[2]});
-                    }
+                    for (const auto* fx : pairs)
+                        item->appendRow(buildFeedItem(*fx, imageCache_));
                 }
             }
         };
@@ -810,38 +803,26 @@ void MarketSimulatorWindow::buildTree() {
     for (const auto& [feedId, feed] : feeds_) {
         if (collectionsWithFolder.contains(feedId))
             continue;
+        const QIcon folderIcon =
+            IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor);
         auto* collectionItem = new QStandardItem(feedItemText(feed));
         collectionItem->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
         collectionItem->setData(QString::fromStdString(feedId), NodeIdRole);
-        collectionItem->setIcon(
-            IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
-        auto* collectionStatus = new QStandardItem();
-        collectionStatus->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
-        collectionStatus->setData(QString::fromStdString(feedId), NodeIdRole);
-
-        auto* collectionVintage = new QStandardItem();
-        collectionVintage->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
-        collectionVintage->setData(QString::fromStdString(feedId), NodeIdRole);
+        collectionItem->setData(QVariant::fromValue(folderIcon), BaseIconRole);
+        collectionItem->setIcon(folderIcon);
 
         for (const auto& [fxId, fx] : fxPairs_) {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
-            auto row = buildFeedItem(fx, imageCache_, runningSourceNames_, vintageValidByFx_);
-            collectionItem->appendRow({row[0], row[1], row[2]});
+            collectionItem->appendRow(buildFeedItem(fx, imageCache_));
         }
 
-        root->appendRow({collectionItem, collectionStatus, collectionVintage});
+        root->appendRow(collectionItem);
     }
 
-    refreshFeedTreeItems(); // sets every folder's status icons from running/vintage state
+    refreshFeedTreeItems(); // sets every node's badges from running/vintage state
     feedsTree_->expandAll();
-    feedsTree_->setColumnWidth(0, 220);
-    feedsTree_->header()->setStretchLastSection(false);
-    feedsTree_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    feedsTree_->header()->setSectionResizeMode(1, QHeaderView::Fixed);
-    feedsTree_->header()->setSectionResizeMode(2, QHeaderView::Fixed);
-    feedsTree_->setColumnWidth(1, 28);
-    feedsTree_->setColumnWidth(2, 28);
+    feedsTree_->header()->setStretchLastSection(true);
 }
 
 void MarketSimulatorWindow::updateEmptyState() {
@@ -1105,19 +1086,15 @@ void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNa
     refreshFxSummaryIfCurrent();
 }
 
-// Recomputes status icons bottom-up for item (column 0) and its column-1
-// (running) and column-2 (vintage) siblings, returning the aggregate so a
-// caller one level up can fold this node's status into its own. Leaf Feed
-// items look themselves up in fxPairs_/vintageValidByFx_; every other node
-// aggregates its children.
+// Recomputes item's icon bottom-up -- its stored plain BaseIconRole icon
+// with fresh running/vintage badges composited on top -- returning the
+// aggregate so a caller one level up can fold this node's status into its
+// own. Leaf Feed items look themselves up in fxPairs_/vintageValidByFx_;
+// every other node aggregates its children.
 MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
     if (!item)
         return {};
-    auto* parentContainer = item->parent();
-    auto* statusItem =
-        parentContainer ? parentContainer->child(item->row(), 1) : treeModel_->item(item->row(), 1);
-    auto* vintageItem =
-        parentContainer ? parentContainer->child(item->row(), 2) : treeModel_->item(item->row(), 2);
+    const QIcon base = item->data(BaseIconRole).value<QIcon>();
     const auto type = static_cast<NodeType>(item->data(NodeTypeRole).toInt());
     if (type == NodeType::Feed) {
         const auto fxId = item->data(NodeIdRole).toString().toStdString();
@@ -1125,8 +1102,6 @@ MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(Q
         if (it == fxPairs_.end())
             return {};
         const bool running = runningSourceNames_.count(it->second.source_name) > 0;
-        if (statusItem)
-            statusItem->setIcon(feedStatusIcon(running));
 
         TreeStatus s;
         s.running = running ? 1 : 0;
@@ -1134,8 +1109,9 @@ MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(Q
         const auto vit = vintageValidByFx_.find(fxId);
         s.anyVintageApplicable = vit != vintageValidByFx_.end();
         s.anyVintageInvalid = s.anyVintageApplicable && !vit->second;
-        if (vintageItem)
-            vintageItem->setIcon(vintageStatusIcon(s.anyVintageInvalid, s.anyVintageApplicable));
+        item->setIcon(composeBadgedIcon(base,
+                                        runningBadge(s.running, 1),
+                                        vintageBadge(s.anyVintageInvalid, s.anyVintageApplicable)));
         return s;
     }
 
@@ -1147,10 +1123,9 @@ MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(Q
         agg.anyVintageInvalid = agg.anyVintageInvalid || s.anyVintageInvalid;
         agg.anyVintageApplicable = agg.anyVintageApplicable || s.anyVintageApplicable;
     }
-    if (statusItem)
-        statusItem->setIcon(folderStatusIcon(agg.running, agg.total));
-    if (vintageItem)
-        vintageItem->setIcon(vintageStatusIcon(agg.anyVintageInvalid, agg.anyVintageApplicable));
+    item->setIcon(composeBadgedIcon(base,
+                                    runningBadge(agg.running, agg.total),
+                                    vintageBadge(agg.anyVintageInvalid, agg.anyVintageApplicable)));
     return agg;
 }
 

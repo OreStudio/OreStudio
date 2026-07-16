@@ -87,30 +87,11 @@ shifts intraday — it is corrected through a controlled, audited
 process. OreStudio enforces this with a comprehensive data quality
 framework described in this chapter.
 
-#+begin_tangent
-*GLEIF and the Legal Entity Identifier (LEI)*
-
-The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
-not-for-profit organisation that oversees the global LEI system on
-behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
-20-character alphanumeric code that uniquely identifies a legal entity
-participating in financial markets — a bank, a corporation, a fund, a
-branch. LEIs are mandated by major regulatory frameworks including
-MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
-counterparty identification.
-
-GLEIF publishes the full registry of LEI entities and their corporate
-hierarchies (parent-child relationships) as open data. OreStudio uses
-the GLEIF dataset to seed counterparties and, when a party's root LEI
-is selected during tenant provisioning, to populate the initial party
-hierarchy from real organisational data.
-
-A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
-identifying a specific financial institution, used in SWIFT messaging
-for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
-that OreStudio also imports, allowing settlement systems to resolve a
-counterparty's BIC from its LEI.
-#+end_tangent
+GLEIF and the Legal Entity Identifier (the LEI standard, and how
+OreStudio uses it to seed parties and counterparties from real
+organisational data) is covered in the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] chapter rather than
+here — legal-entity identification is a property of the parties and
+counterparties themselves, not of reference data generally.
 
 ** Data Quality
 

@@ -58,11 +58,36 @@ a registered company, a bank, a branch — and real legal entities are
 notoriously hard to identify consistently: the same organisation can
 appear under different names, registration numbers, and codes across
 different jurisdictions, counterparties, and vendor systems, with no
-single authority reconciling them all. See the /GLEIF and the Legal
-Entity Identifier/ sidebar in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for what the
-LEI is and how OreStudio consumes it — not repeated here. Because no
-single identifier scheme covers every counterpart a party might need
-to be recognised by, a party can carry more than one — see
+single authority reconciling them all.
+
+#+begin_tangent
+*GLEIF and the Legal Entity Identifier (LEI)*
+
+The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
+not-for-profit organisation that oversees the global LEI system on
+behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
+20-character alphanumeric code that uniquely identifies a legal entity
+participating in financial markets — a bank, a corporation, a fund, a
+branch. LEIs are mandated by major regulatory frameworks including
+MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
+counterparty identification.
+
+GLEIF publishes the full registry of LEI entities and their corporate
+hierarchies (parent-child relationships) as open data. OreStudio uses
+the GLEIF dataset to seed counterparties and, when a party's root LEI
+is selected during tenant provisioning, to populate the initial party
+hierarchy from real organisational data — see [[*The party hierarchy][The party hierarchy]]
+below.
+
+A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
+identifying a specific financial institution, used in SWIFT messaging
+for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
+that OreStudio also imports, allowing settlement systems to resolve a
+counterparty's BIC from its LEI.
+#+end_tangent
+
+Because no single identifier scheme covers every counterpart a party
+might need to be recognised by, a party can carry more than one — see
 [[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
 recognises.
 

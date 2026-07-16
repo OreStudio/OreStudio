@@ -96,10 +96,10 @@ and can use =timestamp= to query for changes since that point.
 
 | Subject | Description |
 |---------+-------------|
-| =refdata.v1.business-units.list= | Retrieve all business units |
-| =refdata.v1.business-units.save= | Create or update a business unit |
-| =refdata.v1.business-units.delete= | Delete one or more business units |
-| =refdata.v1.business-units.history= | Retrieve version history for a business unit |
+| =refdata.v1.business_units.list= | Retrieve all business units |
+| =refdata.v1.business_units.save= | Create or update a business unit |
+| =refdata.v1.business_units.delete= | Delete one or more business units |
+| =refdata.v1.business_units.history= | Retrieve version history for a business unit |
 
 * Contact Types
 

@@ -68,13 +68,23 @@ public:
         const auto& ctx = *ctx_expected;
         service::party_id_scheme_service svc(ctx);
         get_party_id_schemes_response resp;
-        try {
-            resp.party_id_schemes = svc.list_schemes();
-            resp.total_available_count = static_cast<int>(resp.party_id_schemes.size());
-            BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_id_scheme_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        if (auto req = decode<get_party_id_schemes_request>(msg)) {
+            try {
+                resp.schemes = svc.list_schemes(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_schemes());
+                resp.success = true;
+                BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug) << "Completed " << msg.subject;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_id_scheme_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(party_id_scheme_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         reply(nats_, msg, resp);
     }
@@ -131,7 +141,7 @@ public:
             return;
         }
         try {
-            svc.remove_scheme(req->scheme);
+            svc.delete_schemes(req->codes);
             BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_party_id_scheme_response{.success = true});
         } catch (const std::exception& e) {
@@ -159,11 +169,11 @@ public:
             return;
         }
         try {
-            auto h = svc.get_scheme_history(req->scheme);
+            auto h = svc.get_scheme_history(req->code);
             BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
-                  get_party_id_scheme_history_response{.success = true, .history = std::move(h)});
+                  get_party_id_scheme_history_response{.history = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_id_scheme_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

@@ -42,6 +42,12 @@ std::uint32_t party_status_service::count_statuses() {
     return repo_.get_total_status_count(ctx_);
 }
 
+std::optional<domain::party_status>
+party_status_service::get_status_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party status at version: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
 
 std::optional<domain::party_status> party_status_service::get_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting party status: " << code;

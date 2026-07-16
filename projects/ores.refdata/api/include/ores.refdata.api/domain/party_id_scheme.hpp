@@ -23,6 +23,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -73,7 +74,12 @@ struct party_id_scheme final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
+
+    /**
+     * @brief Optional maximum cardinality constraint for the identifier scheme.
+     */
+    std::optional<int> max_cardinality;
 
     /**
      * @brief Username of the person who last modified this party ID scheme.
@@ -102,6 +108,16 @@ struct party_id_scheme final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for party_id_scheme, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const party_id_scheme&) {
+    return "ores.refdata.party_id_scheme";
+}
 
 }
 

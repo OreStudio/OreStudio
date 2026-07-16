@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IBusinessUnitBrowser.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OreImportController.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
@@ -51,6 +52,14 @@ BookController* find_book_controller() {
     for (auto* plugin : PluginRegistry::instance().plugins()) {
         if (auto* refdata = dynamic_cast<RefdataPlugin*>(plugin))
             return refdata->book_controller();
+    }
+    return nullptr;
+}
+
+IBusinessUnitBrowser* find_business_unit_controller() {
+    for (auto* plugin : PluginRegistry::instance().plugins()) {
+        if (auto* refdata = dynamic_cast<RefdataPlugin*>(plugin))
+            return refdata->business_unit_controller();
     }
     return nullptr;
 }
@@ -99,6 +108,11 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
     else
         BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's BookController not found -- "
                                   << "Books menu/Explorer views will be non-functional.";
+
+    businessUnitController_ = find_business_unit_controller();
+    if (!businessUnitController_)
+        BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's BusinessUnitController not found -- "
+                                  << "Org Explorer's business unit edit/history will be non-functional.";
 
     tradeController_ = std::make_unique<TradeController>(ctx_.main_window,
                                                          ctx_.mdi_area,
@@ -223,7 +237,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
         }
 
         auto* window = new OrgExplorerMdiWindow(ctx_.client_manager,
-                                                nullptr,
+                                                businessUnitController_,
                                                 bookController_,
                                                 tradeController_.get(),
                                                 ctx_.username,
@@ -288,6 +302,7 @@ void TradingPlugin::on_logout() {
 
     tradeController_.reset();
     bookController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
+    businessUnitController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
     portfolioController_.reset();
     oreImportController_.reset();
 

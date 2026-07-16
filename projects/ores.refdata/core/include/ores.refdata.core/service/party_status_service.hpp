@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_status_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -74,6 +75,16 @@ public:
      */
     std::uint32_t count_statuses();
 
+    /**
+     * @brief Retrieves a single party status as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the party status.
+     * @param version The version to fetch.
+     * @return The party status at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_status> get_status_at_version(const std::string& code,
+                                                              std::uint32_t version);
 
     /**
      * @brief Retrieves a single party status by its code.

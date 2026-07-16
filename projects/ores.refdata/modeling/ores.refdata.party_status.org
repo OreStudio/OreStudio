@@ -181,6 +181,15 @@ drop function if exists ores_refdata_validate_party_status_fn;
 :icon:                   Flag
 :END:
 
+*** Detail fields
+
+| field         | label         | widget           | type      | is_key | is_required | placeholder          |
+|---------------+---------------+------------------+-----------+--------+-------------+----------------------|
+| code          | Code          | codeEdit         | line_edit | true   | true        | Enter status code    |
+| name          | Name          | nameEdit         | line_edit |        | true        | Enter status name    |
+| description   | Description   | descriptionEdit  | text_edit |        | true        | Enter a description  |
+| display_order | Display Order | displayOrderEdit | spin_box  |        |             |                      |
+
 *** Columns (Qt model)
 
 | enum_name    | field         | header      | type      | width |

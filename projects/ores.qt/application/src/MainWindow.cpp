@@ -504,10 +504,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;
-    // RefdataPlugin appends it to the Reference Data menu). Shared because
-    // party-domain aux types are migrating from ores.qt.party to
-    // ores.qt.refdata entity-by-entity; both plugins may contribute here
-    // during the transition.
+    // RefdataPlugin appends it to the Reference Data menu).
     auto* organisationCodesMenu = new QMenu(tr("Organisation &Codes"), this);
 
     // Phase 1 — let plugins contribute to shared menus.

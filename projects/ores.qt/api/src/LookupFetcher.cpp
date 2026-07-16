@@ -26,6 +26,7 @@
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -207,7 +208,7 @@ std::vector<std::string> fetch_party_id_scheme_codes(ClientManager* cm) {
     request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
-        for (const auto& scheme : response->party_id_schemes) {
+        for (const auto& scheme : response->schemes) {
             codes.push_back(scheme.code);
         }
     }
@@ -290,6 +291,18 @@ fetch_book_statuses(ClientManager* cm) {
     return std::move(response->statuses);
 }
 
+std::expected<std::vector<refdata::domain::business_unit_type>, QString>
+fetch_business_unit_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_business_unit_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
+}
+
 std::expected<std::vector<refdata::domain::party_type>, QString>
 fetch_party_types(ClientManager* cm) {
     if (!cm)
@@ -323,7 +336,7 @@ fetch_party_id_schemes(ClientManager* cm) {
     auto response = cm->process_authenticated_request(std::move(request));
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
-    return std::move(response->party_id_schemes);
+    return std::move(response->schemes);
 }
 
 std::expected<std::vector<refdata::domain::contact_type>, QString>

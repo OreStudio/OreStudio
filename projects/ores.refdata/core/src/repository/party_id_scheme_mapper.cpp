@@ -33,10 +33,13 @@ domain::party_id_scheme party_id_scheme_mapper::map(const party_id_scheme_entity
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
+
     r.name = v.name;
+
     r.description = v.description;
-    r.coding_scheme_code = v.coding_scheme_code;
+    r.coding_scheme_code = v.coding_scheme_code.value_or("");
     r.display_order = v.display_order;
+    r.max_cardinality = v.max_cardinality;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -54,10 +57,14 @@ party_id_scheme_entity party_id_scheme_mapper::map(const domain::party_id_scheme
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
-    r.coding_scheme_code = v.coding_scheme_code;
+    r.coding_scheme_code =
+        v.coding_scheme_code.empty() ? std::nullopt : std::optional(v.coding_scheme_code);
     r.display_order = v.display_order;
+    r.max_cardinality = v.max_cardinality;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

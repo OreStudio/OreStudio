@@ -19,8 +19,11 @@
  */
 #include "ores.refdata.api/generators/business_unit_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -29,21 +32,23 @@ using ores::utility::generation::generation_keys;
 domain::business_unit
 generate_synthetic_business_unit(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::business_unit r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.unit_name = faker::company::companyName() + " Desk " + std::to_string(idx);
+    r.unit_name = faker::company::companyName() + " Desk" + "-" + std::to_string(idx);
     r.parent_business_unit_id = std::nullopt;
     r.unit_code = std::string("DESK") + std::to_string(idx);
     r.business_centre_code = std::string("GBLO");
-    r.status = "Active";
+    r.unit_type_id = std::nullopt;
+    r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

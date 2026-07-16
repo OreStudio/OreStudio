@@ -63,7 +63,7 @@ Human-readable name for the business unit.
 e.g., 'FX Options Desk', 'London Branch'.
 
 #+begin_src cpp :name generator
-std::string(faker::company::name()) + " Desk"
+faker::company::companyName() + " Desk"
 #+end_src
 
 * Columns
@@ -71,7 +71,7 @@ std::string(faker::company::name()) + " Desk"
 ** parent_business_unit_id
 :PROPERTIES:
 :type:     uuid
-:cpp_type: boost::uuids::uuid
+:cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
 :END:
 
@@ -80,7 +80,7 @@ Self-referencing parent unit for hierarchy.
 NULL indicates a top-level unit.
 
 #+begin_src cpp :name generator
-boost::uuids::uuid()
+std::nullopt
 #+end_src
 
 ** unit_code
@@ -95,7 +95,7 @@ Optional internal code or alias.
 Short identifier for the business unit.
 
 #+begin_src cpp :name generator
-std::string("DESK01")
+std::string("DESK") + std::to_string(idx)
 #+end_src
 
 ** business_centre_code
@@ -113,12 +113,106 @@ References the business centres scheme. May be null for global units.
 std::string("GBLO")
 #+end_src
 
+** unit_type_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Classification type for this business unit.
+
+Optional FK to business_unit_type. When set, the level of this unit's
+type must be strictly greater than its parent's type level (if the
+parent also has a type set).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  Active
+:END:
+
+Current lifecycle status (Active, Inactive, Closed).
+
+#+begin_src cpp :name generator
+std::string("Active")
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_business_units_tbl
 :END:
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** parent_business_unit_id
+:PROPERTIES:
+:table:         ores_refdata_business_units_tbl
+:nullable:      true
+:error_message: Invalid parent_business_unit_id: %. No active business unit found with this id.
+:prevent_cycle: true
+:END:
+
+* Insert trigger
+** Validations
+
+| column                | validation_function                       |
+|------------------------+-------------------------------------------|
+| business_centre_code  | ores_refdata_validate_business_centre_fn  |
+| unit_type_id          | ores_refdata_validate_business_unit_type_fn |
+
+#+begin_src sql :name unit_type_level_validation :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- Level constraint: when both parent and child have a type, child level > parent level
+    if NEW.unit_type_id is not null and NEW.parent_business_unit_id is not null then
+        declare
+            v_parent_type_id uuid;
+            v_parent_level integer;
+            v_child_level integer;
+        begin
+            select unit_type_id into v_parent_type_id
+            from ores_refdata_business_units_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.parent_business_unit_id
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if v_parent_type_id is not null then
+                select level into v_parent_level
+                from ores_refdata_business_unit_types_tbl
+                where tenant_id = NEW.tenant_id
+                  and id = v_parent_type_id
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+
+                select level into v_child_level
+                from ores_refdata_business_unit_types_tbl
+                where tenant_id = NEW.tenant_id
+                  and id = NEW.unit_type_id
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+
+                if v_child_level <= v_parent_level then
+                    raise exception
+                        'Business unit type level % cannot be contained by a unit of the same or higher level %. Parent level must be strictly less than child level.',
+                        v_child_level, v_parent_level
+                        using errcode = '23514';
+                end if;
+            end if;
+        end;
+    end if;
+#+end_src
 
 * C++
 
@@ -139,6 +233,7 @@ std::string("GBLO")
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -164,18 +259,20 @@ std::string("GBLO")
 | unit_name            | Unit Name       |
 | unit_code            | Code            |
 | business_centre_code | Business Centre |
+| status               | Status          |
 | modified_by          | Modified By     |
 | version              | Version         |
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.refdata/domain/business_unit.hpp
+:domain_include:          ores.refdata.api/domain/business_unit.hpp
 :domain_class:            refdata::domain::business_unit
-:protocol_include:        ores.refdata/messaging/business_unit_protocol.hpp
+:protocol_include:        ores.refdata.api/messaging/business_unit_protocol.hpp
 :collection_name:         business_units
 :item_var:                business_unit
 :key_field:               unit_code
 :has_uuid_primary_key:    true
+:has_change_reason_cache: true
 :get_request_class:       refdata::messaging::get_business_units_request
 :get_response_class:      refdata::messaging::get_business_units_response
 :get_message_type:        get_business_units_request
@@ -196,11 +293,13 @@ std::string("GBLO")
 
 *** Detail fields
 
-| field                | label           | widget             | type      | is_key | is_required | placeholder                |
-|----------------------+-----------------+--------------------+-----------+--------+-------------+----------------------------|
-| unit_code            | Unit Code       | codeEdit           | line_edit | true   | false       | Enter unit code            |
-| unit_name            | Unit Name       | nameEdit           | line_edit |        | true        | Enter unit name            |
-| business_centre_code | Business Centre | businessCentreEdit | line_edit |        |             | Enter business centre code |
+| field                | label           | widget             | type          | is_key | is_required | placeholder                 | combo_domain_type              | combo_display_field | combo_fetch_include        | combo_fetch_fn            | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label         | combo_setter_pascal | combo_values           |
+|----------------------+-----------------+--------------------+---------------+--------+-------------+------------------------------+---------------------------------+----------------------+-------------------------------+------------------------------+-----------------------+--------------------+------------------------+--------------------+-----------------------+------------------------+--------------------------|
+| unit_code            | Unit Code       | codeEdit           | line_edit     | true   | false       | Enter unit code              |                                 |                      |                                |                              |                       |                    |                        |                    |                       |                        |                          |
+| unit_name            | Unit Name       | nameEdit           | line_edit     |        | true        | Enter unit name              |                                 |                      |                                |                              |                       |                    |                        |                    |                       |                        |                          |
+| business_centre_code | Business Centre | businessCentreEdit | line_edit     |        |             | Enter business centre code   |                                 |                      |                                |                              |                       |                    |                        |                    |                       |                        |                          |
+| status               | Status          | statusCombo        | static_combo  |        |             |                              |                                 |                      |                                |                              |                       |                    |                        |                    |                       |                        | Active,Inactive,Closed   |
+| unit_type_id         | Unit Type       | unitTypeCombo      | dynamic_combo |        |             |                              | refdata::domain::business_unit_type | name             | ores.qt/LookupFetcher.hpp     | fetch_business_unit_types    | unitTypeWatcher       | id                 | description            | level              | business unit types  | UnitTypeCombo          |                          |
 
 *** Columns (Qt model)
 
@@ -209,9 +308,16 @@ std::string("GBLO")
 | UnitCode           | unit_code            | Code            | string    | 120   |
 | UnitName           | unit_name            | Name            | string    | 250   |
 | BusinessCentreCode | business_centre_code | Business Centre | string    | 130   |
+| Status              | status               | Status          | string    | 100   |
 | Version            | version              | Version         | int       | 80    |
 | ModifiedBy         | modified_by          | Modified By     | string    | 120   |
 | RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |
+
+*** Icon columns (Qt model)
+
+| column             | accessor                  | field1                | field2 |
+|--------------------+----------------------------+------------------------+--------|
+| BusinessCentreCode | business_centre_flag_icon | business_centre_code  |        |
 
 ** Custom repository methods
 

@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -39,10 +40,13 @@ struct party_id_scheme_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
-    std::string coding_scheme_code;
-    int display_order;
+    std::optional<std::string> coding_scheme_code;
+    int display_order = 0;
+    std::optional<int> max_cardinality;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

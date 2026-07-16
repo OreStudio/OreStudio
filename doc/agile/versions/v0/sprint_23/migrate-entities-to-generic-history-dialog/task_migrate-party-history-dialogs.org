@@ -7,41 +7,151 @@
 #+level: s1
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-party-history-dialogs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
 #+updated: 2026-07-14
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Retire the 4 hand-rolled =*HistoryDialog= classes in
+=projects/ores.qt/party= (=BusinessUnitHistoryDialog=,
+=BusinessUnitTypeHistoryDialog=, =PartyIdSchemeHistoryDialog=,
+=PartyStatusHistoryDialog=), wiring =business_unit=,
+=business_unit_type=, =party_id_scheme=, and =party_status= onto the
+generic =HistoryDialog=. Scope expanded substantially mid-task — see
+Plan — into moving all 4 entities out of =ores.qt.party= (deleted)
+into =ores.qt.refdata=, and then bringing all 4 entities onto full
+codegen (domain/SQL/repository/service/protocol/generator/Qt/eventing),
+including authoring a brand-new codegen model for =business_unit_type=
+(which never had one) and a new codegen template paste-point.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Now          | Local build (linux-clang-debug-make) passed clean. Manual QA and task close-out remain. |
+| Waiting on   | Manual QA scenario re-run against a live tenant. |
+| Next         | Run QA scenario, close task, raise PR. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
--
+- All 4 entities' history windows use the generic =HistoryDialog= (no per-entity =*HistoryDialog= class remains). ✅
+- =ores.qt.party= plugin is deleted; its 4 entities live in =ores.qt.refdata=/=RefdataPlugin= instead. ✅
+- All 4 entities have a complete codegen stack (domain/SQL/repository/service/protocol/generator/Qt/eventing), diffed layer-by-layer against the prior hand-written code. ✅
+- Local build passes clean. ✅ (manual QA scenario re-run still pending)
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Original scope (per the task title) was a frontend-only rewire, same
+shape as currency's PR #1553. Investigation and explicit direction
+mid-task expanded it in three stages:
+
+** Stage 1 — backend generic-history support + frontend rewire
+
+No backend generic-history support existed for any of the 4 entities
+(no =entity_type_of=, no =*_history_field_mapper=, no
+=register_history_provider= registration in =registrar.cpp=) — unlike
+currency, which already had it. Added these by hand initially, and
+rewired all 4 controllers' =showHistoryWindow=/=onOpenVersion=/
+=onRevertVersion= to the generic =HistoryDialog=, following
+=CurrencyController='s pattern. Deleted the 4 =*HistoryDialog=
+classes.
+
+** Stage 2 — ores.qt.party is not a real plugin; dissolve it
+
+=ores.qt.party='s own doc comment says "contributes to the shared
+Reference Data menu; no standalone menu"; all 4 entities are
+=ores.refdata.api::domain::*= with no =ores.party= backend at all; and
+the product backlog already had a matching deferred capture
+([[id:98D6A549-01D5-4E99-A530-9AFB9CFFD858][Dissolve ores.qt.party plugin]]) tracking exactly this. Moved all 4
+entities' Qt code into =ores.qt.refdata= via =git mv=, wired the 4
+controllers into =RefdataPlugin=, deleted =ores.qt.party= entirely
+(plugin class, CMake wiring, modeling docs), and updated the
+architecture docs.
+
+** Stage 3 — full codegen, not hand-wiring
+
+Explicit direction: every entity touched here should have a *complete*
+codegen stack, not hand-maintained backend glue. Re-did stage 1's
+hand-written pieces properly:
+
+- *business_unit*, *party_id_scheme*, *party_status*: regenerated
+  domain/repository/service/protocol/generator/presentation/Qt layer
+  by layer, diffing each against the prior hand-written code before
+  accepting. SQL regeneration was skipped for =party_id_scheme= and
+  =party_status= — both are dual-file entities (a =_table.org=
+  counterpart already owns their SQL; regenerating from the
+  domain_entity file is a documented unsafe path per
+  =codegen-model-unification.org=, and neither needed schema changes).
+  =business_unit='s SQL was regenerated cleanly.
+- *business_unit_type*: had no codegen model at all. Authored one from
+  scratch (using =business_unit.org=/=business_centre.org= as
+  templates), including its full stack. Its =coding_scheme_code= FK is
+  always system-tenant-scoped (unlike ordinary per-tenant soft FKs)
+  and it exports a validator function
+  (=ores_refdata_validate_business_unit_type_fn=) that =business_unit='s
+  own trigger depends on — neither fits the standard per-column FK
+  knobs, so both are expressed as trailing-paste-block custom SQL.
+  That required adding a *new*, backward-compatible trailing paste
+  marker to the shared =sql_schema_domain_entity_create= template
+  (verified as a no-op against an unrelated already-generated entity,
+  =currency=, before relying on it).
+- *NATS eventing*: discovered mid-stage that =business_unit_type= and
+  =party_id_scheme= never had eventing wired at all (Qt already
+  subscribed to changed-events that nothing published), and that
+  =business_unit='s own eventing was hand-wired directly in
+  =application.cpp= rather than through the generated per-entity
+  =*_event_registrar= pattern. Generated and wired all three properly
+  (Postgres =NOTIFY= trigger → generated =*_event_registrar= →
+  =event_registrar.cpp= → NATS publish), and removed the hand-written
+  block for =business_unit= from =application.cpp=.
+
+Real pre-existing bugs found and fixed while regenerating (not
+introduced by this task, surfaced by actually exercising codegen for
+the first time on stale/never-generated models):
+
+- Old hand-written repositories had *no tenant_id filtering at all* on
+  any query — a multi-tenancy isolation gap; the current template
+  scopes every query by tenant.
+- A model generator snippet assigned a raw =boost::uuids::uuid()=
+  (nil, but an *engaged* optional) to an optional-uuid field instead
+  of =std::nullopt=, which would have failed FK validation on every
+  synthetic-data insert.
+- Two models had a wrong include path (=ores.refdata/domain/...=
+  missing =.api=), never caught because their Qt facet had never
+  actually been generated before.
+- Regenerating =BusinessUnitController= silently dropped
+  =IBusinessUnitBrowser=, a cross-plugin interface =TradingPlugin='s
+  Org Explorer view depends on for its business-unit edit/history
+  actions — restored by hand after each regen (the interface isn't
+  representable in the model). Also found that wiring was already
+  passing =nullptr= for it before this task — a separate, older
+  pre-existing gap, now fixed for real.
+- =party_id_scheme.org= had a =* Check constraints= heading that the
+  domain_entity SQL template silently ignores (the real heading is
+  =* SQL / ** Checks=); moot here since SQL regen was skipped for that
+  entity, but worth knowing.
+- =default ""= (double-quoted empty string) is invalid SQL string
+  literal syntax; fixed to omit the default entirely.
+- A faker API rename (=faker::company::name()= doesn't exist;
+  =companyName()= does) in =business_unit.org='s generator snippet —
+  pre-existing, never caught because the generator had never run.
+
+Deliberately accepted, disclosed simplifications: the old
+=BusinessUnitDetailDialog= showed a read-only "level" label next to
+the unit-type picker as a side effect of selection; the regenerated
+=dynamic_combo= doesn't support that auxiliary display. Not restored
+(minor UX nicety, not core functionality).
 
 * Notes
 
@@ -69,3 +179,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 4 entities (=business_unit=, =business_unit_type=,
+=party_id_scheme=, =party_status=) now use the generic =HistoryDialog=,
+live in =ores.qt.refdata=/=RefdataPlugin= (=ores.qt.party= deleted
+entirely), and have complete, codegen-generated stacks rather than
+hand-maintained backend glue — including a brand-new model for
+=business_unit_type= and a new backward-compatible trailing paste
+point added to the shared SQL create template. Several real
+pre-existing bugs (missing tenant scoping, a nil-vs-nullopt generator
+bug, two wrong include paths, a silently-dropped cross-plugin
+interface, missing/hand-wired NATS eventing for 3 entities) were found
+and fixed along the way. Local build (=linux-clang-debug-make=) passes
+clean. Manual QA scenario re-run against a live tenant is the
+remaining acceptance item before close.

@@ -26,6 +26,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -50,8 +51,8 @@ TEST_CASE("write_single_business_unit_type", tags) {
     ut.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
-    business_unit_type_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(ut));
+    business_unit_type_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), ut));
 }
 
 TEST_CASE("write_multiple_business_unit_types", tags) {
@@ -65,8 +66,8 @@ TEST_CASE("write_multiple_business_unit_types", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Business unit types: " << unit_types;
 
-    business_unit_type_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(unit_types));
+    business_unit_type_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), unit_types));
 }
 
 TEST_CASE("read_latest_business_unit_types", tags) {
@@ -80,10 +81,10 @@ TEST_CASE("read_latest_business_unit_types", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Written business unit types: " << written_types;
 
-    business_unit_type_repository repo(h.context());
-    repo.write(written_types);
+    business_unit_type_repository repo;
+    repo.write(h.context(), written_types);
 
-    auto read_types = repo.read_latest();
+    auto read_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read business unit types: " << read_types;
 
     CHECK(read_types.size() >= written_types.size());
@@ -99,41 +100,18 @@ TEST_CASE("read_latest_business_unit_type_by_id", tags) {
     const auto original_name = ut.name;
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
-    business_unit_type_repository repo(h.context());
-    repo.write(ut);
+    business_unit_type_repository repo;
+    repo.write(h.context(), ut);
 
     ut.name = original_name + " v2";
-    repo.write(ut);
+    repo.write(h.context(), ut);
 
-    auto read_types = repo.read_latest(ut.id);
+    const auto id_str = boost::uuids::to_string(ut.id);
+    auto read_types = repo.read_latest(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "Read business unit types by id: " << read_types;
 
     REQUIRE(read_types.size() == 1);
     CHECK(read_types[0].id == ut.id);
-    CHECK(read_types[0].name == original_name + " v2");
-}
-
-TEST_CASE("read_latest_business_unit_type_by_code", tags) {
-    auto lg(make_logger(test_suite));
-
-    scoped_database_helper h;
-    auto ctx = ores::testing::make_generation_context(h);
-    auto ut = generate_synthetic_business_unit_type(ctx);
-    ut.change_reason_code = "system.test";
-    const auto original_name = ut.name;
-    BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
-
-    business_unit_type_repository repo(h.context());
-    repo.write(ut);
-
-    ut.name = original_name + " v2";
-    repo.write(ut);
-
-    auto read_types = repo.read_latest_by_code(ut.code);
-    BOOST_LOG_SEV(lg, debug) << "Read business unit types by code: " << read_types;
-
-    REQUIRE(read_types.size() == 1);
-    CHECK(read_types[0].code == ut.code);
     CHECK(read_types[0].name == original_name + " v2");
 }
 
@@ -146,13 +124,14 @@ TEST_CASE("read_all_business_unit_type_versions", tags) {
     ut.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
-    business_unit_type_repository repo(h.context());
-    repo.write(ut);
+    business_unit_type_repository repo;
+    repo.write(h.context(), ut);
 
     ut.name = ut.name + " v2";
-    repo.write(ut);
+    repo.write(h.context(), ut);
 
-    auto all_versions = repo.read_all(ut.id);
+    const auto id_str = boost::uuids::to_string(ut.id);
+    auto all_versions = repo.read_all(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
     CHECK(all_versions.size() >= 2);
@@ -167,15 +146,16 @@ TEST_CASE("remove_business_unit_type", tags) {
     ut.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
 
-    business_unit_type_repository repo(h.context());
-    repo.write(ut);
+    business_unit_type_repository repo;
+    repo.write(h.context(), ut);
 
-    auto before_remove = repo.read_latest(ut.id);
+    const auto id_str = boost::uuids::to_string(ut.id);
+    auto before_remove = repo.read_latest(h.context(), id_str);
     REQUIRE(before_remove.size() == 1);
 
-    CHECK_NOTHROW(repo.remove(ut.id));
+    CHECK_NOTHROW(repo.remove(h.context(), id_str));
 
-    auto after_remove = repo.read_latest(ut.id);
+    auto after_remove = repo.read_latest(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove: " << after_remove;
     CHECK(after_remove.empty());
 }

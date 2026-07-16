@@ -141,6 +141,8 @@
 #include "ores.refdata.core/presentation/book_status_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/business_centre_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/business_day_convention_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/business_unit_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/business_unit_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/calendar_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/cds_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/contact_type_history_field_mapper.hpp"
@@ -164,6 +166,8 @@
 #include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/party_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/party_id_scheme_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/party_status_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/party_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/payment_frequency_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/purpose_type_history_field_mapper.hpp"
@@ -183,6 +187,8 @@
 #include "ores.refdata.core/service/book_status_service.hpp"
 #include "ores.refdata.core/service/business_centre_service.hpp"
 #include "ores.refdata.core/service/business_day_convention_type_service.hpp"
+#include "ores.refdata.core/service/business_unit_service.hpp"
+#include "ores.refdata.core/service/business_unit_type_service.hpp"
 #include "ores.refdata.core/service/calendar_service.hpp"
 #include "ores.refdata.core/service/cds_convention_service.hpp"
 #include "ores.refdata.core/service/contact_type_service.hpp"
@@ -206,6 +212,8 @@
 #include "ores.refdata.core/service/ois_convention_service.hpp"
 #include "ores.refdata.core/service/overnight_index_convention_service.hpp"
 #include "ores.refdata.core/service/party_service.hpp"
+#include "ores.refdata.core/service/party_id_scheme_service.hpp"
+#include "ores.refdata.core/service/party_status_service.hpp"
 #include "ores.refdata.core/service/party_type_service.hpp"
 #include "ores.refdata.core/service/payment_frequency_service.hpp"
 #include "ores.refdata.core/service/purpose_type_service.hpp"
@@ -800,6 +808,42 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_payment_frequency_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_payment_frequency_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.business_unit",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::business_unit_service svc(scoped_ctx);
+                auto versions = svc.get_business_unit_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_business_unit_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.business_unit_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::business_unit_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_business_unit_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.party_id_scheme",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::party_id_scheme_service svc(scoped_ctx);
+                auto versions = svc.get_scheme_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_party_id_scheme_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.party_status",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::party_status_service svc(scoped_ctx);
+                auto versions = svc.get_status_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_party_status_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

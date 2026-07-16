@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing party ID schemes.
+ *
+ * Provides a higher-level interface for party ID scheme operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT party_id_scheme_service {
 private:
@@ -47,20 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a party_id_scheme_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit party_id_scheme_service(context ctx);
 
-    std::vector<domain::party_id_scheme> list_schemes();
+    /**
+     * @brief Lists party ID schemes with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of party ID schemes for the requested page.
+     */
+    std::vector<domain::party_id_scheme> list_schemes(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::party_id_scheme> find_scheme(const std::string& code);
+    /**
+     * @brief Gets the total count of active party ID schemes.
+     *
+     * @return Total number of active party ID schemes.
+     */
+    std::uint32_t count_schemes();
 
+    /**
+     * @brief Retrieves a single party ID scheme as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the party ID scheme.
+     * @param version The version to fetch.
+     * @return The party ID scheme at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_id_scheme> get_scheme_at_version(const std::string& code,
+                                                                 std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single party ID scheme by its code.
+     *
+     * @param code The code of the party ID scheme.
+     * @return The party ID scheme if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_id_scheme> get_scheme(const std::string& code);
+
+    /**
+     * @brief Saves a party ID scheme (creates or updates).
+     *
+     * @param scheme The party ID scheme to save.
+     * @throws std::exception on failure.
+     */
     void save_scheme(const domain::party_id_scheme& scheme);
 
+    /**
+     * @brief Saves a batch of party ID schemes.
+     *
+     * @param schemes The party ID schemes to save.
+     * @throws std::exception on failure.
+     */
     void save_schemes(const std::vector<domain::party_id_scheme>& schemes);
 
-    void remove_scheme(const std::string& code);
+    /**
+     * @brief Deletes a party ID scheme by its code.
+     *
+     * @param code The code of the party ID scheme to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_scheme(const std::string& code);
 
-    void remove_schemes(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes party ID schemes by their codes.
+     */
+    void delete_schemes(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a party ID scheme.
+     */
     std::vector<domain::party_id_scheme> get_scheme_history(const std::string& code);
 
 private:

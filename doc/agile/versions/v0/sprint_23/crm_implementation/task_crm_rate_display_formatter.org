@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-refdata-client-currency-pair-convention-cache
-#+pr:
+#+pr: 1596
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1596][#1596]] | [refdata,codegen,qt] Add ores.refdata.client with a currency_pair_convention cache |
 
 * Review
 

@@ -79,7 +79,7 @@ Qt). Concretely:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2590F0EB-007D-4AD2-98E2-27A6AB957555][Scaffold story: Commission ores.qt.dq — full-stack codegen for the DQ component]] | STARTED | 2026-07-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2590F0EB-007D-4AD2-98E2-27A6AB957555][Scaffold story: Commission ores.qt.dq — full-stack codegen for the DQ component]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:206FCFAE-6617-4FEE-BE81-9DC7468FAE1A][Inventory all DQ entities and their current codegen/hand-written status]] | BACKLOG | | | Initial task for: Commission ores.qt.dq — full-stack codegen for the DQ component |
 
 * Decisions

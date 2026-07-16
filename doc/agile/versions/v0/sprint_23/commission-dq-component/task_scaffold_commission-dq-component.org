@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -69,3 +69,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded: docs, sprint wiring. Goal and task-breakdown
+decision (one task per DQ entity) written into =story.org=, capturing
+what the badge migration session ([[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]])
+left half-done deliberately: repository layer regenerated for all
+three entities, but the hand-written combined
+=badge_handler.hpp=/=badge_service.cpp=/=badge_protocol.hpp= and all
+Qt controllers/dialogs are still hand-written and this story's job to
+retire.

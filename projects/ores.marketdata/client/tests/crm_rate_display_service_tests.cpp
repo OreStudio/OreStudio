@@ -88,9 +88,11 @@ TEST_CASE("crm_rate_display_service formats every fetched rate into a row",
 }
 
 TEST_CASE("crm_rate_display_service resolves a convention stored in the "
-          "reverse pair-code direction",
+          "reverse pair-code direction, deriving reciprocal precision "
+          "rather than reusing decimal_places verbatim",
           "[crm_rate_display_service]") {
-    // Cell shows USD/EUR but the convention is only stored as EUR/USD.
+    // Cell shows USD/EUR but the convention is only stored as EUR/USD
+    // (decimal_places 3, calibrated for EUR/USD's own ~1.1 magnitude).
     auto service = make_service(
         {make_item("USD", "EUR", 0.90675)}, {{"EUR/USD", make_convention("EUR/USD", 3)}});
 
@@ -98,7 +100,26 @@ TEST_CASE("crm_rate_display_service resolves a convention stored in the "
 
     REQUIRE(result.success);
     REQUIRE(result.rows.size() == 1);
-    REQUIRE(result.rows[0].display.rate_text == "0.907");
+    REQUIRE(result.rows[0].display.rate_text == "0.9067");
+}
+
+TEST_CASE("crm_rate_display_service preserves significant figures across a "
+          "reversed convention for a JPY-magnitude pair",
+          "[crm_rate_display_service]") {
+    // Cell shows JPY/AUD but the convention is only stored as AUD/JPY
+    // (decimal_places 2, calibrated for AUD/JPY's own ~83 magnitude).
+    // Reusing decimal_places 2 verbatim would collapse every such cell to
+    // "0.01"; the service must derive precision from the reciprocal
+    // magnitude instead.
+    auto service = make_service(
+        {make_item("JPY", "AUD", 0.0120481928)},
+        {{"AUD/JPY", make_convention("AUD/JPY", 2)}});
+
+    const auto result = service.rates("tenant-1", "party-1", "majors", false);
+
+    REQUIRE(result.success);
+    REQUIRE(result.rows.size() == 1);
+    REQUIRE(result.rows[0].display.rate_text == "0.01205");
 }
 
 TEST_CASE("crm_rate_display_service propagates a rates-source failure without formatting",

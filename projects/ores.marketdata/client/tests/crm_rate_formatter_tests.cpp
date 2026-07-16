@@ -87,6 +87,34 @@ TEST_CASE("crm_rate_formatter snaps to a coarser half-pip tick",
     REQUIRE(displays[0].rate_text == "1.10285");
 }
 
+TEST_CASE("crm_rate_formatter derives reciprocal-preserving precision for a "
+          "reversed convention",
+          "[crm_rate_formatter]") {
+    auto item = make_item();
+    item.base_currency_code = "JPY";
+    item.quote_currency_code = "AUD";
+    item.rate = 0.0120481928;
+    // Convention is AUD/JPY's own (decimal_places 2, ~83 magnitude); this
+    // request renders the reciprocal JPY/AUD cell.
+    auto convention = make_convention(0.01, 1.0, 2);
+    convention.pair_code = "AUD/JPY";
+    const auto displays = crm_rate_formatter::format(
+        {crm_rate_format_request{&item, convention, true}});
+    REQUIRE(displays[0].rate_text == "0.01205");
+}
+
+TEST_CASE("crm_rate_formatter does not tick-snap a reversed-convention rate",
+          "[crm_rate_formatter]") {
+    auto item = make_item();
+    item.base_currency_code = "USD";
+    item.quote_currency_code = "EUR";
+    item.rate = 0.90675;
+    auto convention = make_convention(0.0001, 1.0, 3);
+    const auto displays = crm_rate_formatter::format(
+        {crm_rate_format_request{&item, convention, true}});
+    REQUIRE(displays[0].rate_text == "0.9067");
+}
+
 TEST_CASE("crm_rate_formatter reports an inverted-pair tooltip",
           "[crm_rate_formatter]") {
     auto item = make_item();

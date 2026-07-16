@@ -48,6 +48,18 @@ struct crm_rate_display {
 struct crm_rate_format_request {
     const ores::marketdata::messaging::crm_rate_item* item;
     std::optional<ores::refdata::domain::currency_pair_convention> convention;
+
+    /**
+     * @brief True when @c convention was resolved against the *reverse* of
+     * this item's own base/quote pair-code (e.g. item is USD/EUR but the
+     * stored convention is EUR/USD) -- a real market convention only ever
+     * quotes one direction of a pair, so the reciprocal direction is
+     * always derived, never separately stored. decimal_places/tick_size
+     * are calibrated for the convention's own direction and don't
+     * transfer as-is to the reciprocal's magnitude; format_rate()
+     * re-derives an equivalent precision instead of reusing them blindly.
+     */
+    bool convention_reversed = false;
 };
 
 /**
@@ -64,14 +76,19 @@ public:
      * request, in the same order. Each rate is snapped to its convention's
      * nearest tick (tick_size * pip_factor) before being rendered at
      * decimal_places precision; a request with no convention is shown
-     * unsnapped at a fixed default precision.
+     * unsnapped at a fixed default precision. A reversed-convention
+     * request (see crm_rate_format_request::convention_reversed) skips
+     * tick-snapping and instead derives decimal_places that preserve the
+     * same number of significant figures the convention encodes for its
+     * own direction.
      */
     static std::vector<crm_rate_display>
     format(const std::vector<crm_rate_format_request>& requests);
 
 private:
     static std::string format_rate(double rate,
-        const std::optional<ores::refdata::domain::currency_pair_convention>& convention);
+        const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
+        bool convention_reversed);
 };
 
 }

@@ -39,12 +39,39 @@ std::string to_fixed_string(double value, int precision) {
     return std::string(buf, res.ptr);
 }
 
+/// floor(log10(x)) for x > 0 -- the base-10 order of magnitude (e.g. 82.99
+/// -> 1, 0.012 -> -2).
+int order_of_magnitude(double x) {
+    return static_cast<int>(std::floor(std::log10(x)));
+}
+
+/// Derives decimal_places for the reciprocal of a rate whose *own*
+/// direction is described by convention.decimal_places, preserving
+/// significant figures across the inversion instead of reusing
+/// decimal_places verbatim (which is only valid for the convention's own
+/// direction/magnitude). rate is the reciprocal value being rendered, so
+/// 1/rate recovers the direct-direction magnitude the convention assumes.
+int inverted_decimal_places(
+    double rate, const ores::refdata::domain::currency_pair_convention& convention) {
+    if (rate <= 0.0)
+        return default_decimal_places;
+
+    const int direct_order = order_of_magnitude(1.0 / rate);
+    const int significant_figures = direct_order + 1 + convention.decimal_places;
+    const int inverted_order = order_of_magnitude(rate);
+    return std::max(0, significant_figures - 1 - inverted_order);
+}
+
 }
 
 std::string crm_rate_formatter::format_rate(double rate,
-    const std::optional<ores::refdata::domain::currency_pair_convention>& convention) {
+    const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
+    bool convention_reversed) {
     if (!convention)
         return to_fixed_string(rate, default_decimal_places);
+
+    if (convention_reversed)
+        return to_fixed_string(rate, inverted_decimal_places(rate, *convention));
 
     // Snap to the pair's minimum tick (tick_size is in pips; pip_factor
     // converts pips to an absolute rate move) before rendering, rather
@@ -67,7 +94,8 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
     for (const auto& request : requests) {
         const auto& item = *request.item;
         crm_rate_display display;
-        display.rate_text = format_rate(item.rate, request.convention);
+        display.rate_text =
+            format_rate(item.rate, request.convention, request.convention_reversed);
 
         if (item.status == "stale") {
             display.tooltip_text = "Stale as of " + item.as_of;

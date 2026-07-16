@@ -45,8 +45,10 @@ crm_rate_display_service::rates(const std::string& tenant_id, const std::string&
                 tenant_id, item.base_currency_code + "/" + item.quote_currency_code))
             req.convention = direct;
         else if (const auto reverse = lookup_fn_(
-                     tenant_id, item.quote_currency_code + "/" + item.base_currency_code))
+                     tenant_id, item.quote_currency_code + "/" + item.base_currency_code)) {
             req.convention = reverse;
+            req.convention_reversed = true;
+        }
         requests.push_back(std::move(req));
     }
 

@@ -40,6 +40,13 @@ at least two different Party Type values and two different Status
 values visible. Screenshot the full window including the toolbar and
 status bar. Save as =counterparties_main_dialog.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step1_20260716_145843.png]] |
+
 ** Capture counterparty_details_general.png
 
 Double-click any counterparty to open Counterparty Details. On the
@@ -47,12 +54,26 @@ General tab, make sure Party Type, Status, Business Center, and
 Parent Counterparty all show real, non-blank values. Screenshot the
 General tab in full. Save as =counterparty_details_general.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step2_20260716_145907.png]] |
+
 ** Capture counterparty_parent_counterparty_combo.png
 
 Still on the General tab, click the Parent Counterparty combo to
 open its dropdown, showing the list of candidate parent
 counterparties by full name. Screenshot it open. Save as
 =counterparty_parent_counterparty_combo.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | ./tmp/Screenshot from 2026-07-16 15-04-28.png |
 
 ** Capture counterparty_details_identifiers.png
 
@@ -62,12 +83,26 @@ row toolbar first, so the table isn't empty. Screenshot the tab. Save
 as =counterparty_details_identifiers.png=. Discard any rows added
 purely for the screenshot afterwards if you don't want to keep them.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step4_20260716_150506.png]] |
+
 ** Capture counterparty_details_contact_information.png
 
 Switch to the Contact Information tab. If empty, add a row (e.g.
 contact type /Legal/, with city, country, and phone filled in) via
 the row toolbar. Screenshot the tab. Save as
 =counterparty_details_contact_information.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step5_20260716_150542.png]] |
 
 ** Capture counterparty_details_hierarchy.png
 
@@ -78,6 +113,13 @@ guaranteed for every counterparty (see the chapter's explanation of
 why). Screenshot the tab. Save as
 =counterparty_details_hierarchy.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step6_20260716_150552.png]] |
+
 ** Capture counterparty_history_dialog.png
 
 Close the detail dialog, right-click a counterparty row with more
@@ -87,14 +129,21 @@ Fields/Only Changes toggle shows a real diff against its
 predecessor. Screenshot the History dialog. Save as
 =counterparty_history_dialog.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step7_20260716_150710.png]] |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T14:07:12Z |
+| Branch        | feature/write-counterparty-manual-chapter |
+| Commit        | 47487a0eb |
+| Worktree      | prime_origin |
 
 * Notes

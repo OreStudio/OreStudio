@@ -30,11 +30,11 @@ duplicating shared content.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Chapter written; screenshots pending.  |
-| Waiting on   | Screenshot capture.                    |
-| Next         | Capture the 7 counterparty screenshots. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                              |
 
 * Acceptance
@@ -74,15 +74,17 @@ dedup lesson learned writing that chapter.
 
 * Notes
 
-- Screenshots referenced by this chapter (=counterparties_main_dialog.png=,
-  =counterparty_details_general.png=,
-  =counterparty_parent_counterparty_combo.png=,
-  =counterparty_details_identifiers.png=,
-  =counterparty_details_contact_information.png=,
-  =counterparty_details_hierarchy.png=,
-  =counterparty_history_dialog.png=) do not yet exist under
-  =assets/images/= (repo root, not =doc/manual/user_guide/assets/=) —
-  capturing them is the next step, via a test scenario.
+- All 7 screenshots captured against the live Barclays Plc (GLEIF)
+  environment, cropped to just the dialog/window (no QA Validation
+  Runner chrome), and committed under =assets/images/= (repo root).
+- The Hierarchy tab capture (=counterparty_details_hierarchy.png=)
+  shows BANCO CREDIBOM S.A. nested three levels deep under CA
+  INDOSUEZ — a real ancestor chain, demonstrating that (unlike a
+  party) a counterparty's tree membership is incidental group
+  structure from GLEIF data, not a single tenant-wide hierarchy.
+- The History dialog capture shows a genuine Full Name spelling
+  correction (v5→v6), consistent with the other entities' history
+  screenshots this sprint.
 
 * Test Scenarios
 
@@ -93,7 +95,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:F424E50D-B24D-40FA-B28A-76FD21F058E4][Capture counterparty manual chapter screenshots]] | PASSED | All 7 steps passed. |
 
 * PRs
 
@@ -108,3 +110,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =doc/manual/user_guide/chapter_9_counterparties.org=, wired into
+=user_manual.org= after the Parties chapter. Rather than re-deriving
+Parties' content, the chapter cross-references it for everything
+shared (legal-entity identification, GLEIF/LEI, the identifier scheme
+table) and focuses on the two genuine structural differences: no
+=codename= field, and a hierarchy with no database-level
+single-root constraint — the Parent Counterparty field is still
+required on Create as a UI policy, but that is explicitly
+distinguished from a party's DB-enforced house-root rule. Updated
+Parties' Conclusion/See-also to link to the new chapter instead of
+saying it doesn't exist yet. All 7 screenshots captured, cropped, and
+committed; the scenario passed all steps first time.

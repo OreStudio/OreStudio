@@ -138,6 +138,7 @@ in the graph before removing the source.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Sweep for plain-text facet_catalogue.org mentions wasn't exhaustive; variability_model.org missed entirely | projects/modeling/variability_model.org, applied_masd.org, technical_spaces.org, ores.codegen/docs/architecture.org | Accepted | Corrected the factually-wrong "live, parsed by generator.py" claims in variability_model.org's Part 1 with a historical note pointing at the ores.* graph and the sibling stale-references sweep task; fixed the plain-text mentions in applied_masd.org (3), technical_spaces.org (1), architecture.org's ASCII tree (1). Also found and fixed 4 more the reviewer didn't flag: codegen_input_org_schema.org (2), template_variables.org (1), ores.cpp.qt.org/detail_dialog_ui.org (1 each). |
+| 2 | CI drift check failed: .github/workflows/template-drift.yml still invoked the deleted regenerate_facet_inventories.py | .github/workflows/template-drift.yml | Fixed | Self-caught post-push, not from the reviewer -- missed on the earlier "no .py/.sh/.el caller" sweep because I never checked .github/workflows/. Removed the check step and its path trigger; the tangle-drift check itself (the other half of the job) is unaffected. |
 
 * Result
 

@@ -103,6 +103,8 @@ private:
 
     void populateAssetClassCombo();
 
+    void populateCurveRoleCombo();
+
 
     Ui::InstrumentCodeDetailDialog* ui_;
     ClientManager* clientManager_;

@@ -119,12 +119,18 @@ void InstrumentCodeDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &InstrumentCodeDetailDialog::onFieldChanged);
+    connect(ui_->curveRoleCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &InstrumentCodeDetailDialog::onFieldChanged);
 }
 
 void InstrumentCodeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateAssetClassCombo();
     setup_badge_combo(this, ui_->assetClassCombo, badgeCache(), "asset_class");
+    populateCurveRoleCombo();
+    setup_badge_combo(this, ui_->curveRoleCombo, badgeCache(), "curve_role");
 }
 
 void InstrumentCodeDetailDialog::setUsername(const std::string& username) {
@@ -157,6 +163,7 @@ void InstrumentCodeDetailDialog::setReadOnly(bool readOnly) {
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->assetClassCombo->setEnabled(!readOnly);
     ui_->oreTradeTypeEdit->setReadOnly(readOnly);
+    ui_->curveRoleCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -183,6 +190,27 @@ void InstrumentCodeDetailDialog::populateAssetClassCombo() {
         [](const auto&) { return false; },
         QString{});
 }
+void InstrumentCodeDetailDialog::populateCurveRoleCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating curve_role combo";
+    populateDynamicCombo<refdata::domain::curve_role>(
+        ui_->curveRoleCombo,
+        this,
+        clientManager_,
+        &fetch_curve_roles,
+        "curveRoleWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(code__.curve_role); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load curve roles: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->curveRoleCombo, badgeCache(), "curve_role"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; });
+}
 void InstrumentCodeDetailDialog::updateUiFromCode() {
     ui_->codeEdit->setText(QString::fromStdString(code__.code));
     ui_->nameEdit->setText(QString::fromStdString(code__.name));
@@ -195,6 +223,12 @@ void InstrumentCodeDetailDialog::updateUiFromCode() {
     }
     ui_->oreTradeTypeEdit->setText(
         code__.ore_trade_type ? QString::fromStdString(*code__.ore_trade_type) : QString{});
+    {
+        const auto val = QString::fromStdString(code__.curve_role);
+        const int idx = ui_->curveRoleCombo->findData(val);
+        if (idx >= 0)
+            ui_->curveRoleCombo->setCurrentIndex(idx);
+    }
     ui_->displayOrderEdit->setValue(code__.display_order);
 
     populateProvenance(code__.version,
@@ -221,6 +255,7 @@ void InstrumentCodeDetailDialog::updateCodeFromUi() {
                                     std::nullopt :
                                     std::optional<std::string>(ore_trade_type_str);
     }
+    code__.curve_role = ui_->curveRoleCombo->currentText().toStdString();
     code__.display_order = ui_->displayOrderEdit->value();
     code__.modified_by = username_;
 }
@@ -244,8 +279,10 @@ bool InstrumentCodeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
     const bool asset_class_selected = ui_->assetClassCombo->currentIndex() >= 0;
+    const bool curve_role_selected = ui_->curveRoleCombo->currentIndex() >= 0;
 
-    return true && !code_val.isEmpty() && !name_val.isEmpty() && asset_class_selected;
+    return true && !code_val.isEmpty() && !name_val.isEmpty() && asset_class_selected &&
+           curve_role_selected;
 }
 
 void InstrumentCodeDetailDialog::onSaveClicked() {

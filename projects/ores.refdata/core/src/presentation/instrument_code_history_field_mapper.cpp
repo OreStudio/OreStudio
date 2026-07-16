@@ -33,6 +33,7 @@ render_instrument_code_fields(const domain::instrument_code& v) {
     fields.push_back({.name = "Asset Class", .value = v.asset_class});
     fields.push_back({.name = "Ore Trade Type", .value = v.ore_trade_type.value_or(std::string{})});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    fields.push_back({.name = "Curve Role", .value = v.curve_role});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

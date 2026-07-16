@@ -98,16 +98,16 @@ std::string("SOFR")
 :type:          text
 :cpp_type:      std::string
 :nullable:      false
-:default_value: "vasicek"
+:default_value: "VASICEK"
 :END:
 
-Short-rate process engine driving this curve: "vasicek", "cir", or
-"hull_white" -- selects among =ores.analytics.quant='s
-=IYieldCurveProcess= engines via =process_factory::
-make_yield_curve_process()=.
+Short-rate process engine driving this curve (references
+=yield_curve_process_type.code=: =VASICEK=, =CIR=, or =HULL_WHITE=) --
+selects among =ores.analytics.quant='s =IYieldCurveProcess= engines via
+=process_factory::make_yield_curve_process()=.
 
 #+begin_src cpp :name generator
-std::string("vasicek")
+std::string("VASICEK")
 #+end_src
 
 ** kappa
@@ -197,6 +197,24 @@ Whether the configuration is active and eligible for generation.
 faker::datatype::boolean()
 #+end_src
 
+** fixed_leg_payment_frequency_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Annual"
+:END:
+
+Payment frequency for a Swap curve-template entry's fixed leg
+(references =ores.refdata.payment_frequency.code=), used to build the
+strip of intermediate payment dates between spot and maturity that
+=curve_instrument_pricer::swap_par_rate()= needs. Not consulted for
+Deposit/FRA entries, which have no intermediate schedule.
+
+#+begin_src cpp :name generator
+std::string("Annual")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -210,10 +228,9 @@ faker::datatype::boolean()
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
 | "index_name" <> ''                                        |
-| "process_type" in ('vasicek', 'cir', 'hull_white')       |
 | "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
-| "process_type" <> 'cir' or "initial_rate" >= 0             |
+| "process_type" <> 'CIR' or "initial_rate" >= 0             |
 
 * Foreign keys
 
@@ -223,6 +240,14 @@ faker::datatype::boolean()
 :error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
 :nullable:      false
 :END:
+
+* Insert trigger
+** Validations
+
+| column                           | validation_function                             |
+|----------------------------------+--------------------------------------------------|
+| process_type                     | ores_synthetic_validate_yield_curve_process_type_fn |
+| fixed_leg_payment_frequency_code | ores_refdata_validate_payment_frequency_fn      |
 
 * Validation function
 :PROPERTIES:
@@ -297,31 +322,33 @@ faker::datatype::boolean()
 
 *** Detail fields
 
-| field          | label          | widget            | type      | is_key | is_required | placeholder                          |
-|----------------+----------------+-------------------+-----------+--------+-------------+----------------------------------------|
-| currency_code  | Currency       | currencyEdit      | line_edit |        | true        | Enter currency code                  |
-| index_name     | Index          | indexNameEdit     | line_edit |        | true        | Enter floating-rate index (e.g. SOFR)|
-| process_type   | Process Type   | processTypeEdit   | line_edit |        | true        | vasicek, cir, or hull_white          |
-| kappa          | Kappa          | kappaEdit         | line_edit |        | true        | Mean-reversion speed                 |
-| theta          | Theta          | thetaEdit         | line_edit |        | true        | Mean-reversion target level           |
-| sigma          | Sigma          | sigmaEdit         | line_edit |        | true        | Volatility                            |
-| initial_rate   | Initial Rate   | initialRateEdit   | line_edit |        | true        | Starting short rate                   |
-| ticks_per_hour | Ticks per Hour | ticksPerHourEdit  | spin_box  |        | true        |                                        |
-| enabled        | Enabled        | enabledCheck      | check_box |        |             |                                        |
+| field                             | label                        | widget                       | type      | is_key | is_required | placeholder                              |
+|-----------------------------------+-------------------------------+-------------------------------+-----------+--------+-------------+--------------------------------------------|
+| currency_code                     | Currency                     | currencyEdit                 | line_edit |        | true        | Enter currency code                      |
+| index_name                        | Index                        | indexNameEdit                 | line_edit |        | true        | Enter floating-rate index (e.g. SOFR)    |
+| process_type                      | Process Type                  | processTypeEdit                | line_edit |        | true        | VASICEK, CIR, or HULL_WHITE               |
+| kappa                              | Kappa                         | kappaEdit                     | line_edit |        | true        | Mean-reversion speed                     |
+| theta                              | Theta                          | thetaEdit                     | line_edit |        | true        | Mean-reversion target level               |
+| sigma                              | Sigma                          | sigmaEdit                     | line_edit |        | true        | Volatility                                |
+| initial_rate                       | Initial Rate                   | initialRateEdit                | line_edit |        | true        | Starting short rate                       |
+| ticks_per_hour                     | Ticks per Hour                 | ticksPerHourEdit               | spin_box  |        | true        |                                            |
+| fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit |        | true        | Enter payment frequency code (e.g. Annual)|
+| enabled                            | Enabled                        | enabledCheck                   | check_box |        |             |                                            |
 
 *** Columns (Qt model)
 
-| enum_name    | field          | header         | type      | width |
-|--------------+----------------+----------------+-----------+-------|
-| CurrencyCode | currency_code  | Currency       | string    | 100   |
-| IndexName    | index_name     | Index          | string    | 100   |
-| ProcessType  | process_type   | Process Type   | string    | 100   |
-| Kappa        | kappa          | Kappa          | double    | 90    |
-| Theta        | theta          | Theta          | double    | 90    |
-| Sigma        | sigma          | Sigma          | double    | 90    |
-| InitialRate  | initial_rate   | Initial Rate   | double    | 100   |
-| TicksPerHour | ticks_per_hour | Ticks/Hr       | int       | 80    |
-| Enabled      | enabled        | Enabled        | bool      | 70    |
+| enum_name                    | field                             | header                      | type      | width |
+|-------------------------------+------------------------------------+------------------------------+-----------+-------|
+| CurrencyCode                 | currency_code                      | Currency                    | string    | 100   |
+| IndexName                    | index_name                         | Index                       | string    | 100   |
+| ProcessType                  | process_type                       | Process Type                 | string    | 100   |
+| Kappa                        | kappa                              | Kappa                       | double    | 90    |
+| Theta                        | theta                               | Theta                       | double    | 90    |
+| Sigma                        | sigma                               | Sigma                       | double    | 90    |
+| InitialRate                  | initial_rate                        | Initial Rate                 | double    | 100   |
+| TicksPerHour                 | ticks_per_hour                      | Ticks/Hr                    | int       | 80    |
+| FixedLegPaymentFrequencyCode | fixed_leg_payment_frequency_code    | Fixed Leg Payment Frequency  | string    | 140   |
+| Enabled                      | enabled                             | Enabled                      | bool      | 70    |
 | Version      | version        | Version        | int       | 70    |
 | ModifiedBy   | modified_by    | Modified By    | string    | 120   |
 | RecordedAt   | recorded_at    | Recorded At    | timestamp | 150   |

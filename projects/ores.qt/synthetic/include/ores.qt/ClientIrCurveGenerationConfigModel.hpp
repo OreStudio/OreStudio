@@ -62,6 +62,7 @@ public:
         Sigma,
         InitialRate,
         TicksPerHour,
+        FixedLegPaymentFrequencyCode,
         Enabled,
         Version,
         ModifiedBy,

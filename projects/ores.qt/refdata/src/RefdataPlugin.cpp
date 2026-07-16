@@ -39,6 +39,7 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/CurrencyPairController.hpp"
 #include "ores.qt/CurrencyPairConventionController.hpp"
+#include "ores.qt/CurveRoleController.hpp"
 #include "ores.qt/DayCountFractionTypeController.hpp"
 #include "ores.qt/DepositConventionController.hpp"
 #include "ores.qt/FloatingIndexTypeController.hpp"
@@ -589,6 +590,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            this);
     connectControllerSignals(assetClassCodeController_.get());
 
+    curveRoleController_ = std::make_unique<CurveRoleController>(ctx_.main_window,
+                                                                  ctx_.mdi_area,
+                                                                  ctx_.client_manager,
+                                                                  ctx_.change_reason_cache,
+                                                                  ctx_.username,
+                                                                  this);
+    connectControllerSignals(curveRoleController_.get());
+
     instrumentCodeController_ = std::make_unique<InstrumentCodeController>(ctx_.main_window,
                                                                            ctx_.mdi_area,
                                                                            ctx_.client_manager,
@@ -807,6 +816,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (assetClassCodeController_)
                 assetClassCodeController_->showListWindow();
         });
+        auto* actCurveRoles = menuClassifications->addAction(ico(Icon::Tag), tr("Cur&ve Roles"));
+        connect(actCurveRoles, &QAction::triggered, this, [this]() {
+            if (curveRoleController_)
+                curveRoleController_->showListWindow();
+        });
         auto* actInstrumentCodes =
             menuClassifications->addAction(ico(Icon::Tag), tr("&Instrument Codes"));
         connect(actInstrumentCodes, &QAction::triggered, this, [this]() {
@@ -976,6 +990,7 @@ void RefdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
 
     instrumentCodeController_.reset();
+    curveRoleController_.reset();
     assetClassCodeController_.reset();
     tenorResolutionAlgorithmController_.reset();
     tenorUnitController_.reset();

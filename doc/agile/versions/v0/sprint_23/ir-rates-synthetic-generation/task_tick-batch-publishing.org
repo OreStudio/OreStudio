@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tick-batch-publishing
-#+pr: 1597
+#+pr: 1610
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -38,10 +38,10 @@ the GMM improvements story.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Reopened 2026-07-16: closed via PR #1597, which shipped only the payment_frequency prerequisite, not the ir_curve_feed producer this task's own Acceptance requires (confirmed: no ir_curve_feed exists anywhere in ores.synthetic/service/src/ — only fx_spot_feed). Scope confirmed as Phase 1 only (synchronous family publish); see * Analysis below for the design decisions reached before resuming. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Next         | Implement ir_curve_feed: one process step -> N tenor ticks via curve_instrument_pricer, published on synthetic.v1.curve_family.<source>. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
@@ -203,12 +203,110 @@ values) and =invalid input syntax for type date: ""= on
 ORE-importer gaps for instrument types the payment_frequency migration
 doesn't touch.
 
+* Analysis: two-phase design (family feed vs. disaggregation) and market-data grouping (2026-07-16)
+
+** Phase split: family feed vs. per-point disaggregation
+
+The producer side splits into two independent concerns, not one task:
+
+- *Phase 1 (this task's actual scope): the family feed.* One
+  =ir_curve_feed=, mirroring =fx_spot_feed=, where one short-rate
+  process step fans out to N =curve_instrument_pricer= calls (one per
+  =ir_curve_template_entry=) and publishes N ticks synchronously,
+  sharing one =observation_datetime= -- exactly this task's original
+  Acceptance.
+- *Phase 2 (not this task): per-point disaggregation/staggered
+  timing.* Making each tenor in a family tick independently, at its
+  own arrival time, rather than all N points landing together. This
+  is *not* IR-specific: it is the same concern as the existing
+  BACKLOG story [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]],
+  whose =arrival_profile_config= abstraction is designed to wrap
+  *any* feed. Applying it per =point_id= instead of per =source= for
+  curve feeds is that story's future work, not a bespoke IR
+  disaggregator -- so Phase 1 does not need to anticipate any special
+  interface for it. No task filed here for Phase 2; tracked via the
+  link to that story instead.
+
+** Two subjects, not two message shapes
+
+The family feed publishes on its own namespace,
+=synthetic.v1.curve_family.<source>=, distinct from the plain-tick
+namespace =synthetic.v1.tick.<source>= scalar feeds already use --
+still N individual NATS messages (not one aggregate payload), so
+ingest stays a dumb per-message consumer. When Phase 2 eventually
+lands, the disaggregation adapter would subscribe to
+=curve_family.*= and republish onto =tick.*=, so from ingest's point
+of view a disaggregated IR point looks identical to any other tick
+(already carries =point_id=) -- no ingest-side special-casing needed
+either now or later. A consumer wanting the raw family (e.g. a future
+bootstrap-testing consumer) subscribes to =curve_family.*=; a
+consumer simulating live market consumption subscribes to =tick.*=.
+This is a producer/subject-routing decision, not a per-config
+"family vs individual" toggle.
+
+** What the wire format is *not*: one aggregate JSON per curve
+
+Considered and rejected: publishing one large JSON object containing
+the whole curve per generation step, so a UI could "open it up and
+plot the curves" directly. Rejected because =market_observation= is
+already row-per-point (=series_id=, =observation_datetime=,
+=point_id=) -- the same shape non-scalar series (vol surfaces)
+already use -- and an aggregate wire object would either force ingest
+to explode it back into rows anyway, or require a new non-relational
+storage shape outside this story's scope. It would also break Phase
+2 cleanly, which needs to peel off individual points to re-time them
+independently -- an aggregate object is strictly worse for that than
+row-per-tick. "Open it up and plot it" is a *read/query-side*
+concern instead -- see the new curve-snapshot-builder-viewer task.
+
+** Analysis: does market data need a batch/generation identifier?
+
+Raised: since a tick batch's points may one day be published at
+staggered times (Phase 2), how does a consumer know which points
+belong to the same coherent draw, if not by matching
+=observation_datetime=? Considered adding a =generation_id=/
+=batch_id= column to =market_observation=, stamped once per process
+draw and carried by every point derived from it, so grouping survives
+staggered publish times.
+
+Rejected after checking how this actually works in the real world
+(no vendor feed exists in this codebase to check against -- =ores.bloomberg=
+is an unstarted BACKLOG story -- so checked the market data protocols
+instead):
+
+- *FIX MarketDataSnapshotFullRefresh (W)*: always one instrument per
+  message, even when a single =MDReqID= groups a request for many
+  instruments -- responses are still separate messages per
+  instrument. No message-level construct ties multiple instruments'
+  data together as one coherent unit.
+- *Refinitiv/LSEG RIC records*: each instrument (e.g. =USSW10Y== for
+  a 10Y swap rate) is its own independent real-time record, ticking
+  on its own schedule. A "curve" is not a wire-level object at all --
+  it is many independently-updating RICs a downstream consumer groups
+  by naming convention.
+
+Conclusion: *no batch/generation identifier exists in real market
+data feeds, and none is added here either.* Vendor feeds never assert
+"these N points are mutually consistent, published together" --
+a curve is reconstructed downstream, by taking the latest tick <= an
+as-of time independently per point. Adding a synthetic-only
+=batch_id= would have been exactly the kind of source-specific
+extension the architecture (see [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]) is meant to
+avoid. The correct pattern is a read-side *as-of query* --
+=SELECT DISTINCT ON (point_id) ... WHERE series_id = ? AND
+observation_datetime <= ? ORDER BY point_id, observation_datetime
+DESC= -- which degenerates correctly to "all points share one
+timestamp" in this task's Phase-1 synchronous-publish case, and keeps
+working unmodified once Phase 2 staggers publish times. No schema
+change. Tracked as its own task: curve-snapshot-builder-viewer.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1610][#1610]] | [refdata,synthetic,qt] Add curve_role and yield_curve_process_type entities |
 | [[https://github.com/OreStudio/OreStudio/pull/1597][#1597]] | [refdata,trading,ore] Consolidate payment frequency into ores.refdata |
 
 * Review

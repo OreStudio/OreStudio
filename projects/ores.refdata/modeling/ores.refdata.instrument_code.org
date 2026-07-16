@@ -141,6 +141,26 @@ Order for UI display purposes.
 faker::number::integer(1, 100)
 #+end_src
 
+** curve_role
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "NONE"
+:END:
+
+Role this instrument plays when deriving a rate from a curve
+(references =curve_role.code=): =DEPOSIT=, =FRA=, or =SWAP= for the
+instrument types the IR Curve Template uses, =NONE= for every other
+instrument code (the great majority of the catalogue). Determines
+which =curve_instrument_pricer= derivation applies -- simple rate,
+implied forward, or par-rate solve -- when this instrument's tenor
+entry is priced from a short-rate process's =discount_factor()=.
+
+#+begin_src cpp :name generator
+std::string("NONE")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -166,6 +186,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 | column             | validation_function                |
 |--------------------+--------------------------------------|
 | asset_class         | ores_refdata_validate_asset_class_code_fn |
+| curve_role          | ores_refdata_validate_curve_role_fn    |
 | change_reason_code  | ores_dq_validate_change_reason_fn     |
 
 * C++
@@ -212,6 +233,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 | description      | Description    |
 | asset_class      | Asset Class    |
 | ore_trade_type   | ORE Trade Type |
+| curve_role       | Curve Role     |
 | display_order    | Display Order  |
 | modified_by      | Modified By    |
 | version          | Version        |
@@ -254,6 +276,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 | description      | Description    | descriptionEdit | text_edit     |        | true        | Enter a description                   |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 | asset_class      | Asset Class    | assetClassCombo | dynamic_combo |        | true        |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        | asset_class |
 | ore_trade_type   | ORE Trade Type | oreTradeTypeEdit | line_edit    |        |             | Enter the literal ORE oreTradeType (if any) |     |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
+| curve_role       | Curve Role     | curveRoleCombo  | dynamic_combo |        | true        |                                        |              | refdata::domain::curve_role          | ores.qt/LookupFetcher.hpp  | fetch_curve_roles       | curveRoleWatcher      | code               | description          | display_order      | curve roles         | CurveRoleCombo          | curve_role  |
 | display_order    | Display Order  | displayOrderEdit | spin_box     |        | true        |                                        |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 
 *** Columns (Qt model)
@@ -265,6 +288,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 | Description  | description      | Description    | string    | auto  |          |             |
 | AssetClass   | asset_class      | Asset Class    | string    | auto  | true     | asset_class |
 | OreTradeType | ore_trade_type   | ORE Trade Type | string    | auto  |          |             |
+| CurveRole    | curve_role       | Curve Role     | string    | auto  | true     | curve_role  |
 | DisplayOrder | display_order    | Display Order  | int       | 70    |          |             |
 | Version      | version          | Version        | int       | 70    |          |             |
 | ModifiedBy   | modified_by      | Modified By    | string    | auto  |          |             |

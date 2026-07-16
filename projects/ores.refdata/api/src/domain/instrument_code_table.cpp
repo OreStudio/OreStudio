@@ -42,12 +42,12 @@ std::string convert_to_table(const std::vector<instrument_code>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Code" << "Name" << "Description" << "Asset Class" << "ORE Trade Type"
-          << "Display Order" << "Modified By" << "Version" << fort::endr;
+          << "Curve Role" << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ic : v) {
         table << ic.code << ic.name << ic.description << ic.asset_class
-              << opt_str(ic.ore_trade_type) << ic.display_order << ic.modified_by << ic.version
-              << fort::endr;
+              << opt_str(ic.ore_trade_type) << ic.curve_role << ic.display_order << ic.modified_by
+              << ic.version << fort::endr;
     }
     return table.to_string();
 }

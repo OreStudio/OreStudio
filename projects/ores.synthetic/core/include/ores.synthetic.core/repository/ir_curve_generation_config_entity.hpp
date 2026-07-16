@@ -50,13 +50,14 @@ struct ir_curve_generation_config_entity {
 
     std::string index_name;
 
-    std::string process_type = "vasicek";
+    std::string process_type = "VASICEK";
     double kappa = 0.0;
     double theta = 0.0;
     double sigma = 0.0;
     double initial_rate = 0.0;
     int ticks_per_hour = 0;
     bool enabled = false;
+    std::string fixed_leg_payment_frequency_code = "Annual";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

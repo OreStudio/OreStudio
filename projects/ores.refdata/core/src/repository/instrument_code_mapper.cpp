@@ -40,6 +40,7 @@ domain::instrument_code instrument_code_mapper::map(const instrument_code_entity
     r.asset_class = v.asset_class;
     r.ore_trade_type = v.ore_trade_type;
     r.display_order = v.display_order;
+    r.curve_role = v.curve_role;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -64,6 +65,7 @@ instrument_code_entity instrument_code_mapper::map(const domain::instrument_code
     r.asset_class = v.asset_class;
     r.ore_trade_type = v.ore_trade_type;
     r.display_order = v.display_order;
+    r.curve_role = v.curve_role;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

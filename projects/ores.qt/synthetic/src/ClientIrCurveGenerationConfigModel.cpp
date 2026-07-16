@@ -99,6 +99,9 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
                 return ir_curve_generation_config.initial_rate;
             case TicksPerHour:
                 return static_cast<qlonglong>(ir_curve_generation_config.ticks_per_hour);
+            case FixedLegPaymentFrequencyCode:
+                return QString::fromStdString(
+                    ir_curve_generation_config.fixed_leg_payment_frequency_code);
             case Enabled:
                 return ir_curve_generation_config.enabled ? tr("true") : tr("false");
             case Version:
@@ -142,6 +145,8 @@ QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
             return tr("Initial Rate");
         case TicksPerHour:
             return tr("Ticks/Hr");
+        case FixedLegPaymentFrequencyCode:
+            return tr("Fixed Leg Payment Frequency");
         case Enabled:
             return tr("Enabled");
         case Version:

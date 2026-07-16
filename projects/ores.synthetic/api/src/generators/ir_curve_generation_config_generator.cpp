@@ -46,13 +46,14 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     r.config_id = ctx.generate_uuid();
     r.currency_code = std::string("USD") + "-" + std::to_string(idx);
     r.index_name = std::string("SOFR") + "-" + std::to_string(idx);
-    r.process_type = std::string("vasicek");
+    r.process_type = std::string("VASICEK");
     r.kappa = faker::number::decimal(0.01, 2.0);
     r.theta = faker::number::decimal(0.0, 0.1);
     r.sigma = faker::number::decimal(0.0, 0.05);
     r.initial_rate = faker::number::decimal(-0.01, 0.1);
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.enabled = faker::datatype::boolean();
+    r.fixed_leg_payment_frequency_code = std::string("Annual");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

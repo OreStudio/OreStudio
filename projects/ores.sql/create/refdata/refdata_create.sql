@@ -111,9 +111,11 @@
 \ir ./refdata_ledger_feed_types_create.sql
 \ir ./refdata_ledger_feed_types_notify_trigger_create.sql
 
--- Product catalogue: asset_class_codes before instrument_codes (FK).
+-- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ./refdata_asset_class_codes_create.sql
 \ir ./refdata_asset_class_codes_notify_trigger_create.sql
+\ir ./refdata_curve_roles_create.sql
+\ir ./refdata_curve_roles_notify_trigger_create.sql
 \ir ./refdata_instrument_codes_create.sql
 \ir ./refdata_instrument_codes_notify_trigger_create.sql
 

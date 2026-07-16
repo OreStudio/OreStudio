@@ -23,6 +23,7 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/asset_class_code.hpp"
+#include "ores.refdata.api/domain/curve_role.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/domain/calendar_type.hpp"
@@ -444,6 +445,16 @@ fetch_coding_schemes(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::asset_class_code>, QString>
 fetch_asset_class_codes(ClientManager* cm);
+
+/**
+ * @brief Fetches all curve roles from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by InstrumentCode's curve_role combo. Returns an error message
+ * on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::curve_role>, QString>
+fetch_curve_roles(ClientManager* cm);
 
 /**
  * @brief Fetches all instrument codes from the server.

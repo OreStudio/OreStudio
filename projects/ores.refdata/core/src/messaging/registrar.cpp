@@ -70,6 +70,7 @@
 #include "ores.refdata.core/messaging/tenor_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_resolution_algorithm_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_role_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
@@ -133,6 +134,7 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_kind.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
+#include "ores.refdata.api/domain/curve_role.hpp"
 #include "ores.refdata.api/domain/tenor_unit.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.core/presentation/asset_class_code_history_field_mapper.hpp"
@@ -179,6 +181,7 @@
 #include "ores.refdata.core/presentation/tenor_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_kind_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_resolution_algorithm_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/curve_role_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_unit_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/zero_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/service/asset_class_code_service.hpp"
@@ -225,6 +228,7 @@
 #include "ores.refdata.core/service/tenor_kind_service.hpp"
 #include "ores.refdata.core/service/tenor_resolution_algorithm_service.hpp"
 #include "ores.refdata.core/service/tenor_service.hpp"
+#include "ores.refdata.core/service/curve_role_service.hpp"
 #include "ores.refdata.core/service/tenor_unit_service.hpp"
 #include "ores.refdata.core/service/zero_convention_service.hpp"
 #include <array>
@@ -309,6 +313,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_tenor_anchor_handlers(nats, ctx, verifier));
     append(register_tenor_convention_handlers(nats, ctx, verifier));
     append(register_tenor_kind_handlers(nats, ctx, verifier));
+    append(register_curve_role_handlers(nats, ctx, verifier));
     append(register_tenor_unit_handlers(nats, ctx, verifier));
     append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
@@ -790,6 +795,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_algorithm_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_tenor_resolution_algorithm_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.curve_role",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::curve_role_service svc(scoped_ctx);
+                auto versions = svc.get_role_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_curve_role_fields);
             });
 
         hist_registry.register_history_provider(

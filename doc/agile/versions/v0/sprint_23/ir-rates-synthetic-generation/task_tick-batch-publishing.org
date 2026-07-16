@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tick-batch-publishing
-#+pr:
+#+pr: 1597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -209,7 +209,7 @@ doesn't touch.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1597][#1597]] | [refdata,trading,ore] Consolidate payment frequency into ores.refdata |
 
 * Review
 

@@ -37,7 +37,7 @@
 ;; rather than plain verbatim. ores-shell is a custom babel language
 ;; name with no listings definition of its own; map it to bash, same
 ;; as org's own default mapping for sh.
-(setq org-latex-listings t)
+(setq org-latex-src-block-backend 'listings)
 (setq org-latex-listings-langs
       (append '((ores-shell "bash")) org-latex-listings-langs))
 

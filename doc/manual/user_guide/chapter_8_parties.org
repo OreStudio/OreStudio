@@ -58,15 +58,12 @@ a registered company, a bank, a branch — and real legal entities are
 notoriously hard to identify consistently: the same organisation can
 appear under different names, registration numbers, and codes across
 different jurisdictions, counterparties, and vendor systems, with no
-single authority reconciling them all. The modern answer to this is
-the *Legal Entity Identifier (LEI)*, a globally unique code
-maintained by GLEIF and mandated by major post-2008 regulatory
-frameworks (MiFID II, EMIR, Dodd-Frank, Basel III); see the /GLEIF and
-the Legal Entity Identifier/ sidebar in the
-[[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for how OreStudio consumes it. No single
-identifier scheme covers every counterpart a party might need to be
-recognised by, though, which is why a party can carry more than one —
-see [[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
+single authority reconciling them all. See the /GLEIF and the Legal
+Entity Identifier/ sidebar in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for what the
+LEI is and how OreStudio consumes it — not repeated here. Because no
+single identifier scheme covers every counterpart a party might need
+to be recognised by, a party can carry more than one — see
+[[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
 recognises.
 
 Every party carries a *full name* (its official registered legal

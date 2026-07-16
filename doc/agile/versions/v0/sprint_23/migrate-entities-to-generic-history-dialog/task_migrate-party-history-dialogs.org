@@ -176,7 +176,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =ores.qt.party= links break site build | component_overview.org (refdata, application) | Accepted | Fixed in 3a0d4ae3, before this round. |
+| 2 | No test coverage for new repository methods | business_unit(_type)_repository tests | Accepted | Added =repository_business_unit_repository_tests.cpp= (new file) and new cases (pagination, count, at-version, batch remove) to the existing =business_unit_type= test file. |
+| 3 | Dropped =!empty()= guard before =lexical_cast<uuid>= | business_unit_mapper.cpp | Declined | Matches existing convention — verified identical pattern in =portfolio_mapper.cpp= (has_value() only, no empty check); DB columns are typed =uuid null=, not text, so an empty string can't reach this path. |
+| 4 | Stale prose "=ores.qt.party= contributes party-related items" | ores.qt/refdata component_overview.org | Accepted | Reworded to describe the party-domain entities directly, no more reference to the deleted plugin. |
 
 * Result
 

@@ -159,3 +159,93 @@ TEST_CASE("remove_business_unit_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "After remove: " << after_remove;
     CHECK(after_remove.empty());
 }
+
+TEST_CASE("remove_multiple_business_unit_types", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto unit_types = generate_synthetic_business_unit_types(2, ctx);
+    for (auto& ut : unit_types) {
+        ut.change_reason_code = "system.test";
+    }
+
+    business_unit_type_repository repo;
+    repo.write(h.context(), unit_types);
+
+    std::vector<std::string> ids;
+    for (const auto& ut : unit_types) {
+        ids.push_back(boost::uuids::to_string(ut.id));
+    }
+
+    CHECK_NOTHROW(repo.remove(h.context(), ids));
+
+    for (const auto& id_str : ids) {
+        auto after_remove = repo.read_latest(h.context(), id_str);
+        CHECK(after_remove.empty());
+    }
+}
+
+TEST_CASE("read_latest_business_unit_types_paginated", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written = generate_synthetic_business_unit_types(5, ctx);
+    for (auto& ut : written) {
+        ut.change_reason_code = "system.test";
+    }
+
+    business_unit_type_repository repo;
+    repo.write(h.context(), written);
+
+    auto page = repo.read_latest(h.context(), 0, 2);
+    BOOST_LOG_SEV(lg, debug) << "Paginated business unit types: " << page;
+
+    CHECK(page.size() == 2);
+}
+
+TEST_CASE("get_total_business_unit_type_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written = generate_synthetic_business_unit_types(3, ctx);
+    for (auto& ut : written) {
+        ut.change_reason_code = "system.test";
+    }
+
+    business_unit_type_repository repo;
+    repo.write(h.context(), written);
+
+    const auto count = repo.get_total_type_count(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Total business unit type count: " << count;
+
+    CHECK(count >= written.size());
+}
+
+TEST_CASE("read_business_unit_type_at_version", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ut = generate_synthetic_business_unit_type(ctx);
+    ut.change_reason_code = "system.test";
+    const auto original_name = ut.name;
+    BOOST_LOG_SEV(lg, debug) << "Business unit type: " << ut;
+
+    business_unit_type_repository repo;
+    repo.write(h.context(), ut);
+
+    ut.name = original_name + " v2";
+    repo.write(h.context(), ut);
+
+    const auto id_str = boost::uuids::to_string(ut.id);
+    auto v1 = repo.read_at_version(h.context(), id_str, 1);
+    BOOST_LOG_SEV(lg, debug) << "Business unit type at version 1: "
+                             << (v1 ? v1->name : "(not found)");
+
+    REQUIRE(v1.has_value());
+    CHECK(v1->name == original_name);
+    CHECK(v1->version == 1);
+}

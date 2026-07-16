@@ -23,10 +23,12 @@
 MDI windows and dialogs for currencies, countries, all trading conventions
 (swap, OIS, FRA, ibor, overnight, CDS, FX, deposit, zero), day count
 fractions, business day convention types, floating index types, and payment
-frequency types. It owns the Reference Data top-level menu; =ores.qt.party=
-contributes party-related items to the same menu. The =ores.dq=-backed
-Data Catalogue, Change Reason, Coding Scheme, and Data Librarian controllers
-previously hosted here despite having no =ores.refdata= backend now live in
+frequency types, and the party-domain classification entities (business
+units, business unit types, party ID schemes, party statuses) previously
+(mistakenly) hosted in the now-dissolved =ores.qt.party= plugin. It owns
+the Reference Data top-level menu. The =ores.dq=-backed Data Catalogue,
+Change Reason, Coding Scheme, and Data Librarian controllers previously
+hosted here despite having no =ores.refdata= backend now live in
 =ores.qt.data_management=.
 
 * Inputs

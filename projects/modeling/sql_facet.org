@@ -174,4 +174,4 @@ implementation — do not reproduce it here.
 - [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create a new entity SQL schema?]] — step-by-step walkthrough.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — full schema mental model and PostgreSQL setup.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
-- [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]], [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]], [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]] — the literate templates that generate this facet.
+- [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]], [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]], [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]] — the literate templates that generate this facet.

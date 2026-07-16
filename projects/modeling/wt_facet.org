@@ -23,7 +23,7 @@ service. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 components for any new entity:
 
 1. Create mustache templates in =projects/ores.codegen/library/templates/=.
-2. Add a =wt= profile entry to [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+2. Add the new facet's node to the =ores.wt= physical-space graph (=compass add facet=) with its Archetypes table.
 3. Validate against an existing entity (e.g. =currency=).
 4. Only then use codegen to generate the layer.
 

@@ -76,7 +76,7 @@ projects/ores.codegen/
 | =src/iso_generate_metadata_sql.py=    | ISO standards → SQL                                                      |
 | =src/images_generate_sql.py=          | Image artefacts (flags, crypto icons) → SQL                              |
 | =src/lei_extract_subset.py=           | LEI dataset subset extractor                                             |
-| [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]]         | Declares which templates each profile runs per model type; read directly by =generator.py= |
+| [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]         | Declares which templates each profile runs per model type; read directly by =generator.py= |
 | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]]     | Maps component names to discovery roots; read directly by =manifest.py=  |
 | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]           | Editor modeline strings per language; read directly by =generator.py=    |
 | =library/data/=                       | Static data files (licences, modelines)                                  |
@@ -90,7 +90,7 @@ In =src/generator.py=:
 
 - =is_table_model(filename)= — returns =True= for =*_table.json= filenames.
 - =get_model_type(filename)= — maps filename suffix to model type string (=table=, =schema=, =domain_entity=, =junction=, ...).
-- =load_profiles(base_dir)= — parse [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]] directly via =_load_profiles_from_org()=.
+- =load_profiles(base_dir)= — parse [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] directly via =_load_profiles_from_org()=.
 - =resolve_profile_templates(profile, profiles, model_type)= — return the template list for a given profile and model type.
 - =resolve_output_path(pattern, model_data, model_type)= — expand an output path pattern using model fields.
 - =load_data(data_dir)= — load JSON and text files from a data directory.
@@ -116,7 +116,7 @@ In =src/generator.py=:
 
 The generator detects a model's type from its filename suffix.  Each
 type has a root JSON key of the same name and is associated with one or
-more templates through [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]].
+more templates through [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].
 
 | Filename suffix       | Model type      | Root JSON key   | Primary template                             |
 |-----------------------+-----------------+-----------------+----------------------------------------------|
@@ -131,7 +131,7 @@ tables (refdata and similar).  It replaces the legacy =_entity.json= →
 
 ** Model-template mapping
 
-The active mapping is declared in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]], not hard-coded
+The active mapping is declared in [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]], not hard-coded
 in Python.  Each profile entry lists which templates apply to which model
 types and the output path pattern.
 
@@ -203,7 +203,7 @@ the C++ portion.
 
 ** Profile system
 
-Profiles are declared in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]].  Each profile maps to a
+Profiles are declared in [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].  Each profile maps to a
 list of template entries; each entry specifies the template name, the
 output path pattern, and the model types it applies to.
 
@@ -294,7 +294,7 @@ To add a new =_table.json= model for an existing component:
 To add a new profile or template:
 
 1. Add the Mustache template to =library/templates/=.
-2. Add an entry to [[id:A8145FD7-0651-40FD-857E-BC37C9320020][=library/facet_catalogue.org=]] under the relevant profile heading,
+2. Add an entry to [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under the relevant profile heading,
    adding a row to the templates table with =template=, =output= pattern, and optionally =model_types=.
 3. If adding a new model type, update =get_model_type()= in =src/generator.py=
    and add any preprocessing logic in the =generate_from_model()= dispatch block.

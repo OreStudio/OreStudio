@@ -55,7 +55,7 @@ Manual: run the command for a target entity, inspect the diff (already scoped �
 * See also
 
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — profile system, component registry, all-cpp composite profile.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — authoritative profile → template → output path table.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — authoritative profile → template → output path table.
 - [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] — maps component names (=refdata=, =refdata-cpp=, …) to model discovery roots.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check and drift classification.
 - [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] — tracks the missing =--entity= filter.

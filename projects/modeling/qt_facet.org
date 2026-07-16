@@ -105,4 +105,4 @@ implementation — do not reproduce it here.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — =ores.qt.api= contract, plugin lifecycle.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — icon selection for toolbar actions.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
-- [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]] — the literate templates that generate this facet.
+- [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] — the literate templates that generate this facet.

@@ -315,5 +315,5 @@ A codegen sync task for any profile is complete when:
 - [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — per-layer criteria; the mechanical what-to-look-for reference
 - [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — current Y/N coverage per entity per layer
 - [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] — structural concerns C1–C9 and 4-phase roadmap
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — authoritative profile → template → output path definitions (consumed by generator.py)
+- [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — authoritative profile → template → output path definitions (consumed by generator.py)
 - [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — reference commission story; most complete example

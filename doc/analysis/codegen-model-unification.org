@@ -54,7 +54,7 @@ is a =table= — purely because of the =_table= suffix.
 
 ** Profile dispatch by model type
 
-Which [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facets]] fire is a function of the detected model type. The
+Which [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] fire is a function of the detected model type. The
 profile × model_type matrix, drawn from the facet catalogue:
 
 | Profile         | domain_entity | table | junction | schema | Notes                                                  |
@@ -315,7 +315,7 @@ keeps the generator runnable at each step.
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Org entity meta model]]
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]]
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]]
+- [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]
 - [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]]
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]]
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]]

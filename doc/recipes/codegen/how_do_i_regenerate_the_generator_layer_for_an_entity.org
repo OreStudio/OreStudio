@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =generator= profile via =compass codegen regenerate=, generating the per-entity test-data generator header and implementation. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+Runs the =generator= profile via =compass codegen regenerate=, generating the per-entity test-data generator header and implementation. See [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -42,6 +42,6 @@ Manual: run the command, inspect =git diff -- projects/ores.refdata.api/=, verif
 * See also
 
 - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =generator= profile entry.
+- [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] — =generator= profile entry.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
 - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

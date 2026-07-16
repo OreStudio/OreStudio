@@ -13,8 +13,8 @@ This document is the index of ORE Studio's [[id:787A7429-71D5-4295-829B-A9B56275
 instantiation of the MASD [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] hierarchy across every language
 ecosystem the product touches. It provides the linkage between MASD's
 abstract concepts (TS, Part, [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]], Archetype, [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Profile]]) and the
-actual components, directories, templates, and [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] entries that
-implement them.
+actual components, directories, templates, and [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]
+nodes that implement them.
 
 A [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] (a =value= such as =currency=) projects simultaneously
 into every enabled [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] — C++ domain + repository + Qt,
@@ -57,9 +57,9 @@ shows /who owns what/; the TS model shows /how it is generated/.
 
 The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][PMM]] is instantiated by two complementary artefacts:
 
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — the profile catalogue, mapping every [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] name
-  to the [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] it activates and the Mustache templates that belong to each;
-  read directly by =generator.py= (no intermediate JSON).
+- The [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — each facet node's Archetypes table maps a
+  [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] name to the Mustache templates that belong to it; read directly
+  by =generator.py= (no intermediate JSON).
 - =projects/ores.codegen/library/templates/= — the archetype catalogue,
   where each =.mustache= file is one archetype within a facet. The
   directory layout mirrors the TS→Part→Facet hierarchy.

@@ -180,7 +180,7 @@ proceeding.
 
 The story for each gap must:
 1. Create mustache templates that encode the layer's conventions.
-2. Add a profile entry to [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+2. Add the new archetype's row to its facet's Archetypes table in the =ores.*= physical-space graph.
 3. Validate the profile against an existing entity (=currency= for
    refdata, =account= for IAM).
 4. Update this document's file checklist with the new profile's output paths.
@@ -195,4 +195,4 @@ must be replaced with generated output once the profile exists.
 - [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] — first layer skill.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — codegen component model, profile catalogue, model schema.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — schema mental model and PostgreSQL setup.
-- [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]], [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]] — the literate templates for the repository and service facets.
+- [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]], [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] — the literate templates for the repository and service facets.

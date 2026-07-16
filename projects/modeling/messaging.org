@@ -38,4 +38,4 @@ Each domain service owns a subject namespace.
   groups, JetStream.
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the upstream messaging technology this is built on.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — overall system architecture.
-- [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]] — the literate templates that generate the protocol facet.
+- [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] — the literate templates that generate the protocol facet.

@@ -65,7 +65,7 @@ Generator-config types (not entity models):
 
 | Type | File | Description |
 |------+------+-------------|
-| =ores.codegen.facet_catalogue= | [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] | Profile → facet → template/output mapping |
+| =ores.codegen.facet_catalogue= | [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] | Profile → facet → template/output mapping |
 | =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots |
 | =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language |
 

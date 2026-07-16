@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =sql= profile via =compass codegen regenerate=, which writes SQL DDL create/drop scripts and notify-trigger scripts. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] for component-to-model-root mapping.
+Runs the =sql= profile via =compass codegen regenerate=, which writes SQL DDL create/drop scripts and notify-trigger scripts. See [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] for the template list and [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] for component-to-model-root mapping.
 
 * Question
 
@@ -52,7 +52,7 @@ Manual: run the command, inspect =git diff -- projects/ores.sql/create/ projects
 * See also
 
 - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe for running all profiles.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =sql= profile entry with template → output path table.
+- [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] — =sql= profile entry with template → output path table.
 - [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] — =refdata= and =refdata-cpp= component definitions.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — drift classification table; output location check.
 - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — tracks open drift and path issues.

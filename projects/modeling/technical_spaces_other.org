@@ -18,7 +18,7 @@ see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], [[id:787A7429-71D5-4295-8
 
 ** CMake Technical Space
 
-Group-level literate source: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake_group]].
+Group-level literate source: [[id:CA666722-1F34-4591-BC54-BC161BE45EB2][ores.cmake]].
 
 The CMake [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers the build system wiring: =CMakeLists.txt= files that
 define library targets, executable targets, Catch2 test binaries, and the
@@ -40,32 +40,29 @@ service — which adds an executable).
 | Component tests | Catch2 test binary target |
 | Component modeling | PlantUML diagram generation target |
 
-Profile: =--profile cmake=. Literate source: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]].
+Profile: =--profile cmake=. Literate source: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]].
 
-** Assets Technical Space
+** Assets Technical Space (retired)
 
-Group-level literate source: [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets_group]].
+There is no longer a unified "assets" technical space in the
+physical-space address graph — its templates were single-template
+families that each found a home elsewhere as the graph migration
+proceeded:
 
-The Assets [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers non-code, non-SQL generated files that support other
-TSs: Qt Designer UI forms (=.ui= XML), PlantUML diagrams (=.puml=), and
-shell service variable files. One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 4 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]].
+| Former asset | Now lives at |
+|---------------+---------------------------------------------------|
+| Detail dialog =.ui= | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] (=ores.cpp.qt.detail_dialog_ui=) — grouped with the rest of the Qt ensemble it complements |
+| PlantUML ER    | [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] (=ores.plantuml.er=) |
+| Shell service vars | [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] (=ores.shell.service=) |
 
-The Qt UI forms here complement the [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Qt facet]]: the C++ TS generates
-the controller/model/window C++ classes; the Assets TS generates the
-=.ui= form files that Qt Designer reads.
-
-| Archetype | Description |
-|-----------+-------------|
-| Detail dialog =.ui= | Qt Designer XML for the single-record edit/view dialog |
-| History dialog =.ui= | Qt Designer XML for the temporal history browser |
-| PlantUML ER | =.puml= entity-relationship diagram |
-| Shell service vars | Shell variable definitions for service configuration |
-
-Profile: =--profile assets=. Literate source: [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]].
+Of these, only the PlantUML ER diagram and the shell service-vars
+templates are currently referenced by any profile or code path; the
+history-dialog =.ui= form was retired with the generic
+=ores::qt::HistoryDialog=.
 
 ** Doc Technical Space
 
-Group-level literate source: [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc_group]].
+Group-level literate source: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]].
 
 The Doc [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers all org-mode document scaffolding: agile artefacts
 (sprint, story, task, capture), knowledge and reference documents
@@ -101,7 +98,7 @@ for each document type.
 | Facet doc | =doc_facet.org= — facet reference document |
 | Template group doc | =doc_facet_group.org= — template group reference document |
 
-Profile: =--profile doc=. Literate source: [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]].
+Profile: =--profile doc=. Literate source: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]].
 
 * Manually-authored technical spaces
 

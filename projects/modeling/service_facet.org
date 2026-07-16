@@ -39,5 +39,5 @@ rather than reproducing it here.
 
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
-- [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]] — the literate templates that generate this facet.
+- [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] — the literate templates that generate this facet.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — where the service facet sits in the layer ordering.

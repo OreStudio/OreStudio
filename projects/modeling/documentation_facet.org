@@ -37,4 +37,4 @@ skeleton rather than reproducing it here.
 
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
-- [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]] — the literate templates that generate this facet.
+- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the literate templates that generate this facet.

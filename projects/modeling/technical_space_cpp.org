@@ -17,7 +17,7 @@ produces projections in this TS across multiple components.
 
 For the MASD concepts (TS, Part, Facet, Archetype, SRPP) see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]],
 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]]. For the component topology see [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
-Group-level literate source: [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp_group]].
+Group-level literate source: [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]].
 
 * Parts
 
@@ -36,7 +36,7 @@ under =include/<namespace>/=; implementation archetypes live under
 
 ** Domain facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile domain=. Literate source: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile domain=. Literate source: [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]].
 
 Generates the core domain type (struct), rfl-based JSON I/O, and a test
 data generator. This is the native home of a logical entity within its
@@ -53,7 +53,7 @@ fills fields with sample values.
 
 ** Generator facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile generator=. Literate source: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile generator=. Literate source: [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]].
 
 Generates a sample-value builder for integration tests. Produces one
 instance of the domain type with every field populated with a
@@ -68,7 +68,7 @@ representative value. The SRPP is the builder pattern: a free function
 
 ** Repository facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile repository=. Literate source: [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile repository=. Literate source: [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]].
 
 Generates the sqlgen entity (ORM mapping), mapper (SQL↔domain type
 conversion), and repository (CRUD operations). Produces temporal and
@@ -85,7 +85,7 @@ component, which owns all database interaction.
 
 ** Messaging facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile protocol=. Literate source: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile protocol=. Literate source: [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]].
 
 Generates the NATS protocol types: the changed-event struct (published on
 entity mutation), the message handler base class, request/response protocol
@@ -103,7 +103,7 @@ for entity lifecycle events.
 
 ** Service application facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile service=. Literate source: [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile service=. Literate source: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]].
 
 Generates the full service application scaffolding: application class, host,
 configuration options/parser, and the service main entry point. One service
@@ -125,11 +125,11 @@ the Boost.Asio / NATS service host pattern.
 
 ** Qt UI facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile qt=. Literate source: [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile qt=. Literate source: [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]].
 
 Generates the full Qt MDI window and dialog set. The SRPP is the
 Qt MDI + Qt Abstract Table Model pattern for browsing and editing entity
-records. The =.ui= form files are in the [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][Assets]] TS.
+records. The =.ui= form files are in the [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] TS.
 
 | Archetype | Part | Description |
 |-----------+------+-------------|
@@ -143,7 +143,7 @@ records. The =.ui= form files are in the [[id:C024DB5C-C108-4A6B-8B0A-4E77916319
 
 ** Component facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile component=. Literate source: [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile component=. Literate source: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]].
 
 Generates component-level scaffolding — artefacts that exist once per
 component rather than once per entity. These are the first files created
@@ -162,7 +162,7 @@ when a new component is added to the product.
 
 ** Model types facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile model-types=. Literate source: [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile model-types=. Literate source: [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]].
 
 Generates C++ =enum class= types (with string conversion) and field-group
 structs (nested value objects used for decomposition). These are standalone
@@ -177,7 +177,7 @@ types that do not follow the full entity lifecycle pattern.
 
 ** Table facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: part of =--profile domain=. Literate source: [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: part of =--profile domain=. Literate source: [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]].
 
 Generates a libfort table adapter for shell/CLI tabular output. The SRPP is
 the pattern of mapping domain type fields to formatted ASCII table columns.
@@ -211,7 +211,7 @@ The C++ TS projections distribute across components according to the
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — index of all TSs.
 - [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — companion TS for database artefacts.
-- [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp_group]] — literate group document for all C++ facets.
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — literate group document for all C++ facets.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept and full catalogue.
 - [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split and dependency rules.

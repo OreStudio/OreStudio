@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: A6034094-C3DB-48CA-9118-10FFB80BC8DD
+:END:
+#+title: Counterparty/Party list has no way to find a newly created row
+#+description: The Counterparties (and Parties) list is paginated and ordered by id (a random UUID), so a newly created row lands on an arbitrary page with no search or sort-by-name to find it.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:ux:pagination:counterparty:party:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=CounterpartyMdiWindow= / =ClientCounterpartyModel= (and the equivalent
+Party classes) load the list via
+=counterparty_repository::read_latest= (see
+=projects/ores.refdata/core/src/repository/counterparty_repository.cpp=),
+which orders by =order_by("id"_c)= — a random UUID — and paginates at
+~100 rows per page by default. There is no search box or sort-by-name
+control on the grid. In a tenant with thousands of counterparties (the
+Barclays/GLEIF dataset has ~13,000), a newly created row lands on an
+arbitrary page determined by its random id, making it practically
+impossible to find after Save without knowing to hunt through pages.
+Add either a default sort by =full_name= / =short_code=, or a
+search/filter box on the list toolbar (or both).
+
+* Why
+
+Discovered while verifying the "No Parent" combo fix
+([[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]]):
+a tester created a new counterparty with No Parent, it saved
+correctly (confirmed via direct DB query — correct tenant, NULL
+parent, =valid_to= = infinity), but it did not appear in the grid on
+reload, and was initially mistaken for a save/data-loss bug. The
+actual behaviour is a pagination/ordering gap, not a data
+correctness issue, but it is a real UX problem: users have no
+reliable way to locate a record they just created.
+
+* References
+
+- [[id:6D240444-D835-44C3-8660-F68727CB0883][Test Scenario: Verify the No Parent combo entry for party and counterparty]] — step 2 surfaced this.
+
+* See also
+
+- [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]]

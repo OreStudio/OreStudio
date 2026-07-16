@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 6D240444-D835-44C3-8660-F68727CB0883
+:END:
+#+title: Test Scenario: Verify the No Parent combo entry for party and counterparty
+#+description: Verify the new No Parent combo entry: create a standalone counterparty with no parent, confirm a second rootless party is correctly rejected, and confirm editing an existing null-parent record round-trips correctly.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:verification:party:counterparty:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: CounterpartyDetailDialog / PartyDetailDialog
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | CounterpartyDetailDialog / PartyDetailDialog |
+| Clients       |                                          |
+| State         | PASSED                                  |
+
+* Steps
+
+** Connect to tenant Barclays Plc
+
+Log in against the =prime_origin= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a new counterparty with No Parent
+
+Open Reference Data > Counterparties, click *Add*, fill in Short
+Code, Full Name, and the other required fields, and leave *Parent
+Counterparty* on its default *No Parent* entry (or explicitly select
+it if something else is pre-selected). Click *Save*. Confirm it
+saves successfully and the new row appears in the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+Verified via direct DB query: the row saved correctly with a NULL
+=parent_counterparty_id=, correct tenant, and =valid_to= = infinity
+(the current live version). It did not appear in the grid on reload
+because the list is paginated (page size ~100) and ordered by =id=
+(a random UUID) rather than by name or creation time — with ~13,000
+counterparties in this tenant, a newly created row lands at a random
+page and is effectively invisible without searching/paging for it.
+This is a pre-existing UX gap unrelated to the No Parent fix; filed
+separately as a capture rather than blocking this scenario.
+
+** Edit that counterparty back and confirm it round-trips
+
+Double-click the counterparty just created. Confirm *Parent
+Counterparty* shows *No Parent* (not some other counterparty) —
+this is the bug the fix addresses. Close without changes.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Edit an existing standalone counterparty from GLEIF data
+
+Open any counterparty that has no parent in the database (e.g.
+search for one with an empty Parent column, or pick one at random and
+check its Hierarchy tab shows no ancestors). Confirm its Parent
+Counterparty combo shows *No Parent* correctly on open, not some
+unrelated counterparty. Close without changes — do not save unless
+you intend to, since this row is real GLEIF data.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm a second rootless party is rejected
+
+Open Reference Data > Parties, open the tenant's existing house root
+(e.g. BARCLAYS PLC) and confirm its Parent Party combo now correctly
+shows *No Parent* rather than some other party (previously
+mis-displayed due to the same bug). Then open a *different*,
+non-root party, set its Parent Party to *No Parent*, and click
+*Save*. Confirm the save is rejected with a clear error (the
+database's single-root constraint) rather than silently succeeding
+or corrupting the record.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T17:15:00Z |
+| Branch        | feature/write-counterparty-manual-chapter |
+| Commit        | 095a79c77 |
+| Worktree      | prime_origin |
+
+* Notes

@@ -243,7 +243,8 @@ void BookDetailDialog::populateBookStatusCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void BookDetailDialog::populateRegulatoryBookTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
@@ -267,7 +268,8 @@ void BookDetailDialog::populateRegulatoryBookTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));

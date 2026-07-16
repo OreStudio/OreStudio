@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: F424E50D-B24D-40FA-B28A-76FD21F058E4
+:END:
+#+title: Test Scenario: Capture counterparty manual chapter screenshots
+#+description: Capture all 7 screenshots referenced by the new Counterparties manual chapter.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:counterparty:refdata:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: CounterpartyDetailDialog
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | CounterpartyDetailDialog                |
+| Clients       |                                          |
+| State         | PENDING                                 |
+
+* Steps
+
+Log in against =prime_origin= as =tenant_admin@barclays_plc= /
+=Secure-Password-123= and select *BARCLAYS PLC* before the first
+capture step. Save every capture into the repo-root =assets/images/=
+(not =doc/manual/user_guide/assets/images/= — the =proj:= link type
+resolves against the repo root), overwriting any existing file.
+
+** Capture counterparties_main_dialog.png
+
+Open the Counterparties window from the /Reference Data/ menu, with
+at least two different Party Type values and two different Status
+values visible. Screenshot the full window including the toolbar and
+status bar. Save as =counterparties_main_dialog.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step1_20260716_145843.png]] |
+
+** Capture counterparty_details_general.png
+
+Double-click any counterparty to open Counterparty Details. On the
+General tab, make sure Party Type, Status, Business Center, and
+Parent Counterparty all show real, non-blank values. Screenshot the
+General tab in full. Save as =counterparty_details_general.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step2_20260716_145907.png]] |
+
+** Capture counterparty_parent_counterparty_combo.png
+
+Still on the General tab, click the Parent Counterparty combo to
+open its dropdown, showing the list of candidate parent
+counterparties by full name. Screenshot it open. Save as
+=counterparty_parent_counterparty_combo.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | ./tmp/Screenshot from 2026-07-16 15-04-28.png |
+
+** Capture counterparty_details_identifiers.png
+
+Switch to the Identifiers tab. If the selected counterparty has no
+identifier rows yet, add one or two (e.g. an LEI and a BIC) via the
+row toolbar first, so the table isn't empty. Screenshot the tab. Save
+as =counterparty_details_identifiers.png=. Discard any rows added
+purely for the screenshot afterwards if you don't want to keep them.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step4_20260716_150506.png]] |
+
+** Capture counterparty_details_contact_information.png
+
+Switch to the Contact Information tab. If empty, add a row (e.g.
+contact type /Legal/, with city, country, and phone filled in) via
+the row toolbar. Screenshot the tab. Save as
+=counterparty_details_contact_information.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step5_20260716_150542.png]] |
+
+** Capture counterparty_details_hierarchy.png
+
+Switch to the Hierarchy tab. Pick a counterparty (or navigate to one)
+that has both a parent and at least one child, so both directions of
+the tree are visible — note that unlike a party, this is not
+guaranteed for every counterparty (see the chapter's explanation of
+why). Screenshot the tab. Save as
+=counterparty_details_hierarchy.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step6_20260716_150552.png]] |
+
+** Capture counterparty_history_dialog.png
+
+Close the detail dialog, right-click a counterparty row with more
+than one version (or edit-and-save one first to create a second
+version), and choose *History*. Select a version so the All
+Fields/Only Changes toggle shows a real diff against its
+predecessor. Screenshot the History dialog. Save as
+=counterparty_history_dialog.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_counterparty-manual-chapter-screenshots_step7_20260716_150710.png]] |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-16T14:07:12Z |
+| Branch        | feature/write-counterparty-manual-chapter |
+| Commit        | 47487a0eb |
+| Worktree      | prime_origin |
+
+* Notes

@@ -231,7 +231,8 @@ void BusinessCentreDetailDialog::populateCodingSchemeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void BusinessCentreDetailDialog::updateUiFromCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));

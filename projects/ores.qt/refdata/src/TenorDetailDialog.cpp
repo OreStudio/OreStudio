@@ -172,7 +172,8 @@ void TenorDetailDialog::populateKindCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void TenorDetailDialog::populateUnitCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating unit combo";
@@ -193,7 +194,8 @@ void TenorDetailDialog::populateUnitCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void TenorDetailDialog::updateUiFromTenor() {
     ui_->codeEdit->setText(QString::fromStdString(tenor_.code));

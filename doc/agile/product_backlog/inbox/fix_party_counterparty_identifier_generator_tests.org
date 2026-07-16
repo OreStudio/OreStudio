@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: B00412FD-10E4-4B85-A6BF-2096076E0911
+:END:
+#+title: party/counterparty_identifier_generator tests assert stale version/change_reason_code
+#+description: generators_tests.cpp still expects version==1/system.new for party_identifier and counterparty_identifier generators, but the generators produce version==0/system.test — same stale-expectation pattern already fixed for the contact_information generators.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:tests:party:counterparty:pre-existing:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.refdata/api/tests/generators_tests.cpp= —
+=party_identifier_generator_produces_valid_instance= and
+=counterparty_identifier_generator_produces_valid_instance= — assert
+=sut.version == 1= and =sut.change_reason_code == "system.new"=, but
+=party_identifier_generator.cpp= / =counterparty_identifier_generator.cpp=
+set =version = 0= and =change_reason_code = "system.test"=. Fix the
+test assertions to match actual generator output, mirroring the fix
+already applied to =party_contact_information_generator_produces_valid_instance=
+and =counterparty_contact_information_generator_produces_valid_instance=
+in commits =123ca2bfa= / =d0458e500=.
+
+* Why
+
+Confirmed pre-existing and failing on =origin/main= (not introduced
+by any in-flight branch) while running the full test suite locally
+before raising an unrelated PR. Two tests currently fail every CI
+run; low-risk one-line fix per assertion.
+
+* References
+
+- =projects/ores.refdata/api/tests/generators_tests.cpp= lines ~242, ~274
+
+* See also
+
+-

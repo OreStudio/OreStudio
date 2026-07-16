@@ -236,7 +236,8 @@ void PartyDetailDialog::populatePartyTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void PartyDetailDialog::populatePartyStatusCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating status combo";
@@ -257,7 +258,8 @@ void PartyDetailDialog::populatePartyStatusCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void PartyDetailDialog::populateParentPartyCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating parent_party_id combo";
@@ -281,7 +283,8 @@ void PartyDetailDialog::populateParentPartyCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
-        [this](const auto& t) { return t.id == party_.id; });
+        [this](const auto& t) { return t.id == party_.id; },
+        QObject::tr("No Parent"));
 }
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));

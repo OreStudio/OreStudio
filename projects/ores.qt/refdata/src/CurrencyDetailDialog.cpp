@@ -374,7 +374,8 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CurrencyDetailDialog::populateMarketTierCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating market_tier combo";
@@ -397,7 +398,8 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CurrencyDetailDialog::populateRoundingTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating rounding_type combo";
@@ -418,7 +420,8 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CurrencyDetailDialog::updateUiFromCurrency() {
     ui_->isoCodeEdit->setText(QString::fromStdString(currency_.iso_code));

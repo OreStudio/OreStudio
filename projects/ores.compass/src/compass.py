@@ -3267,6 +3267,13 @@ def cmd_add(argv):
                 print("ℹ️  Remember to wire the new artefact into its "
                       "parent (e.g. the sprint's * Stories table) where "
                       "needed.", file=sys.stderr)
+        if doc_type == "test_scenario":
+            print("ℹ️  Before running this scenario, ensure Barclays Plc "
+                  "has been provisioned (compass shell -f "
+                  "projects/ores.shell/scripts/library/provisioning/"
+                  "barclays_system_provision.ores) — the scenario's first "
+                  "step logs in as tenant_admin@barclays_plc.",
+                  file=sys.stderr)
         if doc_type == "skill":
             print("⚠️  Rebuild the skills bundle after filling in the skill body:",
                   file=sys.stderr)

@@ -171,7 +171,7 @@ the history icon in the title bar, or right-click the row and choose
 [[proj:assets/images/business_centre_history_dialog.png]]
 
 Pick the two versions to compare from the *Compare* drop-downs. The
-*All Fields*/*Only Changes* toggle switches between showing every
+*All Fields* / *Only Changes* toggle switches between showing every
 field and showing only the fields that differ between the two
 selected versions. The *Revert* button reinstates any historical
 version as a *new* version, preserving the full audit chain — the old

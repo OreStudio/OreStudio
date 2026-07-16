@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 12544684-931D-4740-829C-D93AE2F8836B
+:END:
+#+title: ores.doc.knowledge.product_identity
+#+description: Product-identity page skeleton.
+#+type: archetype
+#+facet: ores.doc.knowledge
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Product-identity page skeleton.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_product_identity.org.mustache=.
+
+#+begin_src mustache :tangle doc_product_identity.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: product_identity
+,#+level: s5
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+(One paragraph: this is the durable identity of the product. Versions
+come and go; this identity does not. Everything else is filtered
+through this page when deciding whether a candidate idea belongs in
+the product backlog at all.)
+
+,* Vision
+
+(What we are building /toward/. State the vision; quote inspirations.)
+
+,** Vision statement
+
+-
+
+,** Vision quote
+
+,#+begin_quote
+(An inspirational quote that captures the spirit of the vision.)
+,#+end_quote
+
+,* Out of scope
+
+(What this is not. Equally important. Explicit boundaries that keep
+the product honest.)
+
+-
+
+,* Relationship to versions
+
+(How identity relates to the version tree — identity is durable,
+implementations are not. When this changes it is a re-identification,
+not a version bump.)
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

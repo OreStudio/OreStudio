@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 9BED911E-FA50-4DE4-A3B9-0A2D0906A381
+:END:
+#+title: ores.doc.agile.version
+#+description: Version page topping the agile composition tree.
+#+type: archetype
+#+facet: ores.doc.agile
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Version page topping the agile composition tree.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_version.org.mustache=.
+
+#+begin_src mustache :tangle doc_version.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: version
+,#+level: s4
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+,#+todo: STARTED | RELEASED
+
+This page documents the [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] *{{title}}* of ORE Studio. It captures the version's identity, mission, definition of done, current status, and the sprints that compose it. For the durable, version-independent statement of what ORE Studio is, see the [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]].
+
+,* Identity
+
+(What makes this version distinct.)
+
+,* Mission
+
+-
+
+,* Definition of done
+
+(When this version can close.)
+
+,* Status
+
+| Field        | Value                            |
+|--------------+----------------------------------|
+| State        | {{state}}                        |
+| Now          | Version in flight.               |
+| Waiting on   | Nothing.                         |
+| Next         | Continue with the active sprint. |
+| Last touched | {{date}}                         |
+
+,* Sprints
+
+In lexicographic order.
+
+,#+ATTR_HTML: :class hug-leading
+| Sprint | Start | End | Theme |
+|--------+-------+-----+-------|
+|        |       |     |       |
+
+,* Release scope
+
+In scope:
+
+-
+
+Deferred to later versions:
+
+-
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

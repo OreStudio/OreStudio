@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: BBE1DC17-3961-4061-BF6D-ED30E1C6FB75
+:END:
+#+title: ores.doc.knowledge.skill
+#+description: Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=).
+#+type: archetype
+#+facet: ores.doc.knowledge
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=).  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_skill.org.mustache=.
+
+#+begin_src mustache :tangle doc_skill.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+author: Marco Craveiro
+,#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+,#+startup: inlineimages
+,#+export_exclude_tags: noexport
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+,#+begin_export markdown
+---
+name: {{slug}}
+description: {{description}}
+license: Complete terms in LICENSE.txt
+---
+,#+end_export
+
+,* When to use this skill
+
+(When does Claude Code reach for this skill? One or two sentences.)
+
+,* How to use this skill
+
+1. (Step.)
+2. (Step.)
+
+,* Recipes
+
+-
+
+,* Reference
+
+(Link to the knowledge document or component model that backs this
+skill.)
+
+,* Artefacts                                                        :noexport:
+
+,** Licence
+
+,#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+,#+END_SRC
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

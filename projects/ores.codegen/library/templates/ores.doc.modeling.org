@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.modeling= facet of the
 codegen template library. Each section documents one template and
@@ -17,27 +17,31 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Codegen model-authoring scaffolds: entity_org (the literate codegen
+entity model — frontmatter plus the section/table skeleton the
+org_loader parses), field_group, table (SQL-only), junction,
+lookup_entity (batch-loaded), service_registry, and dataset_overview.
+No profile involvement.
 
 * The ores.doc.modeling facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Scaffolds for the source-of-truth org files that drive the rest of
+codegen — these are inputs, not generated outputs, of the entity
+facets in [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] and [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]]. Each scaffold matches the section/table
+shape its own loader parses (Primary key, Columns, Left/Right FK
+sections for junctions, one section per service for the registry).
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+Same identity-escape rendering as the rest of the group. The junction
+and lookup-entity scaffolds carry frontmatter flags
+(={{#has_tenant_id}}=-style) mirroring the flags their generated SQL
+branches on.
 
 * Templates
 
@@ -56,9 +60,15 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:33B2DE63-DA3B-4455-A79A-EBCFAFCC726D][ores.doc.modeling.field_group]] | Codegen field-group model (=*_field_group.org= suffix drives loader dispatch); carries =#+brief=. |
+| [[id:631BD15D-F858-4E31-9FF0-506B82D2A6AC][ores.doc.modeling.junction]] | Codegen SQL join-table + C++ counterpart (=*_junction.org= suffix drives loader dispatch): Left/Right FK sides, Columns, SQL/C++ sections. |
+| [[id:990E0A18-1FC2-4FD8-8013-5A04306BA386][ores.doc.modeling.lookup_entity]] | Codegen batch-loaded reference table (=*_lookup_entity.org= suffix drives loader dispatch): minimal frontmatter, Primary key, Columns, optional Artefact indexes. |
+| [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] | Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses. |
+| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services with psql vars, IAM roles, and DML grant prefixes. One top-level section per service. |
+| [[id:D97584D2-724B-4CA1-B8EE-D73158B2920A][ores.doc.modeling.table]] | Codegen SQL-only table model (=*_table.org= suffix drives loader dispatch): frontmatter plus Primary key / Columns / Validation function / Insert trigger skeleton. |
+| [[id:DB094CBB-5E9A-4EEB-9B3B-B48654734590][ores.doc.modeling.dataset]] | Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets. |
 
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

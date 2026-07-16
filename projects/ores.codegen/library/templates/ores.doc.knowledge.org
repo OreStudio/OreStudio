@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.knowledge= facet of the
 codegen template library. Each section documents one template and
@@ -17,27 +17,31 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture,
+runbook — plus component, investigation, product identity, and
+release notes. No profile involvement; =doc_generate.py='s
+=TYPE_TO_TEMPLATE= maps type → template directly.
 
 * The ores.doc.knowledge facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+Self-hosting mustache sources rendering to org-mode documents, driven
+by =doc_generate='s variables dict (=id=, =title=, =description=,
+=filetags=, =date=, plus type-specific extras — recipe section bodies
+via =--question=/=--answer=/=--script=/=--tested-by=, memory subtype
+fields, component name/brief). Recipe, runbook and skill compose other
+prose docs by reference rather than by structure.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+=doc_generate= renders with =pystache.Renderer(escape=identity)= — see
+the group doc's shared conventions. List sections
+(={{#acceptance}}=, ={{#see_also}}=) render repeatable bullets with
+={{#has_acceptance}}=-style empty-state guards.
 
 * Templates
 
@@ -56,9 +60,19 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:12544684-931D-4740-829C-D93AE2F8836B][ores.doc.knowledge.product_identity]] | Product-identity page skeleton. |
+| [[id:3268F1AC-D311-4418-8DA1-FC0F0B6BCE55][ores.doc.knowledge.manual]] | User-manual chapter under =doc/manual/user_guide/=. |
+| [[id:4086A9C8-E7BB-43E4-B183-FF606B2B17E7][ores.doc.knowledge.investigation]] | Investigation doc with the =Investigation:= title prefix and findings skeleton. |
+| [[id:4723841E-96FB-42F9-A6ED-94B1EFD9253E][ores.doc.knowledge.capture]] | Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred). |
+| [[id:4829F5E5-5B63-4A9B-ACFA-D7D9B94043E0][ores.doc.knowledge.knowledge]] | Generic knowledge page: Summary / Detail / See also. |
+| [[id:8FECAF12-6D73-42E7-8337-D0B80CE6D421][ores.doc.knowledge.memory]] | Project memory: =#+memory_subtype= plus statement / why / how-to-apply one-shot body fields. |
+| [[id:98439F43-C282-423A-8F4F-8FE5CC464A05][ores.doc.knowledge.recipe]] | Recipe with Question / Answer / Script / Tested-by sections, each renderable verbatim from flags (=--question=, =--answer=, …). |
+| [[id:BBE1DC17-3961-4061-BF6D-ED30E1C6FB75][ores.doc.knowledge.skill]] | Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=). |
+| [[id:DA424429-4FC6-4594-8D9D-7183F5D9C08B][ores.doc.knowledge.component]] | Component =component_overview.org=: =#+component_name= / =#+brief= keywords read back by codegen, plus the standard overview sections. |
+| [[id:E17F441C-AD18-4AB9-9AD6-4B26AA482D2D][ores.doc.knowledge.runbook]] | Runbook: Goal / Preconditions / Steps / Postconditions composition of recipes and skills. |
+| [[id:F4149F7D-4F84-4CA4-99B3-37AA6CF04A5C][ores.doc.knowledge.release_notes]] | Sprint release-notes page generated at sprint close. |
 
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

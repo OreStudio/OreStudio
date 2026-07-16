@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =qt= profile to regenerate Qt UI files. Two scopes are available: entity-level (single entity by name, preferred for focused work) and component-level (all entities in a component). See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+Runs the =qt= profile to regenerate Qt UI files. Two scopes are available: entity-level (single entity by name, preferred for focused work) and component-level (all entities in a component). See [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -58,5 +58,5 @@ Manual: run the command, inspect =git diff -- projects/ores.qt/refdata/=, verify
 
 - [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] — entity-level workflow with =--diff= and =--dry-run=.
 - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe; component-wide run.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =qt= profile entry.
+- [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] — =qt= profile entry.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.

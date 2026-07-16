@@ -18,7 +18,7 @@ distinction in SQL).
 The SQL TS projects that live in the repository are placed under
 =projects/ores.sql/=. All DDL output is managed by the schema lifecycle
 there. For the MASD concepts see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
-Group-level literate source: [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql_group]].
+Group-level literate source: [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]].
 
 * Part
 
@@ -36,7 +36,7 @@ but are still part of the same TS.
 
 ** Schema facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile sql=. Literate source: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile sql=. Literate source: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]].
 Modeling reference: [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 
 Generates the DDL lifecycle for an entity: the create table script, the
@@ -64,7 +64,7 @@ Multiple schema model variants are supported:
 
 ** Service facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile service-sql=. Literate source: [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile service-sql=. Literate source: [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]].
 
 Generates the PostgreSQL user/permission setup for a service. Each service
 that touches the database has a dedicated database user with minimal
@@ -82,7 +82,7 @@ per service, not once per entity.
 
 ** Populate facet
 
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile populate=. Literate source: [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]].
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile populate=. Literate source: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]].
 
 Generates the reference-data seed scripts — the canonical data sets for
 entities such as currencies (ISO 4217), countries (ISO 3166), FPML coding
@@ -128,7 +128,7 @@ resource across all components.
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — index of all TSs.
 - [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — the primary codegen TS for domain and application artefacts.
-- [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql_group]] — literate group document for all SQL facets.
+- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — literate group document for all SQL facets.
 - [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]] — modeling reference for the SQL TS projection.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept and full catalogue.
 - [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy.

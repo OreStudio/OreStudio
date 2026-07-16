@@ -16,7 +16,7 @@ docs describe the methodology as an observation of the external world, this
 one shows how ORE Studio instantiates each concept: how the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]
 maps to authored entity models and the four-layer architecture, how the
 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] maps to technical spaces, profiles, and Mustache templates, and
-how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]] maps to [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]]. ORE Studio ports MASD's ideas to
+how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]] maps to the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]. ORE Studio ports MASD's ideas to
 [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]] rather than to a formal meta-meta-model: the underlying concepts
 are encoded in [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] and recipes an LLM can understand and apply.
 
@@ -114,7 +114,8 @@ header, the JSON I/O implementation. The =repository= facet groups the
 archetypes for persistence: entity, mapper, repository (header and
 implementation for each). These are distinct roles, so they are distinct facets.
 
-Facets are defined in =facet_catalogue.org= (=projects/ores.codegen/library/=).
+Facets are defined as nodes in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]
+(=projects/ores.codegen/library/templates/=).
 
 *** Archetype
 
@@ -136,7 +137,8 @@ Putting it together with a concrete case:
 1. =currency= is a *logical entity* with metatype =domain_entity=.
 2. A developer runs =compass codegen generate --model ores.refdata.currency.org --profile domain=.
 3. The *transform* (=ores.codegen=) reads the model, confirms the metatype is =domain_entity=.
-4. It resolves the =domain= *facet* from =facet_catalogue.org=.
+4. It resolves the =domain= *facet* from the =ores.cpp.domain= node in
+   the physical-space graph.
 5. The =domain= facet contains three *archetypes* that bind to =domain_entity=:
    - =domain::entity_header= → =currency.hpp=
    - =domain::json_io_header= → =currency_json_io.hpp=
@@ -189,8 +191,9 @@ implicit part because its artefacts are not split by compile-time role.
 ORE Studio has no compiled Physical Metamodel. The PMM's role is played by two
 artefacts:
 
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] (=projects/ores.codegen/library/facet_catalogue.org=) — the profile catalogue that
-  names every facet and its activation conditions; read directly by =generator.py=.
+- The [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] (=projects/ores.codegen/library/templates/ores.*.org=)
+  — root → technical space → facet → archetype nodes naming every facet, its
+  activation profile, and its archetypes.
 - The Mustache template directory under
   =projects/ores.codegen/library/templates/= — the archetype catalogue, where
   each =.mustache= file is one archetype, wrapped in a literate org document
@@ -222,11 +225,12 @@ every run, carries nothing a human edits, and lives under =build/output/= so it
 stays out of the input tree. =projects/ores.codegen/models/= holds authored
 input only.
 
-** Variability → facet_catalogue.org and element-scope binding
+** Variability → the physical-space graph and element-scope binding
 
-ORE Studio does not maintain a formal VMM. Instead [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] serves as its
-profile catalogue, mapping every profile name (=domain=, =repository=, =sql=, =qt=…) to the
-templates it activates and the model types they apply to. Three activation scopes are
+ORE Studio does not maintain a formal VMM. Instead the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
+graph]] serves as its profile catalogue: each facet node's Archetypes table
+maps a profile name (=domain=, =repository=, =sql=, =qt=…) to the templates
+it activates and the model types they apply to. Three activation scopes are
 supported:
 
 - *Product scope* — composite alias profiles (=all=, =all-cpp=, =non-temporal=) group multiple
@@ -252,9 +256,10 @@ supported:
 #+end_example
 
   The above → supported set = all C++ except Qt. Entities with no =ores.*= properties:
-  supported set = model-types filter (backward-compatible). The TS→facet map lives in a
-  =* Technical spaces= section of =facet_catalogue.org=. All resolution logic is isolated
-  in =codegen/physical_space.py= with its own unit tests.
+  supported set = model-types filter (backward-compatible). The TS→facet map now lives
+  in each technical space's own =* Facets= table in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
+  graph]]. All resolution logic is isolated in =codegen/physical_space.py= with its own
+  unit tests.
 
 For the full treatment — model types, profile catalogue, activation semantics, and the
 MASD→ORE Studio mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
@@ -268,15 +273,15 @@ a literate template org file.
 
 | Facet               | Profile                  | Literate source       | Archetypes | Purpose                                            |
 |---------------------+--------------------------+-----------------------+------------+----------------------------------------------------|
-| Domain              | =--profile domain=       | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]]            | 3          | Temporal domain struct and JSON I/O                |
-| Generator           | =--profile generator=    | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]]            | 2          | Test-data generator (sample-value builder)         |
-| Repository          | =--profile repository=   | [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
-| Messaging           | =--profile protocol=     | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]]         | 6          | NATS event, handler, protocol types, service       |
-| Service application | =--profile service=      | [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]]       | 12         | Application, host, config options/parser, entry point |
-| Qt UI               | =--profile qt=           | [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]]                | 10         | MDI window, controller, detail/history dialogs, client model |
-| Component           | =--profile component=    | [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]]         | 6          | Umbrella header, export macros, test main, stubs   |
-| Model types         | =--profile model-types=  | [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]]       | 2          | Enum class, field-group struct                     |
-| Table               | part of =--profile domain= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]]           | 4          | libfort table adapter and I/O                      |
+| Domain              | =--profile domain=       | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | 3          | Temporal domain struct and JSON I/O                |
+| Generator           | =--profile generator=    | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | 2          | Test-data generator (sample-value builder)         |
+| Repository          | =--profile repository=   | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
+| Messaging           | =--profile protocol=     | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]         | 6          | NATS event, handler, protocol types, service       |
+| Service application | =--profile service=      | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]       | 12         | Application, host, config options/parser, entry point |
+| Qt UI               | =--profile qt=           | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                | 10         | MDI window, controller, detail/history dialogs, client model |
+| Component           | =--profile component=    | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]         | 6          | Umbrella header, export macros, test main, stubs   |
+| Model types         | =--profile model-types=  | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]]       | 2          | Enum class, field-group struct                     |
+| Table               | part of =--profile domain= | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]           | 4          | libfort table adapter and I/O                      |
 
 Per-facet references: [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]], [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] (repository and
 service), [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]], [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol),
@@ -286,9 +291,9 @@ service), [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]]
 
 | Facet    | Profile                | Literate source | Archetypes | Purpose                                            |
 |----------+------------------------+-----------------+------------+----------------------------------------------------|
-| Schema   | =--profile sql=        | [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]]      | 9          | DDL create/drop, notify trigger, junction tables   |
-| Service  | =--profile service-sql= | [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]]   | 4          | Service users, DB grants, IAM accounts and roles   |
-| Populate | =--profile populate=   | [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]]    | 13         | Reference-data seed scripts                        |
+| Schema   | =--profile sql=        | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]      | 9          | DDL create/drop, notify trigger, junction tables   |
+| Service  | =--profile service-sql= | [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]]   | 4          | Service users, DB grants, IAM accounts and roles   |
+| Populate | =--profile populate=   | [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]    | 13         | Reference-data seed scripts                        |
 
 See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 
@@ -296,9 +301,9 @@ See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 
 | Facet         | Profile             | Literate source | Archetypes | Purpose                                             |
 |---------------+---------------------+-----------------+------------+-----------------------------------------------------|
-| CMake build   | =--profile cmake=   | [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]]           | 8          | Component root, src variants, tests, modeling target |
-| Assets        | =--profile assets=  | [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]]          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
-| Documentation | =--profile doc=     | [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
+| CMake build   | =--profile cmake=   | [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]           | 8          | Component root, src variants, tests, modeling target |
+| Assets        | =--profile assets=  | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
+| Documentation | =--profile doc=     | [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
 
 See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]], [[id:1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04][Documentation facet]].
 
@@ -326,7 +331,8 @@ from a proven hand-written entity.
    checklist items are extraction candidates.
 3. *Encode each SRPP as a Mustache archetype* parameterised by the entity
    model.
-4. *Register the archetypes* in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+4. *Register the archetypes* as rows in the facet's Archetypes table in
+   the =ores.*= physical-space graph.
 5. *Verify zero drift* — run the generator against the =currency= model and
    diff against the hand-written files; a zero diff confirms faithful
    extraction.
@@ -382,7 +388,7 @@ as the fitness function.
 ** ORE Studio physical and system model
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete TS→Part→Facet→Archetype model.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — facet_catalogue.org, model types, activation.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the ores physical-space graph, model types, activation.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture as physical-space instances.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split across components.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering and conventions for a full-stack entity.

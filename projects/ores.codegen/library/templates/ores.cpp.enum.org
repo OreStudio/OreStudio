@@ -9,7 +9,7 @@
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.cpp.enum= facet of the
 codegen template library. Each section documents one template and
@@ -18,20 +18,20 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+One template: the enum class with string conversion, rendered from its
+own enum org-model rather than from an entity. =enum= profile.
 
 * The ores.cpp.enum facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+A standalone model format: an enum org-model is a first-class codegen
+input that produces exactly one header. Unlike the entity facets there
+is no layered projection — one model, one artefact. Sibling to
+[[id:EF08BD8A-21CD-4D5F-A574-5C850722DE16][ores.cpp.field-group]].
 
 * Mustache incantations
 
@@ -63,4 +63,3 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

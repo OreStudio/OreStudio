@@ -149,5 +149,5 @@ struct event_traits<ores::{{component}}::eventing::{{entity_singular}}_changed_e
 
 * See also
 
-- Parent facet: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]]
+- Parent facet: [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

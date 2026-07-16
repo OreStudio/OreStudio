@@ -78,5 +78,4 @@ One subheading per template, in the archetype docs below.
 * See also
 
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
 - [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] — generates the =read_for_cache= RPC this facet's cache warms/reloads from.

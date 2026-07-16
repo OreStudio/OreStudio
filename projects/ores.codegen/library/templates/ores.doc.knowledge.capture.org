@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 4723841E-96FB-42F9-A6ED-94B1EFD9253E
+:END:
+#+title: ores.doc.knowledge.capture
+#+description: Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred).
+#+type: archetype
+#+facet: ores.doc.knowledge
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred).  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_capture.org.mustache=.
+
+#+begin_src mustache :tangle doc_capture.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: capture
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *{{bucket}}* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+,* What
+
+(One paragraph: the idea.)
+
+,* Why
+
+(Motivation, problem being solved, related context.)
+
+,* References
+
+-
+
+,* See also
+
+-
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

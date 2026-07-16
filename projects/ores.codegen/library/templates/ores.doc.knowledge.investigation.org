@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 4086A9C8-E7BB-43E4-B183-FF606B2B17E7
+:END:
+#+title: ores.doc.knowledge.investigation
+#+description: Investigation doc with the =Investigation:= title prefix and findings skeleton.
+#+type: archetype
+#+facet: ores.doc.knowledge
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Investigation doc with the =Investigation:= title prefix and findings skeleton.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_investigation.org.mustache=.
+
+#+begin_src mustache :tangle doc_investigation.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: investigation
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into {{description}}.
+
+,* Context
+
+(Describe the original problem, research question, or incident that triggered this investigation. What was the observed behavior and why was it significant?)
+
+,* Methodology
+
+(Describe how the investigation was conducted. List the tools used, the reproduction steps, the environment details, and the datasets involved.)
+
+,* Paths taken
+
+(Provide a detailed log of the various approaches explored during the investigation. Be transparent about what was tried and why, especially for paths that were ultimately unsuccessful or abandoned. Link to related PRs, branches, or commits where available.)
+
+- [[https://github.com/OreStudio/OreStudio/pull/NNN][PR #NNN]] — (Describe what this approach was and why it failed or was set aside).
+
+,* Conclusions
+
+(Summarize the ultimate findings of the investigation. What is the root cause? What have we learned about the system's behavior or limits?)
+
+,* Recommendations
+
+(Suggest the next steps or new architectural approaches based on these findings. Focus on the high-level strategy rather than implementation-level detail. Identify any follow-up tasks or stories that should be created.)
+
+,* See also
+
+- (Links to related knowledge docs, tasks, or external references.)
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

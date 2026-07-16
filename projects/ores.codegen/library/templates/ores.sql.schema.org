@@ -9,7 +9,7 @@
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.sql.schema= facet of the
 codegen template library. Each section documents one template and
@@ -18,42 +18,41 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 Object-name patterns (tables, triggers, functions, indexes, channels) follow
 [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]].
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+DDL templates owning the table layer: bi-temporal entity tables in the
+=domain_entity= and =table= model formats, junction tables, drop
+scripts, the NOTIFY trigger pair, and the artefact/staging table. Most
+are wired to the =sql= profile (=projects/ores.sql/create/= and
+=drop/= outputs); the artefact-staging template is invoked directly
+by =generator.py= rather than via a profile.
 
 * The ores.sql.schema facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+The SQL projection of the /entity/ model: each entity org-model's
+natural keys, columns, and temporal flags become a PostgreSQL table
+with the house conventions — UUID primary key, =valid_from=/=valid_to=
+bi-temporality where applicable, =tenant_id=, and a =_notify= trigger
+announcing changes on a NATS channel. The near-identical create
+templates (=create=, =domain_entity_create=) reflect the model formats
+codegen has accreted, and converge as the single-model unification
+proceeds.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
-
-* Templates
-
-(One subheading per template: prose covering role, model inputs,
-output artefact and profiles, followed by the source block. The first
-line of every block is the output-neutral GENERATED FILE header:)
-
-#+begin_example
-,#+begin_src mustache :tangle <name>.mustache
-{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}
-...template source...
-,#+end_src
-#+end_example
+Every template opens with a ={{! purpose }}= comment (kept from the
+pre-literate files — they render to nothing) and injects
+={{{sql_license}}}= as triple-stache. Column loops use
+={{^last}},{{/last}}= inverted sections for comma placement, and
+={{#default}}…{{/default}}=/={{#nullable}}/{{^nullable}}= for
+per-column DDL fragments. The entity-create templates carry
+book/cross-check validation fragments gated by ={{#declare_vars}}=,
+={{#coalesce}}= and ={{#copy_empty}}=.
 
 * Archetypes
 
@@ -71,4 +70,3 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

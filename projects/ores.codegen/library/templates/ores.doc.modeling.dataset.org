@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: DB094CBB-5E9A-4EEB-9B3B-B48654734590
+:END:
+#+title: ores.doc.modeling.dataset
+#+description: Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets.
+#+type: archetype
+#+facet: ores.doc.modeling
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_dataset.org.mustache=.
+
+#+begin_src mustache :tangle doc_dataset.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: dataset_overview
+,#+dataset_name: {{dataset_name}}
+,#+dataset_version: {{dataset_version}}
+,#+dataset_type: {{dataset_type}}
+,#+source_methodology: {{source_methodology}}
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+,* Summary
+
+(One or two sentences: what this dataset represents, its purpose in the ORE Studio test schema, and what component owns the rows it seeds.)
+
+,* Contents
+
+| File | Description |
+|------+-------------|
+|      |             |
+
+,* Why this dataset
+
+(Why this crafted dataset exists rather than synthetic data: narrative weight, FK closure, known edge cases, or other reasons the specific rows matter.)
+
+,* See also
+
+-
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

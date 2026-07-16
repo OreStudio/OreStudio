@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 9FAAF3AA-F80C-441C-A22C-81428879CD69
+:END:
+#+title: ores.doc.agile.sprint
+#+description: Sprint page: Mission, Status table (state =STARTED=), themed =* Stories= tables.
+#+type: archetype
+#+facet: ores.doc.agile
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Sprint page: Mission, Status table (state =STARTED=), themed =* Stories= tables.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_sprint.org.mustache=.
+
+#+begin_src mustache :tangle doc_sprint.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: sprint
+,#+level: s3
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+start_date: {{date}}
+,#+end_date: {{end_date}}
+,#+updated: {{date}}
+,#+todo: STARTED | DONE
+
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*{{title}}*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:{{parent_id}}][{{parent_title}}]].
+
+,* Mission
+
+(One sentence — what this sprint exists to achieve.)
+
+,* Status
+
+| Field          | Value                                  |
+|----------------+----------------------------------------|
+| State          | {{state}}                              |
+| Parent version | [[id:{{parent_id}}][{{parent_title}}]] |
+| Previous       | {{previous}}                           |
+| Start          | {{date}}                               |
+| End (expected) | {{end_date}}                           |
+| Now            | Sprint in flight.                      |
+| Waiting on     | Nothing.                               |
+| Next           | Pick the first story.                  |
+| Release Notes  | Added at end of sprint.                |
+| Last touched   | {{date}}                               |
+
+,* Stories
+
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+,** Product
+
+,#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------|
+|       |       |       |     |       |
+
+,** Hotfixes
+
+,#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+|       |       |       |     |             |
+
+,* Achievements
+
+Milestones worth capturing as they happen, so the release notes at
+sprint close have the evidence to hand. Add a dated =** subheading=
+per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+
+,* Captures
+
+Real captures filed during this sprint that have *not* been pulled into a
+story as tasks — listed here purely for visibility into what the sprint
+surfaced. Each is an inbox capture (=compass capture=); triage them at the
+health review (promote to a story, move to =next=, or discard).
+
+,#+ATTR_HTML: :class hug-leading
+| Capture | Tags | Description |
+|---------+------+-------------|
+|         |      |             |
+
+,* Health Review
+
+(Run =sprint-reviewer= to generate this section.)
+
+,* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][compass sprint charts]]. See [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]
+for what each chart measures, its purpose, and how to read it.
+
+,** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/prs_commits.png]]
+
+,** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/line_churn.png]]
+
+,** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks. Generated only when PR data is available.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/pr_cycle.png]]
+
+,** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/stories_done.png]]
+
+,* Retrospective
+
+(Filled at sprint close.)
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

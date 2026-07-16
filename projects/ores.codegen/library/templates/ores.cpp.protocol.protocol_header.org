@@ -260,5 +260,5 @@ struct get_{{entity_singular}}_history_response {
 
 * See also
 
-- Parent facet: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]]
+- Parent facet: [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -13,4 +13,4 @@ type as a [[https://en.wikipedia.org/wiki/Passive_data_structure][Passive data s
 
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
-- [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]], [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]], [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]], [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]] — the literate templates that generate this facet.
+- [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]], [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] — the literate templates that generate this facet.

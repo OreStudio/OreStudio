@@ -8,7 +8,7 @@
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the literate source for the =ores.doc.template= facet of the
 codegen template library. Each section documents one template and
@@ -17,27 +17,31 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
-(Three to five sentences: which templates this facet owns, what they
-generate, and which profiles consume them.)
+This library's own self-hosting scaffolds: facet, facet_group,
+technical_space, and archetype docs — the =compass add= types that
+generate new nodes in this very physical-space graph.
 
 * The ores.doc.template facet
 
-(What this facet projects the model onto, in MASD terms: link to the
-MASD modeling docs, name the model element it consumes — entity or
-component — and explain the facet's shape: why these templates exist
-and how they relate to each other.)
+/Self-hosting/ in the fullest sense: these templates are mustache
+sources that render to the org-mode documents that in turn hold other
+mustache sources, including their own facet's siblings. The
+=doc_facet.org.mustache= and =doc_facet_group.org.mustache= scaffolds
+are what produced every =ores.*= facet and facet_group node in this
+graph, including this document.
 
 * Mustache incantations
 
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
+=doc_facet.org.mustache= contains a delimiter swap
+(={{=<< >>=}} … <<={{ }}=>>=) so the GENERATED FILE header example in
+its own output survives rendering as literal mustache — the same
+trick this library uses one level up, applied recursively to its own
+scaffold.
 
 * Templates
 
@@ -56,9 +60,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:968358DF-06AD-4C5F-A01D-E8A2A9DBED29][doc_facet.org.mustache]] | This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, per-template section guidance. |
+| [[id:DED04B44-7D28-46F3-86BA-681182046038][doc_facet_group.org.mustache]] | This library's group doc scaffold: generated =* Facets= inventory note and shared-conventions section. |
+| [[id:D95EB7CE-E078-4599-B7F2-7A32B4A5B1C4][doc_technical_space.org.mustache]] | Technical-space node doc scaffold: lists the facets in the technical space, links up to the =ores= root. |
+| [[id:EEFD9372-B7FD-4A69-A3D7-5F61697753D2][doc_archetype.org.mustache]] | Archetype doc scaffold: the per-template literate source page itself. |
 
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

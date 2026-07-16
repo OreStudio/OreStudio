@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-16
 
 This page is the node for the =ores.cpp= technical space in the codegen
 physical-space address graph. Its title is its MASD address; it gathers the
@@ -17,8 +17,20 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-(Two to four sentences: what kind of artefacts this technical space covers
-and which model elements drive them.)
+The C++ projection: the value type and its companions, tabular
+presentation, the persistence triplet, the Qt ensemble, an entity's NATS
+surface, the component-service scaffold, the new-component skeleton, and
+standalone model formats (enums, field-groups). Entity-shaped facets are
+driven by the entity org-models; component-shaped facets by the component
+manifest.
+
+* Shared conventions
+
+- ={{{cpp_license}}}= triple-stache injects the licence header.
+- Headers guard with =full_name_upper=-derived macros and export via
+  the component's export macro header.
+- Column loops dispatch on per-field type flags (=is_string=,
+  =is_boolean=, =is_timestamp=, …); ={{^last}}= places commas.
 
 * Facets
 

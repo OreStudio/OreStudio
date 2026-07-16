@@ -69,5 +69,5 @@ ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s
 
 * See also
 
-- Parent facet: [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][C++ table templates]]
+- Parent facet: [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

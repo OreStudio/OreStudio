@@ -37,7 +37,7 @@ licence headers and editor modelines.
   (template ← facet doc ← group doc ← groups overview).
 - Static data (licences, modelines) under =library/data/=.
 - Optional generator profiles (collections of templates) declared in
-  [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+  each facet's Archetypes table across the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].
 
 * Outputs
 
@@ -52,7 +52,8 @@ each entry point accepts a custom output directory.
 
 * Profile catalogue
 
-C++ profiles are declared in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] and invoked with
+C++ profiles are declared in each facet's Archetypes table across the
+[[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] and invoked with
 =--profile <name>=. Each profile is a named collection of Mustache
 templates; every template's literate source — prose on role, model
 inputs and outputs, plus the tangle block — lives in its facet doc
@@ -195,7 +196,7 @@ that exercises the scaffold profiles end-to-end.
   kind.*
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the literate template hierarchy: facet
   groups, facet docs, tangle workflow and drift checks. The group
-  docs: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]], [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]].
+  docs: [[id:CA666722-1F34-4591-BC54-BC161BE45EB2][ores.cmake]], [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]], [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]], [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]], [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]], [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]].
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout, internal modules,
   template system, model-template mapping, modeline configuration,
   features.

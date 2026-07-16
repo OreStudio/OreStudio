@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: F4149F7D-4F84-4CA4-99B3-37AA6CF04A5C
+:END:
+#+title: ores.doc.knowledge.release_notes
+#+description: Sprint release-notes page generated at sprint close.
+#+type: archetype
+#+facet: ores.doc.knowledge
+#+level: cross
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-06-08
+#+updated: 2026-07-16
+
+Sprint release-notes page generated at sprint close.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_release_notes.org.mustache=.
+
+#+begin_src mustache :tangle doc_release_notes.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: release_notes
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+,#+startup: inlineimages
+
+/{{month_year}}/
+
+{{#screenshot_filename}}
+[[proj:assets/images/{{screenshot_filename}}]]
+
+{{/screenshot_filename}}
+(( Summary blurb: one paragraph describing the sprint's focus and key outcomes.
+   Replace this placeholder after generation. ))
+
+-----
+
+{{#demo_video_id}}
+,* 🎬 Demo
+
+[[https://youtu.be/{{demo_video_id}}][https://img.youtube.com/vi/{{demo_video_id}}/hqdefault.jpg]]
+
+[[https://youtu.be/{{demo_video_id}}][Watch the {{sprint_title}} demo on YouTube]].
+
+{{/demo_video_id}}
+,* ✅ Highlights
+
+{{{highlights_block}}}
+
+,* 🛠️ Key Improvements
+
+{{{sections_block}}}
+
+,* ⚠️ Known Issues & Postponed
+
+{{{deferred_block}}}
+
+,* 📈 Sprint Charts
+
+,** PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/prs_commits.png]]
+
+,** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/line_churn.png]]
+
+,** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/pr_cycle.png]]
+
+,** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+,#+attr_html: :width 100%
+[[proj:{{parent_dir}}/{{slug}}/stories_done.png]]
+
+,* 📊 Time Summary
+
+{{{time_block}}}
+
+-----
+
+/Next sprint: (( Summarise the top priorities carried into the next sprint. ))/
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

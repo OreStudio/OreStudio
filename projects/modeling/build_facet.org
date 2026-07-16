@@ -40,4 +40,4 @@ for the authoritative output — do not reproduce it here.
 
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
-- [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]] — the literate templates that generate this facet.
+- [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] — the literate templates that generate this facet.

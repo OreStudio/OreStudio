@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-party-history-dialogs
-#+pr:
+#+pr: 1609
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -170,7 +170,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1609][#1609]] | [refdata,qt,codegen] Migrate ores.qt.party entities to generic HistoryDialog + full codegen |
 
 * Review
 

@@ -21,7 +21,8 @@
 #define ORES_QT_CRM_CROSS_RATES_MATRIX_MDI_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/messaging/crm_protocol.hpp"
+#include "ores.marketdata.client/crm_client.hpp"
+#include "ores.marketdata.client/presentation/crm_rate_display_service.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
 #include <QComboBox>
@@ -35,6 +36,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -164,13 +166,25 @@ private:
     /// ("no data") cells are excluded. Export actions (CSV, ORE market
     /// data) work from this: what's on screen, not a fresh unfiltered
     /// fetch.
-    std::vector<ores::marketdata::messaging::crm_rate_item> displayedRates_;
+    std::vector<ores::marketdata::client::presentation::crm_rate_display_service::row>
+        displayedRates_;
 
-    /// Warmed once at construction (this window's own tenant) and never
-    /// consulted yet -- proves the cache loads/is queryable end-to-end
-    /// against a live environment. Actual convention-aware formatting
-    /// using it is the sibling formatter task's job, not this one.
-    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache> conventionCache_;
+    /// Warmed once at construction (this window's own tenant), consulted by
+    /// displayService_ on every reload -- see crm_rate_display_service.
+    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache>
+        conventionCache_;
+
+    /// The "underlying CRM" -- thin authenticated facade over the
+    /// marketdata.v1.crm.rates NATS request. Owned here (not by
+    /// displayService_) so both share the same lifetime as this window.
+    std::unique_ptr<ores::marketdata::client::crm_client> crmClient_;
+
+    /// Facade over crmClient_ + conventionCache_ + crm_rate_formatter --
+    /// reload() makes exactly one rates() call and gets back rows already
+    /// formatted (convention-aware rate/%-change/tooltip text), instead of
+    /// hand-rolling the NATS request, cache lookup, and formatting itself.
+    std::unique_ptr<ores::marketdata::client::presentation::crm_rate_display_service>
+        displayService_;
 };
 
 }

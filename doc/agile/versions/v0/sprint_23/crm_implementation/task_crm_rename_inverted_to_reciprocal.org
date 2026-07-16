@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: A4F67A24-D6B1-42D8-A842-4A094E2C84DA
+:END:
+#+title: Task: Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs
+#+description: Rename the CRM 1/rate backfill concept from 'inverted' to 'reciprocal' end-to-end -- UI labels/tooltips, the inverted field on crm_rate_item/get_crm_rates_request, crm_client/crm_rate_display_service/crm_rate_formatter identifiers, Qt button/handler names, the shell --inverted flag, ores.analytics.quant's rate_inverter, and every doc/recipe/task that names it -- to match FX market convention and distinguish it from derived/triangulated (cross-rate) computation, which is a different concept entirely.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+CRM's 1/rate backfill (a pair with no direct quote served from its
+reverse pair's computed 1/rate) is currently named "inverted"
+everywhere -- =crm_rate_item.inverted=, the Qt "Show Inverted"
+toggle, the =--inverted= shell flag, =rate_inverter=, tooltip text
+"Computed inverse (1/rate)". "Reciprocal" is the correct FX-market
+term for this (the reciprocal of EUR/USD is USD/EUR) and cleanly
+distinguishes it from *derived*/triangulated rates (this codebase's
+existing term for cross-rate computation via an intermediate
+currency -- see =crm_rate_item='s own doc comment) -- a different
+concept "inverted" was at risk of being confused with. Rename the
+concept end-to-end: user-visible strings, code identifiers, the
+=get_crm_rates_request=/=crm_rate_item= protocol field, and every
+doc/recipe/task that names it.
+
+Scope note: the =inverted= field is on a NATS wire protocol
+(=marketdata.v1.crm.rates=) with a boost/rfl JSON payload -- renaming
+it is a breaking wire-format change for anything that has already
+captured a payload sample (docs, recipes with =#+RESULTS= blocks),
+but not a DB schema change (nothing persists an "inverted" column).
+No external/third-party consumer of this subject exists yet, so a
+straight rename is safe rather than needing a deprecation shim.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- Protocol (=ores.marketdata.api/messaging/crm_protocol.hpp=):
+  =crm_rate_item.inverted= -> =reciprocal=,
+  =get_crm_rates_request.inverted= -> =reciprocal=; doc comments
+  updated to say "reciprocal" throughout.
+- =ores.analytics.quant=: =rate_inverter= class/file renamed to
+  =rate_reciprocator= (or equivalent -- exact name decided at
+  implementation time), including its test file; any comment/log text
+  saying "invert"/"inverse" updated.
+- =ores.marketdata.service=: =crm_ingest_bridge=, =crm_handler= and
+  their tests updated wherever they reference the renamed field/type.
+- =ores.marketdata.client=: =crm_client=, =crm_rate_display_service=,
+  =crm_rate_formatter= (and their tests) -- any parameter/field/local
+  named =inverted= renamed to =reciprocal=; tooltip text "Computed
+  inverse (1/rate)" -> "Computed reciprocal (1/rate)".
+- =ores.qt.marketdata=: =CrmCrossRatesMatrixMdiWindow= -- "Show
+  Inverted" button label/tooltip -> "Show Reciprocal",
+  =showInvertedButton_= -> =showReciprocalButton_=,
+  =onShowInvertedToggled= -> =onShowReciprocalToggled=, the
+  =QSettings= key (=showInverted=) migrated or renamed with care for
+  existing users' saved window state (decide at implementation time
+  whether a silent key-rename losing the old preference is acceptable
+  given no released version depends on it yet).
+- =ores.shell=: =crm rates=' =--inverted= flag -> =--reciprocal=
+  (breaking flag rename, acceptable pre-1.0).
+- Docs: every doc/recipe/task under
+  =doc/agile/versions/v0/sprint_23/crm_implementation/= and
+  =doc/recipes/shell/marketdata/crm_rates.org= that mentions
+  "inverted" updated to "reciprocal", including any captured
+  =#+RESULTS= example output showing the old flag/field name.
+- Full build + =ores.marketdata.client.tests=/
+  =ores.analytics.quant.tests=/=ores.marketdata.service.tests= green
+  after the rename; a quick manual smoke (=crm rates ... --reciprocal=
+  and the Qt button) confirms behaviour is unchanged, only naming.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

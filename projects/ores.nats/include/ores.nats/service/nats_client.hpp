@@ -95,6 +95,11 @@ public:
         std::string account_id;
         std::string tenant_id;
         std::string tenant_name;
+        /// The logged-in account's default party -- empty when the
+        /// account has none configured. The implicit party context
+        /// every session-scoped command should fall back to, mirroring
+        /// ClientManager::currentPartyId() on the Qt side.
+        std::string default_party_id;
     };
 
     /**

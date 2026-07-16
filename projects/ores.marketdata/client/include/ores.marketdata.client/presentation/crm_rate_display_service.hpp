@@ -60,6 +60,7 @@ public:
     /// (base/quote/status/inverted) a UI needs alongside the formatted
     /// display strings.
     struct row {
+        std::string crm_name;
         std::string base_currency_code;
         std::string quote_currency_code;
         std::string status;

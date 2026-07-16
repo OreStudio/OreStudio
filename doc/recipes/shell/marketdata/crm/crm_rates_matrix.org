@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 6812613B-127C-4E0E-A652-ACEFB56F6D56
+:END:
+#+title: How do I view a CRM as a grid matrix from the shell?
+#+description: Render one CRM's rates as an NxN grid (base x quote) from ores.shell, mirroring the Qt Cross-Rates Matrix window.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:marketdata:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+Reproduce, from the command line, the Qt Cross-Rates Matrix window's
+own NxN grid layout -- base currencies as rows, quote currencies as
+columns -- via [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][the crm_commands shell command]]'s =--matrix= flag.
+The =ores-shell= block below is tangled into the runnable script
+library as =crm_rates_matrix.ores=.
+
+* Question
+
+How do I view a CRM as a grid matrix from ores.shell?
+
+* Answer
+
+=crm rates <crm-name> --matrix= renders the same rows the flat
+=crm rates <crm-name>= table would, reshaped into a grid keyed by
+(base, quote) instead of one row per pair -- the diagonal shows a
+dash, an unconfigured pair shows blank. =--matrix= requires a named
+CRM: mixing rows from more than one CRM into a single grid would be
+ambiguous (a (base, quote) cell could exist in two different CRMs at
+once), so =crm rates --matrix= with no CRM name is rejected with an
+error rather than silently picking one.
+
+#+name: crm-rates-matrix
+#+begin_src ores-shell :exports none
+crm rates majors --matrix
+logout
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<crm-rates-matrix>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/marketdata/crm_rates_matrix.ores=
+-- generated from this recipe's =ores-shell= block by =compass build
+--direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: run against a Barclays-provisioned database (=compass db
+recreate -y -k= then the Barclays provisioning recipe), then
+=compass shell -u tenant_admin@barclays_plc -p Secure-Password-123 -f
+crm_rates_matrix.ores=. Confirms the grid renders with aligned
+columns and a dash on the diagonal; separately confirm =crm rates
+--matrix= (no CRM name) is rejected with a clear error.
+
+* See also
+
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Task: Add CRM support to ores.shell]]
+- [[id:C22C8331-9E37-485B-84DD-9F2046720450][How do I view majors CRM rates from the shell?]]
+- [[id:715AFB54-B3F8-4A87-B633-393D43A4B5F8][How do I view exotics CRM rates from the shell?]]
+- [[id:A2798131-D6A9-45BB-9B74-0D72607B88AF][How do I view scandies CRM rates from the shell?]]

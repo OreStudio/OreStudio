@@ -366,6 +366,7 @@ void accounts_commands::process_login(std::ostream& out,
     info.account_id = result->account_id;
     info.tenant_id = result->tenant_id;
     info.tenant_name = result->tenant_name;
+    info.default_party_id = result->default_party_id;
     session.set_auth(std::move(info));
 
     out << "✓ Login successful!" << std::endl;

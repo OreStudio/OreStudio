@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/crm-support-ores-shell
+#+pr: 1613
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,12 +41,12 @@ theoretical.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
@@ -65,6 +65,82 @@ theoretical.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- New =crm_commands= in =ores.shell=: =crm rates [<crm-name>] --party
+  <id-or-full-name> [--inverted]=, sending the same
+  =get_crm_rates_request= the Qt matrix uses -- no new NATS subject.
+  =--party= accepts a UUID or exact full name (resolved the same way
+  =provision party <party>= does), since ores.shell has no
+  "current party" concept at the session level.
+- Reuses =crm_rate_display_service= (constructed with lambdas wrapping
+  the shell's own =do_auth_request= calls, not the raw NATS
+  =client&= =crm_client= wants -- no need for ores.shell to plumb a
+  service-account token provider just for this) for convention
+  resolution + =crm_rate_formatter= formatting, so the shell's numbers
+  match the Qt matrix exactly.
+- Added =crm_name= to =crm_rate_display_service::row= (missing before
+  this task): needed to label each row when =--all= mode mixes rates
+  from several enabled CRMs.
+- Output rendered via a new =crm_rate_table=/=crm_rate_table_io= pair
+  in =ores.marketdata.client/presentation= (fort-based table,
+  following the =convert_to_table=/=operator<<= convention every
+  domain entity list already uses), so any future non-Qt consumer
+  gets the same table for free.
+- Added one shell recipe per enabled CRM plus one for the grid view,
+  under =doc/recipes/shell/marketdata/crm/= ->
+  =projects/ores.shell/scripts/library/marketdata/=:
+  =crm_rates_majors=, =crm_rates_exotics=, =crm_rates_scandies=,
+  =crm_rates_matrix=. Also split the pre-existing
+  =doc/recipes/shell/marketdata/= imports into their own
+  =import/= subfolder for readability, alongside the new =crm/=
+  subfolder (source-tree organisation only -- the tangled library
+  category, taken from the recipes' own filetag, is unchanged).
+- =--matrix= (=crm_rate_table::convert_to_matrix_table=) renders the
+  same rows as an NxN grid (base rows, quote columns, dash on the
+  diagonal) instead of the flat list, mirroring the Qt matrix
+  window's own layout. Requires a named CRM -- rejected with an error
+  for the all-CRMs case, since mixing rows from more than one CRM
+  into one grid is ambiguous.
+- Manual QA (first =crm= scenario, live-environment run) surfaced a
+  real precision bug fixed on this branch: a convention resolved via
+  the *reverse* pair-code direction was reusing that convention's
+  decimal_places/tick_size verbatim, collapsing every such cell (e.g.
+  the whole JPY row) to a flat low-precision value. Fixed by deriving
+  reciprocal-preserving decimal places
+  (=crm_rate_formatter::inverted_decimal_places=) instead of reusing
+  them, with a small floating-point epsilon guard on the underlying
+  =log10=-based order-of-magnitude helper (caught in PR review) so a
+  reciprocal landing exactly on a power-of-ten boundary doesn't
+  under/over-shoot by one digit.
+- A second manual QA pass (Qt-embedded Shell window/script library,
+  see second scenario below) surfaced two more real defects, both
+  fixed on this branch:
+  1. Unicode arrow glyphs (▲/▼/—) in =crm_rate_formatter='s
+     change-text broke libfort's byte-based column-width calculation
+     in =ores.shell='s table output ("wonky" alignment) -- replaced
+     with plain ASCII +/- signs (the sign alone already conveys
+     direction; a separate glyph was redundant even before the
+     alignment bug).
+  2. =--party= being *required* on every =crm rates= call was masking
+     a real gap: =ores.shell= had no "current party" concept because
+     none of its three login paths
+     (=accounts_commands::process_login=,
+     =application.cpp::auto_login=, =ShellMdiWindow='s internal
+     Qt-embedded re-login) captured =default_party_id= from the login
+     response into =nats_client::login_info=, unlike Qt's
+     =ClientManager=. Fixed by adding =default_party_id= to
+     =login_info=, populating it at all three sites, and having
+     =crm rates= default to it -- =--party= is now purely an
+     override for an account managing more than one party.
+- Considered (not done, scoped as a follow-up task
+  [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][elsewhere]]): renaming
+  "inverted" to "reciprocal" throughout, the correct FX-market term,
+  and distinct from "derived"/triangulated rates.
+- Considered and explicitly rejected: colouring the Change column
+  (ANSI escape codes) -- both the Qt-embedded Shell window (a plain
+  QTextEdit-style pane with no ANSI parsing) and non-TTY output paths
+  (piped =compass shell -f=, captured recipe =#+RESULTS= blocks)
+  would render raw escape codes instead of colour.
+
 * Notes
 
 * Test Scenarios
@@ -76,13 +152,14 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:24321F8D-B6EE-4EEA-81C2-24FF980D42F8][Verify CRM support in ores.shell]] | PASSED | Named-CRM, all-CRMs, and --party-by-name cases all verified manually against a live environment; also caught the reversed-convention precision bug fixed on this branch. |
+| [[id:DF7EDAB0-14E5-4191-ABDE-5833989F2644][Verify CRM shell recipes and --matrix from the Qt Shell panel]] | PASSED | First run caught the Unicode/libfort alignment bug and the missing default-party plumbing (ShellMdiWindow's internal re-login); re-run after both fixes passed all 5 steps -- per-CRM recipes, --matrix grid, and the all-CRMs --matrix rejection. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1613][#1613]] | [marketdata,qt,shell] Add CRM support to ores.shell |
 
 * Review
 
@@ -91,3 +168,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =crm rates [<crm-name>] [--party <id-or-full-name>]
+[--inverted] [--matrix]= in =ores.shell=, sending the same
+=get_crm_rates_request= (subject =marketdata.v1.crm.rates=) the Qt
+Cross-Rates Matrix window sends and formatting through the same
+=crm_rate_display_service=/=crm_rate_formatter=, so the shell's
+numbers match Qt's exactly rather than re-deriving inversion/delta/
+precision logic. Defaults to the logged-in account's own default
+party (fixed a real gap along the way: none of ores.shell's three
+login paths captured =default_party_id=, unlike Qt's
+=ClientManager=); =--party= is only needed to override for an
+account managing more than one party. =--matrix= renders an NxN grid
+mirroring the Qt window's own layout, rejecting the all-CRMs case as
+ambiguous. Output goes through a new =crm_rate_table=/
+=crm_rate_table_io= pair in =ores.marketdata.client/presentation=
+(fort-based, following the =convert_to_table=/=operator<<= convention
+every domain entity list already uses).
+
+Two rounds of manual QA against a live environment (see =* Test
+Scenarios=) caught and fixed three real defects beyond the original
+acceptance criteria: reciprocal-direction rate precision collapsing
+to near-zero significant figures, Unicode glyphs breaking libfort's
+column alignment in ores.shell's own table output, and the missing
+default-party plumbing across all three of ores.shell's login paths.
+All acceptance criteria met; 49 =ores.marketdata.client.tests=, 80
+=ores.shell.tests=, and 6 =ores.nats.tests= assertions passing after
+every fix.

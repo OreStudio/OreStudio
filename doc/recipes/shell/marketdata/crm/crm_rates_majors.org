@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: C22C8331-9E37-485B-84DD-9F2046720450
+:END:
+#+title: How do I view majors CRM rates from the shell?
+#+description: List a party's 'majors' FX cross-rates matrix (CRM) rates from ores.shell.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:marketdata:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+Reproduce, from the command line, the =majors= slice of what the Qt
+Cross-Rates Matrix window shows, via [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][the crm_commands shell
+command]]. The =ores-shell= block below is tangled into the runnable
+script library as =crm_rates_majors.ores=.
+
+* Question
+
+How do I view the majors CRM rates from ores.shell?
+
+* Answer
+
+The =crm rates= command
+(=projects/ores.shell/src/app/commands/crm_commands.cpp=) sends the
+same =get_crm_rates_request= (subject =marketdata.v1.crm.rates=) the
+Qt matrix window sends and formats through the same
+=crm_rate_formatter=. Runs in the logged-in account's own default
+party by default; expects the services up (=compass services
+start=) and a tenant/party provisioned (e.g. via the Barclays
+provisioning recipe, which also seeds this party's =majors= CRM from
+=refdata.crm_topology_bundles=).
+
+#+name: crm-rates-majors
+#+begin_src ores-shell :exports none
+crm rates majors
+logout
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<crm-rates-majors>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/marketdata/crm_rates_majors.ores=
+-- generated from this recipe's =ores-shell= block by =compass build
+--direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: run against a Barclays-provisioned database (=compass db
+recreate -y -k= then the Barclays provisioning recipe), then
+=compass shell -u tenant_admin@barclays_plc -p Secure-Password-123 -f
+crm_rates_majors.ores=. Prints a table (CRM, Pair, Rate, Change,
+Status, As Of) scoped to the =majors= CRM; rows show =unavailable=
+until the marketdata feed has ticked at least once for that party.
+
+* See also
+
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Task: Add CRM support to ores.shell]]
+- [[id:715AFB54-B3F8-4A87-B633-393D43A4B5F8][How do I view exotics CRM rates from the shell?]]
+- [[id:A2798131-D6A9-45BB-9B74-0D72607B88AF][How do I view scandies CRM rates from the shell?]]
+- [[id:6812613B-127C-4E0E-A652-ACEFB56F6D56][How do I view a CRM as a grid matrix from the shell?]]

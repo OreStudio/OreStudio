@@ -46,7 +46,8 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
     PRIVATE
         ores.logging.lib
-        ores.utility.lib)
+        ores.utility.lib
+        libfort::fort)
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 

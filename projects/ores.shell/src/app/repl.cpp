@@ -27,6 +27,7 @@
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/countries_commands.hpp"
+#include "ores.shell/app/commands/crm_commands.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
@@ -98,6 +99,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);
+    crm_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     parties_commands::register_commands(*root, session_);
     account_parties_commands::register_commands(*root, session_);

@@ -1,0 +1,8 @@
+# How do I view exotics CRM rates from the shell?
+# List a party's 'exotics' FX cross-rates matrix (CRM) rates from ores.shell.
+#
+# GENERATED from doc/recipes/shell/marketdata/crm/crm_rates_exotics.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm rates exotics
+logout

@@ -1,0 +1,8 @@
+# How do I view a CRM as a grid matrix from the shell?
+# Render one CRM's rates as an NxN grid (base x quote) from ores.shell, mirroring the Qt Cross-Rates Matrix window.
+#
+# GENERATED from doc/recipes/shell/marketdata/crm/crm_rates_matrix.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm rates majors --matrix
+logout

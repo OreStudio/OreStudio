@@ -1,0 +1,8 @@
+# How do I view majors CRM rates from the shell?
+# List a party's 'majors' FX cross-rates matrix (CRM) rates from ores.shell.
+#
+# GENERATED from doc/recipes/shell/marketdata/crm/crm_rates_majors.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+crm rates majors
+logout

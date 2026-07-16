@@ -397,16 +397,18 @@ def run(argv, project_root: Path) -> int:
     if args.disable_logging:
         return _logging_only(env_file, "disable", "debug")
 
-    preset = args.preset or ""
+    # Read existing .env early so ORES_ENV_NAME and pre-assigned ports can be
+    # picked up before the derived values are computed, and so --preset can
+    # default to whatever is already configured rather than forcing the
+    # caller to repeat it every time.
+    existing = _read_env(env_file)
+
+    preset = args.preset or existing.get("ORES_PRESET", "")
     if not preset and not os.environ.get("CI"):
         print("Error: --preset is required.\n"
               "  Example: compass env configure --preset linux-clang-debug-ninja",
               file=sys.stderr)
         return 1
-
-    # Read existing .env early so ORES_ENV_NAME and pre-assigned ports can be
-    # picked up before the derived values are computed.
-    existing = _read_env(env_file)
 
     # Identity from the checkout directory name.
     # New style: ores_dev_festive_hawking → label = festive_hawking

@@ -55,9 +55,9 @@ in the graph before removing the source.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Complete: content ported, links repointed, legacy docs + facet_catalogue.org + regenerate_facet_inventories.py deleted, deploy_site green, tangle drift confirmed limited to intentional edits. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                       |
-| Next         | Close task; PR.  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -140,3 +140,18 @@ in the graph before removing the source.
 |   |                 |      |          |       |
 
 * Result
+
+facet_catalogue.org and all 19 legacy literate facet/facet_group docs
+are deleted. Every non-placeholder prose paragraph they carried was
+ported onto its corresponding =ores.*= physical-space graph node
+first; every inbound =id:= link (~135 internal, ~33 external) was
+repointed rather than left dangling — grep-verified zero remaining
+references to any deleted ID. =regenerate_facet_inventories.py= and
+the confirmed-dead =cmake_service_src.mustache= archetype were removed
+alongside it. As a follow-up surfaced by this task's own content
+audit, the 23 =ores.doc.*= facets' per-template archetype docs (which
+had never been migrated off their flat =doc_<type>_org.org= form) were
+also migrated onto the graph. =deploy_site= is green and a full
+=tangle_codegen_templates= pass shows drift only in the two
+self-hosting scaffolds whose source I intentionally edited — no
+regression to any live-entity template.

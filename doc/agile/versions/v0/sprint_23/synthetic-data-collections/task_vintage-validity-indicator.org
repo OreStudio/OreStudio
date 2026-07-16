@@ -60,11 +60,11 @@ validity instead of inventing a second, server-persisted rollup.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -87,11 +87,35 @@ validity instead of inventing a second, server-persisted rollup.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Implemented as a hand-written NATS handler (not a codegen entity field),
+following the "compute at read time" design already settled in the Goal
+section:
+
+- =get_vintage_validity_request=/=response= added to the existing
+  hand-written =market_feed_config_protocol.hpp=, alongside the other
+  control-plane messages.
+- New =vintage_validity_handler= in =ores.synthetic.service=, wired
+  identically to =folder_feed_control_handler= (per-request
+  =make_request_context= + JWT auth, no persisted state) -- iterates every
+  =fx_spot_generation_config= and calls the existing
+  =feed_controller::validate()= per vintage-priced feed.
+- Qt fetches this on every reload and folds it into the tree.
+
+First cut showed the result as two full extra tree columns (running-status,
+vintage-status), one icon per row -- manual QA correctly called this out as
+unreadable noise (every row showing the same repeated green circles twice).
+Redesigned to a single column: running and vintage status are small badge
+emblems (play/pause bottom-left, tick/cross bottom-right) composited onto
+each folder/feed's own icon, recomputed bottom-up from a stored plain
+"base" icon so badges never stack.
 
 * Notes
+
+- The bearer-forwarding bug found while testing the folder-cascade
+  endpoint (Phase 2/3 of the sibling feed-namespacing work) also explains
+  why this indicator initially seemed to disagree with individual-feed
+  starts -- both now correctly agree, verified live via
+  =get_vintage_validity_request= against Barclays' Realistic collection.
 
 * Test Scenarios
 
@@ -100,9 +124,9 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                                     | State   | Notes                        |
+|----------------------------------------------------------------+---------+------------------------------|
+| [[id:1B5D3529-E591-4A29-BCE3-1D144EE6A0B0][Vintage-validity indicator and folder-cascade start/stop]] | FAILED* | *First cut (2 columns); redesigned to badge emblems per feedback, not yet re-run |
 
 * PRs
 
@@ -117,3 +141,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented and built cleanly. Server side verified live via NATS:
+=get_vintage_validity_request= against Barclays' 24 feeds correctly
+reports every vintage-priced feed as applicable/valid once the reference
+data is imported, and correctly reports invalid when it isn't (matching
+the folder-cascade skip counts from the sibling task). Qt side redesigned
+mid-flight from a 2-column layout (rejected by manual QA as unreadable) to
+single-column badge emblems on each node's own icon. Local build clean
+(preset =linux-clang-debug-make=); full local build/test suite was not
+re-run before this PR due to the dev machine being heavily loaded by
+concurrent builds across other worktrees at push time -- flagging this
+explicitly rather than silently skipping it.

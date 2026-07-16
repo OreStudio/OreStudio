@@ -36,7 +36,7 @@ the GMM improvements story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
 | Now          | Reopened 2026-07-16: closed via PR #1597, which shipped only the payment_frequency prerequisite, not the ir_curve_feed producer this task's own Acceptance requires (confirmed: no ir_curve_feed exists anywhere in ores.synthetic/service/src/ — only fx_spot_feed). Scope confirmed as Phase 1 only (synchronous family publish); see * Analysis below for the design decisions reached before resuming. |
 | Waiting on   | Nothing.                               |

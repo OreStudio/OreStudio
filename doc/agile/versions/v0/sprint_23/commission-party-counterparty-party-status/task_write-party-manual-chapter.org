@@ -8,7 +8,7 @@
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
 #+branch: feature/write-party-manual-chapter
-#+pr:
+#+pr: 1602
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -158,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1602][#1602]] | [docs] Write party manual chapter |
 
 * Review
 

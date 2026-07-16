@@ -8,7 +8,7 @@
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch: feature/currency-pair-convention-calendar-migration
-#+pr:
+#+pr: 1612
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
@@ -84,7 +84,7 @@ convention case specifically.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1612][#1612]] | [refdata,ore] Migrate currency_pair_convention.advance_calendar onto the calendar model |
 
 * Review
 

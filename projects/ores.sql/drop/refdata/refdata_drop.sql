@@ -127,6 +127,10 @@
 \ir ./refdata_party_categories_notify_trigger_drop.sql
 \ir ./refdata_party_categories_drop.sql
 
+-- Currency-pair-convention-calendar (advance calendar) junction (depends on
+-- currency_pair_conventions and calendars; drop before both)
+\ir ./refdata_currency_pair_convention_calendar_drop.sql
+
 -- Currency pairs (must drop before currencies, currency_pair_classifications, currency_groups)
 \ir ./refdata_currency_pair_conventions_notify_trigger_drop.sql
 \ir ./refdata_currency_pair_conventions_drop.sql

@@ -55,6 +55,9 @@
 -- Currency-calendar junction
 \ir ./refdata_currency_calendar_create.sql
 
+-- Currency-pair-convention-calendar (advance calendar) junction
+\ir ./refdata_currency_pair_convention_calendar_create.sql
+
 -- FPML Reference data tables
 \ir ./refdata_account_types_create.sql
 \ir ./refdata_account_types_notify_trigger_create.sql

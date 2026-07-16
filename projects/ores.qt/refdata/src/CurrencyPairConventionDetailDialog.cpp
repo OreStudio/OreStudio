@@ -128,10 +128,6 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CurrencyPairConventionDetailDialog::onFieldChanged);
-    connect(ui_->advanceCalendarEdit,
-            &QLineEdit::textChanged,
-            this,
-            &CurrencyPairConventionDetailDialog::onFieldChanged);
     connect(ui_->businessDayConventionCombo,
             &QComboBox::currentIndexChanged,
             this,
@@ -225,7 +221,6 @@ void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->pairCodeCombo->setEnabled(false);
     ui_->pipFactorEdit->setReadOnly(readOnly);
     ui_->tickSizeEdit->setReadOnly(readOnly);
-    ui_->advanceCalendarEdit->setReadOnly(readOnly);
     ui_->businessDayConventionCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -241,9 +236,6 @@ void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
     ui_->pipFactorEdit->setText(QString::number(convention_.pip_factor));
     ui_->tickSizeEdit->setText(QString::number(convention_.tick_size));
     ui_->decimalPlacesSpinBox->setValue(convention_.decimal_places);
-    ui_->advanceCalendarEdit->setText(convention_.advance_calendar ?
-                                          QString::fromStdString(*convention_.advance_calendar) :
-                                          QString{});
     {
         const auto val = convention_.business_day_convention ?
                              QString::fromStdString(*convention_.business_day_convention) :
@@ -277,12 +269,6 @@ void CurrencyPairConventionDetailDialog::updateConventionFromUi() {
     convention_.pip_factor = ui_->pipFactorEdit->text().trimmed().toDouble();
     convention_.tick_size = ui_->tickSizeEdit->text().trimmed().toDouble();
     convention_.decimal_places = ui_->decimalPlacesSpinBox->value();
-    {
-        const auto advance_calendar_str = ui_->advanceCalendarEdit->text().trimmed().toStdString();
-        convention_.advance_calendar = advance_calendar_str.empty() ?
-                                           std::nullopt :
-                                           std::optional<std::string>(advance_calendar_str);
-    }
     convention_.business_day_convention =
         ui_->businessDayConventionCombo->currentData().toString().toStdString();
     switch (ui_->spotRelativeCheckBox->checkState()) {

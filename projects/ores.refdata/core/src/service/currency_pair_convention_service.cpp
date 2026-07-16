@@ -42,6 +42,13 @@ std::uint32_t currency_pair_convention_service::count_conventions() {
     return repo_.get_total_convention_count(ctx_);
 }
 
+std::optional<domain::currency_pair_convention>
+currency_pair_convention_service::get_convention_at_version(const std::string& pair_code,
+                                                            std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair convention at version: " << pair_code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, pair_code, version);
+}
 
 std::optional<domain::currency_pair_convention>
 currency_pair_convention_service::get_convention(const std::string& pair_code) {

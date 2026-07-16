@@ -142,7 +142,6 @@ void CurrencyPairConventionMdiWindow::setupTable() {
             cs::text_left,
             cs::text_left,
             cs::mono_center,
-            cs::text_left,
             cs::badge_centered,
             cs::badge_centered,
             cs::badge_centered,
@@ -152,7 +151,7 @@ void CurrencyPairConventionMdiWindow::setupTable() {
         },
         tableView_);
     delegate->set_badge_color_resolver(
-        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair fallback{color_constants::badge_fallback,
                                                    color_constants::badge_fallback_text};
             if (!cache)
@@ -165,7 +164,7 @@ void CurrencyPairConventionMdiWindow::setupTable() {
                     QColor(QString::fromStdString(def->text_colour))};
         });
     delegate->set_badge_color_resolver(
-        6, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair fallback{color_constants::badge_fallback,
                                                    color_constants::badge_fallback_text};
             if (!cache)
@@ -178,7 +177,7 @@ void CurrencyPairConventionMdiWindow::setupTable() {
                     QColor(QString::fromStdString(def->text_colour))};
         });
     delegate->set_badge_color_resolver(
-        7, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        6, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair fallback{color_constants::badge_fallback,
                                                    color_constants::badge_fallback_text};
             if (!cache)

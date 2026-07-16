@@ -74,13 +74,6 @@ struct currency_pair_convention final {
     int decimal_places = 0;
 
     /**
-     * @brief Calendar used advancing spot→forward. Free-text pending
-     * [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference
-     * data]].
-     */
-    std::optional<std::string> advance_calendar;
-
-    /**
      * @brief Soft FK to ores_trading_business_day_convention_types_tbl.
      */
     std::optional<std::string> business_day_convention;

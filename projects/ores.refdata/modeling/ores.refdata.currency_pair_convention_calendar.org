@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: F7B4DEEB-CDA5-4E7E-AC75-52EC8DA8F394
+:END:
+#+title: ores.refdata.currency_pair_convention_calendar
+#+description: Codegen junction model for currency_pair_convention_calendars.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: currency_pair_convention_calendars
+#+name_singular: currency_pair_convention_calendar
+#+name_title: Currency Pair Convention Calendar
+#+name_singular_words: currency pair convention advance-calendar assignment
+#+brief: Links a currency pair convention to the calendar(s) used to advance its spot/maturity dates.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+Many-to-many junction between currency_pair_convention and calendar:
+[[id:7316C20B-1C0D-4BE3-A994-1957C7595771][a convention's AdvanceCalendar]]
+almost always names the union of both legs' calendars (e.g.
+=TARGET,UnitedKingdom=), so a convention needs more than one calendar
+row. Replaces =currency_pair_convention.advance_calendar='s
+comma-joined free-text value with a proper FK relationship to
+[[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]]. The
+=advance_calendar= name is kept (not renamed to =calendar=/=holiday_calendar=)
+since it matches ORE's own =AdvanceCalendar= XML field verbatim and
+denotes a distinct concept from =currency.holiday_calendar= — it drives
+date-advancing (=Calendar::advance()=), not business/settlement-day
+membership tests.
+
+* Left
+:PROPERTIES:
+:column:        pair_code
+:column_short:  pair
+:column_title:  Pair
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up calendars used by a currency pair convention
+:END:
+
+Currency pair code (e.g. EURGBP).
+
+References ores_refdata_currency_pair_conventions_tbl.pair_code (soft FK).
+
+The composite key is (pair_code, calendar_code), and neither field
+carries any other per-call-unique data -- an inline counter is the
+only way to guarantee repeated synthetic-generation calls don't
+collide on the same key (same convention as currency_country's own
+synthetic generator).
+
+#+begin_src cpp :name generator
+[] { static std::size_t counter = 0; return std::string("EURGBP") + std::to_string(++counter); }()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        calendar_code
+:column_short:  calendar
+:column_title:  Calendar
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding conventions that use a calendar
+:END:
+
+QuantLib/ORE calendar token (e.g. TARGET, UnitedKingdom).
+
+References ores_refdata_calendars_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_pair_convention_calendars_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: pair_convention_calendar
+:name_short:          pair_convention_calendars
+:name_singular_words: currency pair convention calendar
+:name_words:          currency pair convention calendars
+:order_column:        calendar_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pcc
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| pair_code     | Pair        |
+| calendar_code | Calendar    |
+| modified_by   | Modified By |
+| version       | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — parent story.
+- [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][ORE's AdvanceCalendar Convention Field]] — the domain concept this junction models.

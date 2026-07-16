@@ -33,6 +33,12 @@ Log in against the =prime_origin= environment as
 =tenant_admin@barclays_plc= / =Secure-Password-123= and select
 *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Create a new counterparty with No Parent
 
 Open Reference Data > Counterparties, click *Add*, fill in Short
@@ -41,11 +47,33 @@ Counterparty* on its default *No Parent* entry (or explicitly select
 it if something else is pre-selected). Click *Save*. Confirm it
 saves successfully and the new row appears in the list.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+Verified via direct DB query: the row saved correctly with a NULL
+=parent_counterparty_id=, correct tenant, and =valid_to= = infinity
+(the current live version). It did not appear in the grid on reload
+because the list is paginated (page size ~100) and ordered by =id=
+(a random UUID) rather than by name or creation time — with ~13,000
+counterparties in this tenant, a newly created row lands at a random
+page and is effectively invisible without searching/paging for it.
+This is a pre-existing UX gap unrelated to the No Parent fix; filed
+separately as a capture rather than blocking this scenario.
+
 ** Edit that counterparty back and confirm it round-trips
 
 Double-click the counterparty just created. Confirm *Parent
 Counterparty* shows *No Parent* (not some other counterparty) —
 this is the bug the fix addresses. Close without changes.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Edit an existing standalone counterparty from GLEIF data
 
@@ -55,6 +83,12 @@ check its Hierarchy tab shows no ancestors). Confirm its Parent
 Counterparty combo shows *No Parent* correctly on open, not some
 unrelated counterparty. Close without changes — do not save unless
 you intend to, since this row is real GLEIF data.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Confirm a second rootless party is rejected
 
@@ -67,14 +101,20 @@ non-root party, set its Parent Party to *No Parent*, and click
 database's single-root constraint) rather than silently succeeding
 or corrupting the record.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-16T15:30:46Z |
+| Branch        | feature/write-counterparty-manual-chapter |
+| Commit        | ef107498b |
+| Worktree      | prime_origin |
 
 * Notes

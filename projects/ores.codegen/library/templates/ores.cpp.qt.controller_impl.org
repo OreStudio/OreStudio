@@ -767,5 +767,5 @@ void {{domain_entity.entity_pascal}}Controller::notifyOpenDialogs(const QStringL
 
 * See also
 
-- Parent facet: [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]]
+- Parent facet: [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

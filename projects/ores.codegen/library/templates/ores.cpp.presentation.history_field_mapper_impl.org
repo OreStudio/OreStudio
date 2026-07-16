@@ -137,6 +137,6 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 
 * See also
 
-- Parent facet: [[id:03F9721D-E714-435A-BCD0-79C82F5B27D9][C++ presentation templates]]
+- Parent facet: [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]

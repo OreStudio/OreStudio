@@ -100,5 +100,5 @@ inline std::ostream& operator<<(std::ostream& os, {{name}} v) {
 
 * See also
 
-- Parent facet: [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][C++ model type templates]]
+- Parent facet: [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

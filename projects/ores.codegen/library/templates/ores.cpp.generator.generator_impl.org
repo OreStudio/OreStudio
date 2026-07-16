@@ -225,5 +225,5 @@ generate_synthetic_{{name}}(std::size_t n,
 
 * See also
 
-- Parent facet: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][C++ domain templates]]
+- Parent facet: [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

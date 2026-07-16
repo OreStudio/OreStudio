@@ -77,5 +77,5 @@ install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
 
 * See also
 
-- Parent facet: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][CMake templates]]
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

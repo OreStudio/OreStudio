@@ -155,5 +155,5 @@ where d.code = '{{dataset.code}}'
 
 * See also
 
-- Parent facet: [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][SQL populate templates]]
+- Parent facet: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

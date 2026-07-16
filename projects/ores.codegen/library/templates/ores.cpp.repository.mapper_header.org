@@ -105,5 +105,5 @@ public:
 
 * See also
 
-- Parent facet: [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][C++ repository templates]]
+- Parent facet: [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

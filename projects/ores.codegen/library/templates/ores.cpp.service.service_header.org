@@ -314,5 +314,5 @@ private:
 
 * See also
 
-- Parent facet: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]]
+- Parent facet: [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

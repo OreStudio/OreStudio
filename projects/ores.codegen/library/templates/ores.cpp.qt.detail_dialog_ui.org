@@ -260,5 +260,5 @@ The full template source. Edit here and re-tangle with
 
 * See also
 
-- Parent facet: [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][Asset templates]]
+- Parent facet: [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

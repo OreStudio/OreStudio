@@ -17,32 +17,34 @@ facet docs hold the template sources themselves.
 
 * Summary
 
-The 116 mustache templates consumed by =generator.py= are organised
-into five template groups — [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] and [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] — each
-corresponding to a [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] and containing one or more /facets/ in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] sense: coherent families of
-artefacts projected from a model element. Every facet is a literate
-org document in this directory whose =mustache= blocks tangle to the
-sibling =.mustache= artefacts; the =.mustache= files are generated
-and carry a ={{! GENERATED FILE }}= header naming their source.
+The mustache templates consumed by =generator.py= are organised as
+the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]: a root node fanning out to technical
+spaces, each containing one or more /facets/ in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] sense —
+coherent families of artefacts projected from a model element. Every
+facet is a literate org document in this directory whose =mustache=
+blocks tangle to the sibling =.mustache= artefacts; the =.mustache=
+files are generated and carry a ={{! GENERATED FILE }}= header naming
+their source.
 
 * The hierarchy
 
-| Level           | Document                       | Role                                            |
-|-----------------+--------------------------------+-------------------------------------------------|
-| Groups overview | this page                      | How the library is organised and maintained.    |
-| Group doc       | =<group>_group.org=            | Namespace: indexes the group's facets, holds shared conventions. |
-| Facet doc       | =<facet>.org=                  | Literate source: prose + =mustache= blocks per template. |
-| Template        | =<name>.mustache=              | Tangled artefact consumed by =generator.py=.    |
+| Level                  | Document                       | Role                                            |
+|------------------------+---------------------------------+-------------------------------------------------|
+| Groups overview        | this page                      | How the library is organised and maintained.    |
+| Technical-space doc    | =ores.<space>.org=             | Namespace: indexes the space's facets.          |
+| Facet doc              | =ores.<space>.<facet>.org=     | Literate source: prose + Archetypes table (per-template =mustache= blocks pending migration for some facets). |
+| Archetype/Template     | =<name>.mustache=              | Tangled artefact consumed by =generator.py=.    |
 
-The groups:
+The technical spaces:
 
-| Group | Templates | Scope |
-|-------+-----------+-------|
-| [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]] | 8 | Component =CMakeLists.txt= files across the api/core/service split. |
-| [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]] | 58 | Domain types, repositories, mappers, Qt UI classes, services, components, enums. |
-| [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]] | 26 | Schema create/drop, notify triggers, junctions, reference-data populates. |
-| [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] | 20 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group types). |
-| [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] | 4 | Singleton families: Qt Designer =.ui= XML, PlantUML ER, shell service vars. |
+| Technical space | Facets | Scope |
+|------------------+--------+-------|
+| [[id:CA666722-1F34-4591-BC54-BC161BE45EB2][ores.cmake]] | 2 | Component =CMakeLists.txt= files across the api/core/service split. |
+| [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] | 13 | Domain types, repositories, mappers, Qt UI classes, services, components, enums. |
+| [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] | 3 | Schema create/drop, notify triggers, junctions, reference-data populates. |
+| [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] | 4 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group/technical_space/archetype types). |
+| [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] | 1 | Entity-relationship diagram generation from the bi-temporal SQL schema. |
+| [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] | 1 | Service-registry shell scripts. |
 
 * Tangling and the drift check
 

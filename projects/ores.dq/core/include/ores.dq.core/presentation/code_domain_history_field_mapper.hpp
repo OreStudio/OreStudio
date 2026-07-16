@@ -17,36 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_MAPPER_HPP
-#define ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_MAPPER_HPP
+#ifndef ORES_DQ_CORE_PRESENTATION_CODE_DOMAIN_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_CODE_DOMAIN_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/code_domain_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
 
-namespace ores::dq::repository {
+namespace ores::dq::presentation {
 
 /**
- * @brief Maps code_domain domain entities to data storage layer and vice-versa.
+ * @brief Renders a code_domain to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-class ORES_DQ_CORE_EXPORT code_domain_mapper {
-private:
-    inline static std::string_view logger_name = "ores.dq.repository.code_domain_mapper";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    static domain::code_domain map(const code_domain_entity& v);
-    static code_domain_entity map(const domain::code_domain& v);
-
-    static std::vector<domain::code_domain> map(const std::vector<code_domain_entity>& v);
-    static std::vector<code_domain_entity> map(const std::vector<domain::code_domain>& v);
-};
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_code_domain_fields(const domain::code_domain& v);
 
 }
 

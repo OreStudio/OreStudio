@@ -102,6 +102,7 @@ BEGIN
     -- story's tenant-scoping migration task for the full rationale)
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_severities', 300);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_definitions', 301);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.code_domains', 302);
 
     -- =============================================================================
     -- Crypto Bundle Members

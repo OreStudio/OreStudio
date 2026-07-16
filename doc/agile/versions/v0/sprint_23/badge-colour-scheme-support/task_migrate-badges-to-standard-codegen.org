@@ -185,6 +185,43 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
     (=ores.dq.core.lib=, =ores.dq.core.tests=, =ores.dq.service.lib=,
     the full =ores.qt.exe=) clean; =ores.dq.core.tests= still green
     (318 assertions, 104 cases).
+13. Repeated the same treatment for =code_domain=: regenerated onto
+    the standard codegen stack via
+    =compass codegen entity generate code_domain= (no model bugs this
+    time -- its generator snippet was already faker-API-correct).
+    This also silently re-broke cross-tenant reads for code domains,
+    same root cause, same fix: artefact table
+    (=dq_code_domains_artefact_create.sql=), preview/publish function
+    pair, dataset+artefact-type+bundle-member registration (same
+    catalog/subject-area/methodology/=base= bundle choices as the
+    other two), and a new =dq.v1.code-domains.publish-from-dq=
+    subject on the shared handler. The 31 seed rows were extracted
+    programmatically the same way as =badge_definition='s 57 -- this
+    time the extraction regex needed a fix mid-way: the first attempt
+    (reused verbatim from =badge_definition='s extraction) silently
+    dropped =tenor_unit= (30 instead of 31 matches) because its
+    description contains a SQL-escaped apostrophe (=tenor''s
+    duration=) that the regex's backslash-escape assumption didn't
+    handle; fixed to handle doubled single-quotes (the actual SQL
+    escaping convention) and re-verified the row count against a
+    plain =grep -c= count before proceeding.
+14. Note: =code_domain='s hand-written Qt layer
+    (=CodeDomainController=/=CodeDomainDetailDialog= in
+    =projects/ores.qt/refdata=, including the =BadgeMappingsTab=
+    wired in by the blocked =badge_mapping= browser task) is
+    unaffected by this regeneration -- confirmed in that earlier task
+    that these are hand-maintained, not generated from this model, so
+    no rebuild/rewiring was needed here.
+15. Verified end-to-end: freshly recreated database, artefact table
+    populated (31 rows), publish function works directly via SQL
+    (31/31 updated against the system tenant's own rows). Then, on a
+    fresh recreate + full Barclays provisioning run, confirmed all 31
+    code domains were published for Barclays automatically via the
+    =base= bundle (spot-checked =book_status=: name/display_order
+    match the source seed exactly). Full stack rebuild
+    (=ores.dq.core.lib=, =ores.dq.core.tests=, =ores.dq.service.lib=,
+    the full =ores.qt.exe=) clean; =ores.dq.core.tests= still green
+    (318 assertions, 104 cases).
 
 * Notes
 
@@ -194,13 +231,14 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
   and the reason this task exists. Fixed by wiring =badge_severity=
   into the DQ publish-from-dq pipeline (Plan items 6-8) rather than
   reverting or leaving the gap open.
-- =badge_definition= is now done too (Plan items 9-12). =code_domain=
-  still needs the same treatment (regenerate + publish-from-dq
-  wiring); =badge_mapping= (a junction) has no core-layer divergence
-  to fix but will need its own publish-from-dq artefact once
-  =code_domain=/=badge_definition= are both tenant-scoped, since
-  mappings reference both. Not started in this session -- scope for
-  this task's next round.
+- =badge_definition= and =code_domain= are now both done too (Plan
+  items 9-15). All three badge-related =ores.codegen.entity= models
+  are on the standard codegen stack and tenant-scoped via
+  publish-from-dq. =badge_mapping= (a junction) has no core-layer
+  divergence to fix, but still needs its own publish-from-dq artefact
+  now that =code_domain=/=badge_definition= are both tenant-scoped,
+  since mappings reference both. That's the remaining scope for this
+  task.
 - The orphaned, unbuilt =projects/ores.qt/dq= scaffold (no
   CMakeLists.txt) grew two more entities' worth of generated-but-dead
   Qt files this round (=BadgeDefinitionController=/

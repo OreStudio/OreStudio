@@ -23,6 +23,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
@@ -69,7 +70,7 @@ struct code_domain final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this code domain.
@@ -98,6 +99,16 @@ struct code_domain final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for code_domain, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const code_domain&) {
+    return "ores.dq.code_domain";
+}
 
 }
 

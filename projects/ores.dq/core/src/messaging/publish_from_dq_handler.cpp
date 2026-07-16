@@ -48,6 +48,7 @@ const std::unordered_map<std::string, std::string>& subject_fn_map() {
         {"dq.v1.coding-schemes.publish-from-dq", "ores_dq_coding_schemes_publish_fn"},
         {"dq.v1.badge-severities.publish-from-dq", "ores_dq_badge_severities_publish_fn"},
         {"dq.v1.badge-definitions.publish-from-dq", "ores_dq_badge_definitions_publish_fn"},
+        {"dq.v1.code-domains.publish-from-dq", "ores_dq_code_domains_publish_fn"},
     };
     return m;
 }

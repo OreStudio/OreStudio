@@ -17,17 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/code_domain_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_DQ_CORE_MESSAGING_CODE_DOMAIN_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_CODE_DOMAIN_REGISTRAR_HPP
 
-namespace ores::dq::repository {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const code_domain_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::dq::messaging {
 
-}
+std::vector<ores::nats::service::subscription>
+register_code_domain_handlers(ores::nats::service::client& nats,
+                              ores::database::context ctx,
+                              std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::dq::messaging
+
+#endif

@@ -154,6 +154,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'badge_definitions', 0, 'Badge Definitions', 'Visual badge definitions (colour, severity, CSS class), self-published into DQ''s own table like coding_schemes/badge_severities',
      'dq_badge_definitions_artefact_tbl', 'dq_badge_definitions_tbl', 'dq.v1.badge-definitions.publish-from-dq', 51,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'code_domains', 0, 'Code Domains', 'Named namespaces for disambiguating enum codes across entity types, self-published into DQ''s own table like coding_schemes/badge_severities/badge_definitions',
+     'dq_code_domains_artefact_tbl', 'dq_code_domains_tbl', 'dq.v1.code-domains.publish-from-dq', 52,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

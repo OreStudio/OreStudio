@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,17 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/code_domain_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
-namespace ores::dq::repository {
-
-std::ostream& operator<<(std::ostream& s, const code_domain_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
+drop trigger if exists ores_dq_code_domains_notify_trg on "ores_dq_code_domains_tbl";
+drop function if exists ores_dq_code_domains_notify_fn;

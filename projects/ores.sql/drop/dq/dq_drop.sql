@@ -100,6 +100,8 @@
 \ir ./dq_badge_severities_population_functions_drop.sql
 \ir ./dq_badge_severities_artefact_drop.sql
 \ir ./dq_badge_severities_drop.sql
+\ir ./dq_code_domains_population_functions_drop.sql
+\ir ./dq_code_domains_artefact_drop.sql
 \ir ./dq_code_domains_drop.sql
 
 -- Population functions

@@ -32,7 +32,6 @@
 #include "ores.cli/config/add_floating_index_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
-#include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_system_setting_options.hpp"
@@ -109,11 +108,8 @@
 #include "ores.trading.api/domain/floating_index_type_table_io.hpp"
 #include "ores.trading.api/domain/leg_type_json_io.hpp"
 #include "ores.trading.api/domain/leg_type_table_io.hpp"
-#include "ores.trading.api/domain/payment_frequency_type_json_io.hpp"
-#include "ores.trading.api/domain/payment_frequency_type_table_io.hpp"
 #include "ores.trading.core/repository/floating_index_type_repository.hpp"
 #include "ores.trading.core/repository/leg_type_repository.hpp"
-#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -769,37 +765,6 @@ void application::export_floating_index_types(const config::export_options& cfg)
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " floating index type(s).";
 }
 
-void application::export_payment_frequency_types(const config::export_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting payment frequency types.";
-
-    trading::repository::payment_frequency_type_repository repo;
-    std::vector<trading::domain::payment_frequency_type> items;
-
-    if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
-                                   repo.read_latest(context_, cfg.key);
-    } else {
-        items = repo.read_latest(context_);
-    }
-
-    if (cfg.target_format == config::format::json) {
-        output_stream_ << "[";
-        const char* sep = "";
-        for (const auto& item : items) {
-            output_stream_ << sep << item;
-            sep = ",";
-        }
-        output_stream_ << "]" << std::endl;
-    } else if (cfg.target_format == config::format::table) {
-        output_stream_ << items << std::endl;
-    } else {
-        BOOST_THROW_EXCEPTION(application_exception(
-            "Only JSON and table formats are supported for payment frequency types"));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " payment frequency type(s).";
-}
-
 void application::export_leg_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting leg types.";
 
@@ -892,9 +857,6 @@ void application::export_data(const std::optional<config::export_options>& ocfg)
                 application_exception("Export is not yet supported for feature flags."));
         case config::entity::floating_index_types:
             export_floating_index_types(cfg);
-            break;
-        case config::entity::payment_frequency_types:
-            export_payment_frequency_types(cfg);
             break;
         case config::entity::leg_types:
             export_leg_types(cfg);
@@ -1101,9 +1063,6 @@ void application::delete_data(const std::optional<config::delete_options>& ocfg)
         case config::entity::floating_index_types:
             delete_floating_index_type(cfg);
             break;
-        case config::entity::payment_frequency_types:
-            delete_payment_frequency_type(cfg);
-            break;
         case config::entity::leg_types:
             delete_leg_type(cfg);
             break;
@@ -1118,13 +1077,6 @@ void application::delete_floating_index_type(const config::delete_options& cfg) 
     BOOST_LOG_SEV(lg(), info) << "Deleted floating index type: " << cfg.key;
 }
 
-void application::delete_payment_frequency_type(const config::delete_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting payment frequency type: " << cfg.key;
-    trading::repository::payment_frequency_type_repository repo;
-    repo.remove(context_, cfg.key);
-    output_stream_ << "Payment frequency type deleted successfully: " << cfg.key << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted payment frequency type: " << cfg.key;
-}
 
 void application::delete_leg_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting leg type: " << cfg.key;
@@ -1589,25 +1541,6 @@ void application::add_floating_index_type(
     BOOST_LOG_SEV(lg(), info) << "Added floating index type: " << cfg.code;
 }
 
-void application::add_payment_frequency_type(
-    const config::add_payment_frequency_type_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Adding payment frequency type: " << cfg.code;
-
-    trading::domain::payment_frequency_type record;
-    record.code = cfg.code;
-    record.modified_by = cfg.modified_by;
-    record.performed_by = cfg.modified_by;
-    record.recorded_at = std::chrono::system_clock::now();
-    if (cfg.description)
-        record.description = *cfg.description;
-
-    trading::repository::payment_frequency_type_repository repo;
-    repo.write(context_, record);
-
-    output_stream_ << "Successfully added payment frequency type: " << cfg.code << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Added payment frequency type: " << cfg.code;
-}
-
 void application::add_leg_type(const config::add_leg_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding leg type: " << cfg.code;
 
@@ -1666,8 +1599,6 @@ void application::add_data(const std::optional<config::add_options>& ocfg) const
                 add_compute_workunit(opts);
             } else if constexpr (std::is_same_v<T, config::add_floating_index_type_options>) {
                 add_floating_index_type(opts);
-            } else if constexpr (std::is_same_v<T, config::add_payment_frequency_type_options>) {
-                add_payment_frequency_type(opts);
             } else if constexpr (std::is_same_v<T, config::add_leg_type_options>) {
                 add_leg_type(opts);
             } else {

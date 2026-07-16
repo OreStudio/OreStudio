@@ -102,6 +102,7 @@
 \ir ../refdata/refdata_tenor_units_populate.sql
 \ir ../refdata/refdata_tenor_anchors_populate.sql
 \ir ../refdata/refdata_tenor_resolution_algorithms_populate.sql
+\ir ../refdata/refdata_payment_frequencies_populate.sql
 \ir ../refdata/refdata_tenors_populate.sql
 \ir ../refdata/refdata_tenor_conventions_populate.sql
 \ir ../refdata/refdata_tenor_convention_resolutions_populate.sql

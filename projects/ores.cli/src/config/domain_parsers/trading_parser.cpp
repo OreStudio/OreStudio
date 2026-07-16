@@ -20,7 +20,6 @@
 #include "ores.cli/config/domain_parsers/trading_parser.hpp"
 #include "ores.cli/config/entity_parsers/floating_index_types_parser.hpp"
 #include "ores.cli/config/entity_parsers/leg_types_parser.hpp"
-#include "ores.cli/config/entity_parsers/payment_frequency_types_parser.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
@@ -44,10 +43,6 @@ namespace entity_parsers = ores::cli::config::entity_parsers;
 const std::string floating_index_types_name("floating-index-types");
 const std::string floating_index_types_desc("Manage floating index types (list, delete, add).");
 
-const std::string payment_frequency_types_name("payment-frequency-types");
-const std::string
-    payment_frequency_types_desc("Manage payment frequency types (list, delete, add).");
-
 const std::string leg_types_name("leg-types");
 const std::string leg_types_desc("Manage leg types (list, delete, add).");
 
@@ -64,7 +59,6 @@ void print_domain_help(std::ostream& info) {
     });
 
     row(floating_index_types_name, floating_index_types_desc);
-    row(payment_frequency_types_name, payment_frequency_types_desc);
     row(leg_types_name, leg_types_desc);
 
     info << std::endl
@@ -73,14 +67,13 @@ void print_domain_help(std::ostream& info) {
 
 void validate_entity_name(const std::string& entity_name) {
     const bool is_valid(entity_name == floating_index_types_name ||
-                        entity_name == payment_frequency_types_name ||
                         entity_name == leg_types_name);
 
     if (!is_valid) {
         BOOST_THROW_EXCEPTION(
             parser_exception(std::format("Invalid or unsupported entity: {}. "
                                          "Available entities: floating-index-types, "
-                                         "payment-frequency-types, leg-types",
+                                         "leg-types",
                                          entity_name)));
     }
 }
@@ -134,8 +127,6 @@ std::optional<options> handle_trading_command(bool has_help,
 
     if (entity_name == floating_index_types_name) {
         return entity_parsers::handle_floating_index_types_command(has_help, new_po, info, vm);
-    } else if (entity_name == payment_frequency_types_name) {
-        return entity_parsers::handle_payment_frequency_types_command(has_help, new_po, info, vm);
     } else if (entity_name == leg_types_name) {
         return entity_parsers::handle_leg_types_command(has_help, new_po, info, vm);
     }

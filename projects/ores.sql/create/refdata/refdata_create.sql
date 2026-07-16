@@ -194,6 +194,11 @@
 \ir ./refdata_tenor_resolution_algorithms_create.sql
 \ir ./refdata_tenor_resolution_algorithms_notify_trigger_create.sql
 
+-- Payment frequency: ORE's canonical frequencyType codes (Annual,
+-- Semiannual, Quarterly...), reusing tenor_unit's period vocabulary.
+\ir ./refdata_payment_frequencies_create.sql
+\ir ./refdata_payment_frequencies_notify_trigger_create.sql
+
 -- Tenor reference data: the tenor catalog before conventions;
 -- conventions before the resolution junction that joins them.
 \ir ./refdata_tenors_create.sql

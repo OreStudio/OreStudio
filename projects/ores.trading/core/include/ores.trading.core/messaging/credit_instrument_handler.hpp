@@ -46,6 +46,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class ORES_TRADING_CORE_EXPORT credit_instrument_handler {
@@ -99,6 +100,7 @@ public:
         service::credit_instrument_service svc(ctx);
         if (auto req = decode<save_credit_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_credit_instrument(req->data);
                 BOOST_LOG_SEV(credit_instrument_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, save_credit_instrument_response{.success = true});

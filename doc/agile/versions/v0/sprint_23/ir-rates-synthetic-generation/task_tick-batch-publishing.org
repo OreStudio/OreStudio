@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/tick-batch-publishing
+#+pr: 1597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,7 +36,7 @@ the GMM improvements story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -61,13 +61,155 @@ the GMM improvements story.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Design discussion (before implementation)
+
+A proper swap par rate needs its fixed-leg payment schedule (a strip
+of periodic discount factors), not just its two endpoints — treating
+a Swap entry as a single-period deposit-equivalent (an early draft of
+this plan) was rejected as defeating the purpose of modelling a swap
+at all. This requires:
+
+- A genuine, catalog-driven classification of "how do I price this
+  instrument against a curve" (deposit / fra / swap), rather than
+  inferring it from =start_tenor_code == "SPOT"= (Deposit and Swap are
+  both point instruments but need different formulas).
+- A payment frequency for the swap's fixed leg, to build its
+  intermediate payment dates between spot and maturity.
+
+*** Payment frequency: consolidating a genuine duplication
+
+ORE's canonical =frequencyType= enumeration
+(=external/ore/xsd/ore_types.xsd=: =Once=, =Annual=, =Semiannual=,
+=Quarterly=, =Bimonthly=, =Monthly=, =Lunarmonth=, =Weekly=, =Daily=)
+was already modelled once, as =ores.trading.payment_frequency_type=
+(used by trade-leg conventions). Building a second, separate
+=ores.refdata= entity for the same concept (an early draft of this
+plan) was rejected once spotted as a real duplication, not a
+justified split — there is no case for two types here ("payment
+frequency conventions" vs "payment frequencies" is a flimsy
+distinction); it is one type with properties.
+
+Resolved: a single =payment_frequency= entity, promoted into
+=ores.refdata= (genuinely shared reference data — used by trading leg
+conventions *and* curve-template schedule building, not
+trading-owned), replacing =ores.trading.payment_frequency_type=
+entirely:
+- =code= (PK): the canonical long-form codes above.
+- =period_unit=: *FK-validated against =tenor_unit.code=*
+  (=DAY=/=WEEK=/=MONTH=/=YEAR=/=NONE=) via the standard Insert-trigger
+  Validations mechanism — reuses the existing =tenor_unit= catalog
+  (including its =NONE= sentinel row) rather than duplicating the
+  vocabulary a second time as an inline =CHECK=.
+- =period_multiplier= (nullable int): null only when =period_unit= =
+  =NONE= (i.e. =Once=).
+- Tenant scope: system. This is a statement of fact (ORE's own
+  enumeration), not a per-tenant convention — same category as
+  =tenor_unit=/=book_status=, not =swap_convention=.
+- Badge on =period_unit= (the referencing column), reusing
+  =tenor_unit='s *already-seeded* badge domain/mappings (colors for
+  =DAY=/=WEEK=/=MONTH=/=YEAR=/=NONE= were seeded earlier this sprint)
+  — no new badge definitions needed. Not badged on its own =code=: an
+  earlier draft self-badged =code=, which was caught as breaking the
+  established "badge the referencing column, not the code table
+  itself" convention (=instrument_code.asset_class=, not
+  =asset_class_code.code=).
+- Migration: delete =ores.trading.payment_frequency_type= (entity +
+  every generated layer + SQL + Qt UI + menu wiring), and repoint
+  *every* =ores.trading= column that stores a payment-frequency code
+  string to validate against the new =ores.refdata.payment_frequency=
+  instead — =swap_leg.payment_frequency_code= (the only one with a
+  real FK today), plus =credit_instrument.payment_frequency_code=,
+  =commodity_instrument.payment_frequency_code=, and
+  =equity_swap_instrument.payment_frequency= (currently unvalidated
+  free text) — wiring FK validation onto all of them is a deliberate
+  test of the consolidated data model, not just a like-for-like swap.
+
+*** Still to design (not yet resolved)
+
+- =instrument_code='s =curve_role= classification (deposit/fra/swap/none).
+- =ir_curve_generation_config.fixed_leg_payment_frequency= (FK to the
+  new =payment_frequency=) and the periodic-schedule-building pure
+  function it feeds.
+- The =ir_curve_feed= producer itself and ingest-side wiring.
+
+** Payment frequency migration: completed
+
+The =payment_frequency= consolidation described above is implemented:
+
+- New =ores.refdata.payment_frequency= entity (full codegen facet set:
+  API/core/service/Qt/SQL), seeded with the 9 canonical rows, badge on
+  =period_unit= reusing =tenor_unit='s existing badge domain, DQ
+  publish-from-dq wired.
+- =ores.trading.payment_frequency_type= deleted entirely: modeling
+  =.org=, all generated API/core C++, Qt list/detail/history dialogs +
+  menu wiring, CLI entity registration, and its
+  =ores.trading.module.org= catalog row.
+- All four =ores.trading= consumer columns
+  (=swap_leg=/=credit_instrument=/=commodity_instrument=/=equity_swap_instrument=)
+  repointed to validate against the new entity, including the three
+  that previously had no FK validation at all.
+- Schema validated clean (253 tables, 0 warnings) after =db recreate=.
+
+*** Bugs found and fixed while UI-testing the migration
+
+Testing the payment-frequency UI and ORE trade re-import surfaced
+three genuine, pre-existing bugs unrelated to the migration design
+itself, exposed by finally adding real FK validation where none
+existed before:
+
+- *History provider not registered*: =ores.refdata/core/src/messaging/registrar.cpp=
+  never wired a =history_registry().register_history_provider(...)=
+  entry for =ores.refdata.payment_frequency= (only =currency= and
+  =country= had one) — added it, mirroring the existing pattern.
+- *ORE importer stored raw tenor strings, not frequency names*: every
+  mapper that populates a payment-frequency FK column
+  (=swap_instrument_mapper.cpp=, =credit_instrument_mapper.cpp=,
+  =equity_instrument_mapper.cpp=) copied the ORE schedule rule's
+  =Tenor= string (e.g. ="3M"=) straight into the FK column instead of
+  converting it to the canonical name (=Quarterly=) the new FK
+  validates against. Added a shared, bidirectional
+  =tenor_to_payment_frequency()=/=payment_frequency_to_tenor()=
+  conversion in a new =ores.ore.core/domain/payment_frequency_conversion.hpp=,
+  wired into both forward (import) and reverse (export) directions.
+- *Missing =trade_type_code= on 8 swap-family instrument types*:
+  =swap_instrument_mapper.cpp='s =forward_swap=/=forward_inflation_swap=/
+  =forward_fra=/=forward_capfloor=/=forward_swaption=/=forward_callable_swap=/
+  =forward_flexi_swap=/=forward_balance_guaranteed_swap= never set
+  =identity.trade_type_code=, so every one of these instruments failed
+  its NOT-NULL check on import. Set it explicitly per function.
+- *=stamp()= silently no-op'd on nested audit fields*: the documented
+  =ores::service::messaging::stamp()= helper (which is supposed to
+  overwrite =modified_by=/=performed_by= from the request context) was
+  never called by any of the 8 trading instrument-save handlers
+  (=bond=/=commodity=/=composite=/=credit=/=rates=[9 variants]/=scripted=/
+  =typed_equity=/=typed_fx=), so every ORE-imported instrument kept the
+  mapper's hardcoded, invalid ="ores"= literal for =modified_by=. Fixed
+  by calling =stamp(req->data.audit, ctx)= in each handler — the fields
+  live under a nested =audit= sub-struct
+  (=ores::dq::domain::audit_record=), not directly on the instrument,
+  which is why =stamp(req->data, ctx)='s =if constexpr (requires {...})=
+  check was silently matching nothing.
+
+Confirmed via =ores.trading.service= logs before/after: "Invalid
+modified_by: ores", "Invalid payment_frequency: 3M...", and "Invalid
+trade_type: value cannot be null or empty" are all gone after the fix
+and rebuild. Left out of scope (unrelated to payment_frequency, called
+out explicitly rather than silently ignored): check-constraint
+violations on =composite=/=scripted=/=commodity=/=swaption=/=credit=
+instruments (trade_type_code, quantity, unit, average_type,
+script_name, long_short, tenor fields with other unmapped/invalid
+values) and =invalid input syntax for type date: ""= on
+=bond=/=equity_swap=/=vanilla_swap=/=cap_floor= imports — pre-existing
+ORE-importer gaps for instrument types the payment_frequency migration
+doesn't touch.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1597][#1597]] | [refdata,trading,ore] Consolidate payment frequency into ores.refdata |
 
 * Review
 

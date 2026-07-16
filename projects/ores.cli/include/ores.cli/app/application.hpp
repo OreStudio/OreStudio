@@ -33,7 +33,6 @@
 #include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_options.hpp"
-#include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_system_setting_options.hpp"
@@ -132,15 +131,12 @@ private:
     void add_data(const std::optional<config::add_options>& ocfg) const;
 
     void export_floating_index_types(const config::export_options& cfg) const;
-    void export_payment_frequency_types(const config::export_options& cfg) const;
     void export_leg_types(const config::export_options& cfg) const;
 
     void delete_floating_index_type(const config::delete_options& cfg) const;
-    void delete_payment_frequency_type(const config::delete_options& cfg) const;
     void delete_leg_type(const config::delete_options& cfg) const;
 
     void add_floating_index_type(const config::add_floating_index_type_options& cfg) const;
-    void add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg) const;
     void add_leg_type(const config::add_leg_type_options& cfg) const;
 
 public:

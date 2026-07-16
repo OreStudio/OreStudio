@@ -315,7 +315,6 @@ RLS_001 ores_trading_day_count_fraction_types_tbl
 RLS_001 ores_trading_floating_index_types_tbl
 RLS_001 ores_trading_leg_types_tbl
 RLS_001 ores_trading_lifecycle_events_tbl
-RLS_001 ores_trading_payment_frequency_types_tbl
 
 # =============================================================================
 # RLS_002 ignores — tables with party_id that intentionally skip party isolation

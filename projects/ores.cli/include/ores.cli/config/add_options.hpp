@@ -33,7 +33,6 @@
 #include "ores.cli/config/add_floating_index_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
-#include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_system_setting_options.hpp"
@@ -65,7 +64,6 @@ using add_options = std::variant<add_currency_options,
                                  add_compute_batch_options,
                                  add_compute_workunit_options,
                                  add_floating_index_type_options,
-                                 add_payment_frequency_type_options,
                                  add_leg_type_options>;
 
 ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_options& v);

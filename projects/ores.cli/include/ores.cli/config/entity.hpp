@@ -50,7 +50,6 @@ enum class entity {
     compute_results,
     // trading
     floating_index_types,
-    payment_frequency_types,
     leg_types
 };
 

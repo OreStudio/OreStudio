@@ -122,10 +122,6 @@
 \ir ./trading_floating_index_types_drop.sql
 \ir ./trading_floating_index_types_validate_fn_drop.sql
 
-\ir ./trading_payment_frequency_types_notify_trigger_drop.sql
-\ir ./trading_payment_frequency_types_drop.sql
-\ir ./trading_payment_frequency_types_validate_fn_drop.sql
-
 \ir ./trading_leg_types_notify_trigger_drop.sql
 \ir ./trading_leg_types_drop.sql
 \ir ./trading_leg_types_validate_fn_drop.sql

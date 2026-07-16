@@ -925,6 +925,20 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Payment Frequencies (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_payment_frequencies_tbl enable row level security;
+
+create policy payment_frequencies_tbl_tenant_isolation_policy
+on ores_refdata_payment_frequencies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Tenors (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenors_tbl enable row level security;

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include <map>
 #include <stdexcept>
 
@@ -343,7 +344,7 @@ equity_instrument_mapper::forward_equity_swap(const trade& t) {
                 inst.start_date = std::string(rule.StartDate);
                 if (rule.EndDate)
                     inst.maturity_date = std::string(*rule.EndDate);
-                inst.payment_frequency = std::string(rule.Tenor);
+                inst.payment_frequency = tenor_to_payment_frequency(std::string(rule.Tenor));
             }
         }
     }

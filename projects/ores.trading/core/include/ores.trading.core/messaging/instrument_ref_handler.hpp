@@ -29,12 +29,10 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.trading.api/messaging/leg_type_protocol.hpp"
-#include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.trading.api/messaging/trade_type_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/floating_index_type_service.hpp"
 #include "ores.trading.core/service/leg_type_service.hpp"
-#include "ores.trading.core/service/payment_frequency_type_service.hpp"
 #include "ores.trading.core/service/trade_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <optional>
@@ -193,28 +191,6 @@ public:
         history_impl<service::floating_index_type_service,
                      get_floating_index_type_history_request,
                      get_floating_index_type_history_response>(std::move(msg));
-    }
-
-    // Payment frequency type
-    void list_payment_frequency_types(ores::nats::message msg) {
-        list_impl<service::payment_frequency_type_service,
-                  get_payment_frequency_types_request,
-                  get_payment_frequency_types_response>(std::move(msg));
-    }
-    void save_payment_frequency_type(ores::nats::message msg) {
-        save_impl<service::payment_frequency_type_service,
-                  save_payment_frequency_type_request,
-                  save_payment_frequency_type_response>(std::move(msg));
-    }
-    void delete_payment_frequency_type(ores::nats::message msg) {
-        delete_impl<service::payment_frequency_type_service,
-                    delete_payment_frequency_type_request,
-                    delete_payment_frequency_type_response>(std::move(msg));
-    }
-    void history_payment_frequency_type(ores::nats::message msg) {
-        history_impl<service::payment_frequency_type_service,
-                     get_payment_frequency_type_history_request,
-                     get_payment_frequency_type_history_response>(std::move(msg));
     }
 
     // Leg type

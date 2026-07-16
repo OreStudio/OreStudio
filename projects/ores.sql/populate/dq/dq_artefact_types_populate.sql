@@ -145,6 +145,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'calendars', 0, 'Calendars', 'ORE/QuantLib calendar reference data: business-day/holiday calendars, financial-centre calendars, and central-bank meeting calendars',
      'dq_calendars_artefact_tbl', 'refdata_calendars_tbl', 'refdata.v1.calendars.publish-from-dq', 40,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'payment_frequencies', 0, 'Payment Frequencies', 'ORE''s canonical frequencyType enumeration (Annual, Semiannual, Quarterly, Monthly...)',
+     'dq_payment_frequencies_artefact_tbl', 'refdata_payment_frequencies_tbl', 'refdata.v1.payment-frequencies.publish-from-dq', 41,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

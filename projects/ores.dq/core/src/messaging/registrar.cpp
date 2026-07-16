@@ -550,6 +550,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "dq.v1.code-domains.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
                 pdq->handle(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            "dq.v1.badge-mappings.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
+                pdq->handle(std::move(msg));
+            }));
     }
 
     return subs;

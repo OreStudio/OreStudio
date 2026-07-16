@@ -33,8 +33,9 @@ namespace ores::dq::messaging {
  * Handles dq.v1.ip2country.publish-from-dq,
  * dq.v1.coding-schemes.publish-from-dq,
  * dq.v1.badge-severities.publish-from-dq,
- * dq.v1.badge-definitions.publish-from-dq, and
- * dq.v1.code-domains.publish-from-dq, which write to DQ's own tables
+ * dq.v1.badge-definitions.publish-from-dq,
+ * dq.v1.code-domains.publish-from-dq, and
+ * dq.v1.badge-mappings.publish-from-dq, which write to DQ's own tables
  * rather than another service's.
  *
  * Subject-to-function mapping:
@@ -43,6 +44,7 @@ namespace ores::dq::messaging {
  *   dq.v1.badge-severities.publish-from-dq  -> ores_dq_badge_severities_publish_fn
  *   dq.v1.badge-definitions.publish-from-dq -> ores_dq_badge_definitions_publish_fn
  *   dq.v1.code-domains.publish-from-dq      -> ores_dq_code_domains_publish_fn
+ *   dq.v1.badge-mappings.publish-from-dq    -> ores_dq_badge_mappings_publish_fn
  */
 class ORES_DQ_CORE_EXPORT publish_from_dq_handler {
 public:

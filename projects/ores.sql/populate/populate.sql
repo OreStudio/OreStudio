@@ -112,6 +112,18 @@
 \ir dq/dq_code_domains_artefact_populate.sql
 
 -- =============================================================================
+-- Badge Mappings Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge mappings catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Mappings Dataset ---'
+\ir dq/dq_badge_mappings_dataset_populate.sql
+\ir dq/dq_badge_mappings_artefact_populate.sql
+
+-- =============================================================================
 -- Reporting Layer
 -- =============================================================================
 

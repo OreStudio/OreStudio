@@ -499,7 +499,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // appends it to its own Trading menu in create_menus()).
     auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
 
-    // Pre-create &Data Management menu. NOT inserted directly; DataTransferPlugin
+    // Pre-create &Data Management menu. NOT inserted directly; DataManagementPlugin
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
 

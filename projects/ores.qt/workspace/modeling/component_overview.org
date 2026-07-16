@@ -24,7 +24,7 @@ NATS-persisted records that group a user's session context — active views,
 preferences, and configuration state. The plugin provides an MDI window and
 dialogs for creating, editing, and deleting workspaces. It contributes a
 Manage Workspaces item to the Data Management menu owned by
-=ores.qt.data_transfer=.
+=ores.qt.data_management=.
 
 * Inputs
 
@@ -50,7 +50,7 @@ Manage Workspaces item to the Data Management menu owned by
 
 * See also
 
-- [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_transfer]] — owns the Data Management menu that workspace contributes to.
+- [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_management]] — owns the Data Management menu that workspace contributes to.
 - [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
 - [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — controller/window/dialog/model structure.

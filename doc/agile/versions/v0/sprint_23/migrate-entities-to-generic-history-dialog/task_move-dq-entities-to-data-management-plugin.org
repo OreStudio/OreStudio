@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | PENDING | Awaiting manual execution via QA Validation Runner. |
 
 * PRs
 

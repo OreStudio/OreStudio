@@ -25,13 +25,7 @@
 #include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
 #include "ores.qt/CalendarController.hpp"
-#include "ores.qt/CatalogController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
-#include "ores.qt/ChangeReasonCategoryController.hpp"
-#include "ores.qt/ChangeReasonController.hpp"
-#include "ores.qt/CodeDomainController.hpp"
-#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
-#include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/CountryController.hpp"
@@ -43,13 +37,8 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/CurrencyPairController.hpp"
 #include "ores.qt/CurrencyPairConventionController.hpp"
-#include "ores.qt/DataDomainController.hpp"
-#include "ores.qt/DataLibrarianWindow.hpp"
-#include "ores.qt/DatasetBundleController.hpp"
-#include "ores.qt/DatasetController.hpp"
 #include "ores.qt/DayCountFractionTypeController.hpp"
 #include "ores.qt/DepositConventionController.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
@@ -57,11 +46,8 @@
 #include "ores.qt/InstrumentCodeController.hpp"
 #include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
-#include "ores.qt/MethodologyController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
-#include "ores.qt/NatureDimensionController.hpp"
 #include "ores.qt/OisConventionController.hpp"
-#include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.qt/PartyController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
@@ -69,7 +55,6 @@
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
-#include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/SwapConventionController.hpp"
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.qt/TenorController.hpp"
@@ -77,7 +62,6 @@
 #include "ores.qt/TenorKindController.hpp"
 #include "ores.qt/TenorResolutionAlgorithmController.hpp"
 #include "ores.qt/TenorUnitController.hpp"
-#include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/ZeroConventionController.hpp"
 #include <QAction>
 #include <QMainWindow>
@@ -131,48 +115,6 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                              this);
     connectControllerSignals(countryController_.get());
 
-    changeReasonCategoryController_ =
-        std::make_unique<ChangeReasonCategoryController>(ctx_.main_window,
-                                                         ctx_.mdi_area,
-                                                         ctx_.client_manager,
-                                                         ctx_.change_reason_cache,
-                                                         ctx_.username,
-                                                         this);
-    connectControllerSignals(changeReasonCategoryController_.get());
-
-    changeReasonController_ = std::make_unique<ChangeReasonController>(ctx_.main_window,
-                                                                       ctx_.mdi_area,
-                                                                       ctx_.client_manager,
-                                                                       ctx_.username,
-                                                                       ctx_.change_reason_cache,
-                                                                       this);
-    connectControllerSignals(changeReasonController_.get());
-
-    codingSchemeAuthorityTypeController_ =
-        std::make_unique<CodingSchemeAuthorityTypeController>(ctx_.main_window,
-                                                              ctx_.mdi_area,
-                                                              ctx_.client_manager,
-                                                              ctx_.change_reason_cache,
-                                                              ctx_.username,
-                                                              this);
-    connectControllerSignals(codingSchemeAuthorityTypeController_.get());
-
-    codeDomainController_ = std::make_unique<CodeDomainController>(ctx_.main_window,
-                                                                   ctx_.mdi_area,
-                                                                   ctx_.client_manager,
-                                                                   ctx_.username,
-                                                                   ctx_.badge_cache,
-                                                                   this);
-    connectControllerSignals(codeDomainController_.get());
-
-    codingSchemeController_ = std::make_unique<CodingSchemeController>(ctx_.main_window,
-                                                                       ctx_.mdi_area,
-                                                                       ctx_.client_manager,
-                                                                       ctx_.change_reason_cache,
-                                                                       ctx_.username,
-                                                                       this);
-    connectControllerSignals(codingSchemeController_.get());
-
     contactTypeController_ = std::make_unique<ContactTypeController>(ctx_.main_window,
                                                                      ctx_.mdi_area,
                                                                      ctx_.client_manager,
@@ -180,14 +122,6 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.username,
                                                                      this);
     connectControllerSignals(contactTypeController_.get());
-
-    datasetController_ = std::make_unique<DatasetController>(ctx_.main_window,
-                                                             ctx_.mdi_area,
-                                                             ctx_.client_manager,
-                                                             ctx_.change_reason_cache,
-                                                             ctx_.username,
-                                                             this);
-    connectControllerSignals(datasetController_.get());
 
     dayCountFractionTypeController_ =
         std::make_unique<DayCountFractionTypeController>(ctx_.main_window,
@@ -536,74 +470,6 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                          this);
     connectControllerSignals(cdsConventionController_.get());
 
-    // Data Catalogue controllers
-    dataDomainController_ = std::make_unique<DataDomainController>(ctx_.main_window,
-                                                                   ctx_.mdi_area,
-                                                                   ctx_.client_manager,
-                                                                   ctx_.change_reason_cache,
-                                                                   ctx_.username,
-                                                                   this);
-    connectControllerSignals(dataDomainController_.get());
-
-    subjectAreaController_ = std::make_unique<SubjectAreaController>(ctx_.main_window,
-                                                                     ctx_.mdi_area,
-                                                                     ctx_.client_manager,
-                                                                     ctx_.change_reason_cache,
-                                                                     ctx_.username,
-                                                                     this);
-    connectControllerSignals(subjectAreaController_.get());
-
-    catalogController_ = std::make_unique<CatalogController>(ctx_.main_window,
-                                                             ctx_.mdi_area,
-                                                             ctx_.client_manager,
-                                                             ctx_.change_reason_cache,
-                                                             ctx_.username,
-                                                             this);
-    connectControllerSignals(catalogController_.get());
-
-    datasetBundleController_ = std::make_unique<DatasetBundleController>(ctx_.main_window,
-                                                                         ctx_.mdi_area,
-                                                                         ctx_.client_manager,
-                                                                         ctx_.change_reason_cache,
-                                                                         ctx_.username,
-                                                                         this);
-    connectControllerSignals(datasetBundleController_.get());
-
-    methodologyController_ = std::make_unique<MethodologyController>(ctx_.main_window,
-                                                                     ctx_.mdi_area,
-                                                                     ctx_.client_manager,
-                                                                     ctx_.change_reason_cache,
-                                                                     ctx_.username,
-                                                                     this);
-    connectControllerSignals(methodologyController_.get());
-
-    originDimensionController_ =
-        std::make_unique<OriginDimensionController>(ctx_.main_window,
-                                                    ctx_.mdi_area,
-                                                    ctx_.client_manager,
-                                                    ctx_.change_reason_cache,
-                                                    ctx_.username,
-                                                    this);
-    connectControllerSignals(originDimensionController_.get());
-
-    natureDimensionController_ =
-        std::make_unique<NatureDimensionController>(ctx_.main_window,
-                                                    ctx_.mdi_area,
-                                                    ctx_.client_manager,
-                                                    ctx_.change_reason_cache,
-                                                    ctx_.username,
-                                                    this);
-    connectControllerSignals(natureDimensionController_.get());
-
-    treatmentDimensionController_ =
-        std::make_unique<TreatmentDimensionController>(ctx_.main_window,
-                                                       ctx_.mdi_area,
-                                                       ctx_.client_manager,
-                                                       ctx_.change_reason_cache,
-                                                       ctx_.username,
-                                                       this);
-    connectControllerSignals(treatmentDimensionController_.get());
-
     tenorController_ = std::make_unique<TenorController>(ctx_.main_window,
                                                          ctx_.mdi_area,
                                                          ctx_.client_manager,
@@ -891,23 +757,6 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         // Classifications submenu
         auto* menuClassifications = ref->addMenu(tr("C&lassifications"));
-        auto* actCodingSchemes =
-            menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
-        connect(actCodingSchemes, &QAction::triggered, this, [this]() {
-            if (codingSchemeController_)
-                codingSchemeController_->showListWindow();
-        });
-        auto* actCodeDomains = menuClassifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
-        connect(actCodeDomains, &QAction::triggered, this, [this]() {
-            if (codeDomainController_)
-                codeDomainController_->showListWindow();
-        });
-        auto* actCodingSchemeAuthorityTypes =
-            menuClassifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
-        connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
-            if (codingSchemeAuthorityTypeController_)
-                codingSchemeAuthorityTypeController_->showListWindow();
-        });
         auto* actAssetClassCodes =
             menuClassifications->addAction(ico(Icon::Tag), tr("Asset &Class Codes"));
         connect(actAssetClassCodes, &QAction::triggered, this, [this]() {
@@ -1017,121 +866,6 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                     contactTypeController_->showListWindow();
             });
         }
-
-        ref->addSeparator();
-
-        // Audit Trail submenu (Change Reason Categories + Change Reasons)
-        auto* menuAuditTrail = ref->addMenu(tr("&Audit Trail"));
-        auto* actChangeReasonCategories =
-            menuAuditTrail->addAction(ico(Icon::Tag), tr("Change Reason &Categories"));
-        connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
-            if (changeReasonCategoryController_)
-                changeReasonCategoryController_->showListWindow();
-        });
-        auto* actChangeReasons =
-            menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
-        connect(actChangeReasons, &QAction::triggered, this, [this]() {
-            if (changeReasonController_)
-                changeReasonController_->showListWindow();
-        });
-    }
-
-    // ---- Data Management menu — contribute Data Catalogue submenu + Data Librarian
-    auto* dt = smc.data_management_menu;
-    if (dt) {
-        auto* menuCatalogue = dt->addMenu(tr("Data Ca&talogue"));
-
-        auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
-        connect(actDataDomains, &QAction::triggered, this, [this]() {
-            if (dataDomainController_)
-                dataDomainController_->showListWindow();
-        });
-
-        auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
-        connect(actSubjectAreas, &QAction::triggered, this, [this]() {
-            if (subjectAreaController_)
-                subjectAreaController_->showListWindow();
-        });
-
-        auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogues"));
-        connect(actCatalogs, &QAction::triggered, this, [this]() {
-            if (catalogController_)
-                catalogController_->showListWindow();
-        });
-
-        auto* actDatasetBundles =
-            menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
-        connect(actDatasetBundles, &QAction::triggered, this, [this]() {
-            if (datasetBundleController_)
-                datasetBundleController_->showListWindow();
-        });
-
-        auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
-        connect(actMethodologies, &QAction::triggered, this, [this]() {
-            if (methodologyController_)
-                methodologyController_->showListWindow();
-        });
-
-        menuCatalogue->addSeparator();
-
-        auto* actOriginDimensions =
-            menuCatalogue->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
-        connect(actOriginDimensions, &QAction::triggered, this, [this]() {
-            if (originDimensionController_)
-                originDimensionController_->showListWindow();
-        });
-
-        auto* actNatureDimensions =
-            menuCatalogue->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
-        connect(actNatureDimensions, &QAction::triggered, this, [this]() {
-            if (natureDimensionController_)
-                natureDimensionController_->showListWindow();
-        });
-
-        auto* actTreatmentDimensions =
-            menuCatalogue->addAction(ico(Icon::Database), tr("&Treatment Dimensions"));
-        connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
-            if (treatmentDimensionController_)
-                treatmentDimensionController_->showListWindow();
-        });
-
-        act_data_librarian_ = dt->addAction(
-            IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
-            tr("Data &Librarian"));
-        connect(act_data_librarian_, &QAction::triggered, this, [this]() {
-            if (data_librarian_window_) {
-                ctx_.mdi_area->setActiveSubWindow(data_librarian_window_);
-                return;
-            }
-
-            auto* librarianWindow = new DataLibrarianWindow(
-                ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
-
-            auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
-            subWindow->setWidget(librarianWindow);
-            subWindow->setWindowTitle(tr("Data Librarian"));
-            subWindow->setWindowIcon(
-                IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
-            subWindow->setAttribute(Qt::WA_DeleteOnClose);
-
-            connect(librarianWindow,
-                    &DataLibrarianWindow::statusChanged,
-                    this,
-                    [this](const QString& msg) { emit statusMessage(msg); });
-            connect(librarianWindow,
-                    &DataLibrarianWindow::errorOccurred,
-                    this,
-                    [this](const QString& msg) { emit statusMessage(msg); });
-
-            data_librarian_window_ = subWindow;
-            connect(subWindow, &QObject::destroyed, this, [this]() {
-                data_librarian_window_ = nullptr;
-            });
-
-            ctx_.mdi_area->addSubWindow(subWindow);
-            subWindow->resize(librarianWindow->sizeHint());
-            subWindow->show();
-        });
     }
 
     // ---- Trading Codes menu — contribute Purpose Types ------------------
@@ -1176,10 +910,6 @@ QList<QAction*> RefdataPlugin::toolbar_actions() {
 // ---------------------------------------------------------------------------
 void RefdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
-    if (data_librarian_window_) {
-        data_librarian_window_->close();
-        data_librarian_window_ = nullptr;
-    }
 
     instrumentCodeController_.reset();
     assetClassCodeController_.reset();
@@ -1189,15 +919,6 @@ void RefdataPlugin::on_logout() {
     tenorAnchorController_.reset();
     tenorConventionController_.reset();
     tenorController_.reset();
-
-    treatmentDimensionController_.reset();
-    natureDimensionController_.reset();
-    originDimensionController_.reset();
-    methodologyController_.reset();
-    datasetBundleController_.reset();
-    catalogController_.reset();
-    subjectAreaController_.reset();
-    dataDomainController_.reset();
 
     zeroConventionController_.reset();
     businessCentreController_.reset();
@@ -1221,13 +942,7 @@ void RefdataPlugin::on_logout() {
     floatingIndexTypeController_.reset();
     businessDayConventionTypeController_.reset();
     dayCountFractionTypeController_.reset();
-    datasetController_.reset();
     contactTypeController_.reset();
-    codingSchemeController_.reset();
-    codeDomainController_.reset();
-    codingSchemeAuthorityTypeController_.reset();
-    changeReasonController_.reset();
-    changeReasonCategoryController_.reset();
     countryController_.reset();
     currencyController_.reset();
 

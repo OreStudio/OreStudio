@@ -108,7 +108,7 @@ Current composite components and their active sub-components:
 | =ores.iam= | =api=, =core=, =service=, =client=, =modeling= |
 | =ores.marketdata= | =api=, =core=, =service= |
 | =ores.ore= | =api=, =core=, =service= |
-| =ores.qt= | =application=, =api=, =refdata=, =analytics=, =compute=, =data_transfer=, =mktdata=, =party=, =scheduler=, =trading=, =workflow=, =workspace=, =admin= |
+| =ores.qt= | =application=, =api=, =refdata=, =analytics=, =compute=, =data_management=, =mktdata=, =party=, =scheduler=, =trading=, =workflow=, =workspace=, =admin= |
 | =ores.refdata= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.reporting= | =api=, =core=, =service=, =modeling= |
 | =ores.scheduler= | =api=, =core=, =service=, =modeling= |
@@ -158,7 +158,7 @@ are domain-area names, not the standard roles.
 | =refdata= | Reference-data Qt plugin (country, currency, rounding types, …). |
 | =analytics= | Analytics Qt plugin. |
 | =compute= | Compute Qt plugin. |
-| =data_transfer= | Data-transfer Qt plugin. |
+| =data_management= | Data management Qt plugin (Data Catalogue, Change Reason, Coding Scheme, Data Librarian). |
 | =mktdata= | Market-data Qt plugin. |
 | =party= | Party-management Qt plugin. |
 | =scheduler= | Scheduler Qt plugin. |

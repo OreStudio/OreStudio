@@ -21,15 +21,19 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CurrencyPairConventionDetailDialog.hpp"
-#include "ores.qt/CurrencyPairConventionHistoryDialog.hpp"
 #include "ores.qt/CurrencyPairConventionMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/currency_pair_convention_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -301,10 +305,13 @@ void CurrencyPairConventionController::showHistoryWindow(const QString& code) {
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog =
-        new CurrencyPairConventionHistoryDialog(code, clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::currency_pair_convention{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &CurrencyPairConventionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CurrencyPairConventionController>(this)](const QString& message) {
                 if (!self)
@@ -312,7 +319,7 @@ void CurrencyPairConventionController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CurrencyPairConventionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CurrencyPairConventionController>(this)](const QString& message) {
                 if (!self)
@@ -320,13 +327,23 @@ void CurrencyPairConventionController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CurrencyPairConventionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CurrencyPairConventionController::onRevertVersion);
+            [self = QPointer<CurrencyPairConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CurrencyPairConventionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CurrencyPairConventionController::onOpenVersion);
+            [self = QPointer<CurrencyPairConventionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -416,6 +433,99 @@ void CurrencyPairConventionController::onOpenVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void CurrencyPairConventionController::fetchCurrencyPairConventionHistory(
+    const QString& entityId,
+    std::function<void(
+        std::expected<std::vector<refdata::domain::currency_pair_convention>, QString>)> callback) {
+    refdata::messaging::get_currency_pair_convention_history_request request;
+    request.pair_code = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<refdata::domain::currency_pair_convention>, QString>;
+
+    QPointer<CurrencyPairConventionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CurrencyPairConventionController::onOpenHistoryVersion(const QString& entityId,
+                                                            int versionNumber) {
+    QPointer<CurrencyPairConventionController> self = this;
+    fetchCurrencyPairConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_pair_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CurrencyPairConventionController::onRevertHistoryVersion(const QString& entityId,
+                                                              int versionNumber) {
+    QPointer<CurrencyPairConventionController> self = this;
+    fetchCurrencyPairConventionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency_pair_convention>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 void CurrencyPairConventionController::onRevertVersion(

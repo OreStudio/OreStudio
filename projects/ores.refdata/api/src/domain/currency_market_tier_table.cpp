@@ -23,6 +23,7 @@
 
 namespace ores::refdata::domain {
 
+
 std::string convert_to_table(const std::vector<currency_market_tier>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
@@ -30,9 +31,9 @@ std::string convert_to_table(const std::vector<currency_market_tier>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& cmt : v) {
-        table << cmt.code << cmt.name << cmt.description << cmt.display_order << cmt.modified_by
-              << cmt.version << fort::endr;
+    for (const auto& mt : v) {
+        table << mt.code << mt.name << mt.description << mt.display_order << mt.modified_by
+              << mt.version << fort::endr;
     }
     return table.to_string();
 }

@@ -31,8 +31,11 @@ domain::rounding_type rounding_type_mapper::map(const rounding_type_entity& v) {
 
     domain::rounding_type r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
@@ -50,8 +53,11 @@ rounding_type_entity rounding_type_mapper::map(const domain::rounding_type& v) {
 
     rounding_type_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

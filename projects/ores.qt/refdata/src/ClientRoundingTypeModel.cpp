@@ -212,12 +212,27 @@ void ClientRoundingTypeModel::fetch_types(std::uint32_t offset, std::uint32_t li
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->rounding_types.size() << " rounding types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->rounding_types.size());
+                    << "Fetched " << result->types.size() << " rounding types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
-                        .types = std::move(result->rounding_types),
+                        .types = std::move(result->types),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -280,6 +295,7 @@ const refdata::domain::rounding_type* ClientRoundingTypeModel::getType(int row) 
         return nullptr;
     return &types_[idx];
 }
+
 
 QVariant ClientRoundingTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

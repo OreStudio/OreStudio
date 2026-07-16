@@ -87,6 +87,7 @@ public:
      */
     const refdata::domain::currency_market_tier* getTier(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

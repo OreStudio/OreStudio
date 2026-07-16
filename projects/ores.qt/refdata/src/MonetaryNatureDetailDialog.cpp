@@ -40,6 +40,16 @@ MonetaryNatureDetailDialog::MonetaryNatureDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 MonetaryNatureDetailDialog::~MonetaryNatureDetailDialog() {
@@ -56,6 +66,10 @@ QWidget* MonetaryNatureDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* MonetaryNatureDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString MonetaryNatureDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void MonetaryNatureDetailDialog::setupUi() {
@@ -109,6 +123,11 @@ void MonetaryNatureDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void MonetaryNatureDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -179,6 +198,7 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -258,7 +278,8 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -277,7 +298,7 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_monetary_nature_request request;
-        request.nature = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -309,5 +330,6 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -7,35 +7,61 @@
 #+level: s1
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-refdata-history-dialogs
+#+pr: 1595
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
 #+updated: 2026-07-14
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Retire the remaining hand-rolled per-entity =*HistoryDialog= classes
+in =projects/ores.qt/refdata=, migrating each entity's controller
+onto the generic =HistoryDialog= via full codegen regeneration (same
+process as [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]], which already migrated 26 of the ~43 original
+entities). 30 entities remain with a =*HistoryDialog.cpp= on disk;
+14 of those have a codegen model and can be migrated the same way as
+AA97E310. The other 16 ( =catalog=, =change_reason=,
+=change_reason_category=, =code_domain=, =coding_scheme=,
+=coding_scheme_authority_type=, =data_domain=, =dataset=,
+=dataset_bundle=, =floating_index_type=, =leg_type=, =methodology=,
+=nature_dimension=, =origin_dimension=, =payment_frequency_type=,
+=subject_area=, =treatment_dimension=) have no codegen model at all —
+hand-crafted data-catalogue and change-reason-system infrastructure —
+and need a different, non-codegen migration approach or explicit
+scoping-out; not attempted in this pass.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
--
+- All 14 codegen-model-backed entities (=asset_class_code=,
+  =currency_market_tier=, =currency_pair_convention=,
+  =day_count_fraction_type=, =ledger_feed_type=, =monetary_nature=,
+  =party_type=, =purpose_type=, =regulatory_book_type=,
+  =rounding_type=, =tenor_anchor=, =tenor_kind=,
+  =tenor_resolution_algorithm=, =tenor_unit=) migrated onto the
+  generic =HistoryDialog= via full, unmodified codegen regeneration;
+  legacy =*HistoryDialog.{hpp,cpp,ui}= files deleted per entity.
+- Each entity's server-side history-provider registration added to
+  =registrar.cpp=, following the AA97E310 pattern.
+- No selective/hand-patched regeneration — full generator output per
+  entity, diffs reviewed before applying, anything unexpected flagged
+  rather than silently forced through or silently reverted.
 
 * Plan
 
@@ -43,7 +69,71 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Same process as AA97E310: full, unmodified =compass codegen entity
+generate <entity> --address ores.cpp.qt=, diff reviewed before
+applying, legacy =*HistoryDialog.{hpp,cpp,ui}= deleted per entity,
+server-side history-provider registration added to =registrar.cpp=.
+
+Of the 14 entities, 7 (=asset_class_code=, =currency_market_tier=,
+=monetary_nature=, =rounding_type=, =tenor_kind=,
+=tenor_resolution_algorithm=, =tenor_unit=) never had a history field
+mapper generated at all despite having a history protocol — generated
+via =--address ores.cpp.presentation= for all 7.
+
+3 of those 7 (=currency_market_tier=, =rounding_type=,
+=monetary_nature=) turned out to be significantly stale beyond just
+the missing mapper: their domain object was missing =tenant_id= (the
+DB column and repository entity already had it — no schema migration
+needed), no pagination/count support, response structs missing the
+=success=/=message= failure-signalling wrapper (the exact
+silent-failure-as-empty-list bug fixed everywhere else in AA97E310),
+NATS subjects using dashes instead of underscores, and no event
+registrar. Flagged to the story owner before proceeding (full regen
+here is materially bigger than "migrate a history dialog"); decision
+was to do the full =--address ores.cpp= regen for all 3 and review
+each diff carefully — confirmed no =.sql= files in any of the three
+diffs, so no schema migration was required. Also caught two further
+stale =delete_request_id_field=/=history_request_id_field= overrides
+this surfaced (=currency_market_tier=: =tier=->=codes=/=code=,
+=rounding_type=: =type=->=codes=/=code=, =monetary_nature=:
+=nature=->=codes=/=code=) — same class of bug as AA97E310's 8
+conventions, just discovered a step later since these entities'
+protocols were stale enough that the delete/history requests didn't
+even compile until the entity-wide field rename was applied. Also
+required a CMake reconfigure (new event-registrar =.cpp= files aren't
+picked up by an incremental build) and a hand-fix to
+=ores.qt/api/src/LookupFetcher.cpp=, whose hand-written
+=fetch_rounding_types=/=fetch_monetary_natures=/
+=fetch_currency_market_tiers= referenced the old response field names.
+
+Manual QA (scenario 44064405) caught one further real bug: saving a
+=rounding_type= record didn't fire a live-eventing notification.
+Root cause: =refdata_rounding_types_notify_trigger_create.sql=
+existed on disk (correctly codegen-generated) but was never
+=\ir=-included in =create/refdata/refdata_create.sql= — a pre-existing
+gap unrelated to this session's other changes, so no environment ever
+had the trigger. Applied the trigger directly to the running DB and
+fixed the missing include for future recreations. While investigating
+also found (and fixed, drive-by) 15 more refdata entities entirely
+missing from =refdata_drop.sql='s narrower per-table teardown list
+(their create side was fine, confirmed live in the DB) and captured
+the root cause — =validate_schemas.sh= discovers SQL files via a
+filesystem glob rather than walking the actual =\ir= chain, so a
+missing include is invisible to it — as its own backlog item, since
+it already does this reachability check for RLS policy files
+specifically and just needs generalizing.
+
 * Notes
+
+*Scope note*: the remaining 17 entities under =projects/ores.qt/refdata=
+with a =*HistoryDialog.cpp= but no codegen model reachable from
+=ores.refdata= itself are tracked by the follow-on task
+[[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][Migrate remaining ores.qt.refdata entities without a codegen model
+onto the generic HistoryDialog]], not this one. 5 of those 17 turned
+out to actually have a codegen model under a different owning
+component (=ores.trading=, =ores.dq=) once investigated properly; the
+other 12 are hand-crafted change-reason/coding-scheme/data-catalogue
+infrastructure needing a scoping decision before any migration.
 
 * Test Scenarios
 
@@ -54,18 +144,38 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:44064405-FBA7-42B6-A831-4FEABD683321][Verify second batch of migrated refdata history dialogs]] | PASSED | First run FAILED on rounding_type eventing (missing NOTIFY trigger include); fixed and re-run PASSED. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1595][#1595]] | [qt,refdata,sql] Migrate 14 more entities onto generic HistoryDialog |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Branch's merge-base was stale (predated PR #1594), making the "full ores.cpp regen" diff look like it reverted the party/counterparty parent-picker feature | party.org, counterparty.org, PartyDetailDialog, CounterpartyDetailDialog, LookupFetcher, cpp_qt_detail_dialog template | Accepted | Rebased onto current origin/main (fixed in 568432fd9), re-ran the regen for all 14 target entities on top of that, confirmed zero-diff and that party/counterparty files + the shared template are untouched — only picked up a small additive doc-comment the shared template gained from #1594. |
+| 2 | Pagination total count uses page size (result->types.size()) rather than server-reported total (result->total_available_count) | Client*Model.cpp (currency_market_tier, rounding_type, monetary_nature) | Declined | Pre-existing, codebase-wide codegen convention already present identically in unmodified sibling models (e.g. ClientDayCountFractionTypeModel.cpp) — not introduced by this PR, out of scope here. |
 
 * Result
+
+14 codegen-model-backed entities migrated onto the generic
+=HistoryDialog= via full, unmodified codegen regeneration:
+=asset_class_code=, =currency_market_tier=,
+=currency_pair_convention=, =day_count_fraction_type=,
+=ledger_feed_type=, =monetary_nature=, =party_type=, =purpose_type=,
+=regulatory_book_type=, =rounding_type=, =tenor_anchor=,
+=tenor_kind=, =tenor_resolution_algorithm=, =tenor_unit=. Fixed 7
+missing history field mappers, brought 3 significantly stale
+entities' full backend stack in line with codegen conventions (no
+schema migration needed), fixed 3 more stale
+=delete_request_id_field=/=history_request_id_field= overrides, and
+fixed a pre-existing, unrelated SQL gap (=rounding_type='s missing
+NOTIFY trigger include) that manual QA surfaced. QA scenario 44064405
+PASSED after all fixes.
+
+Remaining 17 non-codegen-backed entities tracked separately by
+[[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][Migrate remaining ores.qt.refdata entities without a codegen model
+onto the generic HistoryDialog]].

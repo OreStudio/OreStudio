@@ -18,20 +18,31 @@
  *
  */
 #include "ores.qt/RoundingTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RoundingTypeDetailDialog.hpp"
-#include "ores.qt/RoundingTypeHistoryDialog.hpp"
 #include "ores.qt/RoundingTypeMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/rounding_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::rounding_type_changed_event>::name;
+}
 
 RoundingTypeController::RoundingTypeController(QMainWindow* mainWindow,
                                                QMdiArea* mdiArea,
@@ -39,7 +50,7 @@ RoundingTypeController::RoundingTypeController(QMainWindow* mainWindow,
                                                ChangeReasonCache* changeReasonCache,
                                                const QString& username,
                                                QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -146,6 +157,7 @@ void RoundingTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void RoundingTypeController::onShowHistory(const refdata::domain::rounding_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
@@ -250,7 +262,6 @@ void RoundingTypeController::showDetailWindow(const refdata::domain::rounding_ty
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
     detailWindow->setGeometryKey(key);
-    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<RoundingTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -276,10 +287,14 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new RoundingTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::rounding_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &RoundingTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<RoundingTypeController>(this)](const QString& message) {
                 if (!self)
@@ -287,7 +302,7 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &RoundingTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<RoundingTypeController>(this)](const QString& message) {
                 if (!self)
@@ -295,13 +310,23 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &RoundingTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &RoundingTypeController::onRevertVersion);
+            [self = QPointer<RoundingTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &RoundingTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &RoundingTypeController::onOpenVersion);
+            [self = QPointer<RoundingTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -312,12 +337,12 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Rounding Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
     historyWindow->setGeometryKey(windowKey);
-    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<RoundingTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -391,6 +416,96 @@ void RoundingTypeController::onOpenVersion(const refdata::domain::rounding_type&
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void RoundingTypeController::fetchRoundingTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::rounding_type>, QString>)>
+        callback) {
+    refdata::messaging::get_rounding_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::rounding_type>, QString>;
+
+    QPointer<RoundingTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void RoundingTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<RoundingTypeController> self = this;
+    fetchRoundingTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::rounding_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void RoundingTypeController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<RoundingTypeController> self = this;
+    fetchRoundingTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::rounding_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void RoundingTypeController::onRevertVersion(const refdata::domain::rounding_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting rounding type to version: " << type.version;
 
@@ -400,8 +515,11 @@ void RoundingTypeController::onRevertVersion(const refdata::domain::rounding_typ
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &RoundingTypeDetailDialog::statusMessage,
@@ -439,6 +557,28 @@ void RoundingTypeController::onRevertVersion(const refdata::domain::rounding_typ
 
 EntityListMdiWindow* RoundingTypeController::listWindow() const {
     return listWindow_;
+}
+
+void RoundingTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

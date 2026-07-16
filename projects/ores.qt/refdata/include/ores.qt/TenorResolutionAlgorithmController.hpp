@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -81,11 +84,27 @@ private slots:
     void onRevertVersion(const refdata::domain::tenor_resolution_algorithm& algorithm);
     void onOpenVersion(const refdata::domain::tenor_resolution_algorithm& algorithm,
                        int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::tenor_resolution_algorithm& algorithm);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed tenor resolution algorithm history (the
+     * existing per-entity refdata::messaging::get_tenor_resolution_algorithm_history_request/
+     * refdata::messaging::get_tenor_resolution_algorithm_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenor resolution algorithm, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenorResolutionAlgorithmHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>,
+                                         QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     TenorResolutionAlgorithmMdiWindow* listWindow_;

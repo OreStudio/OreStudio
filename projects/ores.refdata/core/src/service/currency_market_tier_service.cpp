@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/currency_market_tier_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,14 +31,27 @@ using namespace ores::logging;
 currency_market_tier_service::currency_market_tier_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::currency_market_tier> currency_market_tier_service::list_types() {
+std::vector<domain::currency_market_tier>
+currency_market_tier_service::list_types(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all currency market tiers";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t currency_market_tier_service::count_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total currency market tiers count";
+    return repo_.get_total_type_count(ctx_);
 }
 
 std::optional<domain::currency_market_tier>
-currency_market_tier_service::find_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding currency market tier: " << code;
+currency_market_tier_service::get_type_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency market tier at version: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::currency_market_tier>
+currency_market_tier_service::get_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency market tier: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -56,24 +70,23 @@ void currency_market_tier_service::save_type(const domain::currency_market_tier&
 
 void currency_market_tier_service::save_types(
     const std::vector<domain::currency_market_tier>& types) {
-    for (const auto& t : types) {
-        if (t.code.empty())
+    for (const auto& e : types)
+        if (e.code.empty())
             throw std::invalid_argument("Currency Market Tier code cannot be empty.");
-    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
-    auto stamped = types;
-    for (auto& t : stamped)
-        stamp(t, ctx_);
-    repo_.write(ctx_, stamped);
+    auto ts = types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void currency_market_tier_service::remove_type(const std::string& code) {
+void currency_market_tier_service::delete_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier: " << code;
     repo_.remove(ctx_, code);
     BOOST_LOG_SEV(lg(), info) << "Removed currency market tier: " << code;
 }
 
-void currency_market_tier_service::remove_types(const std::vector<std::string>& codes) {
+void currency_market_tier_service::delete_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

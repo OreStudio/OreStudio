@@ -30,25 +30,17 @@ namespace ores::refdata::eventing {
 /**
  * @brief Domain event indicating that currency market tier data has changed.
  *
- * This event is published when any currency market tier entity is created,
- * updated, or deleted in the database. Subscribers can use the timestamp
- * to query for changes since that point.
+ * Published when any currency market tier entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct currency_market_tier_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Codes of currency market tiers that changed.
-     *
-     * Contains the codes (e.g., "g10", "emerging") of currency market
-     * tiers that were created, updated, or deleted. May contain multiple
-     * codes for batch operations.
+     * @brief Changed currency market tier codes.
      */
     std::vector<std::string> codes;
 

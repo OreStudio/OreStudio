@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 44064405-FBA7-42B6-A831-4FEABD683321
+:END:
+#+title: Test Scenario: Verify second batch of migrated refdata history dialogs
+#+description: Manually verify the generic HistoryDialog for 5 of the 14 entities migrated in the ores.qt.refdata task's second batch, including the 3 entities that needed a full-stack codegen sync.
+#+type: test_scenario
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][Migrate ores.qt.refdata's history dialogs to the generic HistoryDialog]] in [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][Migrate ores.qt.refdata's history dialogs to the generic HistoryDialog]] |
+| Parent story  | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]]   |
+| Target dialog | HistoryDialog (asset_class_code, currency_market_tier, rounding_type, monetary_nature, tenor_kind) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in and select the Barclays Plc party
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select "BARCLAYS PLC" as the active party if prompted. If the
+database has been recreated since this was last provisioned, first
+run =./compass.sh shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to reprovision it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check asset class code history
+
+Reference Data > Classifications > Asset Class Codes. Open an
+existing code's history. Confirm the History Timeline shows its
+versions and the diff pane renders without a "No history provider
+registered" error — this entity never had a history field mapper
+generated before this batch.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check currency market tier history, list, save, and delete
+
+Reference Data > Currency Codes > Currency Market Tiers. Confirm the
+list loads (this entity's protocol was significantly stale and just
+regenerated). Create or edit an entry providing a change reason,
+confirm it saves, then open its history and confirm it loads. Delete
+an entry and confirm it disappears from the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check rounding type history, list, save, and delete
+
+Reference Data > Currency Codes > Rounding Types (or wherever wired).
+Same checks as currency market tier above — list loads, save with
+change reason succeeds, history loads, delete works.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | no eventing on save. everything else worked correctly. |
+
+** Check monetary nature history, list, save, and delete
+
+Same checks as currency market tier above, for Monetary Natures.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check tenor kind history
+
+Reference Data > Tenors > Tenor Kinds. Open an existing kind's
+history. Confirm it loads correctly — this entity never had a history
+field mapper generated before this batch.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Open and Revert still work on one entity
+
+Pick any one of the five entities above. With a single version
+selected in its History Timeline, click Open — confirm the read-only
+detail view opens correctly. Close it, select an older version, and
+click Revert — confirm the confirmation dialog appears and (on
+confirming) the editable revert dialog opens pre-populated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-15T23:09:25Z |
+| Branch        | feature/migrate-refdata-history-dialogs |
+| Commit        | ca73b6f7e |
+| Worktree      | brave_hopper |
+
+* Notes

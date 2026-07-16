@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 8013D18B-9A15-4BAC-816A-E05A49AD8FE2
+:END:
+#+title: Generalize SQL include-reachability validation beyond RLS
+#+description: validate_schemas.sh's RLS_003 check (is a *_rls_policies_create.sql file reachable via \ir from rls/rls_create.sql?) should be generalized to all *_create.sql/*_drop.sql/*_notify_trigger_*.sql files under create/ and drop/, not just RLS policy files -- it would have caught rounding_type's missing notify-trigger include.
+#+type: capture
+#+level: cross
+#+filetags: :sql:codegen:validation:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/src/plantuml_er_parse_sql.py='s =parse_create_dir=/
+=parse_drop_dir= discover files via =rglob('*_create.sql')=/
+=rglob('*_drop.sql')= — a raw filesystem scan of every matching file,
+regardless of whether the file is actually =\ir=-included (directly or
+transitively) from the real entry points
+(=setup_schema.sql= -> =create/create.sql= -> =create/refdata/refdata_create.sql=,
+and the =drop= equivalent). So every discovered file's *own* content is
+validated for convention compliance, but nothing checks whether the
+orchestrator chain actually *reaches* it. Generalize the reachability
+walk that =validate_rls_policies()= already does for
+=*_rls_policies_create.sql= (RLS_003: file exists but isn't reachable
+from =rls/rls_create.sql=) to cover every =*_create.sql=, =*_drop.sql=,
+and =*_notify_trigger_{create,drop}.sql= file under =create/= and
+=drop/=, per component.
+
+* Why
+
+Found while investigating why saving a =rounding_type= record didn't
+fire a live-eventing notification: its
+=refdata_rounding_types_notify_trigger_create.sql= file existed on
+disk (correctly codegen-generated, matching every other entity's
+pattern) but was never =\ir=-included from
+=create/refdata/refdata_create.sql= — a plain human oversight at some
+point in the past, unrelated to any of this session's own changes.
+=validate_schemas.sh= runs on every commit/CI cycle and is supposed to
+catch exactly this class of drift, but it never noticed because it
+scans the filesystem for matching files rather than walking the
+=\ir= chain from the real entry point. The same investigation also
+found 15 more refdata entities (=account_types=, =asset_classes=,
+=asset_measures=, =benchmark_rates=, =business_centres=,
+=business_processes=, =cashflow_types=, =entity_classifications=,
+=local_jurisdictions=, =party_relationships=, =party_roles=,
+=person_roles=, =regulatory_corporate_sectors=, =reporting_regimes=,
+=supervisory_bodies=) missing from =refdata_drop.sql= entirely (not
+just their notify trigger — the whole entity), which a general
+reachability check would also have caught immediately instead of
+requiring a manual grep sweep.
+
+* References
+
+- [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][Task: Migrate ores.qt.refdata's history dialogs to the generic HistoryDialog]] — where the missing rounding_type notify trigger was found and fixed (create-side; also fixed the drop-side gaps for rounding_type and the 15 other entities as a drive-by).
+- =projects/ores.codegen/src/plantuml_er_parse_sql.py=§=validate_rls_policies= — the existing reachability-check pattern to generalize.
+- =projects/ores.sql/utility/validate_schemas.sh= — the script that should have caught this.
+
+* See also
+
+-

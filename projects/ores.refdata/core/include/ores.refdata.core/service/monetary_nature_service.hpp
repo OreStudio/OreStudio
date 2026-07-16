@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/monetary_nature_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,7 +34,10 @@
 namespace ores::refdata::service {
 
 /**
- * @brief Service for managing currency asset classes.
+ * @brief Service for managing monetary natures.
+ *
+ * Provides a higher-level interface for monetary nature operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT monetary_nature_service {
 private:
@@ -47,20 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a monetary_nature_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit monetary_nature_service(context ctx);
 
-    std::vector<domain::monetary_nature> list_types();
+    /**
+     * @brief Lists monetary natures with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of monetary natures for the requested page.
+     */
+    std::vector<domain::monetary_nature> list_types(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::monetary_nature> find_type(const std::string& code);
+    /**
+     * @brief Gets the total count of active monetary natures.
+     *
+     * @return Total number of active monetary natures.
+     */
+    std::uint32_t count_types();
 
-    void save_type(const domain::monetary_nature& v);
+    /**
+     * @brief Retrieves a single monetary nature as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the monetary nature.
+     * @param version The version to fetch.
+     * @return The monetary nature at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::monetary_nature> get_type_at_version(const std::string& code,
+                                                               std::uint32_t version);
 
+    /**
+     * @brief Retrieves a single monetary nature by its code.
+     *
+     * @param code The code of the monetary nature.
+     * @return The monetary nature if found, std::nullopt otherwise.
+     */
+    std::optional<domain::monetary_nature> get_type(const std::string& code);
+
+    /**
+     * @brief Saves a monetary nature (creates or updates).
+     *
+     * @param type The monetary nature to save.
+     * @throws std::exception on failure.
+     */
+    void save_type(const domain::monetary_nature& type);
+
+    /**
+     * @brief Saves a batch of monetary natures.
+     *
+     * @param types The monetary natures to save.
+     * @throws std::exception on failure.
+     */
     void save_types(const std::vector<domain::monetary_nature>& types);
 
-    void remove_type(const std::string& code);
+    /**
+     * @brief Deletes a monetary nature by its code.
+     *
+     * @param code The code of the monetary nature to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_type(const std::string& code);
 
-    void remove_types(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes monetary natures by their codes.
+     */
+    void delete_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a monetary nature.
+     */
     std::vector<domain::monetary_nature> get_type_history(const std::string& code);
 
 private:

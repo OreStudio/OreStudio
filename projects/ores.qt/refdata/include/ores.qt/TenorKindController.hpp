@@ -28,6 +28,9 @@
 #include "ores.refdata.api/domain/tenor_kind.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -80,11 +83,27 @@ private slots:
     void onShowHistory(const refdata::domain::tenor_kind& kind);
     void onRevertVersion(const refdata::domain::tenor_kind& kind);
     void onOpenVersion(const refdata::domain::tenor_kind& kind, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::tenor_kind& kind);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed tenor kind history (the
+     * existing per-entity refdata::messaging::get_tenor_kind_history_request/
+     * refdata::messaging::get_tenor_kind_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenor kind, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenorKindHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::tenor_kind>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     TenorKindMdiWindow* listWindow_;

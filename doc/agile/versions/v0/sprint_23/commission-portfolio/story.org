@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C
+:END:
+#+title: Story: Commission: portfolio
+#+description: Codegen 100% full stack for portfolio (api/core/sql/shell/cli/qt/wt/http as applicable) against current templates, updating the ores.refdata.portfolio.org model as needed; address any codegen drift; add the entity chapter to the user manual.
+#+type: story
+#+level: s2
+#+filetags: :product:refdata:commissioning:portfolio:sprint_23:v0:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Commission =portfolio= across the full stack: regenerate api/core/sql
+(and shell/cli/qt/wt/http where the codegen entity already supports
+them) from the current codegen templates against
+=ores.refdata.portfolio.org=, updating the model as needed; reconcile
+any codegen drift the same way book was remediated in
+[[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] (=compass codegen entity show=
+all-✅, no silently-dropped SQL validations); and add the entity
+chapter to the user manual, following the pattern of the book and
+counterparty chapters.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-16                               |
+
+* Acceptance
+
+- [ ] =compass codegen entity show= reports all-✅ for portfolio
+  (fully regenerated against current templates, api/core/sql at
+  minimum).
+- [ ] Any SQL validations (soft FKs, value checks, insert triggers)
+  present before regeneration are confirmed still present afterwards,
+  via paste blocks or variability knobs in the .org model — not
+  hand-patched post-generation.
+- [ ] portfolio builds cleanly on the configured preset; no
+  regressions in existing tests.
+- [ ] The portfolio entity chapter is added to the user manual,
+  covering its Qt windows and behaviours (list, detail, history) as
+  applicable.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | BACKLOG | | | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
+| [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | BACKLOG | | | Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned. |
+
+* Decisions
+
+* Out of scope
+
+- New portfolio functionality beyond what the current model/codegen
+  templates already support — this story is about commissioning the
+  existing model full-stack, not adding new fields or behaviours.

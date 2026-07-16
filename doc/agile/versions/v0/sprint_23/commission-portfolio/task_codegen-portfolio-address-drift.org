@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 1217C1E2-E07E-426F-93E5-5A6B9C4609E6
+:END:
+#+title: Task: Codegen full stack for portfolio and address codegen drift
+#+description: Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23).
+#+type: task
+#+level: s1
+#+filetags: :commission-portfolio:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring portfolio onto a clean, fully-regenerated codegen baseline
+across every layer the meta-model supports (api/core/sql at minimum,
+plus shell/cli/qt/wt/http where already scaffolded), updating
+=ores.refdata.portfolio.org= as needed, then reconcile any drift the
+same way book was remediated in [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]:
+identify stale layers via =compass codegen entity show=, regenerate,
+and confirm no SQL validations (soft FKs, value checks, insert
+triggers) were silently dropped in the process.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- [ ] =compass codegen entity show= reports all-✅ for portfolio.
+- [ ] Any SQL validations present before regeneration are confirmed
+  still present afterwards, via paste blocks or variability knobs —
+  not hand-patched.
+- [ ] portfolio builds cleanly on the configured preset; existing
+  tests pass with no regressions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

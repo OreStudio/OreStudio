@@ -66,11 +66,11 @@ established.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:B5632854-1CE5-4839-9D56-53A8CA0AD112][Verify currency_pair_convention_cache loads end-to-end from the CRM matrix]] | PASSED | All 4 steps PASSED; re-verified live post-auth-fix: 179 conventions loaded successfully, no error dialog |
 
 * PRs
 
@@ -134,3 +134,62 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in three parts:
+
+1. *Generalised the =nats-event-cache= facet* past its hardcoded
+   =.core= output path. =cached_by= now accepts the same
+   ="component.subcomponent"= dotted form =component_include= already
+   uses (e.g. =cached_by: refdata.client=) -- no new model-facing
+   flag; =cache_component=/=cache_subcomponent= are purely derived by
+   splitting =cached_by= on its optional dot, exactly like every other
+   =_upper=/=_dir= variable in the same block. Verified byte-identical
+   regeneration of =party_cache= (the one existing consumer) before
+   and after.
+2. *New =ores.refdata.client= component* -- thin, DB-free, the
+   catalogue-consistent =client= specialist role (not a bespoke
+   =.cache= suffix; corrected =component_architecture.org='s own
+   =client= row to list =ores.marketdata= alongside =ores.iam= while
+   here). Houses =currency_pair_convention_cache= (+ registrar
+   wiring), generated end-to-end via =read_for_cache= +
+   =cached_by: refdata.client= with zero hand-written protocol/handler
+   code -- unlike =party=, which predates this and is still stuck on
+   a hand-written =read_parties_for_cache= due to unrelated codegen
+   drift.
+3. *Wired and verified live* from =CrmCrossRatesMatrixMdiWindow=
+   (construct + one-shot warm-up on open) -- surfaced two real,
+   pre-existing gaps along the way rather than working around them:
+   - =load()= returned =void= and only logged failures, invisible to
+     any caller that isn't tailing a log. Changed to =[[nodiscard]]
+     std::string= (empty on success); every existing fire-and-forget
+     caller (generated registrar warm-up/refresh, IAM's hand-written
+     auth/bootstrap handlers) now explicitly discards it with
+     =(void)=.
+   - The =nats-event-cache= cache_header template never included
+     =ores.utility/rfl/reflectors.hpp=, needed for
+     =rfl::json::read/write= on any =tenant_id=/=uuid=-bearing entity
+     (every =read_for_cache= entity qualifies). Only ever worked for
+     =party_cache= by accident, via a transitively-included handler
+     header in every real consumer TU. Fixed at the template.
+   - =ClientManager= had no bearer-token accessor for a UI-side
+     consumer authenticating as a logged-in user (as opposed to
+     =party_cache='s service-account =token_provider=). Added
+     =currentAuthToken()=, snapshotted synchronously on the GUI thread
+     at construction (not re-read live from a background-thread
+     token_provider, which would race the proactive token-refresh
+     timer -- safe here since =load()= only ever fires once).
+   - A one-shot load failure routed through =errorOccurred=/
+     =statusChanged= was found to be invisible in practice: this
+     window's own 5s auto-refresh success message immediately
+     overwrote it in the shared status-bar channel. Switched to
+     =MessageBoxHelper::critical= (user-readable message + expandable,
+     copyable low-level-error details section), matching the app's
+     standard critical-dialog convention used elsewhere in this file.
+
+Verified live end-to-end (post-fix): server-side JWT validation
+succeeds, 179 currency pair conventions loaded and mapped, cache logs
+"Loaded 179 currency_pair_conventions for tenant ..." -- no error
+dialog. =ores.refdata.client.tests= (compile/instantiate smoke test;
+=load()='s NATS round trip isn't unit-testable without a live service,
+matching =party_cache='s own precedent) and every touched component
+build clean.

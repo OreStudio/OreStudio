@@ -26,11 +26,11 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | All 9 docs (hub + 8 atomic) written and indexed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then close.                    |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -43,6 +43,8 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Original implementation
 
 One hub doc (=stochastic_processes.org=) plus one atomic doc per
 foundational concept and per concrete process implemented in
@@ -77,6 +79,46 @@ real, checkable papers rather than a bare bibliography line.
   data generation (methodology)", and ran =compass index
   --org-roam-db-sync= to confirm all 9 docs are indexed and searchable.
 
+** Review round (after user read-through on the served site)
+
+A full review pass, applied incrementally while the user read the built
+site:
+
+- Broadened the hub's opening framing so it isn't hard-coded to
+  synthetic data generation — that is the first, not the only, expected
+  consumer of the cluster.
+- Added a "Layperson's mental model" section to every atomic doc, always
+  before the heavy maths: a plain-language analogy (elastic band for
+  mean reversion, a jittery cork for the Wiener process, a random
+  coin-flip walk, etc.), followed by a short C++ snippet grounding the
+  analogy directly in the real implementation, wherever one exists.
+- Converted every formula from org-verbatim/ASCII (=dX = kappa*...=) to
+  proper LaTeX ($...$ inline, =\begin{equation}=/=\begin{align}= for
+  display), matching the rest of the knowledge base's convention
+  (confirmed via =aggregation_currency.org=/=covered_interest_parity.org=).
+- Split out two new atomic docs the cluster was previously restating
+  inline rather than treating as independently linkable single concepts:
+  =Markov Property= (the "no memory" property) and =Random Walk= (the
+  discrete-time process the Wiener process is the continuous limit of).
+- Added a "Brownian motion vs. Wiener process" section to =Wiener
+  Process= (the phenomenon vs. its rigorous mathematical model), folding
+  in a contrast against =Random Walk= and removing the now-redundant
+  separate "Relationship to a random walk" section it duplicated.
+- Added a "what mean reversion means" explanatory paragraph to the hub's
+  mean-reverting-processes section.
+- Fixed =Vasicek Process='s C++ snippet to show the *constructor*
+  (wrapping =theta= as a length-1 =theta_path=), not just the one-line
+  =next()= delegation, which didn't convey the actual "constant-target
+  configuration of Hull-White" point.
+- Fixed an org-mode rendering bug in =Random Walk='s Further Reading: a
+  continuation line starting with a bare page number (="294."=) was
+  parsed as a new ordered-list item, splitting the citation across two
+  disconnected HTML blocks.
+- Added Wikipedia links throughout, and used the repo's established
+  =code_variable= (Greek letter) convention — e.g. ==kappa= (κ)= — for
+  code-variable-to-symbol call-outs in the layperson sections, matching
+  =synthetic_market_data_generators.org=.
+
 * Notes
 
 * Test Scenarios
@@ -105,10 +147,14 @@ via its "Verifies task" field.
 * Result
 
 Shipped: a new =doc/knowledge/domain/stochastic_processes.org= hub plus
-8 atomic docs (=wiener_process.org=, =ito_lemma.org=,
+10 atomic docs — the original 8 (=wiener_process.org=, =ito_lemma.org=,
 =geometric_brownian_motion.org=, =arithmetic_brownian_motion.org=,
 =ornstein_uhlenbeck_process.org=, =vasicek_process.org=,
-=hull_white_process.org=, =cir_process.org=), cross-linked via
+=hull_white_process.org=, =cir_process.org=) plus two added during
+review (=markov_property.org=, =random_walk.org=) — cross-linked via
 org-roam =[[id:...]]= links exactly as the acceptance criteria specify,
-each with a real-citation "Further reading" section. Registered in
-=doc/knowledge/knowledge.org= and confirmed indexed via =compass search=.
+each with a real-citation "Further reading" section, a layperson mental
+model with a grounding C++ snippet, and LaTeX-rendered maths throughout.
+Registered in =doc/knowledge/knowledge.org=, confirmed indexed via
+=compass search=, and reviewed end-to-end by the user against a locally
+served build (=compass site serve=) with all feedback addressed.

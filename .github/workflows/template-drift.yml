@@ -21,14 +21,12 @@ on:  # yamllint disable-line rule:truthy
     paths:
       - "projects/ores.codegen/library/templates/**"
       - "projects/ores.lisp/src/ores-build-codegen-templates.el"
-      - "projects/ores.codegen/scripts/regenerate_facet_inventories.py"
 
   pull_request:
     branches: ["main"]
     paths:
       - "projects/ores.codegen/library/templates/**"
       - "projects/ores.lisp/src/ores-build-codegen-templates.el"
-      - "projects/ores.codegen/scripts/regenerate_facet_inventories.py"
 
   workflow_dispatch:
 
@@ -38,9 +36,8 @@ permissions:
 jobs:
   # The codegen mustache templates are tangled from the literate facet
   # docs in projects/ores.codegen/library/templates/. This job re-runs
-  # the tangle and the facet-inventory generator and fails if either
-  # produces a diff — i.e. someone edited a .mustache artefact or a
-  # group's * Facets table by hand instead of the org source.
+  # the tangle and fails if it produces a diff — i.e. someone edited a
+  # .mustache artefact by hand instead of the org source.
   drift:
     runs-on: ubuntu-24.04
     steps:
@@ -56,6 +53,3 @@ jobs:
       - name: Check templates match their org sources
         run: |
           git diff --exit-code -- projects/ores.codegen/library/templates
-      - name: Check facet inventories are current
-        run: |
-          python3 projects/ores.codegen/scripts/regenerate_facet_inventories.py --check

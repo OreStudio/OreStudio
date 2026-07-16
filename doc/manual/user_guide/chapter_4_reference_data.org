@@ -223,7 +223,7 @@ as MiFID II and EMIR require that firms demonstrate the state of their
 data at any past point in time. OreStudio's history tables provide this
 proof unconditionally.
 
-#+caption[The Currency History dialog]: The Currency History dialog for the Angolan Kwanza, showing three versions. The Changes tab shows a field-by-field diff for the selected version against its predecessor.
+#+caption[The Currency History dialog]: The Currency History dialog for the Angolan Kwanza, showing three versions. The All Fields/Only Changes toggle shows a field-by-field diff for the selected version against its predecessor.
 [[proj:assets/images/currency_history_dialog.png]]
 
 The history dialog, accessible from every detail dialog's title bar or

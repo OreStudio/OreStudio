@@ -262,13 +262,14 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption[The Currency History dialog for AOA]: The History dialog for the Angolan Kwanza, showing three versions: the original ISO 4217 import (version 1), a test correction (version 2), and a final rectification (version 3, currently selected). The Changes tab shows that only the Name and Commentary fields changed between version 2 and version 3.
+#+caption[The Currency History dialog for AOA]: The History dialog for the Angolan Kwanza, showing three versions: the original ISO 4217 import (version 1), a test correction (version 2), and a final rectification (version 3, currently selected). The Only Changes toggle narrows the field list to what actually differs between version 2 and version 3.
 [[proj:assets/images/currency_history_dialog.png]]
 
-Select a version to populate the detail panel. The *Changes* tab
-shows which fields changed between the selected version and its
-predecessor. The *Revert* button reinstates any historical version as
-a new version, preserving the full audit chain.
+Pick the two versions to compare from the *Compare* drop-downs. The
+*All Fields*/*Only Changes* toggle switches between showing every
+field and showing only the fields that differ between the two
+selected versions. The *Revert* button reinstates any historical
+version as a new version, preserving the full audit chain.
 
 ** Auxiliary Data
 

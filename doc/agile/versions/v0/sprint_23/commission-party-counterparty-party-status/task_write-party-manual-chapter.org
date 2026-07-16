@@ -152,7 +152,7 @@ via its "Verifies task" field.
 |----------+-------+-------|
 | [[id:00832CCC-F7A4-49FB-9041-BC35978B2605][Capture party manual chapter screenshots]] | PASSED | All 8 steps passed; also surfaced and drove the fix for the missing party history provider registration (real bug, see Notes). |
 | [[id:510B6314-197D-482B-A3E5-ABA0A2E90779][Recapture party_details_hierarchy.png with a non-root party]] | PASSED | Redo of one screenshot on a non-root party so both ancestors and descendants are visible. |
-| [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history dialog screenshots]] | PENDING | Unrelated gap fix surfaced during review; user is running this one. |
+| [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history dialog screenshots]] | PASSED | All 9 steps passed; unrelated gap fix surfaced during review, spanning Books/Countries/Currencies/Business Centres chapters. |
 
 * PRs
 
@@ -181,4 +181,8 @@ dialog/window, and wired in. Along the way, running the screenshot
 scenario surfaced and drove the fix for a real bug (party/counterparty
 had no history provider registered, so History always failed) plus a
 party_type badge colour-collision fix and two stale generator-test
-assertions — see =* Notes= for detail.
+assertions — see =* Notes= for detail. A review round also fixed URL
+clutter (footnoted), added a Tenants cross-link and legal-entity
+identification framing (inlined, not linked out, per feedback) to
+chapter_8_parties.org, and captured/refreshed 9 unrelated Books and
+History-dialog screenshots across four other chapters.

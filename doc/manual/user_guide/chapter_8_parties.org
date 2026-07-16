@@ -63,13 +63,11 @@ the *Legal Entity Identifier (LEI)*, a globally unique code
 maintained by GLEIF and mandated by major post-2008 regulatory
 frameworks (MiFID II, EMIR, Dodd-Frank, Basel III); see the /GLEIF and
 the Legal Entity Identifier/ sidebar in the
-[[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for how OreStudio consumes it. Because no
-single identifier scheme covers every counterpart a party might need
-to be recognised by, a party can carry more than one — see
-[[*Identifiers][Identifiers]] below and
-[[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]] for the full set of schemes (LEI,
-BIC, national IDs, and others) with links to their governing
-standards.
+[[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for how OreStudio consumes it. No single
+identifier scheme covers every counterpart a party might need to be
+recognised by, though, which is why a party can carry more than one —
+see [[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
+recognises.
 
 Every party carries a *full name* (its official registered legal
 name) and a *short code* (a brief mnemonic used elsewhere in the
@@ -188,17 +186,35 @@ The General tab carries the core fields of the party:
 [[proj:assets/images/party_details_identifiers.png]]
 
 The Identifiers tab is an editable table of external identifiers held
-against the party — for example its LEI (Legal Entity Identifier) or
-BIC (Bank Identifier Code); see [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]] for
-the full set of schemes. Each row carries an *Identification Scheme*
-(chosen from the tenant's configured schemes, e.g. =LEI=, =BIC=,
-=NATIONAL_ID=), an *Identifier Value* (the actual code or string
-within that scheme), and an optional free-text *Description*. A party
-may hold at most one identifier per scheme, but may hold identifiers
-under as many different schemes as apply to it. Use the row toolbar
-to add, edit, or remove identifier rows; changes to this tab are
-saved together with the rest of the party record when *Save* is
-clicked.
+against the party. Each row carries an *Identification Scheme*
+(chosen from the tenant's configured schemes), an *Identifier Value*
+(the actual code or string within that scheme), and an optional
+free-text *Description*. A party may hold at most one identifier per
+scheme, but may hold identifiers under as many different schemes as
+apply to it. Use the row toolbar to add, edit, or remove identifier
+rows; changes to this tab are saved together with the rest of the
+party record when *Save* is clicked.
+
+The ten schemes OreStudio recognises span a spectrum from globally
+standardised to purely internal, reflecting how fragmented legal
+entity identification remains in practice: even the LEI, the closest
+thing to a universal answer, only reaches back to 2012 and still
+leaves gaps that jurisdiction-specific and venue-specific schemes
+fill.
+
+#+attr_latex: :environment tabularx :width \linewidth :align lp{2.7cm}X
+| Scheme                | Standard / issuer          | What it identifies                                  |
+|------------------------+-----------------------------+------------------------------------------------------|
+| =LEI=                  | ISO 17442 / GLEIF           | Any legal entity, globally, mandated for MiFID II/EMIR/Dodd-Frank/Basel III reporting. |
+| =BIC=                  | ISO 9362 / SWIFT            | Banks and financial institutions on the SWIFT network. |
+| =MIC=                  | ISO 10383 / SWIFT           | Trading venues (e.g. =XNYS=, =XLON=), where a party also acts as a venue. |
+| =NATIONAL_ID=          | Jurisdiction-specific        | Passport, tax ID, or national ID card — covers MiFID II client identification. |
+| =CEDB=                 | CFTC (US)                   | CFTC Entity Directory code for non-LEI entities in swap data reporting. |
+| =NATURAL_PERSON=       | Not standardised            | Individuals (employee ID, trader ID); value interpreted contextually. |
+| =ACER=                 | EU Agency for Energy Regulation | Non-LEI energy market participants, for REMIT reporting. |
+| =DTCC_PARTICIPANT_ID=  | DTCC (US)                   | Member firms in US clearing and settlement systems. |
+| =MPID=                 | FINRA (US)                  | Broker-dealers and ATSs in US equities markets (also known as AII). |
+| =INTERNAL=             | Proprietary                 | A party's own OMS, CRM, or clearing-system client ID. |
 
 *** Contact Information
 
@@ -297,5 +313,4 @@ over here.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
 - [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors, including the Change Reason Required dialog.
 - [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the business center a party links to, and the country flag a contact record may carry.
-- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]] — the LEI, BIC, and other schemes recorded on the Identifiers tab.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning]] — the architecture behind the Identifiers and Contact Information child tables.

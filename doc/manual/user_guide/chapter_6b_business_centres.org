@@ -167,16 +167,17 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption[The Business Centre History dialog]: The History dialog for business centre =AEAB= (Abu Dhabi), listing both versions newest-first. The Changes tab shows the field-level diff between the selected version and its predecessor — here, a correction to the Description field.
+#+caption[The Business Centre History dialog]: The History dialog for business centre =AOLU= (Luanda), comparing version 2 against version 3. The Only Changes toggle narrows the field list to what actually differs — here, a spelling correction to the Source field.
 [[proj:assets/images/business_centre_history_dialog.png]]
 
-Select a version to populate the detail panel. The *Changes* tab
-shows which fields changed between the selected version and its
-predecessor. The *Revert* button reinstates any historical version as
-a *new* version, preserving the full audit chain — the old version is
-never rewritten. Reverting a business centre follows exactly the same
-confirm-then-save-with-a-reason flow described for [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]]; it is
-not repeated here.
+Pick the two versions to compare from the *Compare* drop-downs. The
+*All Fields*/*Only Changes* toggle switches between showing every
+field and showing only the fields that differ between the two
+selected versions. The *Revert* button reinstates any historical
+version as a *new* version, preserving the full audit chain — the old
+version is never rewritten. Reverting a business centre follows
+exactly the same confirm-then-save-with-a-reason flow described for
+[[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]]; it is not repeated here.
 
 ** Conclusion
 

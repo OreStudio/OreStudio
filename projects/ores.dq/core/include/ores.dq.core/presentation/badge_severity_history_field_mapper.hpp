@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/badge_severity_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_DQ_CORE_PRESENTATION_BADGE_SEVERITY_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_BADGE_SEVERITY_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::dq::repository {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.core/export.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const badge_severity_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::dq::presentation {
+
+/**
+ * @brief Renders a badge_severity to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_badge_severity_fields(const domain::badge_severity& v);
+
 }
 
-}
+#endif

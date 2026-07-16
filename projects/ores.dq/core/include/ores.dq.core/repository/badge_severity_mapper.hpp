@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_BADGE_SEVERITY_MAPPER_HPP
 
 #include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_severity_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +30,7 @@ namespace ores::dq::repository {
 /**
  * @brief Maps badge_severity domain entities to data storage layer and vice-versa.
  */
-class badge_severity_mapper {
+class ORES_DQ_CORE_EXPORT badge_severity_mapper {
 private:
     inline static std::string_view logger_name = "ores.dq.repository.badge_severity_mapper";
 

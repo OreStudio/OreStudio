@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -39,11 +39,59 @@ badge_definition, badge_severity, and code_domain are modeled as ores.codegen.en
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Scoped the migration with =compass codegen entity generate <entity>
+   --diff=: =badge_definition= and =badge_severity= each produce ~33
+   new/changed files (they're modeled =ores.codegen.entity= but their
+   NATS-facing layer -- handler/protocol/service/event
+   registrar/registrar -- and Qt layer were hand-written, combined
+   across all three badge entities in one bespoke
+   =badge_handler.hpp=/=badge_service.cpp=/=badge_protocol.hpp=,
+   never actually generated). =code_domain='s core layer turned out
+   to already be standard (only its Qt layer had diverged -- fixed in
+   the blocked =badge_mapping= browser task); =badge_mapping= is a
+   junction with no core divergence.
+2. Confirmed via diff that the =badge_severity_repository.cpp= (and by
+   extension =badge_definition_repository.cpp=) files, though already
+   tracked/generated-looking, had their =read_latest(ctx)= tenant
+   filter *hand-removed* -- the actual mechanism behind badge data
+   being globally readable by any tenant today. Regenerating restores
+   the standard tenant filter.
+3. Ran =compass codegen entity generate badge_severity= for real
+   (first entity, smallest, and a dependency of =badge_definition= via
+   =severity_code=). Repository/entity/mapper/domain/generator files
+   were regenerated in place (already tracked); handler, protocol,
+   service, event registrar/event type, and Qt controller/dialog/
+   window files are new. The new Qt files landed in the orphaned,
+   unbuilt =projects/ores.qt/dq= scaffold (no CMakeLists.txt) --
+   consistent with the =code_domain= drift found earlier; left as-is
+   for now, to be resolved when the Qt layer is actually wired up.
+4. Verified: =ores.dq.core.lib=, =ores.dq.service.lib=, and the full
+   =ores.qt.exe= build clean with =badge_severity='s repository now
+   tenant-filtered again -- no compile-time fallout, since nothing
+   yet references the new handler/service/Qt files (the old combined
+   hand-written =badge_handler.hpp=/=badge_service.cpp= is still what's
+   registered and running; it now transparently inherits the restored
+   tenant filter on severity reads via the shared repository, which is
+   expected and desired for the eventual end-state, but currently
+   *not yet compensated for* by the publish-from-dq wiring -- so
+   badge_severity list reads for any non-system tenant are broken
+   again until that's completed). =ores.dq.core.tests= (318 assertions,
+   104 cases) still green -- no repository-level test coverage
+   exercises the tenant-filter behaviour directly.
+5. Committed as a deliberate, isolated first step (generate, commit,
+   then handle fallout next) rather than bundling with handler/registrar
+   rewiring or Qt migration in the same change.
 
 * Notes
+
+- Regenerating =badge_severity= silently re-broke cross-tenant reads
+  for badge severities (same root cause the blocked =badge_mapping=
+  browser task hit for =code_domain=/=badge_definition=) -- expected,
+  and the reason this task exists, but flagging that the system is
+  in a *worse* state for non-system tenants until the DQ
+  publish-from-dq wiring (or an equivalent interim fix) lands. Not
+  reverting since this is the intended direction; next steps must
+  prioritise closing that gap rather than leaving it open-ended.
 
 * Test Scenarios
 

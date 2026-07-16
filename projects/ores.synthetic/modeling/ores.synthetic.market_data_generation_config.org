@@ -35,21 +35,23 @@ party manages its own configurations and its own generated data.
 
 Surrogate UUID uniquely identifying this configuration.
 
-* Natural keys
+* Columns
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:nullable: false
 :END:
 
-Owning party (legal entity) this configuration belongs to.
+Owning party (legal entity) this configuration belongs to. Not a natural
+key: a party can legitimately own several containers (e.g. "Basic" and
+"Realistic" published from different DQ datasets), so no uniqueness is
+enforced beyond the surrogate =id=.
 
 #+begin_src cpp :name generator
-uuid_gen()
+ctx.generate_uuid()
 #+end_src
-
-* Columns
 
 ** name
 :PROPERTIES:
@@ -90,6 +92,22 @@ Whether the configuration is active and eligible for generation.
 faker::datatype::boolean()
 #+end_src
 
+** dataset_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The DQ dataset this container was published from (=ores_dq_datasets_tbl.id=),
+if any. Distinguishes containers created by separate =publish-from-dq= calls
+for the same (tenant, party) -- e.g. "Basic" vs "Realistic" -- from a
+manually-created config, which has no dataset of origin.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -123,12 +141,14 @@ faker::datatype::boolean()
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 

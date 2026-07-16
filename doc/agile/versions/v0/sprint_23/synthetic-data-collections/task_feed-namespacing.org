@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/feed-namespacing
+#+pr: 1611
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ collide. Prefix with the owning collection:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -50,9 +50,20 @@ collide. Prefix with the owning collection:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Delivered as two layers rather than one, once the real requirement became
+clear mid-implementation (the tree needed to show/act on the hierarchy,
+not just avoid subject collisions):
+
+1. =source_name= is now =synthetic.<collection>.<pair>= (e.g.
+   =synthetic.basic.eurusd= / =synthetic.realistic.eurusd=), set both by
+   =ores_synthetic_publish_fx_spot_configs_from_dq_fn= and by
+   =FxSpotRateEditor::defaultSourceName()= for manual creation.
+2. A generic =ores.synthetic.folder= entity (self-referencing hierarchy,
+   see the sibling folder/vintage-validity tasks) gives the collection/
+   asset-class/instrument-type structure real, queryable identity instead
+   of being encoded in the string at all -- =source_name= ended up staying
+   a simple display/NATS-subject string once =folder_id= existed to carry
+   the actual hierarchy.
 
 * Notes
 
@@ -60,7 +71,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1611][#1611]] | [synthetic] Generic folder hierarchy, folder-cascade start/stop, vintage-validity indicator |
 
 * Review
 
@@ -69,3 +80,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Two collections (Basic + Realistic) verified concurrently side by side for
+the same party, correctly namespaced (=synthetic.basic.*=/
+=synthetic.realistic.*=), no subject/source collisions. Superseded the
+original string-only design with a real =folder= hierarchy once it became
+clear the Market Simulator tree grouping and folder-scoped start/stop
+(sibling tasks) needed queryable structure, not just a namespaced string.

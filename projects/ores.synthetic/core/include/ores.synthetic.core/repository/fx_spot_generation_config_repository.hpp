@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -73,6 +75,19 @@ public:
      * @brief Reads all FX spot generation configs, possibly filtered by id.
      */
     std::vector<domain::fx_spot_generation_config> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single FX spot generation config as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::fx_spot_generation_config>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
 
     /**

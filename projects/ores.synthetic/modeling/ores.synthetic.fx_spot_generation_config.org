@@ -229,6 +229,25 @@ when "fixed" — see =price_source=.
 std::string("2016-02-05")
 #+end_src
 
+** folder_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The =folder= this feed lives under (the instrument-type folder, e.g.
+"FX Rates", nested under an asset-class folder under this feed's
+owning collection). Real, queryable hierarchy position -- not parsed
+out of =source_name=, which stays a display/NATS-subject string.
+Nullable for now: only the publish-from-dq path populates it; manual
+creation (Qt's New FX Rate) doesn't yet resolve/create folders --
+follow-up work.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -257,6 +276,13 @@ std::string("2016-02-05")
 :table:         ores_synthetic_market_data_generation_configs_tbl
 :error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
 :nullable:      false
+:END:
+
+** folder_id
+:PROPERTIES:
+:table:         ores_synthetic_folders_tbl
+:error_message: Invalid folder_id: %. No active folder found with this id.
+:nullable:      true
 :END:
 
 * Validation function

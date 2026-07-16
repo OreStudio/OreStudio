@@ -22,6 +22,7 @@
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.synthetic.core/messaging/folder_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_handler.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_handler.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_registrar.hpp"
@@ -127,6 +128,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
     {
         auto s = register_ir_curve_template_entry_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_folder_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }

@@ -23,7 +23,9 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::synthetic::domain {
 
@@ -52,7 +54,9 @@ struct market_data_generation_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Owning party (legal entity) this configuration belongs to.
+     * @brief Owning party (legal entity) this configuration belongs to. Not a natural key: a party
+     * can legitimately own several containers (e.g. "Basic" and "Realistic" published from
+     * different DQ datasets), so no uniqueness is enforced beyond the surrogate id.
      */
     boost::uuids::uuid party_id;
 
@@ -70,6 +74,14 @@ struct market_data_generation_config final {
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;
+
+    /**
+     * @brief The DQ dataset this container was published from (ores_dq_datasets_tbl.id), if any.
+     * Distinguishes containers created by separate publish-from-dq calls for the same (tenant,
+     * party) -- e.g. "Basic" vs "Realistic" -- from a manually-created config, which has no dataset
+     * of origin.
+     */
+    std::optional<boost::uuids::uuid> dataset_id;
 
     /**
      * @brief Username of the person who last modified this market data generation config.
@@ -98,6 +110,16 @@ struct market_data_generation_config final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for market_data_generation_config, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const market_data_generation_config&) {
+    return "ores.synthetic.market_data_generation_config";
+}
 
 }
 

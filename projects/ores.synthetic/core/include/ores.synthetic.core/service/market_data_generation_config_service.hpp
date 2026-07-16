@@ -25,6 +25,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,6 +76,17 @@ public:
      * @return Total number of active market data generation configs.
      */
     std::uint32_t count_market_data_generation_configs();
+
+    /**
+     * @brief Retrieves a single market data generation config as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the market data generation config.
+     * @param version The version to fetch.
+     * @return The market data generation config at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::market_data_generation_config>
+    get_market_data_generation_config_at_version(const std::string& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single market data generation config by its id.

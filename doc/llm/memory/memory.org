@@ -121,8 +121,6 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:A422E0ED-7D4D-4581-A7D5-B9DD05D39F33][Toolchain gaps are work items, never licenses for workarounds]] — implement through the toolchain or capture and ask; never hand-roll =.org= files or UUIDs.
 - [[id:D2733820-85A1-49E5-8F1E-214D1A511A75][Don't use cat/--help after compass show/recipe]] — act on what it says directly; if something is missing, file a capture.
 - [[id:975C94B2-06AC-4073-B187-ED4779FCAC7B][Close task bookkeeping when raising the PR, not after review]] — do the task close-out as part of =pr-raise=, before pushing; no separate close-task commit tacked onto the end of the review round.
-- [[id:EF0B274F-B0AD-42F2-A5C6-81F3C2C95A78][Don't override --instance-name on compass client start]] — it defaults
-  to the environment's own label; vary =--colour= only for parallel clients.
 
 ** User
 

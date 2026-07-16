@@ -25,6 +25,7 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
+#include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
@@ -50,6 +51,7 @@ class QTimer;
 class QValueAxis;
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace ores::qt {
@@ -60,12 +62,24 @@ class ChangeReasonCache;
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
- * The Market Simulator presents a two-level tree of feeds
- * (market_data_generation_config) > FX spot rates (fx_spot_generation_config)
- * on the left. The tree is the browser; the right panel is a read-only summary
- * of the selected node. Feeds are created/edited in a modal FeedDialog; FX spot
- * rates (with their GMM price model) are created/edited in the FxSpotRateEditor,
- * shown as a non-modal MDI sub-window.
+ * The Market Simulator presents a tree, on the left, built directly from
+ * real ores.synthetic.folder rows (a generic, party-scoped, self-referencing
+ * hierarchy -- see that entity's model doc) rather than parsed out of a
+ * feed's source_name string: Synthetic (root) > Collection
+ * (market_data_generation_config, e.g. Basic/Realistic, linked via
+ * folder.collection_id) > asset class > instrument type > Feed (the leaf
+ * currency pair, fx_spot_generation_config, linked via its own folder_id,
+ * e.g. GBP/USD). The tree is the browser; the right panel is a read-only
+ * summary of the selected node. Collections are created/edited in a modal
+ * FeedDialog; Feeds (with their GMM price model) are created/edited in the
+ * FxSpotRateEditor, shown as a non-modal MDI sub-window.
+ *
+ * Starting/stopping a non-leaf node (Root/Collection/Group) sends a single
+ * folder-scoped request (start_feeds_under_folder_request /
+ * stop_feeds_under_folder_request) that the server resolves and fans out --
+ * the same capability ores.shell or a wt workflow step can call directly,
+ * rather than this client enumerating every feed itself. A Feed leaf (or a
+ * mixed/multi-selection) still uses the original per-feed request.
  *
  * Modelled on DataLibrarianWindow's composition pattern.
  */
@@ -114,15 +128,19 @@ private slots:
     void onDeleteClicked();
     void onStartFeedClicked();
     void onStopFeedClicked();
-    void onStartAllClicked();
-    void onStopAllClicked();
     void onValidateVintageClicked();
     void appendTickSample(double mid);
     void onTickChartFlash();
 
 private:
-    // Node levels stored in the tree items via Qt::UserRole markers.
-    enum class NodeType { Feed, FxPair };
+    // Node levels stored in the tree items via Qt::UserRole markers. The tree
+    // mirrors the feed's own namespace path (synthetic.<collection>.<asset
+    // class>.<instrument type>.<pair>, e.g. synthetic.basic.fx.fxrates.gbpusd):
+    // Root ("Synthetic") > Collection (Basic/Realistic) > Group (asset class,
+    // then instrument type -- both use the same structural node type) > Feed
+    // (the leaf currency pair, e.g. GBP/USD). Selecting/starting/stopping any
+    // non-leaf node cascades to every Feed beneath it.
+    enum class NodeType { Root, Collection, Group, Feed };
 
     static std::string synthetic_subject(const std::string& source_name);
     void subscribeTickChart(const std::string& source_name);
@@ -145,6 +163,7 @@ private:
 
     void showSummaryForCurrent();
     void showFeedSummary(const synthetic::domain::market_data_generation_config& feed);
+    void showFolderSummary(const QModelIndex& idx, const QString& title, const QString& name);
     void showFxPairSummary(const synthetic::domain::fx_spot_generation_config& fx);
     void clearSummary();
 
@@ -152,24 +171,57 @@ private:
     void openFxEditorForNew(const std::string& feedId);
     void openFxEditorForEdit(const synthetic::domain::fx_spot_generation_config& fx);
 
-    // Resolve the feed id implied by the current selection (node or descendant).
+    // Resolve the owning Collection id implied by the current selection (the
+    // node itself if it's a Collection, its nearest Collection ancestor if
+    // it's a Group or Feed, or empty if it's Root or unresolvable).
     [[nodiscard]] std::string resolveFeedId() const;
     [[nodiscard]] QString feedNameFor(const std::string& feedId) const;
 
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
+    // All Feed-leaf pairs reachable from the current tree selection, cascading
+    // through Root/Collection/Group nodes to their descendant Feeds.
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
+    // All Feed-leaf pairs nested under the given index (itself if it's a Feed).
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
-    fxPairsForFeed(const std::string& feedId) const;
+    pairsUnderIndex(const QModelIndex& idx) const;
+    // The single folder id to cascade start/stop through via the backend
+    // folder-scoped request, if the current selection is exactly one
+    // non-Feed node; empty otherwise (Feed leaf, mixed, or multi-selection --
+    // those fall back to the per-feed request via selectedFxPairs()).
+    [[nodiscard]] std::string selectedFolderId() const;
 
     void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
+    void startFolderAsync(const std::string& folderId);
+    void stopFolderAsync(const std::string& folderId);
 
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
     void refreshFxSummaryIfCurrent();
     void refreshFeedTreeItems();
+    // Aggregated status folded bottom-up: running/total leaf counts (for the
+    // running-status column) plus whether any applicable descendant feed has
+    // invalid vintage data and whether any descendant feed is vintage-
+    // applicable at all (for the vintage-status column).
+    struct TreeStatus {
+        int running = 0;
+        int total = 0;
+        bool anyVintageInvalid = false;
+        bool anyVintageApplicable = false;
+    };
+    // Recomputes status icons bottom-up starting at item; returns the
+    // aggregate so a caller can fold it upward.
+    TreeStatus refreshTreeItemStatus(QStandardItem* item);
+    // Recursively collects the ids of every Feed-leaf descendant of item
+    // (including item itself, if it's already a Feed).
+    static void collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids);
+    // Builds one Feed-leaf tree item for a single fx pair. Its running and
+    // vintage status are composited as small badges by refreshTreeItemStatus,
+    // not here -- this only sets the plain base icon (see BaseIconRole).
+    static QStandardItem* buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
+                                        ImageCache* imageCache);
 
     ClientManager* clientManager_;
     QString username_;
@@ -188,8 +240,6 @@ private:
     QAction* deleteAction_;
     QAction* startFeedAction_;
     QAction* stopFeedAction_;
-    QAction* startAllAction_;
-    QAction* stopAllAction_;
     QAction* validateVintageAction_;
 
     // Left panel
@@ -225,9 +275,15 @@ private:
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
+    std::map<std::string, synthetic::domain::folder> folders_;
 
     // source_names of feeds the client has successfully started this session.
     std::set<std::string> runningSourceNames_;
+
+    // Vintage-availability status per fx pair id, computed server-side at
+    // every reload (see get_vintage_validity_request) -- absent entries are
+    // price_source = "fixed" feeds, for which the check doesn't apply.
+    std::map<std::string, bool> vintageValidByFx_;
 
     // Currency ISO code -> display name, sourced from refdata for hero titles.
     std::unordered_map<std::string, std::string> currencyNames_;

@@ -93,7 +93,8 @@ market_data_generation_config_repository::read_all(context ctx, const std::strin
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data generation config versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<market_data_generation_config_entity,
                               domain::market_data_generation_config>(
@@ -102,6 +103,30 @@ market_data_generation_config_repository::read_all(context ctx, const std::strin
         [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
         lg(),
         "Reading all market data generation config versions by id.");
+}
+
+std::optional<domain::market_data_generation_config>
+market_data_generation_config_repository::read_at_version(context ctx,
+                                                          const std::string& id,
+                                                          std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading market data generation config at version. id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<market_data_generation_config_entity,
+                                             domain::market_data_generation_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
+        lg(),
+        "Reading market data generation config at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
 }
 
 void market_data_generation_config_repository::remove(context ctx, const std::string& id) {

@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 5E4CD7F4-F267-4CE5-8862-55D15A2B98E0
+:END:
+#+title: Task: Server-computed vintage-validity indicator per feed and folder
+#+description: Read-time computed is_vintage_valid boolean per fx_spot_generation_config (null for fixed-price feeds), surfaced in the Qt tree per-feed and rolled up per-folder client-side, replacing the on-demand-only 'Validate Vintage' action with an always-visible status.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_23:v0:
+#+owner: marco
+#+branch: feature/feed-namespacing
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today, whether a feed's vintage data is available is only known on demand:
+either at start time (rejected with an error if missing) or via the
+"Validate Vintage" toolbar action, which the user must remember to click.
+Make this a passive, always-visible status instead: a green tick / red
+cross per feed in the Market Simulator tree, rolled up to every ancestor
+folder (any invalid child taints its parent), computed server-side and
+shipped as part of the normal feed list response -- no separate request,
+no user action.
+
+** Design: compute at read time, don't persist + trigger
+
+Two ways to keep this fresh were considered:
+
+1. *Persisted column + triggers* (rejected): a stored =is_vintage_valid=
+   column on =fx_spot_generation_config=, recomputed by a trigger whenever
+   the feed itself changes. This goes stale the moment new market data
+   arrives independently of any feed edit (the common case -- a DQ import
+   lands new =market_observation= rows) unless a *second* trigger on
+   =market_observation= inserts walks back and re-validates every feed
+   whose =vintage_source=/=vintage_date= matches -- real cross-table
+   trigger complexity for a check that's cheap to just redo.
+2. *Compute at read time* (recommended): add an =is_vintage_valid:
+   std::optional<bool>= field to =fx_spot_generation_config= (nullopt for
+   =price_source = "fixed"=, since the check doesn't apply), populated by
+   an =EXISTS= lookup against =market_observation= (matching
+   =vintage_source=/=vintage_date=) in the same SQL read path already used
+   by the list/get handlers. Always accurate, no dual-write reasoning, no
+   trigger -- and cheap given the table sizes here (an indexed lookup
+   against a few thousand observation rows, for a few dozen feeds).
+
+Folder-level rollup is *not* a server concept: Qt already aggregates
+running/stopped status up the tree client-side (see
+=refreshTreeItemStatus= in =MarketSimulatorWindow.cpp=) the same
+worst-of-children way this needs -- reuse that pattern for vintage
+validity instead of inventing a second, server-persisted rollup.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- =fx_spot_generation_config= list/get responses include
+  =is_vintage_valid: std::optional<bool>=, computed at read time (not
+  stored), correct immediately after a data import even when no feed row
+  itself was touched.
+- =null= for =price_source = "fixed"= feeds (the check doesn't apply);
+  =true=/=false= for ="vintage"= feeds based on whether a matching
+  =market_observation= row exists.
+- Market Simulator tree shows a per-feed green tick / red cross reflecting
+  this field, and every ancestor folder (instrument type, asset class,
+  collection, root) shows red if *any* descendant feed is invalid --
+  computed client-side from the same per-feed values, no new server
+  endpoint.
+- The existing "Validate Vintage" action and its summary dialog can be
+  retired once this lands, since the tree itself now shows the same
+  information passively.
+
+* Plan
+
+Implemented as a hand-written NATS handler (not a codegen entity field),
+following the "compute at read time" design already settled in the Goal
+section:
+
+- =get_vintage_validity_request=/=response= added to the existing
+  hand-written =market_feed_config_protocol.hpp=, alongside the other
+  control-plane messages.
+- New =vintage_validity_handler= in =ores.synthetic.service=, wired
+  identically to =folder_feed_control_handler= (per-request
+  =make_request_context= + JWT auth, no persisted state) -- iterates every
+  =fx_spot_generation_config= and calls the existing
+  =feed_controller::validate()= per vintage-priced feed.
+- Qt fetches this on every reload and folds it into the tree.
+
+First cut showed the result as two full extra tree columns (running-status,
+vintage-status), one icon per row -- manual QA correctly called this out as
+unreadable noise (every row showing the same repeated green circles twice).
+Redesigned to a single column: running and vintage status are small badge
+emblems (play/pause bottom-left, tick/cross bottom-right) composited onto
+each folder/feed's own icon, recomputed bottom-up from a stored plain
+"base" icon so badges never stack.
+
+* Notes
+
+- The bearer-forwarding bug found while testing the folder-cascade
+  endpoint (Phase 2/3 of the sibling feed-namespacing work) also explains
+  why this indicator initially seemed to disagree with individual-feed
+  starts -- both now correctly agree, verified live via
+  =get_vintage_validity_request= against Barclays' Realistic collection.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario                                                     | State   | Notes                        |
+|----------------------------------------------------------------+---------+------------------------------|
+| [[id:1B5D3529-E591-4A29-BCE3-1D144EE6A0B0][Vintage-validity indicator and folder-cascade start/stop]] | FAILED* | *First cut (2 columns); redesigned to badge emblems per feedback, not yet re-run |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented and built cleanly. Server side verified live via NATS:
+=get_vintage_validity_request= against Barclays' 24 feeds correctly
+reports every vintage-priced feed as applicable/valid once the reference
+data is imported, and correctly reports invalid when it isn't (matching
+the folder-cascade skip counts from the sibling task). Qt side redesigned
+mid-flight from a 2-column layout (rejected by manual QA as unreadable) to
+single-column badge emblems on each node's own icon. Local build clean
+(preset =linux-clang-debug-make=); full local build/test suite was not
+re-run before this PR due to the dev machine being heavily loaded by
+concurrent builds across other worktrees at push time -- flagging this
+explicitly rather than silently skipping it.

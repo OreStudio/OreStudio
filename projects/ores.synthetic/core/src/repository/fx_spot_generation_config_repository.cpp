@@ -91,7 +91,8 @@ fx_spot_generation_config_repository::read_all(context ctx, const std::string& i
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX spot generation config versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_spot_generation_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<fx_spot_generation_config_entity, domain::fx_spot_generation_config>(
         ctx,
@@ -99,6 +100,30 @@ fx_spot_generation_config_repository::read_all(context ctx, const std::string& i
         [](const auto& entities) { return fx_spot_generation_config_mapper::map(entities); },
         lg(),
         "Reading all FX spot generation config versions by id.");
+}
+
+std::optional<domain::fx_spot_generation_config>
+fx_spot_generation_config_repository::read_at_version(context ctx,
+                                                      const std::string& id,
+                                                      std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading FX spot generation config at version. id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<fx_spot_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<fx_spot_generation_config_entity, domain::fx_spot_generation_config>(
+            ctx,
+            query,
+            [](const auto& entities) { return fx_spot_generation_config_mapper::map(entities); },
+            lg(),
+            "Reading FX spot generation config at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
 }
 
 

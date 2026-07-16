@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::synthetic::domain {
 
@@ -134,6 +135,15 @@ struct fx_spot_generation_config final {
     std::string vintage_date;
 
     /**
+     * @brief The folder this feed lives under (the instrument-type folder, e.g. "FX Rates", nested
+     * under an asset-class folder under this feed's owning collection). Real, queryable hierarchy
+     * position -- not parsed out of source_name, which stays a display/NATS-subject string.
+     * Nullable for now: only the publish-from-dq path populates it; manual creation (Qt's New FX
+     * Rate) doesn't yet resolve/create folders -- follow-up work.
+     */
+    std::optional<boost::uuids::uuid> folder_id;
+
+    /**
      * @brief Username of the person who last modified this FX spot generation config.
      */
     std::string modified_by;
@@ -160,6 +170,16 @@ struct fx_spot_generation_config final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_spot_generation_config, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_spot_generation_config&) {
+    return "ores.synthetic.fx_spot_generation_config";
+}
 
 }
 

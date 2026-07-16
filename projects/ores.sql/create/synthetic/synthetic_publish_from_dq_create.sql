@@ -33,11 +33,14 @@
 -- FX Spot Configs: synthetic.v1.fx-spot-configs.publish-from-dq
 --
 -- Parent+child publish: each artefact row is a denormalized FX config
--- combining the market_data_generation_config container fields (name,
--- description, enabled) with the fx_spot_generation_config sub-config
--- fields (currency pair, initial price, tick cadence, process type). The
--- container is shared across all FX pairs for the same (tenant, party): the
--- first artefact row for a party creates it, subsequent rows reuse it.
+-- combining the fx_spot_generation_config sub-config fields (currency
+-- pair, initial price, tick cadence, process type). The container
+-- (market_data_generation_config) is shared across all FX pairs
+-- published from the same dataset for the same (tenant, party): the
+-- first call for a given (tenant, party, dataset) creates it, named
+-- from the dataset's own display name; a second dataset published for
+-- the same party (e.g. "Realistic" alongside "Basic") gets its own,
+-- separate container rather than being merged into the first.
 -- =============================================================================
 
 create or replace function ores_synthetic_publish_fx_spot_configs_from_dq_fn(
@@ -53,6 +56,11 @@ returns table (
 declare
     v_party_id uuid;
     v_config_id uuid;
+    v_config_name text;
+    v_root_folder_id uuid;
+    v_collection_folder_id uuid;
+    v_asset_class_folder_id uuid;
+    v_folder_id uuid;
     v_fx_config_id uuid;
     v_dataset_name text;
     v_inserted bigint := 0;
@@ -109,39 +117,140 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn();
     end if;
 
-    -- Resolve (or create) the shared container for this (tenant, party).
+    -- Resolve (or create) the container for this (tenant, party, dataset).
+    -- Keyed by dataset_id, not just (tenant, party): a party can run several
+    -- distinct collections (e.g. "Basic", "Realistic") side by side, each
+    -- published from its own dataset, and each must get its own container --
+    -- not be silently merged into whichever one happened to publish first.
     select id into v_config_id
     from ores_synthetic_market_data_generation_configs_tbl
     where tenant_id = p_target_tenant_id
       and party_id = v_party_id
+      and dataset_id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 
-    if v_config_id is null then
-        select a.name, a.description, a.enabled
-        into r
-        from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
-        where a.dataset_id = p_dataset_id
-        order by a.name
-        limit 1;
+    -- The container's name is the dataset's own human-readable name (e.g.
+    -- "Synthetic FX Spot Configs: Basic"), trimmed to its label after the
+    -- last ": " when present ("Basic") -- not any one FX pair's artefact
+    -- name, which would be a single arbitrary pair. Used both for the new
+    -- container's name (below) and to namespace each pair's source_name.
+    v_config_name := coalesce(nullif(split_part(v_dataset_name, ': ', 2), ''), v_dataset_name);
 
-        if found then
-            v_config_id := gen_random_uuid();
-            insert into ores_synthetic_market_data_generation_configs_tbl (
-                tenant_id, id, version, party_id, name, description, enabled,
-                modified_by, performed_by, change_reason_code, change_commentary
-            ) values (
-                p_target_tenant_id, v_config_id, 0, v_party_id,
-                coalesce(r.name, 'synthetic'), coalesce(r.description, ''),
-                coalesce(r.enabled, true),
-                coalesce(ores_iam_current_service_fn(), current_user), current_user,
-                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
-            );
-        end if;
+    if v_config_id is null then
+        v_config_id := gen_random_uuid();
+        insert into ores_synthetic_market_data_generation_configs_tbl (
+            tenant_id, id, version, party_id, name, description, enabled, dataset_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_config_id, 0, v_party_id,
+            v_config_name,
+            'Published from DQ dataset: ' || v_dataset_name,
+            true, p_dataset_id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+        );
+    else
+        -- Reusing an existing container: its name may have been renamed by
+        -- the user since creation, so use the live value, not the dataset's.
+        select name into v_config_name
+        from ores_synthetic_market_data_generation_configs_tbl
+        where tenant_id = p_target_tenant_id and id = v_config_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
     end if;
 
     if v_config_id is null then
         return query select 'skipped_no_config'::text, 0::bigint;
         return;
+    end if;
+
+    -- Resolve (or create) the folder chain this dataset's feeds live under:
+    -- root ("Synthetic") > collection (linked to v_config_id via
+    -- collection_id) > asset class > instrument type. Asset class/instrument
+    -- type are hardcoded to FX/FX Rates for now since FX spot is the only
+    -- instrument type modelled; generalize when a second one is added.
+    -- Real, queryable rows (not a parsed source_name string) so any caller --
+    -- Qt, ores.shell, or a wt workflow -- can resolve "everything under this
+    -- folder" via the generated hierarchy function.
+    select id into v_root_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and parent_id is null and kind = 'root'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_root_folder_id is null then
+        v_root_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_root_folder_id, 0, v_party_id, null, 'Synthetic', 'root', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Root folder for synthetic feeds'
+        );
+    end if;
+
+    select id into v_collection_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'collection' and collection_id = v_config_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_collection_folder_id is null then
+        v_collection_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_collection_folder_id, 0, v_party_id, v_root_folder_id,
+            v_config_name, 'collection', v_config_id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Collection folder for ' || v_config_name
+        );
+    else
+        -- Keep the folder's display name in sync if the collection was renamed.
+        update ores_synthetic_folders_tbl
+        set name = v_config_name
+        where tenant_id = p_target_tenant_id and id = v_collection_folder_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and name <> v_config_name;
+    end if;
+
+    select id into v_asset_class_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'asset_class' and parent_id = v_collection_folder_id and name = 'FX'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_asset_class_folder_id is null then
+        v_asset_class_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_asset_class_folder_id, 0, v_party_id, v_collection_folder_id,
+            'FX', 'asset_class', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Asset class folder'
+        );
+    end if;
+
+    select id into v_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'instrument_type' and parent_id = v_asset_class_folder_id and name = 'FX Rates'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_folder_id is null then
+        v_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_folder_id, 0, v_party_id, v_asset_class_folder_id,
+            'FX Rates', 'instrument_type', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Instrument type folder'
+        );
     end if;
 
     for r in
@@ -175,7 +284,7 @@ begin
         end if;
 
         insert into ores_synthetic_fx_spot_generation_configs_tbl (
-            tenant_id, id, version, party_id, config_id,
+            tenant_id, id, version, party_id, config_id, folder_id,
             base_currency_code, quote_currency_code,
             source_name, ore_key, price_source, gmm_initial_price, ticks_per_hour, process_type,
             enabled, vintage_source, vintage_date,
@@ -185,9 +294,14 @@ begin
             p_target_tenant_id,
             coalesce(existing.id, gen_random_uuid()),
             coalesce(existing.version, 0),
-            v_party_id, v_config_id,
+            v_party_id, v_config_id, v_folder_id,
             r.base_currency_code, r.quote_currency_code,
-            'synthetic.' || lower(r.base_currency_code) || lower(r.quote_currency_code),
+            -- source_name is now just a display/NATS-subject string, namespaced
+            -- by collection only (to avoid two collections' same pair
+            -- colliding) -- the actual hierarchy lives in folder_id above,
+            -- not parsed out of this string.
+            'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
+                lower(r.base_currency_code) || lower(r.quote_currency_code),
             -- ore_key uses the pair's natural base/quote order; the
             -- underlying market data is keyed the same way.
             'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code,

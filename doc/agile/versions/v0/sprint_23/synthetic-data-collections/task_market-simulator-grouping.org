@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ their owning collection — in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -49,9 +49,12 @@ their owning collection — in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=MarketSimulatorWindow= builds its tree directly from real =ores.synthetic.folder=
+rows (fetched via =get_folders_request=) rather than any string-parsing:
+Synthetic (root) > Collection > asset class > instrument type > Feed.
+Collections without a backing folder row yet (manually created, before the
+publish-from-dq path creates one) still surface at the top level so
+they're never silently invisible.
 
 * Notes
 
@@ -68,3 +71,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Verified via the QA Validation Runner (=scenario_market_simulator_tree_grouping.org=):
+tree shows two top-level nodes, =Basic= (11 feeds) and =Realistic= (13
+feeds), each with its own distinct pairs, no cross-contamination. PASS on
+all steps.

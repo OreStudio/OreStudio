@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 32C647B2-5B3A-4C2A-AA0F-FAA8D5541A2F
+:END:
+#+title: compass has 'compass add memory' to create a memory doc, but…
+#+description: compass has 'compass add memory' to create a memory doc, but no equivalent removal command — retiring an obsolete memory (e.g. one whose advice no longer applies after a feature was removed) requires manually deleting the .org file and editing its index entry out of doc/llm/memory/memory.org by hand. Add a 'compass memory remove <slug-or-id>' command that does both.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

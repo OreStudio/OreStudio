@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::synthetic::generators {
 
@@ -54,6 +55,7 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.enabled = faker::datatype::boolean();
     r.vintage_source = std::string("ore.reference");
     r.vintage_date = std::string("2016-02-05");
+    r.folder_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

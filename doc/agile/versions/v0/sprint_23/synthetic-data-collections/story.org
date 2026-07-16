@@ -9,7 +9,7 @@
 #+filetags: :market_data:synthetic:librarian:collections:sprint_23:v0:
 #+created: 2026-07-03
 #+updated: 2026-07-11
-#+environment: merry_newton
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -81,11 +81,11 @@ two archetypes, and closes the gaps that surfaced while designing it:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Blocker resolved ([[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] is DONE); 6/8 tasks done. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Feed namespacing by collection; Market Simulator tree grouping. |
+| Next          | Nothing. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -121,10 +121,11 @@ two archetypes, and closes the gaps that surfaced while designing it:
 | [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] | DONE | 2026-07-05 | 2026-07-06 | Import FX spot values from external/ore/examples/Legacy/Example_56/Input/market.txt into ores.marketdata as market_observation rows tagged source=ore.reference. |
 | [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]] | DONE | 2026-07-06 | 2026-07-09 | Validate required vintage data exists in ores.marketdata before a dependent feed starts, plus a Market Simulator toolbar action to validate every configured entry on demand. |
 | [[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Seed Basic and Realistic dataset bundles]] | DONE | 2026-07-10 | 2026-07-10 | Create the Basic and Realistic dataset bundles, both seeding initial spot from the imported 2016-02-05 vintage, differing only in GMM/process parameters. |
-| [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]] | BACKLOG | | | Prefix synthetic feed source_name and NATS subjects with the owning collection (synthetic.basic.<pair> / synthetic.realistic.<pair>) so concurrent collections don't collide. |
-| [[id:E3DEBE80-3B35-42D4-97B6-F1994D671F4F][Group Market Simulator feed tree by collection]] | BACKLOG | | | Change the Market Data Feeds tree's top-level node from a feed-source label to the owning collection (Basic / Realistic). |
+| [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]] | DONE | 2026-07-15 | 2026-07-17 | Prefix synthetic feed source_name and NATS subjects with the owning collection (synthetic.basic.<pair> / synthetic.realistic.<pair>) so concurrent collections don't collide. |
+| [[id:E3DEBE80-3B35-42D4-97B6-F1994D671F4F][Group Market Simulator feed tree by collection]] | DONE | | 2026-07-17 | Change the Market Data Feeds tree's top-level node from a feed-source label to the owning collection (Basic / Realistic). |
 | [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] | DONE | 2026-07-09 | 2026-07-10 | Wire fx_quote_convention_checker into ores.marketdata's import_service, fed from ores.refdata's currency_pair reference data, so a reversed FX/RATE key (e.g. the Legacy/Example_56 FX/RATE/USD/GBP quirk) is auto-corrected and clearly reported at import time instead of silently mis-keying market data. |
 | [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset for 2016-02-05]] | DONE | 2026-07-10 | 2026-07-10 | Publish real Federal Reserve H.10 FX driver rates across 25 vintages spanning 2016 as a DQ/librarian dataset, replacing reliance on ORE's own approximate bundled vintage. |
+| [[id:5E4CD7F4-F267-4CE5-8862-55D15A2B98E0][Server-computed vintage-validity indicator per feed and folder]] | DONE | 2026-07-16 | 2026-07-17 | Read-time computed is_vintage_valid boolean per fx_spot_generation_config (null for fixed-price feeds), surfaced in the Qt tree per-feed and rolled up per-folder client-side, replacing the on-demand-only 'Validate Vintage' action with an always-visible status. |
 
 * Decisions
 
@@ -195,3 +196,26 @@ two archetypes, and closes the gaps that surfaced while designing it:
   the FX foundation story).
 - Curve bootstrapping / vol surfaces (separate stories, per
   [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]'s scope reasoning).
+
+* Result
+
+Both Basic and Realistic collections run concurrently for the same party
+with no NATS subject or =market_observation.source= collisions. What
+started as a namespacing task grew into a real, queryable hierarchy: a
+generic self-referencing =ores.synthetic.folder= entity (root > collection
+> asset class > instrument type > feed) drives the Market Simulator tree
+directly, and backs a folder-scoped start/stop request so "start everything
+under Basic" (or the whole =Synthetic= root) is one server-resolved call
+instead of per-feed client enumeration -- usable identically from Qt,
+=ores.shell=, or a wt workflow step. A vintage-validity indicator (computed
+live, not persisted, to stay accurate across data imports with no feed
+edit) rounds it out, shown as small badge emblems on the tree rather than
+separate columns after manual QA flagged the first cut as unreadable.
+
+Two real bugs were found and fixed along the way, both worth remembering:
+=market_data_generation_config= had =party_id= wrongly declared a Natural
+Key (generating a DB constraint that capped a party at one collection
+ever), and the folder-scoped start endpoint initially failed to forward
+the caller's bearer token into the vintage-availability check, so it ran
+under the service's own system-tenant identity instead of the caller's and
+silently saw no data for any real tenant.

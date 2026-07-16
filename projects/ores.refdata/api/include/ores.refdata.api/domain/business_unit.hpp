@@ -25,6 +25,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -75,15 +76,6 @@ struct business_unit final {
     std::optional<boost::uuids::uuid> parent_business_unit_id;
 
     /**
-     * @brief Classification type for this business unit.
-     *
-     * Optional FK to business_unit_type. When set, the level of this unit's
-     * type must be strictly greater than its parent's type level (if the parent
-     * also has a type set).
-     */
-    std::optional<boost::uuids::uuid> unit_type_id;
-
-    /**
      * @brief Optional internal code or alias.
      *
      * Short identifier for the business unit.
@@ -96,6 +88,14 @@ struct business_unit final {
      * References the business centres scheme. May be null for global units.
      */
     std::string business_centre_code;
+
+    /**
+     * @brief Classification type for this business unit.
+     *
+     * Optional FK to business_unit_type. When set, the level of this unit's type must be strictly
+     * greater than its parent's type level (if the parent also has a type set).
+     */
+    std::optional<boost::uuids::uuid> unit_type_id;
 
     /**
      * @brief Current lifecycle status (Active, Inactive, Closed).
@@ -129,6 +129,16 @@ struct business_unit final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for business_unit, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const business_unit&) {
+    return "ores.refdata.business_unit";
+}
 
 }
 

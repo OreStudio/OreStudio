@@ -36,25 +36,24 @@ std::string party_id_scheme_repository::sql() {
     return generate_create_table_sql<party_id_scheme_entity>(lg());
 }
 
-void party_id_scheme_repository::write(context ctx, const domain::party_id_scheme& scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party ID scheme to database: " << scheme.code;
+void party_id_scheme_repository::write(context ctx, const domain::party_id_scheme& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing party ID scheme: " << v.code;
     execute_write_query(
-        ctx, party_id_scheme_mapper::map(scheme), lg(), "Writing party ID scheme to database.");
+        ctx, party_id_scheme_mapper::map(v), lg(), "Writing party ID scheme to database.");
 }
 
-void party_id_scheme_repository::write(context ctx,
-                                       const std::vector<domain::party_id_scheme>& schemes) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party ID schemes to database. Count: " << schemes.size();
+void party_id_scheme_repository::write(context ctx, const std::vector<domain::party_id_scheme>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing party ID schemes. Count: " << v.size();
     execute_write_query(
-        ctx, party_id_scheme_mapper::map(schemes), lg(), "Writing party ID schemes to database.");
+        ctx, party_id_scheme_mapper::map(v), lg(), "Writing party ID schemes to database.");
 }
 
 std::vector<domain::party_id_scheme> party_id_scheme_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       order_by("code"_c);
 
     return execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
         ctx,
@@ -66,9 +65,8 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_latest(con
 
 std::vector<domain::party_id_scheme>
 party_id_scheme_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID scheme. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID scheme. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<party_id_scheme_entity>> |
@@ -84,12 +82,11 @@ party_id_scheme_repository::read_latest(context ctx, const std::string& code) {
 
 std::vector<domain::party_id_scheme> party_id_scheme_repository::read_all(context ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party ID scheme versions. Code: " << code;
-
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party ID scheme versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
         ctx,
@@ -99,10 +96,30 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_all(contex
         "Reading all party ID scheme versions by code.");
 }
 
-void party_id_scheme_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme from database: " << code;
+std::optional<domain::party_id_scheme> party_id_scheme_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party ID scheme at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto entities = execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_id_scheme_mapper::map(entities); },
+        lg(),
+        "Reading party ID scheme at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void party_id_scheme_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<party_id_scheme_entity> |
@@ -111,9 +128,53 @@ void party_id_scheme_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing party ID scheme from database.");
 }
 
-void party_id_scheme_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<party_id_scheme_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "batch removing party_id_schemes");
+std::vector<domain::party_id_scheme>
+party_id_scheme_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID schemes with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_id_scheme_mapper::map(entities); },
+        lg(),
+        "Reading latest party ID schemes with pagination.");
 }
+
+std::uint32_t party_id_scheme_repository::get_total_scheme_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party ID scheme count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<party_id_scheme_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party ID scheme count: " << count;
+    return count;
+}
+
+void party_id_scheme_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<party_id_scheme_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing party ID schemes.");
+}
+
 
 }

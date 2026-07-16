@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -48,22 +50,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit business_unit_type_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::business_unit_type& business_unit_type);
-    void write(const std::vector<domain::business_unit_type>& business_unit_types);
+    /**
+     * @brief Writes business unit types to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::business_unit_type& v);
+    void write(context ctx, const std::vector<domain::business_unit_type>& v);
+    /**@}*/
 
-    std::vector<domain::business_unit_type> read_latest();
-    std::vector<domain::business_unit_type> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::business_unit_type> read_latest_by_code(const std::string& code);
+    /**
+     * @brief Reads latest business unit types, possibly filtered by id.
+     */
+    /**@{*/
+    std::vector<domain::business_unit_type> read_latest(context ctx);
+    std::vector<domain::business_unit_type> read_latest(context ctx, const std::string& id);
+    /**@}*/
 
-    std::vector<domain::business_unit_type> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
+    /**
+     * @brief Reads all business unit types, possibly filtered by id.
+     */
+    std::vector<domain::business_unit_type> read_all(context ctx, const std::string& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Reads a single business unit type as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::business_unit_type>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest business unit types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::business_unit_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active business unit types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active business unit types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a business unit type by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes business unit types by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

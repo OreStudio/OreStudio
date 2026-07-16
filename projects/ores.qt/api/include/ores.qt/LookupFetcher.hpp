@@ -24,6 +24,7 @@
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/asset_class_code.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/domain/calendar_type.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
@@ -276,6 +277,16 @@ fetch_countries(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
 fetch_book_statuses(ClientManager* cm);
+
+/**
+ * @brief Fetches all business unit types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by BusinessUnit's unit_type_id combo. Returns an error message
+ * on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::business_unit_type>, QString>
+fetch_business_unit_types(ClientManager* cm);
 
 /**
  * @brief Fetches all party types from the server.

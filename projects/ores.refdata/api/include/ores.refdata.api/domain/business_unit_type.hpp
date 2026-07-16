@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -31,9 +32,10 @@ namespace ores::refdata::domain {
  * @brief Classification of organisational unit roles within a hierarchy.
  *
  * Defines the type and level of a business unit (e.g. Division, Desk).
- * The `level` field enforces hierarchy ordering: 0 = top-level (e.g.
+ * The level field enforces hierarchy ordering: 0 = top-level (e.g.
  * Division or Branch), higher values = lower in the hierarchy.
- * Business units referencing a type must satisfy: child.level > parent.level.
+ * Business units referencing a type must satisfy: child.level >
+ * parent.level.
  */
 struct business_unit_type final {
     /**
@@ -87,7 +89,7 @@ struct business_unit_type final {
     std::string description;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this business unit type.
      */
     std::string modified_by;
 
@@ -113,6 +115,16 @@ struct business_unit_type final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for business_unit_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const business_unit_type&) {
+    return "ores.refdata.business_unit_type";
+}
 
 }
 

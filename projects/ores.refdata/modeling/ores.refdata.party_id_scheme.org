@@ -190,13 +190,14 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/party_id_scheme.hpp
+:domain_include:         ores.refdata.api/domain/party_id_scheme.hpp
 :domain_class:           refdata::domain::party_id_scheme
-:protocol_include:       ores.refdata/messaging/party_id_scheme_protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/party_id_scheme_protocol.hpp
 :collection_name:        schemes
 :item_var:               scheme
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_party_id_schemes_request
 :get_response_class:     refdata::messaging::get_party_id_schemes_response
 :get_message_type:       get_party_id_schemes_request
@@ -213,6 +214,17 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 :window_title:           Party ID Schemes
 :icon:                   Key
 :END:
+
+*** Detail fields
+
+| field               | label          | widget              | type      | is_key | is_required | placeholder                     |
+|---------------------+----------------+----------------------+-----------+--------+-------------+----------------------------------|
+| code                | Code           | codeEdit             | line_edit | true   | true        | Enter scheme code                |
+| name                | Name           | nameEdit             | line_edit |        | true        | Enter scheme name                |
+| description         | Description    | descriptionEdit      | text_edit |        | true        | Enter a description              |
+| coding_scheme_code  | Coding Scheme  | codingSchemeCodeEdit | line_edit |        |             | Enter coding scheme code         |
+| display_order       | Display Order  | displayOrderEdit     | spin_box  |        |             |                                  |
+| max_cardinality     | Max Cardinality| maxCardinalityEdit   | spin_box  |        |             |                                  |
 
 *** Columns (Qt model)
 

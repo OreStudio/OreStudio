@@ -902,6 +902,7 @@ begin
     end if;
 end $$;
 {{/domain_entity.sql.hypertable}}
+<<paste:92432102-d405-46fc-911a-111dfed27358>>
 #+end_src
 
 * See also

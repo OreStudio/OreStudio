@@ -72,6 +72,11 @@ class CrmDriverPairController;
 class CrmEnabledDerivedPairController;
 class CounterpartyController;
 class PartyController;
+class BusinessUnitController;
+class BusinessUnitTypeController;
+class PartyIdSchemeController;
+class PartyStatusController;
+class IBusinessUnitBrowser;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -113,6 +118,15 @@ public:
         return bookController_.get();
     }
 
+    /**
+     * @brief Non-owning access to the BusinessUnit controller for other
+     * plugins (e.g. TradingPlugin's Org Explorer view) that consume it
+     * without constructing or owning it. Defined out-of-line in the .cpp:
+     * the upcast to IBusinessUnitBrowser* needs BusinessUnitController's
+     * complete type, which this header only forward-declares.
+     */
+    IBusinessUnitBrowser* business_unit_controller() const noexcept;
+
 private:
     plugin_context ctx_;
 
@@ -127,6 +141,7 @@ private:
     QAction* act_currency_groups_{nullptr};
     QAction* act_counterparties_{nullptr};
     QAction* act_parties_{nullptr};
+    QAction* act_business_units_{nullptr};
 
     std::unique_ptr<CurrencyController> currencyController_;
     std::unique_ptr<CountryController> countryController_;
@@ -172,6 +187,10 @@ private:
     std::unique_ptr<CrmEnabledDerivedPairController> crmEnabledDerivedPairController_;
     std::unique_ptr<CounterpartyController> counterpartyController_;
     std::unique_ptr<PartyController> partyController_;
+    std::unique_ptr<BusinessUnitController> businessUnitController_;
+    std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
+    std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
+    std::unique_ptr<PartyStatusController> partyStatusController_;
 };
 
 }

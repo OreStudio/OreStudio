@@ -31,7 +31,6 @@ from its own CMake target.
 |-----------------------+----------------------------------------------+--------------|
 | [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]               | MDI host, menu/toolbar construction          | All layers   |
 | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]           | Plugin API contract, IPlugin lifecycle       | [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]      |
-| [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]]         | Counterparty list, detail forms, identifiers | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 | [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]]       | Currency, country, calendar CRUD screens     | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 | [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]]       | Trade blotter, deal entry, instrument tables | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 | [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]]       | Curve/surface browser, fixings viewer        | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |

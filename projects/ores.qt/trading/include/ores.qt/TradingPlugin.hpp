@@ -32,6 +32,7 @@ class OreImportController;
 class PortfolioController;
 class BookController;
 class TradeController;
+class IBusinessUnitBrowser;
 
 /**
  * @brief Trading plugin: portfolios, books, trades, and the portfolio/org
@@ -94,6 +95,11 @@ private:
     // composite trading-workflow views (Portfolio/Org Explorer). Resolved
     // in on_login(), after RefdataPlugin (load_order 100 < 200) has run.
     BookController* bookController_{nullptr};
+
+    // Non-owning: BusinessUnitController is constructed and owned by
+    // RefdataPlugin. Resolved in on_login(), after RefdataPlugin
+    // (load_order 100 < 200) has run.
+    IBusinessUnitBrowser* businessUnitController_{nullptr};
 
     std::unique_ptr<TradeController> tradeController_;
 };

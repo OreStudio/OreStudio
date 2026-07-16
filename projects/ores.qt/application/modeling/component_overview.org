@@ -64,7 +64,6 @@ housed in sibling projects under =ores.qt.*=.
 - [[id:03EAE018-5E61-4005-AC9A-EFF827A46178][ores.qt.compute]] — compute/reporting UI plugin.
 - [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_management]] — Data Management menu owner.
 - [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]] — market data UI plugin.
-- [[id:6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA][ores.qt.party]] — party/organisation UI plugin.
 - [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]] — reference data UI plugin.
 - [[id:4092E7E6-C663-4E5E-B330-63BFECE7CA51][ores.qt.scheduler]] — job scheduling UI plugin.
 - [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]] — trading UI plugin.

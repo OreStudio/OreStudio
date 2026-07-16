@@ -135,7 +135,6 @@ add_dependencies(${exe_target_name}
     ores.qt.data_management.lib
     ores.qt.marketdata.lib
     ores.qt.mktdata.lib
-    ores.qt.party.lib
     ores.qt.refdata.lib
     ores.qt.scheduler.lib
     ores.qt.synthetic.lib

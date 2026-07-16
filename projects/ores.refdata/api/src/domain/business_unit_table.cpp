@@ -23,6 +23,7 @@
 
 namespace ores::refdata::domain {
 
+
 std::string convert_to_table(const std::vector<business_unit>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);

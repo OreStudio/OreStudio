@@ -29,7 +29,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/string_generator.hpp>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -69,13 +68,22 @@ public:
         const auto& ctx = *ctx_expected;
         service::business_unit_service svc(ctx);
         get_business_units_response resp;
-        try {
-            resp.business_units = svc.list_business_units();
-            resp.total_available_count = static_cast<int>(resp.business_units.size());
-            BOOST_LOG_SEV(business_unit_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(business_unit_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        if (auto req = decode<get_business_units_request>(msg)) {
+            try {
+                resp.business_units = svc.list_business_units(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_business_units());
+                resp.success = true;
+                BOOST_LOG_SEV(business_unit_handler_lg(), debug) << "Completed " << msg.subject;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(business_unit_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(business_unit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         reply(nats_, msg, resp);
     }
@@ -130,9 +138,7 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            for (const auto& id_str : req->ids)
-                svc.remove_business_unit(gen(id_str));
+            svc.delete_business_units(req->ids);
             BOOST_LOG_SEV(business_unit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_business_unit_response{.success = true});
         } catch (const std::exception& e) {
@@ -158,12 +164,11 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            auto h = svc.get_business_unit_history(gen(req->id));
+            auto h = svc.get_business_unit_history(req->id);
             BOOST_LOG_SEV(business_unit_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
-                  get_business_unit_history_response{.success = true, .history = std::move(h)});
+                  get_business_unit_history_response{.history = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(business_unit_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

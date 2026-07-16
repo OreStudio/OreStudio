@@ -36,14 +36,19 @@ domain::business_unit business_unit_mapper::map(const business_unit_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+
     r.unit_name = v.unit_name;
-    if (v.parent_business_unit_id.has_value() && !v.parent_business_unit_id->empty())
-        r.parent_business_unit_id =
-            boost::lexical_cast<boost::uuids::uuid>(*v.parent_business_unit_id);
-    if (v.unit_type_id.has_value() && !v.unit_type_id->empty())
-        r.unit_type_id = boost::lexical_cast<boost::uuids::uuid>(*v.unit_type_id);
-    r.unit_code = v.unit_code;
-    r.business_centre_code = v.business_centre_code;
+
+    r.parent_business_unit_id =
+        v.parent_business_unit_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_business_unit_id)) :
+            std::nullopt;
+    r.unit_code = v.unit_code.value_or("");
+    r.business_centre_code = v.business_centre_code.value_or("");
+    r.unit_type_id = v.unit_type_id.has_value() ?
+                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.unit_type_id)) :
+                         std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -63,13 +68,20 @@ business_unit_entity business_unit_mapper::map(const domain::business_unit& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
+
+
     r.unit_name = v.unit_name;
-    if (v.parent_business_unit_id)
-        r.parent_business_unit_id = boost::uuids::to_string(*v.parent_business_unit_id);
-    if (v.unit_type_id)
-        r.unit_type_id = boost::uuids::to_string(*v.unit_type_id);
-    r.unit_code = v.unit_code;
-    r.business_centre_code = v.business_centre_code;
+
+    r.parent_business_unit_id =
+        v.parent_business_unit_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.parent_business_unit_id)) :
+            std::nullopt;
+    r.unit_code = v.unit_code.empty() ? std::nullopt : std::optional(v.unit_code);
+    r.business_centre_code =
+        v.business_centre_code.empty() ? std::nullopt : std::optional(v.business_centre_code);
+    r.unit_type_id = v.unit_type_id.has_value() ?
+                         std::optional(boost::uuids::to_string(*v.unit_type_id)) :
+                         std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

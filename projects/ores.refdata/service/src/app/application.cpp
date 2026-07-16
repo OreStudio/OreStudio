@@ -25,7 +25,6 @@
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
-#include "ores.refdata.api/eventing/business_unit_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
@@ -114,15 +113,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     // Generated per-entity event mappings (book, business_day_convention_type,
-    // country, currency, party_type, purpose_type). See event_registrar.cpp for
-    // why not every entity is migrated here yet.
+    // business_unit, business_unit_type, country, currency, party_id_scheme,
+    // party_type, purpose_type). See event_registrar.cpp for why not every
+    // entity is migrated here yet.
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
 
     ev::service::registrar::register_mapping<rdev::business_centre_changed_event>(
         event_source, "ores.refdata.business_centre", "ores_refdata_business_centres");
-    ev::service::registrar::register_mapping<rdev::business_unit_changed_event>(
-        event_source, "ores.refdata.business_unit", "ores_refdata_business_units");
     ev::service::registrar::register_mapping<rdev::counterparty_changed_event>(
         event_source, "ores.refdata.counterparty", "ores_refdata_counterparties");
     ev::service::registrar::register_mapping<rdev::counterparty_contact_information_changed_event>(
@@ -158,17 +156,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.business_centre",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto business_unit_sub = event_bus.subscribe<rdev::business_unit_changed_event>(
-        [&nats](const rdev::business_unit_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::business_unit_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.business_unit",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
                                                 .tenant_id = e.tenant_id});
         });
 

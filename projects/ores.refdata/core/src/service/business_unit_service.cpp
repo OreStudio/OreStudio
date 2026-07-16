@@ -19,7 +19,7 @@
  */
 #include "ores.refdata.core/service/business_unit_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -29,68 +29,72 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 business_unit_service::business_unit_service(context ctx)
-    : ctx_(ctx)
-    , repo_(ctx) {}
+    : ctx_(std::move(ctx)) {}
 
-std::vector<domain::business_unit> business_unit_service::list_business_units() {
+std::vector<domain::business_unit> business_unit_service::list_business_units(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all business units";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t business_unit_service::count_business_units() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count";
+    return repo_.get_total_business_unit_count(ctx_);
+}
+
+
+std::optional<domain::business_unit>
+business_unit_service::get_business_unit_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::business_unit>
-business_unit_service::find_business_unit(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding business unit: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
+business_unit_service::get_business_unit(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-std::optional<domain::business_unit>
-business_unit_service::find_business_unit_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding business unit by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
-}
-
-void business_unit_service::save_business_unit(const domain::business_unit& business_unit) {
-    if (business_unit.id.is_nil()) {
-        throw std::invalid_argument("Business Unit ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving business unit: " << business_unit.id;
-    auto bu = business_unit;
-    stamp(bu, ctx_);
-    repo_.write(bu);
-    BOOST_LOG_SEV(lg(), info) << "Saved business unit: " << business_unit.id;
+void business_unit_service::save_business_unit(const domain::business_unit& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Business Unit id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving business unit: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved business unit: " << v.id;
 }
 
 void business_unit_service::save_business_units(
     const std::vector<domain::business_unit>& business_units) {
-    for (const auto& bu : business_units) {
-        if (bu.id.is_nil())
-            throw std::invalid_argument("Business Unit ID cannot be nil.");
-    }
+    for (const auto& e : business_units)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Business Unit id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
-    auto stamped = business_units;
-    for (auto& bu : stamped)
-        stamp(bu, ctx_);
-    repo_.write(stamped);
+    auto ts = business_units;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void business_unit_service::remove_business_unit(const boost::uuids::uuid& id) {
+void business_unit_service::delete_business_unit(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed business unit: " << id;
 }
 
+void business_unit_service::delete_business_units(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
 std::vector<domain::business_unit>
-business_unit_service::get_business_unit_history(const boost::uuids::uuid& id) {
+business_unit_service::get_business_unit_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, id);
 }
 
 }

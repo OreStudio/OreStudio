@@ -22,7 +22,8 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <iosfwd>
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -39,8 +40,12 @@ struct business_unit_type_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+
     std::string coding_scheme_code;
+
+
     std::string code;
+
     std::string name;
     int level = 0;
     std::string description;

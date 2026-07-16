@@ -21,19 +21,24 @@
 
 // Per-entity generated event-mapping registrars.
 //
-// Not every ores.refdata domain_entity is wired here yet: business_unit,
+// Not every ores.refdata domain_entity is wired here yet:
 // counterparty, counterparty_contact_information, counterparty_identifier,
 // currency_market_tier, monetary_nature, party, party_contact_information,
 // party_identifier, and portfolio have stale nats-eventing output (their
 // changed_event's id field would rename from `ids` to `<entity>_ids` on
 // regeneration) — pre-existing drift unrelated to this registrar, tracked
-// separately. Those ten stay hand-wired in application.cpp until that drift
-// is resolved; see the migrate-remaining-entities capture.
+// separately. Those nine stay hand-wired in application.cpp until that drift
+// is resolved; see the migrate-remaining-entities capture. business_unit was
+// migrated here (its own such drift resolved) while moving it, business_unit_type,
+// and party_id_scheme onto full codegen — see the "Migrate all entities onto the
+// generic HistoryDialog" story.
 #include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_status_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_day_convention_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/business_unit_event_registrar.hpp"
+#include "ores.refdata.service/messaging/business_unit_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/country_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_driver_pair_event_registrar.hpp"
@@ -47,6 +52,7 @@
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/monetary_nature_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/payment_frequency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
@@ -79,6 +85,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_book_status_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_business_day_convention_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_business_unit_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_business_unit_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_contact_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_driver_pair_event_mapping(event_source, event_bus, nats));
@@ -92,6 +100,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_instrument_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_monetary_nature_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_id_scheme_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_payment_frequency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));

@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -40,11 +41,14 @@ struct business_unit_entity {
     std::string tenant_id;
     int version = 0;
     std::string party_id;
+
+
     std::string unit_name;
+
     std::optional<std::string> parent_business_unit_id;
+    std::optional<std::string> unit_code;
+    std::optional<std::string> business_centre_code;
     std::optional<std::string> unit_type_id;
-    std::string unit_code;
-    std::string business_centre_code;
     std::string status;
     std::string modified_by;
     std::string performed_by;

@@ -20,6 +20,5 @@
 
 drop rule if exists ores_refdata_business_unit_types_delete_rule on "ores_refdata_business_unit_types_tbl";
 drop trigger if exists ores_refdata_business_unit_types_insert_trg on "ores_refdata_business_unit_types_tbl";
-drop function if exists ores_refdata_validate_business_unit_type_fn;
 drop function if exists ores_refdata_business_unit_types_insert_fn;
 drop table if exists "ores_refdata_business_unit_types_tbl";

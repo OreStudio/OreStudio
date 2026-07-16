@@ -24,6 +24,8 @@
 #include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
+#include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/CalendarController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
@@ -50,6 +52,8 @@
 #include "ores.qt/OisConventionController.hpp"
 #include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.qt/PartyController.hpp"
+#include "ores.qt/PartyIdSchemeController.hpp"
+#include "ores.qt/PartyStatusController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
@@ -338,6 +342,40 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                          this);
     connectControllerSignals(partyController_.get());
 
+    partyStatusController_ = std::make_unique<PartyStatusController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
+    connectControllerSignals(partyStatusController_.get());
+
+    partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
+    connectControllerSignals(partyIdSchemeController_.get());
+
+    businessUnitController_ = std::make_unique<BusinessUnitController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
+    connectControllerSignals(businessUnitController_.get());
+
+    businessUnitTypeController_ =
+        std::make_unique<BusinessUnitTypeController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     this);
+    connectControllerSignals(businessUnitTypeController_.get());
+
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
                                                                  ctx_.client_manager,
@@ -623,6 +661,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 counterpartyController_->showListWindow();
         });
 
+        act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
+        connect(act_business_units_, &QAction::triggered, this, [this]() {
+            if (businessUnitController_)
+                businessUnitController_->showListWindow();
+        });
+
         ref->addSeparator();
 
         // Trading Conventions submenu (unchanged)
@@ -865,6 +909,24 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 if (contactTypeController_)
                     contactTypeController_->showListWindow();
             });
+            auto* actPartyStatuses =
+                smc.organisation_codes_menu->addAction(ico(Icon::Flag), tr("Party &Statuses"));
+            connect(actPartyStatuses, &QAction::triggered, this, [this]() {
+                if (partyStatusController_)
+                    partyStatusController_->showListWindow();
+            });
+            auto* actPartyIdSchemes =
+                smc.organisation_codes_menu->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
+            connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
+                if (partyIdSchemeController_)
+                    partyIdSchemeController_->showListWindow();
+            });
+            auto* actBizUnitTypes = smc.organisation_codes_menu->addAction(
+                ico(Icon::PeopleTeam), tr("Business Unit &Types"));
+            connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
+                if (businessUnitTypeController_)
+                    businessUnitTypeController_->showListWindow();
+            });
         }
     }
 
@@ -894,7 +956,8 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
     if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
-        !act_business_centres_ || !act_parties_ || !act_counterparties_)
+        !act_business_centres_ || !act_parties_ || !act_counterparties_ ||
+        !act_business_units_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_currencies_,
             act_countries_,
@@ -902,7 +965,8 @@ QList<QAction*> RefdataPlugin::toolbar_actions() {
             act_books_,
             act_business_centres_,
             act_parties_,
-            act_counterparties_};
+            act_counterparties_,
+            act_business_units_};
 }
 
 // ---------------------------------------------------------------------------
@@ -923,6 +987,10 @@ void RefdataPlugin::on_logout() {
     zeroConventionController_.reset();
     businessCentreController_.reset();
     counterpartyController_.reset();
+    businessUnitTypeController_.reset();
+    businessUnitController_.reset();
+    partyIdSchemeController_.reset();
+    partyStatusController_.reset();
     partyController_.reset();
     partyTypeController_.reset();
     purposeTypeController_.reset();
@@ -947,6 +1015,10 @@ void RefdataPlugin::on_logout() {
     currencyController_.reset();
 
     ctx_ = {};
+}
+
+IBusinessUnitBrowser* RefdataPlugin::business_unit_controller() const noexcept {
+    return businessUnitController_.get();
 }
 
 } // namespace ores::qt

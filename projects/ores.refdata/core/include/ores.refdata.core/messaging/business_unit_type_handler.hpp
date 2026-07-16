@@ -26,7 +26,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
-#include "ores.refdata.core/repository/business_unit_type_repository.hpp"
+#include "ores.refdata.core/service/business_unit_type_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -68,15 +68,26 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        repository::business_unit_type_repository repo(ctx);
+        service::business_unit_type_service svc(ctx);
         get_business_unit_types_response resp;
-        try {
-            resp.business_unit_types = repo.read_latest();
-            resp.total_available_count = static_cast<int>(resp.business_unit_types.size());
-            BOOST_LOG_SEV(business_unit_type_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(business_unit_type_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        if (auto req = decode<get_business_unit_types_request>(msg)) {
+            try {
+                resp.types = svc.list_types(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_types());
+                resp.success = true;
+                BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(business_unit_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(business_unit_type_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         reply(nats_, msg, resp);
     }
@@ -94,7 +105,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        repository::business_unit_type_repository repo(ctx);
+        service::business_unit_type_service svc(ctx);
         auto req = decode<save_business_unit_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(business_unit_type_handler_lg(), warn)
@@ -102,7 +113,7 @@ public:
             return;
         }
         try {
-            repo.write(req->data);
+            svc.save_type(req->data);
             BOOST_LOG_SEV(business_unit_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_business_unit_type_response{.success = true});
         } catch (const std::exception& e) {
@@ -127,7 +138,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        repository::business_unit_type_repository repo(ctx);
+        service::business_unit_type_service svc(ctx);
         auto req = decode<delete_business_unit_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(business_unit_type_handler_lg(), warn)
@@ -135,9 +146,7 @@ public:
             return;
         }
         try {
-            auto records = repo.read_latest_by_code(req->type);
-            if (!records.empty())
-                repo.remove(records.front().id);
+            svc.delete_types(req->ids);
             BOOST_LOG_SEV(business_unit_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_business_unit_type_response{.success = true});
         } catch (const std::exception& e) {
@@ -158,7 +167,7 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        repository::business_unit_type_repository repo(ctx);
+        service::business_unit_type_service svc(ctx);
         auto req = decode<get_business_unit_type_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(business_unit_type_handler_lg(), warn)
@@ -166,15 +175,11 @@ public:
             return;
         }
         try {
-            auto records = repo.read_latest_by_code(req->type);
-            std::vector<ores::refdata::domain::business_unit_type> history;
-            if (!records.empty())
-                history = repo.read_all(records.front().id);
+            auto h = svc.get_type_history(req->id);
             BOOST_LOG_SEV(business_unit_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
-                  get_business_unit_type_history_response{.success = true,
-                                                          .history = std::move(history)});
+                  get_business_unit_type_history_response{.history = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(business_unit_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

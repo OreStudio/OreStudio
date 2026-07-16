@@ -1,0 +1,412 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/BusinessUnitDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ui_BusinessUnitDetailDialog.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+BusinessUnitDetailDialog::BusinessUnitDetailDialog(QWidget* parent)
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BusinessUnitDetailDialog)
+    , clientManager_(nullptr) {
+
+    ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
+    setupUi();
+    setupCombos();
+    setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
+}
+
+BusinessUnitDetailDialog::~BusinessUnitDetailDialog() {
+    delete ui_;
+}
+
+QTabWidget* BusinessUnitDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* BusinessUnitDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* BusinessUnitDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
+
+QString BusinessUnitDetailDialog::code() const {
+    return QString::fromStdString(business_unit_.unit_code);
+}
+
+void BusinessUnitDetailDialog::setupUi() {
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+}
+
+void BusinessUnitDetailDialog::setupCombos() {
+    ui_->statusCombo->clear();
+    ui_->statusCombo->addItem(tr("Active"), QString("Active"));
+    ui_->statusCombo->addItem(tr("Inactive"), QString("Inactive"));
+    ui_->statusCombo->addItem(tr("Closed"), QString("Closed"));
+}
+
+void BusinessUnitDetailDialog::setupConnections() {
+    connect(ui_->saveButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onCloseClicked);
+
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BusinessUnitDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->businessCentreEdit,
+            &QLineEdit::textChanged,
+            this,
+            &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->unitTypeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BusinessUnitDetailDialog::onFieldChanged);
+}
+
+void BusinessUnitDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+    populateUnitTypeCombo();
+}
+
+void BusinessUnitDetailDialog::setUsername(const std::string& username) {
+    username_ = username;
+}
+
+void BusinessUnitDetailDialog::setUnit(const refdata::domain::business_unit& business_unit) {
+    business_unit_ = business_unit;
+    updateUiFromUnit();
+}
+
+void BusinessUnitDetailDialog::setCreateMode(bool createMode) {
+    createMode_ = createMode;
+    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
+    if (createMode) {
+        business_unit_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            business_unit_.party_id = clientManager_->currentPartyId();
+    }
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BusinessUnitDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void BusinessUnitDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->businessCentreEdit->setReadOnly(readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
+    ui_->unitTypeCombo->setEnabled(!readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+}
+
+void BusinessUnitDetailDialog::populateUnitTypeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating unit_type_id combo";
+    populateDynamicCombo<refdata::domain::business_unit_type>(
+        ui_->unitTypeCombo,
+        this,
+        clientManager_,
+        &fetch_business_unit_types,
+        "unitTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.name); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.level; },
+        [this]() {
+            const auto& _opt = business_unit_.unit_type_id;
+            return _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load business unit types: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
+        [](const auto&) { return false; });
+}
+void BusinessUnitDetailDialog::updateUiFromUnit() {
+    ui_->codeEdit->setText(QString::fromStdString(business_unit_.unit_code));
+    ui_->nameEdit->setText(QString::fromStdString(business_unit_.unit_name));
+    ui_->businessCentreEdit->setText(QString::fromStdString(business_unit_.business_centre_code));
+    {
+        const auto val = QString::fromStdString(business_unit_.status);
+        const int idx = ui_->statusCombo->findData(val);
+        if (idx >= 0)
+            ui_->statusCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto& _opt = business_unit_.unit_type_id;
+        const auto val = _opt ? QString::fromStdString(boost::uuids::to_string(*_opt)) : QString{};
+        const int idx = ui_->unitTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->unitTypeCombo->setCurrentIndex(idx);
+    }
+
+    populateProvenance(business_unit_.version,
+                       business_unit_.modified_by,
+                       business_unit_.performed_by,
+                       business_unit_.recorded_at,
+                       business_unit_.change_reason_code,
+                       business_unit_.change_commentary);
+
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BusinessUnitDetailDialog::updateUnitFromUi() {
+    if (createMode_) {
+        business_unit_.unit_code = ui_->codeEdit->text().trimmed().toStdString();
+    }
+    business_unit_.unit_name = ui_->nameEdit->text().trimmed().toStdString();
+    business_unit_.business_centre_code = ui_->businessCentreEdit->text().trimmed().toStdString();
+    business_unit_.status = ui_->statusCombo->currentData().toString().toStdString();
+    {
+        const auto unit_type_id_str =
+            ui_->unitTypeCombo->currentData().toString().trimmed().toStdString();
+        if (unit_type_id_str.empty()) {
+            business_unit_.unit_type_id = std::nullopt;
+        } else {
+            try {
+                business_unit_.unit_type_id = boost::uuids::string_generator()(unit_type_id_str);
+            } catch (const std::exception&) {
+                business_unit_.unit_type_id = std::nullopt;
+            }
+        }
+    }
+    business_unit_.modified_by = username_;
+}
+
+void BusinessUnitDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void BusinessUnitDetailDialog::onFieldChanged() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void BusinessUnitDetailDialog::updateSaveButtonState() {
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
+    ui_->saveButton->setEnabled(canSave);
+}
+
+bool BusinessUnitDetailDialog::validateInput() {
+    const QString unit_name_val = ui_->nameEdit->text().trimmed();
+
+    return true && !unit_name_val.isEmpty();
+}
+
+void BusinessUnitDetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save business unit while disconnected from server.");
+        return;
+    }
+
+    if (!validateInput()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
+        return;
+    }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    business_unit_.change_reason_code = crSel->reason_code;
+    business_unit_.change_commentary = crSel->commentary;
+
+    updateUnitFromUi();
+
+    BOOST_LOG_SEV(lg(), info) << "Saving business unit: " << business_unit_.unit_code;
+
+    QPointer<BusinessUnitDetailDialog> self = this;
+
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, business_unit = business_unit_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        refdata::messaging::save_business_unit_request request;
+        request.data = business_unit;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Business Unit saved successfully";
+            QString code = QString::fromStdString(self->business_unit_.unit_code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
+            emit self->business_unitSaved(code);
+            self->notifySaveSuccess(tr("Business Unit '%1' saved").arg(code));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+        }
+    });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void BusinessUnitDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete business unit while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(business_unit_.unit_code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Business Unit",
+        QString("Are you sure you want to delete business unit '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting business unit: " << business_unit_.unit_code;
+
+    QPointer<BusinessUnitDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, id_str = boost::uuids::to_string(business_unit_.id)]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        refdata::messaging::delete_business_unit_request request;
+        request.ids = {id_str};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Business Unit deleted successfully";
+            emit self->statusMessage(QString("Business Unit '%1' deleted").arg(code));
+            emit self->business_unitDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+
+}

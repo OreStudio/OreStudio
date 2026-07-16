@@ -19,8 +19,11 @@
  */
 #include "ores.refdata.api/generators/business_unit_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -29,19 +32,20 @@ using ores::utility::generation::generation_keys;
 domain::business_unit_type
 generate_synthetic_business_unit_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::business_unit_type r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.coding_scheme_code = "ORES-ORG";
-    r.code = std::string(faker::word::noun()) + "_type_" + std::to_string(idx);
-    r.name = std::string(faker::word::adjective()) + " Type";
-    r.level = ctx.random_int(0, 3);
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.coding_scheme_code = std::string("ORES-ORG") + "-" + std::to_string(idx);
+    r.code = std::string("TYPE") + std::to_string(idx) + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::noun()) + " Type";
+    r.level = faker::number::integer(0, 5);
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -58,7 +58,7 @@ multiple plugins contribute to:
 | =system_menu= | =ores.qt= (MainWindow) | AdminPlugin |
 | =account_menu= | =ores.qt= (MainWindow) | AdminPlugin |
 | =telemetry_menu= | =ores.qt= (MainWindow) | AdminPlugin |
-| =reference_data_menu= | RefdataPlugin | PartyPlugin |
+| =reference_data_menu= | RefdataPlugin | |
 | =data_management_menu= | DataManagementPlugin | TradingPlugin, WorkspacePlugin |
 | =trading_codes_menu= | (pre-created) | TradingPlugin, RefdataPlugin |
 | =analytics_menu= | AnalyticsPlugin | ComputePlugin |
@@ -92,7 +92,6 @@ plugin returns that menu via =create_menus()=.
 | load_order | Plugin |
 |------------+--------|
 | 100 | RefdataPlugin |
-| 105 | PartyPlugin |
 | 200 | TradingPlugin |
 | 210 | WorkspacePlugin |
 | 350 | AnalyticsPlugin |

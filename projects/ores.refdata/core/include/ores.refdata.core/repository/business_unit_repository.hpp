@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,22 +49,71 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit business_unit_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::business_unit& business_unit);
-    void write(const std::vector<domain::business_unit>& business_units);
+    /**
+     * @brief Writes business units to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::business_unit& v);
+    void write(context ctx, const std::vector<domain::business_unit>& v);
+    /**@}*/
 
-    std::vector<domain::business_unit> read_latest();
-    std::vector<domain::business_unit> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::business_unit> read_latest_by_code(const std::string& code);
+    /**
+     * @brief Reads latest business units, possibly filtered by id.
+     */
+    /**@{*/
+    std::vector<domain::business_unit> read_latest(context ctx);
+    std::vector<domain::business_unit> read_latest(context ctx, const std::string& id);
+    /**@}*/
 
-    std::vector<domain::business_unit> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
+    /**
+     * @brief Reads all business units, possibly filtered by id.
+     */
+    std::vector<domain::business_unit> read_all(context ctx, const std::string& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Reads a single business unit as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::business_unit>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+
+    /**
+     * @brief Reads latest business units with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::business_unit>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active business units.
+     * @param ctx Repository context with database connection
+     * @return Total number of active business units
+     */
+    std::uint32_t get_total_business_unit_count(context ctx);
+
+    /**
+     * @brief Deletes a business unit by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes business units by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

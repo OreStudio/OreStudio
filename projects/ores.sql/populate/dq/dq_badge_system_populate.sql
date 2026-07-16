@@ -772,6 +772,10 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'cross_asset', 'asset_class_cross_asset');
 
+    -- Note: payment_frequency.period_unit is badged with badge_key
+    -- 'tenor_unit' (see the Qt model column config), reusing tenor_unit's
+    -- own badge domain/mappings above rather than seeding a second set.
+
     -- =============================================================================
     -- Summary
     -- =============================================================================

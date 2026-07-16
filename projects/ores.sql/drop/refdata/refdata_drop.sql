@@ -18,6 +18,10 @@
  *
  */
 
+-- Payment frequency: no dependents yet, drop first.
+\ir ./refdata_payment_frequencies_notify_trigger_drop.sql
+\ir ./refdata_payment_frequencies_drop.sql
+
 -- Tenor reference data: resolution junction before conventions/tenors it
 -- references; tenors and conventions before the code lookups they reference.
 \ir ./refdata_tenor_convention_resolution_drop.sql

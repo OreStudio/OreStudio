@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include <map>
 
 namespace ores::ore::domain {
@@ -387,7 +388,7 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
         tm.currency = std::string(*ld.Currency);
     tm.day_count_fraction_code = day_counter_string(ld.DayCounter);
     tm.business_day_convention_code = bdc_string(ld.PaymentConvention);
-    tm.payment_frequency_code = first_tenor(ld.ScheduleData);
+    tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(ld.ScheduleData));
 
     if (ld.Notionals)
         tm.notional = static_cast<double>(first_notional(*ld.Notionals));
@@ -425,6 +426,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
         sd = &*t.CrossCurrencySwapData;
 
     vanilla_swap_instrument instr;
+    instr.identity.trade_type_code = "Swap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -459,6 +461,7 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping InflationSwap: " << std::string(t.id);
 
     inflation_swap_instrument instr;
+    instr.identity.trade_type_code = "InflationSwap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -493,6 +496,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FRA: " << std::string(t.id);
 
     fra_instrument instr;
+    instr.identity.trade_type_code = "ForwardRateAgreement";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -541,6 +545,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping capfloor: " << std::string(t.id);
 
     cap_floor_instrument instr;
+    instr.identity.trade_type_code = "CapFloor";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -565,7 +570,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     tm.currency = to_string(cf.LegData.Currency);
     tm.day_count_fraction_code = to_string(cf.LegData.DayCounter);
     tm.business_day_convention_code = bdc_string(cf.LegData.PaymentConvention);
-    tm.payment_frequency_code = first_tenor(cf.LegData.ScheduleData);
+    tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(cf.LegData.ScheduleData));
 
     if (!cf.LegData.Notionals.Notional.empty())
         tm.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
@@ -608,7 +613,8 @@ legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
     if (tm.notional != 0.0)
         ld.Notionals = make_notionals(tm.notional);
 
-    ld.ScheduleData = make_schedule(start_date, maturity_date, tm.payment_frequency_code);
+    ld.ScheduleData =
+        make_schedule(start_date, maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
 
     legDataType_group_t ldt;
     if (ld.LegType == legType::Fixed && tm.fixed_rate != 0.0) {
@@ -712,8 +718,8 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
         cf.LegData.DayCounter = dayCounter::ACT_365;
-        cf.LegData.ScheduleData =
-            make_schedule(instr.start_date, instr.maturity_date, tm.payment_frequency_code);
+        cf.LegData.ScheduleData = make_schedule(
+            instr.start_date, instr.maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
         if (tm.notional != 0.0) {
             legData_capfloor_Notionals_t_Notional_t nv;
             static_cast<float&>(nv) = static_cast<float>(tm.notional);
@@ -746,6 +752,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Swaption: " << std::string(t.id);
 
     swaption_instrument instr;
+    instr.identity.trade_type_code = "Swaption";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -831,6 +838,7 @@ swap_instrument_mapper::forward_callable_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableSwap: " << std::string(t.id);
 
     callable_swap_instrument instr;
+    instr.identity.trade_type_code = "CallableSwap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -911,6 +919,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FlexiSwap: " << std::string(t.id);
 
     vanilla_swap_instrument instr;
+    instr.identity.trade_type_code = "FlexiSwap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -946,6 +955,7 @@ swap_instrument_mapper::forward_balance_guaranteed_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BalanceGuaranteedSwap: " << std::string(t.id);
 
     balance_guaranteed_swap_instrument instr;
+    instr.identity.trade_type_code = "BalanceGuaranteedSwap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";

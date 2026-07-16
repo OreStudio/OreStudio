@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
+#include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 
 namespace ores::ore::domain {
 
@@ -72,7 +73,7 @@ void credit_instrument_mapper::map_cds_leg(const legData& ld, credit_instrument&
     instr.schedule.start_date = std::string(rule.StartDate);
     if (rule.EndDate)
         instr.schedule.maturity_date = std::string(*rule.EndDate);
-    instr.schedule.payment_frequency_code = std::string(rule.Tenor);
+    instr.schedule.payment_frequency_code = tenor_to_payment_frequency(std::string(rule.Tenor));
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +115,8 @@ legData credit_instrument_mapper::reverse_cds_leg(const credit_instrument& instr
             rule.EndDate = xsd::optional<date>(ed);
         }
         if (!instr.schedule.payment_frequency_code.empty())
-            static_cast<std::string&>(rule.Tenor) = instr.schedule.payment_frequency_code;
+            static_cast<std::string&>(rule.Tenor) =
+                payment_frequency_to_tenor(instr.schedule.payment_frequency_code);
         scheduleData sched;
         sched.Rules.push_back(std::move(rule));
         ld.ScheduleData = std::move(sched);

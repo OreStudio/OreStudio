@@ -118,7 +118,7 @@ begin
         NEW.tenant_id, NEW.business_day_convention_code);
 
     -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_trading_validate_payment_frequency_type_fn(
+    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(
         NEW.tenant_id, NEW.payment_frequency_code);
 
     -- Validate floating_index_code (optional, required for floating legs)

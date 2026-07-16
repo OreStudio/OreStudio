@@ -55,6 +55,7 @@
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_registrar.hpp"
+#include "ores.refdata.core/messaging/payment_frequency_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/party_registrar.hpp"
 #include "ores.refdata.core/messaging/party_status_registrar.hpp"
@@ -122,6 +123,7 @@
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
@@ -161,6 +163,7 @@
 #include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/party_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/payment_frequency_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/purpose_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/regulatory_book_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/rounding_type_history_field_mapper.hpp"
@@ -200,6 +203,7 @@
 #include "ores.refdata.core/service/ois_convention_service.hpp"
 #include "ores.refdata.core/service/overnight_index_convention_service.hpp"
 #include "ores.refdata.core/service/party_type_service.hpp"
+#include "ores.refdata.core/service/payment_frequency_service.hpp"
 #include "ores.refdata.core/service/purpose_type_service.hpp"
 #include "ores.refdata.core/service/regulatory_book_type_service.hpp"
 #include "ores.refdata.core/service/rounding_type_service.hpp"
@@ -280,6 +284,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_handlers(nats, ctx, verifier));
     append(register_party_contact_information_handlers(nats, ctx, verifier));
     append(register_party_id_scheme_handlers(nats, ctx, verifier));
+    append(register_payment_frequency_handlers(nats, ctx, verifier));
     append(register_party_identifier_handlers(nats, ctx, verifier));
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
@@ -393,6 +398,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.local-jurisdictions.publish-from-dq",
             "refdata.v1.party-relationships.publish-from-dq",
             "refdata.v1.party-roles.publish-from-dq",
+            "refdata.v1.payment-frequencies.publish-from-dq",
             "refdata.v1.person-roles.publish-from-dq",
             "refdata.v1.portfolios.publish-from-dq",
             "refdata.v1.regulatory-corporate-sectors.publish-from-dq",
@@ -763,6 +769,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_unit_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_tenor_unit_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.payment_frequency",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::payment_frequency_service svc(scoped_ctx);
+                auto versions = svc.get_payment_frequency_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_payment_frequency_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

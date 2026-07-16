@@ -144,6 +144,12 @@ begin
     -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
+    -- Validate payment_frequency_code (optional)
+    if NEW.payment_frequency_code is not null then
+        NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(
+            NEW.tenant_id, NEW.payment_frequency_code);
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

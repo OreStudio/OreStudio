@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 3F8B6C3D-9E52-4B84-9C2A-1E5F7A6D2B48
+:END:
+#+title: Test Scenario: Payment Frequency reference data (consolidated model)
+#+description: Verify the consolidated Payment Frequency list/detail screen (badge on Period Unit, not Code), the old Payment Frequency Types menu entry is gone, and swap/credit/commodity/equity-swap instruments validate against the new entity.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] in [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+This scenario supersedes the original =payment_frequency= UI check: the
+data model was reworked mid-task to consolidate the duplicate
+=ores.trading.payment_frequency_type= entity into a single
+=ores.refdata.payment_frequency=, move the badge from the self-referencing
+=code= column onto the FK =period_unit= column (reusing =tenor_unit='s
+existing badge domain), and migrate all four =ores.trading= instrument
+tables that store a payment-frequency code to validate against it.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] |
+| Parent story  | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]   |
+| Target dialog | PaymentFrequencyMdiWindow / PaymentFrequencyDetailDialog — Menu: Reference Data > Trading Conventions > Payment Frequencies |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, select party "BARCLAYS PLC"
+
+If the database was recreated since this tenant was last provisioned,
+re-run =projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+via =compass shell -f <path>= first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the old "Payment Frequency Types" menu entry is gone
+
+Open Reference Data > Trading Conventions. The submenu should show only
+"Payment Fre&quencies" (clock icon) — the old, duplicate "&Payment
+Frequency Types" entry must no longer be present anywhere in the menu.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Reference Data > Trading Conventions > Payment Frequencies and confirm the list window opens
+
+Should show 9 rows: Once, Annual, Semiannual, Quarterly, Bimonthly,
+Monthly, Lunar Month, Weekly, Daily. The *Period Unit* column should
+render each value as a colored badge (reusing tenor_unit's badge
+domain: DAY/WEEK/MONTH/YEAR/NONE). The *Code* column should be plain
+text, not a badge — confirming the badge convention correction (badge
+on the referencing column, not self-badged on code).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the "Once" row's detail dialog and confirm Period Unit shows NONE (badged) and Period Multiplier is blank/empty
+
+This is the one row where period_multiplier is null in the database
+-- confirms the optional-int field renders correctly rather than
+crashing or showing a garbage value.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the "Quarterly" row's detail dialog and confirm Period Unit shows MONTH (badged) and Period Multiplier shows 3
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a row's history dialog and confirm it renders without error
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Failed to load history:; No history provider registered for entity_type: ores.refdata.payment_frequency |
+
+** Open a Swap trade's swap leg detail and confirm Payment Frequency accepts/validates a code from the new list (e.g. Quarterly)
+
+Confirms =ores_trading_swap_legs_tbl.payment_frequency_code= now
+validates against =ores_refdata_validate_payment_frequency_fn= instead
+of the deleted =ores_trading_validate_payment_frequency_type_fn=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | at present importing ORE trades fails with different errors at the instrument level. check logs for workflow |
+
+** Open a Credit instrument (e.g. CDS) and confirm its Payment Frequency field validates against the new list
+
+This column previously had *no* FK validation at all — confirms the
+newly added validation on =ores_trading_credit_instruments_tbl= works.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open a Commodity instrument with a swap-like product type and confirm the (optional) Payment Frequency field validates against the new list when set, and is still allowed to be left blank
+
+Confirms the null-guarded validation on
+=ores_trading_commodity_instruments_tbl.payment_frequency_code=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open an Equity Swap instrument and confirm its Payment Frequency field validates against the new list
+
+Confirms the newly added validation on
+=ores_trading_equity_swap_instruments_tbl.payment_frequency=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-15T23:42:34Z |
+| Branch        | feature/tick-batch-publishing |
+| Commit        | f012b9a4d |
+| Worktree      | eager_maxwell |
+
+* Notes
+
+The FAILED run above surfaced three real, pre-existing bugs unrelated
+to the payment_frequency data model itself (history provider not
+registered, ORE importer storing raw tenor strings instead of
+frequency names, missing =trade_type_code= on swap-family instruments,
+and =stamp()= silently not overwriting nested =.audit.modified_by=
+fields). All four are fixed — see the task's =* Plan / Migration
+completed / Bugs found and fixed= subsection for detail — and
+confirmed via =ores.trading.service= logs: "Invalid modified_by:
+ores", "Invalid payment_frequency: 3M...", and "Invalid trade_type:
+..." no longer appear after rebuild. A handful of unrelated
+check-constraint and empty-date errors remain on other instrument
+types (composite, scripted, commodity, swaption, credit tenor, bond,
+equity_swap, vanilla_swap, cap_floor) — explicitly out of scope for
+this task, left for a future fix. This scenario should be re-run
+end-to-end (PENDING steps still open) to confirm PASS across the
+board.

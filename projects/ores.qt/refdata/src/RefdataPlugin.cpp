@@ -65,7 +65,7 @@
 #include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
-#include "ores.qt/PaymentFrequencyTypeController.hpp"
+#include "ores.qt/PaymentFrequencyController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
@@ -207,9 +207,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(floatingIndexTypeController_.get());
 
-    paymentFrequencyTypeController_ = std::make_unique<PaymentFrequencyTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connectControllerSignals(paymentFrequencyTypeController_.get());
+    paymentFrequencyController_ = std::make_unique<PaymentFrequencyController>(ctx_.main_window,
+                                                                               ctx_.mdi_area,
+                                                                               ctx_.client_manager,
+                                                                               ctx_.change_reason_cache,
+                                                                               ctx_.username,
+                                                                               ctx_.badge_cache,
+                                                                               this);
+    connectControllerSignals(paymentFrequencyController_.get());
 
     legTypeController_ = std::make_unique<LegTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
@@ -730,11 +735,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (floatingIndexTypeController_)
                 floatingIndexTypeController_->showListWindow();
         });
-        auto* actPaymentFrequencyTypes =
-            menuConventions->addAction(ico(Icon::Tag), tr("&Payment Frequency Types"));
-        connect(actPaymentFrequencyTypes, &QAction::triggered, this, [this]() {
-            if (paymentFrequencyTypeController_)
-                paymentFrequencyTypeController_->showListWindow();
+        auto* actPaymentFrequencies =
+            menuConventions->addAction(ico(Icon::Clock), tr("Payment Fre&quencies"));
+        connect(actPaymentFrequencies, &QAction::triggered, this, [this]() {
+            if (paymentFrequencyController_)
+                paymentFrequencyController_->showListWindow();
         });
         auto* actLegTypes = menuConventions->addAction(ico(Icon::Tag), tr("&Leg Types"));
         connect(actLegTypes, &QAction::triggered, this, [this]() {
@@ -1168,7 +1173,7 @@ void RefdataPlugin::on_logout() {
     monetaryNatureController_.reset();
     roundingTypeController_.reset();
     legTypeController_.reset();
-    paymentFrequencyTypeController_.reset();
+    paymentFrequencyController_.reset();
     floatingIndexTypeController_.reset();
     businessDayConventionTypeController_.reset();
     dayCountFractionTypeController_.reset();

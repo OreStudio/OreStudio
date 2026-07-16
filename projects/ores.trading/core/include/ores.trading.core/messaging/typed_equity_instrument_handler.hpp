@@ -54,6 +54,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 template <typename Request, typename Response, typename Service, typename SaveFn>
@@ -76,6 +77,7 @@ void handle_typed_equity_save(ores::nats::service::client& nats,
     if (auto req = decode<Request>(msg)) {
         try {
             Service svc(rctx);
+            stamp(req->data.audit, rctx);
             (svc.*save_fn)(req->data);
             BOOST_LOG_SEV(typed_equity_instrument_handler_lg(), debug)
                 << "Completed " << msg.subject;

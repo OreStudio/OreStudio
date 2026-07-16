@@ -50,7 +50,7 @@ class DatasetController;
 class DayCountFractionTypeController;
 class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
-class PaymentFrequencyTypeController;
+class PaymentFrequencyController;
 class LegTypeController;
 class CurrencyMarketTierController;
 class MonetaryNatureController;
@@ -160,7 +160,7 @@ private:
     std::unique_ptr<DayCountFractionTypeController> dayCountFractionTypeController_;
     std::unique_ptr<BusinessDayConventionTypeController> businessDayConventionTypeController_;
     std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
-    std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
+    std::unique_ptr<PaymentFrequencyController> paymentFrequencyController_;
     std::unique_ptr<LegTypeController> legTypeController_;
     std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<MonetaryNatureController> monetaryNatureController_;

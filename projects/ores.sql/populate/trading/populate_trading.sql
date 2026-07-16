@@ -36,7 +36,6 @@
 
 -- Instrument reference data
 \ir ./trading_floating_index_types_populate.sql
-\ir ./trading_payment_frequency_types_populate.sql
 \ir ./trading_leg_types_populate.sql
 
 \echo ''

@@ -119,39 +119,6 @@ register_trade_handlers(ores::nats::service::client& nats,
                                  h.history_floating_index_type(std::move(msg));
                              }));
 
-    // Instrument reference data — payment frequency types
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_payment_frequency_types_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.list_payment_frequency_types(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_payment_frequency_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.save_payment_frequency_type(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_payment_frequency_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.delete_payment_frequency_type(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_payment_frequency_type_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.history_payment_frequency_type(std::move(msg));
-                             }));
-
     // Instrument reference data — leg types
     subs.push_back(nats.queue_subscribe(std::string(get_leg_types_request::nats_subject),
                                         queue,

@@ -54,6 +54,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 /**
@@ -108,6 +109,7 @@ public:
         service::fra_instrument_service svc(ctx);
         if (auto req = decode<save_fra_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_fra_instrument(req->data);
                 reply(nats_, msg, save_fra_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -206,6 +208,7 @@ public:
         service::vanilla_swap_instrument_service svc(ctx);
         if (auto req = decode<save_vanilla_swap_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_vanilla_swap_instrument(req->data);
                 reply(nats_, msg, save_vanilla_swap_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -306,6 +309,7 @@ public:
         service::cap_floor_instrument_service svc(ctx);
         if (auto req = decode<save_cap_floor_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_cap_floor_instrument(req->data);
                 reply(nats_, msg, save_cap_floor_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -406,6 +410,7 @@ public:
         service::swaption_instrument_service svc(ctx);
         if (auto req = decode<save_swaption_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_swaption_instrument(req->data);
                 reply(nats_, msg, save_swaption_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -507,6 +512,7 @@ public:
         service::balance_guaranteed_swap_instrument_service svc(ctx);
         if (auto req = decode<save_balance_guaranteed_swap_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_balance_guaranteed_swap_instrument(req->data);
                 reply(
                     nats_, msg, save_balance_guaranteed_swap_instrument_response{.success = true});
@@ -610,6 +616,7 @@ public:
         service::callable_swap_instrument_service svc(ctx);
         if (auto req = decode<save_callable_swap_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_callable_swap_instrument(req->data);
                 reply(nats_, msg, save_callable_swap_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -712,6 +719,7 @@ public:
         service::knock_out_swap_instrument_service svc(ctx);
         if (auto req = decode<save_knock_out_swap_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_knock_out_swap_instrument(req->data);
                 reply(nats_, msg, save_knock_out_swap_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -814,6 +822,7 @@ public:
         service::inflation_swap_instrument_service svc(ctx);
         if (auto req = decode<save_inflation_swap_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_inflation_swap_instrument(req->data);
                 reply(nats_, msg, save_inflation_swap_instrument_response{.success = true});
             } catch (const std::exception& e) {
@@ -914,6 +923,7 @@ public:
         service::rpa_instrument_service svc(ctx);
         if (auto req = decode<save_rpa_instrument_request>(msg)) {
             try {
+                stamp(req->data.audit, ctx);
                 svc.save_rpa_instrument(req->data);
                 reply(nats_, msg, save_rpa_instrument_response{.success = true});
             } catch (const std::exception& e) {

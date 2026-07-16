@@ -8,7 +8,7 @@
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-badges-to-standard-codegen
-#+pr:
+#+pr: 1608
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -326,7 +326,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1608][#1608]] | [dq] Migrate badge datasets to standard codegen + publish-from-dq |
 
 * Review
 

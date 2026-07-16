@@ -2,7 +2,7 @@
 :ID: 4E1E0088-FA1A-4335-8904-35937E7280B8
 :END:
 #+title: ores.cpp.qt.detail_dialog_ui
-#+description: Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture.
+#+description: Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui=  — note this is the /pre-regroup/ layout.
 #+type: archetype
 #+output: projects/ores.qt/{component}/ui/{EntityPascal}DetailDialog.ui
 #+facet: ores.cpp.qt
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture.  Qt UI component: model/view class or dialog wired to the service layer via request/response messages.
+Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui=  — note this is the /pre-regroup/ layout.  Qt UI component: model/view class or dialog wired to the service layer via request/response messages.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

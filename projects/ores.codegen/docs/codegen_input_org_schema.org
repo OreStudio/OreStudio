@@ -38,7 +38,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 
 | Type | File | Description |
 |------+------+-------------|
-| =ores.codegen.facet_catalogue= | [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] | Profile → facet → template/output mapping; read by =generator.py= |
+| =ores.codegen.facet_catalogue= (retired) | [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] | Profile → facet → template/output mapping now lives per-facet on the graph, not in one file |
 | =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots; read by =manifest.py= |
 | =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language; read by =generator.py= |
 
@@ -276,10 +276,14 @@ navigation.
 
 * Generator-config schemas
 
-** ores.codegen.facet_catalogue
+** ores.codegen.facet_catalogue (retired)
 
-Declares every codegen profile: which templates each facet activates, the model
-types each template binds to, and how composite facet groups compose leaf facets.
+/Retired/ — declared every codegen profile: which templates each facet
+activated, the model types each template bound to, and how composite
+facet groups composed leaf facets. Superseded by the
+[[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]], where this information now lives directly
+on each facet's own node (its Archetypes table) instead of in one
+central file. Kept here for the historical schema shape.
 
 *** Section hierarchy
 

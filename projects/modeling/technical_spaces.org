@@ -78,6 +78,6 @@ The [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][template library overview]] descr
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this document instantiates.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the MASD variability concept (features, profiles, VMM).
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the applied overview, including the full ORE Studio facet catalogue with archetype counts.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — facet_catalogue.org, model types, and profile activation in ORE Studio.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the ores physical-space graph, model types, and profile activation in ORE Studio.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the layer/component dimension of the physical model.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that performs the M2T transformations.

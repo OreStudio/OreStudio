@@ -70,7 +70,7 @@ line of every block is the output-neutral GENERATED FILE header:)
 | [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] | Dialog lifecycle and service calls. |
 | [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]] | Detail dialog declarations. |
 | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] | Loads the generated =.ui=; field get/set per widget kind. |
-| [[id:4E1E0088-FA1A-4335-8904-35937E7280B8][ores.cpp.qt.detail_dialog_ui]] | Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture. |
+| [[id:4E1E0088-FA1A-4335-8904-35937E7280B8][ores.cpp.qt.detail_dialog_ui]] | Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui=  — note this is the /pre-regroup/ layout. |
 | [[id:0FC76068-16A8-430F-8A15-2E765B562046][ores.cpp.qt.mdi_window_header]] | MDI window declarations. |
 | [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]] | List view window hosted in the main MDI area. |
 

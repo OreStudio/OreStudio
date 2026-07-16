@@ -114,7 +114,8 @@ header, the JSON I/O implementation. The =repository= facet groups the
 archetypes for persistence: entity, mapper, repository (header and
 implementation for each). These are distinct roles, so they are distinct facets.
 
-Facets are defined in =facet_catalogue.org= (=projects/ores.codegen/library/=).
+Facets are defined as nodes in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]
+(=projects/ores.codegen/library/templates/=).
 
 *** Archetype
 
@@ -136,7 +137,8 @@ Putting it together with a concrete case:
 1. =currency= is a *logical entity* with metatype =domain_entity=.
 2. A developer runs =compass codegen generate --model ores.refdata.currency.org --profile domain=.
 3. The *transform* (=ores.codegen=) reads the model, confirms the metatype is =domain_entity=.
-4. It resolves the =domain= *facet* from =facet_catalogue.org=.
+4. It resolves the =domain= *facet* from the =ores.cpp.domain= node in
+   the physical-space graph.
 5. The =domain= facet contains three *archetypes* that bind to =domain_entity=:
    - =domain::entity_header= → =currency.hpp=
    - =domain::json_io_header= → =currency_json_io.hpp=
@@ -254,9 +256,10 @@ supported:
 #+end_example
 
   The above → supported set = all C++ except Qt. Entities with no =ores.*= properties:
-  supported set = model-types filter (backward-compatible). The TS→facet map lives in a
-  =* Technical spaces= section of =facet_catalogue.org=. All resolution logic is isolated
-  in =codegen/physical_space.py= with its own unit tests.
+  supported set = model-types filter (backward-compatible). The TS→facet map now lives
+  in each technical space's own =* Facets= table in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
+  graph]]. All resolution logic is isolated in =codegen/physical_space.py= with its own
+  unit tests.
 
 For the full treatment — model types, profile catalogue, activation semantics, and the
 MASD→ORE Studio mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
@@ -385,7 +388,7 @@ as the fitness function.
 ** ORE Studio physical and system model
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete TS→Part→Facet→Archetype model.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — facet_catalogue.org, model types, activation.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the ores physical-space graph, model types, activation.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture as physical-space instances.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split across components.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering and conventions for a full-stack entity.

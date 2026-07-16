@@ -30,8 +30,9 @@ projects/ores.codegen/
 │   ├── data/                # Static data (licences, modelines)
 │   │   ├── licence-GPL-v3.txt
 │   │   └── modeline.org     # Editor modelines — MASD-style org, read directly by generator.py
-│   ├── facet_catalogue.org  # Profile → model-type → template mapping (read by generator.py)
-│   └── templates/           # Mustache templates
+│   └── templates/           # Mustache templates + the ores.* physical-space
+│                             # graph (root -> technical space -> facet ->
+│                             # archetype), profile/output-path mapping
 │       ├── sql_*.mustache
 │       └── doc_*.org.mustache
 ├── models/                  # JSON model files driving generation

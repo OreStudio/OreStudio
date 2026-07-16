@@ -28,25 +28,9 @@ class QAction;
 
 namespace ores::qt {
 
-class DataLibrarianWindow;
-class DetachableMdiSubWindow;
-class DataDomainController;
-class SubjectAreaController;
-class CatalogController;
-class DatasetBundleController;
-class MethodologyController;
-class OriginDimensionController;
-class NatureDimensionController;
-class TreatmentDimensionController;
 class CurrencyController;
 class CountryController;
-class ChangeReasonCategoryController;
-class ChangeReasonController;
-class CodingSchemeAuthorityTypeController;
-class CodeDomainController;
-class CodingSchemeController;
 class ContactTypeController;
-class DatasetController;
 class DayCountFractionTypeController;
 class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
@@ -94,7 +78,7 @@ class PartyController;
  *        schemes, datasets, trading conventions, and related types.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Reference Data, Data Transfer catalogue, and related menus.
+ * Owns the Reference Data menu.
  */
 class ORES_QT_REFDATA_EXPORT RefdataPlugin : public PluginBase {
     Q_OBJECT
@@ -143,20 +127,10 @@ private:
     QAction* act_currency_groups_{nullptr};
     QAction* act_counterparties_{nullptr};
     QAction* act_parties_{nullptr};
-    QAction* act_data_librarian_{nullptr};
-
-    // Singleton MDI sub-window for Data Librarian (nullptr when not open)
-    DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
     std::unique_ptr<CurrencyController> currencyController_;
     std::unique_ptr<CountryController> countryController_;
-    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
-    std::unique_ptr<ChangeReasonController> changeReasonController_;
-    std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
-    std::unique_ptr<CodeDomainController> codeDomainController_;
-    std::unique_ptr<CodingSchemeController> codingSchemeController_;
     std::unique_ptr<ContactTypeController> contactTypeController_;
-    std::unique_ptr<DatasetController> datasetController_;
     std::unique_ptr<DayCountFractionTypeController> dayCountFractionTypeController_;
     std::unique_ptr<BusinessDayConventionTypeController> businessDayConventionTypeController_;
     std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
@@ -198,16 +172,6 @@ private:
     std::unique_ptr<CrmEnabledDerivedPairController> crmEnabledDerivedPairController_;
     std::unique_ptr<CounterpartyController> counterpartyController_;
     std::unique_ptr<PartyController> partyController_;
-
-    // Data Catalogue controllers (owned here, contributed to data_management_menu)
-    std::unique_ptr<DataDomainController> dataDomainController_;
-    std::unique_ptr<SubjectAreaController> subjectAreaController_;
-    std::unique_ptr<CatalogController> catalogController_;
-    std::unique_ptr<DatasetBundleController> datasetBundleController_;
-    std::unique_ptr<MethodologyController> methodologyController_;
-    std::unique_ptr<OriginDimensionController> originDimensionController_;
-    std::unique_ptr<NatureDimensionController> natureDimensionController_;
-    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
 };
 
 }

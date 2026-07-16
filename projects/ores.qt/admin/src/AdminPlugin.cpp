@@ -192,7 +192,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     });
 
     // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
-    // Domain's detail dialog (see BadgeMappingsTab in ores.qt.refdata),
+    // Domain's detail dialog (see BadgeMappingsTab in ores.qt.data_management),
     // not a standalone window here.
 
     // ---- System > Administration (appended at end, admin-only) -----------

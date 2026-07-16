@@ -41,7 +41,7 @@ from its own CMake target.
 | [[id:B7269E9C-83B6-4D6C-80DE-D796AB89B1BD][ores.qt.workflow]]      | Workflow instance tracker                    | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 | [[id:31D9C75A-DE71-4B98-9D33-D8ED86000C94][ores.qt.workspace]]     | Workspace management and isolation view      | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 | [[id:DB5A4924-8F0A-440C-873E-D823F430043E][ores.qt.admin]]         | User/role management, feature flags          | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_transfer]] | Cross-domain entity import/export            | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
+| [[id:92492264-B67A-4AC7-8A58-7D706D9F0DAB][ores.qt.data_management]] | Data catalogue, change-reason, coding-scheme controllers            | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
 
 Related documents:
 

@@ -67,7 +67,6 @@ target_link_libraries(${lib_target_name}
         ores.ore.core.lib
         ores.storage.lib
         ores.variability.api.lib
-        ores.dq.api.lib
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
         ores.qt.lib

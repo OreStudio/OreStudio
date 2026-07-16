@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 0161889E-40E9-4F5B-9AAC-7FB2FF0719B8
+:END:
+#+title: Test Scenario: Verify Data Management plugin move
+#+description: Manually verify the 14 ores.dq-owned entities' menus and windows still work correctly after moving from RefdataPlugin into the new DataManagementPlugin.
+#+type: test_scenario
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:D5DF4CFA-5316-4825-BC4B-37C96726C00C][Move ores.dq-owned entities from RefdataPlugin into a new ores.qt.data_management plugin]] in [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:D5DF4CFA-5316-4825-BC4B-37C96726C00C][Move ores.dq-owned entities from RefdataPlugin into a new ores.qt.data_management plugin]] |
+| Parent story  | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]]   |
+| Target dialog | DataManagementPlugin (Data Catalogue, Classifications, Audit Trail, Data Librarian) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in and select the Barclays Plc party
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select "BARCLAYS PLC" as the active party if prompted. If the
+database has been recreated since this was last provisioned, first
+run =./compass.sh shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to reprovision it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Data Management menu exists with all submenus
+
+Confirm the top-level "Data Management" menu appears, containing:
+Classifications (Coding Schemes, Code Domains, Coding Scheme
+Authority Types), Audit Trail (Change Reason Categories, Change
+Reasons), Data Catalogue (Data Domains, Subject Areas, Catalogues,
+Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
+Dimensions), and Data Librarian.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Reference Data menu no longer has the moved entities
+
+Confirm Reference Data > Classifications now shows only Asset Class
+Codes and Instrument Codes (Coding Schemes/Code Domains/Coding Scheme
+Authority Types should no longer appear there), and there is no
+"Audit Trail" submenu under Reference Data any more.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open one Data Catalogue window
+
+Data Management > Data Catalogue > Data Domains (or any other entry
+in this submenu). Confirm the list window opens and loads without
+error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open one Classifications window
+
+Data Management > Classifications > Coding Schemes. Confirm the list
+window opens and loads without error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open one Audit Trail window
+
+Data Management > Audit Trail > Change Reasons. Confirm the list
+window opens and loads without error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Data Librarian
+
+Data Management > Data Librarian. Confirm the window opens without
+error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check Code Domain's Badge Mappings tab
+
+Data Management > Classifications > Code Domains. Open an existing
+code domain's detail dialog (double-click a row, or select + Edit).
+Confirm a "Badge Mappings" tab is present alongside the main fields
+tab, and that it lists entity_code -> badge_definition mappings (or
+shows an empty-state message) without error. This tab (and its
+backing =BadgeMappingsTab= class) just moved from =ores.qt.refdata=
+into =ores.qt.data_management= in this same task — re-verify it
+specifically since it wasn't covered by the first pass of this
+scenario.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no code domains; ; ; [[file:scenario_verify-data-management-plugin-move_step8_20260716_113202.png]] |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-16T10:32:05Z |
+| Branch        | feature/move-dq-entities-to-data-management-plugin |
+| Commit        | 948a2bb04 |
+| Worktree      | brave_hopper |
+
+* Notes

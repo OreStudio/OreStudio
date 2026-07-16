@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: D5DF4CFA-5316-4825-BC4B-37C96726C00C
+:END:
+#+title: Task: Move ores.dq-owned entities from RefdataPlugin into a new ores.qt.data_management plugin
+#+description: 14 entities owned by ores.dq (catalog, change_reason, change_reason_category, code_domain, coding_scheme, coding_scheme_authority_type, data_domain, dataset, dataset_bundle, methodology, nature_dimension, origin_dimension, subject_area, treatment_dimension) currently live in RefdataPlugin's Qt UI despite having no ores.refdata backend at all. Repurpose the existing empty ores.qt.data_transfer plugin stub into ores.qt.data_management (matching the 'Data Management' menu label already used in RefdataPlugin's code) and move these entities' controllers, menus, and the Data Librarian window there, correcting the component-ownership mismatch before any HistoryDialog migration work on them.
+#+type: task
+#+level: s1
+#+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
+#+owner: marco
+#+branch: feature/move-dq-entities-to-data-management-plugin
+#+pr: 1601
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+While scoping [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][Migrate remaining ores.qt.refdata entities without a codegen
+model onto the generic HistoryDialog]], found that all 14 of that
+task's non-trading entities are actually owned by =ores.dq=
+(=catalog=, =change_reason=, =change_reason_category=,
+=code_domain=, =coding_scheme=, =coding_scheme_authority_type=,
+=data_domain=, =dataset=, =dataset_bundle=, =methodology=,
+=nature_dimension=, =origin_dimension=, =subject_area=,
+=treatment_dimension=) — none has a domain entity anywhere under
+=ores.refdata=. Their Qt controllers, menus ("Data Catalogue"
+submenu, "Change Reason"/"Coding Scheme" sections), and the Data
+Librarian window are all hosted by =RefdataPlugin= regardless, a
+pre-existing component-ownership mismatch unrelated to the
+HistoryDialog migration itself.
+
+=projects/ores.qt/data_transfer= already exists as an empty plugin
+stub (just a bare =PluginBase= subclass, no controllers) — its name
+doesn't fit what it would actually contain, but its *slot* is
+evidently the intended home: =RefdataPlugin='s own code already
+labels this cluster "Data Catalogue controllers" under a
+=// ---- Data Management menu= comment. Repurpose that stub into
+=ores.qt.data_management= (rename plugin, update CMake target/library
+name, =IPlugin::name()=, and any references) and move all 14
+entities' controllers, their menu wiring, and the Data Librarian
+window there — correcting the component-ownership mismatch before
+any HistoryDialog migration work is attempted on them (that's
+[[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]]'s job, not this task's).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- =ores.qt.data_transfer= renamed to =ores.qt.data_management=
+  (directory, CMake target, library name, plugin class name,
+  =IPlugin::name()=), with no leftover references to the old name.
+- All 14 =ores.dq=-owned entities' controllers, menu entries, and the
+  Data Librarian window moved from =RefdataPlugin= into the new
+  =DataManagementPlugin=; =RefdataPlugin= no longer references any of
+  them.
+- Application still builds and starts cleanly; every moved menu item
+  still opens its list/detail window correctly from its new plugin
+  home (manual QA).
+- [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]] can then proceed with these 14 entities' actual
+  HistoryDialog migration against their new, correctly-owned home.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Repurposed the empty =ores.qt.data_transfer= plugin stub into
+=ores.qt.data_management= (directory, CMake target/library name,
+plugin class, =IPlugin::name()=). Physically =git mv='d every file
+(controllers, detail/history dialogs, MDI windows, client models) for
+all 14 entities from =ores.qt/refdata= to =ores.qt/data_management= —
+no namespace changes needed since both are =ores::qt=. Also moved the
+shared Data Librarian infrastructure discovered along the way:
+=DataLibrarianWindow=, =PublishBundleWizard=, =PublishDatasetsDialog=,
+=PublicationAuditDialog=, =ChangeReasonItemDelegate=,
+=DatasetItemDelegate=, =DatasetViewDialog=, and
+=ClientDatasetDependencyModel= (all exclusively used by the moved
+entities' windows).
+
+Rewrote =DataManagementPlugin= to construct all 14 controllers in
+=on_login= and own the Data Catalogue / Classifications / Audit Trail
+/ Data Librarian menu sections it previously only held a menu handle
+for (=RefdataPlugin= built those submenus into a menu it didn't own).
+=RefdataPlugin='s "Classifications" submenu now only has Asset Class
+Codes and Instrument Codes; its "Audit Trail" submenu is gone
+entirely (moved wholesale).
+
+Found and fixed a genuine pre-existing bug during the move:
+=DatasetController= was constructed in =on_login= but had no menu
+entry anywhere — dead code, since users could never trigger
+=showListWindow()= on it. Added a "Datasets" item to the Data
+Catalogue submenu.
+
+CMake changes: renamed the target/library, added =ores.dq.api.lib=/
+=ores.qt.headless.lib= dependencies (needed by the moved controllers,
+previously satisfied transitively via =ores.qt.refdata.lib=), enabled
+=CMAKE_AUTOUIC= (needed for the moved =.ui= forms — the stub plugin
+never had any), and updated the application's dependency list and a
+stale comment in =MainWindow.cpp=. Updated
+=component_overview.org= docs across every affected component
+(=ores.qt.refdata=, =ores.qt.trading=, =ores.qt.application=,
+=ores.qt.workspace=, plus the two system-level architecture docs).
+
+QA scenario 0161889E: Data Management menu has all submenus and
+every moved window opens correctly from its new home; Reference Data
+no longer shows the moved entities. A later re-run added a Badge
+Mappings tab check, whose step FAILed only because the environment's
+Code Domains table was empty at the time — not a defect in the move
+— leaving the scenario's overall status FAILED pending a retest with
+seeded data.
+
+* Notes
+
+None of these 14 entities has a codegen model yet (except
+=code_domain= and =dataset_bundle=, whose models live under
+=ores.dq='s own codegen and were out of this task's scope) — adding
+one for the rest, so this class of component-ownership drift can't
+recur, is tracked as future work per the story owner's explicit
+direction ("note we want to codegen them ultimately").
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | FAILED | All steps passed except the Badge Mappings tab check, which FAILed due to an empty Code Domains table in the test environment (data gap, not a defect). |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1601][#1601]] | [qt,dq] Move ores.dq-owned entities into DataManagementPlugin |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Duplicate backlog table row for EE0459FE | story.org | Accepted | Removed the duplicate row. |
+| 2 | Stale DataTransferPlugin name/contributor list | qt_plugin_architecture.org | Accepted | Renamed to DataManagementPlugin; dropped RefdataPlugin from data_management_menu contributors. |
+| 3 | Leftover ores.dq.api.lib link in ores.qt.refdata | CMakeLists.txt | Accepted | Removed; refdata no longer references ores.dq. |
+| 4 | PR description over-claims a BadgeCache change not in this diff | PR body | Accepted | Corrected PR description; that change belongs to PR #1599. |
+| 5 | Missing rendered diagram PNG for data_management | component_overview.org | Accepted | Generated and committed ores.qt.data_management.png. |
+| 6 | Task doc still says QA scenario PASSED after it was later amended to FAILED | task doc | Accepted | Updated Plan/Result prose and Test Scenarios table to reflect the FAILED status and data-gap caveat. |
+| 7 | New Datasets menu item is a scope addition beyond a pure move | DataManagementPlugin.cpp | Declined | Intentional fix for a pre-existing dead controller (DatasetController had no menu entry); low-risk, already documented in the task Result. |
+
+* Result
+
+Repurposed =ores.qt.data_transfer= (an empty plugin stub) into
+=ores.qt.data_management=, and moved all 14 =ores.dq=-owned entities'
+controllers, dialogs, MDI windows, client models, and the Data
+Librarian window there from =RefdataPlugin=, correcting the
+component-ownership mismatch. Fixed a genuine dead-code bug found
+along the way (=DatasetController= had no menu entry). QA scenario
+0161889E covered every moved menu and window; its one FAIL (Badge
+Mappings tab, step 8) was an empty-database data gap rather than a
+defect. [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]] can now proceed with these entities' actual
+HistoryDialog migration against their corrected home.

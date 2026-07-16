@@ -15,22 +15,25 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.qt.data_transfer")
+set(name "ores.qt.data_management")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-set(ORES_QT_DATA_TRANSFER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(ORES_QT_DATA_MANAGEMENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-# Qt code generation (MOC for Q_OBJECT)
+# Qt code generation (MOC for Q_OBJECT, UIC for .ui forms)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS "${ORES_QT_DATA_TRANSFER_DIR}/include/*.hpp")
+file(GLOB_RECURSE HEADERS "${ORES_QT_DATA_MANAGEMENT_DIR}/include/*.hpp")
+# UI forms for AUTOUIC.
+file(GLOB FORMS "${ORES_QT_DATA_MANAGEMENT_DIR}/ui/*.ui")
 
-add_library(${lib_target_name} SHARED ${files} ${HEADERS})
+add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)
@@ -38,6 +41,7 @@ endif()
 
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
+    AUTOUIC_SEARCH_PATHS "${ORES_QT_DATA_MANAGEMENT_DIR}/ui;${ORES_QT_API_UI_DIR}"
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     LIBRARY_OUTPUT_DIRECTORY "${ORES_PLUGIN_OUTPUT_DIRECTORY}"
@@ -45,13 +49,19 @@ set_target_properties(${lib_target_name} PROPERTIES
     BUILD_RPATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${ORES_QT_DATA_TRANSFER_DIR}/include)
+    ${ORES_QT_DATA_MANAGEMENT_DIR}/include)
 target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.qt.api.lib)
+        ores.qt.api.lib
+        ores.qt.headless.lib
+        ores.dq.api.lib
+    PRIVATE
+        # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
+        ores.qt.lib
+        ores.qt.workflow.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

@@ -72,7 +72,8 @@ git diff --exit-code -- projects/ores.codegen/library/templates
    profiles), then the =mustache= block with an explicit
    =:tangle <name>.mustache= header and the ={{! GENERATED FILE }}=
    first line.
-3. Run the tangle; wire the template into [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+3. Run the tangle; add a row for the new archetype to its facet's
+   =* Archetypes= table (=ores.<space>.<facet>.org=).
 4. Update the group doc's =* Facets= table if the facet is new.
 
 * Status
@@ -92,4 +93,3 @@ fixtures from an untracked venv.)
   that are derived rather than configured. Read this before adding a new
   switch to a template.
 - [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

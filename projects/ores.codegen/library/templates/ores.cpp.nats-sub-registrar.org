@@ -59,5 +59,4 @@ One subheading per template, in the archetype docs below.
 
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the architecture meta-pattern this facet is the NATS instance of.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
 - [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] — the handler this sub-registrar wires up.

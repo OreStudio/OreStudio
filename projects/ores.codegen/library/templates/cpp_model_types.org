@@ -17,8 +17,8 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 

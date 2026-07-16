@@ -17,8 +17,8 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
@@ -76,4 +76,3 @@ gated by ={{#declare_vars}}=, ={{#coalesce}}= and ={{#copy_empty}}=.
   Part 2. Structural predicates (=has_tenant_id=, =is_uuid=, …) are
   derived from the model, not configured.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogue and codegen routes.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

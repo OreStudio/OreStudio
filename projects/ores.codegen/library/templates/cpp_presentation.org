@@ -17,8 +17,8 @@ holds its source in a =mustache= block tangled to the sibling
 generated artefacts — edit this document, then run the tangle
 (=compass build --direct tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership come from
-[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Output paths and profile membership are documented in each template's row
+of the Archetypes table below.
 
 * Summary
 
@@ -46,5 +46,4 @@ this facet's mapper converts a domain value to *display* strings
 
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD concept these templates project.
-- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this facet implements.

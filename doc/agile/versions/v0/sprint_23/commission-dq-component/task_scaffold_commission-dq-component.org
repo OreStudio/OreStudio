@@ -8,7 +8,7 @@
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
 #+branch: feature/commission-dq-component
-#+pr:
+#+pr: 1607
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1607][#1607]] | [agile] Scaffold: Commission ores.qt.dq — full-stack codegen for the DQ component |
 
 * Review
 

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: C8945E22-EFDF-4D8B-9AF7-D76DE6E6D692
+:END:
+#+title: Test Scenario: Verify tenant-scoped badge catalogue (severities, definitions, code domains, mappings)
+#+description: Manual QA that Barclays Plc sees its own published copy of the badge catalogue after the standard codegen + publish-from-dq migration.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:badges:dq:badge-colour-scheme-support:sprint_23:v0:
+#+target_dialog: CodeDomainMdiWindow / BadgeDefinitionMdiWindow / BadgeSeverityMdiWindow (Reference Data > Classifications > Code Domains; System > Configuration > Badge Definitions / Badge Severities)
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] in [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] |
+| Parent story  | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]   |
+| Target dialog | CodeDomainMdiWindow / BadgeDefinitionMdiWindow / BadgeSeverityMdiWindow |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A freshly recreated database (=compass db recreate -y=), so the
+  system tenant's badge catalogue and its DQ artefact/dataset rows
+  are in a known state.
+- Barclays Plc provisioned via
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+  (this already publishes the =base= bundle, which now includes the
+  badge severities/definitions/code domains/mappings datasets --
+  confirmed automatically in this session's manual verification).
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in as Barclays and open Code Domains
+
+Log in as normal (Barclays Plc tenant). Go to Reference Data >
+Classifications > Code Domains. Confirm the list is populated (31
+rows expected: party_status, book_status, fsm_state, etc.) -- not
+empty. This is the exact list that was empty before this task's fix.
+
+** Open Badge Definitions
+
+Go to System > Configuration > Badge Definitions. Confirm the list
+is populated (57 rows expected: active, inactive, frozen, etc.),
+each with its background/text colour and severity visible.
+
+** Open Badge Severities
+
+Go to System > Configuration > Badge Severities. Confirm the list is
+populated (6 rows: secondary, info, success, warning, danger,
+primary).
+
+** Confirm badge rendering still works end-to-end
+
+Open any list that renders badges from these domains -- e.g. Book
+list's Status column (book_status domain) or Party list's Status
+column (party_status domain). Confirm badges still render with
+correct colours (e.g. ACTIVE -- green, INACTIVE -- grey), matching
+what the Badge Definitions list shows for those same codes. This
+confirms BadgeCache (which reads cross-tenant, unaffected by this
+migration) and the newly tenant-scoped admin CRUD lists agree on the
+same data.
+
+** Confirm a second tenant would get its own independent copy
+
+(Optional, if time permits.) Provision a second tenant (e.g. via
+=compass shell=, any dataset size) and confirm its Code
+Domains/Badge Definitions/Badge Severities lists are also populated
+independently -- i.e. this isn't a fluke specific to Barclays.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

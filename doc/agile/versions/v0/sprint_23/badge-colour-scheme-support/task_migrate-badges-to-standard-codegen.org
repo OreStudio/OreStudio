@@ -317,7 +317,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C8945E22-EFDF-4D8B-9AF7-D76DE6E6D692][Verify tenant-scoped badge catalogue (severities, definitions, code domains, mappings)]] | PENDING | |
 
 * PRs
 

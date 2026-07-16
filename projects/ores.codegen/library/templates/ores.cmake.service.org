@@ -32,12 +32,10 @@ One template: =src/CMakeLists.txt= for a =.service= component
 
 A sibling variant of [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]'s =src= archetype, split out
 because the service flavour has a two-target shape (library + exe)
-the others don't. Note: an earlier, standalone-service =src=
-variant with no sibling-core dependency
-(=cmake_service_src.mustache=, the pre-regroup shape) still exists in
-this directory but is referenced by no profile or code — it has no
-node in this graph and is a dead-code-audit candidate, not part of
-this facet.
+the others don't. An earlier, standalone-service =src= variant with
+no sibling-core dependency (=cmake_service_src.mustache=, the
+pre-regroup shape) was confirmed dead — zero profile or code
+references, no generated output anywhere — and deleted.
 
 * Mustache incantations
 

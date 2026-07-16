@@ -164,7 +164,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | counterparty_contact_information generator test was not actually fixed (still asserted version==1/"system.new") | =projects/ores.refdata/api/tests/generators_tests.cpp= | Fixed | Mirrored the party-side fix: version==0, change_reason_code=="system.test", matching the actual generator output. |
+| 2 | Conclusion's tab recap omits Provenance (Overview correctly lists all five) | =doc/manual/user_guide/chapter_8_parties.org= | Fixed | Added Provenance to the Conclusion's tab list. |
+| 3 | Three party_type badge colours (HedgeFund/Corporate/CentralBank) sit in the same violet/indigo family — technically distinct hex, may be hard to tell apart at a glance | =projects/ores.sql/populate/dq/dq_badge_system_populate.sql= | Declined | Nit-level per reviewer's own note; the literal duplicate-hex bug this PR fixes is resolved, and re-tuning hue distinctiveness across all 8 codes is a separate, broader design pass. |
 
 * Result
 

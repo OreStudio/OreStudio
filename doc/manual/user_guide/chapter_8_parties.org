@@ -315,8 +315,8 @@ in a single corporate hierarchy tree — with the sole exception of the
 tenant's own house root; the Parent Party combo on the General tab is
 a required field precisely because that exception is so narrow.
 Building on that, the Qt interface took the record from the list view
-through its General, Identifiers, Contact Information, and Hierarchy
-tabs, and through the editing, deleting, and history workflows, where
+through its General, Identifiers, Contact Information, Hierarchy, and
+Provenance tabs, and through the editing, deleting, and history workflows, where
 reverting to an earlier version demonstrated the same bitemporal
 audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. The shell's
 =provision party= command covers bulk/GLEIF onboarding (see

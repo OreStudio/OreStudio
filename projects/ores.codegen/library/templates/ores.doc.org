@@ -41,14 +41,10 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 0* | Agile artefact scaffolds: task, story, sprint, version. |
-| [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 0* | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook. |
-| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 0* | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset_overview. |
+| [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 5 | Agile artefact scaffolds: task, story, sprint, version, test_scenario. |
+| [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 11 | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook, component, investigation, product identity, release notes. |
+| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 7 | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset. |
 | [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 4 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
-
-(* archetype docs for these facets have not yet been migrated onto the
-physical-space graph; their templates still live as flat,
-=#+type: knowledge=-tagged docs pending that follow-up.)
 
 * See also
 

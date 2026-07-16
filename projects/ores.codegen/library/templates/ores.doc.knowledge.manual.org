@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 3268F1AC-D311-4418-8DA1-FC0F0B6BCE55
 :END:
-#+title: Archetype: doc_manual.org.mustache
+#+title: ores.doc.knowledge.manual
 #+description: User-manual chapter under =doc/manual/user_guide/=.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 User-manual chapter under =doc/manual/user_guide/=.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

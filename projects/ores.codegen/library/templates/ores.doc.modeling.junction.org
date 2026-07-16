@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 631BD15D-F858-4E31-9FF0-506B82D2A6AC
 :END:
-#+title: Archetype: doc_junction.org.mustache
+#+title: ores.doc.modeling.junction
 #+description: Codegen SQL join-table + C++ counterpart (=*_junction.org= suffix drives loader dispatch): Left/Right FK sides, Columns, SQL/C++ sections.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-07-16
 
 SQL join table with its C++ struct and repository counterpart.  The =*_junction.org=
 suffix causes the org loader to dispatch this as a =junction= model type.

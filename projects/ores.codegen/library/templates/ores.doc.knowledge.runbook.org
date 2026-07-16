@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: E17F441C-AD18-4AB9-9AD6-4B26AA482D2D
 :END:
-#+title: Archetype: doc_runbook.org.mustache
+#+title: ores.doc.knowledge.runbook
 #+description: Runbook: Goal / Preconditions / Steps / Postconditions composition of recipes and skills.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Runbook: Goal / Preconditions / Steps / Postconditions composition of recipes and skills.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

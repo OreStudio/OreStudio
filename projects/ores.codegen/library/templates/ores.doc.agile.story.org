@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: EBA39080-4092-428B-B49E-A6B3711E3A7B
 :END:
-#+title: Archetype: doc_story.org.mustache
+#+title: ores.doc.agile.story
 #+description: Story page: Goal, Status table, Acceptance, =* Tasks= table compass wires rows into, Decisions, Out of scope.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.agile
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Story page: Goal, Status table, Acceptance, =* Tasks= table compass wires rows into, Decisions, Out of scope.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

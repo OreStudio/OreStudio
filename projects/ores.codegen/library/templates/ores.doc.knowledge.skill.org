@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: BBE1DC17-3961-4061-BF6D-ED30E1C6FB75
 :END:
-#+title: Archetype: doc_skill.org.mustache
+#+title: ores.doc.knowledge.skill
 #+description: Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=).
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=).  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

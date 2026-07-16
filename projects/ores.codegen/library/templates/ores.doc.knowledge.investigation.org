@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 4086A9C8-E7BB-43E4-B183-FF606B2B17E7
 :END:
-#+title: Archetype: doc_investigation.org.mustache
+#+title: ores.doc.knowledge.investigation
 #+description: Investigation doc with the =Investigation:= title prefix and findings skeleton.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Investigation doc with the =Investigation:= title prefix and findings skeleton.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

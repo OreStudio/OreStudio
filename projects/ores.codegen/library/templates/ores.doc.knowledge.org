@@ -58,10 +58,19 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * Archetypes
 
-Per-template archetype docs for this facet have not yet been migrated
-onto the physical-space graph — the templates still live as flat,
-=#+type: knowledge=-tagged docs in this directory pending that
-follow-up.
+| Archetype | Description |
+|-----------+-------------|
+| [[id:12544684-931D-4740-829C-D93AE2F8836B][ores.doc.knowledge.product_identity]] | Product-identity page skeleton. |
+| [[id:3268F1AC-D311-4418-8DA1-FC0F0B6BCE55][ores.doc.knowledge.manual]] | User-manual chapter under =doc/manual/user_guide/=. |
+| [[id:4086A9C8-E7BB-43E4-B183-FF606B2B17E7][ores.doc.knowledge.investigation]] | Investigation doc with the =Investigation:= title prefix and findings skeleton. |
+| [[id:4723841E-96FB-42F9-A6ED-94B1EFD9253E][ores.doc.knowledge.capture]] | Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred). |
+| [[id:4829F5E5-5B63-4A9B-ACFA-D7D9B94043E0][ores.doc.knowledge.knowledge]] | Generic knowledge page: Summary / Detail / See also. |
+| [[id:8FECAF12-6D73-42E7-8337-D0B80CE6D421][ores.doc.knowledge.memory]] | Project memory: =#+memory_subtype= plus statement / why / how-to-apply one-shot body fields. |
+| [[id:98439F43-C282-423A-8F4F-8FE5CC464A05][ores.doc.knowledge.recipe]] | Recipe with Question / Answer / Script / Tested-by sections, each renderable verbatim from flags (=--question=, =--answer=, …). |
+| [[id:BBE1DC17-3961-4061-BF6D-ED30E1C6FB75][ores.doc.knowledge.skill]] | Claude Code skill =SKILL.org= (tangled by the skills build into =.claude/skills/=). |
+| [[id:DA424429-4FC6-4594-8D9D-7183F5D9C08B][ores.doc.knowledge.component]] | Component =component_overview.org=: =#+component_name= / =#+brief= keywords read back by codegen, plus the standard overview sections. |
+| [[id:E17F441C-AD18-4AB9-9AD6-4B26AA482D2D][ores.doc.knowledge.runbook]] | Runbook: Goal / Preconditions / Steps / Postconditions composition of recipes and skills. |
+| [[id:F4149F7D-4F84-4CA4-99B3-37AA6CF04A5C][ores.doc.knowledge.release_notes]] | Sprint release-notes page generated at sprint close. |
 
 * See also
 

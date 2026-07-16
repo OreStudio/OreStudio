@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: C0B89074-D107-46E5-B9D2-146AE14ADDFA
 :END:
-#+title: Archetype: doc_entity_org.org.mustache
+#+title: ores.doc.modeling.entity_org
 #+description: Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: DA424429-4FC6-4594-8D9D-7183F5D9C08B
 :END:
-#+title: Archetype: doc_component.org.mustache
+#+title: ores.doc.knowledge.component
 #+description: Component =component_overview.org=: =#+component_name= / =#+brief= keywords read back by codegen, plus the standard overview sections.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Component =component_overview.org=: =#+component_name= / =#+brief= keywords read back by codegen, plus the standard overview sections.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 990E0A18-1FC2-4FD8-8013-5A04306BA386
 :END:
-#+title: Archetype: doc_lookup_entity.org.mustache
+#+title: ores.doc.modeling.lookup_entity
 #+description: Codegen batch-loaded reference table (=*_lookup_entity.org= suffix drives loader dispatch): minimal frontmatter, Primary key, Columns, optional Artefact indexes.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-07-16
 
 Batch-loaded reference table with no management UI.  Typically driven by an external
 data source (LEI golden copy, reporting definition catalogue, etc.).  The

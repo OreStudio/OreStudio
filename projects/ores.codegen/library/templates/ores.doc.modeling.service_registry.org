@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: C635D9E4-C934-4BBF-A5CA-D81DEC345FFD
 :END:
-#+title: Archetype: doc_service_registry.org.mustache
+#+title: ores.doc.modeling.service_registry
 #+description: Codegen service-registry model: catalogue of backend services with psql vars, IAM roles, and DML grant prefixes. One top-level section per service.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-07-16
 
 Catalogue of ORE Studio backend services.  Each top-level heading is one service
 entry with connection variables, IAM role, and the list of DML prefixes that the

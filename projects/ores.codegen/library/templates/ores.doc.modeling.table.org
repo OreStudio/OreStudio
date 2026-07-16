@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: D97584D2-724B-4CA1-B8EE-D73158B2920A
 :END:
-#+title: Archetype: doc_table.org.mustache
+#+title: ores.doc.modeling.table
 #+description: Codegen SQL-only table model (=*_table.org= suffix drives loader dispatch): frontmatter plus Primary key / Columns / Validation function / Insert trigger skeleton.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-07-16
 
 SQL-only reference-data table.  No C++ or Qt generation.  The =*_table.org= suffix
 causes the org loader to dispatch this as a =table= model type, feeding

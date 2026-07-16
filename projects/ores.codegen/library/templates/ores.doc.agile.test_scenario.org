@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: F5E1ECFC-D5C3-4117-98C9-10AF04F583A2
 :END:
-#+title: Archetype: doc_test_scenario.org.mustache
+#+title: ores.doc.agile.test_scenario
 #+description: Test scenario page: Scenario Info, Steps checklist, Results (rewritten in place by the QA Validation Runner panel), Notes.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.agile
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-07-07
-#+updated: 2026-07-07
+#+updated: 2026-07-16
 
 Test scenario page: Scenario Info, Steps checklist, Results (rewritten in place by the QA Validation Runner panel), Notes.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

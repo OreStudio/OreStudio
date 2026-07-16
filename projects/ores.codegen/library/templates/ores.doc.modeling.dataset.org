@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: DB094CBB-5E9A-4EEB-9B3B-B48654734590
 :END:
-#+title: Archetype: doc_dataset.org.mustache
+#+title: ores.doc.modeling.dataset
 #+description: Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.modeling
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

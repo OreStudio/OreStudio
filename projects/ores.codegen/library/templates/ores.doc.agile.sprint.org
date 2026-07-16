@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 9FAAF3AA-F80C-441C-A22C-81428879CD69
 :END:
-#+title: Archetype: doc_sprint.org.mustache
+#+title: ores.doc.agile.sprint
 #+description: Sprint page: Mission, Status table (state =STARTED=), themed =* Stories= tables.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.agile
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Sprint page: Mission, Status table (state =STARTED=), themed =* Stories= tables.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 9BED911E-FA50-4DE4-A3B9-0A2D0906A381
 :END:
-#+title: Archetype: doc_version.org.mustache
+#+title: ores.doc.agile.version
 #+description: Version page topping the agile composition tree.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.agile
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Version page topping the agile composition tree.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

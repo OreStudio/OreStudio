@@ -65,11 +65,13 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * Archetypes
 
-Per-template archetype docs for this facet have not yet been migrated
-onto the physical-space graph — the four templates (=doc_version=,
-=doc_sprint=, =doc_story=, =doc_task=) still live as flat,
-=#+type: knowledge=-tagged docs in this directory pending that
-follow-up.
+| Archetype | Description |
+|-----------+-------------|
+| [[id:21B1EA52-9B33-402F-8CD9-D604FBF41A04][ores.doc.agile.task]] | Task page: Goal, Status, Acceptance, transient Plan, Notes, =* Test Scenarios=, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching. |
+| [[id:9BED911E-FA50-4DE4-A3B9-0A2D0906A381][ores.doc.agile.version]] | Version page topping the agile composition tree. |
+| [[id:9FAAF3AA-F80C-441C-A22C-81428879CD69][ores.doc.agile.sprint]] | Sprint page: Mission, Status table (state =STARTED=), themed =* Stories= tables. |
+| [[id:EBA39080-4092-428B-B49E-A6B3711E3A7B][ores.doc.agile.story]] | Story page: Goal, Status table, Acceptance, =* Tasks= table compass wires rows into, Decisions, Out of scope. |
+| [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][ores.doc.agile.test_scenario]] | Test scenario page: Scenario Info, Steps checklist, Results (rewritten in place by the QA Validation Runner panel), Notes. |
 
 * See also
 

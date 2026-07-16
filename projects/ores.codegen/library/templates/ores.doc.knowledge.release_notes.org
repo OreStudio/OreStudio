@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: F4149F7D-4F84-4CA4-99B3-37AA6CF04A5C
 :END:
-#+title: Archetype: doc_release_notes.org.mustache
+#+title: ores.doc.knowledge.release_notes
 #+description: Sprint release-notes page generated at sprint close.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Sprint release-notes page generated at sprint close.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

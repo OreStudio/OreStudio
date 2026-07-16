@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 4723841E-96FB-42F9-A6ED-94B1EFD9253E
 :END:
-#+title: Archetype: doc_capture.org.mustache
+#+title: ores.doc.knowledge.capture
 #+description: Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred).
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Product-backlog capture: What/Why skeleton plus the bucket-aware blurb (={{bucket}}= names inbox/next/deferred).  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

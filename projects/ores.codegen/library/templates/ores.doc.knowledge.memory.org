@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 8FECAF12-6D73-42E7-8337-D0B80CE6D421
 :END:
-#+title: Archetype: doc_memory.org.mustache
+#+title: ores.doc.knowledge.memory
 #+description: Project memory: =#+memory_subtype= plus statement / why / how-to-apply one-shot body fields.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.knowledge
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-16
 
 Project memory: =#+memory_subtype= plus statement / why / how-to-apply one-shot body fields.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

@@ -1,13 +1,14 @@
 :PROPERTIES:
 :ID: 21B1EA52-9B33-402F-8CD9-D604FBF41A04
 :END:
-#+title: Archetype: doc_task.org.mustache
+#+title: ores.doc.agile.task
 #+description: Task page: Goal, Status, Acceptance, transient Plan, Notes, =* Test Scenarios=, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.
-#+type: knowledge
+#+type: archetype
+#+facet: ores.doc.agile
 #+level: cross
-#+filetags: :codegen:templates:literate:archetype:
+#+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-08
-#+updated: 2026-07-08
+#+updated: 2026-07-16
 
 Task page: Goal, Status, Acceptance, transient Plan, Notes, =* Test Scenarios=, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 

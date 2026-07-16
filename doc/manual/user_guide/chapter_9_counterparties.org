@@ -81,17 +81,14 @@ many unrelated banks and corporates, and there is no reason to force
 them into one shared tree the way a tenant's own internal structure
 is.
 
-The Parent Counterparty field on the Create dialog is nonetheless
-*required*, exactly like a party's Parent Party field — but here that
-requirement is purely a UI-level policy (always attach a new
-counterparty under an existing one when creating it by hand), not a
-reflection of any database invariant about roots. In practice this
-means a counterparty that should genuinely have no parent — the
-first counterparty ever onboarded for a tenant, or an independent
-institution with no group structure to nest under — has to arrive
-through the shell-driven GLEIF import pipeline (see [[*The party hierarchy][The party
-hierarchy]]'s discussion of the equivalent party pipeline) rather than
-through this dialog, which cannot leave the field blank.
+The Parent Counterparty combo reflects that directly: alongside every
+other counterparty, it offers a leading *No Parent* entry, and
+choosing it is a completely ordinary, unconstrained choice here —
+unlike a party's equivalent *No Parent* choice (see [[*The party hierarchy][The party
+hierarchy]]), nothing in the database restricts how many counterparties
+may have no parent. A standalone institution with no group structure
+to nest under is created or edited through this dialog like any
+other, simply by leaving Parent Counterparty set to *No Parent*.
 
 ** The Counterparties window
 
@@ -120,7 +117,7 @@ a whole.
 
 *** General
 
-#+caption[Counterparty Details — General tab]: The General tab for a counterparty, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the required Parent Counterparty combo.
+#+caption[Counterparty Details — General tab]: The General tab for a counterparty, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the Parent Counterparty combo.
 [[proj:assets/images/counterparty_details_general.png]]
 
 The General tab carries the core fields of the counterparty:
@@ -140,14 +137,18 @@ The General tab carries the core fields of the counterparty:
   from a flagged combo of business center codes (see
   [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]]).
 - *Parent Counterparty* — the counterparty's immediate parent, chosen
-  from a combo listing every other counterparty by full name. This
-  field is *required*: the combo has no blank option, and — when
-  editing an existing counterparty — the counterparty being edited is
-  excluded from its own list of candidate parents. See
-  [[*The counterparty hierarchy][The counterparty hierarchy]] above for why this field cannot be left
-  empty, and how that differs from a party's required-parent rule.
+  from a combo listing a leading *No Parent* entry followed by every
+  other counterparty by full name. When editing an existing
+  counterparty, the counterparty being edited is excluded from its
+  own list of candidate parents. See [[*The counterparty hierarchy][The counterparty hierarchy]]
+  above for why *No Parent* is a completely ordinary choice here,
+  unlike the equivalent choice for a party.
 
-  #+caption[The Parent Counterparty combo]: The Parent Counterparty combo open, listing candidate parent counterparties by full name.
+  #+caption: [SCREENSHOT OUTDATED — retake needed] The Parent Counterparty combo open, listing a leading No Parent entry followed by candidate parent counterparties by full name.
+  # Capture: open Counterparty Details, click the Parent Counterparty combo, and
+  # screenshot it open with the leading "No Parent" entry visible above the
+  # candidate counterparties. Save as counterparty_parent_counterparty_combo.png
+  # (overwrite the existing file, which predates the No Parent entry).
   [[proj:assets/images/counterparty_parent_counterparty_combo.png]]
 
 *** Identifiers

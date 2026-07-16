@@ -125,14 +125,15 @@ a parent — a second attempt to create a rootless operational party is
 rejected outright.
 
 The practical consequence for the Party Details dialog covered later
-in this chapter is that the Parent Party field is *required*: there
-is no way to leave it blank. This is deliberate: a business entity
-newly onboarded into ORE Studio, however it arrives, must attach
-somewhere in the one tree that already exists for its tenant. Note
-that this required-parent rule is specific to this dialog, not a
-general rule about how parties come to exist in OreStudio — a party
-can also be created from the shell's =provision party= command,
-which is not bound by any particular UI's field requirements.
+in this chapter is that the Parent Party combo does offer a *No
+Parent* choice, but the database enforces the rest: saving a second
+party with no parent is rejected outright, so in practice *No
+Parent* only succeeds for the tenant's one house root. A business
+entity newly onboarded into ORE Studio almost always needs to attach
+somewhere in the one tree that already exists for its tenant — a
+party can also be created from the shell's =provision party=
+command, which is not bound by any particular UI's field
+requirements.
 
 In practice, most parties never go through this manual Create dialog
 at all: the shell-driven GLEIF (Global Legal Entity Identifier
@@ -175,7 +176,7 @@ to the party as a whole.
 
 *** General
 
-#+caption[Party Details — General tab]: The General tab for a party, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the required Parent Party combo.
+#+caption[Party Details — General tab]: The General tab for a party, showing its short code, full name, the populated Party Type and Status combos, the flagged Business Center combo, and the Parent Party combo.
 [[proj:assets/images/party_details_general.png]]
 
 The General tab carries the core fields of the party:
@@ -192,14 +193,20 @@ The General tab carries the core fields of the party:
 - *Business Center* — the party's primary location, chosen from a
   flagged combo of business center codes (see [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]]).
 - *Parent Party* — the party's immediate parent in the hierarchy,
-  chosen from a combo listing every other party by full name. This
-  field is *required*: the combo has no blank option, and — when
-  editing an existing party — the party being edited is excluded from
-  its own list of candidate parents, since a party can never be its
-  own ancestor. See [[*The party hierarchy][The party hierarchy]] above for why this field
-  cannot be left empty.
+  chosen from a combo listing every other party by full name, plus a
+  leading *No Parent* entry. When editing an existing party, the
+  party being edited is excluded from its own list of candidate
+  parents, since a party can never be its own ancestor. *No Parent*
+  is a genuinely valid choice — it is how the tenant's house root
+  itself is represented — but saving a /second/ party with no parent
+  is rejected by the database's single-root constraint; see
+  [[*The party hierarchy][The party hierarchy]] above for why.
 
-  #+caption[The Parent Party combo]: The Parent Party combo open, listing candidate parent parties by full name.
+  #+caption: [SCREENSHOT OUTDATED — retake needed] The Parent Party combo open, listing a leading No Parent entry followed by candidate parent parties by full name.
+  # Capture: open Party Details, click the Parent Party combo, and screenshot it open
+  # with the leading "No Parent" entry visible above the candidate parties.
+  # Save as party_parent_party_combo.png (overwrite the existing file, which predates
+  # the No Parent entry).
   [[proj:assets/images/party_parent_party_combo.png]]
 
 *** Identifiers
@@ -312,9 +319,10 @@ organisation's structure, and it has traced exactly that path. A
 party is an internal legal entity identified by a short code and full
 name, carrying a type and status, and sitting beneath a parent party
 in a single corporate hierarchy tree — with the sole exception of the
-tenant's own house root; the Parent Party combo on the General tab is
-a required field precisely because that exception is so narrow.
-Building on that, the Qt interface took the record from the list view
+tenant's own house root; the Parent Party combo's *No Parent* choice
+exists precisely for that one narrow exception, with the database
+rejecting any second attempt to use it. Building on that, the Qt
+interface took the record from the list view
 through its General, Identifiers, Contact Information, Hierarchy, and
 Provenance tabs, and through the editing, deleting, and history workflows, where
 reverting to an earlier version demonstrated the same bitemporal

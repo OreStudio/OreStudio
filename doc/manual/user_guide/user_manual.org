@@ -4,7 +4,7 @@
 #+title: ORE Studio User Manual
 #+author: Marco Craveiro
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
-#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations.
+#+description: User manual for ORE Studio, a desktop application for exploring, configuring, and running quantitative finance calculations, backed by a set of headless services and a database.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:

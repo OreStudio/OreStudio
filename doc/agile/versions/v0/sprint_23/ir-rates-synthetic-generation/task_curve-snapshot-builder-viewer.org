@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 80AC4FAC-86E3-41EC-850A-6C1DFA78534B
+:END:
+#+title: Task: Curve snapshot builder/viewer: as-of query + UI for reviewing a raw instrument grid
+#+description: A read-side as-of query (latest observation per point_id, as-of a given time, for one series) that reconstructs a curve/grid snapshot from independently-ticking market_observation rows, plus a first UI surface to view it.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give a party a way to see the raw instrument grid the IR curve family
+feed is publishing, as a coherent curve rather than a stream of
+isolated =market_observation= rows. Two parts:
+
+- A read-side *as-of query*: for one series, the latest observation
+  per =point_id= at or before a given time
+  (=SELECT DISTINCT ON (point_id) ... WHERE series_id = ? AND
+  observation_datetime <= ? ORDER BY point_id, observation_datetime
+  DESC=). This is the general pattern any curve viewer needs to
+  reconstruct a snapshot from independently-ticking points — not
+  synthetic-specific, and not dependent on any producer-side batch/
+  generation identifier (see the tick-batch-publishing task's *
+  Analysis: does market data need a batch/generation identifier? for
+  why no such identifier exists — real vendor feeds (FIX, Refinitiv)
+  don't have one either, and curves are reconstructed exactly this
+  way downstream).
+- A first UI surface consuming that query: a tenor-indexed table for
+  one curve (the degenerate single-column case of the tenor x
+  curve-identity grid in [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]]) — enough to eyeball
+  that a generation cycle's published grid looks like a real curve.
+
+Explicitly out of scope: bootstrapped discount curves, curve sets,
+and the full multi-curve grid — those are downstream, separate
+stories ([[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]], [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets (Storage Grouping)]]).
+This task is scoped to viewing the *raw instrument* grid this
+story's feed publishes, nothing built on top of it. No existing UI
+precedent exists for point_id-keyed (non-scalar) series display —
+confirmed no vol-surface viewer exists either — so this is new
+ground, not an extension of something already built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started. Explicit priority: the immediate need is *any* way to visualise the family feed's raw output, quickly -- polish (grid layout, multi-curve view) is not required for a first cut. |
+| Waiting on   | tick-batch-publishing (Phase 1) -- no data to view until ir_curve_feed actually publishes. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- An as-of query exists (engine-side, not UI-hardcoded SQL) that
+  returns one row per =point_id= for a given =series_id= and as-of
+  timestamp, taking the latest =observation_datetime <= as_of= per
+  point.
+- The query is correct both in the Phase-1 synchronous-publish case
+  (all points share one =observation_datetime=) and in the general
+  case where points have distinct timestamps (proven by a test with
+  staggered timestamps across points, even though nothing in this
+  story actually staggers them yet).
+- A UI surface renders one curve's snapshot as a tenor-indexed table
+  (tenor label, value), reachable from wherever the IR curve
+  generation config is managed. A plain, minimal table is sufficient
+  -- no charting, no multi-curve grid, no styling polish required for
+  this task; the goal is visibility into the raw output, not a
+  finished review surface (that is Multicurve Management's job, on
+  bootstrapped curves, later).
+- No new persistence: this task is read-only over existing
+  =market_observation= rows, no schema change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

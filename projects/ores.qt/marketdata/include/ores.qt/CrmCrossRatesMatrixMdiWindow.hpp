@@ -35,6 +35,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -166,11 +167,20 @@ private:
     /// fetch.
     std::vector<ores::marketdata::messaging::crm_rate_item> displayedRates_;
 
-    /// Warmed once at construction (this window's own tenant) and never
-    /// consulted yet -- proves the cache loads/is queryable end-to-end
-    /// against a live environment. Actual convention-aware formatting
-    /// using it is the sibling formatter task's job, not this one.
-    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache> conventionCache_;
+    /// Warmed once at construction (this window's own tenant). Consulted
+    /// on every reload -- see resolveDecimalPlaces() -- to drive
+    /// convention-aware rate formatting via crm_rate_formatter instead of
+    /// the fixed 'f', 5 precision this window used to hand-roll.
+    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache>
+        conventionCache_;
+
+    /// Looks up the resolved currency_pair_convention's decimal_places for
+    /// a (base, quote) pair, trying both pair-code directions since a
+    /// convention may only be stored in one -- the direction it was
+    /// captured in is independent of how a given CRM cell happens to
+    /// display the pair.
+    std::optional<int> resolveDecimalPlaces(const std::string& base,
+                                            const std::string& quote) const;
 };
 
 }

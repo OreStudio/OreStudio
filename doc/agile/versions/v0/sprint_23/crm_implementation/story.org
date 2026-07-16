@@ -60,7 +60,7 @@ engine the architecture relies on.
 | [[id:60B9E7A1-1CFC-4A33-A3AC-C36078D53FDB][Move CRM matrix's numeric logic (inversion, deltas) out of the Qt client]] | DONE | 2026-07-15 | 2026-07-15 | The cross-rates matrix UI panel currently computes inverted rates and %-change deltas client-side; this logic belongs in ores.analytics.quant (self-contained, unit-tested), exposed via NATS protocol additions (current+previous price with delta, an inverted-quote flag), with FX spot convention fields taken as caller-supplied input, not a class dependency. |
 | [[id:FC7547EB-F9AE-4988-AFE2-DB8C8AB4BD79][Export CRM cross-rates matrix as CSV and ORE XML]] | DONE | 2026-07-15 | 2026-07-15 | Add an export button to the CRM cross-rates matrix UI panel to save the currently displayed rates as CSV, and as an ORE-format market data export (matching the existing ExportOre convention used elsewhere in the app). |
 | [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]] | DONE | 2026-07-15 | 2026-07-16 | New thin, DB-free NATS-only component housing a currency_pair_convention_cache built on the nats-event-cache codegen facet, so every UI surface (Qt now, shell/Wt later) shares one cache instead of each hand-rolling its own. |
-| [[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][Add convention-aware CRM rate formatter and wire into Qt matrix]] | STARTED | 2026-07-16 | | Stateless plain C++ formatter (ores.marketdata.client/presentation) mapping raw CRM rates + a resolved currency_pair_convention into display-ready strings, replacing CrmCrossRatesMatrixMdiWindow's hand-formatting. Depends on the currency_pair_convention_cache task for its convention lookups. |
+| [[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][Add convention-aware CRM rate formatter and wire into Qt matrix]] | DONE | 2026-07-16 | 2026-07-16 | Stateless plain C++ formatter (ores.marketdata.client/presentation) mapping raw CRM rates + a resolved currency_pair_convention into display-ready strings, replacing CrmCrossRatesMatrixMdiWindow's hand-formatting. Depends on the currency_pair_convention_cache task for its convention lookups. |
 | [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][Add CRM support to ores.shell]] | BACKLOG | | | Shell command(s) to view a party's CRM cross-rates matrix (or a single pair), reusing the resolved-rates NATS request and, once available, the convention-aware display formatter -- so ores.shell isn't stuck re-deriving inversion/delta/formatting itself. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
@@ -213,6 +213,19 @@ model's concept map:
   =load()= silently swallowing failures instead of returning them
   (now =[[nodiscard]] std::string=, empty on success) so a UI
   consumer isn't stuck tailing logs to find out why nothing loaded.
+- The convention-aware CRM rate formatter
+  (=ores.marketdata.client/presentation/crm_rate_formatter=) needs
+  only a resolved =decimal_places= int, not the full
+  =currency_pair_convention= or =currency.base_precedence=: a CRM
+  cell's (base, quote) orientation is already fixed upstream by
+  =rate_inverter=/=crm_rate_view=, and =base_precedence= only
+  matters when a convention is *captured* (deciding which direction
+  becomes the stored =pair_code=), not when it's looked up for an
+  already-oriented pair. "Base/quote reordering" is instead a
+  direction-agnostic *lookup* concern, handled by
+  =CrmCrossRatesMatrixMdiWindow= trying the cell's pair-code in both
+  directions against =currency_pair_convention_cache= before falling
+  back to the formatter's own fixed default precision.
 
 * Out of scope
 

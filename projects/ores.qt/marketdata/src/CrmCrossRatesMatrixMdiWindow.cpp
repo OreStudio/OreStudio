@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
+#include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -53,6 +54,7 @@ namespace ores::qt {
 
 using namespace ores::logging;
 namespace marketdata_msg = ores::marketdata::messaging;
+namespace marketdata_client = ores::marketdata::client;
 
 namespace {
 
@@ -143,10 +145,10 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
                 clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
         // load() is a blocking NATS round trip -- run it off the UI
         // thread, but surface a failure visibly rather than only
-        // logging it: nothing reads from conventionCache_ yet (that's
-        // the sibling formatter task), so a silent failure here would
-        // otherwise be completely invisible, including to a developer
-        // testing this live. A QMessageBox rather than statusChanged/
+        // logging it: reload() falls back to default formatting on a
+        // cache miss, so a silent failure here would otherwise be
+        // completely invisible, including to a developer testing this
+        // live. A QMessageBox rather than statusChanged/
         // errorOccurred (which route into the same transient status-bar
         // channel this window's own 5s auto-refresh success message
         // keeps overwriting) -- load() only ever fires once, at
@@ -424,6 +426,19 @@ void CrmCrossRatesMatrixMdiWindow::updateOverviewPanel(const std::string& base,
     overviewSparkline_->setValues(history_it->second);
 }
 
+std::optional<int> CrmCrossRatesMatrixMdiWindow::resolveDecimalPlaces(
+    const std::string& base, const std::string& quote) const {
+    if (!conventionCache_ || !clientManager_)
+        return std::nullopt;
+
+    const auto tenantId = clientManager_->currentTenantId();
+    if (const auto direct = conventionCache_->lookup(tenantId, base + "/" + quote))
+        return direct->decimal_places;
+    if (const auto reverse = conventionCache_->lookup(tenantId, quote + "/" + base))
+        return reverse->decimal_places;
+    return std::nullopt;
+}
+
 void CrmCrossRatesMatrixMdiWindow::reload() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit statusChanged(tr("Not connected"));
@@ -606,42 +621,34 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 auto rateColor = color_constants::level_text;
                 auto changeColor = color_constants::level_trace;
                 auto pairColor = color_constants::level_trace;
-                QString changeText = QStringLiteral("—");
                 QString pairPrefix;
-                QString tooltip;
 
                 if (item.status == "stale") {
                     rateColor = color_constants::level_warn;
                     pairColor = color_constants::level_warn;
                     pairPrefix = QStringLiteral("⚠");
-                    tooltip = tr("Stale as of %1").arg(QString::fromStdString(item.as_of));
                 } else if (item.status == "unavailable") {
                     rateColor = color_constants::level_trace;
                     pairColor = color_constants::level_trace;
                     pairPrefix = QStringLiteral("✕");
-                    tooltip = tr("Unavailable");
-                } else {
-                    tooltip = item.inverted ?
-                                  tr("Computed inverse (1/rate); fresh as of %1")
-                                      .arg(QString::fromStdString(item.as_of)) :
-                                  tr("Fresh as of %1").arg(QString::fromStdString(item.as_of));
-                    if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
-                        const auto pct = *item.delta_pct;
-                        changeText = (pct >= 0 ? QStringLiteral("▲ +%1%") : QStringLiteral("▼ %1%"))
-                                         .arg(QString::number(pct, 'f', 3));
-                        changeColor =
-                            pct >= 0 ? color_constants::level_info : color_constants::level_error;
-                    }
+                } else if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
+                    changeColor = *item.delta_pct >= 0 ? color_constants::level_info :
+                                                          color_constants::level_error;
                 }
 
+                const auto decimalPlaces =
+                    self->resolveDecimalPlaces(item.base_currency_code, item.quote_currency_code);
+                const auto display =
+                    marketdata_client::presentation::crm_rate_formatter::format(item, decimalPlaces);
+
                 cellWidget->setData(rowCurrencies[row] + QStringLiteral("/") + allCurrencies[col],
-                                    QString::number(display_rate, 'f', 5),
-                                    changeText,
+                                    QString::fromStdString(display.rate_text),
+                                    QString::fromStdString(display.change_text),
                                     changeColor,
                                     rateColor,
                                     pairColor,
                                     pairPrefix);
-                cellWidget->setToolTip(tooltip);
+                cellWidget->setToolTip(QString::fromStdString(display.tooltip_text));
                 connect(cellWidget, &CrmRateCellWidget::clicked, self, [self, row, col]() {
                     self->onCellSelected(row, col);
                 });

@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/crm-rate-formatter-and-qt-wiring
 #+pr:
-#+blocked_on: [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]]
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
@@ -47,11 +47,11 @@ replacement for that formatting call, not a new UI contract.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -80,6 +80,29 @@ replacement for that formatting call, not a new UI contract.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- =ores.marketdata.client/presentation/crm_rate_formatter=: stateless
+  =crm_rate_formatter::format(crm_rate_item, optional<int>
+  decimal_places)= returning =crm_rate_display{rate_text, change_text,
+  tooltip_text}=. No convention type crosses into the formatter --
+  it only takes the already-resolved =decimal_places=, keeping it
+  free of any refdata/NATS dependency.
+- =currency.base_precedence= turns out not to be needed at format
+  time: a CRM cell's (base, quote) orientation is already fixed
+  upstream (=rate_inverter=/=crm_rate_view=), and
+  =base_precedence= only matters when a convention is *captured*
+  (deciding which direction becomes the stored =pair_code=), not
+  when it's looked up for a fixed pair. What "base/quote reordering"
+  actually needs is a direction-agnostic *lookup*: since a
+  convention may be stored as either "EUR/USD" or "USD/EUR",
+  =CrmCrossRatesMatrixMdiWindow::resolveDecimalPlaces()= tries the
+  cell's own (base, quote) pair-code first, then the reversed one,
+  before falling back to =std::nullopt= (the formatter's own fixed
+  default precision).
+- =CrmCrossRatesMatrixMdiWindow= keeps status-driven colour/glyph
+  selection (Qt-specific, not part of "ready-to-bind display
+  strings") but delegates rate/%-change/tooltip text entirely to the
+  formatter.
+
 * Notes
 
 * Test Scenarios
@@ -106,3 +129,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped a stateless =crm_rate_formatter= in
+=ores.marketdata.client/presentation= (header + source + Catch2
+tests, no NATS/Qt/Wt dependency) mapping =crm_rate_item= +
+=optional<int> decimal_places= to =crm_rate_display{rate_text,
+change_text, tooltip_text}=. =CrmCrossRatesMatrixMdiWindow= now
+resolves each cell's convention via
+=currency_pair_convention_cache::lookup= -- trying the pair-code in
+both directions, falling back to the formatter's own fixed default
+precision on a miss -- and delegates rate/%-change/tooltip text to
+the formatter; only status-driven colour/glyph selection (Qt-only
+concern) stays in the window. All acceptance criteria met, with one
+scoping refinement recorded in =* Plan=: =currency.base_precedence=
+turned out unnecessary at format time (a cell's base/quote is already
+fixed upstream by =rate_inverter=/=crm_rate_view=; base_precedence
+only matters when a convention is *captured*, not looked up) --
+"base/quote reordering" is instead handled by the direction-agnostic
+direct/reverse pair-code lookup. 10 new Catch2 cases (precision
+rounding, default-precision fallback, fresh/inverted/stale/
+unavailable tooltips, up/down/none/negligible delta text); local
+build clean, =ores.marketdata.client.tests= 100% passed.

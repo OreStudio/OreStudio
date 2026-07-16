@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: EED46603-D1E7-42BD-AA5A-B0C477F76B24
+:END:
+#+title: Wiener Process
+#+description: What a Wiener process (standard Brownian motion) is, its defining properties, and why it is the source of randomness dW every stochastic process in this cluster is driven by.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+A *Wiener process* — also called *standard Brownian motion* and written
+=W_t= or =dW= in differential form — is the continuous-time analogue of a
+random walk: a path that accumulates independent, normally-distributed
+increments over infinitesimally small time steps. It has no drift and no
+memory of its own history beyond its current value, which makes it the
+simplest possible building block for randomness in continuous time —
+every process in the
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] cluster
+uses a Wiener process as its source of noise, scaled by a volatility
+parameter and, for the mean-reverting processes, combined with a
+drift term pulling the path back toward a target level.
+
+* Detail
+
+** Defining properties
+
+A process =W_t= is a standard Wiener process if:
+
+1. =W_0 = 0=.
+2. Increments are independent: for any =0 <= s < t=, =W_t - W_s= is
+   independent of the path up to time =s=.
+3. Increments are normally distributed with variance equal to the elapsed
+   time: =W_t - W_s ~ N(0, t - s)=.
+4. Paths are continuous (almost surely), but nowhere differentiable —
+   the path is a continuous curve with no well-defined instantaneous
+   slope anywhere, a genuinely strange property with no everyday
+   analogue.
+
+Property 3 is the one every discretisation in this codebase reduces to: a
+single tick's increment =dW= over a unit time step is simply
+=Z ~ N(0, 1)=, a draw from the standard Normal distribution. This is
+exactly why =ou_process=, =vasicek_process=, and the other processes in
+this cluster all update state with a term of the form =sigma * Z=: it *is*
+=sigma * dW= for a unit-length tick.
+
+** Why "no memory" matters
+
+Property 2 is the *Markov property*: the distribution of the next
+increment depends only on the current state, never on how the path got
+there. Every process built from a Wiener process inherits this — an
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck]] path's
+next value depends only on its current level, not on whether it arrived
+there by rising steadily or by a sharp reversal. This is what makes these
+processes tractable to simulate exactly, tick by tick, rather than
+requiring the whole path history to be replayed.
+
+** Relationship to a random walk
+
+A Wiener process is the limit of a simple discrete random walk as the
+step size shrinks to zero while the number of steps grows to keep total
+variance fixed (Donsker's theorem). Practically: simulating a Wiener
+process on a computer, which necessarily takes discrete time steps, is
+already an approximation the discrete random walk converges to — the
+"continuous" process is the idealisation the discrete simulation targets.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — the chain rule for functions of a Wiener-driven process.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the simplest mean-reverting process driven by =dW=.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] — the simplest unbounded price process driven by =dW=.
+
+** Further reading
+
+- Wiener, N. (1923). "Differential-Space." /Journal of Mathematics and
+  Physics/, 2(1-4), 131-174. The original rigorous construction of the
+  process (as a model of physical Brownian motion, following Einstein's
+  1905 and Bachelier's 1900 earlier, less rigorous treatments).
+- Bachelier, L. (1900). "Théorie de la spéculation." /Annales
+  Scientifiques de l'École Normale Supérieure/, 3(17), 21-86. The first
+  application of Brownian motion to finance — modelling stock prices —
+  predating both Einstein's physics paper and Wiener's rigorous
+  construction by years.
+- Karatzas, I., & Shreve, S. E. (1991). /Brownian Motion and Stochastic
+  Calculus/ (2nd ed.). Springer. The standard modern graduate reference
+  for the properties stated above.

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 39C32F26-7D95-4F42-948A-1171464E0FFF
+:END:
+#+title: Arithmetic Brownian Motion
+#+description: The additive price process behind arithmetic_gmm_process — its SDE, why it can go negative unlike its geometric counterpart, and when that is actually the right trade-off.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+*Arithmetic Brownian Motion* (ABM) — Louis Bachelier's original 1900
+model of stock price movement, predating
+[[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] by
+73 years — models a price that moves *additively*: the absolute change
+per tick, not the percentage change, is normally distributed.
+=ores::analytics::quant::service::arithmetic_gmm_process= implements it
+as the direct counterpart to =gmm_process=, generalised the same way to a
+K-component Gaussian mixture rather than a single Normal shock.
+
+* Detail
+
+** The SDE and its discretisation
+
+ABM follows:
+
+#+begin_example
+dS = mu * dt + sigma * dW
+#+end_example
+
+Unlike [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]], neither the drift
+nor the diffusion scales with the current level =S= — a wiggle of a given
+size is exactly as likely whether =S= is currently 10 or 10,000. This SDE
+is already exact (no Ito correction is needed, since =S= itself, not
+=log(S)=, is the variable of interest), so the per-tick update
+=arithmetic_gmm_process= implements is a direct discretisation:
+
+#+begin_example
+price += increment,  increment ~ N(mu*dt, sigma^2*dt)
+#+end_example
+
+generalised the same way as =gmm_process= to a K-component Gaussian
+mixture for the increment, rather than a single Normal draw.
+
+** The trade-off: can go negative
+
+Because the increment is unbounded in both directions with no
+state-dependence, an ABM path can, given enough time or a large enough
+downward shock, go negative — a property that makes it a poor model for
+a traded asset price (which cannot be negative in the ordinary case) but
+an entirely reasonable one for a quantity that genuinely can go negative,
+or where the modelling context does not require strict positivity —
+which is exactly why this codebase offers both processes rather than
+only [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]]: the choice between
+them is a modelling decision about the quantity being generated, not a
+strictly-better-or-worse ranking of the two processes.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the =dW= term ABM is driven by.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] — the multiplicative counterpart that stays strictly positive.
+
+** Further reading
+
+- Bachelier, L. (1900). "Théorie de la spéculation." /Annales
+  Scientifiques de l'École Normale Supérieure/, 3(17), 21-86. The
+  original application of Brownian motion to option pricing, using the
+  additive model this document describes — five years before Einstein's
+  physics paper on Brownian motion, and predating a rigorous mathematical
+  construction of the process itself by over two decades.
+- Sullivan, E. J., & Weithers, T. M. (1991). "Louis Bachelier: The Father
+  of Modern Option Pricing Theory." /The Journal of Economic Education/,
+  22(2), 165-171. Historical context on why Bachelier's largely
+  unrecognised 1900 thesis anticipated much of modern quantitative
+  finance by decades.

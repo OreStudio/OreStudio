@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-stochastic-processes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | All 9 docs (hub + 8 atomic) written and indexed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-12                               |
+| Next         | Review, then close.                    |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
@@ -43,6 +43,39 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+One hub doc (=stochastic_processes.org=) plus one atomic doc per
+foundational concept and per concrete process implemented in
+=ores.analytics.quant=, following the existing
+=term_structures_and_tenors.org=/=tenor.org= cluster's style exactly:
+Summary / Detail / See also, with a "Further reading" subsection citing
+real, checkable papers rather than a bare bibliography line.
+
+- Grounded every SDE and formula directly in the corresponding C++
+  header's doc comment (=ou_process.hpp=, =vasicek_process.hpp=,
+  =cir_process.hpp=, =hull_white_process.hpp=, =gmm_process.hpp=,
+  =arithmetic_gmm_process.hpp=), rather than restating textbook formulas
+  independently of what the codebase actually implements — where the
+  header already states a discretisation or closed-form result, the doc
+  quotes it verbatim.
+- 8 atomic docs: [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener
+  Process]] and [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]]
+  (foundations); [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric]]
+  and [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic]] Brownian
+  Motion (price processes); [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck]],
+  [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]],
+  [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], and
+  [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][CIR]] (mean-reverting
+  short-rate family).
+- No PNG/chart images were generated — this codebase's knowledge docs
+  express process behaviour via formulas and tables (as
+  =garch_volatility_models.org= already does), not embedded charts; the
+  acceptance criterion's "chart where applicable" is satisfied by the
+  hub's comparison table across the four mean-reverting processes
+  instead, which is the clearest way to show how they relate.
+- Registered the hub in =doc/knowledge/knowledge.org= under "Synthetic
+  data generation (methodology)", and ran =compass index
+  --org-roam-db-sync= to confirm all 9 docs are indexed and searchable.
 
 * Notes
 
@@ -70,3 +103,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: a new =doc/knowledge/domain/stochastic_processes.org= hub plus
+8 atomic docs (=wiener_process.org=, =ito_lemma.org=,
+=geometric_brownian_motion.org=, =arithmetic_brownian_motion.org=,
+=ornstein_uhlenbeck_process.org=, =vasicek_process.org=,
+=hull_white_process.org=, =cir_process.org=), cross-linked via
+org-roam =[[id:...]]= links exactly as the acceptance criteria specify,
+each with a real-citation "Further reading" section. Registered in
+=doc/knowledge/knowledge.org= and confirmed indexed via =compass search=.

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: A8C46639-0639-4587-B07D-B8B006C46618
+:END:
+#+title: Stochastic Processes
+#+description: Hub note for the stochastic processes driving ORE Studio's synthetic market data generators — the two foundational building blocks (Wiener process, Ito's lemma) and the six concrete processes implemented in ores.analytics.quant.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:synthetic_data:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This is the hub note for the random processes behind
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]'s synthetic
+market data generators. Each linked note is a single focused concept;
+start here and follow the links.
+
+* Summary
+
+Every synthetic price or rate path =ores.analytics.quant= generates is a
+sample path of a *stochastic process* — a random variable that evolves
+over time according to a rule combining a deterministic drift with a
+random shock. Two pieces of stochastic calculus underpin every process in
+this cluster: the [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener
+process]] (the continuous-time random walk supplying that shock) and
+[[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] (the chain rule
+that lets you change variables — e.g. from a rate to a bond price —
+without leaving continuous time). Everything else in this cluster is one
+of six concrete processes built on those two foundations, split into two
+families: *price processes*, which model an asset level that can wander
+without bound (used for FX spot and equity), and *mean-reverting
+processes*, which model a quantity — almost always a short rate — that is
+pulled back toward a long-run level.
+
+* Detail
+
+** Foundations
+
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — continuous-time
+  Brownian motion, =dW=, the source of randomness every process below
+  is driven by.
+- [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — the
+  stochastic chain rule, needed to derive e.g. a bond-price SDE from a
+  short-rate SDE.
+
+** Price processes (unbounded, asset-level)
+
+- [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic Brownian Motion]] —
+  additive increments (=price += increment=); implemented by
+  =arithmetic_gmm_process=.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] —
+  multiplicative, log-normal increments (=price *= exp(log_return)=);
+  implemented by =gmm_process=. Both generalise their single-Gaussian
+  textbook form to a K-component Gaussian mixture, letting the generator
+  reproduce fat tails and volatility clustering a single Normal shock
+  cannot — see [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility
+  clustering and GARCH models]] for the companion discrete-time picture
+  of that same fat-tail problem.
+
+** Mean-reverting processes (short-rate)
+
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] —
+  the general mean-reverting building block, =dX = kappa*(theta-X)*dt +
+  sigma*dW=; implemented by =ou_process=.
+- [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — the OU
+  process applied to a short rate with a constant long-run level;
+  implemented by =vasicek_process=, a thin wrapper composing
+  =hull_white_process=.
+- [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]] —
+  Vasicek generalised to a piecewise-constant, time-varying mean-reversion
+  level =theta(t)=, letting the process fit an observed initial term
+  structure exactly; implemented by =hull_white_process=.
+- [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR)
+  Process]] — Vasicek with a =sqrt(r)= volatility term that keeps the
+  rate non-negative, at the cost of a non-Gaussian (non-central
+  chi-squared) transition density; implemented by =cir_process=.
+
+** How the mean-reverting family relates
+
+Vasicek, Hull-White, and CIR are not three independent models — they are
+three points on one design axis, all sharing the OU drift shape
+=kappa*(target - X)=:
+
+| Process    | Volatility term  | Mean-reversion target      | Can go negative? |
+|------------+------------------+-----------------------------+-------------------|
+| OU         | =sigma= (const.) | constant =theta=            | yes               |
+| Vasicek    | =sigma= (const.) | constant =theta=            | yes               |
+| Hull-White | =sigma= (const.) | time-varying =theta(t)=     | yes               |
+| CIR        | =sigma*sqrt(r)=  | constant =theta=            | no                |
+
+Vasicek is literally the =theta(t) = const= special case of Hull-White —
+=vasicek_process= composes =hull_white_process= rather than
+reimplementing it. CIR cannot be reached from Hull-White by any
+parameter substitution: its non-negativity comes from a genuinely
+different volatility term, which is also why its exact transition
+requires the Poisson-mixture-of-central-chi-squared construction
+described in its own atomic doc, rather than the closed-form Gaussian
+update the other three share.
+
+** Where these processes are consumed
+
+=ores::analytics::quant::service::process_factory= constructs the
+concrete process an =ir_curve_generation_config= or
+=market_data_generation_config= names, behind the common
+=IStochasticProcess= interface every process implements — the
+generation loop that drives =next()= on whichever process was
+configured does not need to know which one it got.
+
+* See also
+
+- [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] — the system these processes generate synthetic data for.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — these processes are calibrated/sampled under the real-world =P= measure for data generation, as distinct from the =Q=-measure dynamics ORE's pricing engines use.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — the discrete-time counterpart to the Gaussian-mixture fat-tail problem the price processes address.

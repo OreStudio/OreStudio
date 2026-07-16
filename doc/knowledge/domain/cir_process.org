@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 2350DE1D-00F7-4909-8308-D91831F4C0EA
+:END:
+#+title: Cox-Ingersoll-Ross (CIR) Process
+#+description: The non-negative short-rate model behind cir_process — its sqrt(r) volatility term, the Feller condition, and why its exact transition is a Poisson mixture of chi-squared draws rather than a Gaussian update.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+The *Cox-Ingersoll-Ross* (CIR, 1985) model keeps
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]] mean-reverting
+drift shape but replaces its constant volatility with a state-dependent
+=sigma*sqrt(r)= term, which shrinks toward zero as the rate itself
+approaches zero and rules out the negative rates
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] and
+[[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]] can produce. That
+same volatility term is also what breaks the closed-form Gaussian
+transition the other two share: a CIR rate's next value follows a
+non-central chi-squared distribution, not a Normal one, requiring a
+genuinely different simulation technique. =ores::analytics::quant::service::cir_process=
+implements the *exact* (non-approximated) transition via the standard
+Poisson-mixture-of-central-chi-squared construction, not an Euler
+discretisation.
+
+* Detail
+
+** The SDE
+
+#+begin_example
+dr = kappa * (theta - r) * dt + sigma * sqrt(r) * dW
+#+end_example
+
+identical to [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]] drift,
+=kappa*(theta-r)=, with the volatility term changed from a constant
+=sigma= to =sigma*sqrt(r)=. As =r -> 0=, the volatility term vanishes
+too, which is exactly the mechanism keeping =r= from crossing zero: the
+closer the rate gets to zero, the less randomness is left to push it
+further down, leaving the positive drift term =kappa*theta*dt= to pull
+it back up.
+
+** The Feller condition
+
+Whether =r= can ever *touch* zero (as opposed to merely staying close to
+it) depends on the *Feller condition*: =2*kappa*theta >= sigma^2=. When
+it holds, =r= stays strictly positive for all time; when it does not,
+=r= can touch zero (but never go negative) before being pulled back up by
+the drift term. This makes CIR's non-negativity guarantee genuinely
+stronger than Vasicek's total absence of one, but not an unconditional
+"always strictly positive" guarantee independent of parameter choice —
+the guarantee's strength depends on which side of the Feller condition
+the chosen =(kappa, theta, sigma)= fall on.
+
+** The exact transition
+
+Because the SDE above is nonlinear in =r= (via =sqrt(r)=), it has no
+closed-form solution the way [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]]
+linear SDE does — but the exact *transition distribution* from one tick
+to the next is still known in closed form, as a Poisson mixture of
+central chi-squared distributions (Glasserman, 2003, section 3.4):
+
+#+begin_example
+c      = sigma^2 * (1 - e^{-kappa}) / (4 * kappa)
+d      = 4 * kappa * theta / sigma^2               (degrees of freedom)
+lambda = r_t * e^{-kappa} / c                       (non-centrality)
+N      ~ Poisson(lambda / 2)
+r_{t+1} = c * X,  X ~ chi-squared(d + 2*N)
+#+end_example
+
+=cir_process= draws this transition exactly, tick by tick, rather than
+approximating it via an Euler scheme (which for CIR specifically can
+produce negative simulated rates — the very defect the model was
+designed to avoid — unless a more careful discretisation is used; drawing
+the exact transition sidesteps that problem entirely). =kappa= must be
+strictly positive for this construction (=c= above divides by =kappa=)
+— unlike [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] and
+[[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], which tolerate
+=kappa <= 0= as a degenerate driftless case, CIR has no such fallback
+since the =sqrt(r)= volatility term makes a non-mean-reverting CIR
+process ill-posed. The =sigma == 0= edge case is likewise handled
+separately, as the deterministic mean-reversion ODE
+=dr = kappa*(theta-r)*dt=, since both the transition formulas above and
+the closed-form bond price below divide by =sigma=.
+
+** The closed-form bond price
+
+CIR also supplies a closed-form affine zero-coupon bond price, derived
+the same way as Vasicek's — applying
+[[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] to the SDE above
+to obtain the bond's own dynamics — despite the SDE itself having no
+closed-form path solution:
+
+#+begin_example
+gamma  = sqrt(kappa^2 + 2*sigma^2)
+B(tau) = 2*(e^{gamma*tau} - 1) / ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)
+A(tau) = [2*gamma*e^{(kappa+gamma)*tau/2} /
+          ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)] ^ (2*kappa*theta/sigma^2)
+P(tau) = A(tau) * e^{-B(tau)*r_t}
+#+end_example
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub, including the comparison table across all four mean-reverting processes.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the drift shape CIR shares with Vasicek and Hull-White.
+- [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — the constant-volatility model whose main criticised weakness (negative rates) CIR addresses.
+- [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — used to derive the closed-form bond price above.
+
+** Further reading
+
+- Cox, J. C., Ingersoll, J. E., & Ross, S. A. (1985). "A Theory of the
+  Term Structure of Interest Rates." /Econometrica/, 53(2), 385-407. The
+  original paper: the SDE, the Feller condition, and the closed-form
+  affine bond price.
+- Feller, W. (1951). "Two Singular Diffusion Problems." /Annals of
+  Mathematics/, 54(1), 173-182. The earlier, purely mathematical paper
+  establishing the boundary-behaviour condition later named after Feller
+  and applied to the CIR process above.
+- Glasserman, P. (2003). /Monte Carlo Methods in Financial Engineering/.
+  Springer. Section 3.4 gives the Poisson-mixture-of-chi-squared exact
+  simulation scheme =cir_process= implements directly.

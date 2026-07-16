@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: BBF2D2A7-B504-4426-94E1-96DD95E31603
+:END:
+#+title: Ito's Lemma
+#+description: The stochastic calculus chain rule for functions of a Wiener-driven process, why the ordinary chain rule fails here, and where this cluster's processes rely on it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+*Ito's lemma* is the stochastic-calculus counterpart of the ordinary
+chain rule: it tells you the stochastic differential equation (SDE)
+followed by =f(X_t, t)=, a function of a process =X_t= that is itself
+driven by a [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]].
+The ordinary chain rule from calculus is not enough here, because a
+Wiener-driven path is not differentiable — but Ito's lemma supplies the
+correction term that makes a rigorous chain rule possible anyway. Every
+short-rate model in this cluster relies on it implicitly: a bond price is
+a *function of* the short rate, so deriving the bond price's own
+dynamics from the short rate's SDE is exactly the kind of change of
+variables Ito's lemma makes possible.
+
+* Detail
+
+** The statement
+
+If =X_t= follows the SDE =dX = mu(X,t) dt + sigma(X,t) dW=, and =f(X, t)=
+is twice-differentiable in =X= and once in =t=, then =f(X_t, t)= follows:
+
+#+begin_example
+df = ( ∂f/∂t + mu * ∂f/∂X + (1/2) * sigma^2 * ∂²f/∂X² ) dt
+     + sigma * ∂f/∂X dW
+#+end_example
+
+Compare this to the ordinary chain rule, which would give only the first
+two terms of the drift (=∂f/∂t + mu * ∂f/∂X=) and the diffusion term. The
+extra piece — =(1/2) * sigma^2 * ∂²f/∂X²=, the *Ito correction term* — is
+the entire reason a dedicated lemma is needed at all.
+
+** Why the ordinary chain rule fails
+
+The ordinary chain rule assumes second-order terms in a Taylor expansion
+vanish faster than first-order terms as the step size shrinks. For an
+ordinary (differentiable) path that is true. For a
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]] it is not:
+because =Var(dW) = dt=, the *square* of the increment, =dW^2=, is itself
+of order =dt=, not negligible next to it — informally, =dW^2 -> dt= as
+the step size shrinks (this is "Ito's multiplication table": =dW*dt = 0=,
+=dt^2 = 0=, but =dW^2 = dt=). Keeping that second-order term through the
+Taylor expansion, instead of discarding it as ordinary calculus would, is
+precisely what produces the =(1/2) sigma^2 ∂²f/∂X²= correction above.
+
+** Where this cluster uses it
+
+The
+[[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross]] process's
+exact transition density, and the closed-form zero-coupon bond price
+implied by the [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]
+and [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] short-rate SDEs,
+are both derived by applying Ito's lemma to change variables from the
+short rate =r= to the quantity actually wanted (a bond price, or a
+transition density) — this codebase consumes those closed-form results
+rather than re-deriving them at runtime, but the results themselves only
+exist because Ito's lemma makes the change of variables valid.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the =dW= term Ito's lemma's correction term arises from.
+- [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — one of the short-rate models whose closed-form bond price is an Ito's-lemma result.
+- [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — its exact transition density is likewise an Ito's-lemma-derived result.
+
+** Further reading
+
+- Ito, K. (1944). "Stochastic Integral." /Proceedings of the Imperial
+  Academy/, 20(8), 519-524. The original paper introducing the Ito
+  integral and the lemma bearing his name.
+- Ito, K. (1951). "On a Formula Concerning Stochastic Differentials."
+  /Nagoya Mathematical Journal/, 3, 55-65. The paper most commonly cited
+  for the modern statement of the lemma.
+- Hull, J. C. (2018). /Options, Futures, and Other Derivatives/ (10th
+  ed.). Pearson. Chapter 14 gives the standard, accessible derivation and
+  worked examples this note's statement follows.

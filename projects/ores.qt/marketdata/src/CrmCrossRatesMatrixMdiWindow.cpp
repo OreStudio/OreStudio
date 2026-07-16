@@ -130,9 +130,18 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
     connect(autoRefreshTimer_, &QTimer::timeout, this, &CrmCrossRatesMatrixMdiWindow::reload);
 
     if (clientManager_) {
+        // Snapshot the token synchronously on the GUI thread rather than
+        // handing the cache a token_provider that would re-read
+        // ClientManager's session state from load()'s own background
+        // thread later (a real data race against the GUI thread's
+        // proactive token-refresh timer) -- safe here specifically
+        // because load() only ever fires this once, at construction, so
+        // there is no "later" call that would need a fresher token.
+        const auto authToken = clientManager_->currentAuthToken();
         conventionCache_ =
             std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
-                clientManager_->nats_client());
+                clientManager_->nats_client(),
+                [authToken](bool /*force*/) { return authToken; });
         // load() is a blocking NATS round trip -- run it off the UI
         // thread, but surface a failure visibly rather than only
         // logging it: nothing reads from conventionCache_ yet (that's

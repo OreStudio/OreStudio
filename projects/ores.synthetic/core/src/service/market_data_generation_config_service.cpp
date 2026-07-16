@@ -44,6 +44,14 @@ std::uint32_t market_data_generation_config_service::count_market_data_generatio
 }
 
 std::optional<domain::market_data_generation_config>
+market_data_generation_config_service::get_market_data_generation_config_at_version(
+    const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::market_data_generation_config>
 market_data_generation_config_service::get_market_data_generation_config(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config: " << id;
     auto results = repo_.read_latest(ctx_, id);

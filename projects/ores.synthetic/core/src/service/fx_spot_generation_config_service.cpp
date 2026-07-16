@@ -45,6 +45,14 @@ std::uint32_t fx_spot_generation_config_service::count_fx_spot_generation_config
 
 
 std::optional<domain::fx_spot_generation_config>
+fx_spot_generation_config_service::get_fx_spot_generation_config_at_version(const std::string& id,
+                                                                            std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::fx_spot_generation_config>
 fx_spot_generation_config_service::get_fx_spot_generation_config(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config: " << id;
     auto results = repo_.read_latest(ctx_, id);

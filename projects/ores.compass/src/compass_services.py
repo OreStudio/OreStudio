@@ -552,19 +552,12 @@ def cmd_client_start(ctx, args):
     log_file = f"{pid_name}.log"
     client_args = ["--log-enabled", "--log-level", args.log_level,
                    "--log-directory", "../log", "--log-filename", log_file]
-    # The colour is only a window marker; the display name comes from
-    # --instance-name, else ORES_CHECKOUT_LABEL — so the status bar shows
-    # which checkout (e.g. local2) this client is bound to.
-    if args.instance_name and args.instance_name != ctx.label:
-        print(f"warning: --instance-name '{args.instance_name}' overrides this "
-              f"environment's label ('{ctx.label}') — the client will no "
-              f"longer be identifiable as belonging to this checkout in the "
-              f"fleet/status view. Prefer --colour to distinguish parallel "
-              f"clients from the same environment; leave --instance-name unset.",
-              file=sys.stderr)
-    instance_name = args.instance_name or ctx.label
-    if instance_name:
-        client_args += ["--instance-name", instance_name]
+    # The colour is only a window marker; the display name is always
+    # ORES_CHECKOUT_LABEL — so the status bar shows which checkout (e.g.
+    # local2) this client is bound to. Not overridable: a mismatched name
+    # makes the client unidentifiable in the fleet/status view.
+    if ctx.label:
+        client_args += ["--instance-name", ctx.label]
     if colour_hex:
         client_args += ["--instance-color", colour_hex]
     if args.open_scenario:
@@ -638,7 +631,6 @@ def run_client(argv, project_root: Path) -> int:
     _common(st)
     st.add_argument("--colour", "--color", default=None,
                     help="red, green, blue, or 6-digit hex — instance accent")
-    st.add_argument("--instance-name", default=None)
     st.add_argument("--log-level", default="debug")
     st.add_argument("--open-scenario", default=None,
                     help="Path to a test_scenario .org doc to open in the "

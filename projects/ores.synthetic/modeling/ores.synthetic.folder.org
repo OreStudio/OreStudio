@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.synthetic.folder
+#+description: Codegen entity model for the synthetic folder table; a generic, party-scoped hierarchy node organizing feeds into collection/asset-class/instrument-type folders.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: folder
+#+entity_plural: folders
+#+entity_title: Folder
+#+brief: A generic hierarchy node organizing feeds into collection/asset-class/instrument-type folders.
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+A generic, self-referencing hierarchy node. The Market Simulator tree is
+drawn directly from these rows rather than parsed out of a feed's
+=source_name= string: one root folder per party ("Synthetic"), with
+=market_data_generation_config= collections, asset-class folders (e.g.
+"FX"), and instrument-type folders (e.g. "FX Rates") nested beneath it.
+=fx_spot_generation_config= rows reference their immediate parent folder
+via =folder_id=. =kind= distinguishes what a given row represents; =
+collection_id= is populated only for =kind = 'collection'= rows, linking
+back to the =market_data_generation_config= it represents (that entity
+remains the source of truth for name/description/enabled/dataset_id;
+this row's own =name= is kept in sync for uniform hierarchy display).
+
+Having real, queryable folder rows (rather than string-parsing) lets any
+caller -- Qt, ores.shell, or a wt workflow -- resolve "everything under
+this folder" the same way, via the generated hierarchy function, instead
+of each reimplementing the tree-walk itself.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:has_parent_id: true
+:parent_id_column: parent_id
+:hierarchy_name_field: name
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this folder node.
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Owning party (legal entity) this folder belongs to. Not a natural key: a
+party has many folders (one root, several collections, and their
+asset-class/instrument-type children), so no uniqueness is enforced
+beyond the surrogate =id=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Display name of this folder (e.g. "Synthetic", "Basic", "FX", "FX Rates").
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What this folder represents: "root", "collection", "asset_class", or
+"instrument_type".
+
+#+begin_src cpp :name generator
+std::string("root")
+#+end_src
+
+** collection_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+For =kind = 'collection'= rows only: the =market_data_generation_config=
+this folder represents. Null for every other kind.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_folders_tbl
+:END:
+
+** Checks
+
+| expression                                                          |
+|----------------------------------------------------------------------|
+| "name" <> ''                                                        |
+| "kind" in ('root', 'collection', 'asset_class', 'instrument_type')  |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: folder
+:entity_plural_short:   folders
+:entity_singular_words: folder
+:entity_plural_words:   folders
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: f
+:END:

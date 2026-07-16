@@ -174,28 +174,6 @@ std::string to_lower(const std::string& s) {
     return r;
 }
 
-// Lowercase the feed name and replace runs of non-alphanumerics with '-'.
-std::string slug(const QString& name) {
-    std::string out;
-    bool prevDash = false;
-    for (const QChar qc : name) {
-        const char c = static_cast<char>(qc.toLatin1());
-        if (std::isalnum(static_cast<unsigned char>(c))) {
-            out += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-            prevDash = false;
-        } else if (!prevDash) {
-            out += '-';
-            prevDash = true;
-        }
-    }
-    // Trim leading/trailing dashes.
-    while (!out.empty() && out.front() == '-')
-        out.erase(out.begin());
-    while (!out.empty() && out.back() == '-')
-        out.pop_back();
-    return out;
-}
-
 }
 
 FxSpotRateEditor::FxSpotRateEditor(ClientManager* cm,
@@ -928,7 +906,13 @@ QString FxSpotRateEditor::defaultSourceName() const {
     const auto quote = quoteCombo_->currentText().toStdString();
     if (base.empty() || quote.empty())
         return {};
-    return QString::fromStdString("ores.synthetic." + slug(feedName_) + "." + to_lower(base) + "." +
+    // A display/NATS-subject string, namespaced by collection only (to avoid
+    // two collections' same pair colliding) -- the actual tree hierarchy
+    // lives in folder_id (see ores.synthetic.folder), not parsed out of this
+    // string.
+    std::string collection = to_lower(feedName_.toStdString());
+    collection.erase(std::remove(collection.begin(), collection.end(), ' '), collection.end());
+    return QString::fromStdString("synthetic." + collection + "." + to_lower(base) +
                                   to_lower(quote));
 }
 

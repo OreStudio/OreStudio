@@ -23,6 +23,9 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
+drop policy if exists folders_party_isolation_policy on "ores_synthetic_folders_tbl";
+drop policy if exists folders_tenant_isolation_policy on "ores_synthetic_folders_tbl";
+
 drop policy if exists ir_curve_template_entries_party_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
 drop policy if exists ir_curve_template_entries_tenant_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
 

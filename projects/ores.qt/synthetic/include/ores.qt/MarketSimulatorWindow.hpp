@@ -50,6 +50,7 @@ class QTimer;
 class QValueAxis;
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace ores::qt {
@@ -60,12 +61,15 @@ class ChangeReasonCache;
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
- * The Market Simulator presents a two-level tree of feeds
- * (market_data_generation_config) > FX spot rates (fx_spot_generation_config)
- * on the left. The tree is the browser; the right panel is a read-only summary
- * of the selected node. Feeds are created/edited in a modal FeedDialog; FX spot
- * rates (with their GMM price model) are created/edited in the FxSpotRateEditor,
- * shown as a non-modal MDI sub-window.
+ * The Market Simulator presents a tree, on the left, mirroring the feed
+ * namespace path (synthetic.<collection>.<asset class>.<instrument type>.
+ * <pair>): Synthetic (root) > Collection (market_data_generation_config,
+ * e.g. Basic/Realistic) > asset class > instrument type > Feed (the leaf
+ * currency pair, fx_spot_generation_config, e.g. GBP/USD). The tree is the
+ * browser; the right panel is a read-only summary of the selected node.
+ * Collections are created/edited in a modal FeedDialog; Feeds (with their GMM
+ * price model) are created/edited in the FxSpotRateEditor, shown as a
+ * non-modal MDI sub-window.
  *
  * Modelled on DataLibrarianWindow's composition pattern.
  */
@@ -114,15 +118,19 @@ private slots:
     void onDeleteClicked();
     void onStartFeedClicked();
     void onStopFeedClicked();
-    void onStartAllClicked();
-    void onStopAllClicked();
     void onValidateVintageClicked();
     void appendTickSample(double mid);
     void onTickChartFlash();
 
 private:
-    // Node levels stored in the tree items via Qt::UserRole markers.
-    enum class NodeType { Feed, FxPair };
+    // Node levels stored in the tree items via Qt::UserRole markers. The tree
+    // mirrors the feed's own namespace path (synthetic.<collection>.<asset
+    // class>.<instrument type>.<pair>, e.g. synthetic.basic.fx.fxrates.gbpusd):
+    // Root ("Synthetic") > Collection (Basic/Realistic) > Group (asset class,
+    // then instrument type -- both use the same structural node type) > Feed
+    // (the leaf currency pair, e.g. GBP/USD). Selecting/starting/stopping any
+    // non-leaf node cascades to every Feed beneath it.
+    enum class NodeType { Root, Collection, Group, Feed };
 
     static std::string synthetic_subject(const std::string& source_name);
     void subscribeTickChart(const std::string& source_name);
@@ -145,6 +153,7 @@ private:
 
     void showSummaryForCurrent();
     void showFeedSummary(const synthetic::domain::market_data_generation_config& feed);
+    void showFolderSummary(const QModelIndex& idx, const QString& title, const QString& name);
     void showFxPairSummary(const synthetic::domain::fx_spot_generation_config& fx);
     void clearSummary();
 
@@ -152,15 +161,20 @@ private:
     void openFxEditorForNew(const std::string& feedId);
     void openFxEditorForEdit(const synthetic::domain::fx_spot_generation_config& fx);
 
-    // Resolve the feed id implied by the current selection (node or descendant).
+    // Resolve the owning Collection id implied by the current selection (the
+    // node itself if it's a Collection, its nearest Collection ancestor if
+    // it's a Group or Feed, or empty if it's Root or unresolvable).
     [[nodiscard]] std::string resolveFeedId() const;
     [[nodiscard]] QString feedNameFor(const std::string& feedId) const;
 
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
+    // All Feed-leaf pairs reachable from the current tree selection, cascading
+    // through Root/Collection/Group nodes to their descendant Feeds.
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
+    // All Feed-leaf pairs nested under the given index (itself if it's a Feed).
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
-    fxPairsForFeed(const std::string& feedId) const;
+    pairsUnderIndex(const QModelIndex& idx) const;
 
     void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
@@ -170,6 +184,12 @@ private:
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
     void refreshFxSummaryIfCurrent();
     void refreshFeedTreeItems();
+    // Recomputes status icons bottom-up starting at item; returns its
+    // (running, total) leaf counts so a caller can fold them upward.
+    std::pair<int, int> refreshTreeItemStatus(QStandardItem* item);
+    // Recursively collects the ids of every Feed-leaf descendant of item
+    // (including item itself, if it's already a Feed).
+    static void collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids);
 
     ClientManager* clientManager_;
     QString username_;
@@ -188,8 +208,6 @@ private:
     QAction* deleteAction_;
     QAction* startFeedAction_;
     QAction* stopFeedAction_;
-    QAction* startAllAction_;
-    QAction* stopAllAction_;
     QAction* validateVintageAction_;
 
     // Left panel

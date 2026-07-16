@@ -64,11 +64,10 @@ database, start services, provision the tenant, and start the client?
    connections; diagnose before assuming this environment is at fault.
 
 5. /Start the client/, detached, with a distinct colour so it does not
-   clash with other environments' running instances. Do not pass
-   =--instance-name= — omitted, it defaults to this environment's own
-   =ORES_CHECKOUT_LABEL= (e.g. =jolly_knuth=), which is what the status
-   bar and window title should show; overriding it hides which
-   environment the client actually belongs to.
+   clash with other environments' running instances. The instance name
+   is always this environment's own =ORES_CHECKOUT_LABEL= (e.g.
+   =jolly_knuth=) — not overridable — so the status bar and window
+   title always show which environment the client actually belongs to.
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh client start --colour <colour>

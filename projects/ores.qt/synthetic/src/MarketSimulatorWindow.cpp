@@ -209,15 +209,17 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     newFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New Feed"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
+        tr("New Collection"));
     newFeedAction_->setToolTip(
-        tr("New feed — a named market-data simulation you can enable and run."));
+        tr("New collection — a named group of market-data feeds you can enable and run "
+           "(e.g. Basic, Realistic)."));
 
     newFxRateAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New FX Rate"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New Feed"));
     newFxRateAction_->setToolTip(
-        tr("New FX rate — a currency pair to simulate (e.g. EUR/USD) and its price "
-           "model; belongs to the selected feed."));
+        tr("New feed — a currency pair to simulate (e.g. EUR/USD) and its price "
+           "model; belongs to the selected collection."));
 
     toolbar_->addSeparator();
 
@@ -233,23 +235,15 @@ void MarketSimulatorWindow::setupToolbar() {
 
     startFeedAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::PlayFilled, IconUtils::DefaultIconColor), tr("Start"));
-    startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate(s)."));
+    startFeedAction_->setToolTip(
+        tr("Start generating live ticks for every feed under the current selection "
+           "-- a single feed, a collection, or the root (everything)."));
 
     stopFeedAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::StopFilled, IconUtils::DefaultIconColor), tr("Stop"));
-    stopFeedAction_->setToolTip(tr("Stop generating ticks for the selected FX rate(s)."));
-
-    toolbar_->addSeparator();
-
-    startAllAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::PlayFilled, IconUtils::DefaultIconColor),
-        tr("Start all"));
-    startAllAction_->setToolTip(tr("Start generating live ticks for all FX rates."));
-
-    stopAllAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::StopFilled, IconUtils::DefaultIconColor),
-        tr("Stop all"));
-    stopAllAction_->setToolTip(tr("Stop generating ticks for all FX rates."));
+    stopFeedAction_->setToolTip(
+        tr("Stop generating ticks for every feed under the current selection "
+           "-- a single feed, a collection, or the root (everything)."));
 
     toolbar_->addSeparator();
 
@@ -267,9 +261,6 @@ void MarketSimulatorWindow::setupLeftPanel() {
     leftLayout->setContentsMargins(0, 0, 0, 0);
     leftLayout->setSpacing(8);
 
-    auto* label = new QLabel(tr("<b>Market Data Feeds</b>"), leftPanel);
-    leftLayout->addWidget(label);
-
     feedsTree_->setModel(treeModel_);
     feedsTree_->setHeaderHidden(true);
     feedsTree_->setIconSize(QSize(44, 22)); // room for the two-flag pair icon
@@ -280,8 +271,9 @@ void MarketSimulatorWindow::setupLeftPanel() {
     leftLayout->addWidget(feedsTree_, 1);
 
     emptyHintLabel_->setWordWrap(true);
-    emptyHintLabel_->setText(tr("No feeds yet. Click 'New Feed' to define a market-data feed, then "
-                                "add an FX rate (currency pair) and its price model."));
+    emptyHintLabel_->setText(
+        tr("No collections yet. Click 'New Collection' to define one, then "
+           "add a feed (currency pair) and its price model."));
     emptyHintLabel_->setStyleSheet("color: gray;");
     emptyHintLabel_->setContentsMargins(4, 0, 4, 4);
     leftLayout->addWidget(emptyHintLabel_);
@@ -369,10 +361,10 @@ void MarketSimulatorWindow::setupRightPanel() {
                                   QVariant::fromValue(static_cast<QObject*>(feedBtnRow)));
 
     connect(feedStartButton_, &QPushButton::clicked, this, [this]() {
-        startPairsAsync(fxPairsForFeed(currentNodeId()));
+        startPairsAsync(pairsUnderIndex(feedsTree_->currentIndex()));
     });
     connect(feedStopButton_, &QPushButton::clicked, this, [this]() {
-        stopPairsAsync(fxPairsForFeed(currentNodeId()));
+        stopPairsAsync(pairsUnderIndex(feedsTree_->currentIndex()));
     });
 
     // Tick chart — shows live synthetic ticks when an FX pair is selected and running.
@@ -497,8 +489,6 @@ void MarketSimulatorWindow::setupConnections() {
     connect(
         startFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartFeedClicked);
     connect(stopFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopFeedClicked);
-    connect(startAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartAllClicked);
-    connect(stopAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopAllClicked);
     connect(validateVintageAction_,
             &QAction::triggered,
             this,
@@ -631,8 +621,9 @@ static QString feedItemText(const synthetic::domain::market_data_generation_conf
     return text;
 }
 
-// Returns the coloured status icon for a feed given its running/total counts.
-static QIcon feedStatusIcon(int running, int total) {
+// Returns the coloured status icon given running/total counts (used for
+// every non-leaf node: Root, Collection, Group).
+static QIcon folderStatusIcon(int running, int total) {
     if (running == 0)
         return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
     if (running == total)
@@ -641,11 +632,50 @@ static QIcon feedStatusIcon(int running, int total) {
     return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(200, 160, 40));
 }
 
-// Returns the coloured status icon for a single FX pair.
-static QIcon fxPairStatusIcon(bool running) {
+// Returns the coloured status icon for a single Feed (leaf).
+static QIcon feedStatusIcon(bool running) {
     if (running)
         return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(60, 180, 80));
     return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
+}
+
+// Pretty display name for an asset-class/instrument-type slug parsed out of
+// a source_name. Hardcoded since FX spot is the only instrument type
+// modelled today; extend this map when a second one is added.
+static QString prettyGroupName(const std::string& slug) {
+    static const std::map<std::string, QString> names = {
+        {"fx", QStringLiteral("FX")},
+        {"fxrates", QStringLiteral("FX Rates")},
+        {"uncategorized", QStringLiteral("Uncategorized")},
+    };
+    auto it = names.find(slug);
+    if (it != names.end())
+        return it->second;
+    QString s = QString::fromStdString(slug);
+    if (!s.isEmpty())
+        s[0] = s[0].toUpper();
+    return s;
+}
+
+// Parses (asset class, instrument type) out of a source_name shaped
+// synthetic.<collection>.<asset class>.<instrument type>.<pair>. Falls back
+// to a single "Uncategorized" bucket for anything that doesn't match (e.g.
+// data predating the namespacing) so old rows still render, just ungrouped.
+static std::pair<std::string, std::string> parseGroup(const std::string& sourceName) {
+    std::vector<std::string> parts;
+    std::string cur;
+    for (char c : sourceName) {
+        if (c == '.') {
+            parts.push_back(cur);
+            cur.clear();
+        } else {
+            cur += c;
+        }
+    }
+    parts.push_back(cur);
+    if (parts.size() != 5 || parts[0] != "synthetic")
+        return {"uncategorized", "uncategorized"};
+    return {parts[2], parts[3]};
 }
 
 void MarketSimulatorWindow::buildTree() {
@@ -653,56 +683,98 @@ void MarketSimulatorWindow::buildTree() {
     treeModel_->setColumnCount(2);
     auto* root = treeModel_->invisibleRootItem();
 
+    // Root node: selecting/starting/stopping it cascades to every feed across
+    // every collection.
+    auto* rootItem = new QStandardItem(tr("Synthetic"));
+    rootItem->setData(static_cast<int>(NodeType::Root), NodeTypeRole);
+    rootItem->setData(QString(), NodeIdRole);
+    rootItem->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    auto* rootStatus = new QStandardItem();
+    rootStatus->setData(static_cast<int>(NodeType::Root), NodeTypeRole);
+    rootStatus->setData(QString(), NodeIdRole);
+    root->appendRow({rootItem, rootStatus});
+
     for (const auto& [feedId, feed] : feeds_) {
-        int total = 0, running = 0;
+        auto* collectionItem = new QStandardItem(feedItemText(feed));
+        collectionItem->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
+        collectionItem->setData(QString::fromStdString(feedId), NodeIdRole);
+        collectionItem->setIcon(
+            IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+        auto* collectionStatus = new QStandardItem();
+        collectionStatus->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
+        collectionStatus->setData(QString::fromStdString(feedId), NodeIdRole);
+
+        // Group this collection's pairs by (asset class, instrument type).
+        std::map<std::string, std::map<std::string, std::vector<const synthetic::domain::fx_spot_generation_config*>>>
+            byAssetClass;
         for (const auto& [fxId, fx] : fxPairs_) {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
-            ++total;
-            if (runningSourceNames_.count(fx.source_name))
-                ++running;
+            const auto [assetClass, instrumentType] = parseGroup(fx.source_name);
+            byAssetClass[assetClass][instrumentType].push_back(&fx);
         }
 
-        auto* feedItem = new QStandardItem(feedItemText(feed));
-        feedItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-        feedItem->setData(QString::fromStdString(feedId), NodeIdRole);
-        feedItem->setIcon(
-            IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+        for (const auto& [assetClass, byInstrumentType] : byAssetClass) {
+            auto* assetClassItem = new QStandardItem(prettyGroupName(assetClass));
+            assetClassItem->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
+            assetClassItem->setData(
+                QString::fromStdString(feedId + "|" + assetClass), NodeIdRole);
+            assetClassItem->setIcon(
+                IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+            auto* assetClassStatus = new QStandardItem();
+            assetClassStatus->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
+            assetClassStatus->setData(
+                QString::fromStdString(feedId + "|" + assetClass), NodeIdRole);
 
-        auto* feedStatus = new QStandardItem();
-        feedStatus->setIcon(feedStatusIcon(running, total));
-        feedStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
-        feedStatus->setData(QString::fromStdString(feedId), NodeIdRole);
+            for (const auto& [instrumentType, pairs] : byInstrumentType) {
+                auto* instrumentTypeItem = new QStandardItem(prettyGroupName(instrumentType));
+                instrumentTypeItem->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
+                instrumentTypeItem->setData(
+                    QString::fromStdString(feedId + "|" + assetClass + "|" + instrumentType),
+                    NodeIdRole);
+                instrumentTypeItem->setIcon(
+                    IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+                auto* instrumentTypeStatus = new QStandardItem();
+                instrumentTypeStatus->setData(static_cast<int>(NodeType::Group), NodeTypeRole);
+                instrumentTypeStatus->setData(
+                    QString::fromStdString(feedId + "|" + assetClass + "|" + instrumentType),
+                    NodeIdRole);
 
-        for (const auto& [fxId, fx] : fxPairs_) {
-            if (boost::uuids::to_string(fx.config_id) != feedId)
-                continue;
+                for (const auto* fxPtr : pairs) {
+                    const auto& fx = *fxPtr;
+                    const auto fxId = boost::uuids::to_string(fx.id);
+                    const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
+                    QString fxText = QString::fromStdString(
+                        fx.base_currency_code + "/" + fx.quote_currency_code);
+                    auto* fxItem = new QStandardItem(fxText);
+                    fxItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+                    fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
+                    if (imageCache_) {
+                        fxItem->setIcon(currency_flag_icon(
+                            *imageCache_, fx.base_currency_code, fx.quote_currency_code));
+                    } else {
+                        fxItem->setIcon(IconUtils::createRecoloredIcon(
+                            Icon::Currency, IconUtils::DefaultIconColor));
+                    }
 
-            const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
-            QString fxText =
-                QString::fromStdString(fx.base_currency_code + "/" + fx.quote_currency_code);
-            auto* fxItem = new QStandardItem(fxText);
-            fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
-            fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
-            if (imageCache_) {
-                fxItem->setIcon(currency_flag_icon(
-                    *imageCache_, fx.base_currency_code, fx.quote_currency_code));
-            } else {
-                fxItem->setIcon(
-                    IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+                    auto* fxStatus = new QStandardItem();
+                    fxStatus->setIcon(feedStatusIcon(fxRunning));
+                    fxStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+                    fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
+
+                    instrumentTypeItem->appendRow({fxItem, fxStatus});
+                }
+
+                assetClassItem->appendRow({instrumentTypeItem, instrumentTypeStatus});
             }
 
-            auto* fxStatus = new QStandardItem();
-            fxStatus->setIcon(fxPairStatusIcon(fxRunning));
-            fxStatus->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
-            fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
-
-            feedItem->appendRow({fxItem, fxStatus});
+            collectionItem->appendRow({assetClassItem, assetClassStatus});
         }
 
-        root->appendRow({feedItem, feedStatus});
+        root->appendRow({collectionItem, collectionStatus});
     }
 
+    refreshFeedTreeItems(); // sets every folder's status icon from running counts
     feedsTree_->expandAll();
     feedsTree_->setColumnWidth(0, 220);
     feedsTree_->header()->setStretchLastSection(false);
@@ -716,14 +788,14 @@ void MarketSimulatorWindow::updateEmptyState() {
 }
 
 void MarketSimulatorWindow::updateStatusCounts() {
-    statusLabel_->setText(tr("%1 feeds, %2 FX rates").arg(feeds_.size()).arg(fxPairs_.size()));
+    statusLabel_->setText(tr("%1 collections, %2 feeds").arg(feeds_.size()).arg(fxPairs_.size()));
     emit statusChanged(statusLabel_->text());
 }
 
 MarketSimulatorWindow::NodeType MarketSimulatorWindow::currentNodeType() const {
     const auto idx = feedsTree_->currentIndex();
     if (!idx.isValid())
-        return NodeType::Feed;
+        return NodeType::Root;
     return static_cast<NodeType>(idx.data(NodeTypeRole).toInt());
 }
 
@@ -734,19 +806,26 @@ std::string MarketSimulatorWindow::currentNodeId() const {
     return idx.data(NodeIdRole).toString().toStdString();
 }
 
+void MarketSimulatorWindow::collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids) {
+    if (!item)
+        return;
+    if (static_cast<NodeType>(item->data(NodeTypeRole).toInt()) == NodeType::Feed) {
+        ids.push_back(item->data(NodeIdRole).toString().toStdString());
+        return;
+    }
+    for (int i = 0; i < item->rowCount(); ++i)
+        collectFeedIdsUnder(item->child(i, 0), ids);
+}
+
 std::vector<synthetic::domain::fx_spot_generation_config>
-MarketSimulatorWindow::selectedFxPairs() const {
-    // The tree has 2 columns; both column items carry the same NodeId, so we
-    // deduplicate by id to avoid sending 2 start/stop requests per pair.
+MarketSimulatorWindow::pairsUnderIndex(const QModelIndex& idx) const {
     std::vector<synthetic::domain::fx_spot_generation_config> result;
-    std::set<std::string> seen;
-    const auto indexes = feedsTree_->selectionModel()->selectedIndexes();
-    for (const auto& idx : indexes) {
-        if (static_cast<NodeType>(idx.data(NodeTypeRole).toInt()) != NodeType::FxPair)
-            continue;
-        const auto id = idx.data(NodeIdRole).toString().toStdString();
-        if (!seen.insert(id).second)
-            continue;
+    if (!idx.isValid())
+        return result;
+    auto* item = treeModel_->itemFromIndex(idx.sibling(idx.row(), 0));
+    std::vector<std::string> ids;
+    collectFeedIdsUnder(item, ids);
+    for (const auto& id : ids) {
         auto it = fxPairs_.find(id);
         if (it != fxPairs_.end())
             result.push_back(it->second);
@@ -754,17 +833,38 @@ MarketSimulatorWindow::selectedFxPairs() const {
     return result;
 }
 
+std::vector<synthetic::domain::fx_spot_generation_config>
+MarketSimulatorWindow::selectedFxPairs() const {
+    // The tree has 2 columns; both column items carry the same NodeId, so we
+    // only look at column-0 indexes. Any selected node -- Root, Collection,
+    // Group, or Feed -- contributes every Feed-leaf beneath it (itself, if
+    // it's already a Feed); dedup by id since overlapping selections (e.g. a
+    // Group and one of its own Feeds) would otherwise double-count.
+    std::vector<synthetic::domain::fx_spot_generation_config> result;
+    std::set<std::string> seen;
+    const auto indexes = feedsTree_->selectionModel()->selectedRows(0);
+    for (const auto& idx : indexes) {
+        for (const auto& fx : pairsUnderIndex(idx)) {
+            const auto id = boost::uuids::to_string(fx.id);
+            if (seen.insert(id).second)
+                result.push_back(fx);
+        }
+    }
+    return result;
+}
+
 std::string MarketSimulatorWindow::resolveFeedId() const {
-    const auto type = currentNodeType();
-    const auto id = currentNodeId();
-    if (id.empty())
-        return {};
-    if (type == NodeType::Feed)
-        return id;
-    // FxPair: return its owning feed.
-    auto it = fxPairs_.find(id);
-    if (it != fxPairs_.end())
-        return boost::uuids::to_string(it->second.config_id);
+    // Walk from the current node up through its ancestors (self included)
+    // looking for the nearest Collection -- the owning collection for a
+    // Group/Feed, or the node itself if it already is one. Root, or an
+    // unresolvable selection, returns empty (ambiguous -- more than one
+    // collection could be implied).
+    auto idx = feedsTree_->currentIndex();
+    while (idx.isValid()) {
+        if (static_cast<NodeType>(idx.data(NodeTypeRole).toInt()) == NodeType::Collection)
+            return idx.data(NodeIdRole).toString().toStdString();
+        idx = idx.parent();
+    }
     return {};
 }
 
@@ -802,13 +902,19 @@ void MarketSimulatorWindow::showSummaryForCurrent() {
     const auto id = idx.data(NodeIdRole).toString().toStdString();
 
     switch (type) {
-        case NodeType::Feed: {
+        case NodeType::Root:
+            showFolderSummary(idx, tr("All feeds"), idx.data(Qt::DisplayRole).toString());
+            break;
+        case NodeType::Collection: {
             auto it = feeds_.find(id);
             if (it != feeds_.end())
                 showFeedSummary(it->second);
             break;
         }
-        case NodeType::FxPair: {
+        case NodeType::Group:
+            showFolderSummary(idx, tr("Group"), idx.data(Qt::DisplayRole).toString());
+            break;
+        case NodeType::Feed: {
             auto it = fxPairs_.find(id);
             if (it != fxPairs_.end())
                 showFxPairSummary(it->second);
@@ -826,7 +932,7 @@ void MarketSimulatorWindow::showFeedSummary(
     clear_form(summaryForm_);
     summaryHero_->setVisible(false);
     summaryTitle_->setVisible(true);
-    summaryTitle_->setText(tr("<b>Feed</b>"));
+    summaryTitle_->setText(tr("<b>Collection</b>"));
     summaryForm_->addRow(tr("Name"), new QLabel(QString::fromStdString(feed.name), summaryPage_));
     if (!feed.description.empty())
         summaryForm_->addRow(tr("Description"),
@@ -834,7 +940,7 @@ void MarketSimulatorWindow::showFeedSummary(
     summaryForm_->addRow(tr("Enabled"),
                          new QLabel(feed.enabled ? tr("Yes") : tr("No"), summaryPage_));
 
-    // Tally FX rates and how many are currently running (client-side knowledge).
+    // Tally feeds and how many are currently running (client-side knowledge).
     const auto feedId = boost::uuids::to_string(feed.id);
     int total = 0, running = 0;
     for (const auto& [id, fx] : fxPairs_) {
@@ -844,7 +950,7 @@ void MarketSimulatorWindow::showFeedSummary(
         if (runningSourceNames_.count(fx.source_name))
             ++running;
     }
-    summaryForm_->addRow(tr("FX rates"), new QLabel(QString::number(total), summaryPage_));
+    summaryForm_->addRow(tr("Feeds"), new QLabel(QString::number(total), summaryPage_));
 
     const QString statusText = running == 0     ? tr("Stopped") :
                                running == total ? tr("Running") :
@@ -864,6 +970,47 @@ void MarketSimulatorWindow::showFeedSummary(
 
     feedSummaryId_ = feedId;
     fxSummaryId_.clear();
+    summaryStack_->setCurrentWidget(summaryPage_);
+}
+
+void MarketSimulatorWindow::showFolderSummary(const QModelIndex& idx,
+                                              const QString& title,
+                                              const QString& name) {
+    unsubscribeTickChart();
+    fxSummaryId_.clear();
+    feedSummaryId_.clear();
+    if (tickChartContainer_)
+        tickChartContainer_->setVisible(false);
+    clear_form(summaryForm_);
+    summaryHero_->setVisible(false);
+    summaryTitle_->setVisible(true);
+    summaryTitle_->setText(QStringLiteral("<b>%1</b>").arg(title));
+    summaryForm_->addRow(tr("Name"), new QLabel(name, summaryPage_));
+
+    const auto pairs = pairsUnderIndex(idx);
+    const int total = static_cast<int>(pairs.size());
+    int running = 0;
+    for (const auto& fx : pairs)
+        if (runningSourceNames_.count(fx.source_name))
+            ++running;
+    summaryForm_->addRow(tr("Feeds"), new QLabel(QString::number(total), summaryPage_));
+
+    const QString statusText = running == 0     ? tr("Stopped") :
+                               running == total ? tr("Running") :
+                                                  tr("%1 of %2 running").arg(running).arg(total);
+    auto* statusLbl = new QLabel(statusText, summaryPage_);
+    statusLbl->setStyleSheet(running > 0 ? "color: green; font-weight: bold;" : "color: gray;");
+    summaryForm_->addRow(tr("Status"), statusLbl);
+
+    feedStatsLabel_->setVisible(false);
+    auto* feedBtnRow =
+        qobject_cast<QWidget*>(feedStartButton_->property("feedBtnRow").value<QObject*>());
+    if (feedBtnRow) {
+        feedBtnRow->setVisible(total > 0);
+        feedStartButton_->setEnabled(running < total);
+        feedStopButton_->setEnabled(running > 0);
+    }
+
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
@@ -887,48 +1034,46 @@ void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNa
     refreshFxSummaryIfCurrent();
 }
 
+// Recomputes status icons bottom-up for item (column 0) and its column-1
+// status sibling, returning (running, total) so a caller one level up can
+// fold this node's counts into its own. Leaf Feed items look themselves up
+// in fxPairs_; every other node aggregates its children.
+std::pair<int, int> MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
+    if (!item)
+        return {0, 0};
+    auto* statusItem = item->parent() ? item->parent()->child(item->row(), 1) :
+                                        treeModel_->item(item->row(), 1);
+    const auto type = static_cast<NodeType>(item->data(NodeTypeRole).toInt());
+    if (type == NodeType::Feed) {
+        const auto fxId = item->data(NodeIdRole).toString().toStdString();
+        auto it = fxPairs_.find(fxId);
+        if (it == fxPairs_.end())
+            return {0, 0};
+        const bool running = runningSourceNames_.count(it->second.source_name) > 0;
+        if (statusItem)
+            statusItem->setIcon(feedStatusIcon(running));
+        return {running ? 1 : 0, 1};
+    }
+
+    int running = 0, total = 0;
+    for (int i = 0; i < item->rowCount(); ++i) {
+        const auto [r, t] = refreshTreeItemStatus(item->child(i, 0));
+        running += r;
+        total += t;
+    }
+    if (statusItem)
+        statusItem->setIcon(folderStatusIcon(running, total));
+    return {running, total};
+}
+
 void MarketSimulatorWindow::refreshFeedTreeItems() {
     auto* root = treeModel_->invisibleRootItem();
-    for (int fi = 0; fi < root->rowCount(); ++fi) {
-        auto* feedItem = root->child(fi);
-        if (!feedItem)
-            continue;
-        const auto feedId = feedItem->data(NodeIdRole).toString().toStdString();
-        auto it = feeds_.find(feedId);
-        if (it == feeds_.end())
-            continue;
-
-        int total = 0, running = 0;
-        for (const auto& [fxId, fx] : fxPairs_) {
-            if (boost::uuids::to_string(fx.config_id) != feedId)
-                continue;
-            ++total;
-            if (runningSourceNames_.count(fx.source_name))
-                ++running;
-        }
-
-        // Update feed status icon in col 1.
-        if (auto* feedStatusItem = treeModel_->item(fi, 1))
-            feedStatusItem->setIcon(feedStatusIcon(running, total));
-
-        // Update child FX pair status icons.
-        for (int xi = 0; xi < feedItem->rowCount(); ++xi) {
-            auto* fxItem = feedItem->child(xi, 0);
-            auto* fxStatusItem = feedItem->child(xi, 1);
-            if (!fxItem || !fxStatusItem)
-                continue;
-            const auto fxId = fxItem->data(NodeIdRole).toString().toStdString();
-            auto fxit = fxPairs_.find(fxId);
-            if (fxit == fxPairs_.end())
-                continue;
-            const bool fxRunning = runningSourceNames_.count(fxit->second.source_name) > 0;
-            fxStatusItem->setIcon(fxPairStatusIcon(fxRunning));
-        }
-    }
+    for (int i = 0; i < root->rowCount(); ++i)
+        refreshTreeItemStatus(root->child(i, 0));
 }
 
 void MarketSimulatorWindow::refreshFxSummaryIfCurrent() {
-    if (fxSummaryId_.empty() || currentNodeType() != NodeType::FxPair ||
+    if (fxSummaryId_.empty() || currentNodeType() != NodeType::Feed ||
         currentNodeId() != fxSummaryId_)
         return;
     auto it = fxPairs_.find(fxSummaryId_);
@@ -955,7 +1100,7 @@ void MarketSimulatorWindow::refreshFxSummaryIfCurrent() {
 }
 
 void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedId) {
-    if (feedId.empty() || currentNodeType() != NodeType::Feed || currentNodeId() != feedId)
+    if (feedId.empty() || currentNodeType() != NodeType::Collection || currentNodeId() != feedId)
         return;
     auto it = feeds_.find(feedId);
     if (it != feeds_.end())
@@ -1159,23 +1304,26 @@ void MarketSimulatorWindow::onEditClicked() {
 
 void MarketSimulatorWindow::editEntity(NodeType type, const std::string& id) {
     switch (type) {
-        case NodeType::Feed: {
+        case NodeType::Collection: {
             auto it = feeds_.find(id);
             if (it == feeds_.end())
                 return;
-            BOOST_LOG_SEV(lg(), info) << "Opening Edit Feed dialog for " << id << ".";
+            BOOST_LOG_SEV(lg(), info) << "Opening Edit Collection dialog for " << id << ".";
             FeedDialog dlg(clientManager_, username_, it->second, this);
             if (dlg.exec() == QDialog::Accepted)
                 reload();
             break;
         }
-        case NodeType::FxPair: {
+        case NodeType::Feed: {
             auto it = fxPairs_.find(id);
             if (it == fxPairs_.end())
                 return;
             openFxEditorForEdit(it->second);
             break;
         }
+        case NodeType::Root:
+        case NodeType::Group:
+            break; // structural nodes -- not editable
     }
 }
 
@@ -1187,14 +1335,14 @@ void MarketSimulatorWindow::onDeleteClicked() {
         return;
     }
 
-    const char* typeName = type == NodeType::Feed ? "feed" : "fx rate";
+    const char* typeName = type == NodeType::Collection ? "collection" : "feed";
 
-    // Confirm before this destructive, irreversible action — deleting a feed
-    // also removes all its child FX rates.
+    // Confirm before this destructive, irreversible action — deleting a
+    // collection also removes all of its child feeds.
     const QString prompt =
-        type == NodeType::Feed ?
-            tr("Delete this feed and all of its FX rates? This cannot be undone.") :
-            tr("Delete this FX rate? This cannot be undone.");
+        type == NodeType::Collection ?
+            tr("Delete this collection and all of its feeds? This cannot be undone.") :
+            tr("Delete this feed? This cannot be undone.");
     if (QMessageBox::question(this,
                               tr("Confirm delete"),
                               prompt,
@@ -1209,7 +1357,7 @@ void MarketSimulatorWindow::onDeleteClicked() {
 
     auto task = [cm, type, id]() -> std::pair<bool, QString> {
         namespace m = synthetic::messaging;
-        if (type == NodeType::Feed) {
+        if (type == NodeType::Collection) {
             auto resp = cm->process_authenticated_request(
                 m::delete_market_data_generation_config_request{.ids = {id}});
             if (!resp)
@@ -1255,51 +1403,24 @@ void MarketSimulatorWindow::onDeleteClicked() {
 void MarketSimulatorWindow::updateToolbarState() {
     const bool hasSelection = feedsTree_->currentIndex().isValid();
     const bool hasFeedContext = !resolveFeedId().empty();
-
-    const bool isFxNode = hasSelection && currentNodeType() == NodeType::FxPair;
-    const bool isFeedNode = hasSelection && currentNodeType() == NodeType::Feed;
+    const auto type = currentNodeType();
+    // Only Collection/Feed are real, editable/deletable entities; Root/Group
+    // are pure tree structure.
+    const bool isEditableNode =
+        hasSelection && (type == NodeType::Collection || type == NodeType::Feed);
     const bool anyFxSelected = !selectedFxPairs().empty();
 
-    // A Feed node selection also activates start/stop for all its children.
-    bool startEnabled = anyFxSelected;
-    bool stopEnabled = anyFxSelected;
-    if (isFeedNode) {
-        const auto pairs = fxPairsForFeed(currentNodeId());
-        startEnabled = !pairs.empty();
-        stopEnabled = !pairs.empty();
-    }
-
-    const bool hasFxPairs = !fxPairs_.empty();
-
     newFxRateAction_->setEnabled(hasFeedContext);
-    editAction_->setEnabled(hasSelection);
-    deleteAction_->setEnabled(hasSelection);
-    startFeedAction_->setEnabled(startEnabled);
-    stopFeedAction_->setEnabled(stopEnabled);
-    startAllAction_->setEnabled(hasFxPairs);
-    stopAllAction_->setEnabled(hasFxPairs);
-    (void)isFxNode;
-}
-
-std::vector<synthetic::domain::fx_spot_generation_config>
-MarketSimulatorWindow::fxPairsForFeed(const std::string& feedId) const {
-    std::vector<synthetic::domain::fx_spot_generation_config> result;
-    for (const auto& [id, fx] : fxPairs_)
-        if (boost::uuids::to_string(fx.config_id) == feedId)
-            result.push_back(fx);
-    return result;
+    editAction_->setEnabled(isEditableNode);
+    deleteAction_->setEnabled(isEditableNode);
+    startFeedAction_->setEnabled(anyFxSelected);
+    stopFeedAction_->setEnabled(anyFxSelected);
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {
-    // Prefer the explicit tree selection (what the user highlighted) over the
-    // current/focused item. Only fall back to "all in feed" when the selection
-    // contains no FX pairs and the focused item is a Feed node — this handles
-    // the toolbar button click after clicking the folder row itself.
-    auto pairs = selectedFxPairs();
-    if (pairs.empty() && feedsTree_->currentIndex().isValid() &&
-        currentNodeType() == NodeType::Feed)
-        pairs = fxPairsForFeed(currentNodeId());
-    startPairsAsync(std::move(pairs));
+    // selectedFxPairs() already cascades through Root/Collection/Group nodes
+    // to their descendant Feeds, so no special-casing is needed here.
+    startPairsAsync(selectedFxPairs());
 }
 
 void MarketSimulatorWindow::startPairsAsync(
@@ -1450,11 +1571,7 @@ void MarketSimulatorWindow::startPairsAsync(
 }
 
 void MarketSimulatorWindow::onStopFeedClicked() {
-    auto pairs = selectedFxPairs();
-    if (pairs.empty() && feedsTree_->currentIndex().isValid() &&
-        currentNodeType() == NodeType::Feed)
-        pairs = fxPairsForFeed(currentNodeId());
-    stopPairsAsync(std::move(pairs));
+    stopPairsAsync(selectedFxPairs());
 }
 
 void MarketSimulatorWindow::stopPairsAsync(
@@ -1519,24 +1636,6 @@ void MarketSimulatorWindow::stopPairsAsync(
                 self, self->tr("Stop failed"), self->tr("Failed to stop:\n") + failed.join("\n"));
     });
     watcher->setFuture(QtConcurrent::run(task));
-}
-
-void MarketSimulatorWindow::onStartAllClicked() {
-    // Collect all FX pairs directly — do NOT mutate tree selection.
-    // The old pattern (clearSelection + select all + delegate) left the selection
-    // containing every FX pair, so subsequent single-pair Start/Stop actions
-    // operated on all of them instead of just the current node.
-    std::vector<synthetic::domain::fx_spot_generation_config> all;
-    for (const auto& [id, fx] : fxPairs_)
-        all.push_back(fx);
-    startPairsAsync(std::move(all));
-}
-
-void MarketSimulatorWindow::onStopAllClicked() {
-    std::vector<synthetic::domain::fx_spot_generation_config> all;
-    for (const auto& [id, fx] : fxPairs_)
-        all.push_back(fx);
-    stopPairsAsync(std::move(all));
 }
 
 void MarketSimulatorWindow::onValidateVintageClicked() {

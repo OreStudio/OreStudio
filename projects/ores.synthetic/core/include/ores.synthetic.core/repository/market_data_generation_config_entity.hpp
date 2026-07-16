@@ -44,6 +44,7 @@ struct market_data_generation_config_entity {
     std::string name;
     std::string description;
     bool enabled = false;
+    std::optional<std::string> dataset_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

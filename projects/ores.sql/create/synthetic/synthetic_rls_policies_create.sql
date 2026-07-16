@@ -156,3 +156,29 @@ with check (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Folders (dual RLS: tenant + party isolation)
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_folders_tbl enable row level security;
+
+create policy folders_tenant_isolation_policy
+on ores_synthetic_folders_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy folders_party_isolation_policy
+on ores_synthetic_folders_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

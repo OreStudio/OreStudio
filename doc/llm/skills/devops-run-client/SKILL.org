@@ -13,21 +13,21 @@
 #+begin_export markdown
 ---
 name: devops-run-client
-description: Launch the Qt client detached, with optional colour and instance name for parallel runs.
+description: Launch the Qt client detached, with optional colour for parallel runs.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-Launching the Qt client, detached so the terminal stays free; colour and instance name keep parallel runs apart. Whenever there's a UI test scenario to run through, always launch (or restart) with =--open-scenario= pointing at it — never make the user navigate to Scenario Runner and open the file by hand.
+Launching the Qt client, detached so the terminal stays free; colour keeps parallel runs apart (the instance name is always the environment's own label — not overridable). Whenever there's a UI test scenario to run through, always launch (or restart) with =--open-scenario= pointing at it — never make the user navigate to Scenario Runner and open the file by hand.
 
 * How to use this skill
 
 1. /Launch/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client start --colour <colour> --instance-name <name>
+   ./projects/ores.compass/compass.sh client start --colour <colour>
    #+end_src
 
 2. /Launch with a test scenario pre-loaded/ — whenever there's UI testing to do, always supply this instead of a bare launch. =--open-scenario= must be an *absolute* path — the client's working directory is not the repo root, so a relative path (even one that's correct from your own shell) fails with a filesystem error:

@@ -25,6 +25,7 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -76,6 +77,17 @@ public:
      */
     std::uint32_t count_fx_spot_generation_configs();
 
+
+    /**
+     * @brief Retrieves a single FX spot generation config as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the FX spot generation config.
+     * @param version The version to fetch.
+     * @return The FX spot generation config at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::fx_spot_generation_config>
+    get_fx_spot_generation_config_at_version(const std::string& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single FX spot generation config by its id.

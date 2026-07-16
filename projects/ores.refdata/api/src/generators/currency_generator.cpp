@@ -59,7 +59,6 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.spot_days = faker::helper::randomElement(std::vector<int>{1, 2});
     r.day_basis = std::string("ACT/360");
     r.base_precedence = faker::number::integer(1, 100);
-    r.holiday_calendar = std::string("TARGET");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

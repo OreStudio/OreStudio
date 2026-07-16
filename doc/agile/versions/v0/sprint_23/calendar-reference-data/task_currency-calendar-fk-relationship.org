@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-calendar-fk-relationship
+#+pr: 1588
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,26 +29,34 @@ country calendar and a financial-centre calendar).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
 
-- [ ] A =currency_calendar= (or similarly named) junction table exists,
+- [X] A =currency_calendar= (or similarly named) junction table exists,
   FK-referencing both =currency= and =calendar=.
-- [ ] =currency.holiday_calendar='s existing free-text values are
+- [X] =currency.holiday_calendar='s existing free-text values are
   migrated onto the junction table.
-- [ ] The old free-text column is retired.
+- [X] The old free-text column is retired.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Mirrored the exact approach used for
+[[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][the currency_country junction]]:
+codegen for SQL only (=ores.codegen.junction=), hand-authored C++ layer
+copied from =currency_country= and re-targeted from
+=country_alpha2_code= to =calendar_code=. Retired =currency.holiday_calendar=
+via a normal codegen regeneration of the =currency= entity (field
+deleted from the org model, then =compass codegen entity generate
+currency=), which cleanly dropped the column everywhere except the two
+places codegen doesn't own: the DQ publish-from-dq function (stopped
+writing the retired column) and =presentation_currency_history_field_mapper_tests.cpp='s
+hardcoded field count.
 
 * Notes
 
@@ -56,12 +64,57 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1588][#1588]] | [refdata] Migrate currency.holiday_calendar to a real FK relationship |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction insert trigger uses current_timestamp (version-collision risk); entity template already fixed to clock_timestamp() | projects/ores.sql/create/refdata/refdata_currency_calendar_create.sql | Declined (captured) | Inherited unchanged from the currency_country junction template, not a regression from this PR; filed as [[id:D97BB18F-61F6-4FD1-921E-D2062705F85D][a backlog capture]] to fix the shared junction codegen template and regenerate both affected junctions together |
 
 * Result
+
+Modelled =currency_calendar= as an =ores.codegen.junction= (SQL schema
+generated) and hand-authored the C++ layer mirroring
+[[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][currency_country]] exactly
+(domain struct, JSON I/O, table display/table I/O, custom generator,
+repository entity/mapper/repository), since junction codegen is
+SQL-only. Wired the create/drop scripts into
+=refdata_create.sql=/=refdata_drop.sql= (currency_calendar depends on
+both =currencies= and =calendars=, so it creates after both and drops
+before both) and added its RLS tenant-isolation policy up front, having
+just fixed that same class of gap for =calendars=/=calendar_types= and
+=currency_countries= on main.
+
+Seeded 19 real currency-to-calendar mappings (mirroring the values
+previously hardcoded on =currency.holiday_calendar=, e.g. EUR ->
+TARGET, USD -> UnitedStates.Settlement, GBP -> UnitedKingdom.Settlement)
+via both a =generate_currency_calendars()= custom generator and a
+matching SQL populate script (=refdata_currency_calendars_populate.sql=),
+following the same dual-path seed pattern established for =calendar='s
+QuantLib seed. Several currencies needed a QuantLib sub-market variant
+rather than the bare country token (=UnitedStates.Settlement=,
+=Canada.Settlement=, =UnitedKingdom.Settlement=, =China.SSE=,
+=SouthKorea.Settlement=), since the seeded calendar set has no plain
+root token for those markets.
+
+Retired =currency.holiday_calendar= by removing the field from
+=ores.refdata.currency.org= and regenerating the currency entity via
+codegen, which cleanly dropped the column from the domain struct,
+entity, mapper, generator, table/table_io, Qt model, and SQL create
+script. Fixed the two non-codegen-owned consumers: stopped the
+publish-from-dq function writing the now-retired column (still reads
+the raw value from the DQ artefact table, unchanged, since that's
+upstream staging data outside this task's scope), and updated
+=presentation_currency_history_field_mapper_tests.cpp='s hardcoded
+field count (21 -> 20).
+=refdata_currency_pair_conventions_seed_populate.sql= reads
+=holiday_calendar= off the DQ artefact table directly (not the
+retired refdata column), so needed no change.
+
+Verified end-to-end: full monorepo build clean; =ctest= 72/73 passed
+(the 1 failure is the same pre-existing, unrelated =contact_type=
+generator test seen throughout this sprint, confirmed untouched by
+any commit here); =validate_schemas.sh= clean (0 warnings, RLS_001
+included); =compass db recreate= runs clean with 19
+=currency_calendars= rows seeded.

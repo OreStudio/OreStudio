@@ -249,20 +249,6 @@ base currency).
 faker::number::integer(1, 100)
 #+end_src
 
-** holiday_calendar
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Named holiday calendar identifier (e.g. "TARGET", "US", "UK"). Free-text
-pending [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
-
-#+begin_src cpp :name generator
-std::string("TARGET")
-#+end_src
-
 * SQL
 
 ** Flags
@@ -346,7 +332,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 | spot_days          | Spot Days       |
 | day_basis          | Day Basis       |
 | base_precedence    | Base Precedence |
-| holiday_calendar   | Holiday Calendar |
 | modified_by        | Modified By     |
 | version            | Version         |
 
@@ -401,11 +386,11 @@ drop function if exists ores_refdata_validate_currency_fn;
 
 *** Detail fields
 
-All 11 fields currently exposed in =CurrencyDetailDialog.ui= (4 new
-domain columns — =spot_days=, =day_basis=, =base_precedence=,
-=holiday_calendar= — aren't in the UI yet; out of scope for this sync,
-tracked separately). =image_id= isn't a detail field either (handled
-generically via =has_flag_icon=, matching every other flag entity).
+All 11 fields currently exposed in =CurrencyDetailDialog.ui= (3 new
+domain columns — =spot_days=, =day_basis=, =base_precedence= — aren't
+in the UI yet; out of scope for this sync, tracked separately).
+=image_id= isn't a detail field either (handled generically via
+=has_flag_icon=, matching every other flag entity).
 
 | field              | label               | widget                   | type          | is_key | is_required | placeholder                    | spin_min | spin_max | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal | badge_key              | view_group  |
 |--------------------+----------------------+---------------------------+---------------+--------+-------------+---------------------------------+----------+----------+----------------------------------------+-----------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+------------------------+----------------------+------------------------+-------------|
@@ -439,7 +424,6 @@ generically via =has_flag_icon=, matching every other flag entity).
 | SpotDays           | spot_days          | Spot Days       | int       | 70    |                |          |                       | true               |
 | DayBasis           | day_basis          | Day Basis       | string    | 80    |                |          |                       |                    |
 | BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       | true               |
-| HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |          |                       | true               |
 | Version            | version            | Version         | int       | 70    |                |          |                       |                    |
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |
 | RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |                |

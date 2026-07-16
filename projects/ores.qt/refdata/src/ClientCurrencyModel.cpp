@@ -108,10 +108,6 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(currency.day_basis);
             case BasePrecedence:
                 return static_cast<qlonglong>(currency.base_precedence);
-            case HolidayCalendar:
-                return currency.holiday_calendar ?
-                           QString::fromStdString(*currency.holiday_calendar) :
-                           QString{};
             case Version:
                 return static_cast<qlonglong>(currency.version);
             case ModifiedBy:
@@ -167,8 +163,6 @@ QVariant ClientCurrencyModel::headerData(int section, Qt::Orientation orientatio
             return tr("Day Basis");
         case BasePrecedence:
             return tr("Base Precedence");
-        case HolidayCalendar:
-            return tr("Holiday Calendar");
         case Version:
             return tr("Version");
         case ModifiedBy:

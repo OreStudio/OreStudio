@@ -17,45 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_ENTITY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_CALENDAR_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_CALENDAR_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <optional>
-#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
 
-/**
- * @brief Represents a currency in the database.
- */
-struct currency_entity {
+struct currency_calendar_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_refdata_currencies_tbl";
+    constexpr static const char* tablename = "ores_refdata_currency_calendars_tbl";
 
-    sqlgen::PrimaryKey<std::string> iso_code;
+    sqlgen::PrimaryKey<std::string> currency_iso_code;
     std::string tenant_id;
+    std::string calendar_code;
     int version = 0;
-
-    std::string name;
-
-    std::string numeric_code;
-    std::string symbol;
-    std::string fraction_symbol;
-    int fractions_per_unit = 0;
-    std::string rounding_type;
-    int rounding_precision = 0;
-    std::string format;
-    std::string monetary_nature;
-    std::string market_tier;
-    std::optional<std::string> image_id;
-    int spot_days = 0;
-    std::string day_basis;
-    int base_precedence = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -64,7 +44,7 @@ struct currency_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const currency_entity& v);
+std::ostream& operator<<(std::ostream& s, const currency_calendar_entity& v);
 
 }
 

@@ -53,17 +53,35 @@ Classifications > Code Domains. Confirm the list is populated (31
 rows expected: party_status, book_status, fsm_state, etc.) -- not
 empty. This is the exact list that was empty before this task's fix.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Badge Definitions
 
 Go to System > Configuration > Badge Definitions. Confirm the list
 is populated (57 rows expected: active, inactive, frozen, etc.),
 each with its background/text colour and severity visible.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Badge Severities
 
 Go to System > Configuration > Badge Severities. Confirm the list is
 populated (6 rows: secondary, info, success, warning, danger,
 primary).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm badge rendering still works end-to-end
 
@@ -76,6 +94,12 @@ confirms BadgeCache (which reads cross-tenant, unaffected by this
 migration) and the newly tenant-scoped admin CRUD lists agree on the
 same data.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm a second tenant would get its own independent copy
 
 (Optional, if time permits.) Provision a second tenant (e.g. via
@@ -83,14 +107,20 @@ same data.
 Domains/Badge Definitions/Badge Severities lists are also populated
 independently -- i.e. this isn't a fluke specific to Barclays.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-16T22:00:34Z |
+| Branch        | feature/migrate-badges-to-standard-codegen |
+| Commit        | 78efc313e |
+| Worktree      | bright_faraday |
 
 * Notes

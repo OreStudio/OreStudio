@@ -736,11 +736,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
 {{/is_optional_uuid}}
 {{/is_uuid}}
 {{#is_self_referencing_combo}}
-        [this](const auto& t) { return t.id == {{domain_entity.qt.item_var}}_.id; });
+        [this](const auto& t) { return t.id == {{domain_entity.qt.item_var}}_.id; },
 {{/is_self_referencing_combo}}
 {{^is_self_referencing_combo}}
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
 {{/is_self_referencing_combo}}
+{{#combo_blank_label}}
+        QObject::tr("{{combo_blank_label}}"));
+{{/combo_blank_label}}
+{{^combo_blank_label}}
+        QString{});
+{{/combo_blank_label}}
 }
 {{/combo_domain_type}}
 {{^combo_domain_type}}

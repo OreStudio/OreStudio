@@ -107,6 +107,18 @@ namespace detail {
  * itself, so it loops forever). Defaults to a no-op (nothing
  * excluded), preserving existing behaviour for every non-self-
  * referencing caller.
+ * @param blank_label When non-empty, an item with this text and an
+ * empty-string value is inserted at the top of the list, letting the
+ * combo represent (and let the user deliberately choose) "no
+ * selection" for an optional field — e.g. a parent-hierarchy picker
+ * where the entity genuinely has no parent. Without this, a
+ * @c std::nullopt/empty field value has no matching combo entry: @c
+ * findData("") fails, the restore-selection step is skipped, and the
+ * combo is left showing whatever Qt auto-selected (index 0) instead
+ * of the true empty state — silently corrupting the field if the
+ * dialog is then saved without the user touching this combo. Defaults
+ * to empty, preserving existing behaviour for every caller that
+ * doesn't pass it.
  */
 template <typename Entity>
 void populateDynamicCombo(
@@ -124,7 +136,8 @@ void populateDynamicCombo(
     const QString& loading_placeholder = QObject::tr("Loading…"),
     const QString& error_placeholder = QObject::tr("Failed to load"),
     std::function<QString(const Entity&)> value_of = nullptr,
-    std::function<bool(const Entity&)> exclude_if = [](const Entity&) { return false; }) {
+    std::function<bool(const Entity&)> exclude_if = [](const Entity&) { return false; },
+    const QString& blank_label = QString()) {
     if (!value_of)
         value_of = code_of;
     if (!combo || !owner || !client_manager || !client_manager->isConnected()) {
@@ -176,7 +189,8 @@ void populateDynamicCombo(
          exclude_if,
          on_error,
          on_success,
-         error_placeholder]() {
+         error_placeholder,
+         blank_label]() {
             auto result = watcher->result();
             watcher->deleteLater();
 
@@ -206,6 +220,11 @@ void populateDynamicCombo(
 
             combo->blockSignals(true);
             combo->clear();
+            if (!blank_label.isEmpty()) {
+                combo->addItem(blank_label);
+                combo->setItemData(0, QString(), Qt::UserRole);
+                combo->setItemData(0, QString(), Qt::ToolTipRole);
+            }
             for (const auto& item : items) {
                 combo->addItem(code_of(item));
                 combo->setItemData(combo->count() - 1, value_of(item), Qt::UserRole);
@@ -218,6 +237,8 @@ void populateDynamicCombo(
                 const int idx = combo->findData(to_select);
                 if (idx >= 0)
                     combo->setCurrentIndex(idx);
+            } else if (!blank_label.isEmpty()) {
+                combo->setCurrentIndex(0);
             }
             combo->blockSignals(false);
 

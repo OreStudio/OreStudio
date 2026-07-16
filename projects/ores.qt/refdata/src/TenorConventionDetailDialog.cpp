@@ -179,7 +179,8 @@ void TenorConventionDetailDialog::populateMeasuredFromCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void TenorConventionDetailDialog::populateResolutionAlgorithmCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating resolution_algorithm combo";
@@ -200,7 +201,8 @@ void TenorConventionDetailDialog::populateResolutionAlgorithmCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void TenorConventionDetailDialog::updateUiFromConvention() {
     ui_->codeEdit->setText(QString::fromStdString(convention_.code));

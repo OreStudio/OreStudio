@@ -241,7 +241,8 @@ void CounterpartyDetailDialog::populatePartyTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CounterpartyDetailDialog::populatePartyStatusCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating status combo";
@@ -262,7 +263,8 @@ void CounterpartyDetailDialog::populatePartyStatusCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CounterpartyDetailDialog::populateParentCounterpartyCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating parent_counterparty_id combo";
@@ -286,7 +288,8 @@ void CounterpartyDetailDialog::populateParentCounterpartyCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
-        [this](const auto& t) { return t.id == counterparty_.id; });
+        [this](const auto& t) { return t.id == counterparty_.id; },
+        QObject::tr("No Parent"));
 }
 void CounterpartyDetailDialog::updateUiFromCounterparty() {
     ui_->codeEdit->setText(QString::fromStdString(counterparty_.short_code));

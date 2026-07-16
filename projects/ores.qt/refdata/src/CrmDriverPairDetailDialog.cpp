@@ -202,7 +202,8 @@ void CrmDriverPairDetailDialog::populateConfigId() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CrmDriverPairDetailDialog::updateUiFromPair() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(pair_.id)));

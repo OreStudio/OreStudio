@@ -166,7 +166,8 @@ void CalendarDetailDialog::populateCalendarTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CalendarDetailDialog::populateCountryCodeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating country_code combo";
@@ -187,7 +188,8 @@ void CalendarDetailDialog::populateCountryCodeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.alpha2_code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void CalendarDetailDialog::updateUiFromCalendar() {
     ui_->codeEdit->setText(QString::fromStdString(calendar_.code));

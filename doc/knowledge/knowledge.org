@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-07-08
+#+updated: 2026-07-16
 
 Durable, cross-cutting knowledge that outlives any sprint. Each entry
 is a single-topic page — a definition, a convention, an explanation of
@@ -136,6 +136,11 @@ Finance concepts the codebase relies on, grouped by topic.
   environment covering all ORE-supported asset classes: chosen method per
   asset class, cross-asset constraint equations, P/Q-measure bridge, time
   evolution strategy, UI requirements, phased implementation roadmap.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — hub note for the random processes behind
+  ores.analytics.quant's generators: the Wiener process and Ito's lemma
+  foundations, the two unbounded price processes (arithmetic/geometric
+  Brownian motion), and the four mean-reverting short-rate processes
+  (Ornstein-Uhlenbeck, Vasicek, Hull-White, CIR).
 
 * Architecture
 

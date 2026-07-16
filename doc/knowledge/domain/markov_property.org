@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 09BA4EBB-BEC0-4AAB-95B1-419B134C9795
+:END:
+#+title: Markov Property
+#+description: What "no memory" means for a stochastic process — the next-state-depends-only-on-current-state property every process in this cluster inherits from the Wiener process, and why it is what makes exact tick-by-tick simulation possible.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+A process has the *Markov property* ("no memory") if the distribution of
+its next state depends only on its *current* state, never on the path it
+took to get there. Every process in the
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] cluster
+has this property, inherited from the
+[[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]] driving it —
+which is what makes exact, tick-by-tick simulation possible: each new
+state can be drawn from the current one alone, with no need to replay or
+retain the whole path history.
+
+* Layperson's mental model
+
+Think of a video game character standing on a tile: to know every move
+they're allowed to make next, you only need to know which tile they're
+on right now — not the sequence of tiles they walked across to get
+there. That's the whole idea. A process "has no memory" in exactly this
+sense: its current state is a complete summary of everything relevant
+about its past, for the purpose of predicting what happens next.
+
+In code, this shows up as a =next()= method that only ever reads the
+process's *current* stored state, never a history buffer:
+
+#+begin_src cpp
+double ou_process::next() {
+    const double z = normal_(rng_);
+    // Only price_ (the current state) and z (a fresh random draw) are
+    // used below -- no earlier value of price_ is read or needed.
+    price_ = theta_ + (price_ - theta_) * decay + sigma_ * std::sqrt(var) * z;
+    return price_;
+}
+#+end_src
+
+If a process were *not* Markovian, this function signature would be a
+lie: it would need to accept (or internally retain) the whole path so
+far, not just the current =price_=, to compute a correct next value.
+
+* Detail
+
+** The formal statement
+
+For a process $X_t$, the Markov property says:
+
+\begin{equation}
+P(X_{t+1} \mid X_t, X_{t-1}, \ldots, X_0) = P(X_{t+1} \mid X_t)
+\end{equation}
+
+Conditioning on the *entire* history up to time $t$ gives exactly the
+same distribution for $X_{t+1}$ as conditioning on $X_t$ alone — every
+earlier state is redundant information once the current one is known.
+
+** Where it comes from in this cluster
+
+The [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener process]]'s
+defining property that increments are independent of the path up to the
+current time is exactly a statement of the Markov property for $W_t$
+itself. Every process built by adding a drift term and scaling the
+diffusion term — [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic]]
+and [[id:3AD7973A-57ED-43EB-9504-825719F601A8][geometric]] Brownian
+motion, [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck]]
+and its short-rate specialisations — inherits the property unchanged: an
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][OU]] path's next value depends
+only on its current level, not on whether it arrived there by rising
+steadily or by a sharp reversal.
+
+** Why it matters practically
+
+The Markov property is the entire reason every process in this cluster
+can be simulated *exactly*, one tick at a time, without ever needing the
+whole path so far: the transition from $X_t$ to $X_{t+1}$ is a
+self-contained calculation depending only on the value $X_t$ already
+holds. A process without this property (one whose next-step distribution
+depended on, say, its average over the last year) would require
+retaining and replaying arbitrarily long path history just to draw the
+next state — dramatically more expensive, and the reason genuinely
+non-Markovian processes are far less common in practical simulation
+despite being mathematically well-defined.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the process this property is originally stated for, and inherited from.
+- [[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][Random Walk]] — the discrete-time process the Markov property is easiest to see directly on.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — a process whose exact simulation depends directly on this property holding.
+
+** Further reading
+
+- Markov, A. A. (1906). "Rasprostranenie zakona bol'shih chisel na
+  velichiny, zavisyaschie drug ot druga" ["Extension of the law of large
+  numbers to dependent quantities"]. /Izvestiya Fiziko-matematicheskogo
+  Obschestva pri Kazanskom Universitete/, 2-ya seriya, tom 15, 135-156.
+  The original paper introducing what are now called Markov chains,
+  studying dependent sequences that nonetheless satisfy the law of large
+  numbers.
+- Karatzas, I., & Shreve, S. E. (1991). /Brownian Motion and Stochastic
+  Calculus/ (2nd ed.). Springer. Chapter 2 gives the modern, rigorous
+  treatment of the Markov property for continuous-time processes,
+  including the Wiener process.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Markov_property][Markov property]] and [[https://en.wikipedia.org/wiki/Markov_chain][Markov chain]].

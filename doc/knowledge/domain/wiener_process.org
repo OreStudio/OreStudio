@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: EED46603-D1E7-42BD-AA5A-B0C477F76B24
+:END:
+#+title: Wiener Process
+#+description: What a Wiener process (standard Brownian motion) is, its defining properties, and why it is the source of randomness dW every stochastic process in this cluster is driven by.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+A *Wiener process* — also called *standard Brownian motion* and written
+$W_t$ or $dW$ in differential form — is the continuous-time analogue of a
+random walk: a path that accumulates independent, normally-distributed
+increments over infinitesimally small time steps. It has no drift and no
+memory of its own history beyond its current value, which makes it the
+simplest possible building block for randomness in continuous time —
+every process in the
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] cluster
+uses a Wiener process as its source of noise, scaled by a volatility
+parameter and, for the mean-reverting processes, combined with a
+drift term pulling the path back toward a target level.
+
+* Layperson's mental model
+
+Picture a tiny cork bobbing on choppy water: every instant it gets
+knocked a random, tiny amount left or right, and each knock is
+completely unrelated to the last one — no momentum, no memory, no
+pattern. Track the cork's position over time and that path is a Wiener
+process. Two consequences fall straight out of that picture: it can
+drift arbitrarily far in either direction (nothing is pulling it back to
+where it started), and knowing its entire history up to now tells you
+nothing about which way the *next* knock will push it beyond what its
+current position already tells you.
+
+In code, a "knock" is just a draw from a standard Normal distribution,
+scaled by however big the knocks are meant to be (=sigma=, σ):
+
+#+begin_src cpp
+const double z = normal_(rng_);              // the "knock", z ~ N(0, 1)
+price_ = price_ + sigma_ * z;                 // one Wiener-driven step
+#+end_src
+
+Every process in this cluster is built by taking exactly this =sigma_ *
+z= term and adding a rule for how much the state should also drift,
+deterministically, in between knocks.
+
+* Detail
+
+** Brownian motion vs. the Wiener process
+
+The two names are used interchangeably in this cluster, but they
+originate from different things, and it is worth knowing why:
+
+- *Brownian motion* is the name of a physical phenomenon: the erratic,
+  jittery movement of a small particle (pollen grains, in Robert Brown's
+  1827 observation) suspended in a fluid, buffeted by unseen molecular
+  collisions. It is an empirical observation, not a mathematical object.
+- The *Wiener process* is the rigorous mathematical model of that
+  phenomenon: the specific random process satisfying the four defining
+  properties below. Norbert Wiener gave the first rigorous mathematical
+  construction proving such a process exists at all (1923) — a genuinely
+  hard problem, since a path with property 4 below (continuous everywhere,
+  differentiable nowhere) was, at the time, a mathematical object nobody
+  had shown could be constructed rigorously.
+
+So "Brownian motion" names the phenomenon (and, by extension in
+mathematical finance, is used as a synonym for its model), while "Wiener
+process" names the specific mathematical construction that models it
+rigorously. This document uses the two names interchangeably from here
+on, following the standard convention in the field — but the Wiener
+process is properly the *mathematical model of* Brownian motion, not
+merely another word for the same physical phenomenon.
+
+Contrast this with the [[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][random
+walk]]: a random walk is *discrete* from the outset — a finite or
+countable sequence of individually distinct steps, each one a fully
+formed event you could point to and count. Brownian motion, and the
+Wiener process modelling it, is *continuous* from the outset — a jittery
+physical particle path, not a sequence of discrete jumps. The two do not
+start from the same kind of object — one is inherently step-by-step, the
+other inherently unbroken — but they are intimately related: a Wiener
+process is the continuous-time limit of a
+[[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][random walk]] as the step size
+shrinks to zero while the number of steps grows to keep total variance
+fixed (Donsker's theorem) — see the Random Walk doc for the discrete
+object itself and the precise sense of that limit.
+
+** Defining properties
+
+A process $W_t$ is a standard Wiener process if:
+
+1. $W_0 = 0$.
+2. Increments are independent: for any $0 \le s < t$, $W_t - W_s$ is
+   independent of the path up to time $s$.
+3. Increments are normally distributed with variance equal to the elapsed
+   time: $W_t - W_s \sim N(0, t - s)$.
+4. Paths are continuous (almost surely), but nowhere differentiable —
+   the path is a continuous curve with no well-defined instantaneous
+   slope anywhere, a genuinely strange property with no everyday
+   analogue.
+
+Property 3 is the one every discretisation in this codebase reduces to: a
+single tick's increment $dW$ over a unit time step is simply
+$Z \sim N(0, 1)$, a draw from the standard Normal distribution. This is
+exactly why =ou_process=, =vasicek_process=, and the other processes in
+this cluster all update state with a term of the form $\sigma Z$: it *is*
+$\sigma \, dW$ for a unit-length tick.
+
+** Why "no memory" matters
+
+Property 2 above is a statement of the
+[[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov property]]: the
+distribution of the next increment depends only on the current state,
+never on how the path got there. Every process built from a Wiener
+process inherits this unchanged — see the Markov Property doc for the
+general statement and why it is what makes exact tick-by-tick simulation
+possible.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — the chain rule for functions of a Wiener-driven process.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the "no memory" property a Wiener process has, and every process built on it inherits.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the simplest mean-reverting process driven by $dW$.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] — the simplest unbounded price process driven by $dW$.
+
+** Further reading
+
+- Wiener, N. (1923). "Differential-Space." /Journal of Mathematics and
+  Physics/, 2(1-4), 131-174. The original rigorous construction of the
+  process (as a model of physical Brownian motion, following Einstein's
+  1905 and Bachelier's 1900 earlier, less rigorous treatments).
+- Bachelier, L. (1900). "Théorie de la spéculation." /Annales
+  Scientifiques de l'École Normale Supérieure/, 3(17), 21-86. The first
+  application of Brownian motion to finance — modelling stock prices —
+  predating both Einstein's physics paper and Wiener's rigorous
+  construction by years.
+- Karatzas, I., & Shreve, S. E. (1991). /Brownian Motion and Stochastic
+  Calculus/ (2nd ed.). Springer. The standard modern graduate reference
+  for the properties stated above.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Wiener_process][Wiener process]] and [[https://en.wikipedia.org/wiki/Brownian_motion][Brownian motion]].

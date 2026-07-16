@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-stochastic-processes
+#+pr: 1600
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-12                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
@@ -43,6 +43,81 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Original implementation
+
+One hub doc (=stochastic_processes.org=) plus one atomic doc per
+foundational concept and per concrete process implemented in
+=ores.analytics.quant=, following the existing
+=term_structures_and_tenors.org=/=tenor.org= cluster's style exactly:
+Summary / Detail / See also, with a "Further reading" subsection citing
+real, checkable papers rather than a bare bibliography line.
+
+- Grounded every SDE and formula directly in the corresponding C++
+  header's doc comment (=ou_process.hpp=, =vasicek_process.hpp=,
+  =cir_process.hpp=, =hull_white_process.hpp=, =gmm_process.hpp=,
+  =arithmetic_gmm_process.hpp=), rather than restating textbook formulas
+  independently of what the codebase actually implements — where the
+  header already states a discretisation or closed-form result, the doc
+  quotes it verbatim.
+- 8 atomic docs: [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener
+  Process]] and [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]]
+  (foundations); [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric]]
+  and [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic]] Brownian
+  Motion (price processes); [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck]],
+  [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]],
+  [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], and
+  [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][CIR]] (mean-reverting
+  short-rate family).
+- No PNG/chart images were generated — this codebase's knowledge docs
+  express process behaviour via formulas and tables (as
+  =garch_volatility_models.org= already does), not embedded charts; the
+  acceptance criterion's "chart where applicable" is satisfied by the
+  hub's comparison table across the four mean-reverting processes
+  instead, which is the clearest way to show how they relate.
+- Registered the hub in =doc/knowledge/knowledge.org= under "Synthetic
+  data generation (methodology)", and ran =compass index
+  --org-roam-db-sync= to confirm all 9 docs are indexed and searchable.
+
+** Review round (after user read-through on the served site)
+
+A full review pass, applied incrementally while the user read the built
+site:
+
+- Broadened the hub's opening framing so it isn't hard-coded to
+  synthetic data generation — that is the first, not the only, expected
+  consumer of the cluster.
+- Added a "Layperson's mental model" section to every atomic doc, always
+  before the heavy maths: a plain-language analogy (elastic band for
+  mean reversion, a jittery cork for the Wiener process, a random
+  coin-flip walk, etc.), followed by a short C++ snippet grounding the
+  analogy directly in the real implementation, wherever one exists.
+- Converted every formula from org-verbatim/ASCII (=dX = kappa*...=) to
+  proper LaTeX ($...$ inline, =\begin{equation}=/=\begin{align}= for
+  display), matching the rest of the knowledge base's convention
+  (confirmed via =aggregation_currency.org=/=covered_interest_parity.org=).
+- Split out two new atomic docs the cluster was previously restating
+  inline rather than treating as independently linkable single concepts:
+  =Markov Property= (the "no memory" property) and =Random Walk= (the
+  discrete-time process the Wiener process is the continuous limit of).
+- Added a "Brownian motion vs. Wiener process" section to =Wiener
+  Process= (the phenomenon vs. its rigorous mathematical model), folding
+  in a contrast against =Random Walk= and removing the now-redundant
+  separate "Relationship to a random walk" section it duplicated.
+- Added a "what mean reversion means" explanatory paragraph to the hub's
+  mean-reverting-processes section.
+- Fixed =Vasicek Process='s C++ snippet to show the *constructor*
+  (wrapping =theta= as a length-1 =theta_path=), not just the one-line
+  =next()= delegation, which didn't convey the actual "constant-target
+  configuration of Hull-White" point.
+- Fixed an org-mode rendering bug in =Random Walk='s Further Reading: a
+  continuation line starting with a bare page number (="294."=) was
+  parsed as a new ordered-list item, splitting the citation across two
+  disconnected HTML blocks.
+- Added Wikipedia links throughout, and used the repo's established
+  =code_variable= (Greek letter) convention — e.g. ==kappa= (κ)= — for
+  code-variable-to-symbol call-outs in the layperson sections, matching
+  =synthetic_market_data_generators.org=.
 
 * Notes
 
@@ -61,12 +136,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1600][#1600]] | [doc] Document stochastic processes: knowledge hub + per-process pages |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.analytics.quant link uses wrong ID (points at ORE Studio hub, not the component doc) | stochastic_processes.org | Accepted | Fixed in 86c2633b8 |
+| 2 | CIR snippet elides the lambda==0 guard, tied to the Feller-condition section discussed nearby | cir_process.org | Accepted | Fixed in 86c2633b8 |
+| 3 | GBM/ABM snippets elide the sd==0 degenerate-mixture-component guard | geometric_brownian_motion.org, arithmetic_brownian_motion.org | Accepted | Fixed in 86c2633b8 |
+| 4 | OU/Hull-White snippets elide kappa<=0, note for future maintenance re: OU's only-short-rate consumption | ornstein_uhlenbeck_process.org, hull_white_process.org, stochastic_processes.org | Declined | kappa<=0 already discussed in adjacent prose (no reader confusion per reviewer); OU-consumption note is a future-maintenance observation, not a defect |
 
 * Result
+
+Shipped: a new =doc/knowledge/domain/stochastic_processes.org= hub plus
+10 atomic docs — the original 8 (=wiener_process.org=, =ito_lemma.org=,
+=geometric_brownian_motion.org=, =arithmetic_brownian_motion.org=,
+=ornstein_uhlenbeck_process.org=, =vasicek_process.org=,
+=hull_white_process.org=, =cir_process.org=) plus two added during
+review (=markov_property.org=, =random_walk.org=) — cross-linked via
+org-roam =[[id:...]]= links exactly as the acceptance criteria specify,
+each with a real-citation "Further reading" section, a layperson mental
+model with a grounding C++ snippet, and LaTeX-rendered maths throughout.
+Registered in =doc/knowledge/knowledge.org=, confirmed indexed via
+=compass search=, and reviewed end-to-end by the user against a locally
+served build (=compass site serve=) with all feedback addressed.

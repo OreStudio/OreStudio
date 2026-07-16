@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 3A5924E0-43BA-4A8E-8107-36D38DA07A87
+:END:
+#+title: Hull-White Process
+#+description: The time-varying generalisation of Vasicek behind hull_white_process — its piecewise-constant theta(t), why that lets it fit an observed yield curve exactly, and the "target level" vs "drift intercept" form choice.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+The *Hull-White* (1990) model generalises
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] by letting the
+mean-reversion target become a function of time, $\theta(t)$, instead of a
+single constant. This one change solves Vasicek's biggest practical
+limitation: a constant $\theta$ cannot be tuned to make the model's
+initial term structure match every observed market rate simultaneously,
+whereas a piecewise-constant $\theta(t)$ can, by construction, be chosen
+to fit the curve exactly at every input pillar.
+=ores::analytics::quant::service::hull_white_process= implements it, and
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][=vasicek_process=]] composes
+it rather than being a separate implementation.
+
+* Layperson's mental model
+
+Take the [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][elastic band pulling
+toward a fixed resting length]] and let the resting length itself change
+over time, in steps, on a schedule chosen in advance — instead of one
+fixed target, the band is told "aim for this length for the first
+period, then this other length for the next period", and so on. That
+single change is what lets the model be tuned to match a whole observed
+curve, point by point, rather than being stuck approximating it with one
+fixed target.
+
+#+begin_src cpp
+double hull_white_process::next() {
+    const double z = normal_(rng_);
+    const double theta_i = theta_at(tick_);   // this tick's target, from a schedule
+    const double decay = std::exp(-kappa_);
+    const double var = (1.0 - decay * decay) / (2.0 * kappa_);
+    rate_ = theta_i + (rate_ - theta_i) * decay + sigma_ * std::sqrt(var) * z;
+    ++tick_;
+    return rate_;
+}
+#+end_src
+
+* Detail
+
+** The SDE
+
+\begin{equation}
+dr = \kappa(\theta(t) - r)\, dt + \sigma\, dW
+\end{equation}
+
+$\theta(t)$ is supplied to =hull_white_process= as a piecewise-constant
+function (=theta_path=) rather than a single number — holding $\theta(t)$
+constant reduces this SDE to exactly
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek's]], which is why
+Vasicek is implemented as a thin wrapper around this class rather than
+duplicated.
+
+** Why fit the initial curve exactly
+
+A constant-$\theta$ model like Vasicek has only three free parameters
+($\kappa$, $\theta$, $\sigma$) to match an entire observed yield curve,
+which typically has far more independently-observed points than that —
+an exact fit is generically impossible. Letting $\theta(t)$ vary in time
+adds one degree of freedom *per time step*, which is exactly enough
+freedom to force the model's implied curve through every observed input
+point exactly, while keeping $\kappa$ and $\sigma$ as the (still just
+two) parameters controlling the curve's *dynamics* — how it moves —
+rather than its *shape today*.
+
+** Two equivalent forms
+
+Hull & White's original paper writes the SDE in "drift intercept" form,
+$dr = [\phi(t) - a r]\, dt + \sigma\, dW$ with $\phi(t) =
+\kappa\theta(t)$. =hull_white_process= instead uses the "target level"
+form shown above, $\kappa(\theta(t)-r)$, the same shape as
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][=ou_process='s]] SDE. The two
+are algebraically equivalent (relabel $\phi(t) = \kappa\theta(t)$ to move
+between them), but the target-level form is chosen deliberately in this
+codebase: it makes both the degenerate $\kappa \le 0$ case and the
+Vasicek special case ($\theta(t)$ held constant) reduce to *exactly*
+=ou_process='s formula, with no re-derivation or approximation needed —
+a direct, mechanical consequence of the form chosen, not a coincidence of
+the underlying mathematics.
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub, including the comparison table across all four mean-reverting processes.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the general process both the target-level form and the degenerate $\kappa \le 0$ case reduce to.
+- [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — the constant-$\theta(t)$ special case, implemented by composing this class.
+- [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — the alternative generalisation addressing non-negativity instead of curve-fitting.
+
+** Further reading
+
+- Hull, J., & White, A. (1990). "Pricing Interest-Rate-Derivative
+  Securities." /The Review of Financial Studies/, 3(4), 573-592. The
+  original paper introducing the time-varying $\theta(t)$ generalisation
+  of Vasicek and its exact-curve-fitting property.
+- Brigo, D., & Mercurio, F. (2006). /Interest Rate Models — Theory and
+  Practice/ (2nd ed.). Springer. Chapter 3 covers both SDE forms (drift
+  intercept vs. target level) and their equivalence in detail.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Hull%E2%80%93White_model][Hull-White model]].

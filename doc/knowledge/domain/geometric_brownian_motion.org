@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 3AD7973A-57ED-43EB-9504-825719F601A8
+:END:
+#+title: Geometric Brownian Motion
+#+description: The multiplicative, log-normal price process behind gmm_process — its SDE, why it never goes negative, its Gaussian-mixture generalisation, and the Black-Scholes-Merton lineage.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+* Summary
+
+*Geometric Brownian Motion* (GBM) models a price that moves
+*multiplicatively*: its percentage change over a tick, not its absolute
+change, is normally distributed. This is what keeps a GBM price strictly
+positive no matter how far it evolves — a crucial property an asset price
+must have that plain (additive) Brownian motion, its
+[[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic]] counterpart, does
+not. =ores::analytics::quant::service::gmm_process= implements GBM,
+generalised from a single Gaussian shock to a K-component Gaussian
+mixture, for FX spot and equity price generation.
+
+* Layperson's mental model
+
+Compound interest, but random: instead of a fixed interest rate applied
+every period, GBM applies a *random* percentage change each tick. That
+"percentage, not absolute" framing is the whole idea — a price of 10
+going up 5% moves by 0.50; a price of 1,000 going up that same 5% moves
+by 50. Because it is always a *percentage* being applied, no matter how
+unlucky the run of draws, the price can shrink toward zero but can never
+actually cross it or go negative — there's no such thing as a
+"-150% return" wiping it out completely.
+
+#+begin_src cpp
+// Simplified for clarity: the real code guards sd == 0 (a degenerate
+// mixture component) separately, since std::normal_distribution asserts
+// on a zero stddev.
+const double log_return = std::normal_distribution<double>(mean, sd)(rng_);
+price_ *= std::exp(log_return);      // a random percentage change, applied
+#+end_src
+
+* Detail
+
+** The SDE and its discretisation
+
+GBM follows:
+
+\begin{equation}
+dS = \mu S\, dt + \sigma S\, dW
+\end{equation}
+
+i.e. both the drift and the diffusion scale with the current price level
+$S$, not a fixed amount — a price at 100 experiences ten times the
+absolute wiggle of a price at 10, for the same percentage volatility
+$\sigma$. Applying
+[[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] to $\log S$
+removes the state-dependence and yields the exact, non-approximated
+per-tick update =gmm_process= actually implements:
+
+\begin{equation}
+S_{t+1} = S_t \exp(\text{log\_return}), \quad
+\text{log\_return} \sim \left(\mu - \tfrac{\sigma^2}{2}\right) dt + \sigma \sqrt{dt}\, Z
+\end{equation}
+
+The $-\sigma^2/2$ term is itself a direct consequence of Ito's lemma
+applied to $\log S$ — without it, the expected *log*-price would drift at
+$\mu$, but the expected *price* would not, since $E[e^X] \ne e^{E[X]}$
+for a random $X$; the correction restores $E[S_t] = S_0 e^{\mu t}$.
+
+** Why multiplicative, not additive
+
+Because the *percentage* change, not the absolute change, is what is
+normally distributed, $S$ can never reach zero or go negative: reaching
+zero would require an infinitely negative percentage change, which has
+zero probability under a Normal distribution. This single property is
+the entire reason GBM, not
+[[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic Brownian motion]],
+is the standard choice for modelling a traded asset price.
+
+** The Gaussian-mixture generalisation
+
+A single Gaussian shock per tick produces returns with thinner tails and
+less clustering than real market data exhibits.
+=gmm_process= draws each tick's =log_return= from a K-component Gaussian
+mixture instead of one Normal distribution — a weighted combination of
+several Normal distributions with different means and variances — which
+reproduces the fat tails and volatility clustering real FX and equity
+returns show, without abandoning the exact log-normal update above. See
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and
+GARCH models]] for the discrete-time family of models addressing this
+same fat-tail problem by a different route (a recurrence relation on the
+variance itself, rather than a mixture of shocks).
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — the $dW$ term GBM is driven by.
+- [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — used to derive the log-price update from the SDE above.
+- [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic Brownian Motion]] — the additive counterpart that can go negative.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — a discrete-time alternative approach to the same fat-tail problem.
+
+** Further reading
+
+- Black, F., & Scholes, M. (1973). "The Pricing of Options and Corporate
+  Liabilities." /Journal of Political Economy/, 81(3), 637-654. The paper
+  that made GBM the standard model for equity price dynamics, as the
+  underlying assumption of the Black-Scholes option pricing formula.
+- Merton, R. C. (1973). "Theory of Rational Option Pricing." /The Bell
+  Journal of Economics and Management Science/, 4(1), 141-183. Extended
+  and rigorised the Black-Scholes framework, sharing the 1997 Nobel Memorial
+  Prize in Economic Sciences with Scholes for this work (Black had died
+  in 1995 and was ineligible).
+- Hull, J. C. (2018). /Options, Futures, and Other Derivatives/ (10th
+  ed.). Pearson. Chapter 15 gives the standard textbook derivation of the
+  log-normal update this document's discretisation matches.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Geometric_Brownian_motion][Geometric Brownian motion]].

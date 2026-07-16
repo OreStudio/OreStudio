@@ -30,14 +30,14 @@ organic grab-bags:
 - =Data &Quality= (new) — DQ metadata entities (Change Reasons, Change
   Reason Categories, Code Domains, Badge Definitions, Badge
   Severities now; Data Domains/Subject Areas/Catalogues migrate in
-  once [[id:B34EEDB0-1C9F-4E8B-9C33-F5CD8E4A7B12][Commission ores.qt.dq — full-stack codegen for the DQ component]] gets them onto codegen).
+  once [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] gets them onto codegen).
 
 Note: Data &Quality's own menu items (and the =ores.qt.dq= library
 they live in) are being stood up incrementally by the badge migration
 work in
 [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
 and the sibling
-[[id:B34EEDB0-1C9F-4E8B-9C33-F5CD8E4A7B12][Commission ores.qt.dq]] story — this story owns the *menu structure*
+[[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story — this story owns the *menu structure*
 decision and the non-DQ menu cleanup (System/Operations/Reference
 Data), not the DQ entity migration itself.
 
@@ -56,14 +56,23 @@ Data), not the DQ entity migration itself.
 
 -
 
+* Decisions
+
+- Task breakdown: one task per top-level menu (=System=,
+  =Operations=, =Reference Data=; =Data &Quality= is owned by the
+  sibling [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story instead, since standing up that
+  menu is inseparable from the DQ entities landing in
+  =ores.qt.dq=). Each task audits that menu's current contents,
+  decides what moves in/out per this story's target structure, and
+  does the actual =QMenu=/plugin rewiring for everything that ends up
+  there.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | STARTED | 2026-07-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Design target menu structure and inventory current state]] | BACKLOG | | | Initial task for: Clean up application menus |
-
-* Decisions
 
 * Out of scope
 

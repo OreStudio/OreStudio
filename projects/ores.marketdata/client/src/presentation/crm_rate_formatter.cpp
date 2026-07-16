@@ -40,9 +40,13 @@ std::string to_fixed_string(double value, int precision) {
 }
 
 /// floor(log10(x)) for x > 0 -- the base-10 order of magnitude (e.g. 82.99
-/// -> 1, 0.012 -> -2).
+/// -> 1, 0.012 -> -2). Nudges by a small epsilon before flooring: log10
+/// isn't guaranteed correctly-rounded on every libm, so an x that's an
+/// exact (or near-exact) power of ten can evaluate fractionally below the
+/// integer (e.g. 1.9999999999998 for log10(100.0)), which floor() would
+/// then round down one too many.
 int order_of_magnitude(double x) {
-    return static_cast<int>(std::floor(std::log10(x)));
+    return static_cast<int>(std::floor(std::log10(x) + 1e-9));
 }
 
 /// Derives decimal_places for the reciprocal of a rate whose *own*

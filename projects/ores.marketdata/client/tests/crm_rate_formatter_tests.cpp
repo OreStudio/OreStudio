@@ -103,6 +103,21 @@ TEST_CASE("crm_rate_formatter derives reciprocal-preserving precision for a "
     REQUIRE(displays[0].rate_text == "0.01205");
 }
 
+TEST_CASE("crm_rate_formatter derives reciprocal precision correctly when "
+          "the reciprocal magnitude lands exactly on a power-of-ten boundary",
+          "[crm_rate_formatter]") {
+    auto item = make_item();
+    item.base_currency_code = "XXX";
+    item.quote_currency_code = "YYY";
+    item.rate = 0.01;
+    // direct magnitude 1/0.01 = 100 (order 2); decimal_places 2 ->
+    // 5 significant figures; inverted order -2 -> 5-1-(-2) = 6 dp.
+    auto convention = make_convention(0.01, 1.0, 2);
+    const auto displays = crm_rate_formatter::format(
+        {crm_rate_format_request{&item, convention, true}});
+    REQUIRE(displays[0].rate_text == "0.010000");
+}
+
 TEST_CASE("crm_rate_formatter does not tick-snap a reversed-convention rate",
           "[crm_rate_formatter]") {
     auto item = make_item();

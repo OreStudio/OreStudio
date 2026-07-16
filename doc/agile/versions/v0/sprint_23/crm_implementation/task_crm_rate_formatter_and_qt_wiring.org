@@ -126,7 +126,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | order_of_magnitude's floor(log10(x)) can under-shoot by one at an exact power-of-ten boundary (libm rounding) | crm_rate_formatter.cpp | Accepted | Nudged log10 by 1e-9 before flooring; added a regression test at reciprocal=0.01/direct=100. |
+| 2 | Unused PUBLIC ores.refdata.client.lib link dependency (only ores.refdata.api.lib is actually used) | client/src/CMakeLists.txt | Accepted | Removed the unused dependency. |
+| 3 | * Plan section's format() signature is stale vs. the shipped batch crm_rate_format_request shape | task doc | Declined | * Plan is an intentional historical record of the implementation strategy as work started; * Result correctly documents the shipped shape. |
+| 4 | Manual QA scenario still shows FAILED / pre-fix commit | scenario doc | Declined (for now) | Already candidly flagged in the task doc; live re-run pending, tracked separately from this round's code fixes. |
+| 5 | Reversed-convention path doesn't tick-snap | crm_rate_formatter.cpp | No change needed | Deliberate (tick_size/pip_factor don't transfer to the reciprocal direction) and already covered by a test. |
 
 * Result
 

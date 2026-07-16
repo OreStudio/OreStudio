@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/move-dq-entities-to-data-management-plugin
-#+pr:
+#+pr: 1601
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -144,7 +144,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1601][#1601]] | [qt,dq] Move ores.dq-owned entities into DataManagementPlugin |
 
 * Review
 

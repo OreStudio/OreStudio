@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/feed-namespacing
-#+pr:
+#+pr: 1611
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -71,7 +71,7 @@ not just avoid subject collisions):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1611][#1611]] | [synthetic] Generic folder hierarchy, folder-cascade start/stop, vintage-validity indicator |
 
 * Review
 

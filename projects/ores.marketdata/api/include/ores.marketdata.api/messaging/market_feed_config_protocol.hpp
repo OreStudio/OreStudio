@@ -162,6 +162,36 @@ struct stop_feeds_under_folder_response {
     int stopped = 0;
 };
 
+/**
+ * @brief Vintage-availability status for one fx_spot_generation_config,
+ * computed live (not stored) against market_observation.
+ */
+struct vintage_validity_entry {
+    std::string fx_spot_generation_config_id;
+    // False for price_source = "fixed" feeds -- the vintage check doesn't
+    // apply to them, so `valid` is meaningless and should not be shown.
+    bool applicable = false;
+    bool valid = false;
+};
+
+/**
+ * @brief Request the vintage-availability status of every feed visible to
+ * the caller, computed at read time (no persisted/cached column) so it is
+ * always accurate -- including immediately after a data import that added
+ * no new feed rows, only new market_observation ones.
+ */
+struct get_vintage_validity_request {
+    using response_type = struct get_vintage_validity_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.market_feed_configs.vintage_validity";
+};
+
+struct get_vintage_validity_response {
+    bool success = false;
+    std::string message;
+    std::vector<vintage_validity_entry> entries;
+};
+
 }
 
 #endif

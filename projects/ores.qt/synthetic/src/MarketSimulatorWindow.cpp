@@ -529,6 +529,7 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::folder> folders;
         std::unordered_map<std::string, std::string> currencyNames;
         std::vector<std::string> runningSourceNames;
+        std::map<std::string, bool> vintageValidByFx;
         QString error;
     };
 
@@ -582,6 +583,16 @@ void MarketSimulatorWindow::reload() {
         if (listResp && listResp->success)
             r.runningSourceNames = std::move(listResp->running_source_names);
 
+        // Vintage-availability status, computed live server-side at every
+        // reload (best-effort; an empty map just shows no vintage badge).
+        auto vintageResp = cm->process_authenticated_request(
+            ores::marketdata::messaging::get_vintage_validity_request{});
+        if (vintageResp && vintageResp->success) {
+            for (const auto& e : vintageResp->entries)
+                if (e.applicable)
+                    r.vintageValidByFx[e.fx_spot_generation_config_id] = e.valid;
+        }
+
         r.success = true;
         return r;
     };
@@ -609,6 +620,7 @@ void MarketSimulatorWindow::reload() {
         self->currencyNames_ = std::move(result.currencyNames);
         self->runningSourceNames_ = {result.runningSourceNames.begin(),
                                      result.runningSourceNames.end()};
+        self->vintageValidByFx_ = std::move(result.vintageValidByFx);
 
         for (auto& f : result.feeds)
             self->feeds_[boost::uuids::to_string(f.id)] = std::move(f);
@@ -659,10 +671,21 @@ static QIcon feedStatusIcon(bool running) {
     return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
 }
 
-std::pair<QStandardItem*, QStandardItem*>
+// Vintage-status icon: green tick, red cross, or no icon at all for a node
+// with no vintage-applicable descendant (fixed-price feeds only).
+static QIcon vintageStatusIcon(bool anyInvalid, bool anyApplicable) {
+    if (!anyApplicable)
+        return {};
+    if (anyInvalid)
+        return IconUtils::createRecoloredIcon(Icon::DismissCircleFilled, QColor(200, 60, 60));
+    return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(60, 180, 80));
+}
+
+std::array<QStandardItem*, 3>
 MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
                                      ImageCache* imageCache,
-                                     const std::set<std::string>& runningSourceNames) {
+                                     const std::set<std::string>& runningSourceNames,
+                                     const std::map<std::string, bool>& vintageValidByFx) {
     const auto fxId = boost::uuids::to_string(fx.id);
     const bool fxRunning = runningSourceNames.count(fx.source_name) > 0;
     QString fxText = QString::fromStdString(fx.base_currency_code + "/" + fx.quote_currency_code);
@@ -679,12 +702,20 @@ MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation
     fxStatus->setIcon(feedStatusIcon(fxRunning));
     fxStatus->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
     fxStatus->setData(QString::fromStdString(fxId), NodeIdRole);
-    return {fxItem, fxStatus};
+
+    auto* fxVintage = new QStandardItem();
+    const auto vit = vintageValidByFx.find(fxId);
+    fxVintage->setIcon(
+        vintageStatusIcon(vit != vintageValidByFx.end() && !vit->second, vit != vintageValidByFx.end()));
+    fxVintage->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+    fxVintage->setData(QString::fromStdString(fxId), NodeIdRole);
+
+    return {fxItem, fxStatus, fxVintage};
 }
 
 void MarketSimulatorWindow::buildTree() {
     treeModel_->clear();
-    treeModel_->setColumnCount(2);
+    treeModel_->setColumnCount(3);
     auto* root = treeModel_->invisibleRootItem();
 
     // Feed pairs grouped by their owning folder.
@@ -743,7 +774,12 @@ void MarketSimulatorWindow::buildTree() {
                 status->setData(QString::fromStdString(nodeId), NodeIdRole);
                 status->setData(QString::fromStdString(folderId), FolderIdRole);
 
-                parentItem->appendRow({item, status});
+                auto* vintage = new QStandardItem();
+                vintage->setData(static_cast<int>(type), NodeTypeRole);
+                vintage->setData(QString::fromStdString(nodeId), NodeIdRole);
+                vintage->setData(QString::fromStdString(folderId), FolderIdRole);
+
+                parentItem->appendRow({item, status, vintage});
 
                 addFolderChildren(folderId, item);
 
@@ -755,9 +791,9 @@ void MarketSimulatorWindow::buildTree() {
                               b->base_currency_code + b->quote_currency_code;
                     });
                     for (const auto* fx : pairs) {
-                        auto [fxItem, fxStatus] =
-                            buildFeedItem(*fx, imageCache_, runningSourceNames_);
-                        item->appendRow({fxItem, fxStatus});
+                        auto row =
+                            buildFeedItem(*fx, imageCache_, runningSourceNames_, vintageValidByFx_);
+                        item->appendRow({row[0], row[1], row[2]});
                     }
                 }
             }
@@ -783,23 +819,29 @@ void MarketSimulatorWindow::buildTree() {
         collectionStatus->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
         collectionStatus->setData(QString::fromStdString(feedId), NodeIdRole);
 
+        auto* collectionVintage = new QStandardItem();
+        collectionVintage->setData(static_cast<int>(NodeType::Collection), NodeTypeRole);
+        collectionVintage->setData(QString::fromStdString(feedId), NodeIdRole);
+
         for (const auto& [fxId, fx] : fxPairs_) {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
-            auto [fxItem, fxStatus] = buildFeedItem(fx, imageCache_, runningSourceNames_);
-            collectionItem->appendRow({fxItem, fxStatus});
+            auto row = buildFeedItem(fx, imageCache_, runningSourceNames_, vintageValidByFx_);
+            collectionItem->appendRow({row[0], row[1], row[2]});
         }
 
-        root->appendRow({collectionItem, collectionStatus});
+        root->appendRow({collectionItem, collectionStatus, collectionVintage});
     }
 
-    refreshFeedTreeItems(); // sets every folder's status icon from running counts
+    refreshFeedTreeItems(); // sets every folder's status icons from running/vintage state
     feedsTree_->expandAll();
     feedsTree_->setColumnWidth(0, 220);
     feedsTree_->header()->setStretchLastSection(false);
     feedsTree_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     feedsTree_->header()->setSectionResizeMode(1, QHeaderView::Fixed);
+    feedsTree_->header()->setSectionResizeMode(2, QHeaderView::Fixed);
     feedsTree_->setColumnWidth(1, 28);
+    feedsTree_->setColumnWidth(2, 28);
 }
 
 void MarketSimulatorWindow::updateEmptyState() {
@@ -1064,35 +1106,52 @@ void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNa
 }
 
 // Recomputes status icons bottom-up for item (column 0) and its column-1
-// status sibling, returning (running, total) so a caller one level up can
-// fold this node's counts into its own. Leaf Feed items look themselves up
-// in fxPairs_; every other node aggregates its children.
-std::pair<int, int> MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
+// (running) and column-2 (vintage) siblings, returning the aggregate so a
+// caller one level up can fold this node's status into its own. Leaf Feed
+// items look themselves up in fxPairs_/vintageValidByFx_; every other node
+// aggregates its children.
+MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
     if (!item)
-        return {0, 0};
-    auto* statusItem = item->parent() ? item->parent()->child(item->row(), 1) :
-                                        treeModel_->item(item->row(), 1);
+        return {};
+    auto* parentContainer = item->parent();
+    auto* statusItem =
+        parentContainer ? parentContainer->child(item->row(), 1) : treeModel_->item(item->row(), 1);
+    auto* vintageItem =
+        parentContainer ? parentContainer->child(item->row(), 2) : treeModel_->item(item->row(), 2);
     const auto type = static_cast<NodeType>(item->data(NodeTypeRole).toInt());
     if (type == NodeType::Feed) {
         const auto fxId = item->data(NodeIdRole).toString().toStdString();
         auto it = fxPairs_.find(fxId);
         if (it == fxPairs_.end())
-            return {0, 0};
+            return {};
         const bool running = runningSourceNames_.count(it->second.source_name) > 0;
         if (statusItem)
             statusItem->setIcon(feedStatusIcon(running));
-        return {running ? 1 : 0, 1};
+
+        TreeStatus s;
+        s.running = running ? 1 : 0;
+        s.total = 1;
+        const auto vit = vintageValidByFx_.find(fxId);
+        s.anyVintageApplicable = vit != vintageValidByFx_.end();
+        s.anyVintageInvalid = s.anyVintageApplicable && !vit->second;
+        if (vintageItem)
+            vintageItem->setIcon(vintageStatusIcon(s.anyVintageInvalid, s.anyVintageApplicable));
+        return s;
     }
 
-    int running = 0, total = 0;
+    TreeStatus agg;
     for (int i = 0; i < item->rowCount(); ++i) {
-        const auto [r, t] = refreshTreeItemStatus(item->child(i, 0));
-        running += r;
-        total += t;
+        const auto s = refreshTreeItemStatus(item->child(i, 0));
+        agg.running += s.running;
+        agg.total += s.total;
+        agg.anyVintageInvalid = agg.anyVintageInvalid || s.anyVintageInvalid;
+        agg.anyVintageApplicable = agg.anyVintageApplicable || s.anyVintageApplicable;
     }
     if (statusItem)
-        statusItem->setIcon(folderStatusIcon(running, total));
-    return {running, total};
+        statusItem->setIcon(folderStatusIcon(agg.running, agg.total));
+    if (vintageItem)
+        vintageItem->setIcon(vintageStatusIcon(agg.anyVintageInvalid, agg.anyVintageApplicable));
+    return agg;
 }
 
 void MarketSimulatorWindow::refreshFeedTreeItems() {

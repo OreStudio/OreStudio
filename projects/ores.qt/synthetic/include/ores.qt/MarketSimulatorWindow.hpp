@@ -38,6 +38,7 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
+#include <array>
 #include <deque>
 #include <map>
 #include <optional>
@@ -201,17 +202,28 @@ private:
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
     void refreshFxSummaryIfCurrent();
     void refreshFeedTreeItems();
-    // Recomputes status icons bottom-up starting at item; returns its
-    // (running, total) leaf counts so a caller can fold them upward.
-    std::pair<int, int> refreshTreeItemStatus(QStandardItem* item);
+    // Aggregated status folded bottom-up: running/total leaf counts (for the
+    // running-status column) plus whether any applicable descendant feed has
+    // invalid vintage data and whether any descendant feed is vintage-
+    // applicable at all (for the vintage-status column).
+    struct TreeStatus {
+        int running = 0;
+        int total = 0;
+        bool anyVintageInvalid = false;
+        bool anyVintageApplicable = false;
+    };
+    // Recomputes status icons bottom-up starting at item; returns the
+    // aggregate so a caller can fold it upward.
+    TreeStatus refreshTreeItemStatus(QStandardItem* item);
     // Recursively collects the ids of every Feed-leaf descendant of item
     // (including item itself, if it's already a Feed).
     static void collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids);
-    // Builds one Feed-leaf tree item pair (columns 0/1) for a single fx pair.
-    static std::pair<QStandardItem*, QStandardItem*>
+    // Builds one Feed-leaf tree item triple (columns 0/1/2) for a single fx pair.
+    static std::array<QStandardItem*, 3>
     buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
                  ImageCache* imageCache,
-                 const std::set<std::string>& runningSourceNames);
+                 const std::set<std::string>& runningSourceNames,
+                 const std::map<std::string, bool>& vintageValidByFx);
 
     ClientManager* clientManager_;
     QString username_;
@@ -269,6 +281,11 @@ private:
 
     // source_names of feeds the client has successfully started this session.
     std::set<std::string> runningSourceNames_;
+
+    // Vintage-availability status per fx pair id, computed server-side at
+    // every reload (see get_vintage_validity_request) -- absent entries are
+    // price_source = "fixed" feeds, for which the check doesn't apply.
+    std::map<std::string, bool> vintageValidByFx_;
 
     // Currency ISO code -> display name, sourced from refdata for hero titles.
     std::unordered_map<std::string, std::string> currencyNames_;

@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/document-stochastic-processes
-#+pr:
+#+pr: 1600
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1600][#1600]] | [doc] Document stochastic processes: knowledge hub + per-process pages |
 
 * Review
 

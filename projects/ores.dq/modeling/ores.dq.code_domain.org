@@ -175,6 +175,20 @@ faker::number::integer(1, 100)
 
 ** Custom repository methods
 
+** Custom badge mappings tab
+
+The live =CodeDomainDetailDialog= (=projects/ores.qt/refdata=) is itself
+hand-maintained, not generated from this model -- there is a separate,
+unused generated scaffold under =projects/ores.qt/dq= left over from an
+earlier component layout (tracked as drift; see the codegen drift-catalog
+story). Paste blocks don't apply here since the live file isn't
+tangled/generated. Instead, a read-only "Badge Mappings" tab (showing
+every entity_code -> badge_definition mapping registered for the
+displayed code_domain) is wired directly into
+=projects/ores.qt/refdata/src/CodeDomainDetailDialog.cpp= by hand,
+mirroring the paste-block pattern used by =PartyHierarchyTab= in shape
+(see =BadgeMappingsTab=) even though no actual paste block is involved.
+
 * See also
 
 - [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

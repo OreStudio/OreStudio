@@ -30,6 +30,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class CodeDomainMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -52,10 +53,15 @@ private:
     }
 
 public:
+    // badgeCache is passed through (not codegen'd -- code_domain has no
+    // badge columns of its own) so the hand-written Badge Mappings tab
+    // (see BadgeMappingsTab) can resolve badge colours for the domain's
+    // own mappings.
     CodeDomainController(QMainWindow* mainWindow,
                          QMdiArea* mdiArea,
                          ClientManager* clientManager,
                          const QString& username,
+                         BadgeCache* badgeCache,
                          QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -83,6 +89,7 @@ private:
 
     CodeDomainMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    BadgeCache* badgeCache_;
 };
 
 }

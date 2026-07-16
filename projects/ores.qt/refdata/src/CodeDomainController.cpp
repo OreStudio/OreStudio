@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CodeDomainController.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/CodeDomainDetailDialog.hpp"
 #include "ores.qt/CodeDomainHistoryDialog.hpp"
 #include "ores.qt/CodeDomainMdiWindow.hpp"
@@ -35,10 +36,12 @@ CodeDomainController::CodeDomainController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
                                            ClientManager* clientManager,
                                            const QString& username,
+                                           BadgeCache* badgeCache,
                                            QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+    , listMdiSubWindow_(nullptr)
+    , badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodeDomainController created";
 }
@@ -150,6 +153,7 @@ void CodeDomainController::showAddWindow() {
 
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -198,6 +202,7 @@ void CodeDomainController::showDetailWindow(const dq::domain::code_domain& domai
 
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setDomain(domain);
@@ -331,6 +336,7 @@ void CodeDomainController::onOpenVersion(const dq::domain::code_domain& domain, 
 
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);
     detailDialog->setReadOnly(true);
@@ -380,6 +386,7 @@ void CodeDomainController::onRevertVersion(const dq::domain::code_domain& domain
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);
     detailDialog->setCreateMode(false);

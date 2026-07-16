@@ -191,6 +191,10 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
             badgeSeverityController_->showListWindow();
     });
 
+    // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
+    // Domain's detail dialog (see BadgeMappingsTab in ores.qt.refdata),
+    // not a standalone window here.
+
     // ---- System > Administration (appended at end, admin-only) -----------
     smc.system_menu->addSeparator();
 

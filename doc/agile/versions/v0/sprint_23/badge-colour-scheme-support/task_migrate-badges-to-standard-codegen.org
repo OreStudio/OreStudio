@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D4DE4138-0B86-49AD-8322-69758925F1EE
+:END:
+#+title: Task: Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing
+#+description: Task for: Improve badge colour scheme support
+#+type: task
+#+level: s1
+#+filetags: :badge-colour-scheme-support:sprint_23:v0:
+#+owner: marco
+#+branch: feature/migrate-badges-to-standard-codegen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+badge_definition, badge_severity, and code_domain are modeled as ores.codegen.entity but their core/service/handler layer is hand-written (bespoke, combined badge_handler.hpp/badge_service.cpp with no tenant filtering on list reads) and code_domain's Qt layer (CodeDomainController/CodeDomainDetailDialog) is also hand-written rather than generated. Move all three onto the standard generated core/service/handler/repository/Qt stack, then wire them into the standard DQ publish-from-dq bundle mechanism (like report_definitions/LEI parties) so each tenant gets its own published copy of badge catalogue data instead of relying on an ad-hoc no-tenant-filter read of system-tenant rows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- badge_definition, badge_severity, code_domain have standard generated core/service/handler/repository/Qt files (no bespoke combined badge_handler.hpp/badge_service.cpp); badge_mapping junction reviewed for the same treatment where applicable; each entity is wired as a DQ bundle/artefact type with a publish_from_dq function+handler per the publication_pipeline.org pattern; Barclays Plc (or any tenant) can publish the badge catalogue bundle and then see populated Code Domains/Badge Definitions/Badge Severities list windows and BadgeCache continues to resolve badges correctly; BadgeMappingsTab (blocked task) can be completed against real tenant-scoped data
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

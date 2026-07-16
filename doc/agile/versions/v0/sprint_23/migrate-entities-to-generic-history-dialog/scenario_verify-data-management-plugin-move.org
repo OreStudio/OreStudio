@@ -40,7 +40,7 @@ to reprovision it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Check Data Management menu exists with all submenus
 
@@ -55,7 +55,7 @@ Dimensions), and Data Librarian.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Check Reference Data menu no longer has the moved entities
 
@@ -68,7 +68,7 @@ Authority Types should no longer appear there), and there is no
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open one Data Catalogue window
 
@@ -80,7 +80,7 @@ error.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open one Classifications window
 
@@ -91,7 +91,7 @@ window opens and loads without error.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open one Audit Trail window
 
@@ -102,7 +102,7 @@ window opens and loads without error.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open the Data Librarian
 
@@ -113,16 +113,34 @@ error.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
+
+** Check Code Domain's Badge Mappings tab
+
+Data Management > Classifications > Code Domains. Open an existing
+code domain's detail dialog (double-click a row, or select + Edit).
+Confirm a "Badge Mappings" tab is present alongside the main fields
+tab, and that it lists entity_code -> badge_definition mappings (or
+shows an empty-state message) without error. This tab (and its
+backing =BadgeMappingsTab= class) just moved from =ores.qt.refdata=
+into =ores.qt.data_management= in this same task — re-verify it
+specifically since it wasn't covered by the first pass of this
+scenario.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
-| Completed at  | 2026-07-16T07:22:50Z |
-| Branch        | feature/move-dq-entities-to-data-management-plugin |
-| Commit        | 5bca72d2f |
-| Worktree      | brave_hopper |
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
 
 * Notes

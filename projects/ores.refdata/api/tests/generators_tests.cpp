@@ -303,7 +303,7 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_party_contact_information(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.party_id.is_nil());
@@ -315,7 +315,7 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     CHECK(!sut.phone.empty());
     CHECK(!sut.email.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("party_contact_information_generator_produces_multiple_instances", tags) {

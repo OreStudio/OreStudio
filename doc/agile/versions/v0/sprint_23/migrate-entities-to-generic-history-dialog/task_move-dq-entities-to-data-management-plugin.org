@@ -51,11 +51,11 @@ any HistoryDialog migration work is attempted on them (that's
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Renaming ores.qt.data_transfer -> ores.qt.data_management and moving the 14 entities across. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Rename ores.qt.data_transfer -> ores.qt.data_management, then move the 14 entities' controllers/menus/Data Librarian window across, verifying RefdataPlugin still builds and every menu item still works from its new home. |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -79,7 +79,55 @@ any HistoryDialog migration work is attempted on them (that's
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Repurposed the empty =ores.qt.data_transfer= plugin stub into
+=ores.qt.data_management= (directory, CMake target/library name,
+plugin class, =IPlugin::name()=). Physically =git mv='d every file
+(controllers, detail/history dialogs, MDI windows, client models) for
+all 14 entities from =ores.qt/refdata= to =ores.qt/data_management= —
+no namespace changes needed since both are =ores::qt=. Also moved the
+shared Data Librarian infrastructure discovered along the way:
+=DataLibrarianWindow=, =PublishBundleWizard=, =PublishDatasetsDialog=,
+=PublicationAuditDialog=, =ChangeReasonItemDelegate=,
+=DatasetItemDelegate=, =DatasetViewDialog=, and
+=ClientDatasetDependencyModel= (all exclusively used by the moved
+entities' windows).
+
+Rewrote =DataManagementPlugin= to construct all 14 controllers in
+=on_login= and own the Data Catalogue / Classifications / Audit Trail
+/ Data Librarian menu sections it previously only held a menu handle
+for (=RefdataPlugin= built those submenus into a menu it didn't own).
+=RefdataPlugin='s "Classifications" submenu now only has Asset Class
+Codes and Instrument Codes; its "Audit Trail" submenu is gone
+entirely (moved wholesale).
+
+Found and fixed a genuine pre-existing bug during the move:
+=DatasetController= was constructed in =on_login= but had no menu
+entry anywhere — dead code, since users could never trigger
+=showListWindow()= on it. Added a "Datasets" item to the Data
+Catalogue submenu.
+
+CMake changes: renamed the target/library, added =ores.dq.api.lib=/
+=ores.qt.headless.lib= dependencies (needed by the moved controllers,
+previously satisfied transitively via =ores.qt.refdata.lib=), enabled
+=CMAKE_AUTOUIC= (needed for the moved =.ui= forms — the stub plugin
+never had any), and updated the application's dependency list and a
+stale comment in =MainWindow.cpp=. Updated
+=component_overview.org= docs across every affected component
+(=ores.qt.refdata=, =ores.qt.trading=, =ores.qt.application=,
+=ores.qt.workspace=, plus the two system-level architecture docs).
+
+QA scenario 0161889E PASSED: Data Management menu has all submenus
+and every moved window opens correctly from its new home; Reference
+Data no longer shows the moved entities.
+
 * Notes
+
+None of these 14 entities has a codegen model yet (except
+=code_domain= and =dataset_bundle=, whose models live under
+=ores.dq='s own codegen and were out of this task's scope) — adding
+one for the rest, so this class of component-ownership drift can't
+recur, is tracked as future work per the story owner's explicit
+direction ("note we want to codegen them ultimately").
 
 * Test Scenarios
 
@@ -90,7 +138,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | PENDING | Awaiting manual execution via QA Validation Runner. |
+| [[id:0161889E-40E9-4F5B-9AAC-7FB2FF0719B8][Verify Data Management plugin move]] | PASSED | All steps passed on first run. |
 
 * PRs
 
@@ -105,3 +153,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Repurposed =ores.qt.data_transfer= (an empty plugin stub) into
+=ores.qt.data_management=, and moved all 14 =ores.dq=-owned entities'
+controllers, dialogs, MDI windows, client models, and the Data
+Librarian window there from =RefdataPlugin=, correcting the
+component-ownership mismatch. Fixed a genuine dead-code bug found
+along the way (=DatasetController= had no menu entry). QA scenario
+0161889E PASSED end-to-end. [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][EE0459FE]] can now proceed with these
+entities' actual HistoryDialog migration against their corrected
+home.

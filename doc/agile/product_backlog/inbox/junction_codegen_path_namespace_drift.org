@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 4AB2C99D-AF27-479E-842F-B223E28D0BCA
+:END:
+#+title: Investigate junction codegen output path/namespace mismatch
+#+description: compass codegen entity generate badge_mapping (a junction) generates into projects/ores.dq/include/ores.dq/domain/... with domain::badge_mapping, but the live hand-written repository lives under ores.dq.api/ores.dq.core using messaging::badge_mapping -- a real path/namespace mismatch, not just missing subcomponent config.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:dq:junction:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Running =compass codegen entity generate badge_mapping --diff=
+(=badge_mapping= is a junction, modeled by
+=projects/ores.dq/modeling/ores.dq.badge_mapping_junction.org=) shows
+it would generate a domain header at
+=projects/ores.dq/include/ores.dq/domain/badge_mapping.hpp=, in
+namespace =ores::dq::domain=, with a =struct badge_mapping= type. But
+the live, actually-used, hand-written repository
+(=projects/ores.dq/core/src/repository/badge_mapping_repository.cpp=)
+lives under the =ores.dq.api=/=ores.dq.core= subcomponents and uses
+=ores::dq::messaging::badge_mapping= (not =domain::badge_mapping=) as
+its return type -- confirmed by =badge_mapping_repository::read_all()=
+returning
+=std::vector<messaging::badge_mapping>=. Regenerating this junction
+today would produce a parallel, incompatible type in an entirely
+different path and namespace, not something that could replace or
+even coexist cleanly with the current hand-written code without
+further changes. Investigate whether this is a genuine junction-codegen
+archetype bug (missing subcomponent/namespace configuration specific
+to junctions) or whether =badge_mapping= was always meant to be
+hand-written and the junction model is just aspirational/never
+actually used to generate the live code.
+
+* Why
+
+Discovered while wiring =badge_mapping= into the DQ publish-from-dq
+pipeline
+([[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]).
+That task successfully regenerated three =ores.codegen.entity=
+models (=badge_severity=, =badge_definition=, =code_domain=) cleanly,
+but the fourth badge-related model, a junction, turned out not to be
+safely regenerable at all due to this mismatch -- meaning junction
+codegen (at least for =badge_mapping=, and possibly other junctions)
+may be more broadly out of sync with what's actually live, similar in
+spirit to the =ores.qt/dq= orphaned-scaffold drift and the
+=tenant_type= =has_tenant_id= drift found in the same task.
+
+* References
+
+- =projects/ores.dq/modeling/ores.dq.badge_mapping_junction.org= --
+  the junction model.
+- =projects/ores.dq/core/src/repository/badge_mapping_repository.cpp=
+  -- the live, hand-written repository this would supposedly replace.
+
+* See also
+
+- [[id:2F793500-FBD1-4E4F-8B6E-15D03337FBD2][Investigate tenant_type model/table drift on has_tenant_id]] --
+  same task, same class of "codegen output doesn't match live code"
+  drift.
+
+* See also
+
+-

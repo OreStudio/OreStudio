@@ -19,8 +19,11 @@
  */
 #include "ores.dq.api/generators/code_domain_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::dq::generators {
 
@@ -29,12 +32,16 @@ using ores::utility::generation::generation_keys;
 domain::code_domain generate_synthetic_code_domain(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
-    const auto idx = ++counter;
     domain::code_domain r;
-    r.version = 1;
-    r.code = "dom_" + ctx.alphanumeric(4) + "_" + std::to_string(idx);
-    r.name = std::string(faker::word::noun()) + " Domain";
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::noun()) + " Domain" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;

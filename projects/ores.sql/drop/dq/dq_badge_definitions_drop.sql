@@ -18,7 +18,7 @@
  *
  */
 
-drop trigger if exists ores_dq_badge_definitions_insert_trg on "ores_dq_badge_definitions_tbl";
 drop rule if exists ores_dq_badge_definitions_delete_rule on "ores_dq_badge_definitions_tbl";
-drop function if exists ores_dq_badge_definitions_insert_fn();
+drop trigger if exists ores_dq_badge_definitions_insert_trg on "ores_dq_badge_definitions_tbl";
+drop function if exists ores_dq_badge_definitions_insert_fn;
 drop table if exists "ores_dq_badge_definitions_tbl";

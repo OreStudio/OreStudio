@@ -81,7 +81,7 @@ Badge background colour as a hex string.
 Example: '#22c55e'.
 
 #+begin_src cpp :name generator
-std::string("#") + faker::string::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::NoPrefix)
+std::string("#") + faker::number::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::None)
 #+end_src
 
 ** text_colour
@@ -126,7 +126,7 @@ Optional Bootstrap CSS class hint for Wt rendering.
 Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style from background_colour/text_colour when absent.
 
 #+begin_src cpp :name generator
-std::optional<std::string>{}
+std::string{}
 #+end_src
 
 ** display_order

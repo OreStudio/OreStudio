@@ -40,13 +40,15 @@ struct badge_definition_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
     std::string background_colour;
     std::string text_colour;
     std::string severity_code;
     std::optional<std::string> css_class;
-    int display_order;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

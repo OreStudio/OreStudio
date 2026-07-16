@@ -23,6 +23,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
@@ -66,7 +67,7 @@ struct badge_severity final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this badge severity.
@@ -95,6 +96,16 @@ struct badge_severity final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for badge_severity, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const badge_severity&) {
+    return "ores.dq.badge_severity";
+}
 
 }
 

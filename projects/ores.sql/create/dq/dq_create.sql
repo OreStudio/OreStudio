@@ -49,9 +49,13 @@
 
 -- Badge system (severities and code domains before definitions, mappings last)
 \ir ./dq_badge_severities_create.sql
+\ir ./dq_badge_severities_artefact_create.sql
 \ir ./dq_code_domains_create.sql
+\ir ./dq_code_domains_artefact_create.sql
 \ir ./dq_badge_definitions_create.sql
+\ir ./dq_badge_definitions_artefact_create.sql
 \ir ./dq_badge_mapping_create.sql
+\ir ./dq_badge_mappings_artefact_create.sql
 
 -- Dimensions
 \ir ./dq_origin_dimension_create.sql
@@ -145,6 +149,10 @@
 \ir ./dq_reporting_regimes_population_functions_create.sql
 \ir ./dq_supervisory_bodies_population_functions_create.sql
 \ir ./dq_coding_schemes_population_functions_create.sql
+\ir ./dq_badge_severities_population_functions_create.sql
+\ir ./dq_badge_definitions_population_functions_create.sql
+\ir ./dq_code_domains_population_functions_create.sql
+\ir ./dq_badge_mappings_population_functions_create.sql
 
 -- Publication
 \ir ./dq_publication_create.sql

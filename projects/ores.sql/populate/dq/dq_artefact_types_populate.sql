@@ -148,6 +148,18 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'payment_frequencies', 0, 'Payment Frequencies', 'ORE''s canonical frequencyType enumeration (Annual, Semiannual, Quarterly, Monthly...)',
      'dq_payment_frequencies_artefact_tbl', 'refdata_payment_frequencies_tbl', 'refdata.v1.payment-frequencies.publish-from-dq', 41,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'badge_severities', 0, 'Badge Severities', 'Badge severity levels (secondary/info/success/warning/danger/primary), self-published into DQ''s own table like coding_schemes',
+     'dq_badge_severities_artefact_tbl', 'dq_badge_severities_tbl', 'dq.v1.badge-severities.publish-from-dq', 50,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'badge_definitions', 0, 'Badge Definitions', 'Visual badge definitions (colour, severity, CSS class), self-published into DQ''s own table like coding_schemes/badge_severities',
+     'dq_badge_definitions_artefact_tbl', 'dq_badge_definitions_tbl', 'dq.v1.badge-definitions.publish-from-dq', 51,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'code_domains', 0, 'Code Domains', 'Named namespaces for disambiguating enum codes across entity types, self-published into DQ''s own table like coding_schemes/badge_severities/badge_definitions',
+     'dq_code_domains_artefact_tbl', 'dq_code_domains_tbl', 'dq.v1.code-domains.publish-from-dq', 52,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'badge_mappings', 0, 'Badge Mappings', '(code_domain, entity_code) -> badge_definition mappings, self-published into DQ''s own table like coding_schemes/badge_severities/badge_definitions/code_domains',
+     'dq_badge_mappings_artefact_tbl', 'dq_badge_mappings_tbl', 'dq.v1.badge-mappings.publish-from-dq', 53,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

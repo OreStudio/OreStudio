@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_MAPPER_HPP
 
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/code_domain_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +30,7 @@ namespace ores::dq::repository {
 /**
  * @brief Maps code_domain domain entities to data storage layer and vice-versa.
  */
-class code_domain_mapper {
+class ORES_DQ_CORE_EXPORT code_domain_mapper {
 private:
     inline static std::string_view logger_name = "ores.dq.repository.code_domain_mapper";
 

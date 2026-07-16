@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq.core/repository/code_domain_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

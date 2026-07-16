@@ -76,6 +76,54 @@
 \ir catalogues/catalogues_populate.sql
 
 -- =============================================================================
+-- Badge Severities Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge severities catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Severities Dataset ---'
+\ir dq/dq_badge_severities_dataset_populate.sql
+\ir dq/dq_badge_severities_artefact_populate.sql
+
+-- =============================================================================
+-- Badge Definitions Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge definitions catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Definitions Dataset ---'
+\ir dq/dq_badge_definitions_dataset_populate.sql
+\ir dq/dq_badge_definitions_artefact_populate.sql
+
+-- =============================================================================
+-- Code Domains Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- code domains catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Code Domains Dataset ---'
+\ir dq/dq_code_domains_dataset_populate.sql
+\ir dq/dq_code_domains_artefact_populate.sql
+
+-- =============================================================================
+-- Badge Mappings Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge mappings catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Mappings Dataset ---'
+\ir dq/dq_badge_mappings_dataset_populate.sql
+\ir dq/dq_badge_mappings_artefact_populate.sql
+
+-- =============================================================================
 -- Reporting Layer
 -- =============================================================================
 

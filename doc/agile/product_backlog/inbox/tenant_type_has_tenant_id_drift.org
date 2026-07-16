@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 2F793500-FBD1-4E4F-8B6E-15D03337FBD2
+:END:
+#+title: Investigate tenant_type model/table drift on has_tenant_id
+#+description: tenant_type's codegen model has no :has_tenant_id: flag, meaning current codegen would drop the tenant_id column entirely, yet the live table still has it -- likely stale drift, not a clean pattern to copy.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:iam:tenant_type:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.iam/modeling/ores.iam.tenant_type.org= (the codegen
+entity model) has no =:has_tenant_id:= flag in its =* Flags= section.
+Running =compass codegen entity generate tenant_type --diff= against
+the current model would *remove* the =tenant_id= column from
+=ores_iam_tenant_types_tbl= entirely (confirmed by running the
+equivalent diff on a similarly-shaped entity, =badge_severity=, which
+showed the column being dropped when =:has_tenant_id:= is absent).
+Yet the live table
+(=projects/ores.sql/create/iam/iam_tenant_types_create.sql=) still has
+a =tenant_id uuid not null= column, is part of the composite primary
+key, and has dedicated indexes on it
+(=iam_tenant_types_create.sql:32,43,54,58,61-62=). Either the flag was
+removed from the model after the fact without regenerating/dropping
+the column, or the column's current presence is unexplained drift.
+Investigate which, and reconcile the model with the live schema (or
+vice versa).
+
+* Why
+
+Discovered while investigating whether omitting =:has_tenant_id:= is
+a safe, established pattern for "globally-readable reference data
+managed by the system tenant" -- 18 of 108 =ores.codegen.entity=
+models omit the flag (including =tenant_type=, =account_type=,
+=book_status=, =party_status=, and other classification/status
+tables that badges apply to), which looked like a strong, reusable
+precedent. But =tenant_type= itself -- the exact example being
+considered as the template to copy -- turns out to not match what
+its own current model would generate, undermining confidence that
+the pattern is cleanly established rather than partially drifted.
+Left unresolved, anyone reaching for this pattern (as this session
+nearly did, for
+[[id:D4DE4138-0B86-49AD-8322-69758925F1EE][badge_definition/badge_severity/code_domain's tenant-scoping fix]])
+risks copying broken drift instead of a sound convention.
+
+* References
+
+- =projects/ores.iam/modeling/ores.iam.tenant_type.org= -- the model
+  with the missing flag.
+- =projects/ores.sql/create/iam/iam_tenant_types_create.sql= -- the
+  live table that still has the column.
+- =projects/ores.codegen/library/templates/ores.sql.schema.create.org=
+  (lines ~43-45) -- the archetype section gating column emission on
+  =table.has_tenant_id=.
+
+* See also
+
+-

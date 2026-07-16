@@ -95,6 +95,8 @@
 -- Badge system (mappings before definitions, definitions before severities/domains)
 \ir ./dq_badge_mappings_drop.sql
 \ir ./dq_badge_definitions_drop.sql
+\ir ./dq_badge_severities_population_functions_drop.sql
+\ir ./dq_badge_severities_artefact_drop.sql
 \ir ./dq_badge_severities_drop.sql
 \ir ./dq_code_domains_drop.sql
 

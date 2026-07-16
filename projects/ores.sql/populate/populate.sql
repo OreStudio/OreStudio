@@ -76,6 +76,18 @@
 \ir catalogues/catalogues_populate.sql
 
 -- =============================================================================
+-- Badge Severities Dataset (self-published DQ artefact; must follow the
+-- catalogues layer, since it references the 'ORE' catalog. Feeds the
+-- publish-from-dq pipeline so any tenant can get its own copy of the
+-- badge severities catalogue.)
+-- =============================================================================
+
+\echo ''
+\echo '--- Badge Severities Dataset ---'
+\ir dq/dq_badge_severities_dataset_populate.sql
+\ir dq/dq_badge_severities_artefact_populate.sql
+
+-- =============================================================================
 -- Reporting Layer
 -- =============================================================================
 

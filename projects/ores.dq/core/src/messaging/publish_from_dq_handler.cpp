@@ -46,6 +46,7 @@ const std::unordered_map<std::string, std::string>& subject_fn_map() {
     static const std::unordered_map<std::string, std::string> m{
         {"dq.v1.ip2country.publish-from-dq", "ores_dq_ip2country_publish_fn"},
         {"dq.v1.coding-schemes.publish-from-dq", "ores_dq_coding_schemes_publish_fn"},
+        {"dq.v1.badge-severities.publish-from-dq", "ores_dq_badge_severities_publish_fn"},
     };
     return m;
 }

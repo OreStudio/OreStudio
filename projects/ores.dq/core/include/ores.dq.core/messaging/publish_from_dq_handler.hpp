@@ -30,13 +30,15 @@ namespace ores::dq::messaging {
 /**
  * @brief Handles DQ-internal publish-from-dq workflow step commands.
  *
- * Handles dq.v1.ip2country.publish-from-dq and
- * dq.v1.coding-schemes.publish-from-dq, which write to DQ's own tables
- * and therefore do not need SECURITY DEFINER cross-service access.
+ * Handles dq.v1.ip2country.publish-from-dq,
+ * dq.v1.coding-schemes.publish-from-dq, and
+ * dq.v1.badge-severities.publish-from-dq, which write to DQ's own tables
+ * rather than another service's.
  *
  * Subject-to-function mapping:
- *   dq.v1.ip2country.publish-from-dq    -> ores_dq_ip2country_publish_fn
- *   dq.v1.coding-schemes.publish-from-dq -> ores_dq_coding_schemes_publish_fn
+ *   dq.v1.ip2country.publish-from-dq       -> ores_dq_ip2country_publish_fn
+ *   dq.v1.coding-schemes.publish-from-dq   -> ores_dq_coding_schemes_publish_fn
+ *   dq.v1.badge-severities.publish-from-dq -> ores_dq_badge_severities_publish_fn
  */
 class ORES_DQ_CORE_EXPORT publish_from_dq_handler {
 public:

@@ -2,7 +2,7 @@
 :ID: 4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C
 :END:
 #+title: Parties
-#+description: Party management in ORE Studio: what an internal legal entity represents, the party hierarchy and its single-root rule, the Qt UI, identifiers, contact information, and history and revert.
+#+description: Party management in ORE Studio: what an internal legal entity represents, legal-entity identification, the party hierarchy and its house-root rule, the Qt UI, identifiers, contact information, and history and revert.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:parties:refdata:user_guide:
@@ -12,12 +12,12 @@
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /party/ as a
 reference-data entity in ORE Studio. A party is an internal legal
-entity — the organisation itself and each of its subsidiaries — and
-every party but one sits somewhere beneath another in a single
-corporate hierarchy tree; the chapter sets out that hierarchy rule,
-the identifiers and contact information a party carries, and the
-complete lifecycle of managing party records through the Qt
-interface.
+entity — the organisation itself and each of its subsidiaries — and,
+barring the tenant's own house root, every party sits somewhere
+beneath another in a single corporate hierarchy tree; the chapter
+sets out that hierarchy rule, the identifiers and contact information
+a party carries, and the complete lifecycle of managing party records
+through the Qt interface.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
@@ -29,8 +29,9 @@ first understanding what it represents and how it fits into the
 organisation's structure, then the interface that governs its
 lifecycle. It begins by establishing what a party is in
 [[*What is a Party?][What is a Party?]], and by working through the [[*The party hierarchy][The party
-hierarchy]] rule that every party but one must supply a parent — the
-premise the rest of the chapter builds on. From there it surveys the
+hierarchy]] rule that every party but the tenant's house root must
+supply a parent — the premise the rest of the chapter builds on. From
+there it surveys the
 body of records in [[*The Parties window][The Parties window]] before narrowing to a single
 record in [[*Party Details][Party Details]] and its General, Identifiers, Contact
 Information, Hierarchy, and Provenance tabs. It then turns to
@@ -44,11 +45,31 @@ deliberately still missing.
 
 A /party/ is an internal legal entity participating in financial
 transactions — the organisation's own top-level entity and each of
-its subsidiaries, branches, and other group-structure members. This
-is distinct from a *counterparty*, which represents an external
-organisation the firm trades with; parties and counterparties share
-almost identical shapes but model opposite sides of a relationship,
-and are managed through separate windows.
+its subsidiaries, branches, and other group-structure members. See
+[[id:E8393440-D821-4A24-AE27-DD0917F125EB][the Tenants chapter's Parties section]] for the conceptual model this
+chapter builds on: the house/counterparty distinction, the
+administrative system party, and how a user's position in the party
+hierarchy determines their data visibility. This chapter does not
+repeat that model; it picks up from it to document the Qt interface
+for managing individual party records.
+
+A party is, first and foremost, a stand-in for a real legal entity —
+a registered company, a bank, a branch — and real legal entities are
+notoriously hard to identify consistently: the same organisation can
+appear under different names, registration numbers, and codes across
+different jurisdictions, counterparties, and vendor systems, with no
+single authority reconciling them all. The modern answer to this is
+the *Legal Entity Identifier (LEI)*, a globally unique code
+maintained by GLEIF and mandated by major post-2008 regulatory
+frameworks (MiFID II, EMIR, Dodd-Frank, Basel III); see the /GLEIF and
+the Legal Entity Identifier/ sidebar in the
+[[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter for how OreStudio consumes it. Because no
+single identifier scheme covers every counterpart a party might need
+to be recognised by, a party can carry more than one — see
+[[*Identifiers][Identifiers]] below and
+[[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]] for the full set of schemes (LEI,
+BIC, national IDs, and others) with links to their governing
+standards.
 
 Every party carries a *full name* (its official registered legal
 name) and a *short code* (a brief mnemonic used elsewhere in the
@@ -71,23 +92,30 @@ entity's primary location, the same code list documented in the
 
 ** The party hierarchy
 
-Parties form a single tree per tenant: every party has a *parent
-party*, except exactly one — the tenant's own root, representing the
-organisation itself. This is enforced structurally, not just by
+Every tenant has, at most, two parties with no parent: the
+[[id:E8393440-D821-4A24-AE27-DD0917F125EB][system party]] created automatically during provisioning
+(administrative only, never part of the business hierarchy), and —
+among the /operational/ parties that actually own trades, books, and
+analytics results — exactly one *house root*, the organisation's own
+top-level legal entity. This is enforced structurally, not just by
 convention: the database carries a unique index that permits at most
-one party per tenant with no parent, so a second attempt to create a
-rootless party is rejected outright.
+one operational party per tenant with no parent. Once that one slot
+is taken by the house root, every other operational party must supply
+a parent — a second attempt to create a rootless operational party is
+rejected outright.
 
-The practical consequence is that creating a party through the Qt UI
-*always* requires choosing an existing parent — there is no way to
-leave the field blank. This is deliberate: a business entity newly
-onboarded into ORE Studio, however it arrives, must attach somewhere
-in the one tree that already exists for its tenant; only the
-tenant's own root party, created once during provisioning, has no
-parent.
+The practical consequence for the Party Details dialog covered later
+in this chapter is that the Parent Party field is *required*: there
+is no way to leave it blank. This is deliberate: a business entity
+newly onboarded into ORE Studio, however it arrives, must attach
+somewhere in the one tree that already exists for its tenant. Note
+that this required-parent rule is specific to this dialog, not a
+general rule about how parties come to exist in OreStudio — a party
+can also be created from the shell's =provision party= command,
+which is not bound by any particular UI's field requirements.
 
-In practice, most parties never go through this manual Create flow
-at all: bulk onboarding via the GLEIF (Global Legal Entity Identifier
+In practice, most parties never go through this manual Create dialog
+at all: the shell-driven GLEIF (Global Legal Entity Identifier
 Foundation) reference data pipeline resolves an entity's real-world
 corporate-hierarchy relationships and assigns each imported party's
 parent automatically, level by level, from that external data. The
@@ -244,22 +272,28 @@ The chapter set out to show that managing a party well follows from
 understanding what it represents and how it fits into the
 organisation's structure, and it has traced exactly that path. A
 party is an internal legal entity identified by a short code and full
-name, carrying a type and status, and sitting — with exactly one
-tenant-wide exception — beneath a parent party in a single corporate
-hierarchy tree; the Parent Party combo on the General tab is a
-required field precisely because that exception is so narrow.
+name, carrying a type and status, and sitting beneath a parent party
+in a single corporate hierarchy tree — with the sole exception of the
+tenant's own house root; the Parent Party combo on the General tab is
+a required field precisely because that exception is so narrow.
 Building on that, the Qt interface took the record from the list view
 through its General, Identifiers, Contact Information, and Hierarchy
 tabs, and through the editing, deleting, and history workflows, where
 reverting to an earlier version demonstrated the same bitemporal
-audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. Shell and
-command-line access to parties is not yet implemented, and a
-dedicated manual chapter for counterparties — the external-facing
-mirror of this one — does not yet exist; both are tracked separately
-rather than glossed over here.
+audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. The shell's
+=provision party= command covers bulk/GLEIF onboarding (see
+[[*The party hierarchy][The party hierarchy]] above), but general-purpose shell/CLI commands
+for adding, editing, deleting, or viewing the history of an
+individual party are not yet implemented, and a dedicated manual
+chapter for counterparties — the external-facing mirror of this one
+— does not yet exist; both are tracked separately rather than glossed
+over here.
 
 ** See also
 
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — the multi-tenant, multi-party conceptual model (house vs
+  counterparty, the system party, hierarchy-based data visibility)
+  this chapter assumes and builds on.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
 - [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors, including the Change Reason Required dialog.
 - [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the business center a party links to, and the country flag a contact record may carry.

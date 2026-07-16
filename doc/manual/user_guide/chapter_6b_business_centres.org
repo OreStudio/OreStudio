@@ -42,8 +42,8 @@ together and names what is deliberately still missing.
 ** The FpML business centre scheme
 
 A business centre is a 4-character code drawn from the FpML
-=businessCenterScheme= code list (=http://www.fpml.org/coding-scheme/business-center=):
-either the real geographical location whose calendar governs a bad
+=businessCenterScheme= code list[fn:business_center_scheme]: either
+the real geographical location whose calendar governs a bad
 business day (=USNY= for New York, =GBLO= for London), or an
 FpML-format rate-publication calendar code used for fixing-day
 offsets. The scheme's own description is precise about the
@@ -52,6 +52,8 @@ used for identifying a bad business day for the purpose of payment
 and rate calculation day adjustments", while the rate-publication
 codes "are used in the context of the fixing day offsets" — two
 different jobs sharing the same 4-character code shape.
+
+[fn:business_center_scheme] FpML coding scheme, business centre: http://www.fpml.org/coding-scheme/business-center.
 
 A business centre's defining role in ORE Studio is exactly the one
 the FpML description names: it identifies *which* holiday calendar a

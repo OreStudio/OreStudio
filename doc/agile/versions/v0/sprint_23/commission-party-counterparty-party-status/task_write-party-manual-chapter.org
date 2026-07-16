@@ -111,6 +111,35 @@ markers.
     via =compass codegen entity generate ... --diff=) correctly
     produce =version == 0= / =\"system.test\"=. Fixed the test
     expectations, not the generators.
+- Review round (chapter content, not code): converted the inline
+  =http://www.fpml.org/coding-scheme/business-center= URL in
+  =chapter_6b_business_centres.org= into a footnote using =\url{}=
+  and added =\usepackage{url}= to =user_manual.org='s LaTeX preamble;
+  audited the rest of the manual and found no other inline-URL-clutter
+  offenders (chapter_1's URLs are already footnoted; every other
+  manual URL is already a proper =[[url][label]]= "See also" link, not
+  clutter). Added a Tenants cross-link and rewrote "What is a Party?"
+  / "The party hierarchy" to (a) not duplicate the Tenants chapter's
+  house/counterparty/system-party model, just point at it; (b) add
+  the legal-entity-identification domain framing (LEI/GLEIF, linking
+  [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial Identifiers]]); (c) fix a real contradiction found
+  against the DB (confirmed live: BARCLAYS PLC's own =parent_party_id=
+  is genuinely null, i.e. the house root, not the system party as a
+  screenshot misleadingly suggested via the known pre-existing
+  QComboBox auto-select-index-0 bug) — a tenant has *two* possible
+  parentless parties (the system party and one operational house
+  root), not one, and the chapter previously only described one; (d)
+  drop the "through the Qt UI" qualifier on required-parent-on-create,
+  since the shell's =provision party= command can also create parties
+  (Conclusion's "shell access not yet implemented" caveat corrected to
+  scope that to general-purpose CRUD commands, not the existing
+  provisioning-level command).
+- Filed [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history
+  dialog screenshots]] to fix an unrelated gap surfaced during review:
+  the regulatory book type combo screenshot in =chapter_7_books.org=
+  was never captured, and the History dialogs in
+  =chapter_6_countries.org=/=chapter_5_currencies.org=/=chapter_7_books.org=/=chapter_6b_business_centres.org=
+  likely predate the current All Fields/Only Changes toggle UI.
 
 * Test Scenarios
 
@@ -123,6 +152,7 @@ via its "Verifies task" field.
 |----------+-------+-------|
 | [[id:00832CCC-F7A4-49FB-9041-BC35978B2605][Capture party manual chapter screenshots]] | PASSED | All 8 steps passed; also surfaced and drove the fix for the missing party history provider registration (real bug, see Notes). |
 | [[id:510B6314-197D-482B-A3E5-ABA0A2E90779][Recapture party_details_hierarchy.png with a non-root party]] | PASSED | Redo of one screenshot on a non-root party so both ancestors and descendants are visible. |
+| [[id:78612C07-D7BA-4D25-9F54-D7B863C51191][Capture missing Books screenshots and refresh legacy history dialog screenshots]] | PENDING | Unrelated gap fix surfaced during review; user is running this one. |
 
 * PRs
 

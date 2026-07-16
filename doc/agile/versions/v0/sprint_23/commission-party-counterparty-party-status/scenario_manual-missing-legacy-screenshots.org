@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 78612C07-D7BA-4D25-9F54-D7B863C51191
+:END:
+#+title: Test Scenario: Capture missing Books screenshots and refresh legacy history dialog screenshots
+#+description: Capture the never-taken regulatory book type combo screenshot, retake the 4 other outdated Books screenshots, and refresh all pre-toggle History dialog screenshots (country, currency, book, business centre) to match the current All Fields/Only Changes UI.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:screenshots:books:history:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | (multiple — Books, Countries, Currencies, Business Centres) |
+| Clients       |                                          |
+| State         | PENDING                                 |
+
+* Steps
+
+Log in against =prime_origin= as =tenant_admin@barclays_plc= /
+=Secure-Password-123= and select *BARCLAYS PLC* before the first
+capture step. Save every capture into
+=doc/manual/user_guide/assets/images/=, overwriting the existing file.
+
+** Capture regulatory_book_type_combo.png (never captured)
+
+Open Trading > Books, open any book's Details, click the Regulatory
+Book Type combo to open its dropdown, and screenshot it open with
+both values (Trading, Banking) visible as coloured badges. Save as
+=regulatory_book_type_combo.png=.
+
+** Capture books_main_dialog.png (outdated)
+
+Open the Books window with at least one book of each Status
+(Active/Closed/Frozen) and Regulatory Book Type (Trading/Banking)
+visible, so every badge colour shows. Screenshot the full window
+including the toolbar and status bar. Save as =books_main_dialog.png=.
+
+** Capture book_details_general.png (outdated)
+
+Open Book Details on any book with a non-default Status and
+Regulatory Book Type selected (so both badges are visible), and
+screenshot the General tab in full. Save as
+=book_details_general.png=.
+
+** Capture book_ledger_currency_combo.png (outdated)
+
+On the General tab, click the Functional Currency combo box to open
+its dropdown, showing the list of ISO currency codes each with its
+flag icon. Save as =book_ledger_currency_combo.png=.
+
+** Capture book_status_combo.png (outdated)
+
+On the General tab, click the Status combo box and screenshot it
+open with the dropdown showing all three values (Active, Closed,
+Frozen) as coloured badges. Save as =book_status_combo.png=.
+
+** Capture country_history_dialog.png (legacy — predates the All Fields/Only Changes toggle)
+
+Open a country with at least two versions, open its History dialog,
+select a version so a diff shows against its predecessor, and
+confirm the *All Fields*/*Only Changes* toggle (not a "Changes tab")
+is visible. Screenshot it. Save as =country_history_dialog.png=.
+
+** Capture currency_history_dialog.png (legacy — predates the All Fields/Only Changes toggle)
+
+Open the Angolan Kwanza (or any currency with 3+ versions), open its
+History dialog, select a version, and screenshot it showing the
+*All Fields*/*Only Changes* toggle. Save as
+=currency_history_dialog.png=. This file is referenced from both
+chapter_4_reference_data.org and chapter_5_currencies.org — one
+capture covers both.
+
+** Capture book_history_dialog.png (legacy — predates the All Fields/Only Changes toggle)
+
+Open a book with more than one version, open its History dialog,
+select a version, and screenshot it showing the *All Fields*/*Only
+Changes* toggle. Save as =book_history_dialog.png=.
+
+** Capture business_centre_history_dialog.png (legacy — predates the All Fields/Only Changes toggle)
+
+Open business centre =AEAB= (Abu Dhabi) or any centre with more than
+one version, open its History dialog, select a version so the diff
+shows a real field correction, and screenshot it showing the *All
+Fields*/*Only Changes* toggle. Save as
+=business_centre_history_dialog.png=.
+
+** Update captions if wording no longer matches
+
+For each retaken history screenshot, check its chapter's caption and
+surrounding prose still say "All Fields"/"Only Changes" rather than
+a literal "Changes tab" (matching the wording fix already applied to
+chapter_8_parties.org) — fix any that still say "Changes tab".
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

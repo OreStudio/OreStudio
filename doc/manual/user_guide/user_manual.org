@@ -18,6 +18,10 @@
 # would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{lettrine}
+# Footnoted reference URLs are typeset and line-broken via \url{};
+# hyperref loads url internally but we depend on its macros directly,
+# so load it explicitly rather than relying on that transitively.
+#+latex_header: \usepackage{url}
 # Drop caps: oversize the letter slightly so its top aligns with the cap
 # height of the first line rather than falling short of it.
 #+latex_header: \renewcommand{\DefaultLoversize}{0.12}

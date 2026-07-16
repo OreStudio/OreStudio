@@ -139,10 +139,13 @@ saved, revisited, and reused across sessions.
 
 ORE Studio is a learning and exploration environment, not a production trading
 or risk system. It is independent of and unaffiliated with ORE, QuantLib, or
-any financial institution. All quantitative mathematics are provided by ORE and
-QuantLib; ORE Studio is the surface through which they are configured and their
-results explored. Users who need production-grade performance, real-time market
-data feeds, or regulatory reporting should look to enterprise risk platforms.
+any financial institution. For the key valuation cases, the quantitative
+mathematics are provided by ORE and QuantLib; ORE Studio is the surface
+through which they are configured and their results explored. ORE Studio does
+reimplement a small subset of QuantLib for its own internal purposes, but that
+reimplementation is not used by the engine's valuation code. Users who need
+production-grade performance, real-time market data feeds, or regulatory
+reporting should look to enterprise risk platforms.
 
 ** How This Manual Is Organised
 

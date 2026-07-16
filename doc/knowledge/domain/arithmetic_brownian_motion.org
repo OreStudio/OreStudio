@@ -33,6 +33,9 @@ process has no floor: enough unlucky flat withdrawals in a row and the
 balance genuinely goes negative.
 
 #+begin_src cpp
+// Simplified for clarity: the real code guards sd == 0 (a degenerate
+// mixture component) separately, since std::normal_distribution asserts
+// on a zero stddev.
 const double increment = std::normal_distribution<double>(mean, sd)(rng_);
 price_ += increment;      // a random flat amount, added
 #+end_src

@@ -44,6 +44,9 @@ double cir_process::next_stochastic() {
     const double c = sigma_ * sigma_ * (1.0 - decay) / (4.0 * kappa_);
     const double d = 4.0 * kappa_ * theta_ / (sigma_ * sigma_);
     const double lambda = rate_ * decay / c;      // shrinks toward 0 as rate_ -> 0
+    // Simplified for clarity: the real code guards this draw for lambda == 0
+    // (rate_ touching the zero boundary this section discusses), since
+    // std::poisson_distribution asserts on a zero mean.
     const int n = std::poisson_distribution<int>(lambda / 2.0)(rng_);
     std::chi_squared_distribution<double> chi2(d + 2.0 * n);
     return c * chi2(rng_);

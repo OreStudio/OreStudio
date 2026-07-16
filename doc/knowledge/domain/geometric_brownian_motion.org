@@ -33,6 +33,9 @@ actually cross it or go negative — there's no such thing as a
 "-150% return" wiping it out completely.
 
 #+begin_src cpp
+// Simplified for clarity: the real code guards sd == 0 (a degenerate
+// mixture component) separately, since std::normal_distribution asserts
+// on a zero stddev.
 const double log_return = std::normal_distribution<double>(mean, sd)(rng_);
 price_ *= std::exp(log_return);      // a random percentage change, applied
 #+end_src

@@ -27,7 +27,7 @@ families: *price processes*, which model a quantity that can wander
 without bound, and *mean-reverting processes*, which model a quantity
 that is pulled back toward a long-run level. The first place these
 processes are put to use in ORE Studio is
-[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][=ores.analytics.quant=]]'s
+[[id:D9424733-9602-45DB-8E87-88F2851C3C29][=ores.analytics.quant=]]'s
 synthetic market data generators (FX spot, equity, and short-rate paths)
 — but that is one consumer of a general-purpose toolkit, not what this
 cluster is fundamentally about.

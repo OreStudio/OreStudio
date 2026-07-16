@@ -55,24 +55,64 @@ in the graph before removing the source.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-28                               |
+| Now          | Content ported, links repointed, legacy docs + facet_catalogue.org + regenerate_facet_inventories.py deleted. |
+| Waiting on   | deploy_site verification and a full codegen regeneration diff before close. |
+| Next         | Run =compass build --direct deploy_site= and a full-entity regeneration; confirm zero diff; close task. |
+| Last touched | 2026-07-16                               |
 
 * Acceptance
 
-- Every legacy doc's non-placeholder prose is ported to its corresponding ores.* node BEFORE deletion (group→technical_space, facet→facet); a content audit confirms nothing useful is lost.
-- facet_catalogue.org + 18 legacy docs deleted; grep finds no inbound links to the deleted IDs; old regenerate_facet_inventories.py removed; deploy_site is green; full regeneration byte-identical.
-- (Already satisfied by 386BED71, verify still true at close): core.py has no load_profiles/_load_profiles_from_org/_parse_facet_table.
+- Every legacy doc's non-placeholder prose is ported to its corresponding ores.* node BEFORE deletion (group→technical_space, facet→facet); a content audit confirms nothing useful is lost. — DONE
+- facet_catalogue.org + 18 legacy docs deleted; grep finds no inbound links to the deleted IDs; old regenerate_facet_inventories.py removed; deploy_site is green; full regeneration byte-identical. — deletions + link repointing DONE (grep-verified zero dangling id: links); deploy_site + regeneration diff NOT YET RUN.
+- (Already satisfied by 386BED71, verify still true at close): core.py has no load_profiles/_load_profiles_from_org/_parse_facet_table. — verified, confirmed clean.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Audited all 20 legacy docs (facet_catalogue.org + 19 facet/facet_group
+   docs) for non-placeholder prose.
+2. Discovered two docs described stale/duplicate ground, not gaps:
+   =cpp_table.org= content was already absorbed into
+   =ores.cpp.domain='s table_* archetypes; the =assets= group's two
+   live templates (plantuml_er, shell_service_vars) already had full
+   homes at =ores.plantuml.er= / =ores.shell.service= (their archetype
+   docs already carried ported content — only the facet-level Summary
+   needed filling).
+3. Ported Summary / facet-projection / Mustache-incantations prose from
+   every legacy doc into its corresponding =ores.*= technical-space or
+   facet node (committed separately from deletion).
+4. Bulk-repointed ~135 internal template-library "See also"/parent-facet
+   references and the boilerplate "profile membership comes from
+   facet_catalogue.org" intro line to point at each doc's own
+   Archetypes table instead.
+5. Repointed ~33 external files (recipes, MASD =projects/modeling/=
+   docs, codegen architecture/schema docs, sprint 20 agile docs) from
+   the legacy IDs onto the corresponding =ores.*= nodes; rewrote the
+   stale "Assets Technical Space" section in
+   =technical_spaces_other.org= to describe the real post-migration
+   split (=ores.cpp.qt= / =ores.plantuml= / =ores.shell=).
+6. Deleted facet_catalogue.org, the 19 legacy docs, and the now-dead
+   =regenerate_facet_inventories.py= (targeted the deleted group docs;
+   no live caller).
+7. Grep-verified zero remaining inbound =id:= links to any deleted ID
+   across =doc/= and =projects/=.
 
 * Notes
+
+- =cmake_service_src.mustache= (the pre-regroup standalone-service
+  =src= variant, referenced by no profile/code) and =plantuml_er.mustache=
+  remain on disk with no clean single-facet home for the former, and a
+  now-explicit "not currently wired into any generation path" note on
+  the latter and on =shell_service_vars.mustache= — real dead-code-audit
+  candidates surfaced by this task, out of its own scope to resolve.
+- The =ores.doc.*= facets (agile/knowledge/modeling/template) have no
+  per-template archetype docs yet except =ores.doc.template= (which
+  reused the four pre-existing =doc_facet*_org.org= archetypes) — the
+  ~20 =doc_*.org.mustache= templates still live as flat,
+  =#+type: knowledge=-tagged docs pending their own migration onto the
+  physical-space graph. Noted inline on each affected facet doc.
+- ~8 prose (non-link) mentions of =regenerate_facet_inventories.py= by
+  name remain in older agile/recipe docs; left as-is (dead references
+  in historical prose, not broken =id:= links).
 
 * PRs
 

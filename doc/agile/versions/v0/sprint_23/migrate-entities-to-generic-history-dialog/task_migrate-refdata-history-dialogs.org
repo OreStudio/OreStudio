@@ -156,7 +156,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Branch's merge-base was stale (predated PR #1594), making the "full ores.cpp regen" diff look like it reverted the party/counterparty parent-picker feature | party.org, counterparty.org, PartyDetailDialog, CounterpartyDetailDialog, LookupFetcher, cpp_qt_detail_dialog template | Accepted | Rebased onto current origin/main (fixed in 568432fd9), re-ran the regen for all 14 target entities on top of that, confirmed zero-diff and that party/counterparty files + the shared template are untouched — only picked up a small additive doc-comment the shared template gained from #1594. |
+| 2 | Pagination total count uses page size (result->types.size()) rather than server-reported total (result->total_available_count) | Client*Model.cpp (currency_market_tier, rounding_type, monetary_nature) | Declined | Pre-existing, codebase-wide codegen convention already present identically in unmodified sibling models (e.g. ClientDayCountFractionTypeModel.cpp) — not introduced by this PR, out of scope here. |
 
 * Result
 

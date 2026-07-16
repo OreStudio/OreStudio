@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/crm-rate-formatter-and-qt-wiring
 #+pr:
 #+blocked_on: [[id:17CAD54D-0C46-427F-9117-E2B82346BAE5][Add ores.refdata.client with a currency_pair_convention cache]]
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-15
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,7 +47,7 @@ replacement for that formatting call, not a new UI contract.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

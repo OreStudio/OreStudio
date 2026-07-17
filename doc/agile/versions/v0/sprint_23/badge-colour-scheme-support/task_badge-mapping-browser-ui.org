@@ -9,10 +9,8 @@
 #+owner: marco
 #+branch: feature/badge-mapping-browser-ui
 #+pr: 1599
-#+blocked_on: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
-#+blocked_since: 2026-07-16
 #+created: 2026-07-15
-#+updated: 2026-07-16
+#+updated: 2026-07-17
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -27,12 +25,12 @@ A user viewing a Code Domain's detail dialog can see every entity_code -> badge 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | BadgeMappingsTab built and embedded in CodeDomainDetailDialog (see Plan/Review); blocked because badge_definition/badge_severity/code_domain data is only ever seeded under the system tenant, and their admin CRUD list windows filter strictly by caller tenant -- so no tenant can currently see the data this tab depends on. |
-| Waiting on   | [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] |
-| Next         | Resume once tenants can publish/see their own badge catalogue data; re-run manual QA against real tenant-scoped rows. |
-| Last touched | 2026-07-16                               |
+| Now          | BadgeMappingsTab built and embedded in CodeDomainDetailDialog (PR #1599, merged). Unblocked: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] is DONE (PR #1608, merged) -- tenants can now publish/see their own badge catalogue data. |
+| Waiting on   | Nothing.                               |
+| Next         | Re-run manual QA against real tenant-scoped rows (scenario 1FCD0C68); confirm the tab renders correctly, then close the task. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 

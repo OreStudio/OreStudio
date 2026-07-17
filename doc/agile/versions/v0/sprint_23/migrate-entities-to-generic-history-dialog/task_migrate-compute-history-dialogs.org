@@ -18,6 +18,8 @@
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
+ABANDONED: superseded by [[id:624B54D3-C875-4FF3-9FBE-DAA9CBD71DE1][capture: commission ores.qt.compute into codegen]] -- this story was narrowed to ores.qt.refdata only, and ores.qt.compute's migration now lives under that capture instead.
+
 * Goal
 
 (Describe what user-visible-or-internal change this task produces.)
@@ -26,12 +28,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                             |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded by capture: commission ores.qt.compute into codegen. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Next         | None -- see capture. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
@@ -69,3 +71,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned -- this migration was split out of the story into its own
+backlog capture when the story was narrowed to ores.qt.refdata only.

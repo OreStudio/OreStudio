@@ -46,7 +46,7 @@ generate_synthetic_business_unit(utility::generation::generation_context& ctx) {
     r.unit_name = faker::company::companyName() + " Desk" + "-" + std::to_string(idx);
     r.parent_business_unit_id = std::nullopt;
     r.unit_code = std::string("DESK") + std::to_string(idx);
-    r.business_centre_code = std::string("GBLO");
+    r.business_centre_code = std::string("WRLD");
     r.unit_type_id = std::nullopt;
     r.status = std::string("Active");
     r.modified_by = modified_by;

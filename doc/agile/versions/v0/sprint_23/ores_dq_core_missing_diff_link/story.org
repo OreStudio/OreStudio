@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: C85B0A71-6649-4A37-89F2-913C69A7976A
+:END:
+#+title: Story: Hotfix: ores.dq.core fails to build, missing ores.diff link
+#+description: ores.dq.core includes ores.diff headers but its CMakeLists never links or includes ores.diff.lib, breaking the build.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.dq:sprint_23:v0:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the build on =main=: =ores.dq.core= fails with =fatal error:
+'ores.diff/domain/field_value.hpp' file not found= because its
+CMakeLists never declares a dependency on =ores.diff.lib=, even
+though its public headers include =ores.diff= types.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Build and tests verified green locally. |
+| Waiting on    | Nothing.                               |
+| Next          | PR.                                    |
+| Last touched  | 2026-07-17                               |
+
+* Acceptance
+
+- =cmake --build --preset linux-clang-debug-make= succeeds.
+- =run_all_tests= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:624AF5D4-24D4-4EF5-A1B2-3E66B04485DE][Scaffold story: Hotfix: ores.dq.core fails to build, missing ores.diff link]] | DONE | 2026-07-17 | 2026-07-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:92E27722-BD9A-4924-BC1B-31EDEB2A3681][Implement Hotfix: ores.dq.core fails to build, missing ores.diff link]] | STARTED | 2026-07-17 | | Initial task for: Hotfix: ores.dq.core fails to build, missing ores.diff link |
+
+* Decisions
+
+Scope grew from the single reported build error to a build-then-test
+green sweep: chasing the build and =run_all_tests= to fully green
+surfaced three more independent, pre-existing bugs on =main= (missing
+=ores.eventing.core.lib= link, a tenant-provisioner query missing the
+=curve_role= column, and several stale/buggy refdata generators and
+tests). Fixed all of them in this one hotfix rather than splitting
+into separate stories, since the failures were only discovered by
+running the exact same build/test verification loop end to end; see
+the implementation task's =* Notes= for the itemised list.
+
+* Out of scope
+
+-

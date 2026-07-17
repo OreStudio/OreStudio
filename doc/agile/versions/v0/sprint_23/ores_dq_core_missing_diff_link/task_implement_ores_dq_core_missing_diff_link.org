@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 92E27722-BD9A-4924-BC1B-31EDEB2A3681
+:END:
+#+title: Task: Implement Hotfix: ores.dq.core fails to build, missing ores.diff link
+#+description: Initial task for: Hotfix: ores.dq.core fails to build, missing ores.diff link
+#+type: task
+#+level: s1
+#+filetags: :ores_dq_core_missing_diff_link:sprint_23:v0:
+#+owner: marco
+#+branch: hotfix/ores-dq-core-missing-diff-link
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =ores.diff.lib= as a dependency of =ores.dq.core.lib= so the
+build compiles again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] |
+| Now          | Fix verified locally.                  |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                                    |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- =cmake --build --preset linux-clang-debug-make= succeeds.
+- =run_all_tests= passes.
+
+* Plan
+
+=projects/ores.dq/core/include/ores.dq.core/presentation/badge_definition_history_field_mapper.hpp=
+includes =ores.diff/domain/field_value.hpp= and uses
+=ores::diff::domain::field_value= in its public signature, but
+=projects/ores.dq/core/src/CMakeLists.txt= never adds =ores.diff.lib=
+to =target_link_libraries=, so neither its include directory nor its
+link is available. Add =ores.diff.lib= to the =PUBLIC= link
+libraries of =ores.dq.core.lib= (public because the type appears in
+a public header, so downstream consumers need the include path
+too).
+
+* Notes
+
+Root cause and fix went well beyond the original single missing link.
+Chasing the build to green, then the test suite to green, surfaced
+four independent, pre-existing bugs on =main=:
+
+1. =ores.dq.core.lib= used =ores.diff= types in a public header but
+   never linked =ores.diff.lib= (the original hotfix trigger).
+2. =ores.dq.service.lib= similarly used
+   =ores.eventing.core/service/postgres_event_source.hpp= without
+   linking =ores.eventing.core.lib=.
+3. =ores_iam_provision_tenant_fn='s instrument-codes copy omitted the
+   (not-null) =curve_role= column, so every new-tenant provisioning
+   call failed once a real =curve_role= was seeded — this broke
+   tenant-provisioning-dependent tests across several unrelated
+   suites (=ores.utility=, =ores.database=, =ores.platform=,
+   =ores.telemetry.core=, =ores.telemetry.database=).
+4. =ores.history.core='s test =CMakeLists.txt= was missing
+   =ORES_TEST_ENV_CMD= in its custom test-run target, so its DB
+   tests never received =.env='s test credentials.
+5. =ores.refdata.api='s generator tests had four stale expectations
+   (=party_status=, =party_id_scheme=, =party_identifier=,
+   =counterparty_identifier=: expected =version == 1= /
+   =change_reason_code == "system.new"=, generators correctly produce
+   =version == 0= / ="system.test"=, per the precedent set in commit
+   123ca2bfa for the sibling contact-information generators).
+6. =party_id_scheme_generator= never set =display_order= (left at its
+   domain default of 0).
+7. =business_unit_type_generator= and =party_id_scheme_generator=
+   generated fabricated =coding_scheme_code= values instead of
+   referencing a seeded =ores_dq_coding_schemes_tbl= code (now
+   ="INTERNAL"= and ="LEI"= respectively).
+8. =business_unit_generator= used ="GBLO"= for
+   =business_centre_code=, which isn't a seeded business centre
+   (only ="WRLD"= is); and its repository tests generated a random,
+   non-existent =party_id= instead of writing a real party and
+   scoping the test context to it via
+   =context::with_party= (required both by the soft FK trigger and
+   by the =business_units_party_isolation_policy= RLS policy).
+
+Verified via =cmake --build --preset linux-clang-debug-make= (clean)
+and the =run_all_tests= target (all suites green) after each fix,
+iterating until the whole tree was clean.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

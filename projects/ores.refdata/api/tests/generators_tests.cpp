@@ -178,7 +178,7 @@ TEST_CASE("party_status_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_party_status(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -186,7 +186,7 @@ TEST_CASE("party_status_generator_produces_valid_instance", tags) {
     CHECK(sut.display_order <= 100);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
@@ -208,7 +208,7 @@ TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_party_id_scheme(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -217,7 +217,7 @@ TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
     CHECK(sut.display_order <= 100);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
@@ -239,7 +239,7 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_party_identifier(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.party_id.is_nil());
@@ -248,7 +248,7 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.description == "Test identifier");
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
@@ -271,7 +271,7 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_counterparty_identifier(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.counterparty_id.is_nil());
@@ -280,7 +280,7 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.description == "Test identifier");
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags) {

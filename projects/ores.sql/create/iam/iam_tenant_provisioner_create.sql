@@ -445,11 +445,11 @@ begin
 
     -- Instrument codes (e.g. DEPO, FRA, IRS)
     insert into ores_refdata_instrument_codes_tbl (
-        code, tenant_id, version, name, description, asset_class, ore_trade_type, display_order,
+        code, tenant_id, version, name, description, asset_class, ore_trade_type, curve_role, display_order,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_tenant_id, 0, name, description, asset_class, ore_trade_type, display_order,
+        code, v_tenant_id, 0, name, description, asset_class, ore_trade_type, curve_role, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_instrument_codes_tbl t

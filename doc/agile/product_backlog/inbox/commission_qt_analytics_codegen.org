@@ -17,7 +17,7 @@ Take an inventory of every entity exposed by ores.qt.analytics: which have a cod
 
 * Why
 
-The "Migrate ores.qt.analytics's history dialogs to the generic HistoryDialog" task originally lived under the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story, but that story is being narrowed to ores.qt.refdata only. ores.qt.analytics still needs its entities inventoried, commissioned through codegen, and migrated onto the generic HistoryDialog — this capture tracks that as its own piece of work, sized and scheduled independently.
+The "Migrate ores.qt.analytics's history dialogs to the generic HistoryDialog" task originally lived under the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] story, but that story is being narrowed to ores.qt.refdata only. ores.qt.analytics still needs its entities inventoried, commissioned through codegen, and migrated onto the generic HistoryDialog — this capture tracks that as its own piece of work, sized and scheduled independently.
 
 * References
 
@@ -25,4 +25,4 @@ The "Migrate ores.qt.analytics's history dialogs to the generic HistoryDialog" t
 
 * See also
 
-- [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] — narrowed to refdata; this capture covers analytics instead.
+- [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] — narrowed to refdata; this capture covers analytics instead.

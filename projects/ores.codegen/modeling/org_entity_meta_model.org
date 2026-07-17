@@ -2,36 +2,45 @@
 :ID: BDE309BA-71DA-4A52-AA10-00F17AFDA476
 :END:
 #+title: Codegen org-entity meta-model
-#+description: The shape of a =*_entity.org= codegen model. Describes every section, its required and optional properties, and the registry of well-known block kinds that templates reference by UUID.
+#+description: Hub page for the shape of a *_entity.org codegen model — what an entity model file is allowed to contain, in MASD terms. Overview, file-level conventions, and links to every segment page (one per facet, plus paste blocks) for the exhaustive per-knob reference.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-07-17
 
-A codegen *entity model* is a single literate org-mode file that describes
-one entity (e.g. =party=) and drives both the C++ and SQL code generation
-pipelines for that entity.
+A codegen *entity model* is a single literate org-mode file that
+describes one entity (e.g. =party=) and drives code generation across
+every technical space that entity touches: SQL and several
+independent C++ facets. In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
+segment pages — is the *metamodel* for the entity model: it does not
+describe any one entity, it describes what any entity model file is
+allowed to contain. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates
+MASD's logical/physical space, metatype, facet, and archetype
+concepts — those concepts are exactly the organising principle this
+hub uses below.
 
-This document is the single source of truth for the file shape:
-every section, every required and optional property, every well-known
-*block kind* that templates may reference. In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this
-document is the *metamodel* for the entity model: it does not describe
-any one entity, it describes what any entity model file is allowed to
-contain (see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates MASD's
-logical/physical space, metatype, facet, and archetype concepts).
+This page stays deliberately short: an overview, the file-level
+conventions every entity model shares regardless of which facets it
+uses, and a table routing to the segment page that documents each
+facet's knobs, worked example, and paste blocks in full. Go to a
+segment page for the exhaustive per-property reference; come back
+here only for the shape of the file as a whole.
 
 * About this document                                                :ignore:
 
-The =:ignore:= tag asks the codegen loader to skip this heading when reading
-an entity file. Sections without that tag may be consumed.
+The =:ignore:= tag asks the codegen loader to skip this heading when
+reading an entity file (it means "skip this heading", not "this
+document is unimportant" — an unfortunate naming collision if you're
+skimming the table of contents). Sections without that tag may be
+consumed by the loader.
 
 * File-level conventions
 
 ** Naming
 
-Entity files live under =projects/ores.<component>/modeling/= with the
-filename =ores.<component>.<entity>.org=. Example:
+Entity files live under =projects/ores.<component>/modeling/= with
+the filename =ores.<component>.<entity>.org=. Example:
 =ores.refdata.party.org= under =projects/ores.refdata/modeling/=.
 (Historical note: an earlier convention put these under
 =projects/ores.codegen/models/<component>/<entity>_entity.org=; that
@@ -41,16 +50,17 @@ in the frontmatter, not by directory convention.)
 
 ** Frontmatter
 
-The first few lines of the file are org-mode frontmatter. They describe the
-*document* (this codegen model), not the modelled entity. Required:
+The first few lines of the file are org-mode frontmatter. They
+describe the *document* (this codegen model), not the modelled
+entity. Required:
 
 | Keyword           | Purpose                                              |
 |-------------------+------------------------------------------------------|
 | =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
-| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — this is a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI (list/chart view rather than a CRUD dialog) is expected future work. Defaults to generating Qt when absent. |
+| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI is expected future work (see the capture on timeseries codegen analysis). Defaults to generating Qt when absent. |
 | =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
 | =#+description:=  | What this *file* is, not what the modelled thing is. |
-| =#+type:=         | =ores.codegen.entity=                                 |
+| =#+type:=         | =ores.codegen.entity= — the value that marks this entity's [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][MASD metatype]] as =domain_entity=. |
 | =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
 | =#+filetags:=     | =:model:entity:<component>:=                         |
 | =#+entity_singular:= | Identifier form, singular (=party=).              |
@@ -60,870 +70,61 @@ The first few lines of the file are org-mode frontmatter. They describe the
 
 ** Prose body (between frontmatter and first heading)
 
-A paragraph or two describing *the modelled entity itself*. This text is
-exposed to templates as the entity =description=. Keep the document-level
-=#+description= for the *file* and put the entity description here.
-
-* Sections
-
-The body is divided into top-level sections. The loader recognises the
-section names below. Unrecognised section names (e.g. =* About this file=,
-typically tagged =:ignore:=) are skipped.
-
-** Flags
-
-Cross-cutting properties consumed by both C++ and SQL codegen.
-
-| Property              | Required | Notes                                    |
-|-----------------------+----------+------------------------------------------|
-| =:schema:=            | yes      | Postgres schema (almost always =public=). |
-| =:product:=           | yes      | Top-level namespace (=ores=).             |
-| =:component:=         | yes      | Component name (=refdata=, =trading=, ...). |
-| =:has_tenant_id:=     | no       | Adds =tenant_id= column / field.          |
-| =:has_workspace_id:=  | no       | Adds =workspace_id= column / field.       |
-
-Example:
-
-#+begin_src org
-,* Flags
-,:PROPERTIES:
-,:schema: public
-,:product: ores
-,:component: refdata
-,:has_tenant_id: true
-,:END:
-#+end_src
-
-** Primary key
-
-Drawer holds the primary-key column description. Body holds prose
-documentation.
-
-| Property      | Required | Notes                                     |
-|---------------+----------+-------------------------------------------|
-| =:column:=    | yes      | SQL column name.                          |
-| =:type:=      | yes      | SQL type (=uuid=, =text=, etc.).          |
-| =:cpp_type:=  | yes      | C++ type (=boost::uuids::uuid=, =std::string=, ...). |
-
-Example:
-
-#+begin_src org
-,* Primary key
-,:PROPERTIES:
-,:column:   id
-,:type:     uuid
-,:cpp_type: boost::uuids::uuid
-,:END:
-
-UUID uniquely identifying this party.
-
-Surrogate key for the party record.
-#+end_src
-
-** Natural keys
-
-Container for natural-key sub-headings. Each =**= sub-heading is one
-natural key, with the column name as the heading title.
-
-Each natural-key sub-heading uses the same property structure as a column
-(see =* Columns= below), and may carry a =generator= babel block.
-
-** Columns
-
-Container for column sub-headings. Each =**= sub-heading is one column,
-with the column name as the heading title.
-
-Per-column properties:
-
-| Property        | Required | Notes                                    |
-|-----------------+----------+------------------------------------------|
-| =:type:=        | yes      | SQL type.                                 |
-| =:cpp_type:=    | yes      | C++ type.                                 |
-| =:nullable:=    | no       | =true= for nullable columns (default false). |
-
-Each column's body is split into a *description* (first paragraph) and an
-optional *detail* (second paragraph and beyond).
-
-Each column may carry one or more named babel blocks. The well-known names:
-
-- =generator= — C++ expression producing a synthetic value for tests.
-
-Example:
-
-#+begin_src org
-,** codename
-,:PROPERTIES:
-,:type:     text
-,:cpp_type: std::string
-,:nullable: false
-,:END:
-
-Globally unique human-readable codename (adjective_noun).
-
-Used as the per-party pgmq queue prefix, pg_cron job names, and
-operator tooling.
-
-#+begin_src cpp :name generator
-,std::string(faker::word::adjective()) + "_" + std::string(faker::word::noun())
-,#+end_src
-#+end_src
-
-** SQL
-
-SQL-specific knobs. The first sub-section is always =** Flags= with a
-property drawer.
-
-#+begin_src org
-,* SQL
-,** Flags
-,:PROPERTIES:
-,:tablename: ores_refdata_parties_tbl
-,:END:
-#+end_src
-
-Future SQL sub-sections (custom triggers, indices) will live alongside the
-=Flags= sub-heading.
-
-*** =has_parent_id=
-
-| Property                | Required | Notes                                                    |
-|--------------------------+----------+-----------------------------------------------------------|
-| =:has_parent_id:=        | no       | Entity has a self-referencing parent soft-FK (a tree).    |
-| =:parent_id_column:=     | if set   | Column name, e.g. =parent_party_id=.                      |
-| =:hierarchy_name_field:= | if set   | Existing column used as the display label in the tree.    |
-
-When set, generates a
-=<product>_<component>_<entity_plural>_hierarchy_fn(p_tenant_id, p_root_id,
-p_from_root)= recursive-CTE function returning flat =(id, parent_id, name)=
-rows: the subtree rooted at =p_root_id= when =p_from_root= is false, or
-(resolving up to the real root first) the whole tenant tree when true.
-Does *not* generate the =parent_<entity>_id= column or its insert-trigger
-validation — those stay hand-written until an entity's SQL file is fully
-migrated onto the unified template (see =Commission: party='s "Bring party
-under codegen" task for why this can't always be done safely yet: hand-written
-logic like codename generation has no paste-block coverage). The generated
-function composes independently of that column either way.
-
-Consumers turn the flat rows into a tree client-side via the shared,
-handwritten =ores::utility::domain::hierarchy_node=/=build_tree()= (not
-codegen'd — entity-agnostic tree assembly is generic logic, not per-entity
-template output).
-
-Example:
-
-#+begin_src org
-,* SQL
-,** Flags
-,:PROPERTIES:
-,:tablename:            ores_refdata_counterparties_tbl
-,:has_parent_id:        true
-,:parent_id_column:     parent_counterparty_id
-,:hierarchy_name_field: full_name
-,:END:
-#+end_src
-
-** C++
-
-C++-specific knobs. Sub-sections:
-
-- =** Flags= — Repository / service flags that affect template output.
-- =** Repository= — Naming-convention strings (=entity_singular_short=,
-  =entity_plural_short=, etc.).
-- =** Domain includes= — Named =includes= babel block; one =#include=
-  directive per line.
-- =** Entity includes= — Same, for the SQL-mapping entity header.
-- =** Conventions= — Misc C++ properties (=iterator_var=, etc.).
-- =** Table display= — Org table mapping column names to display headers.
-- =** Qt= — Property drawer plus sub-tables (=*** Detail fields=,
-  =*** Columns (Qt model)=). See "Qt property drawer" below for the
-  full knob reference — several of these have no default and are
-  silently treated as false/absent by the mustache templates if
-  omitted, so they must be set explicitly on every entity that needs
-  them.
-- =** Custom repository methods= — Custom methods that the standard
-  repository template cannot express. See "Block kinds" below.
-
-** Qt property drawer
-
-Concrete case first: eight =*_convention= entities (currency-like
-lookup entities whose saves require a change-reason code) were
-regenerated without =:has_change_reason_cache: true= in their Qt
-drawer. Nothing errored — codegen ran clean, the build succeeded, the
-tests passed. The only symptom was an empty, unusable change-reason
-dropdown in the save dialog, found by hand during manual QA weeks
-later (task [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]], PRs #1571/#1590). That is the general failure
-mode for every property in the *Behavioural* table below: codegen
-templates gate optional Qt behaviour with a mustache section tag,
-=\{\{#domain_entity.qt.<knob>\}\}=, and mustache's rule for section
-tags is "false or absent renders as nothing" — there is no
-distinction between "author explicitly said no" and "author forgot".
-So an omitted knob is indistinguishable, at generation time, from a
-deliberate =false=; the only way to find out you got it wrong is a
-human noticing the missing feature later. Set every knob the entity
-genuinely needs, on purpose, rather than relying on omission to mean
-"off".
-
-Knobs consumed by the Qt-layer templates (=cpp_qt_*.mustache=), split
-into three groups below. *Naming/wiring* knobs are effectively
-required (derivable from the entity name but must be spelled out) —
-get one wrong and generation still succeeds, just wired to the wrong
-class, which usually fails at compile time (safer than the silent
-Behavioural failure mode above). *Behavioural* knobs are the
-no-default, silently-omittable ones described above. *Overrides*
-only need setting when the entity's generated protocol diverges from
-the naming convention the default assumes.
-
-Worked example — =book='s Qt drawer (trimmed to the properties this
-section documents; =book= is party-scoped and has a UUID primary
-key, so it also exercises =parent_entity_singular= and
-=has_uuid_primary_key=):
-
-#+begin_src org
-,** Qt
-,:PROPERTIES:
-,:domain_include:          ores.refdata.api/domain/book.hpp
-,:domain_class:            refdata::domain::book
-,:protocol_include:        ores.refdata.api/messaging/book_protocol.hpp
-,:collection_name:         books
-,:item_var:                book
-,:key_field:                name
-,:has_uuid_primary_key:    true
-,:get_request_class:       refdata::messaging::get_books_request
-,:get_response_class:      refdata::messaging::get_books_response
-,:get_message_type:        get_books_request
-,:save_request_class:      refdata::messaging::save_book_request
-,:save_response_class:     refdata::messaging::save_book_response
-,:save_message_type:       save_book_request
-,:save_request_item_field: book
-,:delete_request_class:    refdata::messaging::delete_book_request
-,:delete_response_class:   refdata::messaging::delete_book_response
-,:delete_message_type:     delete_book_request
-,:history_request_class:   refdata::messaging::get_book_history_request
-,:history_response_class:  refdata::messaging::get_book_history_response
-,:history_message_type:    get_book_history_request
-,:has_change_reason_cache: true
-,:parent_entity_singular:  portfolio
-,:settings_group:          BookListWindow
-,:window_title:            Books
-,:icon:                    Book
-,:END:
-#+end_src
-
-*** Naming / wiring (required, one entity-specific value each)
-
-| Property                  | Notes                                              |
-|----------------------------+----------------------------------------------------|
-| =:domain_include:=         | Header for the domain struct, e.g. =ores.refdata.api/domain/book.hpp=. |
-| =:domain_class:=           | Fully-qualified domain type, e.g. =refdata::domain::book=. |
-| =:protocol_include:=       | Header for the NATS protocol messages.             |
-| =:collection_name:=        | Plural, e.g. =books=.                              |
-| =:item_var:=               | Singular variable name used in generated code, e.g. =book=. |
-| =:key_field:=               | Column used as the Qt model's unique key.          |
-| =:get_request_class:=, =:get_response_class:=, =:get_message_type:= | List/get NATS message wiring. |
-| =:save_request_class:=, =:save_response_class:=, =:save_message_type:=, =:save_request_item_field:= | Save NATS message wiring. |
-| =:delete_request_class:=, =:delete_response_class:=, =:delete_message_type:= | Delete NATS message wiring. |
-| =:history_request_class:=, =:history_response_class:=, =:history_message_type:= | History NATS message wiring. |
-| =:changed_event_class:=, =:changed_event_include:= | NATS changed-event type, for cross-client cache invalidation. |
-| =:settings_group:=, =:window_title:=, =:icon:= | MDI window chrome. |
-
-*** Behavioural (no default — must be set explicitly when true)
-
-| Property                       | Default if absent | Notes                                                            |
-|----------------------------------+--------------------+-------------------------------------------------------------------|
-| =:has_uuid_primary_key:=         | false (treated as text PK) | Entity's primary key is a UUID, not a natural-key string. Also drives =:key_field_is_uuid:= (wraps the key in =boost::uuids::to_string()=) when =key_field= equals the PK column. |
-| =:has_change_reason_cache:=      | false (no change-reason dropdown) | Entity's saves require a change-reason code. If the DB layer has a =change_reason_code= column, this **must** be =true= or the save dialog silently omits the change-reason prompt (the bug behind [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]]/PRs #1571/#1590). |
-| =:has_explorer_api:=             | false              | Entity is queryable via the generic Explorer API.                 |
-| =:has_export_macro:=             | false              | Class needs an explicit DLL export macro (Windows).                |
-| =:has_pagination:=                | false              | List window paginates instead of loading all rows.                |
-| =:has_csv_xml_io:=                | false              | Entity supports CSV/XML import-export (pairs with =csv_export_*=/=xml_*= properties below). |
-| =:has_version_navigation:=        | false              | Detail dialog shows prev/next version navigation controls.        |
-| =:parent_entity_singular:=, =:parent_entity_pascal:= | (none) | Entity is party/portfolio-scoped; set when the entity is only ever listed under a parent (e.g. =book= under =portfolio=). |
-
-*** Overrides (only needed when the entity diverges from the generated protocol's default naming)
-
-| Property                        | Default if absent                                    | Notes |
-|-----------------------------------+--------------------------------------------------------+-------|
-| =:delete_request_id_field:=       | =ids= if =has_uuid_primary_key=; else ={pk_column}s= | Field name on the generated delete-request message holding the id list. Set explicitly when the protocol's field name doesn't follow either default (currency's =iso_codes= is a real example). |
-| =:history_response_data_field:=   | =history=                                             | Field name on the generated history-response message holding the row list. Older protocols (predating this convention) name it after the entity's plural collection instead — set explicitly when regenerating one of those. |
-
-*** Import/export (set together, only when =:has_csv_xml_io:= is true)
-
-=:csv_export_class:=, =:csv_export_include:=, =:csv_export_method:=,
-=:xml_export_class:=, =:xml_export_include:=, =:xml_export_method:=,
-=:xml_import_class:=, =:xml_import_include:=, =:xml_import_method:=,
-=:xml_validate_method:=.
-
-*** Per-field knobs (=*** Detail fields= / =*** Columns (Qt model)= tables)
-
-| Column        | Notes                                                                 |
-|----------------+------------------------------------------------------------------------|
-| =badge_key=    | Renders this field's value as a coloured badge (looked up via =code_domain=/=badge_definition=) instead of plain text, in both the detail dialog and the list column. Omit only when the field genuinely has no DQ badge mapping. |
-| =flag_source=, =combo_*=  | Dropdown/combo-box wiring for soft-FK fields — see an existing entity with a combo field (e.g. =book='s =book_status=) for the full property set; not yet enumerated here. |
-
-* Block kinds
-
-A *block kind* is a *slot* in a template that an entity model can fill.
-Each kind has a stable UUID; templates reference the slot by that UUID;
-entity models attach blocks to the slot by listing the kind UUID in the
-block's =:implements:= property.
-
-Two levels of identity are at play:
-
-- The *kind UUID* is well-known, lives here in the meta-model, and is
-  referenced by templates.
-- An *instance UUID* (each individual block's =:ID:=) is per-entity, per
-  block. Many entities may implement the same kind.
-
-** SQL: extra drop statements
-:PROPERTIES:
-:ID: 5E47F108-1350-4540-B3C2-E83DD5379B2D
-:END:
-
-Additional =DROP= statements to be inserted in the generated
-=<component>_<entity_plural>_drop.sql= just before =drop table if exists=.
-
-Use this when the entity's companion =_table.org= model generates database
-objects (e.g. a validate function) that the entity template cannot know about.
-If no entity implements this kind, the marker collapses to nothing.
-
-Template usage (mustache / sql_schema_domain_entity_drop.mustache):
-
-#+begin_src text
-drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
-<<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>
-drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
-#+end_src
-
-Entity attachment (=** SQL > ** Extra drops= sub-section):
-
-#+begin_src org
-,** Extra drops
-
-,#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
-drop function if exists ores_refdata_validate_rounding_type_fn;
-,#+end_src
-#+end_src
-
-Multiple =drop= statements can appear in one block or in multiple blocks;
-codegen concatenates them in order with a blank line between blocks.
-
-** Repository: additional class-member declarations
-:PROPERTIES:
-:ID: DCA78C69-E508-48D9-9972-A9B8094D91FB
-:END:
-
-Class-member declarations to be inserted into the generated
-=<entity>_repository.hpp= just before the closing brace of the
-=<entity>_repository= class.
-
-Template usage (mustache):
-
-#+begin_src text
-,    void remove(context ctx, const std::string& id);
-,    // <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>
-,};
-#+end_src
-
-Entity attachment (per custom method):
-
-#+begin_src org
-,*** read_system_party
-,:PROPERTIES:
-,:ID: 9B7C5D2E-1A4F-4E7B-9D8A-6F3C2E1B5A4D
-,:END:
-
-Prose describing what this method does and why it cannot be templated.
-
-,#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-,std::vector<domain::party>
-,read_system_party(context ctx, const std::string& tenant_id);
-,#+end_src
-#+end_src
-
-The =:implements= header argument on the babel block is the contract:
-codegen substitutes the =<<paste:DCA78C69-...>>= marker with the
-concatenation of every babel block in the current entity whose
-=:implements= header argument matches.
-
-The babel block's =:name= is for Emacs / human authoring purposes (so
-authors can navigate by name); =:implements= is what codegen looks at.
-
-** Repository: additional out-of-class implementations
-:PROPERTIES:
-:ID: F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-:END:
-
-Out-of-class method definitions to be inserted into the generated
-=<entity>_repository.cpp= at the marker, typically just before the closing
-namespace brace.
-
-Templates reference: =<<paste:F2EB1914-5E94-42CA-9C77-46BDB364BF9E>>=.
-
-Entity attachment: any babel block with
-=:implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E= contributes its body
-to the substitution.
-
-** Repository: additional .cpp includes
-:PROPERTIES:
-:ID: 6141050C-0ED4-4680-B387-7DDDA3A69806
-:END:
-
-Additional =#include= directives that the implementations above need.
-Inserted into the generated =<entity>_repository.cpp= near the top of the
-include block.
-
-Templates reference: =<<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>=.
-
-Entity attachment: any babel block with
-=:implements 6141050C-0ED4-4680-B387-7DDDA3A69806= contributes its body
-(verbatim, no syntax stripping). Multiple methods may each declare their
-own includes block; the codegen concatenates them. The C++ compiler
-de-duplicates =#include= directives at preprocessing time anyway.
-
-** Service header: extra includes
-:PROPERTIES:
-:ID: C5F35C7E-6EED-48D8-99F8-793145586882
-:END:
-
-Extra =#include= directives injected into the generated
-=<entity>_service.hpp= immediately before the =namespace= opening brace.
-
-Use this when the service needs headers for entity-specific types (e.g.
-=<boost/uuid/uuid.hpp>=, a junction repository header) that the generic
-service template does not emit.
-
-Templates reference: =<<paste:C5F35C7E-6EED-48D8-99F8-793145586882>>=.
-
-Entity attachment example:
-
-#+begin_src org
-,** Custom service includes
-
-,#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
-,#include <boost/uuid/uuid.hpp>
-,#include "ores.refdata.core/repository/party_country_repository.hpp"
-,#+end_src
-#+end_src
-
-** Service header: custom public methods
-:PROPERTIES:
-:ID: 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
-:END:
-
-Additional public method declarations injected into the generated
-=<entity>_service.hpp= just before the =private:= label.
-
-Use this for entity-specific query methods that are beyond the standard
-CRUD surface (e.g. party-scoped list/count operations on junction tables).
-
-Templates reference: =<<paste:2D4EA0F9-6AF6-45A5-A959-F672BF866C6A>>=.
-
-Entity attachment example:
-
-#+begin_src org
-,** Custom service methods
-
-,#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
-,    std::vector<domain::country> list_countries_for_party(
-,        const boost::uuids::uuid& party_id,
-,        std::uint32_t offset, std::uint32_t limit);
-,    std::uint32_t count_countries_for_party(const boost::uuids::uuid& party_id);
-,#+end_src
-#+end_src
-
-** Service header: extra private members
-:PROPERTIES:
-:ID: 047A96EF-1CC4-4661-B80B-C6C4532076AB
-:END:
-
-Additional private member declarations injected into the generated
-=<entity>_service.hpp= after the standard =repo_= member.
-
-Use this when the service needs entity-specific members such as a junction
-repository that the generic template does not know about.
-
-Templates reference: =<<paste:047A96EF-1CC4-4661-B80B-C6C4532076AB>>=.
-
-Entity attachment example:
-
-#+begin_src org
-,** Custom service members
-
-,#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
-,    repository::party_country_repository junction_repo_;
-,#+end_src
-#+end_src
-
-** Service .cpp: extra includes
-:PROPERTIES:
-:ID: A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
-:END:
-
-Additional =#include= directives injected into the generated
-=<entity>_service.cpp= after the standard includes (=<cstdint>=,
-=<stdexcept>=).
-
-Use this for headers that are needed only by the custom method
-implementations injected via =D3E7A5F2= (e.g. =<algorithm>=,
-=<unordered_set>=, =<boost/uuid/uuid_io.hpp>=) — headers that are
-implementation details and should not appear in the service header.
-
-Templates reference: =<<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>=.
-
-** Service .cpp: constructor extra init
-:PROPERTIES:
-:ID: 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
-:END:
-
-Additional member-initialiser-list entries injected into the generated
-=<entity>_service.cpp= constructor, appended after =ctx_(std::move(ctx))=.
-
-Use this when extra private members (declared via =047A96EF=) need
-initialisation with =ctx_=. Each block should start with =,= to extend the
-initialiser list correctly.
-
-Templates reference: =<<paste:4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B>>=.
-
-Entity attachment example:
-
-#+begin_src org
-,** Custom service constructor init
-
-,#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
-,    , junction_repo_(ctx_)
-,#+end_src
-#+end_src
-
-** Service .cpp: custom implementations
-:PROPERTIES:
-:ID: D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
-:END:
-
-Out-of-class method definitions injected into the generated
-=<entity>_service.cpp= just before the closing namespace brace.
-
-Use this for the implementations of methods declared via =2D4EA0F9= — the
-standard template only generates bodies for the built-in CRUD methods;
-entity-specific methods must supply their own bodies here.
-
-Templates reference: =<<paste:D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F>>=.
-
-Entity attachment: any babel block with
-=:implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F= contributes its body.
-Multiple blocks are concatenated with a blank line between them.
-
-** Generator header: custom declarations
-:PROPERTIES:
-:ID: E32E358B-56EC-4642-911E-A2EA1D95E3B4
-:END:
-
-Additional free-function declarations injected into the generated
-=<entity>_generator.hpp= after the standard synthetic generator
-declarations, before the closing namespace brace.
-
-Use this for entity-specific generator functions not expressible through
-the standard =generate_synthetic_<entity>= template (e.g. fictional/
-hardcoded generators for test entities with authoritative data sets).
-
-Templates reference: =<<paste:E32E358B-56EC-4642-911E-A2EA1D95E3B4>>=.
-
-Entity attachment example:
-
-#+begin_src org
-,** Custom generator declarations
-
-,#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
-,ORES_REFDATA_API_EXPORT std::vector<domain::country>
-,generate_fictional_countries(std::size_t n,
-,    utility::generation::generation_context& ctx);
-,#+end_src
-#+end_src
-
-** Generator .cpp: custom implementations
-:PROPERTIES:
-:ID: C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
-:END:
-
-Out-of-class function definitions injected into the generated
-=<entity>_generator.cpp= after the standard =generate_synthetic_<plural>=
-function, before the closing namespace brace.
-
-Use this for the implementations of functions declared via =E32E358B=.
-
-Templates reference: =<<paste:C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A>>=.
-
-Entity attachment: any babel block with
-=:implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A= contributes its body.
-
-** NATS protocol: custom message includes
-:PROPERTIES:
-:ID: 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
-:END:
-
-Additional =#include= directives injected into the generated
-=<entity>_protocol.hpp=, after the standard generated includes.
-
-Use this for domain headers needed by custom message types declared via
-=2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F= (e.g. a child entity's domain header
-for a composite as-of response).
-
-Templates reference: =<<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>=.
-
-** NATS protocol: custom message types
-:PROPERTIES:
-:ID: 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
-:END:
-
-Additional request/response struct definitions injected into the generated
-=<entity>_protocol.hpp=, after the standard generated structs (and the
-=has_parent_id= hierarchy structs, if present) but inside the
-=messaging= namespace.
-
-Use this for entity-specific NATS message types beyond the standard CRUD
-surface (e.g. a bulk cache-warming read, a composite as-of read spanning a
-parent and its child entities) — paired with the "NATS handler: custom
-public methods" and =nats-sub-registrar='s custom-subscription paste points
-to wire the full request/handler/subscription trio.
-
-Templates reference: =<<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>=.
-
-Entity attachment example (=party='s composite-as-of read):
-
-#+begin_src org
-,** Custom NATS protocol messages
-
-,#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
-struct get_party_composite_as_of_request {
-    using response_type = struct get_party_composite_as_of_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
-    std::string id;
-    int version = 0;
-};
-
-struct get_party_composite_as_of_response {
-    bool success = false;
-    std::string message;
-    ores::refdata::domain::party party;
-    std::vector<ores::refdata::domain::party_identifier> identifiers;
-    std::vector<ores::refdata::domain::party_contact_information> contacts;
-};
-,#+end_src
-#+end_src
-
-** NATS handler: save() early-exit override
-:PROPERTIES:
-:ID: 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
-:END:
-
-Placeholder inserted at the very top of the generated =save()= method body,
-before the standard JWT-authenticated request-context flow.
-
-Use this for an entity whose =save= subject must special-case some inbound
-messages before falling through to the standard flow (e.g. workflow-step
-orchestration commands that bypass JWT auth and use a header-supplied
-tenant id instead). The paste block should contain its own early
-=return= for the cases it handles; anything falling through continues
-into the generated standard flow below unaffected. =party= uses this
-for its workflow-step =save= command.
-
-Templates reference: =<<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>=.
-
-** NATS handler: extra includes
-:PROPERTIES:
-:ID: F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
-:END:
-
-Additional =#include= directives injected into the generated
-=<entity>_handler.hpp= after the standard generated includes.
-
-Use this for headers needed by custom handler methods (e.g.
-=rfl/msgpack.hpp=, =storage_transfer.hpp=, additional protocol headers).
-
-Templates reference: =<<paste:F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F>>=.
-
-** NATS handler: custom public methods
-:PROPERTIES:
-:ID: B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
-:END:
-
-Additional public method definitions injected into the generated
-=<entity>_handler.hpp= just before the =private:= label.
-
-Use this for entity-specific NATS handler methods that are beyond the
-standard CRUD surface (e.g. export-to-storage, bulk operations).
-
-Templates reference: =<<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>=.
-
-** NATS handler: extra private members
-:PROPERTIES:
-:ID: A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
-:END:
-
-Additional private member declarations injected into the generated
-=<entity>_handler.hpp= inside the private section.
-
-Use this when the handler needs extra members (e.g. =http_base_url_=)
-that the generic template does not generate.
-
-Templates reference: =<<paste:A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D>>=.
-
-** Qt detail dialog: hierarchy tree seam
-:PROPERTIES:
-:ID: 9B165431-2921-4CAC-A2E8-2C186741E523
-:END:
-
-Placeholder inserted into the generated =<Entity>DetailDialog.cpp=
-constructor, immediately after =setupConnections()=.
-
-A future implementing block is expected to construct a
-=HierarchyModelBuilder=-derived model for the entity, wrap it in a
-=HierarchyTreeWidget=, and insert that widget into the dialog's layout
-(e.g. as a dedicated tab). No entity implements this kind yet — it is a
-seam only, added ahead of wiring party/counterparty hierarchy trees into
-their detail dialogs.
-
-Templates reference: =<<paste:9B165431-2921-4CAC-A2E8-2C186741E523>>=.
-
-Entity attachment (future example):
-
-#+begin_src org
-,** Custom hierarchy tree wiring
-
-,#+begin_src cpp :name hierarchy_tree :implements 9B165431-2921-4CAC-A2E8-2C186741E523
-,    auto* model = new PartyHierarchyModelBuilder(...);
-,    auto* tree = new HierarchyTreeWidget(model, this);
-,    ui_->hierarchyTab->layout()->addWidget(tree);
-,#+end_src
-#+end_src
-
-** Qt detail dialog: private members
-:PROPERTIES:
-:ID: F55CB64E-165A-4E15-A50A-5723C0320E97
-:END:
-
-Additional private member declarations injected into the generated
-=<Entity>DetailDialog.hpp=, immediately before the standard generated
-=ui_=/=clientManager_=/etc. members.
-
-Use this for a hand-written helper class owned by the dialog as a
-pointer member — e.g. the composite child-entity tables seam below owns
-one =PartyChildEntityTables*=/=CounterpartyChildEntityTables*= this way.
-Pair with the [[id:9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A][header extra includes]] seam: a forward declaration is not
-enough for most such members (only bare pointers can get away with one),
-so the member's own header needs including too.
-
-Templates reference: =<<paste:F55CB64E-165A-4E15-A50A-5723C0320E97>>=.
-
-** Qt detail dialog: header extra includes
-:PROPERTIES:
-:ID: 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
-:END:
-
-Additional =#include= directives injected into the generated
-=<Entity>DetailDialog.hpp=, after the standard generated includes, before
-the =Ui= forward declaration.
-
-Use this for headers needed by types declared via the [[id:F55CB64E-165A-4E15-A50A-5723C0320E97][private members]]
-seam above — e.g. a hand-written helper class owned by the dialog as a
-pointer member. A forward declaration is not enough for most such
-members (only bare pointers can get away with one; anything else needs
-the full type visible).
-
-Templates reference: =<<paste:9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A>>=.
-
-** Qt detail dialog: composite child-entity tables seam
-:PROPERTIES:
-:ID: 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
-:END:
-
-Placeholder inserted into the generated =<Entity>DetailDialog.cpp=
-constructor, immediately after the [[id:9B165431-2921-4CAC-A2E8-2C186741E523][hierarchy tree seam]] (itself after
-=setupConnections()=).
-
-Use this for a composite parent entity (one with genuine child entities
-under temporal composite versioning — see the "Temporal composite entity
-versioning" architecture doc) to embed one editable =QTableWidget= +
-=QToolBar= per child entity, each wrapped in its own tab and inserted into
-=tabWidget()=. Pair with the "Qt detail dialog: entity-set load hook" seam
-below (populate the tables once the parent's id is known) and the "NATS
-handler: custom public methods" / "NATS protocol: custom message types"
-kinds if the children need their own bespoke NATS surface. There is no
-generic facet for this — each child entity's fields, service, and
-protocol messages differ too much between consumers to templatize
-usefully with only two consumers (party, counterparty) to date.
-
-Templates reference: =<<paste:7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D>>=.
-
-Entity attachment (party's identifier table, abridged):
-
-#+begin_src org
-,** Custom composite child-entity tables
-
-,#+begin_src cpp :name child_tables_setup :implements 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
-,    setupIdentifierTab();
-,    setupContactTab();
-,#+end_src
-#+end_src
-
-** Qt detail dialog: entity-set load hook
-:PROPERTIES:
-:ID: D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
-:END:
-
-Placeholder inserted at the end of the generated =set<EntityPascalShort>()=
-setter, after =updateUiFrom<EntityPascalShort>()=.
-
-Use this to refresh anything keyed off the entity's id once it changes
-(e.g. reloading composite child-entity tables — see the seam above). Runs
-on every call to the setter, including create-mode (where the id was just
-freshly generated by =setCreateMode()= if that ran first) — implementing
-blocks should tolerate an empty/nil id by showing an empty table rather
-than erroring.
-
-Templates reference: =<<paste:D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F>>=.
-
-Entity attachment (party, abridged):
-
-#+begin_src org
-,#+begin_src cpp :name reload_child_tables :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
-,    loadIdentifiers();
-,    loadContacts();
-,#+end_src
-#+end_src
+A paragraph or two describing *the modelled entity itself*. This
+text is exposed to templates as the entity =description=. Keep the
+document-level =#+description= for the *file* and put the entity
+description here.
+
+* Segments
+
+The body is divided into top-level sections, each read by a
+different facet's templates. Unrecognised section names (e.g.
+=* About this file=, typically tagged =:ignore:=) are skipped by the
+loader. Every segment below is its own page — this table is the
+routing table, not the reference itself.
+
+| Segment                                        | What it covers                                                  | Facet(s)                                                    |
+|--------------------------------------------------+-------------------------------------------------------------------+---------------------------------------------------------------|
+| [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]           | =* Flags=, =* Primary key=, =* Natural keys=, =* Columns= — shared by C++ and SQL. | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                     |
+| [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]                        | =* SQL=: table naming, the =has_parent_id= hierarchy knob.        | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]                                             |
+| [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]                  | =* C++ > ** Domain includes=: the plain domain struct.            | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]                                             |
+| [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]]              | =** Flags=, =** Repository=, =** Entity includes=, =** Conventions=, =** Table display=: entity, mapper, CRUD. | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                                         |
+| [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]]                 | Business-logic wrapper, authorization, event firing on mutation.  | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]                                            |
+| [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]                | Request/response message struct definitions.                      | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]                                           |
+| [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]                    | Command pipeline (handler, sub-registrar) and event pipeline (eventing, event-registrar, event-cache) — one flow, five facets. | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] +4 more (see segment page) |
+| [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]                      | =** Qt=: MDI window, detail dialog, controller, client model.     | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                                                 |
+| [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | =** Custom repository methods='s generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
+| [[id:F966605D-4321-4499-9304-F8A703C91E26][C++ Presentation]]            | History-diff field rendering.                                     | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                       |
+| [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]                | The shared mechanism for injecting hand-written code into an otherwise generated file — concrete block kinds live on the segment page for the facet they inject into, not here. | (cross-cutting)                                             |
+
+=ores.codegen.enum=/=ores.codegen.field-group= are separate MASD
+metatypes with their own facets (=ores.cpp.enum=,
+=ores.cpp.field-group=), not covered by this =domain_entity=-scoped
+hub — they'd get their own metamodel hub if documented to this depth.
 
 * Notes
 
-** Why two levels of UUID
+** Why two levels of UUID (paste blocks)
 
-The kind UUID is a *concept* (akin to an interface), declared once in the
-meta-model. The instance UUID identifies an *implementation* (akin to a
-class) — there will be many. Templates speak the language of concepts;
-entity models speak the language of implementations.
-
-This also means we never have to coordinate UUID changes across templates
-and per-entity files: a template references a fixed kind UUID; entity files
-discover what they implement.
-
-** Template marker syntax
-
-Templates use =<<paste:UUID>>= as the marker. Codegen is a *post-rendering*
-substitution pass: mustache renders first, then a regex pass replaces every
-=<<paste:UUID>>= with the concatenated =body= blocks of every implementing
-sub-heading in the current entity.
-
-If no entity sub-heading implements a given kind, the marker is replaced
-with an empty string (and a single newline is collapsed).
-
-** Block-name conventions
-
-Inside an implementing sub-heading the well-known babel block name is
-=body=. Future kinds may use additional names (=declaration=,
-=implementation=, etc.) — they will be documented alongside each kind.
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the full explanation; in short, a *block kind* is
+a stable, template-referenced UUID (a concept); a *block instance* is
+one entity's per-block =:ID:= (an implementation). This lets
+templates and entity files evolve independently.
 
 ** Future work
 
-- *Stage 1.5*: tag-based heading dispatch. Replace title matching ("Flags",
-  "Primary key", ...) with tag matching (=:section:flags:=, etc.). Lets us
-  rename headings without breaking codegen.
+- *Stage 1.5*: tag-based heading dispatch. Replace title matching
+  ("Flags", "Primary key", ...) with tag matching (=:section:flags:=,
+  etc.). Lets us rename headings without breaking codegen.
 - Migration of remaining ~100 entity models from JSON to org.
-- Compass scaffold for =compass add entity-org=.
+- Compass scaffold for =compass add entity-org=, kind-aware and
+  knob-complete by construction — see task =EE237306=.
+- The five =ores.cpp.nats-*= facets covered together on the [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++
+  NATS]] segment page arguably should be one =ores.cpp.nats= facet
+  with five archetypes, not five facets in the physical-space graph —
+  raised there, not fixed here.
+
+* See also
+
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the methodology this hub instantiates.
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — a shallow, quick-reference index across *all eight* entity-model doc types (=entity=, =lookup_entity=, =junction=, =field_group=, =table=, ...), one line per section. This hub is the deep-dive for =ores.codegen.entity= specifically; that page is the map of the whole territory.

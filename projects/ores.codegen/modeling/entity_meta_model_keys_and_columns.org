@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE
+:END:
+#+title: Codegen entity meta-model — keys and columns
+#+description: The Flags, Primary key, Natural keys, and Columns sections of an entity model — shared by both the C++ and SQL codegen pipelines, since both a database column and a C++ struct field come from the same declaration.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. It is
+the one segment that does not map to a single facet — a column
+declaration is read by *both* [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] (to generate the table's DDL) and by
+[[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]/[[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] (to generate the domain struct field and the
+ODB-mapped entity field). Author a column once here; it becomes a SQL
+column, a domain struct field, and a repository entity field, all
+three kept in sync by construction.
+
+* Flags
+
+Cross-cutting properties read by both the SQL and C++ pipelines, set
+once at the top of the file:
+
+| Property              | Required | Meaning                                              |
+|-----------------------+----------+-------------------------------------------------------|
+| =:schema:=            | yes      | Postgres schema (almost always =public=).              |
+| =:product:=           | yes      | Top-level C++ namespace (=ores=).                       |
+| =:component:=         | yes      | Component name (=refdata=, =trading=, ...) — drives both the C++ namespace and the =<product>_<component>_...= SQL naming convention. |
+| =:has_tenant_id:=     | no       | Adds a =tenant_id uuid not null= column to the table and a matching field to the domain struct — multi-tenancy isolation. Omit only for genuinely global entities (currencies, countries). |
+| =:has_workspace_id:=  | no       | Same idea, for workspace-scoped isolation.             |
+
+#+begin_src org
+,* Flags
+,:PROPERTIES:
+,:schema: public
+,:product: ores
+,:component: refdata
+,:has_tenant_id: true
+,:END:
+#+end_src
+
+* Primary key
+
+The entity's surrogate key. In SQL this becomes part of the
+composite primary key (paired with =tenant_id= and the temporal
+range — see [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]); in C++ it becomes an =sqlgen::PrimaryKey<T>=-wrapped
+field on the repository entity (not on the domain struct — the
+domain struct exposes it as a plain field, the wrapping is a
+repository-layer concern).
+
+| Property      | Required | Meaning                                               |
+|---------------+----------+---------------------------------------------------------|
+| =:column:=    | yes      | SQL column name.                                        |
+| =:type:=      | yes      | SQL type (=uuid=, =text=, etc.).                         |
+| =:cpp_type:=  | yes      | C++ type (=boost::uuids::uuid=, =std::string=, ...).     |
+
+Model:
+
+#+begin_src org
+,* Primary key
+,:PROPERTIES:
+,:column:   id
+,:type:     uuid
+,:cpp_type: boost::uuids::uuid
+,:END:
+
+UUID uniquely identifying this book.
+#+end_src
+
+Generates, in the repository entity (=book_entity.hpp=):
+
+#+begin_src cpp
+struct book_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_refdata_books_tbl";
+
+    sqlgen::PrimaryKey<std::string> id;
+    // ...
+};
+#+end_src
+
+(=book='s primary key is actually =text=, not =uuid= — see [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s
+=:has_uuid_primary_key:= knob, which governs how the *Qt* layer
+treats whichever type is declared here; the SQL/repository/domain
+layers just use whatever =:type:=/=:cpp_type:= says, uuid or not.)
+
+* Natural keys
+
+A container for natural-key sub-headings — the human-meaningful
+column(s) that uniquely identify a record within a tenant (as
+opposed to the surrogate =Primary key= above, which exists purely
+for foreign-key stability). Each =**= sub-heading is one natural key,
+using the same property shape as a column (see below), and may carry
+a =generator= babel block for synthetic test data.
+
+* Columns
+
+A container for the entity's remaining column sub-headings. Each
+=**= sub-heading is one column, its heading title the column name.
+
+| Property        | Required | Meaning                                        |
+|-----------------+----------+---------------------------------------------------|
+| =:type:=        | yes      | SQL type.                                          |
+| =:cpp_type:=    | yes      | C++ type.                                          |
+| =:nullable:=    | no       | =true= for nullable columns; default =false=.      |
+
+Each column's body is split into a *description* (first paragraph —
+becomes the field's doc-comment) and an optional *detail* (second
+paragraph onward — extra context for a human reader, not emitted
+into generated code). A column may also carry a =generator= babel
+block: a C++ expression producing a synthetic value for that field,
+used by the [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] facet.
+
+Model:
+
+#+begin_src org
+,** name
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::string
+,:nullable: false
+,:END:
+
+Human-readable identifier for this book.
+
+Unique per tenant; used as the natural key in the Qt list window.
+
+#+begin_src cpp :name generator
+,std::string(faker::word::adjective()) + "_" + std::string(faker::word::noun())
+,#+end_src
+#+end_src
+
+Generates, in the domain struct (=book.hpp=):
+
+#+begin_src cpp
+namespace ores::refdata::domain {
+
+struct book {
+    // ...
+    std::string name;
+    // ...
+};
+
+}
+#+end_src
+
+And, in the SQL table DDL (=refdata_books_create.sql=):
+
+#+begin_src sql
+create table if not exists "ores_refdata_books_tbl" (
+    "id" uuid not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
+    "party_id" uuid not null,
+    "name" text not null,
+    "description" text null,
+    -- ...
+);
+#+end_src
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] — how these columns become the table's DDL, temporal constraints, and triggers.
+- [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — how they become the plain domain struct.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the ODB-mapped entity and mapper.

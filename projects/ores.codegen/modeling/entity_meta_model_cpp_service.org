@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 6DA1A686-76D9-4372-B6E2-A7282E8CFB47
+:END:
+#+title: Codegen entity meta-model — C++ service
+#+description: The ores.cpp.service facet's paste blocks: the business-logic and authorization layer wrapping a repository, and where NATS event firing on mutation lives.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] facet — the layer between [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] and
+[[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]: authorization checks, business logic, and firing the
+changed-event on every mutation.
+
+* What gets generated, unconditionally
+
+Every entity gets a full service class with =list=, =count=, =save=,
+=delete=, =get=, =get_history= — no knobs control whether these
+exist, only paste blocks extend them:
+
+#+begin_src cpp
+class ORES_REFDATA_CORE_EXPORT book_service {
+private:
+    inline static std::string_view logger_name = "ores.refdata.service.book_service";
+    // ...
+public:
+    using context = ores::database::context;
+    // list/count/save/delete/get/get_history declarations
+};
+#+end_src
+
+There are no service-level behavioural knobs today (unlike [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s
+=has_change_reason_cache= and friends) — everything entity-specific
+at this layer is expressed as one of the paste blocks below.
+
+* Paste block: extra includes (header)
+:PROPERTIES:
+:ID: C5F35C7E-6EED-48D8-99F8-793145586882
+:END:
+
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
+
+Extra =#include= directives injected into =<entity>_service.hpp=,
+immediately before the =namespace= opening brace, expecting a
+=includes= block. Use when the service needs headers for
+entity-specific types the generic template doesn't emit — a junction
+repository header, =<boost/uuid/uuid.hpp>=.
+
+#+begin_src org
+,** Custom service includes
+
+,#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.core/repository/party_country_repository.hpp"
+,#+end_src
+#+end_src
+
+* Paste block: custom public methods (header)
+:PROPERTIES:
+:ID: 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+:END:
+
+Additional public method declarations injected just before the
+=private:= label, expecting a =declaration= block. Use for
+entity-specific query methods beyond the standard CRUD surface —
+party-scoped list/count on a junction table, for example.
+
+#+begin_src org
+,** Custom service methods
+
+,#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    std::vector<domain::country> list_countries_for_party(
+        const boost::uuids::uuid& party_id,
+        std::uint32_t offset, std::uint32_t limit);
+,#+end_src
+#+end_src
+
+* Paste block: extra private members (header)
+:PROPERTIES:
+:ID: 047A96EF-1CC4-4661-B80B-C6C4532076AB
+:END:
+
+Additional private member declarations injected after the standard
+=repo_= member, expecting a =declaration= block. Use when the service
+needs entity-specific members the generic template doesn't know
+about — most often a junction repository, paired with the custom
+method above.
+
+#+begin_src org
+,** Custom service members
+
+,#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+    repository::party_country_repository junction_repo_;
+,#+end_src
+#+end_src
+
+* Paste block: extra includes (.cpp)
+:PROPERTIES:
+:ID: A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+:END:
+
+Additional =#include= directives injected into =<entity>_service.cpp=
+after the standard includes, expecting a =body= block. Use for
+headers needed only by the custom implementations below —
+implementation details that shouldn't leak into the header (e.g.
+=<algorithm>=, =<boost/uuid/uuid_io.hpp>=).
+
+* Paste block: constructor extra init (.cpp)
+:PROPERTIES:
+:ID: 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+:END:
+
+Additional member-initialiser-list entries appended after
+=ctx_(std::move(ctx))= in the generated constructor, expecting a
+=ctor_init= block that starts with =,= to extend the list correctly.
+Pairs with the extra private members block above — whatever member
+you add there, initialise it here.
+
+#+begin_src org
+,** Custom service constructor init
+
+,#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+    , junction_repo_(ctx_)
+,#+end_src
+#+end_src
+
+* Paste block: custom implementations (.cpp)
+:PROPERTIES:
+:ID: D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+:END:
+
+Out-of-class method definitions injected just before the closing
+namespace brace, expecting a =body= block — the implementations for
+the custom public methods declared above (the standard template only
+generates bodies for the built-in CRUD methods). Multiple blocks
+concatenate with a blank line between them.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — what this service wraps.
+- [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — the pipeline that calls into this service and that this service publishes changed-events into.

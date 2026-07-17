@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 2832C7CE-3AB8-4E1B-A707-F1CEBD022598
+:END:
+#+title: Codegen entity meta-model — C++ protocol
+#+description: The ores.cpp.protocol facet: request/response message struct definitions for an entity's NATS API — pure data shape, consumed by both the C++ NATS pipeline and the Qt layer.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] facet.
+
+* What this facet is, and what it isn't
+
+Protocol is *data shape only* — the request/response message structs
+an entity's NATS API exchanges. It has no behaviour: no networking
+code, no dispatch logic. That belongs to [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]], which *consumes*
+these struct definitions on both the sending and receiving side.
+[[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s Naming/wiring knobs (=:get_request_class:=,
+=:save_message_type:=, etc.) also just reference class/type names
+that this facet defines.
+
+* What gets generated, unconditionally
+
+For every entity: a get/list request+response pair, a save
+request+response pair, a delete request+response pair, and a history
+request+response pair — no knobs control whether these exist.
+
+Generates, in =book_protocol.hpp=:
+
+#+begin_src cpp
+namespace ores::refdata::messaging {
+
+struct get_books_request {
+    using response_type = struct get_books_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.books.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_books_response {
+    std::vector<ores::refdata::domain::book> books;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+struct save_book_request {
+    using response_type = struct save_book_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.books.save";
+    ores::refdata::domain::book data;
+
+    static save_book_request from(ores::refdata::domain::book v) {
+        return {.data = std::move(v)};
+    }
+};
+
+// ... save_book_response, delete_book_request/response, history request/response ...
+
+}
+#+end_src
+
+Every request struct's =nats_subject= follows
+=<component>.v1.<entity_plural>.<verb>= — this is what
+[[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]'s sub-registrar wires each handler method to.
+
+* Paste block: custom message includes
+:PROPERTIES:
+:ID: 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+:END:
+
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
+
+Additional =#include= directives injected after the standard
+generated includes, expecting a =body= block. Use for domain headers
+needed by the custom message types below — e.g. a child entity's
+domain header for a composite as-of response.
+
+* Paste block: custom message types
+:PROPERTIES:
+:ID: 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+:END:
+
+Additional request/response struct definitions injected after the
+standard generated structs (and the =has_parent_id= hierarchy
+structs, if [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s hierarchy knob is set), still inside the
+=messaging= namespace, expecting a =body= block. Use for
+entity-specific NATS message types beyond the standard CRUD surface —
+a bulk cache-warming read, a composite as-of read spanning a parent
+and its child entities. Pairs with [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]'s "custom public
+methods" and "custom subscription" paste points, to wire the full
+request/handler/subscription trio.
+
+Entity attachment (=party='s composite-as-of read):
+
+#+begin_src org
+,** Custom NATS protocol messages
+
+,#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+struct get_party_composite_as_of_request {
+    using response_type = struct get_party_composite_as_of_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    std::string id;
+    int version = 0;
+};
+
+struct get_party_composite_as_of_response {
+    bool success = false;
+    std::string message;
+    ores::refdata::domain::party party;
+    std::vector<ores::refdata::domain::party_identifier> identifiers;
+    std::vector<ores::refdata::domain::party_contact_information> contacts;
+};
+,#+end_src
+#+end_src
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — consumes these message types on both the request and the changed-event side.
+- [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]] — references these class/subject names by name in its Naming/wiring knobs.

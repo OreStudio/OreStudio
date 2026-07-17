@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 31A66613-8584-42AE-97EB-D524F19C8574
+:END:
+#+title: Formalize the codegen entity knob system as a proper MASD/MDE feature model
+#+description: Entity-model knobs (has_change_reason_cache, has_uuid_primary_key, badge_key, ...) are documented as an ad hoc flat property list today, with no explicit dependency/group structure (e.g. has_csv_xml_io implies the whole xml_*/csv_* group) and an unexamined implicit-presence-condition default (absence == false, an inversion of the literature's usual true default). Formalize this properly against both generic MDE feature-modeling vocabulary and ORE Studio's own established MASD variability model (feature/feature bundle/profile/binding point/configuration scope), resolving two open questions: (1) which knobs are MASD non-structural variability (rendering/projection config) vs structural variability (change the entity's own logical model, e.g. has_tenant_id) -- these need different treatment; (2) whether 'shape' (the task EE237306 concept for a reusable knob-combination, e.g. hierarchical-composite domain_entity) should just be renamed to MASD's existing 'profile', which matches its definition closely and predates this session's ad hoc naming.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:masd:mde:variability:feature-model:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every entity-model knob documented across the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity
+meta-model]] hub's segment pages (=has_change_reason_cache=,
+=has_uuid_primary_key=, =badge_key=, ...) is, in MASD terms, either a
+*feature* (a single configuration point) or part of a *feature
+bundle*/*profile*, per [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD's own Variability]] page. Today none of that
+structure is explicit: no qualified feature names, no declared
+dependencies between knobs (=has_csv_xml_io= implicitly requires the
+whole =xml_*=/=csv_*= group be set together, but nothing enforces or
+even states that beyond prose), and an unexamined implicit-presence-
+condition default -- a mustache section tag treats "knob absent" and
+"knob explicitly false" identically, so the system's default is
+=false=, the inverse of the "assume true" default the wider MDE
+literature (Czarnecki and Antkiewicz's superimposed-variants work)
+finds usually adequate. Formalize the knob system properly: give it
+real feature/feature-bundle/profile structure, decide what the
+correct implicit-presence-condition default should be (possibly
+per-knob, not system-wide), and make dependencies between knobs
+checkable rather than prose-only -- this last part is also a
+prerequisite for the sibling lint task ([[id:7B59588B-5BC5-4206-935C-1AFEF7C25E96][7B59588B]]) to check anything
+beyond "is this knob present", since checking "is this knob
+*consistent* with the others" needs the dependency structure to exist
+first.
+
+* Why
+
+Two things surfaced while reviewing this session's new codegen
+documentation against both MASD's own [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] page and the external
+MDE variability-modeling literature it's built on:
+
+1. *Structural vs non-structural boundary.* MASD explicitly reserves
+   "variability" for *non-structural* variability -- configuration
+   that doesn't change the object graph, only how it's rendered.
+   Most Qt "Behavioural" knobs fit that (they gate generated code
+   paths without changing the entity's own logical shape) but
+   =:has_tenant_id:= does not -- it adds an actual column/field,
+   which is *structural* variability, living in the logical model
+   itself, not the VMM. The segment pages currently treat both
+   uniformly as "knobs"; MASD's own vocabulary says they need
+   different treatment and don't belong in the same conceptual
+   bucket.
+2. *"Shape" may just be "profile".* Task [[id:EE237306-7782-4625-8880-47E8975530EA][EE237306]] coined "shape" for
+   a reusable knob combination (e.g. the "hierarchical composite"
+   domain_entity shape: =has_parent_id= + =has_uuid_primary_key= +
+   composite child tables). MASD's =profile= is defined almost
+   identically: "a bundle of configuration points... named after the
+   ability they confer... composes base/component/element." This
+   wasn't known when "shape" was picked (the session had just been
+   told to avoid "profile" for a *different*, incorrect reason --
+   confusing it with "metatype" -- not knowing MASD had already
+   reserved and precisely defined "profile" for exactly this use).
+   Worth resolving directly rather than carrying two names for one
+   concept.
+
+* References
+
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's own feature/feature bundle/profile/binding point/configuration scope vocabulary; the primary vocabulary to align to.
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] and its segment pages — where the ad hoc knob documentation currently lives.
+- =/home/marco/Development/mcraveiro.github.io/dogen/docs/mde_and_variability_modeling.org= — the broader academic grounding (Groher & Völter's structural/non-structural split, presence conditions and IPC, positive/negative variability) MASD's variability model is presumably built on.
+- [[id:EE237306-7782-4625-8880-47E8975530EA][Task: Scaffold model .org files per entity type]] — where "shape" was coined, and where its exemplars/knob tables would need renaming if resolved as "profile".
+
+* See also
+
+- [[id:7B59588B-5BC5-4206-935C-1AFEF7C25E96][Task: Add compass codegen entity lint]] — depends on this capture's dependency structure to check more than knob presence.

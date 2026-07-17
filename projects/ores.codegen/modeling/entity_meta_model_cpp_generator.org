@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: C78B8646-350D-4BEA-8D9D-49F4F5DCA55E
+:END:
+#+title: Codegen entity meta-model — C++ generator
+#+description: The ores.cpp.generator facet: fake-data generators used by tests and synthetic-data provisioning, built from each column's generator babel block.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] facet.
+
+* What gets generated, unconditionally
+
+A single-record and an N-record synthetic generator, built by
+combining every column's =generator= babel block from
+[[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — nothing extra to configure here beyond authoring
+those per-column generator expressions.
+
+Generates, in =book_generator.hpp=:
+
+#+begin_src cpp
+namespace ores::refdata::generators {
+
+ORES_REFDATA_API_EXPORT domain::book
+generate_synthetic_book(utility::generation::generation_context& ctx);
+
+ORES_REFDATA_API_EXPORT std::vector<domain::book>
+generate_synthetic_books(std::size_t n, utility::generation::generation_context& ctx);
+
+}
+#+end_src
+
+* Paste block: custom declarations
+:PROPERTIES:
+:ID: E32E358B-56EC-4642-911E-A2EA1D95E3B4
+:END:
+
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
+
+Additional free-function declarations after the standard synthetic
+generator declarations, before the closing namespace brace, expecting
+a =declaration= block. Use for entity-specific generator functions
+not expressible through the standard
+=generate_synthetic_<entity>= template — a fictional/hardcoded
+generator for a test entity with an authoritative fixed data set.
+
+#+begin_src org
+,** Custom generator declarations
+
+,#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_fictional_countries(std::size_t n,
+    utility::generation::generation_context& ctx);
+,#+end_src
+#+end_src
+
+* Paste block: custom implementations
+:PROPERTIES:
+:ID: C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
+:END:
+
+Out-of-class function definitions after the standard
+=generate_synthetic_<plural>= function, before the closing namespace
+brace, expecting a =body= block — the implementations for the custom
+declarations above.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — where each column's generator expression is authored.

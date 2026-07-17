@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 7929F019-F9C3-4EC3-8E27-4642E99DD76D
+:END:
+#+title: Codegen entity meta-model — C++ repository
+#+description: The Flags, Repository, Entity includes, Conventions, and Table display sub-sections, and the ores.cpp.repository facet's paste blocks: entity, mapper, repository classes, and CRUD.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] facet: the persistence layer between the plain
+[[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] struct and the database — the entity, mapper, and
+repository classes, plus list/count/save/delete/get CRUD.
+
+* Flags
+
+#+begin_src org
+,** Flags
+,:PROPERTIES:
+,:subcomponent: api
+,:END:
+#+end_src
+
+| Property           | Required | Meaning                                                          |
+|---------------------+----------+---------------------------------------------------------------------|
+| =:subcomponent:=    | no       | Sub-directory under the component the domain struct lives in (=api= is the default assumption; set when it diverges, e.g. a =core=-only helper type). Affects the =#include= paths the repository/service facets generate for this entity's domain header. |
+
+* Repository naming
+
+Naming-convention strings the templates need but cannot always
+derive mechanically from the entity's singular/plural forms (compound
+words, irregular plurals):
+
+| Property                   | Meaning                                                        |
+|------------------------------+-----------------------------------------------------------------|
+| =:entity_singular_short:=    | Short form used in generated variable names, e.g. =currency=.   |
+| =:entity_plural_short:=      | Plural short form, e.g. =currencies= (not just =entity_plural= with an "s" — irregular plurals need this spelled out). |
+| =:entity_singular_words:=    | Human-readable singular, for doc-comments.                      |
+| =:entity_plural_words:=      | Human-readable plural, for doc-comments.                        |
+
+#+begin_src org
+,** Repository
+,:PROPERTIES:
+,:entity_singular_short: currency
+,:entity_plural_short:   currencies
+,:entity_singular_words: currency
+,:entity_plural_words:   currencies
+,:END:
+#+end_src
+
+* Entity includes
+
+Same shape as [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]'s =Domain includes=, but for the
+repository entity header (the ODB-mapped struct) instead of the
+domain struct.
+
+Generates, in =book_entity.hpp=:
+
+#+begin_src cpp
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
+
+namespace ores::refdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
+
+struct book_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_refdata_books_tbl";
+
+    sqlgen::PrimaryKey<std::string> id;
+    // ... fields from Keys and columns ...
+};
+
+}
+#+end_src
+
+* Conventions
+
+| Property          | Meaning                                                                 |
+|--------------------+----------------------------------------------------------------------------|
+| =:iterator_var:=   | Loop variable name used in generated range-based for loops over this entity's rows (defaults are usually fine; override for readability on an unusually-named entity). |
+
+* Table display
+
+An org table mapping column names to their display headers, consumed
+by more than one downstream facet (Qt list columns, CSV/XML export
+column headers) wherever a human-readable label is needed for a raw
+column name:
+
+#+begin_src org
+,** Table display
+
+| Column | Header |
+|--------+--------|
+| name   | Name   |
+| party_id | Party |
+#+end_src
+
+* Paste block: additional class-member declarations
+:PROPERTIES:
+:ID: DCA78C69-E508-48D9-9972-A9B8094D91FB
+:END:
+
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
+
+Class-member declarations inserted just before the closing brace of
+the generated =<entity>_repository= class, expecting a =declaration=
+block.
+
+Template usage:
+
+#+begin_src text
+    void remove(context ctx, const std::string& id);
+    // <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>
+};
+#+end_src
+
+Entity attachment (per custom method, one =***= sub-heading each):
+
+#+begin_src org
+,*** read_system_party
+,:PROPERTIES:
+,:ID: 9B7C5D2E-1A4F-4E7B-9D8A-6F3C2E1B5A4D
+,:END:
+
+Prose describing what this method does and why it cannot be templated.
+
+,#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::party>
+read_system_party(context ctx, const std::string& tenant_id);
+,#+end_src
+#+end_src
+
+* Paste block: additional out-of-class implementations
+:PROPERTIES:
+:ID: F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+:END:
+
+Out-of-class method definitions inserted into the generated
+=<entity>_repository.cpp=, just before the closing namespace brace —
+the =.cpp= counterpart of the declaration above, expecting a =body=
+block. Multiple implementing blocks concatenate with a blank line
+between them.
+
+* Paste block: additional .cpp includes
+:PROPERTIES:
+:ID: 6141050C-0ED4-4680-B387-7DDDA3A69806
+:END:
+
+Additional =#include= directives the implementations above need,
+inserted near the top of the generated =<entity>_repository.cpp='s
+include block, expecting a =body= block. Multiple methods may each
+declare their own includes block; the C++ compiler de-duplicates
+=#include= directives at preprocessing time regardless, so no need
+to worry about collisions between them.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the fields this repository entity mirrors.
+- [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — the plain struct this layer persists.
+- [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]] — the layer that wraps this repository with business logic and NATS eventing.

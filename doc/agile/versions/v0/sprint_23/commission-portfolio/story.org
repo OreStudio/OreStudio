@@ -56,7 +56,7 @@ counterparty chapters.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | DONE | 2026-07-16 | 2026-07-17 | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
-| [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | BACKLOG | | | Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned. |
+| [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | STARTED | 2026-07-17 | | Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned. |
 
 * Decisions
 

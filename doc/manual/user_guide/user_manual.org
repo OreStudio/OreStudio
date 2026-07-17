@@ -178,6 +178,13 @@
 
 #+include: "chapter_6b_business_centres.org" :minlevel 2
 
+* Portfolios
+:PROPERTIES:
+:CUSTOM_ID: chapter_6c_portfolios
+:END:
+
+#+include: "chapter_6c_portfolios.org" :minlevel 2
+
 * Books
 :PROPERTIES:
 :CUSTOM_ID: chapter_7_books

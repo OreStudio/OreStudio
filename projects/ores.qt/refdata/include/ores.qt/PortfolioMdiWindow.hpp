@@ -32,7 +32,7 @@
 
 namespace ores::qt {
 
-class BadgeCache;
+class ImageCache;
 
 /**
  * @brief MDI window for displaying and managing portfolios.
@@ -54,27 +54,33 @@ private:
 
 public:
     explicit PortfolioMdiWindow(ClientManager* clientManager,
-                                ImageCache* imageCache,
                                 const QString& username,
-                                BadgeCache* badgeCache,
+                                ImageCache* imageCache,
                                 QWidget* parent = nullptr);
     ~PortfolioMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showPortfolioDetails(const refdata::domain::portfolio& portfolio);
     void addNewRequested();
+    void portfolioDeleted(const QString& code);
     void showPortfolioHistory(const refdata::domain::portfolio& portfolio);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -83,12 +89,6 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
-    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
-
-    bool isWorkspaceScoped() const override {
-        return false;
-    }
-
     QString normalRefreshTooltip() const override {
         return tr("Refresh portfolios");
     }
@@ -101,9 +101,8 @@ private:
     void updateActionStates();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     QString username_;
-    BadgeCache* badgeCache_;
+    ImageCache* imageCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

@@ -271,7 +271,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(ev::domain::event_traits<rdev::portfolio_changed_event>::name),
                 ev::domain::entity_change_event{.entity = "ores.refdata.portfolio",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
+                                                .entity_ids = e.portfolio_ids,
                                                 .tenant_id = e.tenant_id});
         });
 

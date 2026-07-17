@@ -55,6 +55,7 @@ class CdsConventionController;
 class PartyTypeController;
 class BusinessCentreController;
 class BookController;
+class PortfolioController;
 class BookStatusController;
 class RegulatoryBookTypeController;
 class BookPurposeTypeController;
@@ -128,6 +129,18 @@ public:
      */
     IBusinessUnitBrowser* business_unit_controller() const noexcept;
 
+    /**
+     * @brief Non-owning access to the Portfolio controller for other
+     * plugins (e.g. TradingPlugin's Portfolio/Org Explorer views) that
+     * consume it without constructing or owning it -- Portfolio's backend
+     * and Qt CRUD both live in ores.refdata/ores.qt.refdata; only
+     * composite trading-workflow views built on top of it belong to
+     * TradingPlugin.
+     */
+    PortfolioController* portfolio_controller() const noexcept {
+        return portfolioController_.get();
+    }
+
 private:
     plugin_context ctx_;
 
@@ -137,6 +150,7 @@ private:
     QAction* act_countries_{nullptr};
     QAction* act_currency_pairs_{nullptr};
     QAction* act_books_{nullptr};
+    QAction* act_portfolios_{nullptr};
     QAction* act_business_centres_{nullptr};
     QAction* act_calendars_{nullptr};
     QAction* act_currency_groups_{nullptr};
@@ -171,6 +185,7 @@ private:
     std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;
     std::unique_ptr<CdsConventionController> cdsConventionController_;
     std::unique_ptr<BookController> bookController_;
+    std::unique_ptr<PortfolioController> portfolioController_;
     std::unique_ptr<BookStatusController> bookStatusController_;
     std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
     std::unique_ptr<BookPurposeTypeController> bookPurposeTypeController_;

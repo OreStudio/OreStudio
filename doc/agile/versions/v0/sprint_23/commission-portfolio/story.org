@@ -8,7 +8,7 @@
 #+filetags: :product:refdata:commissioning:portfolio:sprint_23:v0:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -29,7 +29,7 @@ counterparty chapters.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -55,7 +55,7 @@ counterparty chapters.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | BACKLOG | | | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
+| [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | STARTED | 2026-07-16 | | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
 | [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | BACKLOG | | | Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned. |
 
 * Decisions

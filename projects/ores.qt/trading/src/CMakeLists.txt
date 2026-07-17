@@ -57,7 +57,7 @@ target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/mktdata/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/workflow/include"
-    # Book's Qt layer now lives in ores.qt/refdata (codegen-generated).
+    # Book's and Portfolio's Qt layers now live in ores.qt/refdata (codegen-generated).
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/refdata/include")
 
 target_link_libraries(${lib_target_name}

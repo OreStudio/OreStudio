@@ -20,10 +20,11 @@
 #include "ores.qt/ClientPortfolioModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -35,12 +36,9 @@ std::string portfolio_key_extractor(const refdata::domain::portfolio& e) {
 }
 }
 
-ClientPortfolioModel::ClientPortfolioModel(ClientManager* clientManager,
-                                           ImageCache* imageCache,
-                                           QObject* parent)
+ClientPortfolioModel::ClientPortfolioModel(ClientManager* clientManager, QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , watcher_(new QFutureWatcher<FetchResult>(this))
     , recencyTracker_(portfolio_key_extractor)
     , pulseManager_(new RecencyPulseManager(this)) {
@@ -58,21 +56,6 @@ ClientPortfolioModel::ClientPortfolioModel(ClientManager* clientManager,
             &RecencyPulseManager::pulsing_complete,
             this,
             &ClientPortfolioModel::onPulsingComplete);
-
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
-            if (!portfolios_.empty()) {
-                emit dataChanged(
-                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
-            }
-        });
-        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
-            if (!portfolios_.empty()) {
-                emit dataChanged(
-                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
-            }
-        });
-    }
 }
 
 int ClientPortfolioModel::rowCount(const QModelIndex& parent) const {
@@ -97,27 +80,18 @@ QVariant ClientPortfolioModel::data(const QModelIndex& index, int role) const {
 
     const auto& portfolio = portfolios_[row];
 
-    if (role == Qt::DecorationRole && index.column() == Column::AggregationCcy) {
-        if (imageCache_ && !portfolio.aggregation_ccy.empty()) {
-            return imageCache_->getCurrencyFlagIcon(portfolio.aggregation_ccy);
-        }
-        return {};
-    }
-
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case Name:
                 return QString::fromStdString(portfolio.name);
-            case AggregationCcy:
-                return QString::fromStdString(portfolio.aggregation_ccy);
             case PurposeType:
                 return QString::fromStdString(portfolio.purpose_type);
+            case AggregationCcy:
+                return QString::fromStdString(portfolio.aggregation_ccy);
             case IsVirtual:
-                return portfolio.is_virtual != 0 ? tr("Virtual") : tr("Physical");
-            case Status:
-                return QString::fromStdString(portfolio.status);
+                return static_cast<qlonglong>(portfolio.is_virtual);
             case Version:
-                return portfolio.version;
+                return static_cast<qlonglong>(portfolio.version);
             case ModifiedBy:
                 return QString::fromStdString(portfolio.modified_by);
             case RecordedAt:
@@ -125,6 +99,11 @@ QVariant ClientPortfolioModel::data(const QModelIndex& index, int role) const {
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::AggregationCcy)
+            return currency_flag_icon(*imageCache_, portfolio.aggregation_ccy);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -142,14 +121,12 @@ ClientPortfolioModel::headerData(int section, Qt::Orientation orientation, int r
     switch (section) {
         case Name:
             return tr("Name");
-        case AggregationCcy:
-            return tr("Agg. Currency");
         case PurposeType:
             return tr("Purpose");
+        case AggregationCcy:
+            return tr("Agg. Currency");
         case IsVirtual:
-            return tr("Type");
-        case Status:
-            return tr("Status");
+            return tr("Virtual");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -219,8 +196,7 @@ void ClientPortfolioModel::fetch_portfolios(std::uint32_t offset, std::uint32_t 
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Making portfolios request with offset=" << offset << ", limit=" << limit
-                    << " (model workspace_id=" << self->workspaceContext().id.toStdString() << ")";
+                    << "Making portfolios request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .portfolios = {},
@@ -230,30 +206,41 @@ void ClientPortfolioModel::fetch_portfolios(std::uint32_t offset, std::uint32_t 
                 }
 
                 refdata::messaging::get_portfolios_request request;
-                request.offset = offset;
-                request.limit = limit;
 
-                const auto ws_id = self->workspaceContext().id.toStdString();
                 auto result =
-                    self->clientManager_->process_authenticated_request(std::move(request), ws_id);
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch portfolios: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .portfolios = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString("Failed to fetch portfolios: " +
-                                                                    result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .portfolios = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->portfolios.size()
-                    << " portfolios, total available: " << result->total_available_count;
+                    << "Fetched " << result->portfolios.size() << " portfolios";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->portfolios.size());
                 return {.success = true,
                         .portfolios = std::move(result->portfolios),
-                        .total_available_count =
-                            static_cast<std::uint32_t>(result->total_available_count),
+                        .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
             },
@@ -290,9 +277,6 @@ void ClientPortfolioModel::onPortfoliosLoaded() {
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
                                        << " portfolios newer than last reload";
         }
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Server returned 0 portfolios"
-                                  << " (total_available_count=" << total_available_count_ << ")";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " portfolios."
@@ -318,6 +302,7 @@ const refdata::domain::portfolio* ClientPortfolioModel::getPortfolio(int row) co
         return nullptr;
     return &portfolios_[idx];
 }
+
 
 QVariant ClientPortfolioModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

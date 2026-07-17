@@ -24,17 +24,20 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
-class BadgeCache;
 class PortfolioMdiWindow;
-class ChangeReasonCache;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing portfolio windows and operations.
@@ -42,7 +45,7 @@ class DetachableMdiSubWindow;
  * Manages the lifecycle of portfolio list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class PortfolioController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT PortfolioController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -60,7 +63,6 @@ public:
                         ClientManager* clientManager,
                         ImageCache* imageCache,
                         ChangeReasonCache* changeReasonCache,
-                        BadgeCache* badgeCache,
                         const QString& username,
                         QObject* parent = nullptr);
 
@@ -79,6 +81,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::portfolio& portfolio);
@@ -86,15 +89,29 @@ private slots:
     void onShowHistory(const refdata::domain::portfolio& portfolio);
     void onRevertVersion(const refdata::domain::portfolio& portfolio);
     void onOpenVersion(const refdata::domain::portfolio& portfolio, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow(boost::uuids::uuid parentPortfolioId = {});
     void showDetailWindow(const refdata::domain::portfolio& portfolio);
     void showHistoryWindow(const refdata::domain::portfolio& portfolio);
 
-    ImageCache* imageCache_;
+    /**
+     * @brief Fetches the full typed portfolio history (the
+     * existing per-entity refdata::messaging::get_portfolio_history_request/
+     * refdata::messaging::get_portfolio_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed portfolio, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchPortfolioHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::portfolio>, QString>)>
+            callback);
+
     ChangeReasonCache* changeReasonCache_;
-    BadgeCache* badgeCache_;
     PortfolioMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

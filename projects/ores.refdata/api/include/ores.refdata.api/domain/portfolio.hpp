@@ -97,9 +97,11 @@ struct portfolio final {
     /**
      * @brief Portfolio purpose classification.
      *
-     * References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).
+     * References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal). Defaults to
+     * Risk so a freshly-constructed portfolio (the Add dialog, before the Purpose Type combo's
+     * async populate completes) always carries a value the FK-validation trigger accepts.
      */
-    std::string purpose_type;
+    std::string purpose_type = "Risk";
 
     /**
      * @brief Currency for P&L/risk aggregation at this node.

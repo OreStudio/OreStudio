@@ -17,28 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_GENERATORS_PORTFOLIO_GENERATOR_HPP
-#define ORES_REFDATA_API_GENERATORS_PORTFOLIO_GENERATOR_HPP
+#ifndef ORES_REFDATA_SERVICE_MESSAGING_PORTFOLIO_EVENT_REGISTRAR_HPP
+#define ORES_REFDATA_SERVICE_MESSAGING_PORTFOLIO_EVENT_REGISTRAR_HPP
 
-#include "ores.refdata.api/domain/portfolio.hpp"
-#include "ores.refdata.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::refdata::generators {
+namespace ores::refdata::service::messaging {
 
-/**
- * @brief Generates a synthetic portfolio.
- */
-ORES_REFDATA_API_EXPORT domain::portfolio
-generate_synthetic_portfolio(utility::generation::generation_context& ctx);
+[[nodiscard]] ores::eventing::service::subscription
+register_portfolio_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                 ores::eventing::service::event_bus& event_bus,
+                                 ores::nats::service::client& nats);
 
-/**
- * @brief Generates N synthetic portfolios.
- */
-ORES_REFDATA_API_EXPORT std::vector<domain::portfolio>
-generate_synthetic_portfolios(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::refdata::service::messaging
 
 #endif

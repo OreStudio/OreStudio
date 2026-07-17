@@ -63,6 +63,14 @@ IBusinessUnitBrowser* find_business_unit_controller() {
     }
     return nullptr;
 }
+
+PortfolioController* find_portfolio_controller() {
+    for (auto* plugin : PluginRegistry::instance().plugins()) {
+        if (auto* refdata = dynamic_cast<RefdataPlugin*>(plugin))
+            return refdata->portfolio_controller();
+    }
+    return nullptr;
+}
 }
 
 TradingPlugin::TradingPlugin(QObject* parent)
@@ -89,25 +97,22 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
             this,
             &PluginBase::statusMessage);
 
-    portfolioController_ = std::make_unique<PortfolioController>(ctx_.main_window,
-                                                                 ctx_.mdi_area,
-                                                                 ctx_.client_manager,
-                                                                 ctx_.image_cache,
-                                                                 ctx_.change_reason_cache,
-                                                                 ctx_.badge_cache,
-                                                                 ctx_.username,
-                                                                 this);
-    connectControllerSignals(portfolioController_.get());
-
-    // Book, BookStatus, and RegulatoryBookType are owned by RefdataPlugin --
-    // no cross-component leakage. Resolve a non-owning pointer for the
-    // "&Books" menu action and the composite Explorer views below.
+    // Book and Portfolio are owned by RefdataPlugin -- no cross-component
+    // leakage. Resolve non-owning pointers for the composite Explorer
+    // views below.
     bookController_ = find_book_controller();
     if (bookController_)
         connectControllerSignals(bookController_);
     else
         BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's BookController not found -- "
-                                  << "Books menu/Explorer views will be non-functional.";
+                                  << "Explorer views will be non-functional.";
+
+    portfolioController_ = find_portfolio_controller();
+    if (portfolioController_)
+        connectControllerSignals(portfolioController_);
+    else
+        BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's PortfolioController not found -- "
+                                  << "Explorer views will be non-functional.";
 
     businessUnitController_ = find_business_unit_controller();
     if (!businessUnitController_)
@@ -170,14 +175,6 @@ QList<QMenu*> TradingPlugin::create_menus() {
     // ---- Trading ----------------------------------------------------
     auto* menuTrading = new QMenu(tr("&Trading"));
 
-    act_portfolios_ = menuTrading->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
-    connect(act_portfolios_, &QAction::triggered, this, [this]() {
-        if (portfolioController_)
-            portfolioController_->showListWindow();
-    });
-
-    menuTrading->addSeparator();
-
     act_portfolio_explorer_ =
         menuTrading->addAction(ico(Icon::BriefcaseFilled), tr("&Portfolio Explorer"));
     connect(act_portfolio_explorer_, &QAction::triggered, this, [this]() {
@@ -189,7 +186,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
         BOOST_LOG_SEV(lg(), info) << "DIAG: creating PortfolioExplorerMdiWindow";
         auto* window = new PortfolioExplorerMdiWindow(ctx_.client_manager,
                                                       bookController_,
-                                                      portfolioController_.get(),
+                                                      portfolioController_,
                                                       tradeController_.get(),
                                                       oreImportController_.get(),
                                                       ctx_.username,
@@ -282,9 +279,9 @@ QList<QMenu*> TradingPlugin::create_menus() {
 }
 
 QList<QAction*> TradingPlugin::toolbar_actions() {
-    if (!act_portfolios_ || !act_portfolio_explorer_ || !act_org_explorer_ || !act_trades_)
+    if (!act_portfolio_explorer_ || !act_org_explorer_ || !act_trades_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_portfolios_, act_portfolio_explorer_, act_org_explorer_, act_trades_};
+    return {act_portfolio_explorer_, act_org_explorer_, act_trades_};
 }
 
 // ---------------------------------------------------------------------------
@@ -304,7 +301,7 @@ void TradingPlugin::on_logout() {
     tradeController_.reset();
     bookController_ = nullptr;         // non-owning; RefdataPlugin destroys the real object
     businessUnitController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
-    portfolioController_.reset();
+    portfolioController_ = nullptr;    // non-owning; RefdataPlugin destroys the real object
     oreImportController_.reset();
 
     ctx_ = {};

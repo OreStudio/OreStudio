@@ -25,8 +25,6 @@ physical-space graph change, tracked as task [[id:DA3C5B05-1214-44D5-A5A9-E92344
 ores.cpp.nats-* facets into one facet with five archetypes]] rather
 than done as part of this documentation task.)
 
-[[proj:projects/ores.compass/scripts/variability/cpp_nats.svg]]
-
 * Physical model mapping
 
 | Facet                          | Description                                                              |

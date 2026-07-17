@@ -87,7 +87,7 @@ Feature diagram of the Behavioural group below (the non-structural
 =domain_entity= variability; naming/wiring and overrides omitted, they
 aren't real branch points):
 
-[[proj:projects/ores.compass/scripts/variability/domain_entity_qt.svg]]
+[[proj:projects/ores.codegen/modeling/entity_meta_model_cpp_qt.svg]]
 
 * Naming and wiring
 

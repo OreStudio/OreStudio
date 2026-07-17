@@ -47,53 +47,34 @@ common shape every metaclass specializes with its own identity
 fields. That is a generalisation/specialisation relationship, and it
 is worth drawing as one:
 
-#+begin_src plantuml :file codegen_meta_model_hierarchy.png
+#+begin_src plantuml :file codegen_meta_model.png
 @startuml
 skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 
-abstract class Base {
-  Common frontmatter
+class CommonFrontmatter <<frontmatter>> {
+  ID
+  +title
+  +description
+  +type
+  +filetags
+  +component
 }
 
-class Entity {
-  Keys and columns
-  SQL
-  C++ Domain
-  C++ Repository
-  C++ Service
-  C++ Protocol
-  C++ NATS
-  C++ Qt
-  C++ Generator
-  C++ Presentation
-  Paste blocks
+abstract class Base <<metaclass>> {
+  +frontmatter : CommonFrontmatter
 }
-
-class Junction
-class LookupEntity
-class FieldGroup
-class Table
-class ServiceRegistry
-class Module
-
-Base <|-- Entity
-Base <|-- Junction
-Base <|-- LookupEntity
-Base <|-- FieldGroup
-Base <|-- Table
-Base <|-- ServiceRegistry
-Base <|-- Module
+Base --> CommonFrontmatter
 @enduml
 #+end_src
 
 =Base= is abstract — no model file has =#+type: ores.codegen.base=;
-it exists only to hold the frontmatter every metaclass inherits.
-=Entity= is drawn with its full complement of segments because it is
-the only metaclass documented to that depth so far (see [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen
-org-entity meta-model]]); the other six are drawn empty because their
-segments have not yet been catalogued this deeply — not because they
-have none.
+it exists only to hold the frontmatter every metaclass inherits, as
+one typed field. Each of the seven concrete metaclasses below
+specializes both =Base= (adding its own segments) and
+=CommonFrontmatter= (adding its own identity fields) — see [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen
+org-entity meta-model]] for =Entity='s specialization drawn out in
+full, the only metaclass documented to that depth so far.
 
 * Segment
 

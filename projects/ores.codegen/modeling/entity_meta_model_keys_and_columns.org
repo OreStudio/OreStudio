@@ -18,8 +18,6 @@ sqlgen-mapped entity field). Author a column once here; it becomes a SQL
 column, a domain struct field, and a repository entity field, all
 three kept in sync by construction.
 
-[[proj:projects/ores.compass/scripts/variability/keys_and_columns.svg]]
-
 * Physical model mapping
 
 This segment is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] declaration, not a projection of one

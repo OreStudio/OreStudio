@@ -23,8 +23,6 @@ these struct definitions on both the sending and receiving side.
 =:save_message_type:=, etc.) also just reference class/type names
 that this facet defines.
 
-[[proj:projects/ores.compass/scripts/variability/cpp_protocol.svg]]
-
 * Physical model mapping
 
 | Facet                     | Description                                       |

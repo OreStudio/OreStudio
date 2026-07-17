@@ -15,8 +15,6 @@ the [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] facet: the 
 [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] struct and the database — the entity, mapper, and
 repository classes, plus list/count/save/delete/get CRUD.
 
-[[proj:projects/ores.compass/scripts/variability/cpp_repository.svg]]
-
 * Physical model mapping
 
 | Facet                     | Description                                       |

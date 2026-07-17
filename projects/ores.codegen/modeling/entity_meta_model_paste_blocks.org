@@ -23,8 +23,6 @@ some other time.
 Which facets' paste blocks a given entity actually uses is an =or=
 choice — an entity may draw on several at once:
 
-[[proj:projects/ores.compass/scripts/variability/paste_blocks.svg]]
-
 * Physical model mapping
 
 Unlike every other segment, this one has no facet(s) of its own to

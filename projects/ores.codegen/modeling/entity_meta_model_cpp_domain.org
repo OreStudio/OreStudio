@@ -18,8 +18,6 @@ from), so there is very little left for this section to configure —
 just the =#include= directives the generated struct header needs
 that aren't inferred automatically from column types.
 
-[[proj:projects/ores.compass/scripts/variability/cpp_domain.svg]]
-
 * Physical model mapping
 
 | Facet                     | Description                                       |

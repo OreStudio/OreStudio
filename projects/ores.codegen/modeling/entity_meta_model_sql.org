@@ -17,7 +17,14 @@ The columns it operates on are declared once, shared with C++, on the
 [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] page — this page is only the SQL-specific knobs
 layered on top.
 
-[[proj:projects/ores.compass/scripts/variability/sql.svg]]
+This segment mixes both MASD categories from [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity
+model file as a unified literate document, so it gets two diagrams,
+one per category: =:tablename:= is a required identity field with no
+default, structural in the sense that every entity needs exactly one
+value and there is nothing to toggle — drawn as a UML class diagram
+under [[*Flags][Flags]] below. =:has_parent_id:= (and its two dependent
+properties) is a genuine authored, optional, non-structural [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]]
+feature — drawn as a UVL feature diagram under [[*Hierarchy: =has_parent_id=][Hierarchy]] below.
 
 * Physical model mapping
 
@@ -41,6 +48,35 @@ The section always opens with a =** Flags= drawer:
 |-----------------+----------+-----------------------------------------------------|
 | =:tablename:=   | yes      | The generated table's name. Convention: =<product>_<component>_<entity_plural>_tbl=. |
 
+Structural view — =Entity= has exactly one =SQL= segment,
+=:tablename:= is one of its fields, always present, and the segment's
+one [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste block]] kind (extra drop statements, [[*Paste block: extra drop statements][below]]) is drawn as its
+own class — a block kind's =ID= is the well-known kind UUID, distinct
+from any entity's per-instance implementing block:
+
+#+begin_src plantuml :file entity_meta_model_sql_structural.png
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam classAttributeIconSize 0
+
+class Entity <<metaclass>> {
+  +sql : SQL
+}
+
+class SQL <<segment>> {
+  +tablename : string
+  +extraDrops : SqlPasteBlock
+}
+
+class SqlPasteBlock <<PasteBlock>> {
+  ID
+}
+
+Entity --> SQL
+SQL --> SqlPasteBlock
+@enduml
+#+end_src
+
 Generates:
 
 #+begin_src sql
@@ -62,6 +98,13 @@ a =book= belongs to a =portfolio=, a =counterparty= can have a parent
 =counterparty=. Setting =:has_parent_id: true= tells the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
 facet to generate a recursive-CTE function that walks that tree, so
 consumers don't each hand-write their own recursive query.
+
+Non-structural view — this is a genuine [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] feature: authored by the
+model, read through by the generator, toggling whether the hierarchy
+function is emitted at all, with its two dependent properties only
+meaningful once it's on:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_sql.svg]]
 
 | Property                | Required | Meaning                                                    |
 |--------------------------+----------+-----------------------------------------------------------|

@@ -50,12 +50,54 @@ them.
 
 * Segments
 
-Illustrative feature diagram of the segments below — which are
-typically always present (mandatory) versus optional for a given
-entity, at the segment level. Not a precise codegen dispatch rule; see
-each segment page for its own real variability.
+=Entity='s full specialization of [[id:884C6B00-0849-430D-9D32-F3544269DC56][Base]] (see [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] for
+=Base=/=CommonFrontmatter= alone): its own frontmatter type, and one
+typed field per segment below. Segment classes are drawn empty here —
+each has its own structural fields, documented on its own page, not
+duplicated in this overview.
 
-[[proj:projects/ores.compass/scripts/variability/hub.svg]]
+#+begin_src plantuml :file org_entity_meta_model.png
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam classAttributeIconSize 0
+
+class CommonFrontmatter <<frontmatter>>
+class EntityFrontmatter <<frontmatter>>
+CommonFrontmatter <|-- EntityFrontmatter
+
+abstract class Base <<metaclass>> {
+  +frontmatter : CommonFrontmatter
+}
+
+class Entity <<metaclass>> {
+  +frontmatter : EntityFrontmatter
+  +keysAndColumns : KeysAndColumns
+  +sql : SQL
+  +cppDomain : CppDomain
+  +cppRepository : CppRepository
+  +cppService : CppService
+  +cppProtocol : CppProtocol
+  +cppNats : CppNats
+  +cppQt : CppQt
+  +cppGenerator : CppGenerator
+  +cppPresentation : CppPresentation
+  +pasteBlocks : PasteBlocks
+}
+Base <|-- Entity
+
+class KeysAndColumns <<segment>>
+class SQL <<segment>>
+class CppDomain <<segment>>
+class CppRepository <<segment>>
+class CppService <<segment>>
+class CppProtocol <<segment>>
+class CppNats <<segment>>
+class CppQt <<segment>>
+class CppGenerator <<segment>>
+class CppPresentation <<segment>>
+class PasteBlocks <<segment>>
+@enduml
+#+end_src
 
 The body is divided into top-level sections, each read by a
 different facet's templates. Unrecognised section names (e.g.

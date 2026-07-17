@@ -15,8 +15,6 @@ the [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] facet — the 
 [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]: authorization checks, business logic, and firing the
 changed-event on every mutation.
 
-[[proj:projects/ores.compass/scripts/variability/cpp_service.svg]]
-
 * Physical model mapping
 
 | Facet                     | Description                                       |

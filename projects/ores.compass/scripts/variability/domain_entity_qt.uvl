@@ -1,0 +1,29 @@
+namespace OresCodegenDomainEntityQt
+
+// Experimental UVL model of the ores.cpp.qt facet's variability, as
+// documented in projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org.
+// Scope: only the knobs already classified there as MASD non-structural
+// variability (the "Behavioural" group) plus the has_csv_xml_io sub-group,
+// since UVL/feature-model tooling is a natural fit for exactly that
+// category -- structural variability (e.g. has_tenant_id) lives in the
+// logical model, not here. Not wired into codegen; this is a documentation
+// experiment (see the "Formalize the codegen entity knob system as a
+// proper MASD/MDE feature model" capture).
+
+features
+    DomainEntityQt {abstract}
+        mandatory
+            CoreCrud {abstract}
+        optional
+            HasUuidPrimaryKey
+            HasChangeReasonCache
+            HasExplorerApi
+            HasPagination
+            HasExportMacro
+            HasVersionNavigation
+            ParentScoping
+            HasCsvXmlIo
+                mandatory
+                    CsvExport
+                    XmlExport
+                    XmlImport

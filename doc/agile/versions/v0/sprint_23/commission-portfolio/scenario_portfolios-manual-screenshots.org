@@ -22,21 +22,10 @@ This page documents a test scenario verifying [[id:FA3A1BE7-A030-4164-92DB-41EA8
 | Verifies task | [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] |
 | Parent story  | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]]   |
 | Target dialog | =PortfolioMdiWindow= / =PortfolioDetailDialog= — Menu: Reference Data > Portfolios |
-| Clients       | (single client)                         |
+| Clients       |                                          |
 | State         | PENDING                               |
 
 * Steps
-
-Each step is its own heading — the title should be five to seven
-words so it fits on one line in the QA Validation Runner's step list
-without wrapping or truncating (e.g. "Edit and save the record", not
-a full sentence describing the whole operation). The body below the
-title is a bullet-point checklist, not a prose paragraph: give the
-tester every piece of context needed to execute that one step without
-looking anything up elsewhere — what UI state must already exist,
-exactly what to click or type, and exactly what confirms the step
-passed. The panel writes each step's PASS/FAIL/PENDING outcome and
-notes back as a =*** Result= child heading directly under it.
 
 ** Connect to tenant Barclays Plc
 

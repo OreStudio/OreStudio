@@ -18,12 +18,26 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 
 * Scenario Info
 
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
 | Field         | Value                                   |
 |---------------+------------------------------------------|
 | Verifies task | [[id:{{parent_id}}][{{parent_title}}]] |
 | Parent story  | [[id:{{story_id}}][{{story_title}}]]   |
 | Target dialog | (Qt dialog class under test, if any.)   |
-| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
+| Clients       |                                          |
 | State         | {{state}}                               |
 
 * Steps

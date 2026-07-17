@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calendar-qt-screens
 #+pr:
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,7 +30,7 @@ Currency Pair Conventions' main window that opens Calendars.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |

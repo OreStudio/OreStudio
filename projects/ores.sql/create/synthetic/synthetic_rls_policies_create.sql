@@ -182,3 +182,14 @@ with check (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+alter table ores_synthetic_yield_curve_process_types_tbl enable row level security;
+
+create policy yield_curve_process_types_tenant_isolation_policy
+on ores_synthetic_yield_curve_process_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -33,11 +33,11 @@ triggers) were silently dropped in the process.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -81,3 +81,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Diffed =ores.refdata.portfolio.org= against book's model and fixed
+every gap found: corrected =domain_include=/=protocol_include=
+paths (missing =.api=), added the missing =party_id=/=owner_unit_id=
+Foreign keys sections, added Insert trigger validations for
+=purpose_type= (existing =ores_refdata_validate_purpose_type_fn=)
+and =aggregation_ccy= (=ores_refdata_validate_currency_fn=) with a
+=default_value= for =purpose_type= so the Add dialog's default state
+passes the new trigger, and added the =has_change_reason_cache=/
+=has_export_macro=/=has_explorer_api=/=parent_entity_singular= Qt
+knobs (the latter two required once regeneration surfaced that
+=PortfolioExplorerMdiWindow= calls =openAdd=/=openAddWithParent=/
+=openEdit=/=openHistory= on the controller). Converted =purpose_type=
+to a dynamic combo (new =fetch_purpose_types= in =LookupFetcher=) and
+=aggregation_ccy= to a currency flagged combo with a list-view flag
+icon, matching book's =book_status=/=functional_currency= UX instead
+of leaving them as free-text fields once FK validation was added.
+
+Full stack regenerated via =compass codegen entity generate
+portfolio= — =compass codegen entity show portfolio= is all-✅
+across api/core/service/qt/sql (39 files).
+
+Moved =PortfolioController= construction and menu/toolbar wiring
+from =TradingPlugin= to =RefdataPlugin= (no cross-component leakage),
+mirroring the earlier book move: =RefdataPlugin= now owns the
+=&Portfolios= action, =TradingPlugin= consumes a non-owning
+=portfolio_controller()= pointer for the Portfolio/Org Explorer
+composite views. Deleted the superseded hand-written trading
+Controller/DetailDialog/MdiWindow/ClientPortfolioModel/HistoryDialog
+files.
+
+Found and fixed, unrelated to portfolio itself: missing
+=ores.diff.lib=/=ores.eventing.core.lib= link edges in
+=ores.dq.core=/=ores.dq.service= (build breaks pre-dating this
+branch), a stale =e.ids= field reference in refdata service's
+=application.cpp= (=portfolio_changed_event='s field is
+=portfolio_ids=), and two pre-existing SQL RLS gaps
+(=curve_role=, =yield_curve_process_type= had =tenant_id= but no
+tenant-isolation policy) surfaced by =validate_schemas.sh=.
+
+Also added a host-wide build lock to =compass build= (two
+=flock=-based slots, =-j2=/=-j3=, per-slot live log streaming to
+=/tmp/ores-build.log.<slot>=, =--status=) after a concurrent build
+from another environment corrupted a shared library mid-session
+(=libores.workflow.core.so= truncated to 0 bytes) — multiple
+worktrees on this host build concurrently and were doing so
+uncoordinated. Updated every LLM-facing build recipe/skill to route
+through =compass build= instead of raw =cmake --build=.
+
+Verification: full build green (=linux-clang-debug-make=);
+=ores.refdata.*.tests= pass except 2 known pre-existing failures
+(=party_identifier_generator=/=counterparty_identifier_generator=,
+tracked separately, unrelated to this change);
+=validate_schemas.sh= 0 warnings (was 2, both fixed).

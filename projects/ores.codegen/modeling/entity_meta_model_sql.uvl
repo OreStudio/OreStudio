@@ -12,9 +12,4 @@ namespace OresCodegenSql
 features
     Sql {abstract}
         optional
-            // When selected, two structural fields on the SQL segment
-            // become populated: parentIdColumn and hierarchyNameField.
-            // Not modeled here -- they aren't features, they name real
-            // columns -- see this page's UML structural diagram, which
-            // carries the matching cross-reference note.
             HasParentId

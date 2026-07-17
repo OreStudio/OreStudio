@@ -225,14 +225,18 @@ for an example that also captures a =#+RESULTS:= snapshot.
 :ID: 2B7E4F1A-9C3D-4A8B-B5E6-7D2F0C1A3E9B
 :END:
 
-Use =compass add manual=. The slug should follow the =chapter_<N>_<topic>= convention.
+Use =compass add manual=. The slug should follow the =chapter_<topic>=
+convention — no chapter number in the filename; the manual's reading
+order comes entirely from where the chapter's =#+include= sits in
+=user_manual.org=, so inserting a chapter between two existing ones
+never requires renaming or renumbering anything else.
 =--parent-dir= defaults to [[proj:doc/manual/user_guide][=doc/manual/user_guide=]] and can be omitted.
 Headings inside the chapter start at =**= (level 2); they become =\section= in the PDF.
 After creating, add a =#+include= line in =user_manual.org= and an entry in =user_manual_site.org=.
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh add manual \
-  --slug chapter_4_reference_data \
+  --slug chapter_reference_data \
   --title "Reference Data" \
   --description "Reference data management in ORE Studio: currencies, countries, and other slowly-changing financial master data." \
   --tags "manual,reference_data,user_guide"

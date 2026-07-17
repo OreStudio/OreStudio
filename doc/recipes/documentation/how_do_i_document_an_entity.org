@@ -53,12 +53,15 @@ before moving on" paragraph on deliverability for the pattern).
 
 ** 1. Scaffold the chapter
 
-Create the chapter under =doc/manual/user_guide= as =chapter_<n>_<plural>.org=
-(e.g. =chapter_6_countries.org=):
+Create the chapter under =doc/manual/user_guide= as =chapter_<plural>.org=
+(e.g. =chapter_countries.org=) — no chapter number in the filename.
+Ordering lives entirely in =user_manual.org='s =#+include= sequence, not
+the filename, so inserting a new chapter between two existing ones never
+requires renaming or renumbering anything else:
 
 #+begin_src sh :results verbatim
 ./compass.sh add manual \
-  --slug chapter_<n>_<plural> \
+  --slug chapter_<plural> \
   --parent-dir doc/manual/user_guide \
   --title "<Plural>" \
   --description "<Entity> management in ORE Studio: the standard, the Qt UI, history and revert, shell and CLI commands."
@@ -193,21 +196,20 @@ figures, the long one describes what the reader is looking at.
 
 Add the chapter to =doc/manual/user_guide/user_manual.org= in reading
 order, inside the correct =\part=, as a top-level heading with a
-=:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=. If the entity belongs
-between two existing chapters rather than at the end (e.g. a companion
-entity documented right after the one it extends), it is fine for the
-chapter's filename to not match its numeric position — match the file to
-its neighbour in the manual's reading order, not to a strict sequential
-chapter count (see =chapter_5b_currency_pairs.org=, positioned between
-chapters 5 and 6):
+=:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=. Because filenames
+carry no chapter number, inserting a chapter between two existing ones
+(e.g. a companion entity documented right after the one it extends) is
+just a matter of placing its heading in the right reading-order
+position — nothing about any other chapter's filename, =:CUSTOM_ID:=,
+or include line ever needs to change:
 
 #+begin_example
 ,* Countries
 :PROPERTIES:
-:CUSTOM_ID: chapter_6_countries
+:CUSTOM_ID: chapter_countries
 :END:
 
-,#+include: "chapter_6_countries.org" :minlevel 2
+,#+include: "chapter_countries.org" :minlevel 2
 #+end_example
 
 Also add a row to the *separate* site index,
@@ -263,8 +265,8 @@ a broken link or missing image fails the build.
 - [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter; the simplest complete exemplar.
 - [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] — exemplar with a "standard and its limitations" opening section.
 - [[id:055488FE-81DF-4881-8866-B90FB0E71A04][Currency Pairs]] — exemplar with a domain-concepts section sourced from a
-  knowledge-graph hub, explicit deliverability scoping, and a non-sequential
-  chapter file position (=chapter_5b_=) between two existing chapters.
+  knowledge-graph hub, explicit deliverability scoping, and a chapter
+  inserted between two existing ones in the manual's reading order.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared chapter entity chapters link to for common
   fields (e.g. Provenance).
 - [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the master document that =#+include=​s each chapter.

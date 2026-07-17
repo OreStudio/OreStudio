@@ -5669,6 +5669,41 @@ def build_lock_status():
             for name, jobs in BUILD_LOCK_SLOTS]
 
 
+def _build_log_path(slot_name):
+    """Well-known output-log path for a build-lock slot, for `tail -f`."""
+    return Path(f"/tmp/ores-build.log.{slot_name}")
+
+
+def _build_log_tail(slot_name, n=10):
+    """Last n lines of a build-lock slot's log file, or None if there's
+    no log yet (no build has run in this slot since the file last existed)."""
+    path = _build_log_path(slot_name)
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except (FileNotFoundError, OSError):
+        return None
+    return lines[-n:] if lines else None
+
+
+def _run_logged(cmd, cwd, log):
+    """Run cmd, streaming combined stdout/stderr to both the console and
+    the already-open log file handle, so `tail -f` on that file shows
+    exactly what a build-lock slot is doing right now.
+
+    Returns the process return code.
+    """
+    log.write(f"$ {' '.join(cmd)}\n")
+    log.flush()
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, bufsize=1)
+    for line in proc.stdout:
+        sys.stdout.write(line)
+        log.write(line)
+        log.flush()
+    proc.wait()
+    return proc.returncode
+
+
 def _acquire_build_lock():
     """Acquire one of the host-wide build-lock slots, blocking until free.
 
@@ -5766,12 +5801,13 @@ def cmd_build(argv):
                     help="Call emacs scripts directly, bypassing cmake and "
                          "vcpkg. Required for light environments. Supported "
                          f"targets: {', '.join(sorted(EMACS_BUILD_SCRIPTS))}")
-    ap.add_argument("--lock-status", action="store_true",
+    ap.add_argument("--status", action="store_true",
                     help="Print who currently/last held each build-lock "
-                         "slot and exit without building.")
+                         "slot, plus a tail of its build log, and exit "
+                         "without building.")
     args = ap.parse_args(argv)
 
-    if args.lock_status:
+    if args.status:
         for name, jobs, free, holder in build_lock_status():
             if not holder:
                 print(f"🔓 slot '{name}' (-j{jobs}): no build has taken it yet.")
@@ -5779,6 +5815,15 @@ def cmd_build(argv):
                 print(f"🔓 slot '{name}' (-j{jobs}): free. Last holder: {holder}")
             else:
                 print(f"🔒 slot '{name}' (-j{jobs}): held by {holder}")
+            tail = _build_log_tail(name)
+            log_path = _build_log_path(name)
+            if tail is None:
+                print(f"   (no log yet: {log_path})")
+            else:
+                print(f"   --- tail {log_path} ---")
+                for line in tail:
+                    print(f"   {line}")
+            print("")
         return 0
 
     targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
@@ -5837,18 +5882,27 @@ def cmd_build(argv):
     build_cmd += ["-j", str(jobs)]
     commands.append(build_cmd)
 
+    log_path = _build_log_path(slot_name) if slot_name else None
+    log = None
+    if log_path is not None:
+        print(f"📝 Build output: {log_path} (tail -f to follow)")
+        log = open(log_path, "w")
+
     try:
         for cmd in commands:
             print(f"🔨 {' '.join(cmd)}")
             if args.dry_run:
                 continue
-            rc = subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+            rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
+                  else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
             if rc != 0:
                 print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
                       file=sys.stderr)
                 return rc
         return 0
     finally:
+        if log is not None:
+            log.close()
         if lock_file is not None:
             lock_file.close()
 

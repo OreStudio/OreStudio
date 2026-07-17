@@ -225,12 +225,12 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     // non-owning pointer for its composite trading-workflow views
     // (Portfolio/Org Explorer).
     portfolioController_ = std::make_unique<PortfolioController>(ctx_.main_window,
-                                                                  ctx_.mdi_area,
-                                                                  ctx_.client_manager,
-                                                                  ctx_.image_cache,
-                                                                  ctx_.change_reason_cache,
-                                                                  ctx_.username,
-                                                                  this);
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.image_cache,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(portfolioController_.get());
 
     // Book, BookStatus, RegulatoryBookType: backend already lives in

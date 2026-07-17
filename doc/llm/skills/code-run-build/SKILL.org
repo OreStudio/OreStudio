@@ -39,7 +39,7 @@ CMake — or generate PlantUML diagrams as part of a build.
    build= takes a host-wide lock first (two slots, capped =-j2=/
    =-j3=) so builds don't corrupt each other's shared library
    outputs. If it prints a waiting message, let it wait — that's
-   expected, not a hang. =./compass.sh build --lock-status= shows
+   expected, not a hang. =./compass.sh build --status= shows
    who holds each slot. See [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] for detail.
 
 * Recipes

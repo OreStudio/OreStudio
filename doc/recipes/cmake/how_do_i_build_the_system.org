@@ -62,16 +62,21 @@ at most two environments on the host build at once, each capped to
 that slot's =-j=:
 
 #+begin_src sh :results verbatim
-./compass.sh build --lock-status
+./compass.sh build --status
 #+end_src
 
 reports each slot as held (with the holding environment's identity,
-pid, and start time) or free. If both slots are busy, =compass
-build= prints a waiting message and blocks until one frees — this is
-expected, not a hang; let it wait rather than killing it or falling
-back to a raw =cmake --build=. =--jobs= overrides the slot's job
-count if you deliberately need a different value for one invocation.
-=--dry-run= does not take a lock.
+pid, and start time) or free, plus a tail of that slot's build log.
+Every build's combined stdout/stderr is also streamed live to a
+well-known path per slot, =/tmp/ores-build.log.<slot>= (overwritten
+each run) — =tail -f= it directly if you want to watch a build you
+(or another environment) kicked off rather than polling =--status=.
+If both slots are busy, =compass build= prints a waiting message and
+blocks until one frees — this is expected, not a hang; let it wait
+rather than killing it or falling back to a raw =cmake --build=.
+=--jobs= overrides the slot's job count if you deliberately need a
+different value for one invocation. =--dry-run= does not take a lock
+or write a log.
 
 ** Direct CMake
 

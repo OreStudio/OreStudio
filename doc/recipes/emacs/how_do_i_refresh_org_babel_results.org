@@ -65,12 +65,12 @@ emacs --batch -Q \
   -f save-buffer
 #+end_src
 
-Mark blocks that should /never/ run automatically (e.g. =cmake --build=)
-with =:eval no= so they're skipped:
+Mark blocks that should /never/ run automatically (e.g. a build) with
+=:eval no= so they're skipped:
 
 #+begin_src org
 ,#+begin_src sh :results verbatim :eval no
-cmake --build --preset linux-clang-debug-ninja
+./compass.sh build --preset linux-clang-debug-make
 ,#+end_src
 #+end_src
 

@@ -41,8 +41,8 @@ details, and any ERROR/WARN log lines?
    To enable it, reconfigure CMake:
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
-   cmake --build --preset linux-clang-debug --target rat
+   cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=debug
+   ./compass.sh build rat --preset linux-clang-debug-make
    ./projects/ores.compass/compass.sh test results
    #+end_src
 

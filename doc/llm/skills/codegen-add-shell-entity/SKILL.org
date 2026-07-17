@@ -41,7 +41,7 @@ the full layer ordering.
    add =how_do_i_*.org= recipes under [[proj:doc/recipes/shell][=doc/recipes/shell/=]].
 
 Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
-Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.shell=.
+Build after every step (via =compass build=, not raw =cmake --build=, so it takes the host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]): =./compass.sh build ores.shell=.
 
 * Recipes
 

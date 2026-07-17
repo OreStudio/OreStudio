@@ -47,7 +47,7 @@ Codegen (=--profile qt=) is the primary path — always try it first.
 3. /Select an icon/ for toolbar actions using [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]].
 
 Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
-Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.qt.lib=.
+Build after every step (via =compass build=, not raw =cmake --build=, so it takes the host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]): =./compass.sh build ores.qt.lib=.
 
 * Recipes
 

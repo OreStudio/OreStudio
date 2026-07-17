@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:testing:recipe:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-07-17
 
 For the test-logging knobs and output layout, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
@@ -17,12 +17,17 @@ How do I run the ORE Studio test suite?
 
 * Answer
 
+Running tests builds the test binaries first, so use =compass
+build= (not raw =cmake --build=) — it takes the host-wide build lock
+described in [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]], keeping concurrent
+worktrees from corrupting each other's build outputs.
+
 ** All tests
 
 The =rat= target runs every test:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-release-ninja --target rat
+./compass.sh build rat --preset linux-clang-release-make
 #+end_src
 
 ** Specific component
@@ -30,7 +35,7 @@ cmake --build --preset linux-clang-release-ninja --target rat
 For one component's tests, use the =test_<component>= target:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target test_ores.accounts.tests
+./compass.sh build test_ores.accounts.tests --preset linux-clang-debug-make
 #+end_src
 
 Replace =ores.accounts.tests= with the component you want.
@@ -42,22 +47,22 @@ time (preferred):
 
 #+begin_src sh :results verbatim
 # Logs to files only
-cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=debug
 
 # Logs to files and console
-cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
 #+end_src
 
 Then run the tests as usual:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target rat
+./compass.sh build rat --preset linux-clang-debug-make
 #+end_src
 
 To turn logging off again:
 
 #+begin_src sh :results verbatim
-cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
+cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=OFF
 #+end_src
 
 The env-var equivalents (=ORES_TEST_LOG_ENABLED=,
@@ -70,7 +75,7 @@ After running tests with logging enabled:
 
 #+begin_src sh :results verbatim
 ./scripts/parse_test_results.py \
-    build/output/linux-clang-debug-ninja/publish/bin
+    build/output/linux-clang-debug-make/publish/bin
 #+end_src
 
 The script:
@@ -82,7 +87,9 @@ The script:
 
 * Script
 
-Commands above. No wrapper.
+=compass build= (=projects/ores.compass/src/compass.py=) wraps
+=cmake --build=, adding the host-wide build lock. =parse_test_results.py=
+does the XML + log parsing.
 
 * Tested by
 

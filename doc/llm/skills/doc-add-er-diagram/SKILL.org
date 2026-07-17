@@ -38,10 +38,12 @@ catch up, or when documenting newly-added tables.
    (=<<temporal>>= / =<<junction>>= / none), field notation,
    relationships, notes, temporal columns.
 
-4. /Validate/ via [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]:
+4. /Validate/ via [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]], using =compass
+   build= (not raw =cmake --build=, so it takes the host-wide build
+   lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
 
    #+begin_src sh :results verbatim
-   cmake --build --target generate_ores_schema_diagram
+   ./compass.sh build generate_ores_schema_diagram
    #+end_src
 
 5. /Self-check/ against the evaluation checklist in the

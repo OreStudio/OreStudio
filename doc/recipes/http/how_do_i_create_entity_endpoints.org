@@ -27,7 +27,7 @@ How do I add HTTP REST endpoints for a new entity in =ores.http.server=?
 3. Register both routes in =register_routes()= using the router builder
    (=.auth_required()=, =.roles(...)=, =.query_param(...)=, =.response<T>()=).
 4. Register the routes class in =src/application.cpp=.
-5. Build: =cmake --build --preset linux-clang-debug-ninja --target ores.http.server.lib=
+5. Build (via =compass build=, not raw =cmake --build=): =./compass.sh build ores.http.server.lib=
 
 *Phase 2 — delete and history* (PR title: =[http] Add {entity} delete and history=):
 

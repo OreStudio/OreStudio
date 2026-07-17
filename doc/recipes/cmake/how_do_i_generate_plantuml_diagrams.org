@@ -18,13 +18,16 @@ docs and site?
 
 * Answer
 
+Via =compass build= (not raw =cmake --build=, so it takes the
+host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]).
+
 ** All diagrams
 
 The =mad= target ("make all diagrams") builds every PlantUML diagram
 declared in the build:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target mad
+./compass.sh build mad
 #+end_src
 
 ** A single component's diagram
@@ -33,11 +36,11 @@ Component diagrams follow =generate_<component>_diagram= where
 =<component>= uses dots, just like the component name:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target generate_ores.refdata_diagram
+./compass.sh build generate_ores.refdata_diagram
 #+end_src
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target generate_ores.comms_diagram
+./compass.sh build generate_ores.comms_diagram
 #+end_src
 
 ** The system-level diagram
@@ -45,7 +48,7 @@ cmake --build --preset linux-clang-debug-ninja --target generate_ores.comms_diag
 For the whole-project view used on the home page:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
+./compass.sh build generate_ores_diagram
 #+end_src
 
 ** Prerequisites

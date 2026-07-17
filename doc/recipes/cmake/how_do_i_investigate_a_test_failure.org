@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:tests:debugging:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-07-17
 
 For the conventions tests follow (file structure, naming, helpers),
 see [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]]. To /enable/ logging, see [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I
@@ -30,22 +30,22 @@ results XML and the per-test logs?
    enable test logging?]]:
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+   cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=debug
    # or for more detail
-   cmake --preset linux-clang-debug-ninja \
+   cmake --preset linux-clang-debug-make \
          -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
    #+end_src
 
 3. /Run the failing suite/. Run only what you need to keep noise
-   down:
+   down, via =compass build= (not raw =cmake --build=) so it takes
+   the host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]:
 
    #+begin_src sh :results verbatim
-   cmake --build --target test_ores.accounts.tests \
-         --preset linux-clang-debug-ninja
+   ./compass.sh build test_ores.accounts.tests --preset linux-clang-debug-make
    #+end_src
 
    Replace =ores.accounts= with the target component. Use
-   =--target rat= to run everything.
+   =rat= to run everything.
 
 4. /Parse the results/. The script reads the test-result XML files
    alongside their log files and prints a per-suite summary with
@@ -53,7 +53,7 @@ results XML and the per-test logs?
 
    #+begin_src sh :results verbatim
    ./scripts/parse_test_results.py \
-       build/output/linux-clang-debug-ninja/publish/bin
+       build/output/linux-clang-debug-make/publish/bin
    #+end_src
 
    Output sections:
@@ -89,7 +89,7 @@ results XML and the per-test logs?
 7. /Disable logging when done/, to keep the test suite quick:
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
+   cmake --preset linux-clang-debug-make -DORES_TEST_LOG_LEVEL=OFF
    #+end_src
 
 * Script

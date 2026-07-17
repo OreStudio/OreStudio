@@ -2,12 +2,12 @@
 :ID: F176FCA1-68D5-420D-B076-75A65FEE5EBB
 :END:
 #+title: How do I build the system?
-#+description: Build ORE Studio with compass build (preset from .env), or directly with `cmake --build --preset`.
+#+description: Build ORE Studio with compass build (preset from .env, host-wide lock slots), or directly with `cmake --build --preset` (single-environment only).
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:recipe:
 #+created: 2026-05-18
-#+updated: 2026-06-05
+#+updated: 2026-07-17
 
 Configure first if you haven't (see [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]).
 For preset / output / parallelism details, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
@@ -28,7 +28,7 @@ How do I build ORE Studio?
 ./compass.sh build ores.iam.core            # specific target(s)
 ./compass.sh build site                     # friendly alias (deploy_site)
 ./compass.sh build --preset linux-clang-release-make   # preset override
-./compass.sh build -j 4 --dry-run           # jobs / print-only
+./compass.sh build -j 4 --dry-run           # jobs override / print-only
 #+end_src
 
 Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
@@ -40,9 +40,46 @@ and run the Emacs build script directly (no cmake/vcpkg — works in light
 environments): =./compass.sh build --direct site skills settings manual=.
 See [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
 
+Always build via =compass build= (not raw =cmake --build=) — never
+bypass it, even to "just quickly build one target". See *Build
+locking* below for why.
+
+** Build locking
+
+This only matters on a host running several ORE Studio worktrees at
+once (each their own environment) — the common case for this repo's
+LLM-driven workflow, where multiple environments can be building in
+parallel. On a single-checkout machine with nothing else building,
+the lock is a no-op (you always get a free slot immediately).
+
+Where it applies: concurrent, uncoordinated =cmake --build=
+invocations from different worktrees on the same host contend for
+the same CPUs and have been observed to corrupt shared library
+outputs when one build is killed mid-link while another links
+against the same target. A non-direct =compass build= automatically
+waits for one of two host-wide lock slots before invoking cmake, so
+at most two environments on the host build at once, each capped to
+that slot's =-j=:
+
+#+begin_src sh :results verbatim
+./compass.sh build --lock-status
+#+end_src
+
+reports each slot as held (with the holding environment's identity,
+pid, and start time) or free. If both slots are busy, =compass
+build= prints a waiting message and blocks until one frees — this is
+expected, not a hang; let it wait rather than killing it or falling
+back to a raw =cmake --build=. =--jobs= overrides the slot's job
+count if you deliberately need a different value for one invocation.
+=--dry-run= does not take a lock.
+
 ** Direct CMake
 
-The underlying invocation, for when you need to drive cmake yourself:
+Only for local single-environment work where you know no other
+worktree on the host is building concurrently — it bypasses the lock
+entirely, so simultaneous invocations from other environments can
+corrupt shared build outputs (see *Build locking* above). Prefer
+=compass build= otherwise.
 
 #+begin_src sh :results verbatim
 cmake --build --preset <preset> [--target <target_name>]
@@ -51,7 +88,10 @@ cmake --build --preset <preset> [--target <target_name>]
 * Script
 
 =compass build= ([[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]) wrapping
-=cmake --build --preset=.
+=cmake --build --preset=. Locking is =_acquire_build_lock=/
+=BUILD_LOCK_SLOTS= in the same file — two =flock=-based slots
+(=-j2=/=-j3=) under =/tmp/ores-build.lock.<slot>=, shared by every
+worktree on the host.
 
 * Tested by
 

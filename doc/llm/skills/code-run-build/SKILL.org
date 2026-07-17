@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:skill:skills:claude_code:cmake:build:
 #+created: 2024-09-01
-#+updated: 2026-06-06
+#+updated: 2026-07-17
 
 #+begin_export markdown
 ---
@@ -31,9 +31,16 @@ CMake — or generate PlantUML diagrams as part of a build.
 3. /Run from the repo root/. The babel blocks are configured to use
    the repo root as their cwd; if you run commands outside emacs,
    =cd= there first.
-4. /Default preset/: =linux-clang-debug-ninja= on Linux unless the
-   user specifies otherwise. The recipe shows how to list the
-   alternatives.
+4. /Default preset/: read =ORES_PRESET= from =.env= (=compass
+   build= does this automatically) unless the user specifies
+   otherwise. The recipe shows how to list the alternatives.
+5. /Always build via =compass build=, never raw =cmake --build=/.
+   Multiple worktrees on this host build concurrently; =compass
+   build= takes a host-wide lock first (two slots, capped =-j2=/
+   =-j3=) so builds don't corrupt each other's shared library
+   outputs. If it prints a waiting message, let it wait — that's
+   expected, not a hang. =./compass.sh build --lock-status= shows
+   who holds each slot. See [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] for detail.
 
 * Recipes
 

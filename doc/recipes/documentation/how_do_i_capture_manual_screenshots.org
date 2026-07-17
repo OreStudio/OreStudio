@@ -177,7 +177,7 @@ and does not update just because =deploy_manual= ran:
 # script, and the recompiled resource has to be picked up by rebuilding
 # and restarting ores.qt before the "Read the manual in the Qt client"
 # step below will show anything new.
-cmake --build --preset <preset> --target deploy_help_qch
+./compass.sh build deploy_help_qch --preset <preset>
 #+end_src
 
 Both builds are prerequisites for the two review steps in step 1 above —

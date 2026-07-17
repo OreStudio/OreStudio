@@ -69,7 +69,7 @@ No wrapper — bare shell commands against the =build/output/<preset>/publish/lo
 
 * Tested by
 
-Manual. Run the environment with =cmake --build= and confirm the log
+Manual. Run the environment with =compass build= and confirm the log
 directory is populated.
 
 * See also

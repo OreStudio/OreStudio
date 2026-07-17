@@ -5541,6 +5541,28 @@ def _direct_build_log_path(target: str) -> Path:
     return Path(f"/tmp/{env_label}_{friendly}_build.log")
 
 
+def _clean_stale_emacs_build_state() -> None:
+    """Remove stale Emacs lock files and zero-byte org-publish caches under
+    build/output/org-timestamps/.
+
+    A killed/interrupted build (e.g. a background build process terminated
+    mid-write) can leave a `.#<name>.cache` Emacs lock symlink alongside a
+    truncated, zero-byte `<name>.cache`. org-publish then fails outright on
+    the next run with "org-publish-cache-file-needs-publishing called, but
+    no cache present" instead of just rebuilding that cache — so this must
+    run before every direct emacs build, not just on-demand after a failure.
+    """
+    timestamps_dir = PROJECT_ROOT / "build" / "output" / "org-timestamps"
+    if not timestamps_dir.is_dir():
+        return
+    for entry in timestamps_dir.iterdir():
+        is_lock_file = entry.name.startswith(".#")
+        is_empty_cache = entry.name.endswith(".cache") and entry.is_file() and entry.stat().st_size == 0
+        if is_lock_file or is_empty_cache:
+            print(f"🧹 Removing stale build state: {entry.relative_to(PROJECT_ROOT)}")
+            entry.unlink()
+
+
 def _run_emacs_target(target: str, dry_run: bool = False) -> int:
     """Run a single emacs build script directly, bypassing cmake."""
     script = EMACS_BUILD_SCRIPTS.get(target)
@@ -5553,6 +5575,8 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
     if not script_path.is_file():
         print(f"❌ Emacs script not found: {script_path}", file=sys.stderr)
         return 1
+    if not dry_run:
+        _clean_stale_emacs_build_state()
     cmd = ["emacs", "-Q", "--script", str(script_path)]
     print(f"🔨 emacs -Q --script {_EMACS_LISP_DIR / script}")
     if dry_run:
@@ -6239,6 +6263,9 @@ def main():
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "site":
         sys.exit(cmd_site(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "uvl":
+        import compass_uvl
+        sys.exit(compass_uvl.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
         sys.exit(cmd_build(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "shell":
@@ -6406,6 +6433,9 @@ def main():
     subparsers.add_parser("site",
                           help="Site: build and serve the org-mode site locally; "
                                "'site serve [--compile] [--port N]'; 'site --help'")
+    subparsers.add_parser("uvl",
+                          help="UVL: 'uvl compile <input.uvl> [output.svg]' renders a "
+                               "feature model to a feature-diagram SVG; 'uvl --help'")
     subparsers.add_parser("build",
                           help="Build: run cmake with the preset from .env (ORES_PRESET); "
                                "'build site' builds the website; 'build --help'")

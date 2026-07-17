@@ -25,10 +25,10 @@ real, correctly-named, correctly-cropped screenshots?
 
 ** Prerequisites
 
-Run these four steps, in order, before touching the chapter's
-placeholders — every one of them, every time. Capturing screenshots
-against a stale build or an unprovisioned tenant produces screenshots
-that don't match what ships.
+Run these three steps, in order, before touching the chapter's
+placeholders — every time. Capturing screenshots against a stale
+build or an unprovisioned tenant produces screenshots that don't match
+what ships.
 
 1. /Ask the user whether a new build is necessary/ before doing
    anything else. If nothing has changed since the last build, skip
@@ -38,43 +38,13 @@ that don't match what ships.
    ./compass.sh build --preset <preset>
    #+end_src
 
-2. /Check the database is recent, and recreate it if not/ — never
-   assume; check first:
+2. /Ready the environment/ — confirm the database is recent (recreate
+   only if it's not) and the Barclays Plc tenant is provisioned, per
+   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5 (skip that recipe's step
+   6, client start — the scenario in step 2 below starts its own
+   client with the scenario preloaded).
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh db status
-   #+end_src
-
-   Recreate if =drift= is not =current= or you're not sure the schema
-   reflects the entity being documented:
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh db recreate -y -k
-   #+end_src
-
-   If the database was already current and the =barclays= tenant
-   already shows =[active]= in the status output, step 3 can be
-   skipped — otherwise it must run.
-
-3. /Provision the Barclays Plc tenant yourself, via =ores.shell=/ —
-   run by the LLM, not handed to the user:
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh shell -f \
-     projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
-   #+end_src
-
-   *Any failure in this step must be diagnosed and fixed before
-   continuing* — do not capture screenshots against a
-   partially-provisioned tenant. A provisioning failure is frequently
-   a real bug rather than an environment problem; fix the underlying
-   cause, redeploy the changed SQL, and re-run from a fresh
-   =db recreate= until it completes cleanly. See
-   [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] and
-   [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]§Prerequisites for the
-   fuller account of this same chain.
-
-4. /Confirm the chapter itself already builds/ before capturing
+3. /Confirm the chapter itself already builds/ before capturing
    anything, so a broken link or missing include isn't mistaken for a
    capture problem later:
 
@@ -274,6 +244,8 @@ is for.
 
 - [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the recipe this one follows; defines the
   placeholder convention and the naming standard this recipe fills in.
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] — the shared prerequisite chain
+  this recipe's step 2 calls rather than duplicating.
 - [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
   — the panel this recipe drives.
 - [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] — the worked

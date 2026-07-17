@@ -27,59 +27,25 @@ human review.
 
 * How to use this skill
 
-Run [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] end to end. The
-first four steps are prerequisites, non-negotiable and in order —
-never skip straight to writing the scenario, and never capture against
-a build or database that predates the entity's current state:
+Run [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] end to end:
 
-1. *Ask the user whether a new build is necessary.* If yes, build
-   before continuing.
-2. *Check the database is recent* (=compass db status=) — recreate it
-   only if drift/staleness says so, not unconditionally.
-3. *Provision the Barclays Plc tenant yourself*, via =compass shell -f
-   barclays_system_provision.ores= — never hand this to the user. Any
-   failure here is usually a real bug; diagnose and fix it, redeploy,
-   and re-run from a fresh =db recreate= until it completes cleanly.
-4. *Confirm the chapter itself already builds* (=compass build
-   --direct manual=) before capturing anything, so a broken link isn't
-   mistaken for a capture problem later.
-
-Then capture and wire in the screenshots:
-
-5. Scaffold a =test_scenario=, one step per =[SCREENSHOT NEEDED]=
-   placeholder, in the chapter's top-to-bottom order — the capture-step
-   count must equal the placeholder count exactly. Every step title is
-   five to seven words; every step body is a bullet-point checklist
-   (copying the placeholder's =# Capture:= instruction, adjusted only
-   for concrete data that differs) giving the tester all the context
-   to execute it, not prose. Add the two closing review steps (read
-   the chapter in the Qt client's own help viewer; check the built
-   PDF) — mandatory, not counted against the placeholder count.
-6. Start the Qt client with =--open-scenario= pointing at the new
-   scenario (absolute path, via =realpath= — a relative path silently
-   fails to load) and ask the user to execute it — do not run the UI
-   steps yourself.
-7. Locate each capture, crop it tightly to the dialog or window (never
-   the full desktop, never with QA Validation Runner chrome in frame),
-   and copy it to =assets/images/<name>.png= following the plural/
-   singular naming rule.
-8. Wire the real image and caption into the chapter, replacing the
-   placeholder, then rebuild both the PDF (=compass build --direct
-   manual=) and the Qt-embedded help (=compass build --direct help=
-   then =compass build deploy_help_qch=) — two independent pipelines,
-   both must be rebuilt.
-9. Close out: update the task and scenario docs, commit the chapter,
-   PDF, and images together, and hand off for human review — this
-   skill's job ends at a chapter that reads correctly with real images
-   in place, not at marking the task DONE.
+1. Its *Prerequisites* section — build if needed, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the
+   environment]] (fresh database, Barclays Plc provisioned by you, not
+   the user), then confirm the chapter itself already builds.
+   Non-negotiable, in order — never capture against a build or
+   database that predates the entity's current state.
+2. Its capture/wire-in sections — a =test_scenario= with one step per
+   placeholder, run through the QA Validation Runner, each capture
+   cropped and named per convention, wired into the chapter, both the
+   PDF and the Qt-embedded help rebuilt, then handed off for human
+   review — this skill's job ends at a chapter with real images in
+   place, not at marking the task DONE.
 
 * Recipes
 
 - [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
 - [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the recipe this one follows on from.
-- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] — the sibling recipe
-  with the fuller account of the same prerequisite chain.
-- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
 
 * Reference
 
@@ -87,8 +53,9 @@ Then capture and wire in the screenshots:
 - [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
   — the panel this skill drives.
 - [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics.
-- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — sibling skill applying the same prerequisite
-  chain to feature verification instead of screenshot capture.
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — sibling skill sharing the same
+  environment-readying recipe, applied to feature verification instead
+  of screenshot capture.
 
 * Artefacts                                                        :noexport:
 

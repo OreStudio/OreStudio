@@ -27,7 +27,7 @@
 namespace ores::marketdata::client {
 
 crm_client::crm_client(ores::nats::service::client& nats,
-    std::function<std::string(bool)> token_provider)
+                       std::function<std::string(bool)> token_provider)
     : nats_(nats)
     , token_provider_(std::move(token_provider)) {}
 
@@ -46,10 +46,9 @@ crm_client::rates(const std::string& party_id, const std::string& crm_name, bool
             headers[std::string(ores::nats::headers::authorization)] =
                 std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
 
-        const auto reply = nats_.request_sync(
-            messaging::get_crm_rates_request::nats_subject,
-            ores::nats::as_bytes(req_json),
-            std::move(headers));
+        const auto reply = nats_.request_sync(messaging::get_crm_rates_request::nats_subject,
+                                              ores::nats::as_bytes(req_json),
+                                              std::move(headers));
         auto resp = rfl::json::read<messaging::get_crm_rates_response>(
             ores::nats::as_string_view(reply.data));
         if (!resp || !resp->success) {

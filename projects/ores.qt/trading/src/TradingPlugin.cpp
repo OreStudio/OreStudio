@@ -111,8 +111,9 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 
     businessUnitController_ = find_business_unit_controller();
     if (!businessUnitController_)
-        BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's BusinessUnitController not found -- "
-                                  << "Org Explorer's business unit edit/history will be non-functional.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "RefdataPlugin's BusinessUnitController not found -- "
+            << "Org Explorer's business unit edit/history will be non-functional.";
 
     tradeController_ = std::make_unique<TradeController>(ctx_.main_window,
                                                          ctx_.mdi_area,
@@ -301,7 +302,7 @@ void TradingPlugin::on_logout() {
     }
 
     tradeController_.reset();
-    bookController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
+    bookController_ = nullptr;         // non-owning; RefdataPlugin destroys the real object
     businessUnitController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
     portfolioController_.reset();
     oreImportController_.reset();

@@ -109,8 +109,8 @@ public:
             }
             entry.applicable = true;
             std::string error_detail;
-            entry.valid =
-                ctrl_->validate(fx.ore_key, fx.vintage_source, fx.vintage_date, error_detail, bearer);
+            entry.valid = ctrl_->validate(
+                fx.ore_key, fx.vintage_source, fx.vintage_date, error_detail, bearer);
             resp.entries.push_back(entry);
         }
 

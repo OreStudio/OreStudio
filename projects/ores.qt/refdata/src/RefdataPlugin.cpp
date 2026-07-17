@@ -591,11 +591,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(assetClassCodeController_.get());
 
     curveRoleController_ = std::make_unique<CurveRoleController>(ctx_.main_window,
-                                                                  ctx_.mdi_area,
-                                                                  ctx_.client_manager,
-                                                                  ctx_.change_reason_cache,
-                                                                  ctx_.username,
-                                                                  this);
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(curveRoleController_.get());
 
     instrumentCodeController_ = std::make_unique<InstrumentCodeController>(ctx_.main_window,
@@ -970,8 +970,7 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
     if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
-        !act_business_centres_ || !act_parties_ || !act_counterparties_ ||
-        !act_business_units_)
+        !act_business_centres_ || !act_parties_ || !act_counterparties_ || !act_business_units_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_currencies_,
             act_countries_,

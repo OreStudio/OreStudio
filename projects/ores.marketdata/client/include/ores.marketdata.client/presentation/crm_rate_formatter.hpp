@@ -86,9 +86,10 @@ public:
     format(const std::vector<crm_rate_format_request>& requests);
 
 private:
-    static std::string format_rate(double rate,
-        const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
-        bool convention_reversed);
+    static std::string
+    format_rate(double rate,
+                const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
+                bool convention_reversed);
 };
 
 }

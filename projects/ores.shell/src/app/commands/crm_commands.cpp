@@ -73,13 +73,12 @@ do_auth_request(std::ostream& out,
 void crm_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("crm");
 
-    menu->Insert(
-        "rates",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_rates(std::ref(out), std::ref(session), args);
-        },
-        "List CRM rates for a party",
-        {"[<crm-name>] [--party <id-or-full-name>] [--inverted] [--matrix]"});
+    menu->Insert("rates",
+                 [&session](std::ostream& out, std::vector<std::string> args) {
+                     process_rates(std::ref(out), std::ref(session), args);
+                 },
+                 "List CRM rates for a party",
+                 {"[<crm-name>] [--party <id-or-full-name>] [--inverted] [--matrix]"});
 
     root_menu.Insert(std::move(menu));
 }
@@ -182,10 +181,8 @@ void crm_commands::process_rates(std::ostream& out,
     // thousands.
     refdata_msg::get_currency_pair_conventions_request conventions_req;
     conventions_req.limit = 10000;
-    auto conventions_result =
-        do_auth_request<refdata_msg::get_currency_pair_conventions_response>(
-            out, session, std::string(conventions_req.nats_subject),
-            rfl::json::write(conventions_req));
+    auto conventions_result = do_auth_request<refdata_msg::get_currency_pair_conventions_response>(
+        out, session, std::string(conventions_req.nats_subject), rfl::json::write(conventions_req));
     if (!conventions_result)
         return;
 

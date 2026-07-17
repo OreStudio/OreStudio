@@ -27,10 +27,10 @@
 #include "ores.synthetic.core/messaging/gmm_component_handler.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_template_entry_registrar.hpp"
-#include "ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_handler.hpp"
 #include "ores.synthetic.core/messaging/organisation_handler.hpp"
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
 #include <memory>
 #include <optional>
 

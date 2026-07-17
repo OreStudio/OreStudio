@@ -168,13 +168,17 @@ public:
                                         bearer);
             using sr = feed_controller::start_result;
             switch (r) {
-                case sr::started: ++resp.started; break;
-                case sr::already_running: ++resp.already_running; break;
+                case sr::started:
+                    ++resp.started;
+                    break;
+                case sr::already_running:
+                    ++resp.already_running;
+                    break;
                 case sr::vintage_data_missing:
                     ++resp.skipped;
                     BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                        << "Skipping " << fx.ore_key << " under folder " << req->folder_id
-                        << " — " << error_detail;
+                        << "Skipping " << fx.ore_key << " under folder " << req->folder_id << " — "
+                        << error_detail;
                     break;
             }
         }
@@ -253,8 +257,8 @@ private:
     // Every folder id in the subtree rooted at root_id, including root_id
     // itself — the set fx_spot_generation_config::folder_id is matched
     // against.
-    static std::set<boost::uuids::uuid>
-    resolve_subtree(const ores::database::context& ctx, const boost::uuids::uuid& root_id) {
+    static std::set<boost::uuids::uuid> resolve_subtree(const ores::database::context& ctx,
+                                                        const boost::uuids::uuid& root_id) {
         namespace repo = ores::synthetic::repository;
         repo::folder_repository folder_repo;
         const auto rows = folder_repo.get_hierarchy(ctx, root_id, false);

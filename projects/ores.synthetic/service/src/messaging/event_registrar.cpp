@@ -23,9 +23,9 @@
 #include "ores.synthetic.service/messaging/fx_spot_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_event_registrar.hpp"
-#include "ores.synthetic.service/messaging/yield_curve_process_type_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_template_entry_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/market_data_generation_config_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/yield_curve_process_type_event_registrar.hpp"
 
 namespace ores::synthetic::service::messaging {
 
@@ -45,8 +45,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_gmm_component_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_ir_curve_generation_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(
-        register_yield_curve_process_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_yield_curve_process_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_template_entry_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_market_data_generation_config_event_mapping(event_source, event_bus, nats));

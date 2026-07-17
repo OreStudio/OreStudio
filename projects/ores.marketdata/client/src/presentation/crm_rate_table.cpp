@@ -33,8 +33,7 @@ std::string convert_to_table(const std::vector<crm_rate_display_service::row>& v
 
     for (const auto& r : v) {
         table << r.crm_name << r.base_currency_code + "/" + r.quote_currency_code
-              << r.display.rate_text << r.display.change_text << r.status << r.as_of
-              << fort::endr;
+              << r.display.rate_text << r.display.change_text << r.status << r.as_of << fort::endr;
     }
     return table.to_string();
 }

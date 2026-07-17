@@ -171,8 +171,7 @@ private:
 
     /// Warmed once at construction (this window's own tenant), consulted by
     /// displayService_ on every reload -- see crm_rate_display_service.
-    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache>
-        conventionCache_;
+    std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache> conventionCache_;
 
     /// The "underlying CRM" -- thin authenticated facade over the
     /// marketdata.v1.crm.rates NATS request. Owned here (not by

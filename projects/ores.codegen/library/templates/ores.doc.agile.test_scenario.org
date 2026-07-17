@@ -52,11 +52,16 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 
 ,* Steps
 
-Each step is its own heading — the title should be short (it's shown
-as a single list entry in the QA Validation Runner); put any longer
-instructions in the body below the title. The panel writes each
-step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
-child heading directly under it.
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
 
 ,** Connect to tenant Barclays Plc
 

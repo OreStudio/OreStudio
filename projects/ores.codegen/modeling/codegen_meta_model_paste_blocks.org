@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 40AD7EFB-AACE-472F-B767-8FD3FF2F5C03
 :END:
-#+title: Codegen entity meta-model — paste blocks
-#+description: ORE Studio's implementation of the MDE "protected region" mechanism, project-specific naming: how an entity model injects hand-written code into an otherwise fully-generated file, and why. Concrete block kinds live on each segment page, not here.
+#+title: Codegen meta-model — paste blocks
+#+description: ORE Studio's implementation of the MDE "protected region" mechanism, project-specific naming: how a segment injects hand-written code into an otherwise fully-generated file, and why. Concrete block kinds live on each segment page, not here.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:paste_blocks:
@@ -10,37 +10,46 @@
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
-This page is the *concept* note for paste blocks, one of the
-[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub's segments. It explains the
-mechanism once; every segment page that has concrete block kinds
-(Repository, Service, Protocol, NATS, Qt, Generator, ...) links back
-here instead of re-explaining it, and hosts its own block kinds
-inline rather than in one central registry — a Repository paste
-block belongs on the Repository page, not in a separate index,
-because you need it while reading about the repository facet, not
-some other time.
+This page is the *concept* note for paste blocks, applicable to any
+metaclass's segments, not only [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Entity]]'s. It is ORE Studio's extension
+to the MASD logical model: [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] already has a notion of
+protected regions (see § "Protected regions" below), but as a
+mechanism belonging to physical space, scanned from generated output.
+ORE Studio instead models a paste block *as a field on the logical
+metaentity itself* — a segment composes zero or more =PasteBlock=
+instances, each with its own kind =ID=, the same way it composes any
+other typed field:
 
-Which facets' paste blocks a given entity actually uses is an =or=
-choice — an entity may draw on several at once:
+[[proj:projects/ores.codegen/modeling/codegen_meta_model_paste_blocks.png]]
+
+This page explains the mechanism once; every segment page that has
+concrete block kinds ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][Repository]], [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][Service]], [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][Protocol]], [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][NATS]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Qt]],
+[[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][Generator]]) links back here instead of re-explaining it, and hosts
+its own block kinds inline rather than in one central registry — a
+Repository paste block belongs on the Repository page,
+not in a separate index, because you need it while reading about the
+repository facet, not some other time.
 
 * Physical model mapping
 
-Unlike every other segment, this one has no facet(s) of its own to
-map to — it is cross-cutting, injecting content into whichever
-facet's archetype the entity happens to attach a block for. See
-"Finding a block kind" below for which segment page (and therefore
-which facet) hosts each concrete block kind.
+Paste blocks are not a segment themselves — this page is a concept
+note, not a hub-and-spokes segment page — so there is no facet of
+its own to map to here. A paste block *exists within* a segment (see
+each segment's own structural diagram, e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =SqlPasteBlock=),
+and it is that owning segment's facet the content ultimately projects
+into. See "Finding a block kind" below for which segment page (and
+therefore which facet) hosts each concrete block kind.
 
 * Terminology: this is a protected region
 
 "Paste block" is *not* a MASD concept — it is ORE Studio's
 project-specific name for an instance of the formally-named MDE
-mechanism, the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § Protected regions, the same naming
-mismatch already flagged for =stereotype=/metatype (see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied
+mechanism, the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § "Protected regions", the same naming
+mismatch already flagged for =stereotype= /metatype (see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied
 MASD]]'s note on that). Read that section first for the general
 mechanism, the tool-naming survey across XPand/Acceleo/EGL/JET/
-MOFScript, and the formal comparison this is drawn from (Greifenberg
-/et al./ 2015).
+MOFScript, and the formal comparison this is drawn from
+([[https://arxiv.org/pdf/1509.04498][Greifenberg /et al./ 2015]]).
 
 One thing worth being precise about: ORE Studio's paste blocks are
 *not* the classic protected-region implementation described there.
@@ -143,5 +152,5 @@ facet whose generated file they inject into:
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub this page is a segment of.
-- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § Protected regions — the formal MDE concept this page's mechanism is a project-specific instance of.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § "Protected regions" — the formal MDE concept this page's mechanism is a project-specific instance of.
 - Greifenberg /et al./, [[https://arxiv.org/pdf/1509.04498][A Comparison of Mechanisms for Integrating Handwritten and Generated Code for Object-Oriented Programming Languages]] (2015) — the formal comparison across tools/mechanisms.

@@ -35,7 +35,7 @@ level up from the model files themselves, in exactly the sense a UML
 class is one level up from its instances. =ores.codegen.entity= is
 not an entity; it is the class of things that are entities. This is
 not a loose analogy — it is the same relationship [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
-Metatype states plainly: "=currency= is the entity; =domain_entity=
+"Metatype" states plainly: "=currency= is the entity; =domain_entity=
 is its metatype... in MASD, =currency= is an /instance/ of the
 metatype =domain_entity='."
 
@@ -47,26 +47,10 @@ common shape every metaclass specializes with its own identity
 fields. That is a generalisation/specialisation relationship, and it
 is worth drawing as one:
 
-#+begin_src plantuml :file codegen_meta_model.png
-@startuml
-skinparam backgroundColor #FEFEFE
-skinparam classAttributeIconSize 0
+[[proj:projects/ores.codegen/modeling/codegen_meta_model.png]]
 
-class CommonFrontmatter <<frontmatter>> {
-  ID
-  +title
-  +description
-  +type
-  +filetags
-  +component
-}
-
-abstract class Base <<metaclass>> {
-  +frontmatter : CommonFrontmatter
-}
-Base --> CommonFrontmatter
-@enduml
-#+end_src
+(Source: =projects/ores.codegen/modeling/codegen_meta_model.puml=,
+rendered with =plantuml=.)
 
 =Base= is abstract — no model file has =#+type: ores.codegen.base=;
 it exists only to hold the frontmatter every metaclass inherits, as
@@ -78,21 +62,22 @@ full, the only metaclass documented to that depth so far.
 
 * Segment
 
-Each compartment inside =Entity= above — =Keys and columns=, =SQL=,
-=C++ Qt=, and so on — is what these meta-model docs call a *segment*:
-not itself a MASD concept, but the documentation unit each deep hub
-is organised by. A segment is a bundle of related fields/properties
-of a metaclass: a coherent group of frontmatter keywords, headings,
+ORE Studio extended the MASD logical model with *segments*: not
+themselves a MASD concept, but a bundle of related fields within
+logical space — a coherent group of frontmatter keywords, headings,
 and property-drawer properties that an author fills in together and
 that [[id:787A7429-71D5-4295-829B-A9B56275B1F8][project]] into one facet, or a small closed set of closely related
-facets, as one unit. =ores.codegen.entity='s =* SQL= heading and
-everything under it is a segment; so is the =** Qt= sub-heading under
-=* C++= and everything under it.
+facets, as one unit. Every concrete metaclass is composed of zero or
+more segments, as drawn in the diagram above. =ores.codegen.entity='s
+=* SQL= heading and everything under it is one segment; so is the
+=** Qt= sub-heading under =* C++= and everything under it — see
+[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] for =Entity='s segments drawn out in
+full.
 
 A segment exists so a reader (or an LLM) can find "everything about
-how this metaclass's Qt projection is configured" in one page,
-without also needing to hold the rest of the metaclass's fields in
-view. It is not itself an addressable point in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] (a
+the data this metaclass needs in order to project into its Qt facet"
+in one page, without also needing to hold the rest of the metaclass's
+fields in view. It is not itself an addressable point in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] (a
 facet is) nor in [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]] (the metaclass as a whole is) — a
 segment is the documentation-level grouping that sits between the
 two, which is precisely why every segment page opens with a
@@ -105,15 +90,15 @@ documenting, because every other metaclass's segments build on it.
 
 * Common frontmatter
 
-Every metaclass's frontmatter inherits from =Base=: the properties
-below are declared once, here, and every metaclass's own
+Every metaclass's frontmatter inherits from =CommonFrontmatter=: the
+properties below are declared once, here, and every metaclass's own
 frontmatter — documented on that metaclass's own hub page — extends
 this set rather than repeating it.
 
 | Keyword         | Purpose                                                         |
 |-------------------+--------------------------------------------------------------------|
 | =:ID:= (drawer)   | UUID of this org file. Used for cross-document links; also what makes the file an org-roam node at all, independently of codegen. |
-| =#+type:=         | The metatype discriminator. Its value is what dispatches to a specific archetype set — see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § Metatype. |
+| =#+type:=         | The metatype discriminator. Its value is what dispatches to a specific archetype set — see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "Metatype". |
 | =#+filetags:=     | Org-roam tags; convention is =:model:<metatype-noun>:<component>:=, e.g. =:model:entity:refdata:=. |
 | =#+component:=    | Component the model belongs to (=refdata=, =trading=, ...). Present on every metaclass except =ServiceRegistry= (=ores.codegen.service_registry=), which is cross-component by nature (one registry of every backend service). |
 
@@ -121,24 +106,24 @@ Each concrete metaclass's own specialized frontmatter — the
 identity/naming fields a generator needs to render that metaclass's
 archetype set — is documented on its own hub page once one exists;
 until then, see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] § that
-metatype for the quick list. As a sample of how much the specialized
-fields diverge between metaclasses — =Entity= names itself with
-=#+entity_singular=/=#+entity_plural=/=#+entity_title=/=#+brief=;
-=Junction= instead uses =#+name=/=#+name_singular=/=#+name_title=/
-=#+name_singular_words=/=#+brief= (a junction has no single subject
-to be "the entity," so its naming scheme is built around the
-relation's plural/singular forms instead); =LookupEntity= drops
-naming fields in favour of structural declarations
-(=#+has_tenant_id=/=#+has_coding_scheme=/=#+has_image_id=/
-=#+has_artefact_insert_fn=) made at frontmatter level rather than in
-a body section. =Entity='s full specialized-frontmatter treatment
-lives on [[id:18D99C09-22CD-4487-B7A3-FA0612A8B154][Codegen entity meta-model — file-level conventions]].
+metatype for the quick list. The specialized fields diverge
+considerably between metaclasses:
+
+| Metaclass       | Specialized fields (on top of the base above)                          |
+|-------------------+----------------------------------------------------------------------------|
+| =Entity=          | =#+entity_singular=, =#+entity_plural=, =#+entity_title=, =#+brief=       |
+| =Junction=        | =#+name=, =#+name_singular=, =#+name_title=, =#+name_singular_words=, =#+brief= — a junction has no single subject to be "the entity," so its naming scheme is built around the relation's plural/singular forms instead. |
+| =LookupEntity=    | =#+has_tenant_id=, =#+has_coding_scheme=, =#+has_image_id=, =#+has_artefact_insert_fn= — structural declarations made at frontmatter level, no naming fields. |
+
+=Entity='s full specialized-frontmatter treatment lives on [[id:18D99C09-22CD-4487-B7A3-FA0612A8B154][Codegen
+entity meta-model — file-level conventions]].
 
 * The metaclasses
 
-One row per concrete metaclass in the hierarchy above — =Base= itself
-is abstract and has no row, no model files, and no =#+type= value of
-its own.
+The table below lists the descendants of the base metaclass and
+provides details of each: its metatype, hub page, and where its
+model files live. =Base= itself is abstract and has no row, no model
+files, and no =#+type= value of its own.
 
 | Metaclass       | Metatype (=#+type=)          | Hub page                                                      | Model files live under                          |
 |-------------------+--------------------------------+-----------------------------------------------------------------+----------------------------------------------------|
@@ -151,8 +136,8 @@ its own.
 | =Module=          | =ores.codegen.module=          | *(not yet authored)*                                             | same                                                |
 
 Every entity model file, regardless of metaclass, is also an
-instance of the pattern described in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity model
-file as a unified literate document: one physical =.org= document
+instance of the pattern described in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "The entity model
+file as a unified literate document": one physical =.org= document
 bundling the logical element's shape, its authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]], and
 any [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][protected regions]] (paste blocks) it needs. Read that section for
 *why* these documents look the way they do.

@@ -35,7 +35,7 @@ The first few lines of the file are org-mode frontmatter. They
 describe the *document* (this codegen model), not the modelled
 entity. =:ID:=, =#+type:=, =#+filetags:=, and =#+component:= are
 inherited from every metatype's common base — see [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen
-meta-model]] § Common frontmatter. Specialized to =ores.codegen.entity=
+meta-model]] § "Common frontmatter". Specialized to =ores.codegen.entity=
 on top of that base, and required:
 
 | Keyword           | Purpose                                              |

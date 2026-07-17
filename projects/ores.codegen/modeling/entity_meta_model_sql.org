@@ -17,8 +17,8 @@ The columns it operates on are declared once, shared with C++, on the
 [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] page — this page is only the SQL-specific knobs
 layered on top.
 
-This segment mixes both MASD categories from [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity
-model file as a unified literate document, so it gets two diagrams,
+This segment mixes both MASD categories from [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "The entity
+model file as a unified literate document", so it gets two diagrams,
 one per category. Structural, drawn as a UML class diagram under
 [[*Flags][Flags]] below: =:tablename:= (a required identity field with no
 default — every entity needs exactly one value, nothing to toggle),
@@ -61,38 +61,10 @@ block]] kind (extra drop statements, [[*Paste block: extra drop statements][belo
 class — a block kind's =ID= is the well-known kind UUID, distinct
 from any entity's per-instance implementing block:
 
-#+begin_src plantuml :file entity_meta_model_sql_structural.png
-@startuml
-skinparam backgroundColor #FEFEFE
-skinparam classAttributeIconSize 0
+[[proj:projects/ores.codegen/modeling/entity_meta_model_sql_structural.png]]
 
-class Entity <<metaclass>> {
-  +sql : SQL
-}
-
-class SQL <<segment>> {
-  +tablename : string
-  +parentIdColumn : string [0..1]
-  +hierarchyNameField : string [0..1]
-  +extraDrops : SqlPasteBlock
-}
-
-note right of SQL
-  parentIdColumn and hierarchyNameField
-  are present only when the non-structural
-  HasParentId feature is selected -- see
-  this page's UVL feature diagram, which
-  carries the matching cross-reference.
-end note
-
-class SqlPasteBlock <<PasteBlock>> {
-  ID
-}
-
-Entity --> SQL
-SQL --> SqlPasteBlock
-@enduml
-#+end_src
+(Source: =projects/ores.codegen/modeling/entity_meta_model_sql_structural.puml=,
+rendered with =plantuml=.)
 
 Generates:
 

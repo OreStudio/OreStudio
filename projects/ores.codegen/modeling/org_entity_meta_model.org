@@ -21,8 +21,8 @@ all eight metatypes ores.codegen recognises. It does not describe any
 one entity, it describes what any entity model file is allowed to
 contain. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates MASD's
 logical/physical space, metatype, facet, and archetype concepts, and
-for why an entity model file looks the way it does at all (§ The
-entity model file as a unified literate document) — those concepts
+for why an entity model file looks the way it does at all (§ "The
+entity model file as a unified literate document") — those concepts
 are exactly the organising principle this hub uses below.
 
 This page stays deliberately short: an overview, the file-level
@@ -56,48 +56,10 @@ typed field per segment below. Segment classes are drawn empty here —
 each has its own structural fields, documented on its own page, not
 duplicated in this overview.
 
-#+begin_src plantuml :file org_entity_meta_model.png
-@startuml
-skinparam backgroundColor #FEFEFE
-skinparam classAttributeIconSize 0
+[[proj:projects/ores.codegen/modeling/org_entity_meta_model.png]]
 
-class CommonFrontmatter <<frontmatter>>
-class EntityFrontmatter <<frontmatter>>
-CommonFrontmatter <|-- EntityFrontmatter
-
-abstract class Base <<metaclass>> {
-  +frontmatter : CommonFrontmatter
-}
-
-class Entity <<metaclass>> {
-  +frontmatter : EntityFrontmatter
-  +keysAndColumns : KeysAndColumns
-  +sql : SQL
-  +cppDomain : CppDomain
-  +cppRepository : CppRepository
-  +cppService : CppService
-  +cppProtocol : CppProtocol
-  +cppNats : CppNats
-  +cppQt : CppQt
-  +cppGenerator : CppGenerator
-  +cppPresentation : CppPresentation
-  +pasteBlocks : PasteBlocks
-}
-Base <|-- Entity
-
-class KeysAndColumns <<segment>>
-class SQL <<segment>>
-class CppDomain <<segment>>
-class CppRepository <<segment>>
-class CppService <<segment>>
-class CppProtocol <<segment>>
-class CppNats <<segment>>
-class CppQt <<segment>>
-class CppGenerator <<segment>>
-class CppPresentation <<segment>>
-class PasteBlocks <<segment>>
-@enduml
-#+end_src
+(Source: =projects/ores.codegen/modeling/org_entity_meta_model.puml=,
+rendered with =plantuml=.)
 
 The body is divided into top-level sections, each read by a
 different facet's templates. Unrecognised section names (e.g.
@@ -117,7 +79,12 @@ routing table, not the reference itself.
 | [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]                      | MDI window, detail dialog, controller, client model.              | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                                                 |
 | [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | Custom repository methods' generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
 | [[id:F966605D-4321-4499-9304-F8A703C91E26][C++ Presentation]]            | History-diff field rendering.                                     | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                       |
-| [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]                | The shared mechanism for injecting hand-written code into an otherwise generated file — concrete block kinds live on the segment page for the facet they inject into, not here. | (cross-cutting)                                             |
+
+Not itself a segment — a concept applicable *within* several
+segments above — but documented alongside them for navigation:
+[[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]], the shared mechanism for injecting hand-written code
+into an otherwise generated file. Concrete block kinds live on the
+segment page that hosts them, not there.
 
 =ores.codegen.enum=/=ores.codegen.field-group= are separate MASD
 metatypes with their own facets (=ores.cpp.enum=,
@@ -133,8 +100,8 @@ entity's shape, its authored variability, and its protected regions
 into one document; the mechanical test for telling a variability
 *feature* apart from a *structural predicate*; and the contrast with
 how classical UML+Profile MDE keeps the same three concerns in three
-separate artefacts — now lives in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity model file
-as a unified literate document. Read that first if a knob on one of
+separate artefacts — now lives in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "The entity model file
+as a unified literate document". Read that first if a knob on one of
 these segment pages doesn't obviously fit "feature" or "structural
 predicate."
 

@@ -72,6 +72,7 @@ MDE variability-modeling literature it's built on:
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] and its segment pages — where the ad hoc knob documentation currently lives.
 - =/home/marco/Development/mcraveiro.github.io/dogen/docs/mde_and_variability_modeling.org= — the broader academic grounding (Groher & Völter's structural/non-structural split, presence conditions and IPC, positive/negative variability) MASD's variability model is presumably built on.
 - [[id:EE237306-7782-4625-8880-47E8975530EA][Task: Scaffold model .org files per entity type]] — where "shape" was coined, and where its exemplars/knob tables would need renaming if resolved as "profile".
+- [[id:A4B0BA78-7985-4652-8887-47692BD83A3E][Variability Modeling with UVL and FlamaPy]] — a working UVL-to-PNG feature-diagram experiment run against the C++ Qt segment page's Behavioural knobs, in support of formalizing this properly rather than leaving it prose-only.
 
 * See also
 

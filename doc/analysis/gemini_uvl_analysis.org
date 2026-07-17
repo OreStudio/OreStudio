@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: A4B0BA78-7985-4652-8887-47692BD83A3E
+:END:
+#+title: Variability Modeling with UVL and FlamaPy
+#+description: A practical blueprint for designing, writing, and compiling Feature Model Diagrams using the Universal Variability Language (UVL) and the FlamaPy toolchain. Gemini-authored notes; see projects/ores.compass/scripts/variability/ for the working, corrected experiment against the real flamapy 2.6 package layout.
+#+type: knowledge
+#+level: cross
+#+filetags: :spl:variability:uvl:flamapy:analysis:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+* Introduction to Software Product Line Engineering (SPLE)
+Model-Driven Engineering (MDE) often shifts the focus from engineering individual software solutions to managing groups of systems with similar characteristics—known as *Software Product Lines (SPLs)* or system families.
+
+The core mission of Software Product Line Engineering (SPLE) is to explicitly separate the engineering process into two distinct tracks:
+1. *Domain Engineering:* Defining the core assets, commonalities, and overall variation space (the variability model).
+2. *Application Engineering:* Selecting specific configurations or *variants* from the core assets to generate a single, concrete product.
+
+To manage this systematically, engineers employ **Feature Models**. A Feature Model is a hierarchical tree structure that defines the features of a system family, their structural relationships (mandatory, optional, alternative groups, OR groups), and cross-tree integrity constraints.
+
+* The Language: Universal Variability Language (UVL)
+To express these models in text—similar to how PlantUML is used for UML diagrams—the SPLE community developed the **Universal Variability Language (UVL)**. UVL is a human-readable, machine-parsable domain-specific language designed to act as a pivot format for variability analysis tools.
+
+** Common Notation Rules:
+- *Mandatory (●):* Features that must appear in every system variant if their parent is selected.
+- *Optional (○):* Features that can be included or excluded dynamically.
+- *Alternative (XOR / Hollow Arc):* A group of features where *exactly one* child must be chosen.
+- *Or (OR / Solid Arc):* A group of features where *one or more* children can be chosen in combination.
+
+* Comprehensive UVL Blueprint Example
+Below is an explicit UVL file structure representing an E-Commerce System portfolio. It covers multi-tiered relationships, abstract layout declarations, and cross-tree constraint mappings.
+
+Save this content locally as =ecommerce_model.uvl=.
+
+#+BEGIN_SRC uvl
+namespace ECommerceSystem
+
+features
+    ECommerceSystem {abstract}
+        mandatory
+            Catalog
+                alternative
+                    StaticCatalog
+                    DynamicCatalog
+            Payment
+                or
+                    CreditCard
+                    PayPal
+                    Crypto
+        optional
+            SearchEngine
+            Security
+                mandatory
+                    Encryption
+
+constraints
+    Crypto requires DynamicCatalog
+#+END_SRC
+
+* Pipeline Installation and Setup
+To compile your UVL declarations into visual PNG assets directly from your command line terminal, install the **FlamaPy** engine alongside the UVL parsing plugin and the systemic Graphviz bridging package.
+
+#+BEGIN_SRC bash
+# Install FlamaPy core, the feature model plugin, the UVL parser, and Python Graphviz bindings
+pip install flamapy flamapy-fm flamapy-uvl graphviz
+#+END_SRC
+
+#+BEGIN_NOTE
+*System Dependency Requirement:*
+The underlying rendering mechanism depends on the native system-level Graphviz engine. Ensure that the binary application is installed on your operating path:
+- *macOS:* =brew install graphviz=
+- *Ubuntu/Debian:* =sudo apt install graphviz=
+- *Windows:* Download the official installer from the Graphviz site and ensure the =bin/= path is appended to your environment variables.
+#+END_NOTE
+
+* The Python Compiler Pipeline Script
+Save the code block below as =uvl2png.py=. This script operates exactly like a compiler engine: it reads the incoming UVL hierarchy, maps out the structural vectors, attaches standard notation indicators, and compiles the result down to a clean PNG diagram.
+
+#+BEGIN_SRC python
+import sys
+import os
+from graphviz import Digraph
+from flamapy.metamodels.fm_metamodel.transformations import UVLReader
+
+def render_feature_tree(uvl_path, output_png_path):
+    print(f"[*] Initializing parsing pipeline for: {uvl_path}")
+
+    # 1. Parse the text file into an internal FlamaPy FeatureModel representation
+    reader = UVLReader(uvl_path)
+    feature_model = reader.transform()
+
+    # 2. Instantiate and configure the Graphviz canvas structure
+    dot = Digraph(comment='Feature Model Tree', format='png')
+
+    # Visual Styling matching standard documentation design specifications
+    dot.attr('graph', rankdir='TB', splines='ortho', nodesep='0.6', ranksep='0.6', bgcolor='#fafafa')
+    dot.attr('node', fontname='Helvetica', fontsize='11', shape='box',
+             style='rounded,filled', fillcolor='#ffffff', color='#2b2b2b', penwidth='1.5')
+    dot.attr('edge', color='#4a4a4a', penwidth='1.2')
+
+    # 3. Traverse the parsed FeatureTree structure recursively
+    def traverse(feature):
+        name = feature.name
+        label = name
+
+        # Add a node configuration onto the graph matrix
+        dot.node(name, label)
+
+        for relation in feature.get_relations():
+            is_mandatory = relation.is_mandatory()
+            is_alternative = relation.is_alternative()
+            is_or = relation.is_or()
+
+            for child in relation.children:
+                arrow_head = 'normal'
+                edge_style = 'solid'
+                edge_label = ''
+
+                # Structural syntax translation to standard tree aesthetics
+                if not is_mandatory and not is_alternative and not is_or:
+                    # Optional features: Indicated via empty/hollow arrowhead
+                    arrow_head = 'empty'
+                elif is_alternative:
+                    # Alternative groups (XOR representation)
+                    edge_label = 'XOR'
+                    edge_style = 'dashed'
+                elif is_or:
+                    # Inclusive OR group representation
+                    edge_label = 'OR'
+
+                dot.edge(name, child.name, style=edge_style, arrowhead=arrow_head, label=edge_label)
+                traverse(child)
+
+    # Begin executing from the root structural node
+    root_feature = feature_model.root
+    if root_feature:
+        traverse(root_feature)
+
+    # 4. Compile the output file mapping layout matrix
+    output_base = os.path.splitext(output_png_path)[0]
+    dot.render(output_base, cleanup=True)
+    print(f"[+] Extraction complete. Asset successfully written to: {output_base}.png")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("[!] Execution error. Missing required inputs.")
+        print("Usage: python uvl2png.py <input.uvl> <output.png>")
+        sys.exit(1)
+
+    render_feature_tree(sys.argv[1], sys.argv[2])
+#+END_SRC
+
+* Execution and Automation Command
+Once your structural data logic and compiler engine file scripts are configured inside the exact same working folder directory, trigger the generation pipeline via the terminal environment line:
+
+#+BEGIN_SRC bash
+python uvl2png.py ecommerce_model.uvl ecommerce_diagram.png
+#+END_SRC
+
+This creates a high-resolution, presentation-ready =ecommerce_diagram.png=
+detailing your product line's variability points cleanly across an absolute
+graphical structural tree layout.
+
+* See also
+
+- =projects/ores.compass/scripts/variability/= — the working experiment run
+  against this pipeline: =domain_entity_qt.uvl= (a real UVL feature model of
+  the [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]] segment page's Behavioural knobs) and =uvl2png.py= (this
+  page's script, corrected — =flamapy-fm=/=flamapy-uvl= as separate PyPI
+  packages don't exist; =UVLReader= ships in the base =flamapy=/=flamapy-fm=
+  packages, pulled in automatically by installing =flamapy=). First render
+  worked end to end but wasn't visually clean enough to embed yet — a
+  mandatory sibling group renders as a confusing chain under Graphviz's
+  =splines=ortho=.
+- [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize the codegen entity knob system as a proper MASD/MDE feature
+  model]] — the capture this experiment supports.

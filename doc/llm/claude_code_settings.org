@@ -5,9 +5,9 @@
 #+description: Literate source for .claude/settings.json — permission allow-list and sandbox overrides, generated via org-babel tangle.
 #+type: knowledge
 #+level: cross
-#+filetags: :llm:claude_code:settings:permissions:
+#+filetags: :llm:claude_code:settings:permissions:hooks:
 #+created: 2026-05-22
-#+updated: 2026-07-05
+#+updated: 2026-07-17
 
 * Summary
 
@@ -77,6 +77,9 @@ last section in each array carries no comma.
 <<sandbox-network>>,
 <<sandbox-filesystem>>,
 <<sandbox-excluded>>
+  },
+  "hooks": {
+<<hooks-pretooluse>>
   }
 }
 #+end_src
@@ -557,6 +560,97 @@ invocation forms from the permission grant are mirrored here.
       "./projects/ores.compass/compass.sh *",
       "projects/ores.compass/compass.sh *",
       "git *"
+    ]
+#+end_src
+
+* Hooks
+
+** Deny piped or redirected compass invocations
+
+Permission allow/deny rules cannot express this rule: they evaluate a
+compound command /per subcommand/ (see the Shell utilities rationale
+above), so a pipeline like =./compass.sh build --direct site | tail
+-30= is checked as two independent, individually-authorised pieces
+(=compass.sh build ...= and =tail -30=) — there is no way for a glob
+rule to see "compass, piped into tail" as a single shape to deny, nor
+to distinguish it from an unrelated, perfectly fine =tail -f
+/tmp/some.log=. A =PreToolUse= hook is the only mechanism that
+inspects the full command string as written, so it is what enforces
+CLAUDE.md's "never pipe or redirect a compass command" rule: every
+=compass= command that produces meaningful output prints its own
+well-known log-file path (=📝 Build output: /tmp/<label>_<target>_build.log
+(tail -f to follow)=; see [[proj:projects/ores.compass/src/compass.py][=compass.py='s =_build_log_path=/=_direct_build_log_path=]]) —
+watching that reported file with a separate, standalone =tail= is the
+supported way to follow progress.
+
+The hook fires on every =Bash= tool call, matches the command against
+all four invocation forms compass is granted under (see [[id:2D83251F-0E24-4B97-B736-08F710316634][Compass]]
+above) plus the raw script name, and denies (exit code 2, message on
+stderr) only when that same command string also contains a pipe
+(=|=) or a redirect (=>=, which also matches =2>&1= and =>>=). A
+denial's stderr becomes the tool result the agent sees, so the
+message doubles as the correction: it names the rule and repeats what
+to do instead, rather than the agent having to infer that from a bare
+rejection.
+
+#+begin_src python :tangle ../../projects/ores.compass/src/deny_piped_compass_hook.py :mkdirp yes :shebang "#!/usr/bin/env python3"
+"""PreToolUse hook: deny compass.sh invocations that pipe or redirect
+their output. See CLAUDE.md's "Never pipe or redirect a compass
+command" rule and doc/llm/claude_code_settings.org's Hooks section.
+
+Compass build/deploy commands print their own well-known log-file
+path for exactly this purpose; tailing that file separately is the
+supported way to follow progress instead.
+"""
+import json
+import re
+import sys
+
+COMPASS_RE = re.compile(
+    r"(?:^|[\s&;(])(?:\./)?(?:projects/ores\.compass/)?compass\.sh(?:\s|$)"
+)
+REDIRECT_RE = re.compile(r"\||>")
+
+DENIAL_MESSAGE = (
+    "Never pipe or redirect a compass command (no `|`, no `>`, no "
+    "`2>&1`) -- run it bare. Compass build/deploy commands print their "
+    "own well-known log-file path (e.g. \"\U0001F4DD Build output: "
+    "/tmp/<label>_<target>_build.log (tail -f to follow)\"). To watch "
+    "progress, tail THAT reported file as a separate, standalone "
+    "command (e.g. `tail -f <path>`) -- never by piping the compass "
+    "invocation itself. See CLAUDE.md.\n"
+)
+
+
+def main() -> int:
+    try:
+        data = json.load(sys.stdin)
+    except (ValueError, json.JSONDecodeError):
+        return 0
+    if data.get("tool_name") != "Bash":
+        return 0
+    command = data.get("tool_input", {}).get("command", "")
+    if COMPASS_RE.search(command) and REDIRECT_RE.search(command):
+        sys.stderr.write(DENIAL_MESSAGE)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#+end_src
+
+#+begin_src json :tangle no :noweb-ref hooks-pretooluse
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 projects/ores.compass/src/deny_piped_compass_hook.py"
+          }
+        ]
+      }
     ]
 #+end_src
 

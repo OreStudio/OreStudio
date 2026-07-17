@@ -5532,6 +5532,15 @@ EMACS_BUILD_SCRIPTS = {
 _EMACS_LISP_DIR = Path("projects") / "ores.lisp" / "src"
 
 
+def _direct_build_log_path(target: str) -> Path:
+    """Well-known output-log path for a `--direct` emacs build target, for
+    `tail -f` — named <environment-label>_<target>_build.log so it's easy
+    to tell apart from another worktree's build running concurrently."""
+    env_label = _read_env_map().get("ORES_CHECKOUT_LABEL", "") or "direct"
+    friendly = target.removeprefix("deploy_")
+    return Path(f"/tmp/{env_label}_{friendly}_build.log")
+
+
 def _run_emacs_target(target: str, dry_run: bool = False) -> int:
     """Run a single emacs build script directly, bypassing cmake."""
     script = EMACS_BUILD_SCRIPTS.get(target)
@@ -5548,7 +5557,10 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
     print(f"🔨 emacs -Q --script {_EMACS_LISP_DIR / script}")
     if dry_run:
         return 0
-    return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+    log_path = _direct_build_log_path(target)
+    print(f"📝 Build output: {log_path} (tail -f to follow)")
+    with open(log_path, "w") as log:
+        return _run_logged(cmd, PROJECT_ROOT, log)
 
 
 def cmd_site(argv):

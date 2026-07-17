@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 11FDFC40-E10B-4970-A15E-EEA8D8B7CA82
+:END:
+#+title: Task: Improve compass output monitoring
+#+description: Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once.
+#+type: task
+#+level: s1
+#+filetags: :compass:tooling:observability:sprint_23:compass_improvements:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give every =compass= invocation a "control panel": a well-known,
+project-local, rotated log per command shape, instead of today's
+scattered =/tmp/ores-build.log.<slot>= and =/tmp/<label>_<target>_build.log=
+files — and cap concurrent service fleets host-wide so at most 4
+environments run services at once, with a clear message (and a list
+of who's holding a slot) when a 5th tries.
+
+This grew out of an earlier ad-hoc fix made in-session: =compass
+build= and =compass build --direct <target>= currently print
+a =📝 Build output: <path> (tail -f to follow)= line and write to a
+=/tmp=-rooted path (=_build_log_path=/=_direct_build_log_path= in
+=compass.py=). That was a step in the right direction (a well-known,
+reported path an LLM can =tail= instead of piping the compass
+invocation itself — see CLAUDE.md's "never pipe or redirect a
+compass command" rule and =deny_piped_compass_hook.py=), but it is
+=/tmp=-rooted, one file per command *target* rather than rotated
+history, and doesn't cover every compass command that produces
+meaningful output.
+
+* Requirements
+
+1. *Location*: all compass command output moves from =/tmp= to a
+   project-local =./tmp/compass_output/= directory (gitignored,
+   per-checkout — so concurrent environments on the same host never
+   collide on a filename).
+2. *Naming*: one log-file family per distinct command shape, not per
+   invocation — e.g. =build.log=, =build_site_direct.log=,
+   =build_settings_direct.log=, =build_skills_direct.log=.
+3. *Header*: each fresh log file opens with a line identifying the
+   command and when it ran, e.g. =compass command executed at
+   2026-07-17T19:42:03: ./compass.sh build --direct site=.
+4. *Rotation*: classic logrotate scheme, max 5 kept per command
+   family (current + 4 rotated). On each new run: drop
+   =build.log.4=, shift =.3→.4=, =.2→.3=, =.1→.2=, =build.log→.1=,
+   write a fresh =build.log=.
+5. *Build-lock interaction*: the build-lock file itself stays at
+   =/tmp/ores-build-lock.<slot>= (host-wide by design — shared across
+   every worktree/environment on the box, so it must live outside
+   any one checkout). It no longer writes the build log directly;
+   instead it points at the log's new location under that
+   invocation's own =./tmp/compass_output/= (so
+   =compass build --status= can still find and tail it).
+6. *Retrofit*: apply this to every compass command already migrated
+   to the old =/tmp= scheme (=build=, =build --direct site=,
+   =build --direct settings=, =build --direct skills=, and any other
+   =--direct= target), not just new ones going forward.
+7. *Services-start lock*: a new host-wide lock, independent of the
+   build lock, capping concurrent *running* service fleets at 4
+   environments. Unlike the build lock (released when the command
+   exits), this lock is acquired on =compass services start= and held
+   until the matching =compass services stop= — it tracks "up", not
+   "running the start command". When a 5th environment tries to
+   start with no slots free, =services start= must refuse cleanly:
+   print a clear "no slots left" message plus the list of which
+   environments currently hold a slot (label + since-when), so the
+   user knows which one to bring down.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Design the rotation/log-family scheme, then implement in compass.py alongside the existing build lock. |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- Every compass command that produces meaningful output writes to =./tmp/compass_output/<command>.log=, not =/tmp=.
+- Each log file's first line records the command executed and a timestamp.
+- Rotation keeps at most 5 generations per command family (current + =.1= through =.4=), oldest dropped.
+- The build-lock file at =/tmp/ores-build-lock.<slot>= still exists (host-wide coordination unaffected) but now only points at the per-checkout log location; =compass build --status= still works.
+- =compass services start= acquires a host-wide lock capped at 4 concurrently-running environments, held until =compass services stop=.
+- A =services start= attempt with no free slot prints a clear message and lists the environments currently holding a slot.
+- =doc/llm/claude_code_settings.org= / recipes updated if the reported log-path message text changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

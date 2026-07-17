@@ -12,7 +12,7 @@
 
 A codegen *entity model* is a single literate org-mode file that
 describes one entity (e.g. [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][party]]) and drives code generation across
-every technical space that entity touches: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][SQL]] and several independent
+every technical space that entity touches: [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]] and several independent
 C++ facets (e.g. [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]],
 [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]). In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
 segment pages — is the *metamodel* for one metatype, =ores.codegen.entity=
@@ -32,12 +32,10 @@ facet's knobs, worked example, and paste blocks in full. Go to a
 segment page for the exhaustive per-property reference; come back
 here only for the shape of the file as a whole.
 
-* About this document
+* Use of =:ignore:= in models
 
-The =:ignore:= tag (not applied to this heading itself — this is a
-knowledge doc, not an entity model, so the tag has no functional
-effect here) asks the codegen loader to skip a heading when reading
-an actual entity file (it means "skip this heading", not "this
+The =:ignore:= tag asks the codegen loader to skip a heading when
+reading an entity file (it means "skip this heading", not "this
 document is unimportant" — an unfortunate naming collision if you're
 skimming the table of contents of an entity model that uses it).
 Sections without that tag may be consumed by the loader.

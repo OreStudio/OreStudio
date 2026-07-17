@@ -59,8 +59,8 @@ this =Flags= sub-heading.
 
 Some entities form a tree via a self-referencing soft foreign key —
 a =book= belongs to a =portfolio=, a =counterparty= can have a parent
-=counterparty=. Setting =:has_parent_id: true= tells the SQL facet
-to generate a recursive-CTE function that walks that tree, so
+=counterparty=. Setting =:has_parent_id: true= tells the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
+facet to generate a recursive-CTE function that walks that tree, so
 consumers don't each hand-write their own recursive query.
 
 | Property                | Required | Meaning                                                    |

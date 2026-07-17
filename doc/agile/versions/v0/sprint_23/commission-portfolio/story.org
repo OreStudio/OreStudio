@@ -31,9 +31,9 @@ counterparty chapters.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Codegen/drift task DONE (PR open).     |
-| Waiting on    | Nothing.                               |
-| Next          | Add portfolio entity chapter to the user manual. |
+| Now           | Codegen/drift task DONE (merged). Manual-chapter task BLOCKED on the badge story. |
+| Waiting on    | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] — Portfolios badge colours must be correct before screenshotting. |
+| Next          | Resume the manual-chapter task once the badge story lands. |
 | Last touched  | 2026-07-17                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ counterparty chapters.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | DONE | 2026-07-16 | 2026-07-17 | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
-| [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | STARTED | 2026-07-17 | | Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned. |
+| [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | BLOCKED | 2026-07-17 | | Chapter written, screenshot scenario scaffolded; capture blocked on [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] -- Portfolios screens render wrong badge colours until that story's remaining tasks land. |
 
 * Decisions
 

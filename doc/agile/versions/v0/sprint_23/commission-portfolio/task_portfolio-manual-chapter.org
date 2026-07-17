@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/portfolio-manual-chapter
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]
+#+blocked_since: 2026-07-17
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-07-17
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ the codegen/drift task has landed a commissioned baseline.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Now          | Screenshot test scenario scaffolded and loading correctly (169B33B9), but capture blocked before any screenshots were taken: the Portfolios list/detail screens render badges with wrong colours, traced to the incomplete [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story (adoption-coverage audit and badge-source self-badging tasks never finished). |
+| Waiting on   | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] — resume once its remaining tasks land and portfolio's badges render correctly. |
+| Next         | Resume the screenshot capture scenario once unblocked; no screenshots have been taken yet, so nothing needs redoing, just picking back up. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
@@ -49,6 +49,19 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- 2026-07-17: While working the screenshot-capture scenario ([[id:169B33B9-D673-4BA9-9AC1-14FBF3B63AA0][Capture
+  screenshots for the Portfolios manual chapter]]), the Portfolios
+  list and detail screens showed wrong badge colours (Status,
+  IsVirtual). Traced to [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]
+  (sprint 23, owned by =bright_faraday=) being started but not
+  finished — its highest-leverage task (the =badge_mapping= browser
+  UI) is itself BLOCKED, and the coverage-audit/self-badging tasks
+  are still BACKLOG. Screenshotting the Portfolios chapter now would
+  capture the wrong colours into shipped manual images. Blocked this
+  task on that story rather than working around it with a one-off
+  fix scoped to portfolio; see the badge story for the actual
+  remediation work.
 
 * Test Scenarios
 

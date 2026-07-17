@@ -28,11 +28,11 @@ parent story has a concrete, complete list of what remains to commission.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Inventory complete; follow-on task scaffolded. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close this task.                       |
+| Next         | Nothing. |
 | Last touched | 2026-07-17                             |
 
 * Acceptance
@@ -139,3 +139,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 22 DQ repository entities classified: 4 core-only commissioned, 3
+partially commissioned (model exists, handler/service/protocol/Qt
+hand-written — sibling task), 16 with no codegen model at all (5
+named in the story, 11 discovered here). Two follow-on tasks scaffolded
+from this inventory: [[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]] (commission the 5 story-named entities)
+and, via the promoted capture [[id:EE237306-7782-4625-8880-47E8975530EA][EE237306]]/new sibling [[id:7B59588B-5BC5-4206-935C-1AFEF7C25E96][7B59588B]], the
+scaffold+lint tooling to make future commissioning knob-complete by
+construction.

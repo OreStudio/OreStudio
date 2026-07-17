@@ -48,6 +48,13 @@ keys, and credentials from =ORES_SHELL_LOGIN_USERNAME= /
 - =--dry-run= — print the command (password masked) without running.
 - Anything after =--= is forwarded to ores.shell verbatim.
 
+A scripted session's (=-f=) combined output also streams live to
+=/tmp/ores_<env>_shell.log= (overwritten each run) — =tail -f= that
+path from another shell to watch a long-running provisioning script
+without waiting on this command's own output. The interactive REPL
+(no =-f=) is unaffected — it keeps the terminal directly, since
+piping its output would break readline.
+
 The Emacs dashboard's /Open ORE Studio shell/ item launches the REPL
 through this command, so both entry points share the same defaults.
 

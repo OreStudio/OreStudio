@@ -34,7 +34,6 @@
 #include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_status_changed_event.hpp"
-#include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.service/app/application_exception.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
@@ -114,8 +113,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // Generated per-entity event mappings (book, business_day_convention_type,
     // business_unit, business_unit_type, country, currency, party_id_scheme,
-    // party_type, purpose_type). See event_registrar.cpp for why not every
-    // entity is migrated here yet.
+    // party_type, portfolio, purpose_type). See event_registrar.cpp for why
+    // not every entity is migrated here yet.
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
 
@@ -145,8 +144,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.refdata.party_identifier", "ores_refdata_party_identifiers");
     ev::service::registrar::register_mapping<rdev::party_status_changed_event>(
         event_source, "ores.refdata.party_status", "ores_refdata_party_statuses");
-    ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
-        event_source, "ores.refdata.portfolio", "ores_refdata_portfolios");
 
     auto business_centre_sub = event_bus.subscribe<rdev::business_centre_changed_event>(
         [&nats](const rdev::business_centre_changed_event& e) {
@@ -261,17 +258,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.party_status",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto portfolio_sub = event_bus.subscribe<rdev::portfolio_changed_event>(
-        [&nats](const rdev::portfolio_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::portfolio_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.portfolio",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.portfolio_ids,
                                                 .tenant_id = e.tenant_id});
         });
 

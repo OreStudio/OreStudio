@@ -49,7 +49,7 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
     r.owner_unit_id = ctx.generate_uuid();
     r.purpose_type = std::string("Risk");
     r.aggregation_ccy = std::string("USD");
-    r.is_virtual = 0;
+    r.is_virtual = false;
     r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

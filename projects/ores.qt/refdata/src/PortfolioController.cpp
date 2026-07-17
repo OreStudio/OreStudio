@@ -51,9 +51,11 @@ PortfolioController::PortfolioController(QMainWindow* mainWindow,
                                          ImageCache* imageCache,
                                          ChangeReasonCache* changeReasonCache,
                                          const QString& username,
+                                         BadgeCache* badgeCache,
                                          QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, portfolio_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
     setImageCache(imageCache);
@@ -71,7 +73,7 @@ void PortfolioController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PortfolioMdiWindow(clientManager_, username_, imageCache_);
+    listWindow_ = new PortfolioMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(

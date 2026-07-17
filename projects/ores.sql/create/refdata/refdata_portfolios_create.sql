@@ -40,7 +40,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "owner_unit_id" uuid null,
     "purpose_type" text not null,
     "aggregation_ccy" text null,
-    "is_virtual" integer not null,
+    "is_virtual" boolean not null,
     "status" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,

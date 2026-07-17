@@ -56,6 +56,7 @@ public:
     enum Column {
         Name,
         PurposeType,
+        Status,
         AggregationCcy,
         IsVirtual,
         Version,

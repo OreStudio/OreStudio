@@ -149,27 +149,33 @@ std::string("USD")
 
 ** is_virtual
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
 :END:
 
-If 1, node is purely for on-demand reporting.
+If true, node is purely for on-demand reporting.
 
 Not persisted in trade attribution when virtual.
 
 #+begin_src cpp :name generator
-0
+false
 #+end_src
 
 ** status
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Active"
 :END:
 
-Current lifecycle status (Active, Inactive, Closed).
+Current lifecycle status (Active, Inactive, Closed). No dedicated
+lookup table exists yet (unlike book_status) -- a fixed three-value
+list, defaulting to =Active= for the same reason as
+=purpose_type=/book's =book_status=: a freshly-constructed portfolio
+always carries a value.
 
 #+begin_src cpp :name generator
 std::string("Active")
@@ -306,24 +312,32 @@ entity versioning" architecture doc, "Multi-level composition".
 
 *** Detail fields
 
-| field           | label                 | widget                 | type           | is_key | is_required | placeholder                 | flag_source | combo_allow_blank | combo_fetch | combo_domain_type          | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal |
-|-----------------+-----------------------+-------------------------+----------------+--------+-------------+------------------------------+-------------+--------------------+-------------+-----------------------------+-----------------------------+----------------------+----------------------+-------------------+----------------------+-------------------+----------------+----------------------|
-| id              | Id                    | idEdit                  | line_edit      | true   | true        | Portfolio id                |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |
-| name            | Name                  | nameEdit                | line_edit      |        | true        | Enter portfolio name         |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |
-| purpose_type    | Purpose Type          | purposeTypeCombo        | dynamic_combo  |        |             |                              |             |                    |             | refdata::domain::purpose_type | ores.qt/LookupFetcher.hpp | fetch_purpose_types | purposeTypeWatcher   | code              | description          | display_order     | purpose types  | PurposeTypeCombo     |
-| aggregation_ccy | Aggregation Currency  | aggregationCcyEdit      | flagged_combo  |        |             |                              | currency    |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |
+=parent_portfolio_id=/=owner_unit_id= (optional UUID FKs) are not
+exposed here, matching book's =owner_unit_id= precedent -- neither
+codegen entity has an entity-picker combo widget yet.
+
+| field           | label                 | widget                 | type           | is_key | is_required | placeholder                 | flag_source | combo_allow_blank | combo_fetch | combo_domain_type          | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | combo_values             |
+|-----------------+-----------------------+-------------------------+----------------+--------+-------------+------------------------------+-------------+--------------------+-------------+-----------------------------+-----------------------------+----------------------+----------------------+-------------------+----------------------+-------------------+----------------+----------------------+---------------------------|
+| id              | Id                    | idEdit                  | line_edit      | true   | true        | Portfolio id                |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
+| name            | Name                  | nameEdit                | line_edit      |        | true        | Enter portfolio name         |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
+| purpose_type    | Purpose Type          | purposeTypeCombo        | dynamic_combo  |        |             |                              |             |                    |             | refdata::domain::purpose_type | ores.qt/LookupFetcher.hpp | fetch_purpose_types | purposeTypeWatcher   | code              | description          | display_order     | purpose types  | PurposeTypeCombo     |                           |
+| status          | Status                | statusCombo             | static_combo   |        |             |                              |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      | Active,Inactive,Closed,Frozen,Pending |
+| is_virtual      | Virtual               | isVirtualCheckBox       | check_box      |        |             |                              |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
+| aggregation_ccy | Aggregation Currency  | aggregationCcyEdit      | flagged_combo  |        |             |                              | currency    |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
+| description     | Description           | descriptionEdit         | text_edit      |        |             | Enter description (optional) |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
 
 *** Columns (Qt model)
 
-| enum_name      | field           | header        | type      | width |
-|----------------+-----------------+---------------+-----------+-------|
-| Name           | name            | Name          | string    | 250   |
-| PurposeType    | purpose_type    | Purpose       | string    | 120   |
-| AggregationCcy | aggregation_ccy | Agg. Currency | string    | 120   |
-| IsVirtual      | is_virtual      | Virtual       | int       | 70    |
-| Version        | version         | Version       | int       | 80    |
-| ModifiedBy     | modified_by     | Modified By   | string    | 120   |
-| RecordedAt     | recorded_at     | Recorded At   | timestamp | 150   |
+| enum_name      | field           | header        | type      | width | is_badge | badge_key  |
+|----------------+-----------------+---------------+-----------+-------+----------+------------|
+| Name           | name            | Name          | string    | 250   |          |            |
+| PurposeType    | purpose_type    | Purpose       | string    | 120   |          |            |
+| Status         | status          | Status        | string    | 100   | true     | portfolio_status |
+| AggregationCcy | aggregation_ccy | Agg. Currency | string    | 120   |          |            |
+| IsVirtual      | is_virtual      | Virtual       | bool      | 70    | true     | is_virtual |
+| Version        | version         | Version       | int       | 80    |          |            |
+| ModifiedBy     | modified_by     | Modified By   | string    | 120   |          |            |
+| RecordedAt     | recorded_at     | Recorded At   | timestamp | 150   |          |            |
 
 *** Icon columns (Qt model)
 

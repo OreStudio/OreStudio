@@ -40,7 +40,7 @@ std::vector<ores::diff::domain::field_value> render_portfolio_fields(const domai
          .value = v.owner_unit_id ? boost::uuids::to_string(*v.owner_unit_id) : std::string{}});
     fields.push_back({.name = "Purpose Type", .value = v.purpose_type});
     fields.push_back({.name = "Aggregation Ccy", .value = v.aggregation_ccy});
-    fields.push_back({.name = "Is Virtual", .value = std::to_string(v.is_virtual)});
+    fields.push_back({.name = "Is Virtual", .value = v.is_virtual ? "true" : "false"});
     fields.push_back({.name = "Status", .value = v.status});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});

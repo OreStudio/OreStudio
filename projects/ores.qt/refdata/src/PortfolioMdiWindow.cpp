@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/PortfolioMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -38,11 +39,13 @@ using namespace ores::logging;
 
 PortfolioMdiWindow::PortfolioMdiWindow(ClientManager* clientManager,
                                        const QString& username,
+                                       BadgeCache* badgeCache,
                                        ImageCache* imageCache,
                                        QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , badgeCache_(badgeCache)
     , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
@@ -134,14 +137,46 @@ void PortfolioMdiWindow::setupTable() {
         {
             cs::text_left,
             cs::text_left,
+            cs::badge_centered,
             cs::icon_text_left,
-            cs::mono_center,
+            cs::badge_centered,
             cs::mono_center,
             cs::text_left,
             cs::text_left,
         },
         tableView_);
+    delegate->set_badge_color_resolver(
+        2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("portfolio_status", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("is_virtual", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
     initializeTableSettings(tableView_, model_, "PortfolioListWindow", {}, {900, 400}, 1);
 }

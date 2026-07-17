@@ -30,6 +30,7 @@
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -94,7 +95,14 @@ void PortfolioDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
-void PortfolioDetailDialog::setupCombos() {}
+void PortfolioDetailDialog::setupCombos() {
+    ui_->statusCombo->clear();
+    ui_->statusCombo->addItem(tr("Active"), QString("Active"));
+    ui_->statusCombo->addItem(tr("Inactive"), QString("Inactive"));
+    ui_->statusCombo->addItem(tr("Closed"), QString("Closed"));
+    ui_->statusCombo->addItem(tr("Frozen"), QString("Frozen"));
+    ui_->statusCombo->addItem(tr("Pending"), QString("Pending"));
+}
 
 void PortfolioDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &PortfolioDetailDialog::onSaveClicked);
@@ -108,8 +116,18 @@ void PortfolioDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(
+        ui_->isVirtualCheckBox, &QCheckBox::toggled, this, &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->aggregationCcyEdit,
             &QComboBox::currentIndexChanged,
+            this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
             this,
             &PortfolioDetailDialog::onFieldChanged);
 }
@@ -159,7 +177,9 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     ui_->idEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->purposeTypeCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->aggregationCcyEdit->setEnabled(!readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -196,10 +216,18 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
             ui_->purposeTypeCombo->setCurrentIndex(idx);
     }
     {
+        const auto val = QString::fromStdString(portfolio_.status);
+        const int idx = ui_->statusCombo->findData(val);
+        if (idx >= 0)
+            ui_->statusCombo->setCurrentIndex(idx);
+    }
+    ui_->isVirtualCheckBox->setChecked(portfolio_.is_virtual);
+    {
         const auto val = QString::fromStdString(portfolio_.aggregation_ccy);
         const int idx = ui_->aggregationCcyEdit->findText(val);
         ui_->aggregationCcyEdit->setCurrentIndex(idx);
     }
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(portfolio_.description));
 
     populateProvenance(portfolio_.version,
                        portfolio_.modified_by,
@@ -215,7 +243,10 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
 void PortfolioDetailDialog::updatePortfolioFromUi() {
     portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
     portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().toStdString();
+    portfolio_.status = ui_->statusCombo->currentData().toString().toStdString();
+    portfolio_.is_virtual = ui_->isVirtualCheckBox->isChecked();
     portfolio_.aggregation_ccy = ui_->aggregationCcyEdit->currentText().toStdString();
+    portfolio_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     portfolio_.modified_by = username_;
 }
 

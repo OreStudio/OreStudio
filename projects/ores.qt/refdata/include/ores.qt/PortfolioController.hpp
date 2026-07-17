@@ -36,6 +36,7 @@ namespace ores::qt {
 
 class PortfolioMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 class ImageCache;
 
@@ -64,6 +65,7 @@ public:
                         ImageCache* imageCache,
                         ChangeReasonCache* changeReasonCache,
                         const QString& username,
+                        BadgeCache* badgeCache,
                         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -112,6 +114,7 @@ private:
             callback);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     PortfolioMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

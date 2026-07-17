@@ -86,10 +86,12 @@ QVariant ClientPortfolioModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(portfolio.name);
             case PurposeType:
                 return QString::fromStdString(portfolio.purpose_type);
+            case Status:
+                return QString::fromStdString(portfolio.status);
             case AggregationCcy:
                 return QString::fromStdString(portfolio.aggregation_ccy);
             case IsVirtual:
-                return static_cast<qlonglong>(portfolio.is_virtual);
+                return portfolio.is_virtual ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(portfolio.version);
             case ModifiedBy:
@@ -123,6 +125,8 @@ ClientPortfolioModel::headerData(int section, Qt::Orientation orientation, int r
             return tr("Name");
         case PurposeType:
             return tr("Purpose");
+        case Status:
+            return tr("Status");
         case AggregationCcy:
             return tr("Agg. Currency");
         case IsVirtual:

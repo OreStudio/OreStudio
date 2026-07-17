@@ -69,18 +69,19 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-7. /Optionally, provision via the shell/ — run a provisioning script
-   from the generated library (e.g. a full Barclays/GLEIF system, or
-   the lightweight bootstrap smoke):
+7. /Provision the Barclays tenant via the shell/ — run the full
+   Barclays/GLEIF provisioning script from the generated library:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
    #+end_src
 
-8. /Verify/ — services up, bearings clean:
+8. /Verify/ — bearings clean. Do not start services as part of this
+   skill; only run =compass services start= if the user explicitly
+   asks for it:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh services start && ./projects/ores.compass/compass.sh bearings
+   ./projects/ores.compass/compass.sh bearings
    #+end_src
 
 * Recipes

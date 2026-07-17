@@ -23,6 +23,10 @@ import sqlite3
 import subprocess
 import sys
 import time
+try:
+    import fcntl  # POSIX-only; build-lock functions degrade gracefully without it.
+except ImportError:
+    fcntl = None
 from collections import defaultdict
 from pathlib import Path
 
@@ -5611,6 +5615,169 @@ def cmd_site(argv):
     return 0
 
 
+# Two build-lock slots so up to two environments on this host can build at
+# once without oversubscribing it: slot 'a' gets -j3, slot 'b' gets -j2
+# (5 cores in flight, max). A third slot could be added the same way if
+# the host ever has headroom for it -- nothing else assumes exactly two.
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))
+BUILD_LOCK_POLL_INTERVAL = 1.0
+
+
+def _build_lock_path(slot_name):
+    return Path(f"/tmp/ores-build.lock.{slot_name}")
+
+
+def _build_lock_identity_line(jobs):
+    """This environment's one-line identity string for a build-lock slot."""
+    env_name = _read_env_map().get("ORES_ENV_NAME") or PROJECT_ROOT.name
+    identity = env_name.replace("-", " ").replace("_", " ")
+    started = datetime.datetime.now().isoformat(timespec="seconds")
+    return f"{identity} | pid={os.getpid()} | jobs={jobs} | {PROJECT_ROOT} | since {started}\n"
+
+
+def build_lock_holder(slot_name):
+    """Best-effort read of who currently/last held a build-lock slot.
+
+    Returns the identity line written by _acquire_build_lock, or None if
+    the slot's lock file doesn't exist yet or is empty. This is
+    informational only -- the content can be stale (left over from the
+    last holder) if the slot isn't actually held right now; pair with
+    _build_lock_slot_free() if you need to know whether it's held.
+    """
+    try:
+        content = _build_lock_path(slot_name).read_text(encoding="utf-8").strip()
+    except (FileNotFoundError, OSError):
+        return None
+    return content or None
+
+
+def _build_lock_slot_free(slot_name):
+    """Non-destructively probe whether a build-lock slot is currently held.
+
+    Always reports free on platforms without fcntl (e.g. Windows) --
+    build locking is a no-op there; see _acquire_build_lock.
+    """
+    if fcntl is None:
+        return True
+    fd = os.open(_build_lock_path(slot_name), os.O_CREAT | os.O_RDWR, 0o666)
+    probe = os.fdopen(fd, "r+")
+    try:
+        fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return False
+    else:
+        fcntl.flock(probe, fcntl.LOCK_UN)
+        return True
+    finally:
+        probe.close()
+
+
+def build_lock_status():
+    """List of (slot_name, jobs, free, holder) for every build-lock slot."""
+    return [(name, jobs, _build_lock_slot_free(name), build_lock_holder(name))
+            for name, jobs in BUILD_LOCK_SLOTS]
+
+
+def _build_log_path(slot_name):
+    """Well-known output-log path for a build-lock slot, for `tail -f`."""
+    return Path(f"/tmp/ores-build.log.{slot_name}")
+
+
+def _build_log_tail(slot_name, n=10):
+    """Last n lines of a build-lock slot's log file, or None if there's
+    no log yet (no build has run in this slot since the file last existed)."""
+    path = _build_log_path(slot_name)
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except (FileNotFoundError, OSError):
+        return None
+    return lines[-n:] if lines else None
+
+
+def _run_logged(cmd, cwd, log):
+    """Run cmd, streaming combined stdout/stderr to both the console and
+    the already-open log file handle, so `tail -f` on that file shows
+    exactly what a build-lock slot is doing right now.
+
+    Returns the process return code.
+    """
+    log.write(f"$ {' '.join(cmd)}\n")
+    log.flush()
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, bufsize=1)
+    for line in proc.stdout:
+        sys.stdout.write(line)
+        log.write(line)
+        log.flush()
+    proc.wait()
+    return proc.returncode
+
+
+def _acquire_build_lock():
+    """Acquire one of the host-wide build-lock slots, blocking until free.
+
+    Every worktree/environment on this host shares the same slots (paths
+    outside any worktree, so they aren't per-checkout). Concurrent
+    `cmake --build` invocations across environments contend for the same
+    CPUs and have been observed to truncate/corrupt shared library
+    outputs when one build is killed mid-link while another links against
+    the same target -- these slots cap how many builds run at once and
+    at what parallelism each gets. flock releases automatically on
+    process exit (including a crash or kill -9), so there is no
+    stale-lock file to clean up.
+
+    Opens each slot with O_CREAT|O_RDWR (not "w") so attempting the lock
+    never truncates the file out from under whoever currently holds it --
+    that only happens once *this* process actually holds the slot, so the
+    holder's identity stays readable by other environments while they
+    wait (see build_lock_status).
+
+    There's no OS primitive to block on "whichever of N fds frees first",
+    so once every slot is taken this polls at BUILD_LOCK_POLL_INTERVAL;
+    with only two slots and multi-minute compiles, the busy-wait cost is
+    negligible.
+
+    Returns (lock_file, slot_name, jobs) -- keep lock_file alive for as
+    long as the lock must be held; it releases when closed or
+    garbage-collected.
+
+    On platforms without fcntl (e.g. Windows) this is a no-op: prints a
+    one-time warning and returns (None, None, <first slot's jobs>) so
+    the build proceeds unlocked and unlogged rather than crashing --
+    the concurrent-worktree scenario this lock protects against is a
+    Linux dev-host pattern, not something Windows CI hits.
+    """
+    if fcntl is None:
+        print("⚠️  Build locking is unavailable on this platform (no fcntl) "
+              "-- building unlocked.")
+        return None, None, BUILD_LOCK_SLOTS[0][1]
+
+    announced = False
+    while True:
+        for name, jobs in BUILD_LOCK_SLOTS:
+            fd = os.open(_build_lock_path(name), os.O_CREAT | os.O_RDWR, 0o666)
+            lock_file = os.fdopen(fd, "r+")
+            try:
+                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                lock_file.close()
+                continue
+            lock_file.seek(0)
+            lock_file.truncate()
+            lock_file.write(_build_lock_identity_line(jobs))
+            lock_file.flush()
+            if announced:
+                print(f"🔓 Build lock '{name}' acquired.")
+            return lock_file, name, jobs
+        if not announced:
+            holders = ", ".join(
+                f"{name} ({build_lock_holder(name) or 'unknown'})"
+                for name, _ in BUILD_LOCK_SLOTS)
+            print(f"⏳ Waiting for a build lock — both slots busy: {holders}...")
+            announced = True
+        time.sleep(BUILD_LOCK_POLL_INTERVAL)
+
+
 def cmd_build(argv):
     """compass build — Build pillar: cmake builds via the prevailing preset.
 
@@ -5622,6 +5789,13 @@ def cmd_build(argv):
     Pass --direct to call emacs scripts directly, bypassing cmake and vcpkg
     entirely. Only targets listed in EMACS_BUILD_SCRIPTS are supported in
     direct mode; this is the required path for light environments.
+
+    A non-direct build acquires one of two host-wide lock slots first
+    (see _acquire_build_lock/BUILD_LOCK_SLOTS) so at most two environments
+    on this machine build at once, each capped to that slot's job count --
+    concurrent cmake builds beyond that contend for the same CPUs and
+    have been observed to corrupt shared library outputs. --jobs
+    overrides whichever slot's job count would otherwise apply.
     """
     ap = argparse.ArgumentParser(
         prog="compass build",
@@ -5630,6 +5804,7 @@ def cmd_build(argv):
                     "--direct (no cmake or vcpkg required).")
     aliases = ", ".join(f"'{k}' → {v}" for k, v in
                         sorted(BUILD_TARGET_ALIASES.items()))
+    slot_desc = ", ".join(f"'{n}'=-j{j}" for n, j in BUILD_LOCK_SLOTS)
     ap.add_argument("targets", nargs="*", metavar="TARGET",
                     help="Build target(s): a friendly alias or any raw "
                          f"cmake target. Aliases: {aliases}. "
@@ -5637,16 +5812,39 @@ def cmd_build(argv):
     ap.add_argument("--preset", default="",
                     help="CMake preset name (default: read ORES_PRESET "
                          "from .env); ignored with --direct")
-    ap.add_argument("-j", "--jobs", type=int, default=0,
-                    help="Parallel build jobs (default: CMAKE_BUILD_PARALLEL_LEVEL "
-                         "from .env, else cmake's default); ignored with --direct")
+    ap.add_argument("-j", "--jobs", type=int, default=None,
+                    help="Parallel build jobs (default: whichever build-lock "
+                         f"slot is acquired -- {slot_desc}); ignored with --direct")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the command(s) without running them")
     ap.add_argument("--direct", action="store_true",
                     help="Call emacs scripts directly, bypassing cmake and "
                          "vcpkg. Required for light environments. Supported "
                          f"targets: {', '.join(sorted(EMACS_BUILD_SCRIPTS))}")
+    ap.add_argument("--status", action="store_true",
+                    help="Print who currently/last held each build-lock "
+                         "slot, plus a tail of its build log, and exit "
+                         "without building.")
     args = ap.parse_args(argv)
+
+    if args.status:
+        for name, jobs, free, holder in build_lock_status():
+            if not holder:
+                print(f"🔓 slot '{name}' (-j{jobs}): no build has taken it yet.")
+            elif free:
+                print(f"🔓 slot '{name}' (-j{jobs}): free. Last holder: {holder}")
+            else:
+                print(f"🔒 slot '{name}' (-j{jobs}): held by {holder}")
+            tail = _build_log_tail(name)
+            log_path = _build_log_path(name)
+            if tail is None:
+                print(f"   (no log yet: {log_path})")
+            else:
+                print(f"   --- tail {log_path} ---")
+                for line in tail:
+                    print(f"   {line}")
+            print("")
+        return 0
 
     targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
 
@@ -5687,23 +5885,46 @@ def cmd_build(argv):
     build_cmd = ["cmake", "--build", "--preset", preset]
     if targets:
         build_cmd += ["--target", *targets]
-    jobs = args.jobs or _read_env_map().get("CMAKE_BUILD_PARALLEL_LEVEL")
-    if jobs:
-        source = "--jobs" if args.jobs else "CMAKE_BUILD_PARALLEL_LEVEL (.env)"
-        print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
-        build_cmd += ["-j", str(jobs)]
+
+    lock_file = slot_name = None
+    if args.dry_run:
+        # No lock acquired for a dry run, so the slot (and its job count)
+        # that a real invocation would land in isn't known yet -- preview
+        # with the override if given, else the first slot's count.
+        jobs = args.jobs if args.jobs is not None else BUILD_LOCK_SLOTS[0][1]
+        source = "--jobs" if args.jobs is not None else \
+            f"slot '{BUILD_LOCK_SLOTS[0][0]}' (dry-run estimate, actual slot decided at run time)"
+    else:
+        lock_file, slot_name, slot_jobs = _acquire_build_lock()
+        jobs = args.jobs if args.jobs is not None else slot_jobs
+        source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
+    print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
+    build_cmd += ["-j", str(jobs)]
     commands.append(build_cmd)
 
-    for cmd in commands:
-        print(f"🔨 {' '.join(cmd)}")
-        if args.dry_run:
-            continue
-        rc = subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
-        if rc != 0:
-            print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
-                  file=sys.stderr)
-            return rc
-    return 0
+    log_path = _build_log_path(slot_name) if slot_name else None
+    log = None
+    if log_path is not None:
+        print(f"📝 Build output: {log_path} (tail -f to follow)")
+        log = open(log_path, "w")
+
+    try:
+        for cmd in commands:
+            print(f"🔨 {' '.join(cmd)}")
+            if args.dry_run:
+                continue
+            rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
+                  else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
+            if rc != 0:
+                print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
+                      file=sys.stderr)
+                return rc
+        return 0
+    finally:
+        if log is not None:
+            log.close()
+        if lock_file is not None:
+            lock_file.close()
 
 
 def _read_env_map() -> dict:

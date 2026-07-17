@@ -25,14 +25,17 @@ The =deploy_org= target (alias =dorg=) depends on =deploy_site=,
 =deploy_skills=, =deploy_settings=, and =make_all_diagrams=. Running it
 rebuilds every org-mode artefact in dependency order:
 
+Via =compass build= (not raw =cmake --build=, so it takes the
+host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target deploy_org
+./compass.sh build deploy_org
 #+end_src
 
 Or with the shorter alias:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target dorg
+./compass.sh build dorg
 #+end_src
 
 This must be run outside the sandbox (Emacs, CMake, PlantUML, and

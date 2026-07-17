@@ -57,6 +57,7 @@
 #include "ores.qt/PartyStatusController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyController.hpp"
+#include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
@@ -217,6 +218,21 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.username,
                                                                      this);
     connectControllerSignals(purposeTypeController_.get());
+
+    // Portfolio: backend already lives in ores.refdata; owned here (not
+    // TradingPlugin) for the same reason as Book -- no cross-component
+    // leakage. TradingPlugin consumes portfolio_controller() via a
+    // non-owning pointer for its composite trading-workflow views
+    // (Portfolio/Org Explorer).
+    portfolioController_ = std::make_unique<PortfolioController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.image_cache,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 ctx_.badge_cache,
+                                                                 this);
+    connectControllerSignals(portfolioController_.get());
 
     // Book, BookStatus, RegulatoryBookType: backend already lives in
     // ores.refdata; owned here (not TradingPlugin) for the same reason --
@@ -642,6 +658,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (bookController_)
                 bookController_->showListWindow();
         });
+        act_portfolios_ = ref->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
+        connect(act_portfolios_, &QAction::triggered, this, [this]() {
+            if (portfolioController_)
+                portfolioController_->showListWindow();
+        });
         act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
         connect(act_business_centres_, &QAction::triggered, this, [this]() {
             if (businessCentreController_)
@@ -970,12 +991,14 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
     if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_ ||
-        !act_business_centres_ || !act_parties_ || !act_counterparties_ || !act_business_units_)
+        !act_portfolios_ || !act_business_centres_ || !act_parties_ || !act_counterparties_ ||
+        !act_business_units_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_currencies_,
             act_countries_,
             act_currency_pairs_,
             act_books_,
+            act_portfolios_,
             act_business_centres_,
             act_parties_,
             act_counterparties_,
@@ -1016,6 +1039,7 @@ void RefdataPlugin::on_logout() {
     regulatoryBookTypeController_.reset();
     bookStatusController_.reset();
     bookController_.reset();
+    portfolioController_.reset();
     currencyMarketTierController_.reset();
     monetaryNatureController_.reset();
     roundingTypeController_.reset();

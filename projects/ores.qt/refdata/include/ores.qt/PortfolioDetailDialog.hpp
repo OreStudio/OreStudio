@@ -23,9 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include <vector>
 
 namespace Ui {
 class PortfolioDetailDialog;
@@ -57,11 +58,20 @@ public:
     ~PortfolioDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
-    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setPortfolio(const refdata::domain::portfolio& portfolio);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void portfolioSaved(const QString& code);
@@ -80,24 +90,27 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromPortfolio();
     void updatePortfolioFromUi();
     void updateSaveButtonState();
-    void populateCurrencyCombo();
-    void populatePurposeTypeCombo();
-    void populateParentPortfolioCombo();
     bool validateInput();
+
+    void populatePurposeTypeCombo();
+
+
+    void populateAggregationCcyCombo();
+
 
     Ui::PortfolioDetailDialog* ui_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::portfolio portfolio_;
-    std::vector<portfolio_entry> portfolioEntries_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

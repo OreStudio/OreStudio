@@ -420,6 +420,7 @@ declare
     r record;
     v_exists boolean;
     v_new_version integer;
+    v_calendar_code text;
 begin
     select name into v_dataset_name
     from ores_dq_datasets_tbl
@@ -441,6 +442,11 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
+
+        update ores_refdata_currency_pair_convention_calendars_tbl
+        set valid_to = current_timestamp
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
     end if;
 
     for r in
@@ -472,12 +478,12 @@ begin
         insert into ores_refdata_currency_pair_conventions_tbl (
             tenant_id,
             pair_code, version, pip_factor, tick_size, decimal_places,
-            advance_calendar, business_day_convention, spot_relative, end_of_month,
+            business_day_convention, spot_relative, end_of_month,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
             r.pair_code, 0, r.pip_factor, r.tick_size, r.decimal_places,
-            r.advance_calendar, r.business_day_convention, r.spot_relative, r.end_of_month,
+            r.business_day_convention, r.spot_relative, r.end_of_month,
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
@@ -487,6 +493,44 @@ begin
             v_inserted := v_inserted + 1;
         else
             v_updated := v_updated + 1;
+        end if;
+
+        -- advance_calendar comma-joins one or two calendar codes (see
+        -- refdata_currency_pair_conventions_seed_populate.sql); each maps to
+        -- its own row in the pair<->calendar junction table, not a column on
+        -- the convention itself. Close out any calendars no longer present
+        -- (the update-not-insert path) before inserting the current set.
+        update ores_refdata_currency_pair_convention_calendars_tbl
+        set valid_to = current_timestamp
+        where tenant_id = p_target_tenant_id
+          and pair_code = r.pair_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and calendar_code != all(
+              coalesce(string_to_array(r.advance_calendar, ','), array[]::text[]));
+
+        if r.advance_calendar is not null then
+            foreach v_calendar_code in array string_to_array(r.advance_calendar, ',')
+            loop
+                if not exists (
+                    select 1 from ores_refdata_currency_pair_convention_calendars_tbl existing
+                    where existing.tenant_id = p_target_tenant_id
+                      and existing.pair_code = r.pair_code
+                      and existing.calendar_code = v_calendar_code
+                      and existing.valid_to = ores_utility_infinity_timestamp_fn()
+                ) then
+                    insert into ores_refdata_currency_pair_convention_calendars_tbl (
+                        tenant_id,
+                        pair_code, calendar_code, version,
+                        modified_by, performed_by, change_reason_code, change_commentary
+                    ) values (
+                        p_target_tenant_id,
+                        r.pair_code, v_calendar_code, 0,
+                        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                        'system.external_data_import',
+                        'Imported from DQ dataset: ' || v_dataset_name
+                    );
+                end if;
+            end loop;
         end if;
     end loop;
 
@@ -2744,8 +2788,8 @@ begin
             m.new_id, 0, v_root_party_id, m.name,
             parent_m.new_id,
             bu_map.published_id,
-            m.purpose_type, m.aggregation_ccy, m.is_virtual,
-            'active',
+            m.purpose_type, m.aggregation_ccy, (m.is_virtual != 0),
+            'Active',
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'
         from portfolio_publish_map m

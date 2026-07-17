@@ -56,8 +56,10 @@ overview), and again whenever the architecture changes.
    =#F7E5FF=, ORM classes =<<orm>> #99CB99=, generators =#FFFACD=,
    test suites =<<test suite>> #C5E1A5=, all namespaces =#F2F2F2=.
 
-4. /Generate the PNG/ via the CMake diagram target:
-   =cmake --build --preset linux-clang-debug-ninja --target generate_SHORTNAME_diagram=
+4. /Generate the PNG/ via the CMake diagram target, using =compass
+   build= (not raw =cmake --build=, so it takes the host-wide build
+   lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+   =./compass.sh build generate_SHORTNAME_diagram=
 
 5. /Update the system model/ if this is a new component: add to
    [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]] and [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]].

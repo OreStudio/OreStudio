@@ -71,6 +71,8 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'portfolio_status', 'Pending', 'pending', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'portfolio_type', 'Virtual', 'type_virtual', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'portfolio_type', 'Physical', 'type_physical', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'is_virtual', 'true', 'active', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'is_virtual', 'false', 'inactive', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_type', 'Trading', 'type_virtual', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_type', 'Banking', 'type_physical', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'login_status', 'Online', 'login_online', 0),

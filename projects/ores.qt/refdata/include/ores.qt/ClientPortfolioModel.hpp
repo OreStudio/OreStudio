@@ -26,18 +26,15 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
 namespace ores::qt {
 
-class ImageCache;
-
 /**
  * @brief Model for displaying portfolios fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches portfolio
+ * This model extends AbstractClientModel and fetches portfolio
  * data asynchronously using the ores.comms client.
  */
 class ClientPortfolioModel final : public AbstractClientModel {
@@ -58,19 +55,17 @@ public:
      */
     enum Column {
         Name,
-        AggregationCcy,
         PurposeType,
-        IsVirtual,
         Status,
+        AggregationCcy,
+        IsVirtual,
         Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientPortfolioModel(ClientManager* clientManager,
-                                  ImageCache* imageCache,
-                                  QObject* parent = nullptr);
+    explicit ClientPortfolioModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientPortfolioModel() override = default;
 
     // QAbstractTableModel interface
@@ -80,6 +75,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::AggregationCcy,
+        };
+    }
+
+public:
     /**
      * @brief Refresh portfolio data from server asynchronously.
      */
@@ -92,6 +96,7 @@ public:
      * @return The portfolio, or nullptr if row is invalid.
      */
     const refdata::domain::portfolio* getPortfolio(int row) const;
+
 
     /**
      * @brief Load a specific page of data.
@@ -117,15 +122,6 @@ public:
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
     void onPortfoliosLoaded();
     void onPulseStateChanged(bool isOn);
@@ -145,7 +141,6 @@ private:
     void fetch_portfolios(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     std::vector<refdata::domain::portfolio> portfolios_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

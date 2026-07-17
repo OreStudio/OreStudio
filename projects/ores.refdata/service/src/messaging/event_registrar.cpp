@@ -24,14 +24,15 @@
 // Not every ores.refdata domain_entity is wired here yet:
 // counterparty, counterparty_contact_information, counterparty_identifier,
 // currency_market_tier, monetary_nature, party, party_contact_information,
-// party_identifier, and portfolio have stale nats-eventing output (their
+// and party_identifier have stale nats-eventing output (their
 // changed_event's id field would rename from `ids` to `<entity>_ids` on
 // regeneration) — pre-existing drift unrelated to this registrar, tracked
-// separately. Those nine stay hand-wired in application.cpp until that drift
+// separately. Those eight stay hand-wired in application.cpp until that drift
 // is resolved; see the migrate-remaining-entities capture. business_unit was
 // migrated here (its own such drift resolved) while moving it, business_unit_type,
 // and party_id_scheme onto full codegen — see the "Migrate all entities onto the
-// generic HistoryDialog" story.
+// generic HistoryDialog" story. portfolio was migrated here the same way while
+// regenerating it against current codegen templates.
 #include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
@@ -56,6 +57,7 @@
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/payment_frequency_event_registrar.hpp"
+#include "ores.refdata.service/messaging/portfolio_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/rounding_type_event_registrar.hpp"
@@ -105,6 +107,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_payment_frequency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_portfolio_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_rounding_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_event_mapping(event_source, event_bus, nats));

@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -35,19 +36,20 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::portfolio r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.name = std::string(faker::company::companyName()) + " Portfolio";
+    r.name = std::string(faker::company::companyName()) + " Portfolio" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = boost::uuids::uuid();
     r.owner_unit_id = ctx.generate_uuid();
     r.purpose_type = std::string("Risk");
     r.aggregation_ccy = std::string("USD");
-    r.is_virtual = 0;
+    r.is_virtual = false;
     r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

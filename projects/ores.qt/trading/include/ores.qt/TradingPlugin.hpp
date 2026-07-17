@@ -80,21 +80,21 @@ private:
     // Shared Trading Codes submenu (populated in setup_menus, appended in create_menus)
     QMenu* trading_codes_menu_{nullptr};
 
-    QAction* act_portfolios_{nullptr};
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};
 
     // Entity controllers
     std::unique_ptr<OreImportController> oreImportController_;
-    std::unique_ptr<PortfolioController> portfolioController_;
 
-    // Non-owning: BookController is constructed and owned by RefdataPlugin
-    // (Book's backend and Qt CRUD both live in ores.refdata/ores.qt.refdata).
-    // TradingPlugin only consumes it for the "&Books" menu action and its
-    // composite trading-workflow views (Portfolio/Org Explorer). Resolved
-    // in on_login(), after RefdataPlugin (load_order 100 < 200) has run.
+    // Non-owning: BookController and PortfolioController are constructed
+    // and owned by RefdataPlugin (their backends and Qt CRUD both live in
+    // ores.refdata/ores.qt.refdata). TradingPlugin only consumes them for
+    // its composite trading-workflow views (Portfolio/Org Explorer).
+    // Resolved in on_login(), after RefdataPlugin (load_order 100 < 200)
+    // has run.
     BookController* bookController_{nullptr};
+    PortfolioController* portfolioController_{nullptr};
 
     // Non-owning: BusinessUnitController is constructed and owned by
     // RefdataPlugin. Resolved in on_login(), after RefdataPlugin

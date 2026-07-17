@@ -43,7 +43,7 @@ Then proceed to Phase 4 (controller wiring) below.
    using =QtConcurrent::run= + =QFutureWatcher=, add pagination.
 2. Create ={Entity}ListWindow.hpp= / =.cpp=: toolbar, sort/filter proxy,
    table view; connect =dataLoaded= / =loadError= signals.
-3. Build: =cmake --build --preset linux-clang-debug-ninja --target ores.qt.lib=.
+3. Build (via =compass build=, not raw =cmake --build=): =./compass.sh build ores.qt.lib=.
 
 *Phase 2 — detail dialog* (PR: =[qt] Add {Entity} detail dialog=):
 

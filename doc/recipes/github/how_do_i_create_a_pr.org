@@ -24,8 +24,10 @@ correctly-formatted title and a structured body?
    was removed — it took too long and slowed down development), so
    this local step is the only thing that catches a broken build
    before review, and the PR description (step 2) is the only record
-   that it happened: =cmake --build --preset <preset>= then =ctest
-   --preset <preset>=, both clean, before proceeding.
+   that it happened: =./compass.sh build --preset <preset>= (not raw
+   =cmake --build=, so it takes the host-wide build lock — see
+   [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]) then =ctest --preset <preset>=, both
+   clean, before proceeding.
 
 2. /Close task/story bookkeeping now, if not already done/ — task
    =DONE=, =* Result= written, story/sprint rows synced (see

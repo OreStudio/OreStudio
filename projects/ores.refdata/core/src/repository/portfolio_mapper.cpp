@@ -37,7 +37,10 @@ domain::portfolio portfolio_mapper::map(const portfolio_entity& v) {
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+
     r.name = v.name;
+
     r.description = v.description.value_or("");
     r.parent_portfolio_id =
         v.parent_portfolio_id.has_value() ?
@@ -69,7 +72,10 @@ portfolio_entity portfolio_mapper::map(const domain::portfolio& v) {
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
+
+
     r.name = v.name;
+
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.parent_portfolio_id = v.parent_portfolio_id.has_value() ?
                                 std::optional(boost::uuids::to_string(*v.parent_portfolio_id)) :

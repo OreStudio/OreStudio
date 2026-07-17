@@ -40,10 +40,13 @@ lifecycle is ordered this way.
    build/test job on PRs (the old "canary" job was removed — it took
    too long and slowed down development), so this step is the *only*
    thing that catches a broken build before review, and the PR
-   description is the only record that it happened:
+   description is the only record that it happened. Use =compass
+   build= (not raw =cmake --build=) — it takes the host-wide build
+   lock so this doesn't corrupt or get corrupted by another
+   environment's concurrent build; see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]:
 
    #+begin_src sh :results verbatim
-   cmake --build --preset <preset>
+   ./compass.sh build --preset <preset>
    ctest --preset <preset>
    #+end_src
 

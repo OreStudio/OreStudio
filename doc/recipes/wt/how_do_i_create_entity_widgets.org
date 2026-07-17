@@ -24,7 +24,7 @@ How do I add Wt UI components for a new entity in =ores.wt.service=?
    =include/ores.wt.service/app/{entity}_list_widget.hpp=.
 2. Implement the widget (=setup_toolbar=, =setup_table=,
    =populate_table=, signals) in =src/app/{entity}_list_widget.cpp=.
-3. Build: =cmake --build --preset linux-clang-debug-ninja --target ores.wt.service.lib=.
+3. Build (via =compass build=, not raw =cmake --build=): =./compass.sh build ores.wt.service.lib=.
 
 *Phase 2 — detail dialog* (PR: =[wt] Add {Entity} dialog=):
 

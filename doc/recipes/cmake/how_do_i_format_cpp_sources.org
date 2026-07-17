@@ -24,8 +24,11 @@ correctly formatted?
 Runs =clang-format -i= on all =.cpp=, =.hpp=, and =.h= files under
 [[proj:projects][=projects/=]]. Use before opening a PR or after pulling a config change.
 
+Via =compass build= (not raw =cmake --build=, so it takes the
+host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-make --target format
+./compass.sh build format --preset linux-clang-debug-make
 #+end_src
 
 ** Check for drift (dry run)
@@ -34,7 +37,7 @@ Reports files that differ from the canonical style and exits non-zero
 if any file would change. Does not modify files.
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-make --target check-format
+./compass.sh build check-format --preset linux-clang-debug-make
 #+end_src
 
 ** Run clang-format directly on one file

@@ -79,5 +79,5 @@ layer-specific skills for deep detail on each layer.
 
 * Tested by
 
-Build and test suite for the component under =cmake --build --preset
-linux-clang-debug-ninja --target {component}.core.tests=.
+Build and test suite for the component via =compass build= (not raw
+=cmake --build=): =./compass.sh build {component}.core.tests=.

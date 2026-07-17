@@ -21,9 +21,10 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -37,15 +38,15 @@ namespace ores::qt {
 using namespace ores::logging;
 
 PortfolioMdiWindow::PortfolioMdiWindow(ClientManager* clientManager,
-                                       ImageCache* imageCache,
                                        const QString& username,
                                        BadgeCache* badgeCache,
+                                       ImageCache* imageCache,
                                        QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , username_(username)
     , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -59,13 +60,10 @@ PortfolioMdiWindow::PortfolioMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
 void PortfolioMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -76,7 +74,7 @@ void PortfolioMdiWindow::setupUi() {
     layout->addWidget(tableView_);
 
     paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(createBottomBar(paginationWidget_, clientManager_));
+    layout->addWidget(paginationWidget_);
 }
 
 void PortfolioMdiWindow::setupToolbar() {
@@ -119,7 +117,8 @@ void PortfolioMdiWindow::setupToolbar() {
 }
 
 void PortfolioMdiWindow::setupTable() {
-    model_ = new ClientPortfolioModel(clientManager_, imageCache_, this);
+    model_ = new ClientPortfolioModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -131,30 +130,28 @@ void PortfolioMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
-    initializeTableSettings(tableView_, model_, "PortfolioListWindow", {}, {900, 400}, 1);
-
-    // Configure badge delegate for Status and IsVirtual columns
     using cs = column_style;
     auto* delegate = new EntityItemDelegate(
         {
-            cs::text_left,      // Name
-            cs::mono_center,    // AggregationCcy
-            cs::text_left,      // PurposeType
-            cs::badge_centered, // IsVirtual (Virtual/empty badge)
-            cs::badge_centered, // Status
-            cs::mono_center,    // Version
-            cs::text_left,      // ModifiedBy
-            cs::mono_left       // RecordedAt
+            cs::text_left,
+            cs::text_left,
+            cs::badge_centered,
+            cs::icon_text_left,
+            cs::badge_centered,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
         },
         tableView_);
     delegate->set_badge_color_resolver(
-        3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair fallback{color_constants::badge_fallback,
                                                    color_constants::badge_fallback_text};
             if (!cache)
                 return fallback;
-            auto* def = cache->resolve("portfolio_type", value.toStdString());
+            auto* def = cache->resolve("portfolio_status", value.toStdString());
             if (!def)
                 return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
@@ -166,19 +163,27 @@ void PortfolioMdiWindow::setupTable() {
                                                    color_constants::badge_fallback_text};
             if (!cache)
                 return fallback;
-            auto* def = cache->resolve("portfolio_status", value.toStdString());
+            auto* def = cache->resolve("is_virtual", value.toStdString());
             if (!def)
                 return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
+
+    initializeTableSettings(tableView_, model_, "PortfolioListWindow", {}, {900, 400}, 1);
 }
 
 void PortfolioMdiWindow::setupConnections() {
     connect(model_, &ClientPortfolioModel::dataLoaded, this, &PortfolioMdiWindow::onDataLoaded);
     connect(model_, &ClientPortfolioModel::loadError, this, &PortfolioMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -205,18 +210,15 @@ void PortfolioMdiWindow::setupConnections() {
         &PaginationWidget::page_requested,
         this,
         [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void PortfolioMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading portfolios";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading portfolios..."));
-    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
-}
-
-void PortfolioMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
-    model_->setWorkspaceContext(ctx);
-    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 void PortfolioMdiWindow::onDataLoaded() {
@@ -301,12 +303,12 @@ void PortfolioMdiWindow::deleteSelected() {
         return;
     }
 
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
     std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* portfolio = model_->getPortfolio(sourceIndex.row())) {
-            ids.push_back(portfolio->id);
+            ids.push_back(boost::uuids::to_string(portfolio->id));
             codes.push_back(portfolio->name);
         }
     }
@@ -335,21 +337,17 @@ void PortfolioMdiWindow::deleteSelected() {
     }
 
     QPointer<PortfolioMdiWindow> self = this;
-    using DeleteResult =
-        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
         if (!self)
             return {};
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << ids.size() << " portfolios";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << ids.size() << " portfolios";
 
         refdata::messaging::delete_portfolio_request request;
-        for (const auto& id : ids) {
-            request.ids.push_back(boost::uuids::to_string(id));
-        }
+        request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -362,8 +360,8 @@ void PortfolioMdiWindow::deleteSelected() {
         }
 
         for (std::size_t i = 0; i < ids.size(); ++i) {
-            std::string code = (i < codes.size()) ? codes[i] : "";
-            results.push_back({ids[i], code, response_result->success, response_result->message});
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;
@@ -382,6 +380,7 @@ void PortfolioMdiWindow::deleteSelected() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Portfolio deleted: " << code;
                 success_count++;
+                emit self->portfolioDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Portfolio deletion failed: " << code << " - " << message;
@@ -417,5 +416,6 @@ void PortfolioMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

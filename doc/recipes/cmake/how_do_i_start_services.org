@@ -63,7 +63,7 @@ Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
 
 - =.env= exists (run =compass env configure= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
 - Database initialised (=compass db recreate -y=).
-- Project built (=cmake --build --preset <preset>=).
+- Project built (=./compass.sh build --preset <preset>=).
 - =nats-server= on =PATH= or in =/usr/sbin=.
 
 * Script

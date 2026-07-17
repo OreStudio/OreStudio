@@ -37,8 +37,8 @@ How do I set up a development environment on Ubuntu, Debian, or WSL?
    [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja
-   cmake --build --preset linux-clang-debug-ninja
+   cmake --preset linux-clang-debug-make
+   ./compass.sh build --preset linux-clang-debug-make
    #+end_src
 
 * Script

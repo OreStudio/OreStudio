@@ -38,6 +38,7 @@
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
@@ -288,6 +289,16 @@ fetch_book_statuses(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::business_unit_type>, QString>
 fetch_business_unit_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all purpose types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Portfolio's purpose_type combo. Returns an error message on
+ * failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::purpose_type>, QString>
+fetch_purpose_types(ClientManager* cm);
 
 /**
  * @brief Fetches all party types from the server.

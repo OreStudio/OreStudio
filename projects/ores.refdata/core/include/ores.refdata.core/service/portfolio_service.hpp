@@ -25,7 +25,8 @@
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -35,8 +36,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing portfolios.
  *
- * This service provides functionality for:
- * - Managing portfolios (CRUD operations)
+ * Provides a higher-level interface for portfolio operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT portfolio_service {
 private:
@@ -52,48 +53,79 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a portfolio_service with required repositories.
+     * @brief Constructs a portfolio_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit portfolio_service(context ctx);
 
     /**
-     * @brief Lists all portfolios.
+     * @brief Lists portfolios with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of portfolios for the requested page.
      */
-    std::vector<domain::portfolio> list_portfolios();
+    std::vector<domain::portfolio> list_portfolios(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Finds a portfolio by its ID.
+     * @brief Gets the total count of active portfolios.
+     *
+     * @return Total number of active portfolios.
      */
-    std::optional<domain::portfolio> find_portfolio(const boost::uuids::uuid& id);
+    std::uint32_t count_portfolios();
+
+
+    /**
+     * @brief Retrieves a single portfolio as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the portfolio.
+     * @param version The version to fetch.
+     * @return The portfolio at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::portfolio> get_portfolio_at_version(const std::string& id,
+                                                              std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single portfolio by its id.
+     *
+     * @param id The id of the portfolio.
+     * @return The portfolio if found, std::nullopt otherwise.
+     */
+    std::optional<domain::portfolio> get_portfolio(const std::string& id);
 
     /**
      * @brief Saves a portfolio (creates or updates).
      *
-     * @param portfolio The portfolio to save
+     * @param portfolio The portfolio to save.
+     * @throws std::exception on failure.
      */
     void save_portfolio(const domain::portfolio& portfolio);
 
     /**
-     * @brief Saves multiple portfolios (creates or updates).
+     * @brief Saves a batch of portfolios.
      *
-     * @param portfolios The portfolios to save
+     * @param portfolios The portfolios to save.
+     * @throws std::exception on failure.
      */
     void save_portfolios(const std::vector<domain::portfolio>& portfolios);
 
     /**
-     * @brief Removes a portfolio.
+     * @brief Deletes a portfolio by its id.
      *
-     * @param id The ID of the portfolio to remove
+     * @param id The id of the portfolio to delete.
+     * @throws std::exception on failure.
      */
-    void remove_portfolio(const std::string& id);
+    void delete_portfolio(const std::string& id);
 
     /**
-     * @brief Gets the version history for a portfolio.
-     *
-     * @param id The portfolio ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes portfolios by their ids.
+     */
+    void delete_portfolios(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a portfolio.
      */
     std::vector<domain::portfolio> get_portfolio_history(const std::string& id);
 

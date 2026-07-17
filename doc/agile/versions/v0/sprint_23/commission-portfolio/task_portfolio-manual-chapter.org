@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: FA3A1BE7-A030-4164-92DB-41EA84BC838C
+:END:
+#+title: Task: Add portfolio entity chapter to the user manual
+#+description: Write the portfolio chapter following the pattern of the book/counterparty manual chapters, covering the Qt windows (list, detail, history) and behaviours once portfolio is commissioned.
+#+type: task
+#+level: s1
+#+filetags: :commission-portfolio:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-16
+#+updated: 2026-07-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the portfolio entity chapter to the user manual, following the
+pattern of the book and counterparty chapters — documenting
+portfolio's Qt windows (list, detail, history) and behaviours once
+the codegen/drift task has landed a commissioned baseline.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-16                               |
+
+* Acceptance
+
+- [ ] Portfolio entity chapter added to the manual, documenting the
+  Qt list, detail, and history windows and their behaviours.
+- [ ] Manual builds cleanly (PDF/site) with the new chapter included.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

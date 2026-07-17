@@ -97,9 +97,11 @@ struct portfolio final {
     /**
      * @brief Portfolio purpose classification.
      *
-     * References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).
+     * References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal). Defaults to
+     * Risk so a freshly-constructed portfolio (the Add dialog, before the Purpose Type combo's
+     * async populate completes) always carries a value the FK-validation trigger accepts.
      */
-    std::string purpose_type;
+    std::string purpose_type = "Risk";
 
     /**
      * @brief Currency for P&L/risk aggregation at this node.
@@ -109,16 +111,19 @@ struct portfolio final {
     std::string aggregation_ccy;
 
     /**
-     * @brief If 1, node is purely for on-demand reporting.
+     * @brief If true, node is purely for on-demand reporting.
      *
      * Not persisted in trade attribution when virtual.
      */
-    int is_virtual = 0;
+    bool is_virtual = false;
 
     /**
-     * @brief Current lifecycle status (Active, Inactive, Closed).
+     * @brief Current lifecycle status (Active, Inactive, Closed). No dedicated lookup table exists
+     * yet (unlike book_status) -- a fixed three-value list, defaulting to Active for the same
+     * reason as purpose_type/book's book_status: a freshly-constructed portfolio always carries a
+     * value.
      */
-    std::string status;
+    std::string status = "Active";
 
     /**
      * @brief Username of the person who last modified this portfolio.

@@ -44,7 +44,7 @@ The work is split into three phases, each ending in a PR.
    [[proj:doc/recipes/http][=doc/recipes/http/=]]. PR title: =[doc] Add {entity} HTTP endpoint recipes=.
 
 Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
-Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.http.server.lib=.
+Build after every step (via =compass build=, not raw =cmake --build=, so it takes the host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]): =./compass.sh build ores.http.server.lib=.
 
 * Recipes
 

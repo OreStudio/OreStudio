@@ -21,17 +21,19 @@ How do I test a feature after finishing implementation?
 
 * Answer
 
-1. /Full build/ — build the affected targets (or =all= if unsure which):
+1. /Full build/ — build the affected targets (or =all= if unsure
+   which), via =compass build= (not raw =cmake --build=, so it takes
+   the host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
 
    #+begin_src sh :results verbatim
-   cmake --build --preset <preset>
+   ./compass.sh build --preset <preset>
    #+end_src
 
 2. /Run all tests/ — the =rat= target runs the full suite; treat any
    failure as a blocker, not something to defer to review:
 
    #+begin_src sh :results verbatim
-   cmake --build --preset <preset> --target rat
+   ./compass.sh build rat --preset <preset>
    #+end_src
 
    See [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] for per-component targets and logging knobs.

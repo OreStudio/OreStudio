@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PortfolioDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
@@ -26,12 +27,15 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ui_PortfolioDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QtConcurrent>
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -45,7 +49,18 @@ PortfolioDetailDialog::PortfolioDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PortfolioDetailDialog::~PortfolioDetailDialog() {
@@ -55,11 +70,17 @@ PortfolioDetailDialog::~PortfolioDetailDialog() {
 QTabWidget* PortfolioDetailDialog::tabWidget() const {
     return ui_->tabWidget;
 }
+
 QWidget* PortfolioDetailDialog::provenanceTab() const {
     return ui_->provenanceTab;
 }
+
 ProvenanceWidget* PortfolioDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString PortfolioDetailDialog::code() const {
+    return QString::fromStdString(portfolio_.name);
 }
 
 void PortfolioDetailDialog::setupUi() {
@@ -74,124 +95,53 @@ void PortfolioDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void PortfolioDetailDialog::setupCombos() {
+    ui_->statusCombo->clear();
+    ui_->statusCombo->addItem(tr("Active"), QString("Active"));
+    ui_->statusCombo->addItem(tr("Inactive"), QString("Inactive"));
+    ui_->statusCombo->addItem(tr("Closed"), QString("Closed"));
+    ui_->statusCombo->addItem(tr("Frozen"), QString("Frozen"));
+    ui_->statusCombo->addItem(tr("Pending"), QString("Pending"));
+}
+
 void PortfolioDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &PortfolioDetailDialog::onSaveClicked);
     connect(
         ui_->deleteButton, &QPushButton::clicked, this, &PortfolioDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &PortfolioDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PortfolioDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
-            this,
-            &PortfolioDetailDialog::onFieldChanged);
-    connect(ui_->aggregationCcyCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &PortfolioDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->purposeTypeCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &PortfolioDetailDialog::onFieldChanged);
-    connect(ui_->portfolioTypeCombo,
-            &QComboBox::currentTextChanged,
+            &QComboBox::currentIndexChanged,
             this,
             &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->statusCombo,
-            &QComboBox::currentTextChanged,
+            &QComboBox::currentIndexChanged,
             this,
             &PortfolioDetailDialog::onFieldChanged);
-    connect(ui_->parentPortfolioCombo,
-            &QComboBox::currentTextChanged,
+    connect(
+        ui_->isVirtualCheckBox, &QCheckBox::toggled, this, &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->aggregationCcyEdit,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
             this,
             &PortfolioDetailDialog::onFieldChanged);
 }
 
 void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateCurrencyCombo();
     populatePurposeTypeCombo();
-    populateParentPortfolioCombo();
+    populateAggregationCcyCombo();
 }
 
-void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
-    imageCache_ = imageCache;
-    setup_flag_combo(this, ui_->aggregationCcyCombo, imageCache_, FlagSource::Currency);
-}
-
-void PortfolioDetailDialog::populateCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<PortfolioDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<std::string> {
-        return fetch_currency_codes(cm);
-    };
-
-    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-        auto codes = watcher->result();
-        watcher->deleteLater();
-        if (!self)
-            return;
-
-        self->ui_->aggregationCcyCombo->clear();
-        self->ui_->aggregationCcyCombo->addItem(QString()); // "(select)" sentinel
-        for (const auto& code : codes) {
-            self->ui_->aggregationCcyCombo->addItem(QString::fromStdString(code));
-        }
-
-        apply_flag_icons(self->ui_->aggregationCcyCombo, self->imageCache_, FlagSource::Currency);
-
-        self->updateUiFromPortfolio();
+void PortfolioDetailDialog::populateAggregationCcyCombo() {
+    setup_currency_combo(ui_->aggregationCcyEdit, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(portfolio_.aggregation_ccy);
     });
-
-    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
-void PortfolioDetailDialog::populatePurposeTypeCombo() {
-    ui_->purposeTypeCombo->clear();
-    // Portfolio purpose classifications.
-    // TODO: populate asynchronously from the purpose_types lookup service
-    // once the protocol is available.
-    for (const auto* pt : {"Risk", "Regulatory", "ClientReporting", "Internal"}) {
-        ui_->purposeTypeCombo->addItem(QString::fromUtf8(pt));
-    }
-}
-
-void PortfolioDetailDialog::populateParentPortfolioCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<PortfolioDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<portfolio_entry> {
-        return fetch_portfolio_entries(cm);
-    };
-
-    auto* watcher = new QFutureWatcher<std::vector<portfolio_entry>>(self);
-    connect(
-        watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished, self, [self, watcher]() {
-            auto entries = watcher->result();
-            watcher->deleteLater();
-            if (!self)
-                return;
-
-            self->portfolioEntries_ = entries;
-            self->ui_->parentPortfolioCombo->clear();
-            self->ui_->parentPortfolioCombo->addItem(QString()); // "(none)" sentinel
-            for (const auto& e : entries) {
-                self->ui_->parentPortfolioCombo->addItem(QString::fromStdString(e.name));
-            }
-            self->updateUiFromPortfolio();
-        });
-
-    QFuture<std::vector<portfolio_entry>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
 void PortfolioDetailDialog::setUsername(const std::string& username) {
@@ -205,53 +155,79 @@ void PortfolioDetailDialog::setPortfolio(const refdata::domain::portfolio& portf
 
 void PortfolioDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->idEdit->setReadOnly(true);
+    ui_->deleteButton->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
     if (createMode) {
-        boost::uuids::random_generator gen;
-        portfolio_.id = gen();
+        portfolio_.id = boost::uuids::random_generator()();
         if (clientManager_)
             portfolio_.party_id = clientManager_->currentPartyId();
     }
-    ui_->deleteButton->setVisible(!createMode);
-
-    setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void PortfolioDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
 void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(true);
-    ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->aggregationCcyCombo->setEnabled(!readOnly);
+    ui_->idEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->purposeTypeCombo->setEnabled(!readOnly);
-    ui_->portfolioTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
-    ui_->parentPortfolioCombo->setEnabled(!readOnly);
+    ui_->aggregationCcyEdit->setEnabled(!readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void PortfolioDetailDialog::populatePurposeTypeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating purpose_type combo";
+    populateDynamicCombo<refdata::domain::purpose_type>(
+        ui_->purposeTypeCombo,
+        this,
+        clientManager_,
+        &fetch_purpose_types,
+        "purposeTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(portfolio_.purpose_type); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load purpose types: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; },
+        QString{});
+}
 void PortfolioDetailDialog::updateUiFromPortfolio() {
+    ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(portfolio_.id)));
     ui_->nameEdit->setText(QString::fromStdString(portfolio_.name));
-    ui_->partyIdLabel->setText(clientManager_ ? clientManager_->currentPartyName() : QString());
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(portfolio_.description));
-    ui_->aggregationCcyCombo->setCurrentText(QString::fromStdString(portfolio_.aggregation_ccy));
-    ui_->purposeTypeCombo->setCurrentText(QString::fromStdString(portfolio_.purpose_type));
-    ui_->portfolioTypeCombo->setCurrentIndex(portfolio_.is_virtual != 0 ? 1 : 0);
-    ui_->statusCombo->setCurrentText(QString::fromStdString(portfolio_.status));
-
-    // Select the parent portfolio by matching the stored UUID to a loaded entry
-    ui_->parentPortfolioCombo->setCurrentIndex(0); // default: "(none)"
-    if (portfolio_.parent_portfolio_id.has_value()) {
-        const auto parent_id_str = boost::uuids::to_string(*portfolio_.parent_portfolio_id);
-        for (const auto& e : portfolioEntries_) {
-            if (e.id == parent_id_str) {
-                ui_->parentPortfolioCombo->setCurrentText(QString::fromStdString(e.name));
-                break;
-            }
-        }
+    {
+        const auto val = QString::fromStdString(portfolio_.purpose_type);
+        const int idx = ui_->purposeTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->purposeTypeCombo->setCurrentIndex(idx);
     }
+    {
+        const auto val = QString::fromStdString(portfolio_.status);
+        const int idx = ui_->statusCombo->findData(val);
+        if (idx >= 0)
+            ui_->statusCombo->setCurrentIndex(idx);
+    }
+    ui_->isVirtualCheckBox->setChecked(portfolio_.is_virtual);
+    {
+        const auto val = QString::fromStdString(portfolio_.aggregation_ccy);
+        const int idx = ui_->aggregationCcyEdit->findText(val);
+        ui_->aggregationCcyEdit->setCurrentIndex(idx);
+    }
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(portfolio_.description));
 
     populateProvenance(portfolio_.version,
                        portfolio_.modified_by,
@@ -259,31 +235,19 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
                        portfolio_.recorded_at,
                        portfolio_.change_reason_code,
                        portfolio_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void PortfolioDetailDialog::updatePortfolioFromUi() {
     portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
+    portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().toStdString();
+    portfolio_.status = ui_->statusCombo->currentData().toString().toStdString();
+    portfolio_.is_virtual = ui_->isVirtualCheckBox->isChecked();
+    portfolio_.aggregation_ccy = ui_->aggregationCcyEdit->currentText().toStdString();
     portfolio_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    portfolio_.aggregation_ccy = ui_->aggregationCcyCombo->currentText().trimmed().toStdString();
-    portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().trimmed().toStdString();
-    portfolio_.is_virtual = (ui_->portfolioTypeCombo->currentIndex() == 1) ? 1 : 0;
-    portfolio_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     portfolio_.modified_by = username_;
-    portfolio_.performed_by = username_;
-
-    // Resolve parent portfolio name back to UUID
-    const auto parent_name = ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
-    portfolio_.parent_portfolio_id = std::nullopt;
-    if (!parent_name.empty()) {
-        for (const auto& e : portfolioEntries_) {
-            if (e.name == parent_name) {
-                portfolio_.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(e.id);
-                break;
-            }
-        }
-    }
 }
 
 void PortfolioDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -302,10 +266,10 @@ void PortfolioDetailDialog::updateSaveButtonState() {
 }
 
 bool PortfolioDetailDialog::validateInput() {
+    const QString id_val = ui_->idEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
-    const QString ccy_val = ui_->aggregationCcyCombo->currentText().trimmed();
 
-    return !name_val.isEmpty() && !ccy_val.isEmpty();
+    return true && !id_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PortfolioDetailDialog::onSaveClicked() {
@@ -316,12 +280,10 @@ void PortfolioDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(
-            this,
-            "Invalid Input",
-            "Please fill in all required fields (name and currency are required).");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -355,7 +317,6 @@ void PortfolioDetailDialog::onSaveClicked() {
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -402,7 +363,8 @@ void PortfolioDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -415,20 +377,19 @@ void PortfolioDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = portfolio_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(portfolio_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         refdata::messaging::delete_portfolio_request request;
-        request.ids.push_back(boost::uuids::to_string(id));
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -454,5 +415,6 @@ void PortfolioDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

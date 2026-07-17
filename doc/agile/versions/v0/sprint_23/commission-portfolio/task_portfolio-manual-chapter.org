@@ -59,7 +59,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:169B33B9-D673-4BA9-9AC1-14FBF3B63AA0][Capture screenshots for the Portfolios manual chapter]] | PENDING | |
 
 * PRs
 

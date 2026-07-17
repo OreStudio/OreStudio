@@ -13,7 +13,6 @@ Pillars:
 import argparse
 import csv
 import datetime
-import fcntl
 import functools
 import http.server
 import json
@@ -24,6 +23,10 @@ import sqlite3
 import subprocess
 import sys
 import time
+try:
+    import fcntl  # POSIX-only; build-lock functions degrade gracefully without it.
+except ImportError:
+    fcntl = None
 from collections import defaultdict
 from pathlib import Path
 
@@ -5613,10 +5616,10 @@ def cmd_site(argv):
 
 
 # Two build-lock slots so up to two environments on this host can build at
-# once without oversubscribing it: slot 'a' gets -j2, slot 'b' gets -j3
+# once without oversubscribing it: slot 'a' gets -j3, slot 'b' gets -j2
 # (5 cores in flight, max). A third slot could be added the same way if
 # the host ever has headroom for it -- nothing else assumes exactly two.
-BUILD_LOCK_SLOTS = (("a", 2), ("b", 3))
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
 
@@ -5649,7 +5652,13 @@ def build_lock_holder(slot_name):
 
 
 def _build_lock_slot_free(slot_name):
-    """Non-destructively probe whether a build-lock slot is currently held."""
+    """Non-destructively probe whether a build-lock slot is currently held.
+
+    Always reports free on platforms without fcntl (e.g. Windows) --
+    build locking is a no-op there; see _acquire_build_lock.
+    """
+    if fcntl is None:
+        return True
     fd = os.open(_build_lock_path(slot_name), os.O_CREAT | os.O_RDWR, 0o666)
     probe = os.fdopen(fd, "r+")
     try:
@@ -5731,7 +5740,18 @@ def _acquire_build_lock():
     Returns (lock_file, slot_name, jobs) -- keep lock_file alive for as
     long as the lock must be held; it releases when closed or
     garbage-collected.
+
+    On platforms without fcntl (e.g. Windows) this is a no-op: prints a
+    one-time warning and returns (None, None, <first slot's jobs>) so
+    the build proceeds unlocked and unlogged rather than crashing --
+    the concurrent-worktree scenario this lock protects against is a
+    Linux dev-host pattern, not something Windows CI hits.
     """
+    if fcntl is None:
+        print("⚠️  Build locking is unavailable on this platform (no fcntl) "
+              "-- building unlocked.")
+        return None, None, BUILD_LOCK_SLOTS[0][1]
+
     announced = False
     while True:
         for name, jobs in BUILD_LOCK_SLOTS:

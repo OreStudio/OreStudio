@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -14,6 +15,8 @@ the [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] facet —
 [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]. It exists to answer one question: when the Qt history
 dialog shows "what changed between version 3 and version 4", what
 does it show, and in what order?
+
+[[proj:projects/ores.compass/scripts/variability/cpp_presentation.svg]]
 
 * What gets generated, unconditionally
 

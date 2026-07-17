@@ -6,13 +6,15 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-06-01
 #+updated: 2026-07-17
 
 A codegen *entity model* is a single literate org-mode file that
-describes one entity (e.g. =party=) and drives code generation across
-every technical space that entity touches: SQL and several
-independent C++ facets. In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
+describes one entity (e.g. [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][party]]) and drives code generation across
+every technical space that entity touches: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][SQL]] and several independent
+C++ facets (e.g. [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]],
+[[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]). In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
 segment pages — is the *metamodel* for the entity model: it does not
 describe any one entity, it describes what any entity model file is
 allowed to contain. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates
@@ -27,55 +29,32 @@ facet's knobs, worked example, and paste blocks in full. Go to a
 segment page for the exhaustive per-property reference; come back
 here only for the shape of the file as a whole.
 
-* About this document                                                :ignore:
+* About this document
 
-The =:ignore:= tag asks the codegen loader to skip this heading when
-reading an entity file (it means "skip this heading", not "this
+The =:ignore:= tag (not applied to this heading itself — this is a
+knowledge doc, not an entity model, so the tag has no functional
+effect here) asks the codegen loader to skip a heading when reading
+an actual entity file (it means "skip this heading", not "this
 document is unimportant" — an unfortunate naming collision if you're
-skimming the table of contents). Sections without that tag may be
-consumed by the loader.
+skimming the table of contents of an entity model that uses it).
+Sections without that tag may be consumed by the loader.
 
 * File-level conventions
 
-** Naming
-
-Entity files live under =projects/ores.<component>/modeling/= with
-the filename =ores.<component>.<entity>.org=. Example:
-=ores.refdata.party.org= under =projects/ores.refdata/modeling/=.
-(Historical note: an earlier convention put these under
-=projects/ores.codegen/models/<component>/<entity>_entity.org=; that
-path no longer exists in the tree — codegen discovers models via the
-=modeling_dir= manifest entry, matching =#+type: ores.codegen.entity=
-in the frontmatter, not by directory convention.)
-
-** Frontmatter
-
-The first few lines of the file are org-mode frontmatter. They
-describe the *document* (this codegen model), not the modelled
-entity. Required:
-
-| Keyword           | Purpose                                              |
-|-------------------+------------------------------------------------------|
-| =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
-| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI is expected future work (see the capture on timeseries codegen analysis). Defaults to generating Qt when absent. |
-| =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
-| =#+description:=  | What this *file* is, not what the modelled thing is. |
-| =#+type:=         | =ores.codegen.entity= — the value that marks this entity's [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][MASD metatype]] as =domain_entity=. |
-| =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
-| =#+filetags:=     | =:model:entity:<component>:=                         |
-| =#+entity_singular:= | Identifier form, singular (=party=).              |
-| =#+entity_plural:=   | Identifier form, plural (=parties=).              |
-| =#+entity_title:=    | Title-cased human form (=Party=).                 |
-| =#+brief:=           | One-line summary of the modelled entity.          |
-
-** Prose body (between frontmatter and first heading)
-
-A paragraph or two describing *the modelled entity itself*. This
-text is exposed to templates as the entity =description=. Keep the
-document-level =#+description= for the *file* and put the entity
-description here.
+See [[id:18D99C09-22CD-4487-B7A3-FA0612A8B154][Codegen entity meta-model — file-level conventions]]: file naming,
+required frontmatter, and the prose body — the conventions every
+entity model shares regardless of which facets it uses, and the
+document-type archetype ([[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]]) that scaffolds
+them.
 
 * Segments
+
+Illustrative feature diagram of the segments below — which are
+typically always present (mandatory) versus optional for a given
+entity, at the segment level. Not a precise codegen dispatch rule; see
+each segment page for its own real variability.
+
+[[proj:projects/ores.compass/scripts/variability/hub.svg]]
 
 The body is divided into top-level sections, each read by a
 different facet's templates. Unrecognised section names (e.g.
@@ -83,17 +62,17 @@ different facet's templates. Unrecognised section names (e.g.
 loader. Every segment below is its own page — this table is the
 routing table, not the reference itself.
 
-| Segment                                        | What it covers                                                  | Facet(s)                                                    |
+| Segment                                        | What it covers                                                  | Facets                                                    |
 |--------------------------------------------------+-------------------------------------------------------------------+---------------------------------------------------------------|
-| [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]           | =* Flags=, =* Primary key=, =* Natural keys=, =* Columns= — shared by C++ and SQL. | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                     |
-| [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]                        | =* SQL=: table naming, the =has_parent_id= hierarchy knob.        | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]                                             |
-| [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]                  | =* C++ > ** Domain includes=: the plain domain struct.            | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]                                             |
-| [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]]              | =** Flags=, =** Repository=, =** Entity includes=, =** Conventions=, =** Table display=: entity, mapper, CRUD. | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                                         |
+| [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]           | Flags, Primary key, Natural keys, Columns — shared by C++ and SQL. | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                     |
+| [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]                        | Table naming, the has_parent_id hierarchy knob.                   | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]                                             |
+| [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]                  | Domain includes: the plain domain struct.                         | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]                                             |
+| [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]]              | Flags, Repository, Entity includes, Conventions, Table display: entity, mapper, CRUD. | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]                                         |
 | [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]]                 | Business-logic wrapper, authorization, event firing on mutation.  | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]                                            |
 | [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]                | Request/response message struct definitions.                      | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]                                           |
 | [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]                    | Command pipeline (handler, sub-registrar) and event pipeline (eventing, event-registrar, event-cache) — one flow, five facets. | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] +4 more (see segment page) |
-| [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]                      | =** Qt=: MDI window, detail dialog, controller, client model.     | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                                                 |
-| [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | =** Custom repository methods='s generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
+| [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]                      | MDI window, detail dialog, controller, client model.              | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                                                 |
+| [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | Custom repository methods' generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
 | [[id:F966605D-4321-4499-9304-F8A703C91E26][C++ Presentation]]            | History-diff field rendering.                                     | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                       |
 | [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]                | The shared mechanism for injecting hand-written code into an otherwise generated file — concrete block kinds live on the segment page for the facet they inject into, not here. | (cross-cutting)                                             |
 
@@ -119,9 +98,9 @@ not yet consistently distinguish the two, and MASD's =profile=
 concept (a reusable, named bundle of feature values, composing
 base/component/element) looks like a close match for what task
 =EE237306= separately calls a domain_entity "shape" — resolving both
-of these properly is tracked by capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][31A66613]] ("Formalize the
-codegen entity knob system as a proper MASD/MDE feature model"), not
-decided piecemeal across these pages.
+of these properly is tracked by capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize the codegen entity
+knob system as a proper MASD/MDE feature model]], not decided
+piecemeal across these pages.
 
 ** Why two levels of UUID (paste blocks)
 

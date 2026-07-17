@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -13,6 +14,8 @@ This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen
 the [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] facet — the layer between [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] and
 [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]: authorization checks, business logic, and firing the
 changed-event on every mutation.
+
+[[proj:projects/ores.compass/scripts/variability/cpp_service.svg]]
 
 * What gets generated, unconditionally
 

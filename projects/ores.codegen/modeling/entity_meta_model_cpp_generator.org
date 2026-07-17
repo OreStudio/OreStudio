@@ -6,11 +6,14 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
 the [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] facet.
+
+[[proj:projects/ores.compass/scripts/variability/cpp_generator.svg]]
 
 * What gets generated, unconditionally
 

@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -16,6 +17,8 @@ plain data (see the [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]
 from), so there is very little left for this section to configure —
 just the =#include= directives the generated struct header needs
 that aren't inferred automatically from column types.
+
+[[proj:projects/ores.compass/scripts/variability/cpp_domain.svg]]
 
 * Domain includes
 

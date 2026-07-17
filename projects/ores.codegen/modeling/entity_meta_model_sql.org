@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -15,6 +16,8 @@ bi-temporal table create/drop, insert triggers, and notify triggers.
 The columns it operates on are declared once, shared with C++, on the
 [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] page — this page is only the SQL-specific knobs
 layered on top.
+
+[[proj:projects/ores.compass/scripts/variability/sql.svg]]
 
 * Flags
 

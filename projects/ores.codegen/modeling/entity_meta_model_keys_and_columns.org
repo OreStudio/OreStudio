@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -13,9 +14,11 @@ This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen
 the one segment that does not map to a single facet — a column
 declaration is read by *both* [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] (to generate the table's DDL) and by
 [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]/[[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] (to generate the domain struct field and the
-ODB-mapped entity field). Author a column once here; it becomes a SQL
+sqlgen-mapped entity field). Author a column once here; it becomes a SQL
 column, a domain struct field, and a repository entity field, all
 three kept in sync by construction.
+
+[[proj:projects/ores.compass/scripts/variability/keys_and_columns.svg]]
 
 * Flags
 
@@ -172,4 +175,4 @@ create table if not exists "ores_refdata_books_tbl" (
 - [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] — how these columns become the table's DDL, temporal constraints, and triggers.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the structural/non-structural distinction referenced above.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — how they become the plain domain struct.
-- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the ODB-mapped entity and mapper.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the sqlgen-mapped entity and mapper.

@@ -1,0 +1,19 @@
+namespace OresCodegenCppService
+
+// UVL model of entity_meta_model_cpp_service.org: the six standard CRUD
+// methods are mandatory; every paste block is an independent optional
+// per-entity choice. No cross-tree constraints asserted -- the prose
+// pairing (e.g. extra private members with constructor init) is a
+// convention, not an enforced dependency in the generator today.
+
+features
+    CppService {abstract}
+        mandatory
+            StandardCrud
+        optional
+            HasExtraIncludesHeader
+            HasCustomPublicMethods
+            HasExtraPrivateMembers
+            HasCtorExtraInit
+            HasExtraIncludesCpp
+            HasCustomImplementations

@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -21,6 +22,8 @@ archetypes underneath would model this more accurately than five
 separate facets; that's a physical-space graph change, out of scope
 for this documentation task, but worth raising against the
 =codegen_terminology_cleanup= capture.)
+
+[[proj:projects/ores.compass/scripts/variability/cpp_nats.svg]]
 
 * Two independent pipelines
 

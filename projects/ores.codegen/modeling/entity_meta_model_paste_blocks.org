@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:paste_blocks:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -18,6 +19,11 @@ inline rather than in one central registry — a Repository paste
 block belongs on the Repository page, not in a separate index,
 because you need it while reading about the repository facet, not
 some other time.
+
+Which facets' paste blocks a given entity actually uses is an =or=
+choice — an entity may draw on several at once:
+
+[[proj:projects/ores.compass/scripts/variability/paste_blocks.svg]]
 
 * Terminology: this is a protected region
 

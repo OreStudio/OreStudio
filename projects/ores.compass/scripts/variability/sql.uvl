@@ -1,0 +1,16 @@
+namespace OresCodegenSql
+
+// UVL model of entity_meta_model_sql.org's has_parent_id hierarchy knob.
+// ParentIdColumn/HierarchyNameField are "if set" properties, required
+// only once HasParentId is selected -- expressed as mandatory children
+// of an optional parent, same pattern as the Qt page's HasCsvXmlIo group.
+
+features
+    Sql {abstract}
+        mandatory
+            Tablename
+        optional
+            HasParentId
+                mandatory
+                    ParentIdColumn
+                    HierarchyNameField

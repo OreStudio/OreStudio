@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -21,6 +22,8 @@ these struct definitions on both the sending and receiving side.
 [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s Naming/wiring knobs (=:get_request_class:=,
 =:save_message_type:=, etc.) also just reference class/type names
 that this facet defines.
+
+[[proj:projects/ores.compass/scripts/variability/cpp_protocol.svg]]
 
 * What gets generated, unconditionally
 

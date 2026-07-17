@@ -1,0 +1,18 @@
+namespace OresCodegenKeysAndColumns
+
+// UVL model of entity_meta_model_keys_and_columns.org's Flags knobs.
+// Both are MASD *structural* variability (they add a column/field to
+// the entity's own logical shape), not the VMM's non-structural
+// "variability" proper -- modeled here anyway since UVL/feature-model
+// tooling is still a reasonable way to express "which optional columns
+// does this entity have", just a different MASD category from the
+// C++ Qt Behavioural knobs.
+
+features
+    KeysAndColumns {abstract}
+        mandatory
+            PrimaryKey
+            Columns
+        optional
+            HasTenantId
+            HasWorkspaceId

@@ -1,0 +1,24 @@
+namespace OresCodegenEntityModel
+
+// Illustrative UVL model of the segments documented by
+// projects/ores.codegen/modeling/org_entity_meta_model.org: which parts
+// of an entity model file are always present versus optional, at the
+// segment level. Not a precise model of any real codegen dispatch logic
+// -- CppQt's optionality mirrors the real :ores.cpp.qt.enabled: knob;
+// the others' mandatory/optional split is illustrative of "what a
+// typical fully-commissioned entity has", not a hard codegen constraint.
+
+features
+    EntityModel {abstract}
+        mandatory
+            KeysAndColumns
+            Sql
+            CppDomain
+            CppRepository
+            CppService
+            CppProtocol
+            CppNats
+        optional
+            CppQt
+            CppGenerator
+            CppPresentation

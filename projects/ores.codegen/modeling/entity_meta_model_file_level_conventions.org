@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 18D99C09-22CD-4487-B7A3-FA0612A8B154
+:END:
+#+title: Codegen entity meta-model — file-level conventions
+#+description: The conventions every entity model file shares regardless of which facets it uses — file naming, frontmatter, and the prose body — split out from the hub because they apply to the whole file, not to any one segment.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is linked from the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. Where every
+other segment page documents one facet's knobs, this one documents
+the conventions that apply to the *whole file*, before any facet gets
+involved at all — this is what a =.org= file has to look like for
+codegen to recognise it as an entity model in the first place. The
+concrete document-type scaffold this describes is
+[[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] — the archetype =compass add
+entity_org= renders from.
+
+* Naming
+
+Entity files live under =projects/ores.<component>/modeling/= with
+the filename =ores.<component>.<entity>.org=. Example:
+=ores.refdata.party.org= under =projects/ores.refdata/modeling/=.
+(Historical note: an earlier convention put these under
+=projects/ores.codegen/models/<component>/<entity>_entity.org=; that
+path no longer exists in the tree — codegen discovers models via the
+=modeling_dir= manifest entry, matching =#+type: ores.codegen.entity=
+in the frontmatter, not by directory convention.)
+
+* Frontmatter
+
+The first few lines of the file are org-mode frontmatter. They
+describe the *document* (this codegen model), not the modelled
+entity. Required:
+
+| Keyword           | Purpose                                              |
+|-------------------+------------------------------------------------------|
+| =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
+| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI is expected future work (see the capture on timeseries codegen analysis). Defaults to generating Qt when absent. |
+| =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
+| =#+description:=  | What this *file* is, not what the modelled thing is. |
+| =#+type:=         | =ores.codegen.entity= — the value that marks this entity's [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][MASD metatype]] as =domain_entity=. |
+| =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
+| =#+filetags:=     | =:model:entity:<component>:=                         |
+| =#+entity_singular:= | Identifier form, singular (=party=).              |
+| =#+entity_plural:=   | Identifier form, plural (=parties=).              |
+| =#+entity_title:=    | Title-cased human form (=Party=).                 |
+| =#+brief:=           | One-line summary of the modelled entity.          |
+
+* Prose body (between frontmatter and first heading)
+
+A paragraph or two describing *the modelled entity itself*. This
+text is exposed to templates as the entity =description=. Keep the
+document-level =#+description= for the *file* and put the entity
+description here.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] — the document-type archetype this page describes; =compass add entity_org= renders a blank scaffold from it.

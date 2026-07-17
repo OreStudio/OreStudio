@@ -6,6 +6,7 @@
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
 #+created: 2026-07-17
 #+updated: 2026-07-17
 
@@ -75,6 +76,12 @@ party-scoped with a UUID primary key, so it also exercises
 ,:icon:                    Book
 ,:END:
 #+end_src
+
+Feature diagram of the Behavioural group below (the non-structural
+=domain_entity= variability; naming/wiring and overrides omitted, they
+aren't real branch points):
+
+[[proj:projects/ores.compass/scripts/variability/domain_entity_qt.svg]]
 
 * Naming and wiring
 

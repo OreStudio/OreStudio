@@ -19,12 +19,16 @@ layered on top.
 
 This segment mixes both MASD categories from [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity
 model file as a unified literate document, so it gets two diagrams,
-one per category: =:tablename:= is a required identity field with no
-default, structural in the sense that every entity needs exactly one
-value and there is nothing to toggle — drawn as a UML class diagram
-under [[*Flags][Flags]] below. =:has_parent_id:= (and its two dependent
-properties) is a genuine authored, optional, non-structural [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]]
-feature — drawn as a UVL feature diagram under [[*Hierarchy: =has_parent_id=][Hierarchy]] below.
+one per category. Structural, drawn as a UML class diagram under
+[[*Flags][Flags]] below: =:tablename:= (a required identity field with no
+default — every entity needs exactly one value, nothing to toggle),
+and, once =:has_parent_id:= is on, =:parent_id_column:=/
+=:hierarchy_name_field:= — these two name *real columns*, so despite
+looking like they belong next to the toggle that gates them, they are
+structural facts about the entity, not configuration. Non-structural,
+drawn as a UVL feature diagram under [[*Hierarchy: =has_parent_id=][Hierarchy]] below:
+=:has_parent_id:= itself — the one genuine authored, optional [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]]
+feature on this page.
 
 * Physical model mapping
 
@@ -48,10 +52,13 @@ The section always opens with a =** Flags= drawer:
 |-----------------+----------+-----------------------------------------------------|
 | =:tablename:=   | yes      | The generated table's name. Convention: =<product>_<component>_<entity_plural>_tbl=. |
 
-Structural view — =Entity= has exactly one =SQL= segment,
-=:tablename:= is one of its fields, always present, and the segment's
-one [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste block]] kind (extra drop statements, [[*Paste block: extra drop statements][below]]) is drawn as its
-own class — a block kind's =ID= is the well-known kind UUID, distinct
+Structural view — =Entity= has exactly one =SQL= segment;
+=:tablename:= is always present, =:parent_id_column:=/
+=:hierarchy_name_field:= are present only once =:has_parent_id:= is
+on (drawn optional here even though that condition itself is
+non-structural — see [[*Hierarchy: =has_parent_id=][Hierarchy]]); and the segment's one [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste
+block]] kind (extra drop statements, [[*Paste block: extra drop statements][below]]) is drawn as its own
+class — a block kind's =ID= is the well-known kind UUID, distinct
 from any entity's per-instance implementing block:
 
 #+begin_src plantuml :file entity_meta_model_sql_structural.png
@@ -65,8 +72,18 @@ class Entity <<metaclass>> {
 
 class SQL <<segment>> {
   +tablename : string
+  +parentIdColumn : string [0..1]
+  +hierarchyNameField : string [0..1]
   +extraDrops : SqlPasteBlock
 }
+
+note right of SQL
+  parentIdColumn and hierarchyNameField
+  are present only when the non-structural
+  HasParentId feature is selected -- see
+  this page's UVL feature diagram, which
+  carries the matching cross-reference.
+end note
 
 class SqlPasteBlock <<PasteBlock>> {
   ID

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: A06F9EE0-91F0-45B8-80CC-27DBEE7442B7
+:END:
+#+title: Automate content transfer when promoting captures to tasks/stories
+#+description: compass add task/story --id <capture-id> should copy the capture's content across automatically (not just preserve the ID) and prompt the LLM to reformat it into the target's section schema, instead of the promoter hand-retyping the capture's substance into the new doc.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:codegen:tooling:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Captures and tasks/stories are different document types with
+different section schemas (a capture has =* What=/=* Why=/
+=* References=/=* See also=; a task has =* Goal=/=* Status=/
+=* Acceptance=/=* Plan=/=* Notes=/etc.), so promoting a capture today
+means scaffolding a fresh doc with =compass add task/story --id
+<capture-id>= (preserving the ID for traceability) and then manually
+re-typing the capture's substance into the new doc's sections by
+hand. Automate this: when =--id= matches an existing capture, have
+compass read that capture's full body, pass it to the LLM with the
+target schema, and have the LLM reformat/redistribute the content
+into the new doc's sections in one step — then delete or archive the
+source capture. The promoter should review/edit the result, not
+retype it from scratch.
+
+* Why
+
+Observed directly while promoting capture
+=EE237306-7782-4625-8880-47E8975530EA= ("Scaffold model .org files
+per entity type") into a task under the "Commission ores.qt.dq"
+story: the ID was correctly preserved, but the capture's =* What=/
+=* Why=/=* References= content had to be hand-copied and reworded
+into the task's =* Notes= section because the two schemas don't
+line up automatically. This is manual, error-prone (easy to drop a
+reference or nuance in transcription), and repeats every single time
+a capture is promoted — a purely mechanical step that an LLM-assisted
+compass command could do reliably.
+
+* References
+
+- Task [[id:EE237306-7782-4625-8880-47E8975530EA][Scaffold model .org files per entity type (regular/enum/junction)]] — the promotion that surfaced this gap.
+- =projects/ores.compass/src/env_init.py=/=compass.py= `add` command — where =--id= reuse and doc-type templating already live; this would extend that path.
+
+* See also
+
+- [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Story: Commission ores.qt.dq — full-stack codegen for the DQ component]]

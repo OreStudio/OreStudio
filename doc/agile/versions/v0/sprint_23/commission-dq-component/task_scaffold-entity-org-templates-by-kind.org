@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: EE237306-7782-4625-8880-47E8975530EA
+:END:
+#+title: Task: Scaffold model .org files per entity type (regular/enum/junction)
+#+description: Generate model .org skeletons from mustache templates keyed by entity type (regular entity, enum entity, junction), pre-populated with the correct variability knobs already enabled, derived by sampling known-good reference entities (e.g. book, currency) rather than ad-hoc copy-paste.
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generate correct, fully-knobbed entity .org model skeletons per entity kind (regular/enum/junction), by sampling correctly-modeled reference entities such as book and currency, so new DQ (and future) entity models start from a known-good baseline instead of copy-paste.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- A codegen command/template exists per entity kind that scaffolds a new *_entity.org with the correct variability knobs (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/junction wiring, etc.) already set based on sampled reference entities; used to author the DQ reference-entity models in the sibling commissioning task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Promoted from a backlog capture (same =:ID:=, preserved for traceability).
+
+Today every entity's model =.org= file (e.g.
+=projects/ores.refdata/modeling/ores.refdata.<entity>.org=) is
+hand-authored from scratch or copy-pasted from a similar entity, so
+variability knobs (=has_change_reason_cache=,
+=history_response_data_field=, =delete_request_id_field=,
+=has_uuid_primary_key=, badge wiring for enum-like lookups, junction
+wiring for many-to-many association entities, etc.) get set
+inconsistently or omitted entirely depending on which entity someone
+copied from. In practice there are really only a handful of *entity
+kinds* driving these knobs: a plain domain entity, an enum/lookup
+entity (small closed set of codes, usually badge-rendered in list
+views), and a junction/association entity (links two entities, often
+read-only or list-only). Add a mustache template per kind under
+=projects/ores.codegen/library/templates/= that scaffolds a new model
+=.org= with the correct knobs for that kind already present and set
+to sensible defaults -- derived by sampling known-good reference
+entities (e.g. =ores.refdata.book.org=, =ores.refdata.currency.org=)
+that are already proven to fill in every knob correctly, rather than
+generic per-kind defaults alone.
+
+This traces back to task [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]] (PRs #1571/#1590), which found 8
+=*_convention= entities missing =has_change_reason_cache: true=
+despite their schema requiring =change_reason_code= (saves silently
+failed with an empty change-reason dropdown), and the same 8 missing
+=history_response_data_field=/=delete_request_id_field= overrides
+because their protocol field names don't follow the codegen
+defaults. All three gaps trace back to the model =.org= file being
+authored without a checklist for "what does an entity of this kind
+need". A kind-aware scaffold sampled from correct entities would make
+these knobs impossible to silently omit.
+
+See also: [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Story: Migrate all entities onto the generic HistoryDialog]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

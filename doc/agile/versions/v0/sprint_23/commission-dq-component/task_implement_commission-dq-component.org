@@ -7,43 +7,113 @@
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/commission-dq-entities
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Inventory every DQ entity in =ores.dq.core/repository= and classify it by
+codegen/hand-written status (core, service/handler/protocol, Qt), so the
+parent story has a concrete, complete list of what remains to commission.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Inventory complete; follow-on task scaffolded. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Next         | Close this task.                       |
+| Last touched | 2026-07-17                             |
 
 * Acceptance
 
--
+- Every entity under =ores.dq.core/repository/*_entity.hpp= is accounted for.
+- Each entity is classified: has codegen =.org= model? core generated?
+  service/handler/protocol generated or hand-written? Qt layer generated,
+  hand-written, or absent?
+- At least one follow-on task exists naming the entities to commission next.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Diff the entities in =projects/ores.dq/core/include/ores.dq.core/repository/*_entity.hpp=
+against the codegen models in =projects/ores.dq/modeling/*.org= and the
+hand-written Qt sources in =projects/ores.qt/dq=, then record the result.
 
 * Notes
+
+** Inventory (22 repository entities)
+
+*** Core commissioned, Qt not yet (NOT fully commissioned)
+
+| Entity                | Codegen model                     |
+|-----------------------+------------------------------------|
+| artefact_type          | artefact_type_lookup_entity.org    |
+| badge_mapping          | badge_mapping_junction.org         |
+| dataset_bundle         | dataset_bundle.org                 |
+| dataset_bundle_member  | dataset_bundle_member_junction.org |
+
+*** Partially commissioned — codegen model exists, but hand-written handler/service/protocol + hand-written Qt
+
+(already the subject of the sibling task "Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing")
+
+- badge_definition
+- badge_severity
+- code_domain
+
+*** Not commissioned at all — no codegen =.org= model, no generated core/service/handler/protocol, no Qt
+
+Named in the story description:
+
+- catalog
+- change_reason
+- change_reason_category
+- data_domain
+- subject_area
+
+Additional entities found during this inventory, not named in the story
+description — same "no model at all" status:
+
+- coding_scheme
+- coding_scheme_authority_type
+- dataset
+- dataset_dependency
+- fsm_state
+- fsm_transition
+- methodology
+- nature_dimension
+- origin_dimension
+- publication
+- treatment_dimension
+
+*** Qt layer (=projects/ores.qt/dq=)
+
+Hand-written, no =CMakeLists.txt= (not wired into the build as a plugin
+library) — covers only badge_definition, badge_severity, code_domain.
+Every other entity has no Qt presence at all.
+
+** Follow-on task
+
+Scaffolded [[id:819B050A-A877-4B9A-BB24-942B95DA1206][Commission catalog/change_reason/change_reason_category/data_domain/subject_area onto standard codegen]]
+covering the five "no model at all" entities explicitly named in the
+story description — all simple code-list-shaped reference entities
+(tenant_id/version/description + standard audit/temporal columns, one
+with a category_code/applies_to_* flag set). The remaining eleven
+entities discovered during this inventory but not named in the story
+(coding_scheme(+authority_type), dataset(+dependency), fsm_state/transition,
+methodology, nature/origin/treatment_dimension, publication) are left
+for subsequent follow-on tasks — several of them (fsm_state/transition,
+the *_dimension trio) look like they may share a common shape and could
+be worth commissioning as a group once that's confirmed.
 
 * Test Scenarios
 

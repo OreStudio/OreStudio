@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 819B050A-A877-4B9A-BB24-942B95DA1206
+:END:
+#+title: Task: Commission catalog/change_reason/change_reason_category/data_domain/subject_area onto standard codegen
+#+description: Author codegen .org models for the five simple code-list-shaped DQ entities named in the parent story (catalog, change_reason, change_reason_category, data_domain, subject_area) and regenerate their core/repository/service/handler/protocol layers, retiring the hand-written equivalents.
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Commission the five no-model DQ entities named in the story description onto the standard codegen stack: catalog, change_reason, change_reason_category, data_domain, subject_area.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- Each of the five entities has a codegen .org model under projects/ores.dq/modeling/; generated core/repository/service/handler/protocol code replaces any hand-written equivalent; build and tests green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

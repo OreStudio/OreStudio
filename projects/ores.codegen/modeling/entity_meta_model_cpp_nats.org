@@ -25,6 +25,16 @@ for this documentation task, but worth raising against the
 
 [[proj:projects/ores.compass/scripts/variability/cpp_nats.svg]]
 
+* Physical model mapping
+
+| Facet                          | Description                                                              |
+|-----------------------------------+------------------------------------------------------------------------------|
+| [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]]            | NATS subscription handlers.                                               |
+| [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]]      | Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler. |
+| [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]]           | NATS changed-event publishers.                                            |
+| [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]]    | Per-entity NATS event-mapping registrar pair wiring an entity's Postgres LISTEN/NOTIFY channel to its changed-event pipeline. |
+| [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]        | Consumer-side in-process cache mirroring a producer entity, kept fresh via eventing. |
+
 * Two independent pipelines
 
 NATS transport is used for two unrelated purposes per entity, and it

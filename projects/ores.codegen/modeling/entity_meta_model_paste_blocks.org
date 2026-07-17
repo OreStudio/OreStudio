@@ -25,6 +25,14 @@ choice — an entity may draw on several at once:
 
 [[proj:projects/ores.compass/scripts/variability/paste_blocks.svg]]
 
+* Physical model mapping
+
+Unlike every other segment, this one has no facet(s) of its own to
+map to — it is cross-cutting, injecting content into whichever
+facet's archetype the entity happens to attach a block for. See
+"Finding a block kind" below for which segment page (and therefore
+which facet) hosts each concrete block kind.
+
 * Terminology: this is a protected region
 
 "Paste block" is *not* a MASD concept — it is ORE Studio's

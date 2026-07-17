@@ -25,6 +25,12 @@ that this facet defines.
 
 [[proj:projects/ores.compass/scripts/variability/cpp_protocol.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]          | Protocol (de)serialisation.                         |
+
 * What gets generated, unconditionally
 
 For every entity: a get/list request+response pair, a save

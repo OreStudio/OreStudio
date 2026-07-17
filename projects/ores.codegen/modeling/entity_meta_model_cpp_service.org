@@ -17,6 +17,12 @@ changed-event on every mutation.
 
 [[proj:projects/ores.compass/scripts/variability/cpp_service.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]           | C++ service application classes.                    |
+
 * What gets generated, unconditionally
 
 Every entity gets a full service class with =list=, =count=, =save=,

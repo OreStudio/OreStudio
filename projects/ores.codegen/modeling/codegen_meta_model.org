@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 884C6B00-0849-430D-9D32-F3544269DC56
+:END:
+#+title: Codegen meta-model
+#+description: Top-level registry of ores.codegen's meta-model documents — one deep-dive hub per #+type document type (ores.codegen.entity, ores.codegen.junction, ...) — plus the common frontmatter every type inherits from and the general modeling approach they all follow.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+Each of the eight =#+type: ores.codegen.*= document types that
+=ores.codegen= reads as a generator input (see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file
+schema reference]] for the shallow, one-page-per-type quick reference
+across all eight) is, in [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, a distinct [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][metatype]]: a
+classification of *what kind* of logical element a model file
+describes, per [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]]. This page is the registry of the *deep*
+per-metatype treatments — one hub-and-spokes document set per
+metatype, each documenting every property that metatype's model files
+can declare, with worked examples and generated-output snippets. Only
+one exists today.
+
+Every entity model file, regardless of metatype, is also an instance
+of the pattern described in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity model file as a
+unified literate document: one physical =.org= document bundling the
+logical element's shape, its authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]], and any [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][protected
+regions]] (paste blocks) it needs. Read that section first — it explains
+*why* these documents look the way they do, before this page's tables
+tell you *what* each one contains.
+
+* Segment
+
+Every deep hub in the registry below decomposes its metatype's model
+file into *segments* — a term specific to these meta-model docs, not a
+MASD concept in its own right. A segment is a bundle of related
+fields/properties of a metaentity: a coherent group of frontmatter
+keywords, headings, and property-drawer properties that an author
+fills in together and that [[id:787A7429-71D5-4295-829B-A9B56275B1F8][project]] into one facet, or a small closed
+set of closely related facets, as one unit. =ores.codegen.entity='s
+=* SQL= heading and everything under it is a segment; so is =* C++ >
+** Qt= and everything under it. A segment is the *documentation* unit
+this registry's hubs are organised by — it exists so a reader (or an
+LLM) can find "everything about how this metaentity's Qt projection is
+configured" in one page, without also needing to hold the rest of the
+metaentity's fields in view. It is not itself an addressable point in
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] (a facet is) nor in [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]] (the metaentity as a
+whole is) — a segment is the documentation-level grouping that sits
+between the two, which is precisely why every segment page opens with
+a *Physical model mapping* table: to make explicit which facet(s) —
+real points in physical space — that segment's fields ultimately
+project into.
+
+* Registry
+
+| Metatype (=#+type=)          | Hub page                                                      | Model files live under                          |
+|--------------------------------+-----------------------------------------------------------------+----------------------------------------------------|
+| =ores.codegen.entity=          | [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]]                                  | =projects/ores.<component>/modeling/ores.<component>.<entity>.org= |
+| =ores.codegen.junction=        | *(not yet authored to this depth — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][schema reference]] for the shallow treatment)* | same                                                |
+| =ores.codegen.lookup_entity=   | *(not yet authored)*                                             | same                                                |
+| =ores.codegen.field_group=     | *(not yet authored)*                                             | same                                                |
+| =ores.codegen.table=           | *(not yet authored)*                                             | same                                                |
+| =ores.codegen.service_registry= | *(not yet authored)*                                            | same                                                |
+| =ores.codegen.module=          | *(not yet authored)*                                             | same                                                |
+
+* Common frontmatter
+
+Every metatype's frontmatter can be understood as inheriting from one
+implicit base — a UML analogy is deliberate here: think of each
+=#+type: ores.codegen.*= value as a subclass, and the properties below
+as attributes declared once on an abstract superclass every subclass
+inherits, then extends with its own required attributes. ORE Studio
+has no literal class hierarchy for this (frontmatter keywords are
+just text, not a type system with inheritance semantics enforced by
+anything) — but the *shape* of the relationship is exactly
+generalisation/specialisation, and thinking of it that way is the
+fastest route to remembering which fields are universal and which are
+metatype-specific.
+
+** Inherited by every metatype (the implicit base)
+
+| Keyword         | Purpose                                                         |
+|-------------------+--------------------------------------------------------------------|
+| =:ID:= (drawer)   | UUID of this org file. Used for cross-document links; also what makes the file an org-roam node at all, independently of codegen. |
+| =#+type:=         | The metatype discriminator. Its value is what dispatches to a specific archetype set — see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § Metatype. |
+| =#+filetags:=     | Org-roam tags; convention is =:model:<metatype-noun>:<component>:=, e.g. =:model:entity:refdata:=. |
+| =#+component:=    | Component the model belongs to (=refdata=, =trading=, ...). Present on every metatype except =ores.codegen.service_registry=, which is cross-component by nature (one registry of every backend service). |
+
+** Specialized per metatype
+
+Each metatype layers its own required fields on top of the inherited
+base — the identity/naming fields a generator needs to render that
+specific archetype set. These are documented in full on each
+metatype's own hub page; until a metatype gets one, see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input
+org-file schema reference]] § that metatype for the quick list. As a
+sample of how much the specialized fields diverge between metatypes —
+=ores.codegen.entity= names itself with =#+entity_singular=/
+=#+entity_plural=/=#+entity_title=/=#+brief=; =ores.codegen.junction=
+instead uses =#+name=/=#+name_singular=/=#+name_title=/
+=#+name_singular_words=/=#+brief= (a junction has no single subject to
+be "the entity," so its naming scheme is built around the relation's
+plural/singular forms instead); =ores.codegen.lookup_entity= drops
+naming fields in favour of structural declarations
+(=#+has_tenant_id=/=#+has_coding_scheme=/=#+has_image_id=/
+=#+has_artefact_insert_fn=) made at frontmatter level rather than in a
+body section. The entity metatype's full specialized-frontmatter
+treatment lives on [[id:18D99C09-22CD-4487-B7A3-FA0612A8B154][Codegen entity meta-model — file-level conventions]].
+
+* See also
+
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the modeling approach every metatype's model files follow, including the UML contrast.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — metatype as a MASD concept; the logical entity types table.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — what a metatype's archetypes ultimately produce.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the physical-space grouping each metatype's archetypes bind to.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] / [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — how a metatype's facets get activated and configured.
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the shallow, all-eight-metatypes-at-once quick reference this registry's deep hubs supersede one metatype at a time.

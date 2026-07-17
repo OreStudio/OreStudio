@@ -17,6 +17,12 @@ repository classes, plus list/count/save/delete/get CRUD.
 
 [[proj:projects/ores.compass/scripts/variability/cpp_repository.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | Repository layer: entity, mapper, CRUD.             |
+
 * Flags
 
 #+begin_src org

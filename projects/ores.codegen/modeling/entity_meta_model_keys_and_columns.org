@@ -20,6 +20,17 @@ three kept in sync by construction.
 
 [[proj:projects/ores.compass/scripts/variability/keys_and_columns.svg]]
 
+* Physical model mapping
+
+This segment is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] declaration, not a projection of one
+facet — it [[id:787A7429-71D5-4295-829B-A9B56275B1F8][projects]] into three:
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]            | Bi-temporal schema: table create/drop, insert triggers, notify triggers. |
+| [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | Domain types: class, JSON I/O, table I/O.           |
+| [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | Repository layer: entity, mapper, CRUD.             |
+
 * Flags
 
 Cross-cutting properties read by both the SQL and C++ pipelines, set

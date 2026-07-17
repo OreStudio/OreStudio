@@ -20,6 +20,12 @@ that aren't inferred automatically from column types.
 
 [[proj:projects/ores.compass/scripts/variability/cpp_domain.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | Domain types: class, JSON I/O, table I/O.           |
+
 * Domain includes
 
 A named =includes= babel block: one =#include= directive per line,

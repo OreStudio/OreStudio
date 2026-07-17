@@ -19,6 +19,12 @@ layered on top.
 
 [[proj:projects/ores.compass/scripts/variability/sql.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]            | Bi-temporal schema: table create/drop, insert triggers, notify triggers. |
+
 * Flags
 
 The section always opens with a =** Flags= drawer:

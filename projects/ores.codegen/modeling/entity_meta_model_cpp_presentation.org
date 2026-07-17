@@ -18,6 +18,12 @@ does it show, and in what order?
 
 [[proj:projects/ores.compass/scripts/variability/cpp_presentation.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]      | Server-side rendering of a domain type for display: history field mapper. |
+
 * What gets generated, unconditionally
 
 A history field mapper: a function rendering the entity to an

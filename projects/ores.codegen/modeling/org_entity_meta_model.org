@@ -15,12 +15,15 @@ describes one entity (e.g. [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][party]]) a
 every technical space that entity touches: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][SQL]] and several independent
 C++ facets (e.g. [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]],
 [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]). In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
-segment pages — is the *metamodel* for the entity model: it does not
-describe any one entity, it describes what any entity model file is
-allowed to contain. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates
-MASD's logical/physical space, metatype, facet, and archetype
-concepts — those concepts are exactly the organising principle this
-hub uses below.
+segment pages — is the *metamodel* for one metatype, =ores.codegen.entity=
+(=domain_entity=); it is one entry in the [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] registry of
+all eight metatypes ores.codegen recognises. It does not describe any
+one entity, it describes what any entity model file is allowed to
+contain. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how ORE Studio instantiates MASD's
+logical/physical space, metatype, facet, and archetype concepts, and
+for why an entity model file looks the way it does at all (§ The
+entity model file as a unified literate document) — those concepts
+are exactly the organising principle this hub uses below.
 
 This page stays deliberately short: an overview, the file-level
 conventions every entity model shares regardless of which facets it
@@ -83,24 +86,24 @@ hub — they'd get their own metamodel hub if documented to this depth.
 
 * Notes
 
-** Terminology: knobs are (mostly) MASD variability
+** Terminology: what a "knob" actually is
 
-Every "knob" documented across these segment pages is, precisely, a
-[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] *feature* (a single configuration point) or belongs
-to a *feature bundle*. But not uniformly: MASD reserves "variability"
-strictly for *non-structural* configuration — it doesn't change the
-object graph, only how it's rendered. Most Qt knobs fit that exactly
-(they gate generated code paths without changing the entity's own
-logical shape). =:has_tenant_id:= does not — it adds an actual
-column/field, which is *structural* variability, living in the
-logical model itself, not MASD's Variability Metamodel. This hub does
-not yet consistently distinguish the two, and MASD's =profile=
-concept (a reusable, named bundle of feature values, composing
-base/component/element) looks like a close match for what task
-=EE237306= separately calls a domain_entity "shape" — resolving both
-of these properly is tracked by capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize the codegen entity
-knob system as a proper MASD/MDE feature model]], not decided
-piecemeal across these pages.
+The full treatment of this — why a =.org= entity model bundles the
+entity's shape, its authored variability, and its protected regions
+into one document; the mechanical test for telling a variability
+*feature* apart from a *structural predicate*; and the contrast with
+how classical UML+Profile MDE keeps the same three concerns in three
+separate artefacts — now lives in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § The entity model file
+as a unified literate document. Read that first if a knob on one of
+these segment pages doesn't obviously fit "feature" or "structural
+predicate."
+
+Resolving the two open questions that discussion raises for *this*
+hub specifically — full structural/non-structural labelling on every
+segment page, and whether task =EE237306='s domain_entity "shape"
+concept should just be MASD's existing =profile= — is tracked by
+capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize the codegen entity knob system as a proper MASD/MDE
+feature model]], not decided piecemeal across these pages.
 
 ** Why two levels of UUID (paste blocks)
 
@@ -124,6 +127,7 @@ templates and entity files evolve independently.
 
 * See also
 
+- [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] — the registry this hub is one entry of, and the common frontmatter every metatype (including this one) specializes.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the methodology this hub instantiates.
-- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's feature/feature bundle/profile/binding point/configuration scope vocabulary that most of these segment pages' knobs should be described in.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] / [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — MASD's feature/feature bundle/profile/binding point/configuration scope vocabulary that most of these segment pages' knobs should be described in.
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — a shallow, quick-reference index across *all eight* entity-model doc types (=entity=, =lookup_entity=, =junction=, =field_group=, =table=, ...), one line per section. This hub is the deep-dive for =ores.codegen.entity= specifically; that page is the map of the whole territory.

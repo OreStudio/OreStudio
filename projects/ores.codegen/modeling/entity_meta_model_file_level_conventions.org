@@ -33,17 +33,16 @@ in the frontmatter, not by directory convention.)
 
 The first few lines of the file are org-mode frontmatter. They
 describe the *document* (this codegen model), not the modelled
-entity. Required:
+entity. =:ID:=, =#+type:=, =#+filetags:=, and =#+component:= are
+inherited from every metatype's common base — see [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen
+meta-model]] § Common frontmatter. Specialized to =ores.codegen.entity=
+on top of that base, and required:
 
 | Keyword           | Purpose                                              |
 |-------------------+------------------------------------------------------|
-| =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
 | =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI is expected future work (see the capture on timeseries codegen analysis). Defaults to generating Qt when absent. |
 | =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
 | =#+description:=  | What this *file* is, not what the modelled thing is. |
-| =#+type:=         | =ores.codegen.entity= — the value that marks this entity's [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][MASD metatype]] as =domain_entity=. |
-| =#+component:=    | Component the entity belongs to (=refdata=, =trading=, ...). |
-| =#+filetags:=     | =:model:entity:<component>:=                         |
 | =#+entity_singular:= | Identifier form, singular (=party=).              |
 | =#+entity_plural:=   | Identifier form, plural (=parties=).              |
 | =#+entity_title:=    | Title-cased human form (=Party=).                 |
@@ -59,4 +58,5 @@ description here.
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] — the registry this metatype belongs to, and the common-frontmatter base every metatype specializes.
 - [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] — the document-type archetype this page describes; =compass add entity_org= renders a blank scaffold from it.

@@ -15,6 +15,12 @@ the [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] facet.
 
 [[proj:projects/ores.compass/scripts/variability/cpp_generator.svg]]
 
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]         | Fake-data generators for testing.                   |
+
 * What gets generated, unconditionally
 
 A single-record and an N-record synthetic generator, built by

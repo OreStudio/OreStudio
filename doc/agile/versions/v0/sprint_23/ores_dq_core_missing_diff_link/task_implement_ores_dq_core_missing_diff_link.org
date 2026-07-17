@@ -27,11 +27,11 @@ build compiles again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] |
-| Now          | Fix verified locally.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-07-17                               |
 
 * Acceptance
@@ -119,3 +119,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Build and full test suite (=run_all_tests=) restored to green on
+=main= via PR [[https://github.com/OreStudio/OreStudio/pull/1615][#1615]]: linked =ores.diff.lib= into =ores.dq.core= and
+=ores.eventing.core.lib= into =ores.dq.service=; fixed the tenant
+provisioner's instrument-codes copy to include =curve_role=; wired
+=ORES_TEST_ENV_CMD= into =ores.history.core='s test target; fixed
+stale refdata generator test expectations and several generator bugs
+(missing =display_order=, fabricated =coding_scheme_code=/
+=business_centre_code= values, missing real-party scoping in
+=business_unit= repository tests). Both automated review passes
+found no correctness issues; CI green.

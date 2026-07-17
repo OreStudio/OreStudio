@@ -24,11 +24,11 @@ though its public headers include =ores.diff= types.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Build and tests verified green locally. |
+| Now           | Merged via PR #1615.                   |
 | Waiting on    | Nothing.                               |
-| Next          | PR.                                    |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-17                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ though its public headers include =ores.diff= types.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:624AF5D4-24D4-4EF5-A1B2-3E66B04485DE][Scaffold story: Hotfix: ores.dq.core fails to build, missing ores.diff link]] | DONE | 2026-07-17 | 2026-07-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:92E27722-BD9A-4924-BC1B-31EDEB2A3681][Implement Hotfix: ores.dq.core fails to build, missing ores.diff link]] | STARTED | 2026-07-17 | | Initial task for: Hotfix: ores.dq.core fails to build, missing ores.diff link |
+| [[id:92E27722-BD9A-4924-BC1B-31EDEB2A3681][Implement Hotfix: ores.dq.core fails to build, missing ores.diff link]] | DONE | 2026-07-17 | 2026-07-17 | Initial task for: Hotfix: ores.dq.core fails to build, missing ores.diff link |
 
 * Decisions
 

@@ -5563,6 +5563,44 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
         return _run_logged(cmd, PROJECT_ROOT, log)
 
 
+def _cmd_site_show(path, raw=False, width=100):
+    """compass site show — dump a built site page's content directly from disk,
+    without needing `compass site serve` + curl running in parallel."""
+    site_root = PROJECT_ROOT / "build" / "output" / "site" / "OreStudio"
+    rel = path.strip("/")
+    if rel.startswith("OreStudio/"):
+        rel = rel[len("OreStudio/"):]
+    if not rel.endswith(".html"):
+        rel += ".html"
+    file_path = site_root / rel
+
+    if not file_path.is_file():
+        print(f"❌ Page not found: {file_path}\n"
+              "   Run: compass build --direct site  (or: compass site serve --compile)",
+              file=sys.stderr)
+        return 1
+
+    if raw:
+        print(file_path.read_text())
+        return 0
+
+    lynx = shutil.which("lynx")
+    if not lynx:
+        print("⚠️  lynx not found; showing raw HTML instead (install lynx for rendered text)",
+              file=sys.stderr)
+        print(file_path.read_text())
+        return 0
+
+    result = subprocess.run(
+        [lynx, "-dump", "-nolist", f"-width={width}", str(file_path)],
+        capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"❌ lynx failed (exit {result.returncode}): {result.stderr}", file=sys.stderr)
+        return result.returncode
+    print(result.stdout)
+    return 0
+
+
 def cmd_site(argv):
     """compass site — Site pillar: build and serve the org-mode site locally."""
     ap = argparse.ArgumentParser(
@@ -5576,10 +5614,19 @@ def cmd_site(argv):
     sp.add_argument("--port", type=int, default=0,
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
 
+    sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
+    sp2.add_argument("path", help="Page path relative to the site root, e.g. "
+                     "projects/ores.codegen/modeling/org_entity_meta_model.html "
+                     "(.html and a leading OreStudio/ are both optional)")
+    sp2.add_argument("--raw", action="store_true", help="Print the raw HTML instead of rendered text")
+    sp2.add_argument("--width", type=int, default=100, help="Wrap width for rendered text (default: 100)")
+
     args = ap.parse_args(argv)
     if args.subcmd is None:
         ap.print_help()
         return 0
+    if args.subcmd == "show":
+        return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd != "serve":
         ap.print_help()
         return 1

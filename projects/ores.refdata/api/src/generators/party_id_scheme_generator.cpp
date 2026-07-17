@@ -44,7 +44,8 @@ generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx)
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Scheme" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.coding_scheme_code = std::string(faker::word::noun());
+    r.coding_scheme_code = std::string("LEI");
+    r.display_order = faker::number::integer(1, 100);
     r.max_cardinality = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

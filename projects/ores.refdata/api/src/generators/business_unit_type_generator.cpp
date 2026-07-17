@@ -42,7 +42,7 @@ generate_synthetic_business_unit_type(utility::generation::generation_context& c
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.coding_scheme_code = std::string("ORES-ORG") + "-" + std::to_string(idx);
+    r.coding_scheme_code = std::string("INTERNAL");
     r.code = std::string("TYPE") + std::to_string(idx) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::noun()) + " Type";
     r.level = faker::number::integer(0, 5);

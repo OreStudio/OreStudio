@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 624AF5D4-24D4-4EF5-A1B2-3E66B04485DE
+:END:
+#+title: Task: Scaffold story: Hotfix: ores.dq.core fails to build, missing ores.diff link
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :ores_dq_core_missing_diff_link:sprint_23:v0:
+#+owner: marco
+#+branch: hotfix/ores-dq-core-missing-diff-link
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story, tasks, and sprint wiring scaffolded; no code changes ride this
+task.

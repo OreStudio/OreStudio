@@ -14,7 +14,12 @@ import sys
 COMPASS_RE = re.compile(
     r"(?:^|[\s&;(])(?:\./)?(?:projects/ores\.compass/)?compass\.sh(?:\s|$)"
 )
-REDIRECT_RE = re.compile(r"\||>")
+# A lone "|" (pipe) not adjacent to another "|" -- excludes the "||"
+# logical-OR operator (e.g. `compass.sh build || echo failed`, a normal
+# error-handling idiom that pipes nothing) while still catching a real
+# single-pipe pipeline. Any ">" is a redirect (">", ">>", "2>&1" all
+# contain it) and has no equivalent non-redirect meaning to exclude.
+REDIRECT_RE = re.compile(r"(?<!\|)\|(?!\|)|>")
 
 DENIAL_MESSAGE = (
     "Never pipe or redirect a compass command (no `|`, no `>`, no "
@@ -32,7 +37,7 @@ def main() -> int:
         data = json.load(sys.stdin)
     except (ValueError, json.JSONDecodeError):
         return 0
-    if data.get("tool_name") != "Bash":
+    if not isinstance(data, dict) or data.get("tool_name") != "Bash":
         return 0
     command = data.get("tool_input", {}).get("command", "")
     if COMPASS_RE.search(command) and REDIRECT_RE.search(command):

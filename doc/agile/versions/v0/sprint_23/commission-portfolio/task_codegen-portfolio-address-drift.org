@@ -8,7 +8,7 @@
 #+filetags: :commission-portfolio:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-portfolio-address-drift
-#+pr:
+#+pr: 1616
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1616][#1616]] | [refdata,qt,codegen] Regenerate portfolio against current codegen templates |
 
 * Review
 

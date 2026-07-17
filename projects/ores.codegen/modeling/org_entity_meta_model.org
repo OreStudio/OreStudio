@@ -38,6 +38,7 @@ The first few lines of the file are org-mode frontmatter. They describe the
 | Keyword           | Purpose                                              |
 |-------------------+------------------------------------------------------|
 | =:ID:= (drawer)   | UUID of this org file. Used for cross-document links. |
+| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity (e.g. a TimescaleDB hypertable entity with no UI, such as =ores.marketdata.market_observation=). Defaults to generating Qt when absent. |
 | =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
 | =#+description:=  | What this *file* is, not what the modelled thing is. |
 | =#+type:=         | =ores.codegen.entity=                                 |
@@ -225,9 +226,76 @@ C++-specific knobs. Sub-sections:
 - =** Conventions= — Misc C++ properties (=iterator_var=, etc.).
 - =** Table display= — Org table mapping column names to display headers.
 - =** Qt= — Property drawer plus sub-tables (=*** Detail fields=,
-  =*** Columns (Qt model)=).
+  =*** Columns (Qt model)=). See "Qt property drawer" below for the
+  full knob reference — several of these have no default and are
+  silently treated as false/absent by the mustache templates if
+  omitted, so they must be set explicitly on every entity that needs
+  them.
 - =** Custom repository methods= — Custom methods that the standard
   repository template cannot express. See "Block kinds" below.
+
+** Qt property drawer
+
+Knobs consumed by the Qt-layer templates (=cpp_qt_*.mustache=).
+*Naming/wiring* properties are effectively required (derivable from
+the entity name but must be spelled out) — get them wrong and
+generation still succeeds, just wired to the wrong class. *Behavioural*
+knobs change what gets generated and, critically, have **no default**:
+a mustache =\{\{#domain_entity.qt.<knob>\}\}= section silently renders as
+absent/false if the property is missing from the drawer, so omitting
+one does not error, it silently produces the "no coding scheme"
+behaviour whether or not that was intended.
+
+*** Naming / wiring (required, one entity-specific value each)
+
+| Property                  | Notes                                              |
+|----------------------------+----------------------------------------------------|
+| =:domain_include:=         | Header for the domain struct, e.g. =ores.refdata.api/domain/book.hpp=. |
+| =:domain_class:=           | Fully-qualified domain type, e.g. =refdata::domain::book=. |
+| =:protocol_include:=       | Header for the NATS protocol messages.             |
+| =:collection_name:=        | Plural, e.g. =books=.                              |
+| =:item_var:=               | Singular variable name used in generated code, e.g. =book=. |
+| =:key_field:=               | Column used as the Qt model's unique key.          |
+| =:get_request_class:=, =:get_response_class:=, =:get_message_type:= | List/get NATS message wiring. |
+| =:save_request_class:=, =:save_response_class:=, =:save_message_type:=, =:save_request_item_field:= | Save NATS message wiring. |
+| =:delete_request_class:=, =:delete_response_class:=, =:delete_message_type:= | Delete NATS message wiring. |
+| =:history_request_class:=, =:history_response_class:=, =:history_message_type:= | History NATS message wiring. |
+| =:changed_event_class:=, =:changed_event_include:= | NATS changed-event type, for cross-client cache invalidation. |
+| =:settings_group:=, =:window_title:=, =:icon:= | MDI window chrome. |
+
+*** Behavioural (no default — must be set explicitly when true)
+
+| Property                       | Default if absent | Notes                                                            |
+|----------------------------------+--------------------+-------------------------------------------------------------------|
+| =:has_uuid_primary_key:=         | false (treated as text PK) | Entity's primary key is a UUID, not a natural-key string. Also drives =:key_field_is_uuid:= (wraps the key in =boost::uuids::to_string()=) when =key_field= equals the PK column. |
+| =:has_change_reason_cache:=      | false (no change-reason dropdown) | Entity's saves require a change-reason code. If the DB layer has a =change_reason_code= column, this **must** be =true= or the save dialog silently omits the change-reason prompt (the bug behind [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]]/PRs #1571/#1590). |
+| =:has_explorer_api:=             | false              | Entity is queryable via the generic Explorer API.                 |
+| =:has_export_macro:=             | false              | Class needs an explicit DLL export macro (Windows).                |
+| =:has_pagination:=                | false              | List window paginates instead of loading all rows.                |
+| =:has_csv_xml_io:=                | false              | Entity supports CSV/XML import-export (pairs with =csv_export_*=/=xml_*= properties below). |
+| =:has_version_navigation:=        | false              | Detail dialog shows prev/next version navigation controls.        |
+| =:parent_entity_singular:=, =:parent_entity_pascal:= | (none) | Entity is party/portfolio-scoped; set when the entity is only ever listed under a parent (e.g. =book= under =portfolio=). |
+
+*** Overrides (only needed when the entity diverges from the generated protocol's default naming)
+
+| Property                        | Default if absent                                    | Notes |
+|-----------------------------------+--------------------------------------------------------+-------|
+| =:delete_request_id_field:=       | =ids= if =has_uuid_primary_key=; else =\{pk_column\}s= | Field name on the generated delete-request message holding the id list. Set explicitly when the protocol's field name doesn't follow either default (currency's =iso_codes= is a real example). |
+| =:history_response_data_field:=   | =history=                                             | Field name on the generated history-response message holding the row list. Older protocols (predating this convention) name it after the entity's plural collection instead — set explicitly when regenerating one of those. |
+
+*** Import/export (set together, only when =:has_csv_xml_io:= is true)
+
+=:csv_export_class:=, =:csv_export_include:=, =:csv_export_method:=,
+=:xml_export_class:=, =:xml_export_include:=, =:xml_export_method:=,
+=:xml_import_class:=, =:xml_import_include:=, =:xml_import_method:=,
+=:xml_validate_method:=.
+
+*** Per-field knobs (=*** Detail fields= / =*** Columns (Qt model)= tables)
+
+| Column        | Notes                                                                 |
+|----------------+------------------------------------------------------------------------|
+| =badge_key=    | Renders this field's value as a coloured badge (looked up via =code_domain=/=badge_definition=) instead of plain text, in both the detail dialog and the list column. Omit only when the field genuinely has no DQ badge mapping. |
+| =flag_source=, =combo_*=  | Dropdown/combo-box wiring for soft-FK fields — see an existing entity with a combo field (e.g. =book='s =book_status=) for the full property set; not yet enumerated here. |
 
 * Block kinds
 

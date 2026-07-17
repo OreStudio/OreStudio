@@ -21,8 +21,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Generate correct, fully-knobbed entity .org model skeletons per entity
-*stereotype* (regular/lookup/junction, with regular further split by
-shape — see Plan), by sampling correctly-modeled reference entities,
+*stereotype* (regular/lookup/junction/timeseries, with regular further
+split by shape — see Plan), by sampling correctly-modeled reference entities,
 so new DQ (and future) entity models start from a known-good baseline
 instead of copy-paste. Also document the fixed set of manual
 post-generation integration steps (registrar wiring, NATS relay
@@ -63,6 +63,7 @@ once we start, these are reconnaissance picks, not final):
 | Regular: richest/all-knobs      | =ores.refdata.currency.org=     | every optional knob exercised at least once, custom generator/service code |
 | Lookup / enum                   | =ores.iam.tenant_type_lookup_entity.org= (candidate) | small closed code set, minimal knobs |
 | Junction                        | =ores.refdata.party_counterparty_junction.org= (candidate) | two-sided FK association |
+| Timeseries / hypertable          | =ores.marketdata.market_observation.org=      | TimescaleDB hypertable, (series, observation_datetime, point_id) triple, =ores.cpp.qt.enabled: false=, transaction-time vs financial valid-time distinction -- a genuinely different shape from the temporal-versioned entities above, not just a variant |
 
 Existing doc-type split (=ores.codegen.entity=/=lookup_entity=/
 =junction=) already gives us the top-level stereotype boundary;

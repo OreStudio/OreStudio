@@ -43,6 +43,7 @@ inflating the backlog with one-off stories.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:745B765F-BEB2-4CBA-8BA8-852FBDDBA399][Add vcpkg drift check to bearings and a devops-update-environment skill]] | DONE | 2026-07-12 | 2026-07-12 | Add a vcpkg-vs-main drift warning to compass bearings, and create a new devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills). |
+| [[id:11FDFC40-E10B-4970-A15E-EEA8D8B7CA82][Improve compass output monitoring]] | BACKLOG | | | Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. |
 
 * Decisions
 

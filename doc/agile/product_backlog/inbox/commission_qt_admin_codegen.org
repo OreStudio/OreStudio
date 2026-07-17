@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9819FCE0-C26E-4854-9B88-FBDBA1DCD178
+:END:
+#+title: Commission ores.qt.admin into codegen
+#+description: Inventory the entities in ores.qt.admin, check the state of their models and codegen, and generate full stack for all entities in this component, including migrating their history dialogs to the generic HistoryDialog.
+#+type: capture
+#+level: cross
+#+filetags: :qt:admin:codegen:commissioning:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Take an inventory of every entity exposed by ores.qt.admin: which have a codegen model, which are still hand-rolled, and which have a hand-rolled *HistoryDialog. For entities with no model yet, author one. Then run full-stack codegen for every entity in the component and reconcile any drift, so each entity's history view lands on the generic HistoryDialog widget rather than a per-entity hand-rolled dialog.
+
+* Why
+
+The "Migrate ores.qt.admin's history dialogs to the generic HistoryDialog" task originally lived under the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story, but that story is being narrowed to ores.qt.refdata only. ores.qt.admin still needs its entities inventoried, commissioned through codegen, and migrated onto the generic HistoryDialog — this capture tracks that as its own piece of work, sized and scheduled independently.
+
+* References
+
+- [[id:5AF50E6F-8CFB-4403-8047-11949323BF03][Original per-component migration task]] (superseded by this capture)
+
+* See also
+
+- [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] — narrowed to refdata; this capture covers admin instead.

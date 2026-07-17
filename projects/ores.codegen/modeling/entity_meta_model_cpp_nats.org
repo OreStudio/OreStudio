@@ -15,13 +15,15 @@ five separate physical-space facets together, because they are one
 conceptual flow, not five independent concerns: [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]],
 [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]], [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]],
 [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]], [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]. (All five
-currently share the one =ores.cpp= facet_group with every other C++
-facet on this hub — nothing in the physical-space graph distinguishes
-them as a NATS sub-group. A single =ores.cpp.nats= facet with five
-archetypes underneath would model this more accurately than five
-separate facets; that's a physical-space graph change, out of scope
-for this documentation task, but worth raising against the
-=codegen_terminology_cleanup= capture.)
+currently belong to the one [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] alongside every other
+C++ facet on this hub — there is no MASD concept of a "facet group"
+one level below technical space; nothing in the physical-space graph
+distinguishes these five as a NATS sub-grouping within it. A single
+=ores.cpp.nats= facet with five archetypes underneath would model
+this more accurately than five separate facets; that's a
+physical-space graph change, tracked as task [[id:DA3C5B05-1214-44D5-A5A9-E92344EA0680][Consolidate the five
+ores.cpp.nats-* facets into one facet with five archetypes]] rather
+than done as part of this documentation task.)
 
 [[proj:projects/ores.compass/scripts/variability/cpp_nats.svg]]
 

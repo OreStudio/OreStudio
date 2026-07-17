@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 7B59588B-5BC5-4206-935C-1AFEF7C25E96
+:END:
+#+title: Task: Add compass codegen entity lint — flag missing variability knobs on a model
+#+description: A static sanity-check command that parses an entity .org model, classifies its stereotype (regular/lookup/junction), and warns about knobs it expects for that stereotype but doesn't find (Qt section absent, SQL tablename unset, has_change_reason_cache missing despite change_reason_code, etc.). Used to evaluate existing DQ models as they're commissioned, not just new ones.
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a compass subcommand that lints an entity .org model file: classify its stereotype, then check for the knobs that stereotype is expected to declare, warning on gaps instead of letting them surface later as a runtime bug (e.g. an empty change-reason dropdown, a silently absent Qt/SQL layer).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- compass has a lint command taking a model .org path (or component/entity), reusing the existing org-loader parsing; it reports one warning per missing/inconsistent knob, referencing the same knowledge base as the sibling scaffold task so the two never drift apart; run against all DQ models commissioned so far as a first real use.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Scoped narrower than the dormant backlog story
+[[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] (Sprint 19, still BACKLOG) and its
+[[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] knowledge doc: those cover a full
+*post-generation, live-system* health check across twelve layers
+(DB/Qt/shell/CLI/HTTP/Wt/manual), including manual QA steps like
+"open the app, edit a field, save". This task is a static lint of the
+model =.org= file itself, run *before* generation, catching declared-
+vs-expected knob gaps the moment the model is authored rather than
+after a save silently fails in the UI.
+
+Depends on the knowledge base built in the sibling task
+[[id:EE237306-7782-4625-8880-47E8975530EA][Scaffold model .org files per entity type]] (updated
+=org_entity_meta_model.org=, per-stereotype expected-knob list) --
+both tasks should read from the same source so they can't drift
+apart. Implementation should reuse the existing org-loader parsing in
+=ores.codegen= rather than re-parsing =.org= files independently.
+
+There's a related, unstarted sibling-story task,
+[[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]], for a
+different but adjacent `compass codegen entity` subcommand (lists the
+physical-space archetype catalogue). Check for shared CLI plumbing
+before landing this one's command surface.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

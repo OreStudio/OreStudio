@@ -20,7 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Generate correct, fully-knobbed entity .org model skeletons per entity kind (regular/enum/junction), by sampling correctly-modeled reference entities such as book and currency, so new DQ (and future) entity models start from a known-good baseline instead of copy-paste.
+Generate correct, fully-knobbed entity .org model skeletons per entity
+*stereotype* (regular/lookup/junction, with regular further split by
+shape — see Plan), by sampling correctly-modeled reference entities,
+so new DQ (and future) entity models start from a known-good baseline
+instead of copy-paste. Also document the fixed set of manual
+post-generation integration steps (registrar wiring, NATS relay
+wiring, CMake/plugin wiring, ...) so the scaffold — or the LLM using
+it — knows what still needs doing by hand, with a pointer to the
+capture/task ID tracking each step not yet automated.
 
 * Status
 
@@ -35,13 +43,31 @@ Generate correct, fully-knobbed entity .org model skeletons per entity kind (reg
 
 * Acceptance
 
-- A codegen command/template exists per entity kind that scaffolds a new *_entity.org with the correct variability knobs (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/junction wiring, etc.) already set based on sampled reference entities; used to author the DQ reference-entity models in the sibling commissioning task.
+- =org_entity_meta_model.org= documents every variability knob actually in use (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/coding_scheme wiring, etc.) -- today's doc omits all of them.
+- A codegen command/template exists per entity *stereotype* that scaffolds a new model .org with the correct knobs for that stereotype already present -- either set from the sampled exemplar or left as an explicit TODO with a one-line reason -- so a knob can never be silently omitted.
+- A "Post-generation checklist" is authored (in the scaffolded file or a companion doc, decide during implementation) enumerating every fixed manual integration step (registrar sub-registration, application.cpp NATS-relay wiring, CMakeLists entry, Qt plugin/menu wiring, manual chapter), each linking to a capture/task ID if the step is separately tracked for automation.
+- Used to author the DQ reference-entity models in the sibling commissioning task ([[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]]).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Not "profile" -- *stereotype*: the name for an entity's shape-driven
+knob combination (which knobs it needs, not what specific values).
+Candidate stereotypes and their sampled exemplars (to confirm/revise
+once we start, these are reconnaissance picks, not final):
+
+| Stereotype                     | Exemplar(s)                    | Why |
+|---------------------------------+---------------------------------+-----|
+| Regular: simple text-key        | =ores.refdata.country.org=      | text natural key, has_uuid_primary_key: false, no hierarchy |
+| Regular: FK-scoped               | =ores.refdata.book.org=         | party_id soft-FK scoping, moderate size |
+| Regular: hierarchical composite | =ores.refdata.party.org=, =ores.refdata.counterparty.org= | has_parent_id, has_uuid_primary_key: true, composite child-entity tables |
+| Regular: richest/all-knobs      | =ores.refdata.currency.org=     | every optional knob exercised at least once, custom generator/service code |
+| Lookup / enum                   | =ores.iam.tenant_type_lookup_entity.org= (candidate) | small closed code set, minimal knobs |
+| Junction                        | =ores.refdata.party_counterparty_junction.org= (candidate) | two-sided FK association |
+
+Existing doc-type split (=ores.codegen.entity=/=lookup_entity=/
+=junction=) already gives us the top-level stereotype boundary;
+extend within =ores.codegen.entity= rather than adding new doc types,
+since "regular" itself isn't homogeneous.
 
 * Notes
 

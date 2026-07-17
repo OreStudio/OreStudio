@@ -30,6 +30,13 @@ once at the top of the file:
 | =:has_tenant_id:=     | no       | Adds a =tenant_id uuid not null= column to the table and a matching field to the domain struct — multi-tenancy isolation. Omit only for genuinely global entities (currencies, countries). |
 | =:has_workspace_id:=  | no       | Same idea, for workspace-scoped isolation.             |
 
+Unlike most knobs documented elsewhere on these segment pages (see
+e.g. [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s Behavioural group), =:has_tenant_id:=/=:has_workspace_id:=
+are *not* [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] in the strict sense — they change the
+entity's own logical shape (an added column/field), which MASD calls
+*structural* variability, a different category from the VMM's
+non-structural, rendering-only "variability" proper.
+
 #+begin_src org
 ,* Flags
 ,:PROPERTIES:
@@ -163,5 +170,6 @@ create table if not exists "ores_refdata_books_tbl" (
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] — how these columns become the table's DDL, temporal constraints, and triggers.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the structural/non-structural distinction referenced above.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — how they become the plain domain struct.
 - [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the ODB-mapped entity and mapper.

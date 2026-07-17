@@ -102,9 +102,17 @@ a lighter treatment here.
 
 * Behavioural
 
-Every property here is a boolean or identifier that changes *what*
-gets generated, and every one defaults to "off"/absent if you don't
-set it — the silent-omission trap described above.
+Every property here is, in [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] terms, a *feature* — and
+specifically MASD's *non-structural* kind: none of them change the
+entity's own logical shape, only which generated Qt code paths exist
+for it. (Contrast [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]'s =:has_tenant_id:=, which *does*
+add a field — structural variability, a different MASD category
+entirely.) Every property here is a boolean or identifier that
+changes *what* gets generated, and every one defaults to "off"/absent
+if you don't set it — the silent-omission trap described above, which
+in MDE terms is this whole group's implicit presence condition (IPC)
+being =false=, not the =true= default the wider literature usually
+recommends as the safer choice.
 
 - *Key shape* — =:has_uuid_primary_key:= (default: false, treated as
   a text PK). Also drives =:key_field_is_uuid:=, which wraps the key
@@ -249,3 +257,4 @@ empty/nil id by showing an empty table rather than erroring.
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] / [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] — the types this facet's Naming/wiring knobs point at.
 - [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — the changed-event this facet listens for to invalidate its client-side cache.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for what this page's Behavioural/Overrides knobs are.

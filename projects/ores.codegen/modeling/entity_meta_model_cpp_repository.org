@@ -166,3 +166,4 @@ to worry about collisions between them.
 - [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the fields this repository entity mirrors.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — the plain struct this layer persists.
 - [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]] — the layer that wraps this repository with business logic and NATS eventing.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for this page's Flags/Repository/Conventions configuration points.

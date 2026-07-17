@@ -133,3 +133,4 @@ codegen concatenates them in order with a blank line between blocks.
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the column declarations this section's DDL is built from.
 - [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] — the shared paste-block mechanism.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for =:tablename:=/=:has_parent_id:= as configuration points.

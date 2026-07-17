@@ -104,6 +104,25 @@ hub — they'd get their own metamodel hub if documented to this depth.
 
 * Notes
 
+** Terminology: knobs are (mostly) MASD variability
+
+Every "knob" documented across these segment pages is, precisely, a
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] *feature* (a single configuration point) or belongs
+to a *feature bundle*. But not uniformly: MASD reserves "variability"
+strictly for *non-structural* configuration — it doesn't change the
+object graph, only how it's rendered. Most Qt knobs fit that exactly
+(they gate generated code paths without changing the entity's own
+logical shape). =:has_tenant_id:= does not — it adds an actual
+column/field, which is *structural* variability, living in the
+logical model itself, not MASD's Variability Metamodel. This hub does
+not yet consistently distinguish the two, and MASD's =profile=
+concept (a reusable, named bundle of feature values, composing
+base/component/element) looks like a close match for what task
+=EE237306= separately calls a domain_entity "shape" — resolving both
+of these properly is tracked by capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][31A66613]] ("Formalize the
+codegen entity knob system as a proper MASD/MDE feature model"), not
+decided piecemeal across these pages.
+
 ** Why two levels of UUID (paste blocks)
 
 See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the full explanation; in short, a *block kind* is
@@ -127,4 +146,5 @@ templates and entity files evolve independently.
 * See also
 
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the methodology this hub instantiates.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's feature/feature bundle/profile/binding point/configuration scope vocabulary that most of these segment pages' knobs should be described in.
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — a shallow, quick-reference index across *all eight* entity-model doc types (=entity=, =lookup_entity=, =junction=, =field_group=, =table=, ...), one line per section. This hub is the deep-dive for =ores.codegen.entity= specifically; that page is the map of the whole territory.

@@ -142,3 +142,4 @@ concatenate with a blank line between them.
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — what this service wraps.
 - [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — the pipeline that calls into this service and that this service publishes changed-events into.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary; this facet currently has no standalone knobs, only paste blocks.

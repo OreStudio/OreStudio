@@ -216,8 +216,9 @@ that rollout produces.
 - The Gemini-review redesign (task 1EAE3E54) lands on currency only;
   the other 60+ entities still use the pre-redesign =HistoryDialog=
   layout until they migrate onto compare mode, tracked by the sibling
-  [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story (one task
-  per =ores.qt= component). Provenance field names (Modified By,
+  [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] story (now
+  scoped to refdata; other =ores.qt= components are their own backlog
+  captures). Provenance field names (Modified By,
   Performed By, Change Reason Code, Change Commentary, Recorded At)
   are centralized as =ores::history::domain::provenance_fields= in
   =ores.history.api=, shared by the field mappers and any

@@ -16,7 +16,9 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+ABANDONED: superseded by [[id:9819FCE0-C26E-4854-9B88-FBDBA1DCD178][capture: commission ores.qt.admin into codegen]] -- this story was narrowed to ores.qt.refdata only, and ores.qt.admin's migration now lives under that capture instead.
 
 * Goal
 
@@ -26,12 +28,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| State        | ABANDONED                             |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] |
+| Now          | Superseded by capture: commission ores.qt.admin into codegen. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Next         | None -- see capture. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
@@ -69,3 +71,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned -- this migration was split out of the story into its own
+backlog capture when the story was narrowed to ores.qt.refdata only.

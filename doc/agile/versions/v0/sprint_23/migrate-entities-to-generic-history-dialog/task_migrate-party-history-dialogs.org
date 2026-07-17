@@ -16,7 +16,7 @@
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -36,19 +36,20 @@ including authoring a brand-new codegen model for =business_unit_type=
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Local build (linux-clang-debug-make) passed clean. Manual QA and task close-out remain. |
-| Waiting on   | Manual QA scenario re-run against a live tenant. |
-| Next         | Run QA scenario, close task, raise PR. |
-| Last touched | 2026-07-16                               |
+| State        | DONE                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
 - All 4 entities' history windows use the generic =HistoryDialog= (no per-entity =*HistoryDialog= class remains). ✅
 - =ores.qt.party= plugin is deleted; its 4 entities live in =ores.qt.refdata=/=RefdataPlugin= instead. ✅
 - All 4 entities have a complete codegen stack (domain/SQL/repository/service/protocol/generator/Qt/eventing), diffed layer-by-layer against the prior hand-written code. ✅
-- Local build passes clean. ✅ (manual QA scenario re-run still pending)
+- Local build passes clean. ✅
+- PR #1609 merged. ✅
 
 * Plan
 
@@ -194,5 +195,4 @@ pre-existing bugs (missing tenant scoping, a nil-vs-nullopt generator
 bug, two wrong include paths, a silently-dropped cross-plugin
 interface, missing/hand-wired NATS eventing for 3 entities) were found
 and fixed along the way. Local build (=linux-clang-debug-make=) passes
-clean. Manual QA scenario re-run against a live tenant is the
-remaining acceptance item before close.
+clean. PR #1609 merged 2026-07-17.

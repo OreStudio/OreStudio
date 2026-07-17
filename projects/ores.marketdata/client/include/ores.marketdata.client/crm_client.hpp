@@ -43,7 +43,7 @@ namespace ores::marketdata::client {
 class ORES_MARKETDATA_CLIENT_EXPORT crm_client {
 public:
     explicit crm_client(ores::nats::service::client& nats,
-        std::function<std::string(bool)> token_provider = nullptr);
+                        std::function<std::string(bool)> token_provider = nullptr);
 
     struct rates_result {
         bool success = false;

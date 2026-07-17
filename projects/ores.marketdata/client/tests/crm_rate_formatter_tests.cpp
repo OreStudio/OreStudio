@@ -40,8 +40,8 @@ marketdata_msg::crm_rate_item make_item() {
     return item;
 }
 
-refdata_domain::currency_pair_convention make_convention(
-    double pip_factor, double tick_size, int decimal_places) {
+refdata_domain::currency_pair_convention
+make_convention(double pip_factor, double tick_size, int decimal_places) {
     refdata_domain::currency_pair_convention convention;
     convention.pair_code = "EUR/USD";
     convention.pip_factor = pip_factor;
@@ -50,9 +50,9 @@ refdata_domain::currency_pair_convention make_convention(
     return convention;
 }
 
-std::vector<crm_rate_display> format_one(
-    const marketdata_msg::crm_rate_item& item,
-    std::optional<refdata_domain::currency_pair_convention> convention) {
+std::vector<crm_rate_display>
+format_one(const marketdata_msg::crm_rate_item& item,
+           std::optional<refdata_domain::currency_pair_convention> convention) {
     return crm_rate_formatter::format({crm_rate_format_request{&item, std::move(convention)}});
 }
 
@@ -76,8 +76,7 @@ TEST_CASE("crm_rate_formatter falls back to a fixed default precision "
     REQUIRE(displays[0].rate_text == "1.10285");
 }
 
-TEST_CASE("crm_rate_formatter snaps to a coarser half-pip tick",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter snaps to a coarser half-pip tick", "[crm_rate_formatter]") {
     auto item = make_item();
     item.rate = 1.10287;
     // absolute tick = 0.5 * 0.0001 = 0.00005; nearest multiple of 0.00005
@@ -98,8 +97,8 @@ TEST_CASE("crm_rate_formatter derives reciprocal-preserving precision for a "
     // request renders the reciprocal JPY/AUD cell.
     auto convention = make_convention(0.01, 1.0, 2);
     convention.pair_code = "AUD/JPY";
-    const auto displays = crm_rate_formatter::format(
-        {crm_rate_format_request{&item, convention, true}});
+    const auto displays =
+        crm_rate_formatter::format({crm_rate_format_request{&item, convention, true}});
     REQUIRE(displays[0].rate_text == "0.01205");
 }
 
@@ -113,8 +112,8 @@ TEST_CASE("crm_rate_formatter derives reciprocal precision correctly when "
     // direct magnitude 1/0.01 = 100 (order 2); decimal_places 2 ->
     // 5 significant figures; inverted order -2 -> 5-1-(-2) = 6 dp.
     auto convention = make_convention(0.01, 1.0, 2);
-    const auto displays = crm_rate_formatter::format(
-        {crm_rate_format_request{&item, convention, true}});
+    const auto displays =
+        crm_rate_formatter::format({crm_rate_format_request{&item, convention, true}});
     REQUIRE(displays[0].rate_text == "0.010000");
 }
 
@@ -125,22 +124,20 @@ TEST_CASE("crm_rate_formatter does not tick-snap a reversed-convention rate",
     item.quote_currency_code = "EUR";
     item.rate = 0.90675;
     auto convention = make_convention(0.0001, 1.0, 3);
-    const auto displays = crm_rate_formatter::format(
-        {crm_rate_format_request{&item, convention, true}});
+    const auto displays =
+        crm_rate_formatter::format({crm_rate_format_request{&item, convention, true}});
     REQUIRE(displays[0].rate_text == "0.9067");
 }
 
-TEST_CASE("crm_rate_formatter reports an inverted-pair tooltip",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter reports an inverted-pair tooltip", "[crm_rate_formatter]") {
     auto item = make_item();
     item.inverted = true;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
     REQUIRE(displays[0].tooltip_text ==
-        "Computed inverse (1/rate); fresh as of 2026-07-16T10:00:00Z");
+            "Computed inverse (1/rate); fresh as of 2026-07-16T10:00:00Z");
 }
 
-TEST_CASE("crm_rate_formatter reports a fresh, non-inverted tooltip",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter reports a fresh, non-inverted tooltip", "[crm_rate_formatter]") {
     auto item = make_item();
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
     REQUIRE(displays[0].tooltip_text == "Fresh as of 2026-07-16T10:00:00Z");
@@ -155,8 +152,7 @@ TEST_CASE("crm_rate_formatter reports a stale tooltip and does not print a chang
     REQUIRE(displays[0].tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
 }
 
-TEST_CASE("crm_rate_formatter reports an unavailable tooltip",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter reports an unavailable tooltip", "[crm_rate_formatter]") {
     auto item = make_item();
     item.status = "unavailable";
     item.as_of = "";
@@ -164,16 +160,14 @@ TEST_CASE("crm_rate_formatter reports an unavailable tooltip",
     REQUIRE(displays[0].tooltip_text == "Unavailable");
 }
 
-TEST_CASE("crm_rate_formatter renders a positive delta with a plus sign",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter renders a positive delta with a plus sign", "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = 0.123;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
     REQUIRE(displays[0].change_text == "+0.123%");
 }
 
-TEST_CASE("crm_rate_formatter renders a negative delta with a minus sign",
-          "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter renders a negative delta with a minus sign", "[crm_rate_formatter]") {
     auto item = make_item();
     item.delta_pct = -0.045;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));

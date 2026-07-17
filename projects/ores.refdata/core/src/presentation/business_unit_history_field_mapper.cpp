@@ -32,9 +32,9 @@ render_business_unit_fields(const domain::business_unit& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Unit Name", .value = v.unit_name});
     fields.push_back({.name = "Parent Business Unit ID",
-                      .value = v.parent_business_unit_id
-                          ? boost::uuids::to_string(*v.parent_business_unit_id)
-                          : std::string()});
+                      .value = v.parent_business_unit_id ?
+                                   boost::uuids::to_string(*v.parent_business_unit_id) :
+                                   std::string()});
     fields.push_back({.name = "Unit Code", .value = v.unit_code});
     fields.push_back({.name = "Business Centre Code", .value = v.business_centre_code});
     fields.push_back({.name = "Modified By", .value = v.modified_by});

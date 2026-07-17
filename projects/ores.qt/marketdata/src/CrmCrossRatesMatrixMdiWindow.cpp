@@ -133,16 +133,16 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         const auto authToken = clientManager_->currentAuthToken();
         conventionCache_ =
             std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
-                clientManager_->nats_client(),
-                [authToken](bool /*force*/) { return authToken; });
+                clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
         crmClient_ = std::make_unique<marketdata_client::crm_client>(
             clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
         auto* crmClient = crmClient_.get();
         auto conventionCache = conventionCache_;
         displayService_ =
             std::make_unique<marketdata_client::presentation::crm_rate_display_service>(
-                [crmClient](const std::string& party_id, const std::string& crm_name,
-                    bool inv) { return crmClient->rates(party_id, crm_name, inv); },
+                [crmClient](const std::string& party_id, const std::string& crm_name, bool inv) {
+                    return crmClient->rates(party_id, crm_name, inv);
+                },
                 [conventionCache](const std::string& tenant_id, const std::string& key) {
                     return conventionCache->lookup(tenant_id, key);
                 });
@@ -463,7 +463,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
 
         if (!result.success) {
             const QString msg = result.error.empty() ? tr("Failed to load cross-rates matrix") :
-                                                        QString::fromStdString(result.error);
+                                                       QString::fromStdString(result.error);
             BOOST_LOG_SEV(lg(), error) << msg.toStdString();
             emit self->errorOccurred(msg);
             self->footerLabel_->setText(tr("DISCONNECTED"));
@@ -608,7 +608,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                     pairPrefix = QStringLiteral("✕");
                 } else if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {
                     changeColor = *item.delta_pct >= 0 ? color_constants::level_info :
-                                                          color_constants::level_error;
+                                                         color_constants::level_error;
                 }
 
                 cellWidget->setData(rowCurrencies[row] + QStringLiteral("/") + allCurrencies[col],

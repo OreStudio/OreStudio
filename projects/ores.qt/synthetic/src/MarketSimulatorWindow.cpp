@@ -219,9 +219,9 @@ void MarketSimulatorWindow::setupToolbar() {
 
     toolbar_->addSeparator();
 
-    newFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("New Collection"));
+    newFeedAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
+                            tr("New Collection"));
     newFeedAction_->setToolTip(
         tr("New collection — a named group of market-data feeds you can enable and run "
            "(e.g. Basic, Realistic)."));
@@ -282,9 +282,8 @@ void MarketSimulatorWindow::setupLeftPanel() {
     leftLayout->addWidget(feedsTree_, 1);
 
     emptyHintLabel_->setWordWrap(true);
-    emptyHintLabel_->setText(
-        tr("No collections yet. Click 'New Collection' to define one, then "
-           "add a feed (currency pair) and its price model."));
+    emptyHintLabel_->setText(tr("No collections yet. Click 'New Collection' to define one, then "
+                                "add a feed (currency pair) and its price model."));
     emptyHintLabel_->setStyleSheet("color: gray;");
     emptyHintLabel_->setContentsMargins(4, 0, 4, 4);
     leftLayout->addWidget(emptyHintLabel_);
@@ -664,7 +663,8 @@ static QIcon runningBadge(int running, int total) {
         return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
     if (running == total)
         return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(60, 180, 80));
-    return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(200, 160, 40)); // partially running
+    return IconUtils::createRecoloredIcon(Icon::PlayFilled,
+                                          QColor(200, 160, 40)); // partially running
 }
 
 // Small badge icon for the vintage-validity state, composited onto the
@@ -684,7 +684,8 @@ static QIcon vintageBadge(bool anyInvalid, bool anyApplicable) {
 // repeated full-size icons (which reads as noise at a glance: see the
 // "Vintage-validity indicator and folder-cascade start/stop" scenario's
 // step-2 failure).
-static QIcon composeBadgedIcon(const QIcon& base, const QIcon& bottomLeft, const QIcon& bottomRight) {
+static QIcon
+composeBadgedIcon(const QIcon& base, const QIcon& bottomLeft, const QIcon& bottomRight) {
     // Matches feedsTree_'s iconSize (44x22, sized for the two-flag currency
     // pair icon) so folder/feed icons keep their existing aspect ratio.
     constexpr int w = 44, h = 22, badgeSize = 12;
@@ -709,9 +710,10 @@ MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation
     fxItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
     fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
 
-    const QIcon base = imageCache ?
-        currency_flag_icon(*imageCache, fx.base_currency_code, fx.quote_currency_code) :
-        IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
+    const QIcon base =
+        imageCache ?
+            currency_flag_icon(*imageCache, fx.base_currency_code, fx.quote_currency_code) :
+            IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
     fxItem->setData(QVariant::fromValue(base), BaseIconRole);
     fxItem->setIcon(base); // refreshTreeItemStatus composites badges on top
     return fxItem;
@@ -784,7 +786,7 @@ void MarketSimulatorWindow::buildTree() {
                     auto pairs = pit->second;
                     std::sort(pairs.begin(), pairs.end(), [](const auto* a, const auto* b) {
                         return a->base_currency_code + a->quote_currency_code <
-                              b->base_currency_code + b->quote_currency_code;
+                               b->base_currency_code + b->quote_currency_code;
                     });
                     for (const auto* fx : pairs)
                         item->appendRow(buildFeedItem(*fx, imageCache_));
@@ -848,7 +850,8 @@ std::string MarketSimulatorWindow::currentNodeId() const {
     return idx.data(NodeIdRole).toString().toStdString();
 }
 
-void MarketSimulatorWindow::collectFeedIdsUnder(QStandardItem* item, std::vector<std::string>& ids) {
+void MarketSimulatorWindow::collectFeedIdsUnder(QStandardItem* item,
+                                                std::vector<std::string>& ids) {
     if (!item)
         return;
     if (static_cast<NodeType>(item->data(NodeTypeRole).toInt()) == NodeType::Feed) {
@@ -1091,7 +1094,8 @@ void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNa
 // aggregate so a caller one level up can fold this node's status into its
 // own. Leaf Feed items look themselves up in fxPairs_/vintageValidByFx_;
 // every other node aggregates its children.
-MarketSimulatorWindow::TreeStatus MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
+MarketSimulatorWindow::TreeStatus
+MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
     if (!item)
         return {};
     const QIcon base = item->data(BaseIconRole).value<QIcon>();
@@ -1513,8 +1517,8 @@ void MarketSimulatorWindow::startFolderAsync(const std::string& folderId) {
         if (!self)
             return;
         if (!result || !result->success) {
-            const auto msg = result ? QString::fromStdString(result->message) :
-                                      self->tr("Request failed.");
+            const auto msg =
+                result ? QString::fromStdString(result->message) : self->tr("Request failed.");
             BOOST_LOG_SEV(lg(), error) << "Start folder failed: " << msg.toStdString();
             emit self->errorOccurred(msg);
             QMessageBox::critical(self, self->tr("Start failed"), msg);
@@ -1703,8 +1707,8 @@ void MarketSimulatorWindow::stopFolderAsync(const std::string& folderId) {
         if (!self)
             return;
         if (!result || !result->success) {
-            const auto msg = result ? QString::fromStdString(result->message) :
-                                      self->tr("Request failed.");
+            const auto msg =
+                result ? QString::fromStdString(result->message) : self->tr("Request failed.");
             BOOST_LOG_SEV(lg(), error) << "Stop folder failed: " << msg.toStdString();
             emit self->errorOccurred(msg);
             QMessageBox::critical(self, self->tr("Stop failed"), msg);

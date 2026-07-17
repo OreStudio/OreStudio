@@ -153,10 +153,10 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
 
     yieldCurveProcessTypeController_ =
         std::make_unique<YieldCurveProcessTypeController>(ctx_.main_window,
-                                                           ctx_.mdi_area,
-                                                           ctx_.client_manager,
-                                                           ctx_.change_reason_cache,
-                                                           ctx_.username);
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username);
     connect(yieldCurveProcessTypeController_.get(),
             &YieldCurveProcessTypeController::statusMessage,
             this,

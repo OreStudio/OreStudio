@@ -55,8 +55,8 @@ int order_of_magnitude(double x) {
 /// decimal_places verbatim (which is only valid for the convention's own
 /// direction/magnitude). rate is the reciprocal value being rendered, so
 /// 1/rate recovers the direct-direction magnitude the convention assumes.
-int inverted_decimal_places(
-    double rate, const ores::refdata::domain::currency_pair_convention& convention) {
+int inverted_decimal_places(double rate,
+                            const ores::refdata::domain::currency_pair_convention& convention) {
     if (rate <= 0.0)
         return default_decimal_places;
 
@@ -68,7 +68,8 @@ int inverted_decimal_places(
 
 }
 
-std::string crm_rate_formatter::format_rate(double rate,
+std::string crm_rate_formatter::format_rate(
+    double rate,
     const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
     bool convention_reversed) {
     if (!convention)
@@ -98,8 +99,7 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
     for (const auto& request : requests) {
         const auto& item = *request.item;
         crm_rate_display display;
-        display.rate_text =
-            format_rate(item.rate, request.convention, request.convention_reversed);
+        display.rate_text = format_rate(item.rate, request.convention, request.convention_reversed);
 
         if (item.status == "stale") {
             display.tooltip_text = "Stale as of " + item.as_of;
@@ -107,8 +107,8 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
             display.tooltip_text = "Unavailable";
         } else {
             display.tooltip_text = item.inverted ?
-                "Computed inverse (1/rate); fresh as of " + item.as_of :
-                "Fresh as of " + item.as_of;
+                                       "Computed inverse (1/rate); fresh as of " + item.as_of :
+                                       "Fresh as of " + item.as_of;
         }
 
         display.change_text = "-";

@@ -51,8 +51,9 @@ class ORES_MARKETDATA_CLIENT_EXPORT crm_rate_display_service {
 public:
     using rates_fn_t =
         std::function<crm_client::rates_result(const std::string&, const std::string&, bool)>;
-    using lookup_fn_t = std::function<std::optional<ores::refdata::domain::currency_pair_convention>(
-        const std::string&, const std::string&)>;
+    using lookup_fn_t =
+        std::function<std::optional<ores::refdata::domain::currency_pair_convention>(
+            const std::string&, const std::string&)>;
 
     crm_rate_display_service(rates_fn_t rates_fn, lookup_fn_t lookup_fn);
 
@@ -84,8 +85,10 @@ public:
      * direction), and formats the whole batch in a single
      * crm_rate_formatter::format() call.
      */
-    [[nodiscard]] result rates(const std::string& tenant_id, const std::string& party_id,
-        const std::string& crm_name, bool inverted);
+    [[nodiscard]] result rates(const std::string& tenant_id,
+                               const std::string& party_id,
+                               const std::string& crm_name,
+                               bool inverted);
 
 private:
     rates_fn_t rates_fn_;

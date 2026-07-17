@@ -40,8 +40,8 @@ marketdata_msg::crm_rate_item make_item(std::string base, std::string quote, dou
     return item;
 }
 
-refdata_domain::currency_pair_convention make_convention(
-    std::string pair_code, int decimal_places) {
+refdata_domain::currency_pair_convention make_convention(std::string pair_code,
+                                                         int decimal_places) {
     refdata_domain::currency_pair_convention convention;
     convention.pair_code = std::move(pair_code);
     convention.pip_factor = 0.0001;
@@ -58,9 +58,10 @@ crm_rate_display_service make_service(
                         const std::string&, const std::string&, bool) -> crm_client::rates_result {
         return {.success = true, .error = {}, .rates = rates};
     };
-    auto lookup_fn = [conventions = std::move(conventions)](const std::string&,
-                          const std::string& key)
-        -> std::optional<refdata_domain::currency_pair_convention> {
+    auto lookup_fn =
+        [conventions = std::move(conventions)](
+            const std::string&,
+            const std::string& key) -> std::optional<refdata_domain::currency_pair_convention> {
         const auto it = conventions.find(key);
         if (it == conventions.end())
             return std::nullopt;
@@ -73,9 +74,9 @@ crm_rate_display_service make_service(
 
 TEST_CASE("crm_rate_display_service formats every fetched rate into a row",
           "[crm_rate_display_service]") {
-    auto service = make_service(
-        {make_item("EUR", "USD", 1.10285), make_item("GBP", "USD", 1.27134)},
-        {{"EUR/USD", make_convention("EUR/USD", 3)}});
+    auto service =
+        make_service({make_item("EUR", "USD", 1.10285), make_item("GBP", "USD", 1.27134)},
+                     {{"EUR/USD", make_convention("EUR/USD", 3)}});
 
     const auto result = service.rates("tenant-1", "party-1", "majors", false);
 
@@ -93,8 +94,8 @@ TEST_CASE("crm_rate_display_service resolves a convention stored in the "
           "[crm_rate_display_service]") {
     // Cell shows USD/EUR but the convention is only stored as EUR/USD
     // (decimal_places 3, calibrated for EUR/USD's own ~1.1 magnitude).
-    auto service = make_service(
-        {make_item("USD", "EUR", 0.90675)}, {{"EUR/USD", make_convention("EUR/USD", 3)}});
+    auto service = make_service({make_item("USD", "EUR", 0.90675)},
+                                {{"EUR/USD", make_convention("EUR/USD", 3)}});
 
     const auto result = service.rates("tenant-1", "party-1", "majors", false);
 
@@ -111,9 +112,8 @@ TEST_CASE("crm_rate_display_service preserves significant figures across a "
     // Reusing decimal_places 2 verbatim would collapse every such cell to
     // "0.01"; the service must derive precision from the reciprocal
     // magnitude instead.
-    auto service = make_service(
-        {make_item("JPY", "AUD", 0.0120481928)},
-        {{"AUD/JPY", make_convention("AUD/JPY", 2)}});
+    auto service = make_service({make_item("JPY", "AUD", 0.0120481928)},
+                                {{"AUD/JPY", make_convention("AUD/JPY", 2)}});
 
     const auto result = service.rates("tenant-1", "party-1", "majors", false);
 
@@ -127,8 +127,9 @@ TEST_CASE("crm_rate_display_service propagates a rates-source failure without fo
     auto rates_fn = [](const std::string&, const std::string&, bool) -> crm_client::rates_result {
         return {.success = false, .error = "unauthorized", .rates = {}};
     };
-    auto lookup_fn = [](const std::string&,
-                          const std::string&) -> std::optional<refdata_domain::currency_pair_convention> {
+    auto lookup_fn =
+        [](const std::string&,
+           const std::string&) -> std::optional<refdata_domain::currency_pair_convention> {
         return std::nullopt;
     };
     crm_rate_display_service service(std::move(rates_fn), std::move(lookup_fn));

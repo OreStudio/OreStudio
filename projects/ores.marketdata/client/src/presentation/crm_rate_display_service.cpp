@@ -25,9 +25,10 @@ crm_rate_display_service::crm_rate_display_service(rates_fn_t rates_fn, lookup_f
     : rates_fn_(std::move(rates_fn))
     , lookup_fn_(std::move(lookup_fn)) {}
 
-crm_rate_display_service::result
-crm_rate_display_service::rates(const std::string& tenant_id, const std::string& party_id,
-    const std::string& crm_name, bool inverted) {
+crm_rate_display_service::result crm_rate_display_service::rates(const std::string& tenant_id,
+                                                                 const std::string& party_id,
+                                                                 const std::string& crm_name,
+                                                                 bool inverted) {
     result out;
 
     auto fetched = rates_fn_(party_id, crm_name, inverted);
@@ -41,8 +42,8 @@ crm_rate_display_service::rates(const std::string& tenant_id, const std::string&
     for (const auto& item : fetched.rates) {
         crm_rate_format_request req;
         req.item = &item;
-        if (const auto direct = lookup_fn_(
-                tenant_id, item.base_currency_code + "/" + item.quote_currency_code))
+        if (const auto direct =
+                lookup_fn_(tenant_id, item.base_currency_code + "/" + item.quote_currency_code))
             req.convention = direct;
         else if (const auto reverse = lookup_fn_(
                      tenant_id, item.quote_currency_code + "/" + item.base_currency_code)) {

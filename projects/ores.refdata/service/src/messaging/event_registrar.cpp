@@ -48,6 +48,7 @@
 #include "ores.refdata.service/messaging/currency_market_tier_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
@@ -63,7 +64,6 @@
 #include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
-#include "ores.refdata.service/messaging/curve_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_unit_event_registrar.hpp"
 
 namespace ores::refdata::service::messaging {

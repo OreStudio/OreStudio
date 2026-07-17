@@ -92,8 +92,12 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
                                                               this);
     connectControllerSignals(codingSchemeAuthorityTypeController_.get());
 
-    codeDomainController_ = std::make_unique<CodeDomainController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, ctx_.badge_cache, this);
+    codeDomainController_ = std::make_unique<CodeDomainController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.username,
+                                                                   ctx_.badge_cache,
+                                                                   this);
     connectControllerSignals(codeDomainController_.get());
 
     codingSchemeController_ = std::make_unique<CodingSchemeController>(ctx_.main_window,
@@ -293,9 +297,9 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
             treatmentDimensionController_->showListWindow();
     });
 
-    act_data_librarian_ = dt->addAction(
-        IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
-        tr("Data &Librarian"));
+    act_data_librarian_ =
+        dt->addAction(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
+                      tr("Data &Librarian"));
     connect(act_data_librarian_, &QAction::triggered, this, [this]() {
         if (data_librarian_window_) {
             ctx_.mdi_area->setActiveSubWindow(data_librarian_window_);
@@ -312,15 +316,18 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
             IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
-        connect(librarianWindow, &DataLibrarianWindow::statusChanged, this,
+        connect(librarianWindow,
+                &DataLibrarianWindow::statusChanged,
+                this,
                 [this](const QString& msg) { emit statusMessage(msg); });
-        connect(librarianWindow, &DataLibrarianWindow::errorOccurred, this,
+        connect(librarianWindow,
+                &DataLibrarianWindow::errorOccurred,
+                this,
                 [this](const QString& msg) { emit statusMessage(msg); });
 
         data_librarian_window_ = subWindow;
-        connect(subWindow, &QObject::destroyed, this, [this]() {
-            data_librarian_window_ = nullptr;
-        });
+        connect(
+            subWindow, &QObject::destroyed, this, [this]() { data_librarian_window_ = nullptr; });
 
         ctx_.mdi_area->addSubWindow(subWindow);
         subWindow->resize(librarianWindow->sizeHint());

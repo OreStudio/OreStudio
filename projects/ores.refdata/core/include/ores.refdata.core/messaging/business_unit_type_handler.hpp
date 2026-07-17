@@ -177,9 +177,10 @@ public:
         try {
             auto h = svc.get_type_history(req->id);
             BOOST_LOG_SEV(business_unit_type_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_business_unit_type_history_response{.history = std::move(h), .success = true});
+            reply(
+                nats_,
+                msg,
+                get_business_unit_type_history_response{.history = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(business_unit_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

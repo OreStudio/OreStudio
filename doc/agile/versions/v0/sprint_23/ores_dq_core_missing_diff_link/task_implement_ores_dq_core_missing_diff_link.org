@@ -8,7 +8,7 @@
 #+filetags: :ores_dq_core_missing_diff_link:sprint_23:v0:
 #+owner: marco
 #+branch: hotfix/ores-dq-core-missing-diff-link
-#+pr:
+#+pr: 1615
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1615][#1615]] | [dq,refdata,history,iam] Fix build and test breakage on main |
 
 * Review
 

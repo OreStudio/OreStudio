@@ -97,8 +97,17 @@ follows.
      Types"). A bare class name forces the tester to hunt through menus
      to find a screen that may not exist yet in their muscle memory;
      the menu path is the whole reason this field exists.
-   - *Clients* — leave empty for one client; list every colour/label a
-     multi-client scenario needs (e.g. "blue, red").
+   - *Clients* — *genuinely empty* (no placeholder text at all, not even
+     "single client") for one client; list every colour/label a
+     multi-client scenario needs (e.g. "blue, red") only when the
+     scenario truly needs several running client instances at once.
+     This field is not just documentation: the QA Validation Runner
+     treats *any* non-empty value here as "multi-client" and then only
+     looks for steps nested one level deeper, under a per-client =**=
+     heading — a stray placeholder (even something as reasonable-looking
+     as "single client") with flat =**= steps silently loads *zero*
+     steps, no error shown. Leave the cell blank unless you are actually
+     writing the nested per-client structure to match.
 
    Fill in =* Steps= per [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]], following
    two conventions every step must meet:

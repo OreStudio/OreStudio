@@ -41,6 +41,11 @@ Run [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for 
    review — this skill's job ends at a chapter with real images in
    place, not at marking the task DONE.
 
+*Leave =Clients= in =* Scenario Info= genuinely empty* for a
+single-client scenario (the common case) — any non-empty value there,
+even a placeholder like "single client", makes the Runner load *zero*
+steps, silently.
+
 * Recipes
 
 - [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]

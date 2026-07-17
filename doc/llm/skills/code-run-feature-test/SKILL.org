@@ -37,6 +37,11 @@ Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after imp
    for an entity), then a client started with the scenario preloaded
    and handed to the user to execute.
 
+*Leave =Clients= in =* Scenario Info= genuinely empty* for a
+single-client scenario (the common case) — any non-empty value there,
+even a placeholder like "single client", makes the Runner load *zero*
+steps, silently.
+
 * Recipes
 
 - [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]

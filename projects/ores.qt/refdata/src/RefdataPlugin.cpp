@@ -865,11 +865,6 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (ledgerFeedTypeController_)
                 ledgerFeedTypeController_->showListWindow();
         });
-        auto* actPurposeTypes = menuBookCodes->addAction(ico(Icon::Flag), tr("&Purpose Types"));
-        connect(actPurposeTypes, &QAction::triggered, this, [this]() {
-            if (purposeTypeController_)
-                purposeTypeController_->showListWindow();
-        });
         auto* actRegulatoryBookTypes =
             menuBookCodes->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
         connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
@@ -957,6 +952,17 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                     partyTypeController_->showListWindow();
             });
         }
+
+        // Portfolio Codes submenu: split out from Book Codes since
+        // purpose_type classifies Portfolios, not Books, despite the
+        // similarly-named book_purpose_type — distinct entities.
+        auto* menuPortfolioCodes = menuCodes->addMenu(tr("&Portfolio Codes"));
+        auto* actPurposeTypes =
+            menuPortfolioCodes->addAction(ico(Icon::Flag), tr("&Purpose Types"));
+        connect(actPurposeTypes, &QAction::triggered, this, [this]() {
+            if (purposeTypeController_)
+                purposeTypeController_->showListWindow();
+        });
 
         ref->addSeparator();
 

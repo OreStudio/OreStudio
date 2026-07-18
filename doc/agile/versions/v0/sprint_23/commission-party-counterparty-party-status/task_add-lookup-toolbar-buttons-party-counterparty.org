@@ -8,7 +8,7 @@
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-lookup-toolbar-buttons-party-counterparty
-#+pr:
+#+pr: 1633
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1633][#1633]] | [refdata,qt,doc] Party manual chapter screenshots, section restructure, party_type Display Order fix |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :commission-portfolio:sprint_23:v0:
 #+owner: marco
 #+branch: feature/portfolio-manual-chapter
-#+pr:
+#+pr: 1636
 #+created: 2026-07-16
 #+updated: 2026-07-18
 #+environment: prime_origin
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1636][#1636]] | [refdata,doc] Add portfolio manual chapter, fix history provider |
 
 * Review
 

@@ -237,8 +237,23 @@ points somewhere resolvable as a file reference (the build does not
 require the =TODO_= files to exist as real images). The site build
 publishes the chapter's HTML regardless of whether it's linked from
 the site index — it will not fail if you forgot the step above, so
-manually check the new chapter appears at
-=doc/manual/user_guide/user_manual_site.html= after building.
+*never rely on eyeballing the built HTML to catch a missing row* (this
+is exactly how =chapter_parties.org=/=chapter_counterparties.org=
+went undetected for a full sprint). Cross-check the two chapter lists
+programmatically instead — every =#+include=-d chapter filename in
+=user_manual.org= must have a matching row in =user_manual_site.org=:
+
+#+begin_src sh :results verbatim
+comm -23 \
+  <(grep -oP '(?<=#\+include: ")[^"]+(?=\.org")' doc/manual/user_guide/user_manual.org | sort) \
+  <(grep -oP '(?<=\[\[id:)[A-F0-9-]+(?=\]\[)' doc/manual/user_guide/user_manual_site.org \
+    | while read -r id; do grep -l ":ID: $id" doc/manual/user_guide/chapter_*.org 2>/dev/null; done \
+    | xargs -n1 basename | sed 's/\.org$//' | sort)
+#+end_src
+
+Empty output means every chapter in =user_manual.org= has a matching
+row in the site index. Any filename it prints is missing from
+=user_manual_site.org='s =* Chapters= table — add it before moving on.
 
 At the end of this recipe the chapter is content-complete — domain
 grounding sourced and written in the required prose tone, every section

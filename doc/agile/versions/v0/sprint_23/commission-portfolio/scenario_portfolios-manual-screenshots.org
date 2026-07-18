@@ -89,7 +89,7 @@ Log in against the =prime_origin= environment as
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
-| Notes  | ./tmp/Screenshot from 2026-07-18 12-28-06.png; ; purpose type:; ; ./tmp/Screenshot from 2026-07-18 12-28-45.png |
+| Notes  | Captured via manual desktop screenshot (raw file since deleted); cropped and wired in as [[file:../../../../../../assets/images/portfolio_status_combo.png]]. A second capture of the Purpose Type combo (raw codes, not labels) informed [[id:1335C42D-DA3F-44EC-9B5E-055B4BF7CB08][Purpose Type combo shows raw codes, not display labels]]. |
 
 ** Capture portfolio_history_dialog.png
 

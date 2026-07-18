@@ -9,10 +9,8 @@
 #+owner: marco
 #+branch: feature/portfolio-manual-chapter
 #+pr:
-#+blocked_on: [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]
-#+blocked_since: 2026-07-17
 #+created: 2026-07-16
-#+updated: 2026-07-17
+#+updated: 2026-07-18
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,12 +27,12 @@ the codegen/drift task has landed a commissioned baseline.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
-| Now          | Screenshot test scenario scaffolded and loading correctly (169B33B9), but capture blocked before any screenshots were taken: the Portfolios list/detail screens render badges with wrong colours, traced to the incomplete [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story (adoption-coverage audit and badge-source self-badging tasks never finished). |
-| Waiting on   | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] — resume once its remaining tasks land and portfolio's badges render correctly. |
-| Next         | Resume the screenshot capture scenario once unblocked; no screenshots have been taken yet, so nothing needs redoing, just picking back up. |
-| Last touched | 2026-07-17                               |
+| Now          | Unblocked: [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]'s mapping-browser task landed (PR #1622, merged) and fixed the ores.dq.service crash plus the badge-rendering bugs; Portfolios badge colours confirmed correct in that PR's QA scenario. Screenshot test scenario (169B33B9) scaffolded and loading correctly; no screenshots have been taken yet. |
+| Waiting on   | Nothing.                               |
+| Next         | Resume the screenshot capture scenario now that badge colours render correctly. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 

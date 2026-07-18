@@ -124,6 +124,12 @@ Areas, Catalogues, Datasets, Dataset Bundles, Methodologies, Origin/
 Nature/Treatment Dimensions). Open one entry from each and confirm
 the correct window opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Trading Codes is retired; Purpose Types moved to its own Portfolio Codes submenu
 
 There is no more *Trading &Codes* submenu anywhere (it used to sit
@@ -138,6 +144,12 @@ Codes, since =purpose_type= classifies Portfolios
 named =book_purpose_type= being a distinct entity. Open it and
 confirm the correct window opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Synthetic groups its data-generation entries under Configuration
 
 Open *Market Data > &Synthetic*. Confirm *Market Simulator* sits
@@ -147,14 +159,20 @@ Generation Configs, IR Curve Template Entries, and Yield Curve
 Process Types. Open one entry from Configuration and confirm the
 correct window opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-18T12:50:43Z |
+| Branch        | feature/system-operations-account-menu-taxonomy |
+| Commit        | cc77acac7 |
+| Worktree      | solid_dirac |
 
 * Notes

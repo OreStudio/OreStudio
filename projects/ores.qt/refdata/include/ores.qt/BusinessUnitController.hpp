@@ -70,9 +70,9 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+    void openAdd();
     void openEdit(const refdata::domain::business_unit& business_unit) override;
     void openHistory(const refdata::domain::business_unit& business_unit) override;
-
 
 signals:
     void statusMessage(const QString& message);

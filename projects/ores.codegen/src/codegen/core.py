@@ -1316,6 +1316,32 @@ def validate_cache_aux_type(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cache_aux_type requires cached_by")
 
 
+def validate_explorer_interface(domain_entity):
+    """
+    Validate the qt.explorer_interface knob: the name of an abstract
+    interface a generated Controller additionally implements, for a
+    cross-component explorer window that needs to drive openEdit/
+    openHistory without linking against this entity's concrete Controller
+    header. Requires has_explorer_api, since that's what generates the
+    openEdit/openHistory methods the interface's pure virtuals need — a
+    Controller with the extra base class but no has_explorer_api would
+    inherit unimplemented pure virtuals and fail to compile as an
+    abstract class, far from the actual misconfiguration.
+
+    Args:
+        domain_entity (dict): not mutated; qt.explorer_interface has no
+            default (its absence simply means no extra interface applies).
+
+    Raises:
+        ValueError: if qt.explorer_interface is set without qt.has_explorer_api.
+    """
+    qt = domain_entity.get('qt', {})
+    if qt.get('explorer_interface') and not qt.get('has_explorer_api'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: "
+            f"qt.explorer_interface requires qt.has_explorer_api")
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2259,6 +2285,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 qt['parent_entity_pascal'] = parent_pascal
                 qt.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
                 qt.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
+            # explorer_interface is an optional companion to has_explorer_api:
+            # when a cross-component explorer window (e.g. OrgExplorerMdiWindow
+            # in ores.qt.trading) needs to drive this controller's openEdit/
+            # openHistory without linking against its concrete header, the
+            # entity model names an abstract interface (hand-authored
+            # elsewhere, e.g. ores.qt.api/IBusinessUnitBrowser.hpp) that the
+            # generated Controller additionally implements. Same-component
+            # explorers (PortfolioExplorer/OrgExplorer for Book, both in
+            # ores.qt.trading) need no such interface — leave unset.
+            validate_explorer_interface(domain_entity)
+            qt['has_explorer_interface'] = bool(qt.get('explorer_interface'))
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided

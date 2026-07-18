@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: C2168F5B-B0F5-4F7E-B35D-06025F567BF9
+:END:
+#+title: Business Unit list/detail has no badge emblems
+#+description: Business Unit's status/type-like fields aren't wired to badge_key, so its list and detail views show plain text where other refdata entities show colour-coded badges -- a candidate for the existing badge-adoption coverage audit.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:ux:badges:business_unit:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=business_unit='s =status= column (Active/Inactive/Closed, a
+hardcoded enum rather than a lookup table) has no =is_badge=/
+=badge_key= wiring in =ores.refdata.business_unit.org=, so the list
+column and detail combo both render as plain text/string rather than
+the colour-coded badge other status-like fields across the codebase
+get (e.g. =book_status=-backed entities).
+
+* Why
+
+Found while manually verifying the Org Explorer business unit
+edit/history actions after a codegen regen; not a regression from
+that change, but a pre-existing gap the badge-adoption coverage audit
+task should pick up.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.business_unit.org=
+  line ~303 — the =status= column's =static_combo= Detail field row,
+  no badge wiring.
+
+* See also
+
+- [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Task: Audit badge adoption coverage across domain_entity models]] —
+  the audit this is a candidate finding for.

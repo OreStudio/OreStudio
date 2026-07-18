@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :qt:party:refdata:codegen:commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-party-lookup-entities-to-refdata
+#+pr: 1637
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,16 +36,23 @@ accumulated.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- party_status, party_id_scheme, business_unit, business_unit_type all
+  confirmed living under ores.qt.refdata (component migration was
+  already complete for all four).
+- All four regenerate against current codegen templates with zero
+  diff (business_unit required a new codegen seam first).
+- business_unit's IBusinessUnitBrowser cross-component interface
+  (consumed by ores.qt.trading's OrgExplorerMdiWindow) preserved
+  through regeneration via a proper model property, not a hand-patch.
 
 * Plan
 
@@ -76,18 +83,48 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:370BA753-673D-4AA4-8A7B-53CD93E271B8][Verify OrgExplorer business unit edit/history still work after IBusinessUnitBrowser regen]] | PASSED | |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1637][#1637]] | [codegen,refdata,qt] Migrate party lookup entities to refdata; add explorer_interface seam |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | explorer_interface not validated against has_explorer_api (raised independently by all 3 review passes) | core.py | Accepted | Added validate_explorer_interface following the validate_cached_by/validate_cache_aux_type pattern, plus test_explorer_interface.py (3 cases). |
+| 2 | Architectural question: is IBusinessUnitBrowser still earning its keep now trading already links refdata directly for Book/Portfolio? | IBusinessUnitBrowser.hpp | Declined | Out of scope for this PR (preserving the existing interface through regen, not re-litigating its necessity); noted for a future look. |
+| 3 | Unrelated QString{} drive-by in BusinessUnitDetailDialog.cpp | BusinessUnitDetailDialog.cpp | Declined | Legitimate template-drift catch-up from the "regenerate against current templates" goal, already called out in the PR description; harmless no-op matching the parameter's default. |
 
 * Result
+
+Confirmed all four entities (=party_status=, =party_id_scheme=,
+=business_unit=, =business_unit_type=) already live under
+=ores.qt.refdata= — =ores.qt.party= doesn't exist as a component any
+more, so that half of the task was already complete. Regen-against-
+current-templates was clean for three of the four; =business_unit=
+was not, because its hand-written =IBusinessUnitBrowser=
+implementation (consumed by =ores.qt.trading='s =OrgExplorerMdiWindow=
+for cross-plugin decoupling) had no corresponding model declaration
+and would have been silently deleted by a naive regen.
+
+Extended codegen with a new =qt.explorer_interface= model property
+(companion to the existing =has_explorer_api= knob): when set, the
+generated Controller additionally implements the named interface
+(extra base class + =override= on =openEdit=/=openHistory=), letting
+=business_unit= regenerate cleanly while preserving the cross-plugin
+contract. Verified zero-diff on re-generation, and that all other
+=has_explorer_api= consumers (=book=, =portfolio=) and the three
+sibling lookups are unaffected by the codegen change.
+
+Manually verified via a QA scenario against Org Explorer: edit and
+history both correctly open the right business unit through the
+interface. Found (and filed separately, not fixed here) four
+pre-existing, unrelated gaps while testing: Org Explorer's tree has no
+double-click handler, business unit has no badge emblems, its
+Business Centre field is plain text rather than the flagged combo
+party/counterparty use, and editing a business unit doesn't live-
+refresh an already-open Org Explorer.

@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: F39CBE57-19F8-4D6B-B74D-F077C23B4981
+:END:
+#+title: Org Explorer tree nodes don't respond to double-click
+#+description: OrgExplorerMdiWindow wires doubleClicked only on the trade table, not the org tree view; business unit/book nodes have no double-click-to-edit, only an explicit toolbar/context action.
+#+type: capture
+#+level: cross
+#+filetags: :qt:trading:ux:org_explorer:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=OrgExplorerMdiWindow::setupConnections()=
+([[file:../../../../projects/ores.qt/trading/src/OrgExplorerMdiWindow.cpp][OrgExplorerMdiWindow.cpp]]) wires =QTableView::doubleClicked= only for
+the right-hand trade table, not the left-hand org tree view. A
+business unit or book node in the tree therefore has no
+double-click-to-edit — the only way in is the explicit edit
+button/context action, unlike list windows elsewhere where
+double-clicking a row is the standard way to open a record.
+
+* Why
+
+Found while manually verifying the Org Explorer's business unit
+edit/history actions still worked after regenerating
+=BusinessUnitController= against a new codegen seam. The regen work
+itself was fine — this is a pre-existing UX inconsistency, not a
+regression.
+
+* References
+
+- =projects/ores.qt/trading/src/OrgExplorerMdiWindow.cpp= — tree
+  view setup and =setupConnections()=.
+- =projects/ores.qt/trading/include/ores.qt/OrgExplorerMdiWindow.hpp=
+  — no double-click slot declared for the tree.
+
+* See also
+
+-

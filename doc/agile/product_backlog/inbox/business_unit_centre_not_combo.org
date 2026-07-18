@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: BB5836DA-272B-4572-97BC-634CF697F13C
+:END:
+#+title: Business Unit Details' Business Centre field is a plain text field, not a combo
+#+description: Unlike party/counterparty's Business Center combo (flagged, populated from business centre codes), BusinessUnitDetailDialog renders business_center_code as a plain line edit.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:ux:business_unit:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.refdata.business_unit.org='s =*** Detail fields= table declares
+=business_centre_code= as a plain =line_edit=
+(=businessCentreEdit=), so the field is free-text in the generated
+dialog. =ores.refdata.party.org='s equivalent field
+(=business_center_code=) instead uses a =flagged_combo= widget
+(=businessCenterCombo=, populated via =fetch_business_centre_codes=,
+showing the country flag). Business unit should use the same
+=flagged_combo= configuration.
+
+* Why
+
+A free-text business centre field lets a business unit be saved with
+a code that doesn't correspond to any real business centre, whereas
+party/counterparty correctly constrain it to a valid, flagged choice.
+Inconsistent between the two entities that both carry this field.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.business_unit.org=
+  line ~302 — the =line_edit= row to change.
+- =projects/ores.refdata/modeling/ores.refdata.party.org= line ~319
+  — the =flagged_combo= configuration to mirror.
+
+* See also
+
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the FpML business centre concept this field references.

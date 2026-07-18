@@ -27,6 +27,16 @@ for the full mechanism. This template defines one:
   cross-navigation request relayed from the list window (see the
   matching seam in [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]]).
 
+Not a paste-block, but a related extension point: =qt.explorer_interface=
+(a model property, not a paste-block UUID) names an abstract interface
+the generated Controller additionally implements — for a cross-component
+explorer window (e.g. =ores.qt.trading='s =OrgExplorerMdiWindow=) that
+needs to drive =openEdit=/=openHistory= (from =has_explorer_api=) without
+linking against this entity's concrete Controller header. The interface
+itself is hand-authored elsewhere (e.g. =ores.qt.api/IBusinessUnitBrowser.hpp=)
+and must declare exactly the =openEdit=/=openHistory= signatures
+=has_explorer_api= generates.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -50,6 +60,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.has_export_macro}}
 #include "ores.qt/{{domain_entity.qt.export_header}}"
 {{/domain_entity.qt.has_export_macro}}
+{{#domain_entity.qt.has_explorer_interface}}
+#include "ores.qt/{{domain_entity.qt.explorer_interface}}.hpp"
+{{/domain_entity.qt.has_explorer_interface}}
 #include <expected>
 #include <functional>
 #include <vector>
@@ -74,7 +87,7 @@ class ImageCache;
  * Manages the lifecycle of {{domain_entity.entity_singular_words}} list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController {
+class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController{{#domain_entity.qt.has_explorer_interface}}, public {{domain_entity.qt.explorer_interface}}{{/domain_entity.qt.has_explorer_interface}} {
     Q_OBJECT
 
 private:
@@ -113,8 +126,8 @@ public:
 {{#domain_entity.qt.has_parent_relationship}}
     void openAddWithParent(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}});
 {{/domain_entity.qt.has_parent_relationship}}
-    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
-    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}){{#domain_entity.qt.has_explorer_interface}} override{{/domain_entity.qt.has_explorer_interface}};
+    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}){{#domain_entity.qt.has_explorer_interface}} override{{/domain_entity.qt.has_explorer_interface}};
 {{/domain_entity.qt.has_explorer_api}}
 
 signals:

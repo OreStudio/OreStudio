@@ -27,7 +27,8 @@ namespace ores::qt {
  * @brief Abstract interface for opening business unit edit/history windows.
  *
  * Decouples OrgExplorerMdiWindow (ores.qt.trading) from BusinessUnitController
- * (ores.qt.party), breaking the cross-plugin compile-time dependency.
+ * (ores.qt.refdata), breaking the cross-plugin compile-time dependency. Named
+ * on BusinessUnitController's codegen model via qt.explorer_interface.
  */
 class IBusinessUnitBrowser {
 public:

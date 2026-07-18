@@ -89,13 +89,13 @@ void SchedulerPlugin::setup_menus(const shared_menus_context& smc) {
     operations_menu_ = smc.operations_menu;
 
     auto* jobs = smc.scheduler_menu;
-    auto* actJobDefs = jobs->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
+    auto* actJobDefs = jobs->addAction(ico(Icon::TasksApp), tr("Scheduled Job &Definitions"));
     connect(actJobDefs, &QAction::triggered, this, [this]() {
         if (jobDefinitionController_)
             jobDefinitionController_->showListWindow();
     });
 
-    auto* actJobInstances = jobs->addAction(ico(Icon::Clock), tr("&Job Instances"));
+    auto* actJobInstances = jobs->addAction(ico(Icon::Clock), tr("Scheduled Job &Instances"));
     connect(actJobInstances, &QAction::triggered, this, [this]() {
         if (jobInstanceController_)
             jobInstanceController_->showListWindow();
@@ -103,7 +103,7 @@ void SchedulerPlugin::setup_menus(const shared_menus_context& smc) {
 
     jobs->addSeparator();
 
-    auto* actMonitor = jobs->addAction(ico(Icon::Clock), tr("Job &Monitor"));
+    auto* actMonitor = jobs->addAction(ico(Icon::Clock), tr("Scheduled Job &Monitor"));
     connect(actMonitor, &QAction::triggered, this, [this]() {
         if (schedulerMonitorController_)
             schedulerMonitorController_->showWindow();

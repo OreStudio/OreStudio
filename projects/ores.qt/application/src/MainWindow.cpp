@@ -502,13 +502,11 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // front, in alphabetical order — each plugin then only populates its
     // assigned handle (addAction/addMenu), never decides insertion order
     // itself. Telemetry is static from .ui; the rest are plain QMenus.
-    auto* configurationMenu = new QMenu(tr("&Configuration"), this);
     auto* dataTransferMenu = new QMenu(tr("Data &Transfer"), this);
     auto* messageQueueMenu = new QMenu(tr("&Message Queue"), this);
     auto* schedulerMenu = new QMenu(tr("&Scheduler"), this);
     auto* userAccountsMenu = new QMenu(tr("User &Accounts"), this);
     auto* workflowsMenu = new QMenu(tr("&Workflows"), this);
-    operationsMenu->addMenu(configurationMenu);
     operationsMenu->addMenu(dataTransferMenu);
     operationsMenu->addMenu(messageQueueMenu);
     operationsMenu->addMenu(schedulerMenu);
@@ -516,13 +514,17 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     operationsMenu->addMenu(userAccountsMenu);
     operationsMenu->addMenu(workflowsMenu);
 
-    // Pre-create trading codes menu (NOT inserted directly; TradingPlugin
-    // appends it to its own Trading menu in create_menus()).
-    auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
-
     // Pre-create &Data Quality menu. NOT inserted directly; DqPlugin
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataQualityMenu = new QMenu(tr("Data &Quality"), this);
+
+    // Pre-create Data Quality's Classifications submenu and attach it —
+    // both DqPlugin (Code Domains) and DataManagementPlugin (Coding
+    // Schemes, Coding Scheme Authority Types) populate it, so it needs a
+    // single owner for attachment rather than either plugin racing to
+    // create/attach it themselves.
+    auto* classificationsMenu = new QMenu(tr("C&lassifications"), this);
+    dataQualityMenu->addMenu(classificationsMenu);
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;
     // RefdataPlugin appends it to the Reference Data menu).
@@ -544,11 +546,10 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     smc.market_data_menu = marketDataMenu;
     smc.telemetry_menu = ui_->menuTelemetry;
     smc.data_quality_menu = dataQualityMenu;
-    smc.trading_codes_menu = tradingCodesMenu;
+    smc.classifications_menu = classificationsMenu;
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
     smc.operations_menu = operationsMenu;
-    smc.configuration_menu = configurationMenu;
     smc.data_transfer_menu = dataTransferMenu;
     smc.message_queue_menu = messageQueueMenu;
     smc.scheduler_menu = schedulerMenu;

@@ -77,9 +77,6 @@ private:
     DetachableMdiSubWindow* portfolio_explorer_sub_window_{nullptr};
     DetachableMdiSubWindow* org_explorer_sub_window_{nullptr};
 
-    // Shared Trading Codes submenu (populated in setup_menus, appended in create_menus)
-    QMenu* trading_codes_menu_{nullptr};
-
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};

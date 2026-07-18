@@ -74,7 +74,9 @@ void DqPlugin::on_login(const plugin_context& ctx) {
 
 void DqPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Quality menu handle."
-                               << " data_quality=" << (smc.data_quality_menu ? "ok" : "null");
+                               << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
+                               << " classifications="
+                               << (smc.classifications_menu ? "ok" : "null");
     data_quality_menu_ = smc.data_quality_menu;
     auto* dq = data_quality_menu_;
     if (!dq)
@@ -100,13 +102,16 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
     // Domain's detail dialog (see BadgeMappingsTab), not a standalone
     // window here.
 
-    dq->addSeparator();
-
-    auto* actCodeDomains = dq->addAction(ico(Icon::Tag), tr("Code &Domains"));
-    connect(actCodeDomains, &QAction::triggered, this, [this]() {
-        if (codeDomainController_)
-            codeDomainController_->showListWindow();
-    });
+    // Code Domains lives in the shared Classifications submenu alongside
+    // Coding Schemes and Coding Scheme Authority Types (contributed by
+    // DataManagementPlugin) — all classification/coding lookups together.
+    if (auto* classifications = smc.classifications_menu) {
+        auto* actCodeDomains = classifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
+        connect(actCodeDomains, &QAction::triggered, this, [this]() {
+            if (codeDomainController_)
+                codeDomainController_->showListWindow();
+        });
+    }
 }
 
 QList<QMenu*> DqPlugin::create_menus() {

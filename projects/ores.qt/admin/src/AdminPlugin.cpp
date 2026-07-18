@@ -148,14 +148,14 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " file=" << (smc.file_menu ? "ok" : "null")
-                               << " configuration=" << (smc.configuration_menu ? "ok" : "null")
                                << " user_accounts=" << (smc.user_accounts_menu ? "ok" : "null");
 
-    if (!(smc.file_menu && smc.configuration_menu && smc.user_accounts_menu))
+    if (!(smc.file_menu && smc.user_accounts_menu))
         return;
 
-    // ---- Operations > Configuration ---------------------------------------
-    auto* config = smc.configuration_menu;
+    // ---- File > Configuration ----------------------------------------------
+    smc.file_menu->addSeparator();
+    auto* config = smc.file_menu->addMenu(tr("Confi&guration"));
     configMenu_ = config;
     configMenu_->setEnabled(false); // enabled on login, like everything below it
 
@@ -303,7 +303,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     // ---- File > Reset System (after Testing) ------------------------------
     smc.file_menu->addSeparator();
 
-    act_reset_system_ = smc.file_menu->addAction(ico(Icon::Warning), tr("Reset &System..."));
+    act_reset_system_ = smc.file_menu->addAction(ico(Icon::Warning), tr("&Reset System..."));
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
     act_reset_system_->setEnabled(false); // enabled on login

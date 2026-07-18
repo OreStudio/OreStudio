@@ -88,7 +88,7 @@ distinguishable from the personal *Account* actions now in File
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | moves look good. but existing ones should also have submenus:; ; - jobs; - workflows; ; also sort menu alphabetically. |
+| Notes  | - configuration should go to file, not a regular operation.; - job definitions, job... become Scheduled job...; - trading codes top level menu- is this ref data? find proper ref data menu for it. Also, in trading we also have trading codes. remove.; - add code domains to  classifications; ;  |
 
 ** Operations gains Data Transfer and Data Catalogue
 
@@ -103,7 +103,7 @@ window opens.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | data catalogue does not make sense in operations. are these types in DQ or refdata? move them accordingly to the correct menu |
 
 ** Data Management is retired; Classifications/Audit Trail moved to Data Quality
@@ -126,9 +126,9 @@ from each and confirm the correct window opens.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-18T10:57:15Z |
+| Completed at  | 2026-07-18T11:37:32Z |
 | Branch        | feature/system-operations-account-menu-taxonomy |
-| Commit        | f20211749 |
+| Commit        | 422abb979 |
 | Worktree      | solid_dirac |
 
 * Notes

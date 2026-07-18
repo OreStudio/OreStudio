@@ -179,6 +179,8 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
 void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
+                               << " classifications="
+                               << (smc.classifications_menu ? "ok" : "null")
                                << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
 
     using IC = IconUtils;
@@ -186,13 +188,9 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // ---- Data Quality > Classifications / Audit Trail / Data Catalogue ---
-    // All auxiliary classification/lookup/catalogue data (not primary
-    // entities), alongside DqPlugin's own Badges/Code Domains.
-    if (auto* dq = smc.data_quality_menu) {
-        dq->addSeparator();
-
-        auto* menuClassifications = dq->addMenu(tr("C&lassifications"));
+    // ---- Data Quality > Classifications ------------------------------------
+    // Alongside DqPlugin's Code Domains — all classification/coding lookups.
+    if (auto* menuClassifications = smc.classifications_menu) {
         auto* actCodingSchemes =
             menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
         connect(actCodingSchemes, &QAction::triggered, this, [this]() {
@@ -205,6 +203,11 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
             if (codingSchemeAuthorityTypeController_)
                 codingSchemeAuthorityTypeController_->showListWindow();
         });
+    }
+
+    // ---- Data Quality > Audit Trail / Data Catalogue -----------------------
+    if (auto* dq = smc.data_quality_menu) {
+        dq->addSeparator();
 
         auto* menuAuditTrail = dq->addMenu(tr("&Audit Trail"));
         auto* actChangeReasonCategories =

@@ -1403,6 +1403,7 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
     for key in _LOOKUP_ENTITY_BOOL_SCALARS:
         if key in fm:
             e[key] = _parse_typed(fm[key])
+    e.setdefault("subcomponent", "api")
 
     body = _strip_body(doc.root)
     if body:

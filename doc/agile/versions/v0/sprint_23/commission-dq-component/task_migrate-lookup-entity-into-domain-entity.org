@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 464B5EC6-0F5A-4B6F-B77E-02806CBEAE94
+:END:
+#+title: Task: Migrate lookup_entity into domain_entity; retire the lookup_entity type/loader/pipeline
+#+description: lookup_entity (#+type: ores.codegen.lookup_entity) is architectural duplication, not a distinct metatype: domain_entity already supports its exact shape via has_uuid_primary_key: false plus a plain natural-key primary key (confirmed via ores.refdata.country.org). Add has_coding_scheme/has_image_id/has_artefact_insert_fn as domain_entity knobs, migrate all 15 existing lookup_entity org models to #+type: ores.codegen.entity with has_uuid_primary_key: false, then retire ores.codegen.lookup_entity's separate #+type:, org_loader.py loader, and any dedicated dispatch -- reusing domain_entity's existing, working column/cpp_type/template pipeline instead of building or maintaining a second one. Supersedes patching lookup_entity's own C++ generation gap in place (see DDBD522D).
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-18                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

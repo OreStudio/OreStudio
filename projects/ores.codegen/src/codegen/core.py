@@ -20,7 +20,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.junction":         "junction",
     "ores.codegen.component":        "component",
     "ores.codegen.field_group":      "field_group",
-    "ores.codegen.lookup_entity":    "enum",
+    "ores.codegen.lookup_entity":    "schema",
     "ores.codegen.service_registry": "service_registry",
     "ores.codegen.dataset":          "dataset",
 }
@@ -737,6 +737,22 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{EntityPascal}', entity_pascal)
 
+    elif model_type == 'schema' and 'entity' in model_data:
+        # Lookup-entity models (#+type: ores.codegen.lookup_entity) load into
+        # the 'entity' key but route through the 'schema' model_type, sharing
+        # sql_schema_table_create.mustache's output path shape with 'table'.
+        entity = model_data['entity']
+        path_vars = _component_path_vars(entity)
+        entity_singular = entity.get('entity_singular', 'unknown')
+        entity_plural = entity.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
     elif model_type == 'service_registry':
         # Service registry output paths are fixed — no placeholder substitution needed.
         pass
@@ -1152,7 +1168,7 @@ def load_model(model_path):
             return load_org_junction_model(model_path)
         if org_type == 'table':
             return load_org_table_model(model_path)
-        if org_type == 'enum':
+        if org_type == 'schema':
             return load_org_lookup_entity_model(model_path)
         if org_type == 'service_registry':
             return load_org_service_registry_model(model_path)

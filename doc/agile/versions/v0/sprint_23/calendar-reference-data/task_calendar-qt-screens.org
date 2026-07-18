@@ -66,7 +66,12 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Calendar-only Save fires two independent change-reason prompts/saves (all 3 review passes) | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Fixed (3a3d7b392) | assignmentsChanged now only enables Save; onSaveClicked() skips the entity save when only calendar assignments are pending |
+| 2 | Switching to Calendars tab reloads unconditionally, silently discarding staged edits | CalendarAssignmentWidget usage in both dialogs | Deferred | Real gap vs. AccountRolesWidget precedent; needs load-once-per-leftKey tracking, out of scope for this round |
+| 3 | commitChanges() doc comment contradicts stop-at-first-failure behaviour; partial failure leaves already-applied items staged | CalendarAssignmentWidget.hpp/.cpp | Fixed (3a3d7b392) | Always reloads after a commit attempt now; doc comment corrected |
+| 4 | Calendars tab unusable while creating a new entity (leftKey empty until first save) | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Deferred | Needs the same pendingAdds-capture-before-create restructuring AccountDetailDialog uses; follow-up task |
+| 5 | Read-only state not reapplied to Calendars tab when paging historical versions in place | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Fixed (3a3d7b392) | setReadOnly() now reapplies to calendarWidget_ when its tab is active |
+| 6 | Toolbar button hand-authored instead of using codegen's related_entity_shortcuts mechanism | CurrencyPairConventionMdiWindow.cpp/.hpp | Fixed (3a3d7b392) | Moved to the same first-class codegen table Book uses for its own list-window shortcuts |
 
 * Result
 

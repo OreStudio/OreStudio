@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tick-batch-publishing
-#+pr: 1610
+#+pr: 1624
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -306,6 +306,7 @@ change. Tracked as its own task: curve-snapshot-builder-viewer.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1624][#1624]] | [synthetic,marketdata] Implement ir_curve_feed producer and curve family ingest |
 | [[https://github.com/OreStudio/OreStudio/pull/1610][#1610]] | [refdata,synthetic,qt] Add curve_role and yield_curve_process_type entities |
 | [[https://github.com/OreStudio/OreStudio/pull/1597][#1597]] | [refdata,trading,ore] Consolidate payment frequency into ores.refdata |
 

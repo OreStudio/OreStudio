@@ -527,8 +527,8 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // "Classifications" to avoid colliding with Reference Data > Codes'
     // unrelated Classifications submenu (Asset Class Codes, Curve Roles,
     // Instrument Codes).
-    auto* classificationsMenu = new QMenu(tr("Coding &Schemes"), this);
-    dataQualityMenu->addMenu(classificationsMenu);
+    auto* codingSchemesMenu = new QMenu(tr("Coding &Schemes"), this);
+    dataQualityMenu->addMenu(codingSchemesMenu);
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;
     // RefdataPlugin appends it to the Reference Data menu).
@@ -550,7 +550,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     smc.market_data_menu = marketDataMenu;
     smc.telemetry_menu = ui_->menuTelemetry;
     smc.data_quality_menu = dataQualityMenu;
-    smc.classifications_menu = classificationsMenu;
+    smc.coding_schemes_menu = codingSchemesMenu;
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
     smc.operations_menu = operationsMenu;

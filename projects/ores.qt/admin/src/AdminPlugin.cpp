@@ -95,8 +95,8 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    if (configMenu_)
-        configMenu_->setEnabled(true);
+    if (act_system_settings_)
+        act_system_settings_->setEnabled(true);
     if (adminMenu_)
         adminMenu_->setEnabled(true);
     if (act_reset_system_)
@@ -154,12 +154,15 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         return;
 
     // ---- File > System (Settings, Test Scenario Runner, Reset) -----------
+    // Gate System Settings and Reset System individually rather than
+    // disabling the whole System submenu: Test Scenario Runner (added
+    // below) deliberately stays reachable before login, so the submenu
+    // itself must stay enabled.
     smc.file_menu->addSeparator();
     auto* systemMenu = smc.file_menu->addMenu(tr("S&ystem"));
-    configMenu_ = systemMenu;
-    configMenu_->setEnabled(false); // enabled on login, like everything below it
 
     act_system_settings_ = systemMenu->addAction(ico(Icon::Flag), tr("&System Settings"));
+    act_system_settings_->setEnabled(false); // enabled on login
     connect(act_system_settings_, &QAction::triggered, this, [this]() {
         if (systemSettingController_)
             systemSettingController_->showListWindow();
@@ -401,8 +404,8 @@ void AdminPlugin::on_logout() {
     accountController_.reset();
     ctx_ = {};
 
-    if (configMenu_)
-        configMenu_->setEnabled(false);
+    if (act_system_settings_)
+        act_system_settings_->setEnabled(false);
     if (adminMenu_)
         adminMenu_->setEnabled(false);
     if (act_reset_system_)

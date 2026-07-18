@@ -168,7 +168,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =configMenu_= gates the whole File > System submenu, silently disabling Test Scenario Runner before login (contradicts its own comment) | AdminPlugin.cpp/.hpp | Accepted | Gate =act_system_settings_= individually, like =act_reset_system_=; removed =configMenu_= entirely. |
+| 2 | Missing separator between Audit Trail and Data Catalogue in Data Quality menu | DataManagementPlugin.cpp | Accepted | Added =dq->addSeparator()= between the two =addMenu()= calls. |
+| 3 | =SchedulerPlugin.hpp= class doc comment says setup_menus() seeds Operations directly; it seeds the Scheduler submenu | SchedulerPlugin.hpp | Accepted | Updated wording. |
+| 4 | =classifications_menu= field name drifted from its "Coding Schemes" display label | IPlugin.hpp, MainWindow.cpp, DataManagementPlugin.cpp, DqPlugin.cpp | Accepted | Renamed to =coding_schemes_menu= (and the local variable) throughout. |
+| 5 | Pre-existing leading separator on Data Transfer from TradingPlugin's =addSeparator()= running first (load_order) | TradingPlugin.cpp | Declined | Pre-existing behaviour against the old =data_management_menu=, not introduced by this PR; out of scope. |
 
 * Result
 

@@ -32,9 +32,10 @@ class SchedulerMonitorController;
 /**
  * @brief Qt plugin providing the Operations menu (job scheduling half).
  *
- * setup_menus() seeds the pre-created Operations menu with Job items;
- * create_menus() returns the populated menu for bar insertion.
- * WorkflowPlugin (load_order 365) appends the Workflow section after.
+ * setup_menus() seeds the pre-created Scheduler submenu (under
+ * Operations) with Job items; create_menus() returns the Operations
+ * menu itself for bar insertion, since this plugin owns attaching it.
+ * WorkflowPlugin populates the sibling Workflows submenu.
  */
 class SchedulerPlugin : public PluginBase {
     Q_OBJECT

@@ -180,7 +180,7 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
                                << " classifications="
-                               << (smc.classifications_menu ? "ok" : "null")
+                               << (smc.coding_schemes_menu ? "ok" : "null")
                                << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
 
     using IC = IconUtils;
@@ -190,7 +190,7 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
 
     // ---- Data Quality > Classifications ------------------------------------
     // Alongside DqPlugin's Code Domains — all classification/coding lookups.
-    if (auto* menuClassifications = smc.classifications_menu) {
+    if (auto* menuClassifications = smc.coding_schemes_menu) {
         auto* actCodingSchemes =
             menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
         connect(actCodingSchemes, &QAction::triggered, this, [this]() {
@@ -222,6 +222,8 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
             if (changeReasonController_)
                 changeReasonController_->showListWindow();
         });
+
+        dq->addSeparator();
 
         auto* menuCatalogue = dq->addMenu(tr("Data Ca&talogue"));
 

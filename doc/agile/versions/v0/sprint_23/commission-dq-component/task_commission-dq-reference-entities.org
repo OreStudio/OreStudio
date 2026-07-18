@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: F71E530F-EB53-4644-AE07-2FDA88E0AE73
+#+blocked_since: 2026-07-18
 #+created: 2026-07-17
 #+updated: 2026-07-17
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-17                               |
+| Now          | Blocked on [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding to cover DQ's simple entities' variability]]. |
+| Waiting on   | [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding]] |
+| Next         | Resume once the scaffold supports compound natural keys and the coding_scheme/image_id/artefact_insert_fn knobs. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
@@ -45,6 +45,23 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Checked the real SQL for all five entities before authoring the first
+model: none of them has a UUID surrogate primary key — every one is
+keyed by =(tenant_id, <natural key column(s)>, valid_from, valid_to)=
+directly (=name= for catalog/data_domain, =code= for
+change_reason/change_reason_category, =(name, domain_name)= for
+subject_area). That is the [[id:884C6B00-0849-430D-9D32-F3544269DC56][LookupEntity]] metatype's shape, not
+=domain_entity='s — despite the story calling them "simple", they are
+=#+type: ores.codegen.lookup_entity=, not =entity_org=. The =--shape=
+scaffolding from task =EE237306= only covers =domain_entity=; a first
+=compass add entity_org --shape simple-text-key= attempt for
+=catalog= was discarded once this was discovered.
+
+=subject_area='s compound natural key (=name= + =domain_name=) also
+doesn't fit =doc_lookup_entity.org.mustache='s current single-column
+=Primary key= section, and =has_coding_scheme=/=has_image_id=/
+=has_artefact_insert_fn= are hardcoded =false= in that template with
+no CLI flag at all. Filed [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][F71E530F]] to fix both before resuming here.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

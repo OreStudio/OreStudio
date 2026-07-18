@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/commission-dq-reference-entities
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
 #+updated: 2026-07-17
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

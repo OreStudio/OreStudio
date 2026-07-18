@@ -42,6 +42,12 @@ provisioned, re-run
 =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 first.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the CRM Cross Rates Matrix
 
 Market Data menu > Cross Rates Matrix (or the MDI window if already
@@ -49,11 +55,23 @@ open). Pick a CRM with at least one pair lacking a direct quote in one
 direction, so the reciprocal-backfill path is exercised (e.g. one of
 the majors/scandies/exotics CRMs used in the shell recipes).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm the toggle reads "Show Reciprocal"
 
 The footer button that used to read "Show Inverted" now reads *Show
 Reciprocal*; hover it and confirm the tooltip text also says
 "reciprocal" rather than "inverted".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Toggle "Show Reciprocal" on and check the backfilled cells
 
@@ -62,11 +80,23 @@ Turn "Show Reciprocal" on and confirm that cell now shows a
 pastel-tinted computed 1/rate value instead of a dash, and that its
 sparkline/history still populates correctly.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Toggle "Show Reciprocal" off and confirm the cell reverts
 
 Turn the toggle back off; the previously-backfilled cell should
 return to showing a dash (no direct quote), confirming the toggle
 still round-trips correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Export CSV with "Show Reciprocal" on and check the header
 
@@ -87,14 +117,20 @@ that the filename/metadata reflects "reciprocal" rather than
 # Single-client scenarios (the common case) keep steps as direct
 # children of * Steps, as above.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-18T07:07:36Z |
+| Branch        | feature/crm-rename-inverted-to-reciprocal |
+| Commit        | 50619dc25 |
+| Worktree      | clever_dijkstra |
 
 * Notes

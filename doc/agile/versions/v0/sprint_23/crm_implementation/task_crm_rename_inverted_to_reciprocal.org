@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:996E0E3B-5389-4648-B153-7F8487591133][Verify CRM 'Show Reciprocal' after the inverted-to-reciprocal rename]] | PENDING | |
+| [[id:996E0E3B-5389-4648-B153-7F8487591133][Verify CRM 'Show Reciprocal' after the inverted-to-reciprocal rename]] | PASSED | |
 
 * PRs
 

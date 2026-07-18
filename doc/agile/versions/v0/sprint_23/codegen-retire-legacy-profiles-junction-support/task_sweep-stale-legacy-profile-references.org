@@ -8,7 +8,7 @@
 #+filetags: :codegen:tooling:documentation:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/sweep-stale-legacy-profile-references
-#+pr:
+#+pr: 1629
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1629][#1629]] | [codegen] Remove --profile entirely; --address is the only selector |
 
 * Review
 

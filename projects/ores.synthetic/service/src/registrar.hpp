@@ -42,6 +42,8 @@ namespace ores::synthetic::service {
  *   synthetic.v1.ir_curve_feed_configs.start  — starts an IR curve config's feed on demand
  *   synthetic.v1.ir_curve_feed_configs.stop   — stops the running IR curve feed
  *   synthetic.v1.ir_curve_feed_configs.list   — lists running IR curve feed source_names
+ *   synthetic.v1.ir_curve.simulate_paths      — batch dry-run short-rate sample paths (auth + RBAC)
+ *   synthetic.v1.ir_curve.preview_shape       — stateless curve-shape preview (auth + RBAC)
  */
 class registrar {
 public:

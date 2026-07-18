@@ -44,6 +44,12 @@ scope; see the =seed-ir-curve-sample-data= follow-on task), so a
 per-tenant config (e.g. one created under Barclays Plc) would never
 actually tick without one.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm the seeded IR curve config
 
 Open *Synthetic > IR Curve Generation Configs*. Confirm a row exists
@@ -53,17 +59,36 @@ for currency =USD=, index =SOFR=, =enabled= = true, process type
 values — see the =seed-ir-curve-sample-data= follow-on task for why
 that distinction matters).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm the Curve Template entries
 
 Open *Synthetic > IR Curve Template Entries*, filtered to the config
 above. Confirm three ordered rows: sequence 0 (=SPOT=→=3M=, =DEPO=),
 sequence 1 (=3M=→=6M=, =FRA=), sequence 2 (=SPOT=→=2Y=, =IRS=).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm the market series was auto-created
 
 Open *Market Data > Market Series*. Confirm a =RATES/YIELD/USD/SOFR=
 row exists, with =asset_class= = rates, =is_scalar= = false — created
 automatically by the ingest loop on the first tick, not manually.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Not visible from the =MarketSimulatorWindow= ("Market Simulator") the tester was looking at -- that window is hardcoded to =fx_spot_generation_config= only (loads "feeds, fx pairs, components, folders" -- no IR equivalent exists). This is the exact manual per-tenant start/monitor control-plane gap already tracked in the =seed-ir-curve-sample-data= follow-on task, not a defect in this task's own code. Server-side, the mechanism is independently confirmed working via direct SQL: a =RATES/YIELD/USD/SOFR= row was auto-created by the ingest loop with =asset_class=rates=, =is_scalar=false=, from a system-tenant auto-started feed (=MarketSeriesMdiWindow=/=MarketObservationMdiWindow=, the generic list windows, do show it -- the gap is specifically the FX-only Market Simulator having no IR view). |
 
 ** Confirm ticks are landing as market observations
 
@@ -75,14 +100,33 @@ every tick at 60 ticks/hour) share one =observation_datetime= per
 batch and add a new batch on the next tick, with =source= =
 =ir_curve.usd.sofr=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Same root cause as the previous step: the tester was looking for a "Start" control in the Market Simulator (FX-only, no IR view -- see above), not the generic Market Observations list window. Independently confirmed working server-side via direct SQL: 3M/6M/2Y point_ids present with numeric values, shared observation_datetime per batch, source=ir_curve.usd.sofr, new batches landing every ~60s across multiple polls. |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-18T13:38:04Z |
+| Branch        | feature/tick-batch-publishing |
+| Commit        | 3b26975cf |
+| Worktree      | eager_maxwell |
 
 * Notes
+
+Overall: steps 1-3 (login, config, Curve Template entries) pass
+cleanly through the generic CRUD list windows. Steps 4-5 fail only
+because the tester was looking in =MarketSimulatorWindow= ("Market
+Simulator"), which is hardcoded FX-only and has no IR curve view --
+not because the feature doesn't work. The actual mechanism (tick
+generation, batching, publish, ingest, auto-create series, persist
+observations) is independently confirmed correct via direct SQL
+against a live, auto-started system-tenant feed. Re-run this scenario
+once the =seed-ir-curve-sample-data= follow-on task adds an IR view to
+the manual control-plane, at which point steps 4-5 should be
+re-verified through the intended UI path rather than direct SQL.

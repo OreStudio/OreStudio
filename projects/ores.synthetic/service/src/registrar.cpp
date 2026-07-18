@@ -20,10 +20,13 @@
 #include "registrar.hpp"
 #include "folder_feed_control_handler.hpp"
 #include "ir_curve_feed_config_handler.hpp"
+#include "ir_curve_preview_handler.hpp"
 #include "market_feed_config_handler.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include "simulate_handler.hpp"
 #include "vintage_validity_handler.hpp"
 
@@ -124,6 +127,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
             ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
             h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(simulate_ir_curve_paths_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier](ores::nats::message msg) {
+            ir_curve_preview_handler h(nats, ctx, verifier);
+            h.simulate_paths(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(preview_ir_curve_shape_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier](ores::nats::message msg) {
+            ir_curve_preview_handler h(nats, ctx, verifier);
+            h.preview_shape(std::move(msg));
         }));
 
     return subs;

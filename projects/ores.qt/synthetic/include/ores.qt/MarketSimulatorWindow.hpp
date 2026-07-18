@@ -28,6 +28,8 @@
 #include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <QFormLayout>
 #include <QLabel>
@@ -124,6 +126,7 @@ private slots:
     void onReloadClicked();
     void onNewFeedClicked();
     void onNewFxRateClicked();
+    void onNewIrCurveClicked();
     void onEditClicked();
     void onDeleteClicked();
     void onStartFeedClicked();
@@ -165,11 +168,14 @@ private:
     void showFeedSummary(const synthetic::domain::market_data_generation_config& feed);
     void showFolderSummary(const QModelIndex& idx, const QString& title, const QString& name);
     void showFxPairSummary(const synthetic::domain::fx_spot_generation_config& fx);
+    void showIrCurveSummary(const synthetic::domain::ir_curve_generation_config& ir);
     void clearSummary();
 
     void editEntity(NodeType type, const std::string& id);
     void openFxEditorForNew(const std::string& feedId);
     void openFxEditorForEdit(const synthetic::domain::fx_spot_generation_config& fx);
+    void openIrCurveEditorForNew(const std::string& feedId);
+    void openIrCurveEditorForEdit(const synthetic::domain::ir_curve_generation_config& ir);
 
     // Resolve the owning Collection id implied by the current selection (the
     // node itself if it's a Collection, its nearest Collection ancestor if
@@ -185,6 +191,13 @@ private:
     // All Feed-leaf pairs nested under the given index (itself if it's a Feed).
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
     pairsUnderIndex(const QModelIndex& idx) const;
+    // IR curve analogues of selectedFxPairs()/pairsUnderIndex() -- same traversal
+    // (collectFeedIdsUnder is entity-agnostic), resolved against irCurves_ instead of fxPairs_.
+    // A future third/fourth asset class follows this same shape.
+    [[nodiscard]] std::vector<synthetic::domain::ir_curve_generation_config>
+    selectedIrCurves() const;
+    [[nodiscard]] std::vector<synthetic::domain::ir_curve_generation_config>
+    irCurvesUnderIndex(const QModelIndex& idx) const;
     // The single folder id to cascade start/stop through via the backend
     // folder-scoped request, if the current selection is exactly one
     // non-Feed node; empty otherwise (Feed leaf, mixed, or multi-selection --
@@ -195,11 +208,16 @@ private:
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void startFolderAsync(const std::string& folderId);
     void stopFolderAsync(const std::string& folderId);
+    // IR curve analogues -- simpler than the FX pair versions since the server resolves
+    // everything (template entries, refdata) from config_id alone; no feed_binding step.
+    void startIrCurvesAsync(std::vector<synthetic::domain::ir_curve_generation_config> curves);
+    void stopIrCurvesAsync(std::vector<synthetic::domain::ir_curve_generation_config> curves);
 
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
     void refreshFxSummaryIfCurrent();
+    void refreshIrCurveSummaryIfCurrent();
     void refreshFeedTreeItems();
     // Aggregated status folded bottom-up: running/total leaf counts (for the
     // running-status column) plus whether any applicable descendant feed has
@@ -222,6 +240,15 @@ private:
     // not here -- this only sets the plain base icon (see BaseIconRole).
     static QStandardItem* buildFeedItem(const synthetic::domain::fx_spot_generation_config& fx,
                                         ImageCache* imageCache);
+    // IR curve analogue of buildFeedItem() -- single-flag icon (one currency), nested under the
+    // real folder hierarchy exactly like FX pairs (see buildTree()'s irCurvesByFolder).
+    static QStandardItem*
+    buildIrCurveFeedItem(const synthetic::domain::ir_curve_generation_config& ir,
+                        ImageCache* imageCache);
+    // "ir_curve.<ccy>.<idx>", lowercased -- must match
+    // ores::synthetic::service::ir_curve_feed_source_name() server-side exactly, since neither
+    // running-status lookups nor stop-by-source_name have any other way to address a feed.
+    static std::string irCurveSourceName(const synthetic::domain::ir_curve_generation_config& ir);
 
     ClientManager* clientManager_;
     QString username_;
@@ -236,6 +263,7 @@ private:
     QAction* reloadAction_;
     QAction* newFeedAction_;
     QAction* newFxRateAction_;
+    QAction* newIrCurveAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* startFeedAction_;
@@ -270,11 +298,14 @@ private:
     QLabel* feedStatsLabel_;
     std::string feedSummaryId_; // id of the feed currently shown in the right panel
     std::string fxSummaryId_;   // id of the fx pair currently shown in the right panel
+    std::string irSummaryId_;   // id of the ir curve currently shown in the right panel
 
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
+    std::map<std::string, synthetic::domain::ir_curve_generation_config> irCurves_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
+    std::map<std::string, synthetic::domain::ir_curve_template_entry> irCurveEntries_;
     std::map<std::string, synthetic::domain::folder> folders_;
 
     // source_names of feeds the client has successfully started this session.

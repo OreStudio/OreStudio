@@ -72,9 +72,16 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index this curve represents (e.g. "SOFR", "ESTR", "SONIA"). Free text:
-     * the universe of index names is currency/convention-specific and not yet its own refdata
-     * catalogue.
+     * @brief Floating-rate index this curve represents, stored as the full ISDA/ORE code
+     * (references ores.refdata.floating_index_type.code, e.g. "USD-SOFR", "EUR-ESTR", "GBP-SONIA")
+     * rather than a bare suffix ("SOFR") -- floating_index_type.code already bakes in currency, and
+     * storing the full code lets this FK reuse the entity's own generated single-argument validator
+     * directly (ores_refdata_validate_floating_index_type_fn(tenant_id, value)) instead of a
+     * bespoke composite validator the codegen Insert-trigger Validations mechanism can't express
+     * (it always calls fn(tenant_id, NEW.column), one column in, one value out).
+     * ir_curve_feed_source_name() and display code strip the redundant <currency_code>- prefix back
+     * off for the "ir_curve.<ccy>.<idx>" subject and UI labels, so the wire subject/tree text are
+     * unaffected by this storage change.
      */
     std::string index_name;
 
@@ -127,6 +134,16 @@ struct ir_curve_generation_config final {
      * for Deposit/FRA entries, which have no intermediate schedule.
      */
     std::string fixed_leg_payment_frequency_code = "Annual";
+
+    /**
+     * @brief The folder this curve lives under (the instrument-type folder, e.g. "IR Curves",
+     * nested under an asset-class folder under this curve's owning collection). Real, queryable
+     * hierarchy position -- not parsed out of source_name, which stays a display/NATS-subject
+     * string. Nullable for now: only the publish-from-dq path populates it; manual creation doesn't
+     * yet resolve/create folders -- follow-up work. Mirrors fx_spot_generation_config.folder_id
+     * exactly.
+     */
+    std::optional<boost::uuids::uuid> folder_id;
 
     /**
      * @brief Username of the person who last modified this IR curve generation config.

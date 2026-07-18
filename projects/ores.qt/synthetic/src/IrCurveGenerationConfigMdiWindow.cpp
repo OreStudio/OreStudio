@@ -21,7 +21,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -49,9 +48,7 @@ IrCurveGenerationConfigMdiWindow::IrCurveGenerationConfigMdiWindow(ClientManager
     , addAction_(nullptr)
     , editAction_(nullptr)
     , deleteAction_(nullptr)
-    , historyAction_(nullptr)
-    , startAction_(nullptr)
-    , stopAction_(nullptr) {
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -116,20 +113,6 @@ void IrCurveGenerationConfigMdiWindow::setupToolbar() {
             &QAction::triggered,
             this,
             &IrCurveGenerationConfigMdiWindow::viewHistorySelected);
-
-    toolbar_->addSeparator();
-
-    startAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor), tr("Start"));
-    startAction_->setToolTip(tr("Start the selected IR curve config's feed"));
-    startAction_->setEnabled(false);
-    connect(startAction_, &QAction::triggered, this, &IrCurveGenerationConfigMdiWindow::startSelected);
-
-    stopAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor), tr("Stop"));
-    stopAction_->setToolTip(tr("Stop the selected IR curve config's feed"));
-    stopAction_->setEnabled(false);
-    connect(stopAction_, &QAction::triggered, this, &IrCurveGenerationConfigMdiWindow::stopSelected);
 }
 
 void IrCurveGenerationConfigMdiWindow::setupTable() {
@@ -236,8 +219,6 @@ void IrCurveGenerationConfigMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
-    startAction_->setEnabled(hasSelection);
-    stopAction_->setEnabled(hasSelection);
 }
 
 void IrCurveGenerationConfigMdiWindow::addNew() {
@@ -407,119 +388,5 @@ void IrCurveGenerationConfigMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
-void IrCurveGenerationConfigMdiWindow::startSelected() {
-    const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Start requested but no row selected";
-        return;
-    }
-
-    if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this, "Disconnected", "Cannot start IR curve feed while disconnected.");
-        return;
-    }
-
-    auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    auto* cfg = model_->getConfig(sourceIndex.row());
-    if (!cfg)
-        return;
-
-    const auto config_id = boost::uuids::to_string(cfg->id);
-    BOOST_LOG_SEV(lg(), debug) << "Start requested for IR curve config: " << config_id;
-
-    QPointer<IrCurveGenerationConfigMdiWindow> self = this;
-    auto task = [self, config_id]() -> synthetic::messaging::start_ir_curve_feed_response {
-        if (!self)
-            return {.success = false, .message = "Window closed"};
-
-        synthetic::messaging::start_ir_curve_feed_request request;
-        request.config_id = config_id;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result)
-            return {.success = false, .message = "Failed to communicate with server"};
-        return *response_result;
-    };
-
-    auto* watcher =
-        new QFutureWatcher<synthetic::messaging::start_ir_curve_feed_response>(self);
-    connect(watcher,
-            &QFutureWatcher<synthetic::messaging::start_ir_curve_feed_response>::finished,
-            self,
-            [self, watcher]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                if (result.success) {
-                    emit self->statusChanged(QString::fromStdString(result.message));
-                } else {
-                    emit self->errorOccurred(QString::fromStdString(result.message));
-                    MessageBoxHelper::warning(
-                        self, "Start Failed", QString::fromStdString(result.message));
-                }
-            });
-
-    QFuture<synthetic::messaging::start_ir_curve_feed_response> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
-void IrCurveGenerationConfigMdiWindow::stopSelected() {
-    const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Stop requested but no row selected";
-        return;
-    }
-
-    if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this, "Disconnected", "Cannot stop IR curve feed while disconnected.");
-        return;
-    }
-
-    auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    auto* cfg = model_->getConfig(sourceIndex.row());
-    if (!cfg)
-        return;
-
-    const auto config_id = boost::uuids::to_string(cfg->id);
-    BOOST_LOG_SEV(lg(), debug) << "Stop requested for IR curve config: " << config_id;
-
-    QPointer<IrCurveGenerationConfigMdiWindow> self = this;
-    auto task = [self, config_id]() -> synthetic::messaging::stop_ir_curve_feed_response {
-        if (!self)
-            return {.success = false, .message = "Window closed"};
-
-        synthetic::messaging::stop_ir_curve_feed_request request;
-        request.config_id = config_id;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result)
-            return {.success = false, .message = "Failed to communicate with server"};
-        return *response_result;
-    };
-
-    auto* watcher = new QFutureWatcher<synthetic::messaging::stop_ir_curve_feed_response>(self);
-    connect(watcher,
-            &QFutureWatcher<synthetic::messaging::stop_ir_curve_feed_response>::finished,
-            self,
-            [self, watcher]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                if (result.success) {
-                    emit self->statusChanged(QString::fromStdString(result.message));
-                } else {
-                    emit self->errorOccurred(QString::fromStdString(result.message));
-                    MessageBoxHelper::warning(
-                        self, "Stop Failed", QString::fromStdString(result.message));
-                }
-            });
-
-    QFuture<synthetic::messaging::stop_ir_curve_feed_response> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
 
 }

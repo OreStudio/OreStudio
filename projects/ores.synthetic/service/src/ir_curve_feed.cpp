@@ -52,35 +52,6 @@ ores::marketdata::domain::series_subclass subclass_for(const std::string& curve_
     return series_subclass::yield;
 }
 
-double price_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
-                   const ir_curve_resolved_entry& e) {
-    using ores::analytics::quant::service::curve_instrument_pricer;
-
-    const double df_end = process.discount_factor(e.ticks_ahead_end);
-
-    if (e.curve_role == "DEPOSIT")
-        return curve_instrument_pricer::deposit_rate(df_end, e.year_fraction);
-
-    if (e.curve_role == "FRA") {
-        const double df_start = process.discount_factor(e.ticks_ahead_start);
-        return curve_instrument_pricer::fra_rate(df_start, df_end, e.year_fraction);
-    }
-
-    if (e.curve_role == "SWAP") {
-        const double df_start = process.discount_factor(e.ticks_ahead_start);
-        std::vector<double> dfs, accruals;
-        dfs.reserve(e.fixed_leg_schedule.size());
-        accruals.reserve(e.fixed_leg_schedule.size());
-        for (const auto& step : e.fixed_leg_schedule) {
-            dfs.push_back(process.discount_factor(step.ticks_ahead));
-            accruals.push_back(step.accrual_fraction);
-        }
-        return curve_instrument_pricer::swap_par_rate(df_start, df_end, dfs, accruals);
-    }
-
-    throw std::invalid_argument("ir_curve_feed: unsupported curve_role '" + e.curve_role + "'");
-}
-
 } // namespace
 
 ir_curve_feed::ir_curve_feed(
@@ -155,7 +126,7 @@ void ir_curve_feed::start() {
                 tick.point_id = e.point_id;
                 tick.source_name = source_name_;
                 tick.datetime = now;
-                tick.value = price_entry(*process_, e);
+                tick.value = price_ir_curve_entry(*process_, e);
 
                 const auto json = rfl::json::write(tick);
                 const auto data = std::as_bytes(std::span{json.data(), json.size()});
@@ -187,10 +158,23 @@ std::string lowercase(std::string s) {
     });
     return s;
 }
+
+// index_name is stored as the full floating_index_type code (e.g. "USD-SOFR"), which already
+// bakes in currency_code -- strip that redundant "<CCY>-" prefix back off for display/subject
+// purposes (see the field's own doc comment on ir_curve_generation_config for why it's stored
+// with the prefix in the first place: reusing floating_index_type's existing single-argument
+// validator rather than a bespoke composite one).
+std::string strip_currency_prefix(const std::string& currency_code, const std::string& index_name) {
+    const auto prefix = currency_code + "-";
+    if (index_name.starts_with(prefix))
+        return index_name.substr(prefix.size());
+    return index_name;
+}
 }
 
 std::string ir_curve_feed_source_name(const std::string& currency_code, const std::string& index_name) {
-    return "ir_curve." + lowercase(currency_code) + "." + lowercase(index_name);
+    return "ir_curve." + lowercase(currency_code) + "." +
+          lowercase(strip_currency_prefix(currency_code, index_name));
 }
 
 std::shared_ptr<ir_curve_feed>
@@ -211,7 +195,9 @@ make_ir_curve_feed(ores::nats::service::client& nats,
                                            "synthetic.v1.curve_family." + source_name,
                                            "RATES",
                                            "YIELD",
-                                           cfg.currency_code + "/" + cfg.index_name,
+                                           cfg.currency_code + "/" +
+                                               strip_currency_prefix(cfg.currency_code,
+                                                                     cfg.index_name),
                                            std::move(process),
                                            static_cast<double>(cfg.ticks_per_hour),
                                            std::move(resolved));

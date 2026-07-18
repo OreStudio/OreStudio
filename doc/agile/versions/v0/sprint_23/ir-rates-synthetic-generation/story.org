@@ -142,6 +142,7 @@ which now require the process to expose =P(t,T)=, not just a path of
 | [[id:2B3FBE54-CD22-4E4F-A282-04A94B1105BB][Document stochastic processes: knowledge hub + per-process pages]] | DONE | 2026-07-16 | 2026-07-16 | A stochastic-processes knowledge hub (GBM, Wiener/Brownian motion, Ito's lemma, OU/Vasicek, CIR, Hull-White) plus one atomic doc per process: layperson description, chart where applicable, paper summary and related-work references. |
 | [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer: as-of query + UI for reviewing a raw instrument grid]] | BACKLOG | | | A read-side as-of query (latest observation per point_id, as-of a given time, for one series) that reconstructs a curve/grid snapshot from independently-ticking market_observation rows, plus a first UI surface to view it. |
 | [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic IR curve sample data (vintage + DQ datasets)]] | BACKLOG | | | Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern. |
+| [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] | BACKLOG | | | Consolidate the duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) into an index entity + currency_index junction. |
 
 * Decisions
 

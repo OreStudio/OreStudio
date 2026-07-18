@@ -18,6 +18,7 @@
  *
  */
 #include "ir_curve_template_resolver.hpp"
+#include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
@@ -183,6 +184,36 @@ std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::dat
     refctx.spot = refctx.horizon; // T+0: see resolve()'s doc.
 
     return refctx;
+}
+
+double price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
+                            const ir_curve_resolved_entry& e) {
+    using ores::analytics::quant::service::curve_instrument_pricer;
+
+    const double df_end = process.discount_factor(e.ticks_ahead_end);
+
+    if (e.curve_role == "DEPOSIT")
+        return curve_instrument_pricer::deposit_rate(df_end, e.year_fraction);
+
+    if (e.curve_role == "FRA") {
+        const double df_start = process.discount_factor(e.ticks_ahead_start);
+        return curve_instrument_pricer::fra_rate(df_start, df_end, e.year_fraction);
+    }
+
+    if (e.curve_role == "SWAP") {
+        const double df_start = process.discount_factor(e.ticks_ahead_start);
+        std::vector<double> dfs, accruals;
+        dfs.reserve(e.fixed_leg_schedule.size());
+        accruals.reserve(e.fixed_leg_schedule.size());
+        for (const auto& step : e.fixed_leg_schedule) {
+            dfs.push_back(process.discount_factor(step.ticks_ahead));
+            accruals.push_back(step.accrual_fraction);
+        }
+        return curve_instrument_pricer::swap_par_rate(df_start, df_end, dfs, accruals);
+    }
+
+    throw std::invalid_argument("price_ir_curve_entry: unsupported curve_role '" + e.curve_role +
+                                "'");
 }
 
 }

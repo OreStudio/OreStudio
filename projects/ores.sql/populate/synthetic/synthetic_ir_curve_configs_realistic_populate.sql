@@ -115,9 +115,9 @@ begin
         c.annual_kappa / v_days, c.theta, c.annual_sigma / sqrt(v_days), c.theta,
         60, 'Quarterly'
     from (values
-        ('USD', 'SOFR', 0.55, 0.008, 0.04),
-        ('EUR', 'ESTR', 0.35, 0.010, 0.03),
-        ('GBP', 'SONIA', 0.25, 0.013, 0.045)
+        ('USD', 'USD-SOFR', 0.55, 0.008, 0.04),
+        ('EUR', 'EUR-ESTR', 0.35, 0.010, 0.03),
+        ('GBP', 'GBP-SONIA', 0.25, 0.013, 0.045)
     ) as c(currency_code, index_name, annual_kappa, annual_sigma, theta);
 
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
@@ -127,7 +127,7 @@ begin
     select
         v_dataset_id, v_tenant_id, c.currency_code, c.index_name,
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
-    from (values ('USD', 'SOFR'), ('EUR', 'ESTR'), ('GBP', 'SONIA')) as c(currency_code, index_name)
+    from (values ('USD', 'USD-SOFR'), ('EUR', 'EUR-ESTR'), ('GBP', 'GBP-SONIA')) as c(currency_code, index_name)
     cross join (values
         (0, 'SPOT', '1M', 'DEPO'),
         (1, 'SPOT', '3M', 'DEPO'),

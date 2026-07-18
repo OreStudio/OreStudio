@@ -694,7 +694,7 @@ begin
         end if;
 
         insert into ores_synthetic_ir_curve_generation_configs_tbl (
-            tenant_id, id, version, party_id, config_id,
+            tenant_id, id, version, party_id, config_id, folder_id,
             currency_code, index_name, process_type,
             kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
             fixed_leg_payment_frequency_code,
@@ -704,7 +704,7 @@ begin
             p_target_tenant_id,
             coalesce(existing.id, gen_random_uuid()),
             coalesce(existing.version, 0),
-            v_party_id, v_config_id,
+            v_party_id, v_config_id, v_folder_id,
             r.currency_code, r.index_name, r.process_type,
             r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
             coalesce(r.enabled, true),

@@ -28,12 +28,16 @@
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/IrCurveEditor.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
@@ -224,10 +228,16 @@ void MarketSimulatorWindow::setupToolbar() {
            "(e.g. Basic, Realistic)."));
 
     newFxRateAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New Feed"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New FX Rate"));
     newFxRateAction_->setToolTip(
-        tr("New feed — a currency pair to simulate (e.g. EUR/USD) and its price "
+        tr("New FX feed — a currency pair to simulate (e.g. EUR/USD) and its price "
            "model; belongs to the selected collection."));
+
+    newIrCurveAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("New IR Curve"));
+    newIrCurveAction_->setToolTip(
+        tr("New IR curve — a currency/index short-rate process to simulate (e.g. USD SOFR) "
+           "and its Curve Template; belongs to the selected collection."));
 
     toolbar_->addSeparator();
 
@@ -491,6 +501,10 @@ void MarketSimulatorWindow::setupConnections() {
     connect(newFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFeedClicked);
     connect(
         newFxRateAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFxRateClicked);
+    connect(newIrCurveAction_,
+            &QAction::triggered,
+            this,
+            &MarketSimulatorWindow::onNewIrCurveClicked);
     connect(editAction_, &QAction::triggered, this, &MarketSimulatorWindow::onEditClicked);
     connect(deleteAction_, &QAction::triggered, this, &MarketSimulatorWindow::onDeleteClicked);
     connect(
@@ -525,7 +539,9 @@ void MarketSimulatorWindow::reload() {
         bool success = false;
         std::vector<synthetic::domain::market_data_generation_config> feeds;
         std::vector<synthetic::domain::fx_spot_generation_config> fxPairs;
+        std::vector<synthetic::domain::ir_curve_generation_config> irCurves;
         std::vector<synthetic::domain::gmm_component> components;
+        std::vector<synthetic::domain::ir_curve_template_entry> irCurveEntries;
         std::vector<synthetic::domain::folder> folders;
         std::unordered_map<std::string, std::string> currencyNames;
         std::vector<std::string> runningSourceNames;
@@ -556,6 +572,14 @@ void MarketSimulatorWindow::reload() {
         }
         r.fxPairs = std::move(fxResp->fx_spot_generation_configs);
 
+        auto irResp = cm->process_authenticated_request(
+            m::get_ir_curve_generation_configs_request{.offset = 0, .limit = 1000});
+        if (!irResp) {
+            r.error = QString::fromStdString(irResp.error());
+            return r;
+        }
+        r.irCurves = std::move(irResp->ir_curve_generation_configs);
+
         auto compResp = cm->process_authenticated_request(
             m::get_gmm_components_request{.offset = 0, .limit = 1000});
         if (!compResp) {
@@ -563,6 +587,14 @@ void MarketSimulatorWindow::reload() {
             return r;
         }
         r.components = std::move(compResp->gmm_components);
+
+        auto irEntriesResp = cm->process_authenticated_request(
+            m::get_ir_curve_template_entries_request{.offset = 0, .limit = 1000});
+        if (!irEntriesResp) {
+            r.error = QString::fromStdString(irEntriesResp.error());
+            return r;
+        }
+        r.irCurveEntries = std::move(irEntriesResp->ir_curve_template_entries);
 
         auto folderResp =
             cm->process_authenticated_request(m::get_folders_request{.offset = 0, .limit = 1000});
@@ -582,6 +614,12 @@ void MarketSimulatorWindow::reload() {
             ores::marketdata::messaging::list_market_feed_configs_request{});
         if (listResp && listResp->success)
             r.runningSourceNames = std::move(listResp->running_source_names);
+
+        auto irListResp =
+            cm->process_authenticated_request(m::list_ir_curve_feed_configs_request{});
+        if (irListResp && irListResp->success)
+            for (auto& name : irListResp->running_source_names)
+                r.runningSourceNames.push_back(std::move(name));
 
         // Vintage-availability status, computed live server-side at every
         // reload (best-effort; an empty map just shows no vintage badge).
@@ -615,7 +653,9 @@ void MarketSimulatorWindow::reload() {
 
         self->feeds_.clear();
         self->fxPairs_.clear();
+        self->irCurves_.clear();
         self->components_.clear();
+        self->irCurveEntries_.clear();
         self->folders_.clear();
         self->currencyNames_ = std::move(result.currencyNames);
         self->runningSourceNames_ = {result.runningSourceNames.begin(),
@@ -626,13 +666,18 @@ void MarketSimulatorWindow::reload() {
             self->feeds_[boost::uuids::to_string(f.id)] = std::move(f);
         for (auto& fx : result.fxPairs)
             self->fxPairs_[boost::uuids::to_string(fx.id)] = std::move(fx);
+        for (auto& ir : result.irCurves)
+            self->irCurves_[boost::uuids::to_string(ir.id)] = std::move(ir);
         for (auto& c : result.components)
             self->components_[boost::uuids::to_string(c.id)] = std::move(c);
+        for (auto& e : result.irCurveEntries)
+            self->irCurveEntries_[boost::uuids::to_string(e.id)] = std::move(e);
         for (auto& f : result.folders)
             self->folders_[boost::uuids::to_string(f.id)] = std::move(f);
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << self->feeds_.size() << " feeds, "
                                   << self->fxPairs_.size() << " fx pairs, "
+                                  << self->irCurves_.size() << " ir curves, "
                                   << self->components_.size() << " components, "
                                   << self->folders_.size() << " folders.";
 
@@ -716,6 +761,47 @@ MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation
     return fxItem;
 }
 
+namespace {
+// index_name is stored as the full floating_index_type code (e.g. "USD-SOFR"), which already
+// bakes in currency_code -- strip that redundant "<CCY>-" prefix back off for display/subject
+// purposes. Mirrors ores::synthetic::service's own strip_currency_prefix() (server-side, not
+// reachable from Qt).
+std::string ir_index_display_suffix(const synthetic::domain::ir_curve_generation_config& ir) {
+    const auto prefix = ir.currency_code + "-";
+    if (ir.index_name.starts_with(prefix))
+        return ir.index_name.substr(prefix.size());
+    return ir.index_name;
+}
+}
+
+std::string
+MarketSimulatorWindow::irCurveSourceName(const synthetic::domain::ir_curve_generation_config& ir) {
+    auto lower = [](std::string s) {
+        std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        return s;
+    };
+    return "ir_curve." + lower(ir.currency_code) + "." + lower(ir_index_display_suffix(ir));
+}
+
+QStandardItem* MarketSimulatorWindow::buildIrCurveFeedItem(
+    const synthetic::domain::ir_curve_generation_config& ir, ImageCache* imageCache) {
+    const auto irId = boost::uuids::to_string(ir.id);
+    QString text =
+        QString::fromStdString(ir.currency_code + " " + ir_index_display_suffix(ir));
+    auto* item = new QStandardItem(text);
+    item->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
+    item->setData(QString::fromStdString(irId), NodeIdRole);
+
+    const QIcon base =
+        imageCache ? currency_flag_icon(*imageCache, ir.currency_code) :
+                    IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
+    item->setData(QVariant::fromValue(base), BaseIconRole);
+    item->setIcon(base);
+    return item;
+}
+
 void MarketSimulatorWindow::buildTree() {
     treeModel_->clear();
     treeModel_->setColumnCount(1);
@@ -728,6 +814,14 @@ void MarketSimulatorWindow::buildTree() {
     for (const auto& [fxId, fx] : fxPairs_)
         if (fx.folder_id.has_value())
             pairsByFolder[boost::uuids::to_string(*fx.folder_id)].push_back(&fx);
+
+    // IR curves grouped by their owning folder -- same shape as pairsByFolder, so any future
+    // asset class follows this pattern instead of a bespoke parallel tree branch.
+    std::map<std::string, std::vector<const synthetic::domain::ir_curve_generation_config*>>
+        irCurvesByFolder;
+    for (const auto& [irId, ir] : irCurves_)
+        if (ir.folder_id.has_value())
+            irCurvesByFolder[boost::uuids::to_string(*ir.folder_id)].push_back(&ir);
 
     // Folders grouped by parent ("" key = roots).
     std::map<std::string, std::vector<const synthetic::domain::folder*>> childrenByParent;
@@ -788,6 +882,16 @@ void MarketSimulatorWindow::buildTree() {
                     for (const auto* fx : pairs)
                         item->appendRow(buildFeedItem(*fx, imageCache_));
                 }
+
+                auto iit = irCurvesByFolder.find(folderId);
+                if (iit != irCurvesByFolder.end()) {
+                    auto curves = iit->second;
+                    std::sort(curves.begin(), curves.end(), [](const auto* a, const auto* b) {
+                        return a->currency_code + a->index_name < b->currency_code + b->index_name;
+                    });
+                    for (const auto* ir : curves)
+                        item->appendRow(buildIrCurveFeedItem(*ir, imageCache_));
+                }
             }
         };
 
@@ -829,7 +933,9 @@ void MarketSimulatorWindow::updateEmptyState() {
 }
 
 void MarketSimulatorWindow::updateStatusCounts() {
-    statusLabel_->setText(tr("%1 collections, %2 feeds").arg(feeds_.size()).arg(fxPairs_.size()));
+    statusLabel_->setText(tr("%1 collections, %2 feeds")
+                              .arg(feeds_.size())
+                              .arg(fxPairs_.size() + irCurves_.size()));
     emit statusChanged(statusLabel_->text());
 }
 
@@ -890,6 +996,37 @@ MarketSimulatorWindow::selectedFxPairs() const {
             const auto id = boost::uuids::to_string(fx.id);
             if (seen.insert(id).second)
                 result.push_back(fx);
+        }
+    }
+    return result;
+}
+
+std::vector<synthetic::domain::ir_curve_generation_config>
+MarketSimulatorWindow::irCurvesUnderIndex(const QModelIndex& idx) const {
+    std::vector<synthetic::domain::ir_curve_generation_config> result;
+    if (!idx.isValid())
+        return result;
+    auto* item = treeModel_->itemFromIndex(idx.sibling(idx.row(), 0));
+    std::vector<std::string> ids;
+    collectFeedIdsUnder(item, ids); // entity-agnostic: same traversal pairsUnderIndex() uses
+    for (const auto& id : ids) {
+        auto it = irCurves_.find(id);
+        if (it != irCurves_.end())
+            result.push_back(it->second);
+    }
+    return result;
+}
+
+std::vector<synthetic::domain::ir_curve_generation_config>
+MarketSimulatorWindow::selectedIrCurves() const {
+    std::vector<synthetic::domain::ir_curve_generation_config> result;
+    std::set<std::string> seen;
+    const auto indexes = feedsTree_->selectionModel()->selectedRows(0);
+    for (const auto& idx : indexes) {
+        for (const auto& ir : irCurvesUnderIndex(idx)) {
+            const auto id = boost::uuids::to_string(ir.id);
+            if (seen.insert(id).second)
+                result.push_back(ir);
         }
     }
     return result;
@@ -967,9 +1104,10 @@ void MarketSimulatorWindow::showSummaryForCurrent() {
             showFolderSummary(idx, tr("Group"), idx.data(Qt::DisplayRole).toString());
             break;
         case NodeType::Feed: {
-            auto it = fxPairs_.find(id);
-            if (it != fxPairs_.end())
+            if (auto it = fxPairs_.find(id); it != fxPairs_.end())
                 showFxPairSummary(it->second);
+            else if (auto irIt = irCurves_.find(id); irIt != irCurves_.end())
+                showIrCurveSummary(irIt->second);
             break;
         }
     }
@@ -979,6 +1117,7 @@ void MarketSimulatorWindow::showFeedSummary(
     const synthetic::domain::market_data_generation_config& feed) {
     unsubscribeTickChart();
     fxSummaryId_.clear();
+    irSummaryId_.clear();
     if (tickChartContainer_)
         tickChartContainer_->setVisible(false);
     clear_form(summaryForm_);
@@ -1022,6 +1161,7 @@ void MarketSimulatorWindow::showFeedSummary(
 
     feedSummaryId_ = feedId;
     fxSummaryId_.clear();
+    irSummaryId_.clear();
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
@@ -1030,6 +1170,7 @@ void MarketSimulatorWindow::showFolderSummary(const QModelIndex& idx,
                                               const QString& name) {
     unsubscribeTickChart();
     fxSummaryId_.clear();
+    irSummaryId_.clear();
     feedSummaryId_.clear();
     if (tickChartContainer_)
         tickChartContainer_->setVisible(false);
@@ -1074,6 +1215,7 @@ void MarketSimulatorWindow::markRunning(const std::vector<std::string>& sourceNa
     refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
     refreshFxSummaryIfCurrent();
+    refreshIrCurveSummaryIfCurrent();
 }
 
 void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNames) {
@@ -1084,6 +1226,7 @@ void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNa
     refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
     refreshFxSummaryIfCurrent();
+    refreshIrCurveSummaryIfCurrent();
 }
 
 // Recomputes item's icon bottom-up -- its stored plain BaseIconRole icon
@@ -1098,18 +1241,29 @@ MarketSimulatorWindow::refreshTreeItemStatus(QStandardItem* item) {
     const QIcon base = item->data(BaseIconRole).value<QIcon>();
     const auto type = static_cast<NodeType>(item->data(NodeTypeRole).toInt());
     if (type == NodeType::Feed) {
-        const auto fxId = item->data(NodeIdRole).toString().toStdString();
-        auto it = fxPairs_.find(fxId);
-        if (it == fxPairs_.end())
+        const auto id = item->data(NodeIdRole).toString().toStdString();
+
+        std::string sourceName;
+        bool vintageApplicable = false;
+        bool vintageInvalid = false;
+        if (auto it = fxPairs_.find(id); it != fxPairs_.end()) {
+            sourceName = it->second.source_name;
+            const auto vit = vintageValidByFx_.find(id);
+            vintageApplicable = vit != vintageValidByFx_.end();
+            vintageInvalid = vintageApplicable && !vit->second;
+        } else if (auto irIt = irCurves_.find(id); irIt != irCurves_.end()) {
+            sourceName = irCurveSourceName(irIt->second);
+            // No vintage concept for IR curve feeds yet -- see the
+            // seed-ir-curve-sample-data follow-on task.
+        } else {
             return {};
-        const bool running = runningSourceNames_.count(it->second.source_name) > 0;
+        }
 
         TreeStatus s;
-        s.running = running ? 1 : 0;
+        s.running = runningSourceNames_.count(sourceName) > 0 ? 1 : 0;
         s.total = 1;
-        const auto vit = vintageValidByFx_.find(fxId);
-        s.anyVintageApplicable = vit != vintageValidByFx_.end();
-        s.anyVintageInvalid = s.anyVintageApplicable && !vit->second;
+        s.anyVintageApplicable = vintageApplicable;
+        s.anyVintageInvalid = vintageInvalid;
         item->setIcon(composeBadgedIcon(base,
                                         runningBadge(s.running, 1),
                                         vintageBadge(s.anyVintageInvalid, s.anyVintageApplicable)));
@@ -1163,6 +1317,34 @@ void MarketSimulatorWindow::refreshFxSummaryIfCurrent() {
     }
 }
 
+void MarketSimulatorWindow::refreshIrCurveSummaryIfCurrent() {
+    if (irSummaryId_.empty() || currentNodeType() != NodeType::Feed ||
+        currentNodeId() != irSummaryId_)
+        return;
+    auto it = irCurves_.find(irSummaryId_);
+    if (it == irCurves_.end())
+        return;
+    const auto sourceName = irCurveSourceName(it->second);
+    const bool running = runningSourceNames_.count(sourceName) > 0;
+    heroStatus_->setText(running ? tr("●  Running") : tr("○  Stopped"));
+    heroStatus_->setStyleSheet(running ? "color: rgb(60,180,80); font-weight: bold;" :
+                                         "color: gray;");
+    if (tickChartContainer_) {
+        if (running && !tickSubscription_) {
+            tickSamples_.clear();
+            if (tickSeries_)
+                tickSeries_->clear();
+            if (tickPosMarker_)
+                tickPosMarker_->clear();
+            tickChartPlaceholder_->setVisible(false);
+            subscribeTickChart(sourceName);
+        } else if (!running && tickSubscription_) {
+            unsubscribeTickChart();
+            tickChartPlaceholder_->setVisible(true);
+        }
+    }
+}
+
 void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedId) {
     if (feedId.empty() || currentNodeType() != NodeType::Collection || currentNodeId() != feedId)
         return;
@@ -1184,6 +1366,7 @@ void MarketSimulatorWindow::showFxPairSummary(
         feedBtnRow->setVisible(false);
     feedStatsLabel_->setVisible(false);
     feedSummaryId_.clear();
+    irSummaryId_.clear();
     fxSummaryId_ = boost::uuids::to_string(fx.id);
 
     clear_form(summaryForm_);
@@ -1271,6 +1454,94 @@ void MarketSimulatorWindow::showFxPairSummary(
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
+void MarketSimulatorWindow::showIrCurveSummary(
+    const synthetic::domain::ir_curve_generation_config& ir) {
+    // Tear down any existing tick subscription before switching curves -- same rationale as
+    // showFxPairSummary's own teardown.
+    unsubscribeTickChart();
+
+    // Hide feed-level controls when switching to an IR curve view.
+    if (auto* feedBtnRow =
+            qobject_cast<QWidget*>(feedStartButton_->property("feedBtnRow").value<QObject*>()))
+        feedBtnRow->setVisible(false);
+    feedStatsLabel_->setVisible(false);
+    feedSummaryId_.clear();
+    fxSummaryId_.clear();
+    irSummaryId_ = boost::uuids::to_string(ir.id);
+
+    clear_form(summaryForm_);
+
+    const QString ccyCode = QString::fromStdString(ir.currency_code);
+    const QString indexName = QString::fromStdString(ir_index_display_suffix(ir));
+    const auto sourceName = irCurveSourceName(ir);
+
+    // Populate the same TradingView-style hero header FX uses, but with a single circular flag
+    // (one currency) instead of the overlapping base/quote pair badge.
+    summaryTitle_->setVisible(false);
+    if (imageCache_) {
+        const qreal dpr = devicePixelRatioF();
+        const int h = static_cast<int>(std::lround(56 * dpr));
+        const QPixmap flagPm = imageCache_->getCurrencyFlagPixmap(ir.currency_code, h);
+        heroFlags_->setPixmap(circular_flag(flagPm, 56, dpr));
+    }
+    heroTitle_->setText(ccyCode + " " + indexName);
+    heroSubtitle_->setText(ccyCode + " • " + QString::fromStdString(sourceName));
+    const bool isRunning = runningSourceNames_.count(sourceName) > 0;
+    heroStatus_->setText(isRunning ? tr("●  Running") : tr("○  Stopped"));
+    heroStatus_->setStyleSheet(isRunning ? "color: rgb(60,180,80); font-weight: bold;" :
+                                           "color: gray;");
+    summaryHero_->setVisible(true);
+
+    summaryForm_->addRow(tr("Process"), new QLabel(QString::fromStdString(ir.process_type),
+                                                    summaryPage_));
+    summaryForm_->addRow(tr("Kappa"), new QLabel(QString::number(ir.kappa), summaryPage_));
+    summaryForm_->addRow(tr("Theta"), new QLabel(QString::number(ir.theta), summaryPage_));
+    summaryForm_->addRow(tr("Sigma"), new QLabel(QString::number(ir.sigma), summaryPage_));
+    summaryForm_->addRow(tr("Initial rate"),
+                         new QLabel(QString::number(ir.initial_rate), summaryPage_));
+    summaryForm_->addRow(tr("Fixed leg frequency"),
+                         new QLabel(QString::fromStdString(ir.fixed_leg_payment_frequency_code),
+                                    summaryPage_));
+    {
+        const int seconds =
+            ir.ticks_per_hour > 0 ?
+                std::max(1, static_cast<int>(std::lround(3600.0 / ir.ticks_per_hour))) :
+                1;
+        summaryForm_->addRow(tr("Update frequency"),
+                             new QLabel(tr("every %1 s").arg(seconds), summaryPage_));
+    }
+
+    // Show the tick chart; subscribe if the curve is currently running. Same chart infra FX
+    // uses -- ticks arrive on the same per-source subject shape regardless of asset class.
+    if (tickChartContainer_) {
+        tickSamples_.clear();
+        if (tickSeries_)
+            tickSeries_->clear();
+        if (tickPosMarker_)
+            tickPosMarker_->clear();
+        tickChartContainer_->setVisible(true);
+
+        const QString title = ccyCode + " " + indexName;
+        if (auto* ch = tickChartView_->chart()) {
+            ch->setTitle(title + " (Rate)");
+            QFont tf = ch->titleFont();
+            tf.setPointSizeF(8.5);
+            ch->setTitleFont(tf);
+            ch->setTitleBrush(QBrush(QColor(0xCB, 0xD5, 0xE1)));
+        }
+        if (tickChartView_)
+            tickChartView_->setText(title);
+        if (isRunning) {
+            tickChartPlaceholder_->setVisible(false);
+            subscribeTickChart(sourceName);
+        } else {
+            tickChartPlaceholder_->setVisible(true);
+        }
+    }
+
+    summaryStack_->setCurrentWidget(summaryPage_);
+}
+
 void MarketSimulatorWindow::onNewFeedClicked() {
     BOOST_LOG_SEV(lg(), info) << "Opening New Feed dialog.";
     FeedDialog dlg(clientManager_, username_, this);
@@ -1289,6 +1560,84 @@ void MarketSimulatorWindow::onNewFxRateClicked() {
         return;
     }
     openFxEditorForNew(feedId);
+}
+
+void MarketSimulatorWindow::onNewIrCurveClicked() {
+    const auto feedId = resolveFeedId();
+    if (feedId.empty()) {
+        emit errorOccurred(tr("Select a feed first."));
+        QMessageBox::information(this,
+                                 tr("Select a feed"),
+                                 tr("Select a feed (or one of its IR curves) before adding an "
+                                    "IR curve."));
+        return;
+    }
+    openIrCurveEditorForNew(feedId);
+}
+
+void MarketSimulatorWindow::openIrCurveEditorForNew(const std::string& feedId) {
+    BOOST_LOG_SEV(lg(), info) << "Opening IR curve editor (new) under feed " << feedId << ".";
+
+    auto* editor = new IrCurveEditor(clientManager_,
+                                     imageCache_,
+                                     changeReasonCache_,
+                                     username_,
+                                     uuid_from_string(feedId),
+                                     feedNameFor(feedId),
+                                     this);
+
+    auto* sub = new DetachableMdiSubWindow(window());
+    sub->setWidget(editor);
+    sub->setWindowTitle(tr("New IR Curve"));
+    sub->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(editor, &IrCurveEditor::savedOk, this, &MarketSimulatorWindow::reload);
+    connect(editor, &IrCurveEditor::statusChanged, this, &MarketSimulatorWindow::statusChanged);
+    connect(editor, &IrCurveEditor::errorOccurred, this, &MarketSimulatorWindow::errorOccurred);
+    connect(editor, &DetailDialogBase::closeRequested, sub, &QWidget::close);
+
+    if (auto* mdi = window()->findChild<QMdiArea*>())
+        mdi->addSubWindow(sub);
+    sub->resize(editor->sizeHint());
+    sub->show();
+}
+
+void MarketSimulatorWindow::openIrCurveEditorForEdit(
+    const synthetic::domain::ir_curve_generation_config& ir) {
+    const auto irId = boost::uuids::to_string(ir.id);
+    BOOST_LOG_SEV(lg(), info) << "Opening IR curve editor (edit) for " << irId << ".";
+
+    std::vector<synthetic::domain::ir_curve_template_entry> entries;
+    for (const auto& [entryId, e] : irCurveEntries_) {
+        if (boost::uuids::to_string(e.ir_curve_config_id) == irId)
+            entries.push_back(e);
+    }
+
+    const auto feedId = boost::uuids::to_string(ir.config_id);
+    auto* editor = new IrCurveEditor(clientManager_,
+                                     imageCache_,
+                                     changeReasonCache_,
+                                     username_,
+                                     ir,
+                                     feedNameFor(feedId),
+                                     entries,
+                                     this);
+
+    auto* sub = new DetachableMdiSubWindow(window());
+    sub->setWidget(editor);
+    sub->setWindowTitle(
+        QString::fromStdString(ir.currency_code + " " + ir_index_display_suffix(ir)));
+    sub->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(editor, &IrCurveEditor::savedOk, this, &MarketSimulatorWindow::reload);
+    connect(editor, &IrCurveEditor::statusChanged, this, &MarketSimulatorWindow::statusChanged);
+    connect(editor, &IrCurveEditor::errorOccurred, this, &MarketSimulatorWindow::errorOccurred);
+    connect(editor, &DetailDialogBase::closeRequested, sub, &QWidget::close);
+
+    if (auto* mdi = window()->findChild<QMdiArea*>())
+        mdi->addSubWindow(sub);
+    sub->resize(editor->sizeHint());
+    sub->show();
 }
 
 void MarketSimulatorWindow::openFxEditorForNew(const std::string& feedId) {
@@ -1379,10 +1728,10 @@ void MarketSimulatorWindow::editEntity(NodeType type, const std::string& id) {
             break;
         }
         case NodeType::Feed: {
-            auto it = fxPairs_.find(id);
-            if (it == fxPairs_.end())
-                return;
-            openFxEditorForEdit(it->second);
+            if (auto it = fxPairs_.find(id); it != fxPairs_.end())
+                openFxEditorForEdit(it->second);
+            else if (auto irIt = irCurves_.find(id); irIt != irCurves_.end())
+                openIrCurveEditorForEdit(irIt->second);
             break;
         }
         case NodeType::Root:
@@ -1472,13 +1821,14 @@ void MarketSimulatorWindow::updateToolbarState() {
     // are pure tree structure.
     const bool isEditableNode =
         hasSelection && (type == NodeType::Collection || type == NodeType::Feed);
-    const bool anyFxSelected = !selectedFxPairs().empty();
+    const bool anySelected = !selectedFxPairs().empty() || !selectedIrCurves().empty();
 
     newFxRateAction_->setEnabled(hasFeedContext);
+    newIrCurveAction_->setEnabled(hasFeedContext);
     editAction_->setEnabled(isEditableNode);
     deleteAction_->setEnabled(isEditableNode);
-    startFeedAction_->setEnabled(anyFxSelected);
-    stopFeedAction_->setEnabled(anyFxSelected);
+    startFeedAction_->setEnabled(anySelected);
+    stopFeedAction_->setEnabled(anySelected);
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {
@@ -1487,11 +1837,15 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     // of enumerating and firing one request per feed client-side. Anything
     // else (a Feed leaf, a multi-selection, or a folder-less Collection)
     // falls back to the per-feed path, which already cascades correctly.
+    // The folder-scoped request only ever resolves fx_spot_generation_config rows
+    // server-side, so IR curves in the current selection always go through the
+    // per-feed path in addition, never through the folder fast-path.
     const auto folderId = selectedFolderId();
     if (!folderId.empty())
         startFolderAsync(folderId);
     else
         startPairsAsync(selectedFxPairs());
+    startIrCurvesAsync(selectedIrCurves());
 }
 
 void MarketSimulatorWindow::startFolderAsync(const std::string& folderId) {
@@ -1638,6 +1992,7 @@ void MarketSimulatorWindow::onStopFeedClicked() {
         stopFolderAsync(folderId);
     else
         stopPairsAsync(selectedFxPairs());
+    stopIrCurvesAsync(selectedIrCurves());
 }
 
 void MarketSimulatorWindow::stopFolderAsync(const std::string& folderId) {
@@ -1732,6 +2087,131 @@ void MarketSimulatorWindow::stopPairsAsync(
         const QString msg = self->tr("Stopped %1 feed(s).").arg(ok);
         self->statusLabel_->setText(msg);
         emit self->statusChanged(msg);
+        if (!failed.isEmpty())
+            QMessageBox::critical(
+                self, self->tr("Stop failed"), self->tr("Failed to stop:\n") + failed.join("\n"));
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void MarketSimulatorWindow::startIrCurvesAsync(
+    std::vector<synthetic::domain::ir_curve_generation_config> curves) {
+    if (curves.empty())
+        return;
+
+    // Simpler than startPairsAsync(): the server resolves everything (Curve Template entries,
+    // refdata catalog) from config_id alone -- no GMM-component lookup or feed_binding step to
+    // replicate client-side.
+    BOOST_LOG_SEV(lg(), info) << "Starting " << curves.size() << " IR curve feed(s).";
+    QPointer<MarketSimulatorWindow> self = this;
+    auto* cm = clientManager_;
+
+    using Results = std::vector<std::pair<std::string, QString>>; // source_name -> error (empty=ok)
+    auto task = [cm, curves]() -> Results {
+        Results results;
+        for (const auto& ir : curves) {
+            synthetic::messaging::start_ir_curve_feed_request req;
+            req.config_id = boost::uuids::to_string(ir.id);
+            const auto sourceName = irCurveSourceName(ir);
+            auto resp = cm->process_authenticated_request(req);
+            if (!resp)
+                results.push_back({sourceName, QString::fromStdString(resp.error())});
+            else if (!resp->success)
+                results.push_back({sourceName, QString::fromStdString(resp->message)});
+            else
+                results.push_back({sourceName, {}});
+        }
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<Results>(self);
+    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        int ok = 0;
+        QStringList failed;
+        std::vector<std::string> started;
+        for (const auto& [key, err] : results) {
+            if (err.isEmpty()) {
+                BOOST_LOG_SEV(lg(), info) << "Started IR curve feed " << key << ".";
+                started.push_back(key);
+                ++ok;
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Start failed for " << key << ": " << err.toStdString();
+                failed << QString::fromStdString(key) + ": " + err;
+            }
+        }
+        if (!started.empty())
+            self->markRunning(started);
+        if (ok > 0) {
+            const QString msg = self->tr("Started %1 IR curve feed(s).").arg(ok);
+            self->statusLabel_->setText(msg);
+            emit self->statusChanged(msg);
+        }
+        if (!failed.isEmpty())
+            QMessageBox::critical(
+                self, self->tr("Start failed"), self->tr("Failed to start:\n") + failed.join("\n"));
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void MarketSimulatorWindow::stopIrCurvesAsync(
+    std::vector<synthetic::domain::ir_curve_generation_config> curves) {
+    if (curves.empty())
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Stopping " << curves.size() << " IR curve feed(s).";
+    QPointer<MarketSimulatorWindow> self = this;
+    auto* cm = clientManager_;
+
+    using Results = std::vector<std::pair<std::string, QString>>;
+    auto task = [cm, curves]() -> Results {
+        Results results;
+        for (const auto& ir : curves) {
+            synthetic::messaging::stop_ir_curve_feed_request req;
+            req.config_id = boost::uuids::to_string(ir.id);
+            const auto sourceName = irCurveSourceName(ir);
+            auto resp = cm->process_authenticated_request(req);
+            if (!resp)
+                results.push_back({sourceName, QString::fromStdString(resp.error())});
+            else if (!resp->success)
+                results.push_back({sourceName, QString::fromStdString(resp->message)});
+            else
+                results.push_back({sourceName, {}});
+        }
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<Results>(self);
+    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        int ok = 0;
+        QStringList failed;
+        std::vector<std::string> stopped;
+        for (const auto& [key, err] : results) {
+            if (err.isEmpty()) {
+                BOOST_LOG_SEV(lg(), info) << "Stopped IR curve feed " << key << ".";
+                stopped.push_back(key);
+                ++ok;
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Stop failed for " << key << ": " << err.toStdString();
+                failed << QString::fromStdString(key) + ": " + err;
+            }
+        }
+        if (!stopped.empty())
+            self->markStopped(stopped);
+        if (ok > 0) {
+            const QString msg = self->tr("Stopped %1 IR curve feed(s).").arg(ok);
+            self->statusLabel_->setText(msg);
+            emit self->statusChanged(msg);
+        }
         if (!failed.isEmpty())
             QMessageBox::critical(
                 self, self->tr("Stop failed"), self->tr("Failed to stop:\n") + failed.join("\n"));

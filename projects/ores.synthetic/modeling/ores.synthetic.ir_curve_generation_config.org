@@ -83,12 +83,22 @@ std::string("USD")
 :cpp_type: std::string
 :END:
 
-Floating-rate index this curve represents (e.g. "SOFR", "ESTR", "SONIA").
-Free text: the universe of index names is currency/convention-specific
-and not yet its own refdata catalogue.
+Floating-rate index this curve represents, stored as the full ISDA/ORE
+code (references =ores.refdata.floating_index_type.code=, e.g.
+"USD-SOFR", "EUR-ESTR", "GBP-SONIA") rather than a bare suffix
+("SOFR") -- =floating_index_type.code= already bakes in currency, and
+storing the full code lets this FK reuse the entity's own generated
+single-argument validator directly (=ores_refdata_validate_floating_index_type_fn(tenant_id,
+value)=) instead of a bespoke composite validator the codegen
+Insert-trigger Validations mechanism can't express (it always calls
+=fn(tenant_id, NEW.column)=, one column in, one value out).
+=ir_curve_feed_source_name()= and display code strip the redundant
+=<currency_code>-= prefix back off for the "ir_curve.<ccy>.<idx>"
+subject and UI labels, so the wire subject/tree text are unaffected by
+this storage change.
 
 #+begin_src cpp :name generator
-std::string("SOFR")
+std::string("USD-SOFR")
 #+end_src
 
 * Columns
@@ -215,6 +225,25 @@ Deposit/FRA entries, which have no intermediate schedule.
 std::string("Annual")
 #+end_src
 
+** folder_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The =folder= this curve lives under (the instrument-type folder,
+e.g. "IR Curves", nested under an asset-class folder under this
+curve's owning collection). Real, queryable hierarchy position --
+not parsed out of =source_name=, which stays a display/NATS-subject
+string. Nullable for now: only the publish-from-dq path populates
+it; manual creation doesn't yet resolve/create folders -- follow-up
+work. Mirrors =fx_spot_generation_config.folder_id= exactly.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -241,6 +270,13 @@ std::string("Annual")
 :nullable:      false
 :END:
 
+** folder_id
+:PROPERTIES:
+:table:         ores_synthetic_folders_tbl
+:error_message: Invalid folder_id: %. No active folder found with this id.
+:nullable:      true
+:END:
+
 * Insert trigger
 ** Validations
 
@@ -248,6 +284,7 @@ std::string("Annual")
 |----------------------------------+--------------------------------------------------|
 | process_type                     | ores_synthetic_validate_yield_curve_process_type_fn |
 | fixed_leg_payment_frequency_code | ores_refdata_validate_payment_frequency_fn      |
+| index_name                       | ores_refdata_validate_floating_index_type_fn    |
 
 * Validation function
 :PROPERTIES:

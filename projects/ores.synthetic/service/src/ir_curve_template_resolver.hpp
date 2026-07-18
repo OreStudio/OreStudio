@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
 
+#include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
@@ -119,6 +120,18 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
  * every curve feed, not just the one being started.
  */
 std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::database::context ctx);
+
+/**
+ * @brief Derives one resolved entry's published rate from a short-rate process's
+ * discount_factor()s, dispatching on curve_role (DEPOSIT/FRA/SWAP) to the matching
+ * curve_instrument_pricer formula.
+ *
+ * Shared by ir_curve_feed's tick loop and the stateless curve-shape preview handler
+ * (ir_curve_preview_handler) -- both need "one process state -> one entry's rate", so this is
+ * factored out rather than duplicated between them.
+ */
+double price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
+                            const ir_curve_resolved_entry& entry);
 
 }
 

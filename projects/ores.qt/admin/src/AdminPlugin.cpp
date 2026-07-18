@@ -153,13 +153,13 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     if (!(smc.file_menu && smc.user_accounts_menu))
         return;
 
-    // ---- File > Configuration ----------------------------------------------
+    // ---- File > System (Settings, Test Scenario Runner, Reset) -----------
     smc.file_menu->addSeparator();
-    auto* config = smc.file_menu->addMenu(tr("Confi&guration"));
-    configMenu_ = config;
+    auto* systemMenu = smc.file_menu->addMenu(tr("S&ystem"));
+    configMenu_ = systemMenu;
     configMenu_->setEnabled(false); // enabled on login, like everything below it
 
-    act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
+    act_system_settings_ = systemMenu->addAction(ico(Icon::Flag), tr("&System Settings"));
     connect(act_system_settings_, &QAction::triggered, this, [this]() {
         if (systemSettingController_)
             systemSettingController_->showListWindow();
@@ -204,7 +204,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     auto* actOnboardTenant = admin->addAction(tr("&Onboard Tenant..."));
     connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
 
-    // ---- File > Testing > QA Validation Runner ----------------------------
+    // ---- File > System > Test Scenario Runner ------------------------------
     // A local, file-based testing tool (parses/rewrites test_scenario org
     // docs directly, no domain data) — unlike everything else this plugin
     // wires up, it needs neither a session nor NATS, so it's built here in
@@ -213,7 +213,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     // MDI subwindow (like every other window in the app), not a dock —
     // the tester needs to move/resize it freely while working through a
     // scenario alongside the dialog under test.
-    smc.file_menu->addSeparator();
+    systemMenu->addSeparator();
     if (smc.main_window && smc.mdi_area) {
         // Same lifecycle as every other list window in the app (see
         // EntityController::bring_window_to_front): closing destroys it
@@ -233,7 +233,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
                 qaValidationRunnerWidget_->setMdiArea(mdi_area);
                 qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
                 qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
-                qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
+                qaValidationRunnerWindow_->setWindowTitle(tr("Test Scenario Runner"));
                 qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
                 qaValidationRunnerWindow_->setAttribute(Qt::WA_DeleteOnClose);
                 mdi_area->addSubWindow(qaValidationRunnerWindow_);
@@ -253,12 +253,11 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
                         &QaValidationRunnerWidget::errorOccurred,
                         main_window,
                         [main_window](const QString& message) {
-                            QMessageBox::warning(main_window, tr("Scenario Runner"), message);
+                            QMessageBox::warning(main_window, tr("Test Scenario Runner"), message);
                         });
             };
 
-        auto* testingMenu = smc.file_menu->addMenu(tr("&Testing"));
-        auto* actQaRunner = testingMenu->addAction(tr("Scenario Runner"));
+        auto* actQaRunner = systemMenu->addAction(tr("&Test Scenario Runner"));
         connect(actQaRunner,
                 &QAction::triggered,
                 this,
@@ -288,7 +287,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         actQaRunner->setVisible(true);
 
         // --open-scenario: launch straight into a scenario, so the tester
-        // doesn't have to click through File > Testing and Open every
+        // doesn't have to click through File > System and Open every
         // time they restart the client to pick up a rebuild.
         if (!smc.open_scenario_path.isEmpty()) {
             ensure_qa_runner_window();
@@ -300,10 +299,10 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         }
     }
 
-    // ---- File > Reset System (after Testing) ------------------------------
-    smc.file_menu->addSeparator();
+    // ---- File > System > Reset System --------------------------------------
+    systemMenu->addSeparator();
 
-    act_reset_system_ = smc.file_menu->addAction(ico(Icon::Warning), tr("&Reset System..."));
+    act_reset_system_ = systemMenu->addAction(ico(Icon::Warning), tr("&Reset System..."));
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
     act_reset_system_->setEnabled(false); // enabled on login

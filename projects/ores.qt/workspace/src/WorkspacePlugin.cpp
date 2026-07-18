@@ -64,13 +64,13 @@ void WorkspacePlugin::on_login(const plugin_context& ctx) {
 
 void WorkspacePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
-    if (!smc.data_management_menu)
+                               << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
+    if (!smc.data_transfer_menu)
         return;
 
-    smc.data_management_menu->addSeparator();
+    smc.data_transfer_menu->addSeparator();
 
-    act_workspaces_ = smc.data_management_menu->addAction(
+    act_workspaces_ = smc.data_transfer_menu->addAction(
         IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor),
         tr("&Manage Workspaces"));
     connect(act_workspaces_, &QAction::triggered, this, [this]() {

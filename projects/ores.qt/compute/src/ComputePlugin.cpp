@@ -197,7 +197,7 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-                               << " system=" << (smc.system_menu ? "ok" : "null")
+                               << " message_queue=" << (smc.message_queue_menu ? "ok" : "null")
                                << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
 
     // ---- Analytics menu: reporting + compute items ----------------------
@@ -265,12 +265,9 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // ---- System > Message Queue (before Telemetry) -----------------------
-    if (smc.system_menu && smc.telemetry_menu) {
-        auto* telemetryAction = smc.telemetry_menu->menuAction();
-
-        auto* msgQueue = new QMenu(tr("&Message Queue"), smc.system_menu);
-        smc.system_menu->insertMenu(telemetryAction, msgQueue);
+    // ---- Operations > Message Queue ---------------------------------------
+    if (smc.message_queue_menu && smc.telemetry_menu) {
+        auto* msgQueue = smc.message_queue_menu;
         messageQueueMenu_ = msgQueue;
         messageQueueMenu_->setEnabled(false); // enabled on login
 
@@ -280,7 +277,7 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
                 queueMonitorController_->showListWindow();
         });
 
-        // ---- System > Telemetry > Service Dashboard (first item) --------
+        // ---- Operations > Telemetry > Service Dashboard (first item) ----
         auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty() ?
                                          nullptr :
                                          smc.telemetry_menu->actions().first();

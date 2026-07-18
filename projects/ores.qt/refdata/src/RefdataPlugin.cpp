@@ -663,9 +663,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
-                               << " data_management=" << (smc.data_management_menu ? "ok" : "null")
-                               << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
+                               << " reference_data=" << (smc.reference_data_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
@@ -992,6 +990,17 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             });
         }
 
+        // Portfolio Codes submenu: split out from Book Codes since
+        // purpose_type classifies Portfolios, not Books, despite the
+        // similarly-named book_purpose_type — distinct entities.
+        auto* menuPortfolioCodes = menuCodes->addMenu(tr("&Portfolio Codes"));
+        auto* actPurposeTypes =
+            menuPortfolioCodes->addAction(ico(Icon::Flag), tr("&Purpose Types"));
+        connect(actPurposeTypes, &QAction::triggered, this, [this]() {
+            if (purposeTypeController_)
+                purposeTypeController_->showListWindow();
+        });
+
         ref->addSeparator();
 
         // Cross Rates Matrix submenu: configuration data (changes
@@ -1018,21 +1027,6 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actCrmTopology, &QAction::triggered, this, [this]() {
             if (crmTopologyConfigController_)
                 crmTopologyConfigController_->showListWindow();
-        });
-    }
-
-    // ---- Trading Codes menu — contribute Purpose Types ------------------
-    // Book Statuses and Regulatory Book Types are reference-data
-    // classification lookups, not trading codes -- they live in the
-    // Reference Data menu's "Book Codes" submenu instead (see create_menus()).
-    auto* tc = smc.trading_codes_menu;
-    if (tc) {
-        auto* actPurposeTypes =
-            tc->addAction(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
-                          tr("&Purpose Types"));
-        connect(actPurposeTypes, &QAction::triggered, this, [this]() {
-            if (purposeTypeController_)
-                purposeTypeController_->showListWindow();
         });
     }
 }

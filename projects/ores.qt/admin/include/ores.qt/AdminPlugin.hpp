@@ -77,12 +77,13 @@ private:
     QAction* act_reset_system_{nullptr};
 
     /**
-     * @brief The Configuration/Administration submenus, disabled until
-     * login (unlike &Testing, everything under these needs a live
-     * session — see updateMenuState()'s comment on why the top-level
-     * &System menu itself no longer carries a blanket pre-login gate).
+     * @brief The User Accounts submenu, disabled until login — unlike
+     * &Test Scenario Runner (which needs neither a session nor NATS and
+     * stays reachable pre-login), everything under here needs a live
+     * session. System Settings is gated individually via
+     * act_system_settings_ instead, since it's a sibling of Test
+     * Scenario Runner inside the always-enabled &System submenu.
      */
-    QMenu* configMenu_{nullptr};
     QMenu* adminMenu_{nullptr};
 
     std::unique_ptr<AccountController> accountController_;

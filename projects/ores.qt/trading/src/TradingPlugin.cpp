@@ -131,28 +131,21 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::setup_menus — populate Trading Codes submenu and Data Transfer menu.
+// IPlugin::setup_menus — populate the Data Transfer menu.
 // ---------------------------------------------------------------------------
 void TradingPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null")
-                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+                               << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // Save reference so create_menus() can append it to the Trading menu.
-    // RefdataPlugin contributes Purpose Types, Book Statuses, and Regulatory
-    // Book Types to this same shared menu -- TradingPlugin no longer adds
-    // entries here itself, only carries the reference through to display it.
-    trading_codes_menu_ = smc.trading_codes_menu;
-
-    // ---- Data Management menu — contribute Import ORE Data --------------
-    if (smc.data_management_menu) {
-        smc.data_management_menu->addSeparator();
+    // ---- Data Transfer menu — contribute Import ORE Data -----------------
+    if (smc.data_transfer_menu) {
+        smc.data_transfer_menu->addSeparator();
         auto* actImportOre =
-            smc.data_management_menu->addAction(ico(Icon::ImportOre), tr("&Import ORE Data..."));
+            smc.data_transfer_menu->addAction(ico(Icon::ImportOre), tr("&Import ORE Data..."));
         connect(actImportOre, &QAction::triggered, this, [this]() {
             if (oreImportController_)
                 oreImportController_->trigger(ctx_.main_window);
@@ -267,12 +260,6 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (tradeController_)
             tradeController_->showListWindow();
     });
-
-    // Append the Trading Codes submenu (populated during setup_menus).
-    if (trading_codes_menu_) {
-        menuTrading->addSeparator();
-        menuTrading->addMenu(trading_codes_menu_);
-    }
 
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuTrading};

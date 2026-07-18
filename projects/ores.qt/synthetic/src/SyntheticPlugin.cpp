@@ -252,42 +252,42 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
     });
 
     syntheticMenu->addSeparator();
-    auto* advancedMenu = syntheticMenu->addMenu(tr("&Advanced (raw tables)"));
+    auto* configMenu = syntheticMenu->addMenu(tr("&Configuration"));
 
-    auto* actConfigs = advancedMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
+    auto* actConfigs = configMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
     connect(actConfigs, &QAction::triggered, this, [this]() {
         if (configController_)
             configController_->showListWindow();
     });
 
-    auto* actFxSpot = advancedMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
+    auto* actFxSpot = configMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
     connect(actFxSpot, &QAction::triggered, this, [this]() {
         if (fxSpotConfigController_)
             fxSpotConfigController_->showListWindow();
     });
 
-    auto* actGmm = advancedMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
+    auto* actGmm = configMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
     connect(actGmm, &QAction::triggered, this, [this]() {
         if (gmmComponentController_)
             gmmComponentController_->showListWindow();
     });
 
     auto* actIrCurveConfigs =
-        advancedMenu->addAction(ico(Icon::Chart), tr("IR Curve &Generation Configs"));
+        configMenu->addAction(ico(Icon::Chart), tr("IR Curve &Generation Configs"));
     connect(actIrCurveConfigs, &QAction::triggered, this, [this]() {
         if (irCurveGenerationConfigController_)
             irCurveGenerationConfigController_->showListWindow();
     });
 
     auto* actIrCurveTemplateEntries =
-        advancedMenu->addAction(ico(Icon::Table), tr("IR Curve &Template Entries"));
+        configMenu->addAction(ico(Icon::Table), tr("IR Curve &Template Entries"));
     connect(actIrCurveTemplateEntries, &QAction::triggered, this, [this]() {
         if (irCurveTemplateEntryController_)
             irCurveTemplateEntryController_->showListWindow();
     });
 
     auto* actYieldCurveProcessTypes =
-        advancedMenu->addAction(ico(Icon::Tag), tr("&Yield Curve Process Types"));
+        configMenu->addAction(ico(Icon::Tag), tr("&Yield Curve Process Types"));
     connect(actYieldCurveProcessTypes, &QAction::triggered, this, [this]() {
         if (yieldCurveProcessTypeController_)
             yieldCurveProcessTypeController_->showListWindow();

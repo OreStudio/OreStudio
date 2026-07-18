@@ -45,12 +45,12 @@ Data), not the DQ entity migration itself.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-16                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-18                               |
 
 * Acceptance
 
@@ -66,6 +66,23 @@ Data), not the DQ entity migration itself.
   decides what moves in/out per this story's target structure, and
   does the actual =QMenu=/plugin rewiring for everything that ends up
   there.
+- Final structure (four top-level menus, down from the original
+  seven): =File= (Connectivity, Current User, System — app chrome
+  and personal actions); =Reference Data= (cleaned up, done in the
+  first task); =Operations= (Scheduler, Workflows, Data Transfer,
+  Telemetry, Message Queue, User Accounts — renamed from
+  Administration to avoid colliding with File's Current User); =Data
+  &Quality= (Badges, Coding Schemes — renamed from Classifications to
+  avoid colliding with Reference Data's own Classifications submenu,
+  Audit Trail, Data Catalogue — moved here rather than Operations
+  since every entity is =ores.dq=-backed). =Data Management= and the
+  single-item =Trading Codes= submenu are both retired.
+- =purpose_type= (ex-Trading Codes) turned out to classify
+  Portfolios, not Books, despite the similarly-named
+  =book_purpose_type= — landed in its own new Portfolio Codes
+  submenu rather than Book Codes; a backlog capture tracks the
+  proper backend rename (=purpose_type= → =portfolio_purpose_type=)
+  as separate follow-up work.
 
 * Tasks
 
@@ -73,6 +90,7 @@ Data), not the DQ entity migration itself.
 |------+-------+-------+-----+-------------|
 | [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] | DONE | 2026-07-18 | 2026-07-18 | Audit current Reference Data menu entries, propose a target taxonomy with rationale, sign-off, then implement. |
+| [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] | DONE | 2026-07-18 | 2026-07-18 | Audit System, Account, and Operations menus (plus Data Management, since Operations' target absorbs Data Transfer/Data Catalogue from it), propose a target taxonomy with rationale for sign-off before implementing. |
 
 * Out of scope
 

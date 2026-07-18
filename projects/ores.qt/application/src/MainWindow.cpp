@@ -463,15 +463,19 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // Menus are created once here and live for the application lifetime.
     // on_login() / on_logout() enable/disable them without recreating them.
     //
-    // Insertion point: before &System so plugin menus sit between File and
-    // System, keeping System/Window/Help always last.
-    auto* systemAction = ui_->menuSystem->menuAction();
+    // Insertion point: before &Window so plugin menus sit between File and
+    // Window, keeping Window/Help always last. File holds all app-chrome:
+    // connection lifecycle, personal actions, and Testing/Reset System
+    // (the latter two contributed by AdminPlugin via setup_menus()).
+    auto* windowAction = ui_->menuWindow->menuAction();
 
-    // Pre-create the shared &Account menu (personal actions only; inserted
-    // directly so it always appears first after File).
-    auto* accountMenu = new QMenu(tr("&Account"), this);
-    menuBar()->insertMenu(systemAction, accountMenu);
-    plugin_menus_.append(accountMenu);
+    // Personal actions (My Account, My Sessions) live in their own Current
+    // User submenu, right after Connectivity and before whatever plugins
+    // contribute (System) via setup_menus() below.
+    ui_->menuFile->addSeparator();
+    auto* currentUserMenu = ui_->menuFile->addMenu(tr("Current &User"));
+    currentUserMenu->addAction(ui_->ActionMyAccount);
+    currentUserMenu->addAction(ui_->ActionMySessions);
 
     // Pre-create the shared &Reference Data menu. NOT inserted directly —
     // RefdataPlugin returns it from create_menus() to control bar position.
@@ -495,17 +499,36 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // returns it from create_menus() to control bar position.
     auto* operationsMenu = new QMenu(tr("&Operations"), this);
 
-    // Pre-create trading codes menu (NOT inserted directly; TradingPlugin
-    // appends it to its own Trading menu in create_menus()).
-    auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
-
-    // Pre-create &Data Management menu. NOT inserted directly; DataManagementPlugin
-    // returns it from create_menus() so it appears in plugin load_order.
-    auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
+    // Pre-create every Operations submenu shell and attach them all up
+    // front, in alphabetical order — each plugin then only populates its
+    // assigned handle (addAction/addMenu), never decides insertion order
+    // itself. Telemetry is static from .ui; the rest are plain QMenus.
+    auto* dataTransferMenu = new QMenu(tr("Data &Transfer"), this);
+    auto* messageQueueMenu = new QMenu(tr("&Message Queue"), this);
+    auto* schedulerMenu = new QMenu(tr("&Scheduler"), this);
+    auto* userAccountsMenu = new QMenu(tr("User &Accounts"), this);
+    auto* workflowsMenu = new QMenu(tr("&Workflows"), this);
+    operationsMenu->addMenu(dataTransferMenu);
+    operationsMenu->addMenu(messageQueueMenu);
+    operationsMenu->addMenu(schedulerMenu);
+    operationsMenu->addMenu(ui_->menuTelemetry);
+    operationsMenu->addMenu(userAccountsMenu);
+    operationsMenu->addMenu(workflowsMenu);
 
     // Pre-create &Data Quality menu. NOT inserted directly; DqPlugin
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataQualityMenu = new QMenu(tr("Data &Quality"), this);
+
+    // Pre-create Data Quality's Coding Schemes submenu and attach it — both
+    // DqPlugin (Code Domains) and DataManagementPlugin (Coding Schemes,
+    // Coding Scheme Authority Types) populate it, so it needs a single
+    // owner for attachment rather than either plugin racing to create/
+    // attach it themselves. Named "Coding Schemes" rather than
+    // "Classifications" to avoid colliding with Reference Data > Codes'
+    // unrelated Classifications submenu (Asset Class Codes, Curve Roles,
+    // Instrument Codes).
+    auto* codingSchemesMenu = new QMenu(tr("Coding &Schemes"), this);
+    dataQualityMenu->addMenu(codingSchemesMenu);
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;
     // RefdataPlugin appends it to the Reference Data menu).
@@ -522,17 +545,20 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     smc.mdi_area = mdiArea_;
     smc.client_manager = clientManager_;
     smc.open_scenario_path = pendingScenarioPath_;
-    smc.system_menu = ui_->menuSystem;
+    smc.file_menu = ui_->menuFile;
     smc.reference_data_menu = referenceDataMenu;
     smc.market_data_menu = marketDataMenu;
     smc.telemetry_menu = ui_->menuTelemetry;
-    smc.account_menu = accountMenu;
-    smc.data_management_menu = dataManagementMenu;
     smc.data_quality_menu = dataQualityMenu;
-    smc.trading_codes_menu = tradingCodesMenu;
+    smc.coding_schemes_menu = codingSchemesMenu;
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
     smc.operations_menu = operationsMenu;
+    smc.data_transfer_menu = dataTransferMenu;
+    smc.message_queue_menu = messageQueueMenu;
+    smc.scheduler_menu = schedulerMenu;
+    smc.user_accounts_menu = userAccountsMenu;
+    smc.workflows_menu = workflowsMenu;
     smc.organisation_codes_menu = organisationCodesMenu;
 
     BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";
@@ -541,14 +567,11 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
         plugin->setup_menus(smc);
     }
 
-    // Populate the Account menu: personal actions only.
-    // Admin items (Accounts, Roles, Tenants) live under System > Administration.
-    accountMenu->addAction(ui_->ActionMyAccount);
-    accountMenu->addAction(ui_->ActionMySessions);
-
-    // Remove My Account / My Sessions from the File menu (they now live in Account).
-    ui_->menuFile->removeAction(ui_->ActionMyAccount);
-    ui_->menuFile->removeAction(ui_->ActionMySessions);
+    // File is now fully built: connection actions (from .ui) + My
+    // Account/My Sessions (above) + Testing/Reset System (contributed by
+    // AdminPlugin in the setup_menus() loop above). Close it off with Exit.
+    ui_->menuFile->addSeparator();
+    ui_->menuFile->addAction(ui_->ExitAction);
 
     BOOST_LOG_SEV(lg(), debug) << "Collecting plugin menus and toolbar actions.";
     for (auto* plugin : plugins) {
@@ -565,7 +588,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
         for (auto* menu : menus) {
             if (menu) {
                 BOOST_LOG_SEV(lg(), debug) << "    \"" << menu->title().toStdString() << "\"";
-                menuBar()->insertMenu(systemAction, menu);
+                menuBar()->insertMenu(windowAction, menu);
                 plugin_menus_.append(menu);
             } else {
                 BOOST_LOG_SEV(lg(), warn)
@@ -826,9 +849,10 @@ void MainWindow::updateMenuState() {
     for (auto* action : plugin_toolbar_actions_)
         action->setEnabled(isLoggedIn);
 
-    // The System menu itself stays enabled regardless of login (it now
-    // also hosts the always-available &Testing submenu); only its
-    // Telemetry submenu actually needs a live session.
+    // File stays enabled regardless of login (it hosts the
+    // always-available Connect/Disconnect and &Testing items); Telemetry
+    // (now under Operations) is the one nested item that actually needs
+    // a live session.
     ui_->menuTelemetry->menuAction()->setEnabled(isLoggedIn);
     // File menu items requiring authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);

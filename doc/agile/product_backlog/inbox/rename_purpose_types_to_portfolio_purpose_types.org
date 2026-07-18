@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: DE3E6155-2162-45F9-95CC-DA8CB18F5A93
+:END:
+#+title: Rename purpose_type to portfolio_purpose_type
+#+description: The purpose_type entity/menu label is confusingly similar to the unrelated book_purpose_type; rename to portfolio_purpose_type for clarity.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:ux:naming:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Rename the =purpose_type= entity (table
+=ores_refdata_purpose_types_tbl=, menu label "Purpose Types") to
+=portfolio_purpose_type= throughout: SQL table/columns, C++
+entity/repository/mapper/service/protocol/controller/dialog classes,
+NATS subjects, and the "Purpose Types" menu label (currently in
+Reference Data > Codes > Portfolio Codes). Full rename sweep, not
+just the UI label — same scope as any other entity rename.
+
+* Why
+
+=purpose_type= classifies *Portfolios*
+(=portfolio_entity.purpose_type=) but its name is easily confused
+with the separate, unrelated =book_purpose_type= entity, which
+classifies *Books*. Both surfaced under near-identical labels during
+the System/Operations/Account menu taxonomy work (sprint 23), and
+the confusion was only resolved by checking the backend FK targets.
+Renaming =purpose_type= to =portfolio_purpose_type= makes the
+distinction obvious from the name alone, without needing to dig into
+the schema.
+
+* References
+
+- [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] task — where the
+  confusion surfaced and Purpose Types was split into its own
+  Portfolio Codes submenu as an interim UI-only fix.
+
+* See also
+
+-

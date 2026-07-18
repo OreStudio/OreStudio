@@ -62,17 +62,20 @@ struct shared_menus_context {
      */
     QString open_scenario_path;
 
-    QMenu* system_menu = nullptr;
+    QMenu* file_menu = nullptr;
     QMenu* reference_data_menu = nullptr;
     QMenu* market_data_menu = nullptr;
     QMenu* telemetry_menu = nullptr;
-    QMenu* account_menu = nullptr;
-    QMenu* data_management_menu = nullptr;
     QMenu* data_quality_menu = nullptr;
-    QMenu* trading_codes_menu = nullptr;
+    QMenu* coding_schemes_menu = nullptr;
     QMenu* analytics_menu = nullptr;
     QMenu* analytics_codes_menu = nullptr;
     QMenu* operations_menu = nullptr;
+    QMenu* data_transfer_menu = nullptr;
+    QMenu* message_queue_menu = nullptr;
+    QMenu* scheduler_menu = nullptr;
+    QMenu* user_accounts_menu = nullptr;
+    QMenu* workflows_menu = nullptr;
     QMenu* organisation_codes_menu = nullptr;
 };
 

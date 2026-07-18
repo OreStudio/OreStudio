@@ -81,27 +81,29 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
 
 void SchedulerPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " operations=" << (smc.operations_menu ? "ok" : "null");
-    if (!smc.operations_menu)
+                               << " operations=" << (smc.operations_menu ? "ok" : "null")
+                               << " scheduler=" << (smc.scheduler_menu ? "ok" : "null");
+    if (!smc.operations_menu || !smc.scheduler_menu)
         return;
 
     operations_menu_ = smc.operations_menu;
 
-    auto* actJobDefs = operations_menu_->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
+    auto* jobs = smc.scheduler_menu;
+    auto* actJobDefs = jobs->addAction(ico(Icon::TasksApp), tr("Scheduled Job &Definitions"));
     connect(actJobDefs, &QAction::triggered, this, [this]() {
         if (jobDefinitionController_)
             jobDefinitionController_->showListWindow();
     });
 
-    auto* actJobInstances = operations_menu_->addAction(ico(Icon::Clock), tr("&Job Instances"));
+    auto* actJobInstances = jobs->addAction(ico(Icon::Clock), tr("Scheduled Job &Instances"));
     connect(actJobInstances, &QAction::triggered, this, [this]() {
         if (jobInstanceController_)
             jobInstanceController_->showListWindow();
     });
 
-    operations_menu_->addSeparator();
+    jobs->addSeparator();
 
-    auto* actMonitor = operations_menu_->addAction(ico(Icon::Clock), tr("Job &Monitor"));
+    auto* actMonitor = jobs->addAction(ico(Icon::Clock), tr("Scheduled Job &Monitor"));
     connect(actMonitor, &QAction::triggered, this, [this]() {
         if (schedulerMonitorController_)
             schedulerMonitorController_->showWindow();

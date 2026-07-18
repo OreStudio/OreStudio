@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: 48783B41-101D-41DC-90B0-C7F9C6CA80AF
+:END:
+#+title: Test Scenario: Verify System/Operations/Account menu taxonomy
+#+description: Checks the consolidated menu structure: File absorbs System+Account with a nested System submenu, Operations absorbs Message Queue/Telemetry/User Accounts/Data Transfer, Data Management retired with Coding Schemes/Audit Trail/Data Catalogue moved to Data Quality, Trading Codes retired with Purpose Types moved to a new Portfolio Codes submenu, Synthetic groups its raw-table entries under Configuration.
+#+type: test_scenario
+#+level: s1
+#+filetags: :clean-up-application-menus:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] in [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] |
+| Parent story  | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]   |
+| Target dialog | File, Operations, and Data Quality menus (menu structure only) — Menu: top-level menu bar |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC* as the active party.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** System and Account no longer exist as top-level menus
+
+Confirm the menu bar reads: *File*, *Reference Data*, *Trading*,
+*Operations*, *Data &Quality*, *Market Data*, *Window*, *Help* — no
+separate *System* or *Account* menu.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** File groups Connectivity, Current User, and System submenus
+
+Open *File*. Confirm, in order: *&Connectivity* (submenu), *Current
+&User* (submenu), *S&ystem* (submenu), separator, Exit.
+
+Open File > Connectivity. Confirm it contains, in order:
+Connections..., separator, Connect, Disconnect.
+
+Open File > Current User. Confirm it contains My Account... and My
+Sessions.... Open both and confirm they still work.
+
+Open File > System. Confirm it contains, in order: System Settings,
+separator, Test Scenario Runner, separator, Reset System.... Open
+System Settings and confirm it opens. Open Test Scenario Runner and
+confirm it opens (this is the window you're using to run this very
+scenario).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Operations gains Telemetry, Message Queue, User Accounts
+
+Open *Operations*. Confirm it now contains, alongside the existing
+*Scheduler* (Scheduled Job Definitions, Scheduled Job Instances,
+Scheduled Job Monitor) and *Workflows* sections: *Message Queue*
+(Queue Monitor), *Telemetry* (Log Viewer, Event Viewer, Shell,
+Protocol, Settings — plus Service Dashboard as the first item), and
+*User &Accounts* (Accounts, Roles, Tenants, Tenant Types, Onboard
+Tenant...). Open one entry from each and confirm the correct
+window/dialog opens. Confirm *User Accounts* is clearly
+distinguishable from the personal *Account* actions in File
+(different labels: "User Accounts" vs "My Account"). Confirm there
+is no separate *Configuration* submenu — System Settings lives in
+File > System instead (previous step).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Operations gains Data Transfer (Data Catalogue moved to Data Quality instead)
+
+Confirm *Operations* has a *Data &Transfer* submenu containing:
+Import ORE Data..., Data Librarian, Manage Workspaces — and nothing
+else (no nested Data Catalogue here; see next step for where it
+actually lives). Open each entry and confirm the correct window
+opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Data Management is retired; Coding Schemes/Audit Trail/Data Catalogue moved to Data Quality
+
+Confirm there is no more top-level *Data Management* menu. Open
+*Data &Quality* and confirm it contains: *Badges* (Badge
+Definitions, Badge Severities), a *Coding &Schemes* submenu (Code
+Domains, Coding Schemes, Coding Scheme Authority Types — named
+"Coding Schemes" rather than "Classifications" specifically to not
+collide with Reference Data > Codes' unrelated Classifications
+submenu), an *Audit Trail* submenu (Change Reason Categories, Change
+Reasons), and a *Data Catalogue* submenu (Data Domains, Subject
+Areas, Catalogues, Datasets, Dataset Bundles, Methodologies, Origin/
+Nature/Treatment Dimensions). Open one entry from each and confirm
+the correct window opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Trading Codes is retired; Purpose Types moved to its own Portfolio Codes submenu
+
+There is no more *Trading &Codes* submenu anywhere (it used to sit
+nested inside the *Trading* menu with a single entry, Purpose
+Types). Open *Trading* and confirm it now ends at *Trades* — no
+Trading Codes submenu after it.
+
+Instead, open *Reference Data > &Codes > &Portfolio Codes* and
+confirm *Purpose Types* is there — its own submenu, not inside Book
+Codes, since =purpose_type= classifies Portfolios
+(=portfolio_entity.purpose_type=), not Books, despite the similarly
+named =book_purpose_type= being a distinct entity. Open it and
+confirm the correct window opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Synthetic groups its data-generation entries under Configuration
+
+Open *Market Data > &Synthetic*. Confirm *Market Simulator* sits
+directly under Synthetic, and a *&Configuration* submenu holds
+Generation Configs, FX Spot Configs, GMM Components, IR Curve
+Generation Configs, IR Curve Template Entries, and Yield Curve
+Process Types. Open one entry from Configuration and confirm the
+correct window opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-18T12:59:48Z |
+| Branch        | feature/system-operations-account-menu-taxonomy |
+| Commit        | 25e8b698a |
+| Worktree      | solid_dirac |
+
+* Notes

@@ -47,10 +47,12 @@
 #include "ores.refdata.core/messaging/curve_role_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/floating_index_type_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/ibor_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/instrument_code_registrar.hpp"
 #include "ores.refdata.core/messaging/ledger_feed_type_registrar.hpp"
+#include "ores.refdata.core/messaging/leg_type_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_registrar.hpp"
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
@@ -162,9 +164,11 @@
 #include "ores.refdata.core/presentation/curve_role_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/day_count_fraction_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/deposit_convention_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/floating_index_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/fra_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/ibor_index_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/ledger_feed_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/leg_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/monetary_nature_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
@@ -209,9 +213,11 @@
 #include "ores.refdata.core/service/curve_role_service.hpp"
 #include "ores.refdata.core/service/day_count_fraction_type_service.hpp"
 #include "ores.refdata.core/service/deposit_convention_service.hpp"
+#include "ores.refdata.core/service/floating_index_type_service.hpp"
 #include "ores.refdata.core/service/fra_convention_service.hpp"
 #include "ores.refdata.core/service/ibor_index_convention_service.hpp"
 #include "ores.refdata.core/service/ledger_feed_type_service.hpp"
+#include "ores.refdata.core/service/leg_type_service.hpp"
 #include "ores.refdata.core/service/monetary_nature_service.hpp"
 #include "ores.refdata.core/service/ois_convention_service.hpp"
 #include "ores.refdata.core/service/overnight_index_convention_service.hpp"
@@ -291,9 +297,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_day_count_fraction_type_handlers(nats, ctx, verifier));
     append(register_instrument_code_handlers(nats, ctx, verifier));
     append(register_deposit_convention_handlers(nats, ctx, verifier));
+    append(register_floating_index_type_handlers(nats, ctx, verifier));
     append(register_fra_convention_handlers(nats, ctx, verifier));
     append(register_ibor_index_convention_handlers(nats, ctx, verifier));
     append(register_ledger_feed_type_handlers(nats, ctx, verifier));
+    append(register_leg_type_handlers(nats, ctx, verifier));
     append(register_monetary_nature_handlers(nats, ctx, verifier));
     append(register_ois_convention_handlers(nats, ctx, verifier));
     append(register_overnight_index_convention_handlers(nats, ctx, verifier));
@@ -858,6 +866,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_status_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_party_status_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.floating_index_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::floating_index_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_floating_index_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.leg_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::leg_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_leg_type_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

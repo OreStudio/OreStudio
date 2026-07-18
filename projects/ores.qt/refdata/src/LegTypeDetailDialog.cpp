@@ -18,9 +18,10 @@
  *
  */
 #include "ores.qt/LegTypeDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/leg_type_protocol.hpp"
+#include "ores.refdata.api/messaging/leg_type_protocol.hpp"
 #include "ui_LegTypeDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
@@ -39,6 +40,16 @@ LegTypeDetailDialog::LegTypeDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 LegTypeDetailDialog::~LegTypeDetailDialog() {
@@ -55,6 +66,10 @@ QWidget* LegTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* LegTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString LegTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void LegTypeDetailDialog::setupUi() {
@@ -89,7 +104,7 @@ void LegTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void LegTypeDetailDialog::setType(const trading::domain::leg_type& type) {
+void LegTypeDetailDialog::setType(const refdata::domain::leg_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -100,6 +115,11 @@ void LegTypeDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void LegTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -132,7 +152,6 @@ void LegTypeDetailDialog::updateTypeFromUi() {
     }
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void LegTypeDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -152,7 +171,8 @@ void LegTypeDetailDialog::updateSaveButtonState() {
 
 bool LegTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    return !code_val.isEmpty();
+
+    return true && !code_val.isEmpty();
 }
 
 void LegTypeDetailDialog::onSaveClicked() {
@@ -166,6 +186,15 @@ void LegTypeDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
 
     updateTypeFromUi();
 
@@ -183,7 +212,7 @@ void LegTypeDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::save_leg_type_request request;
+        refdata::messaging::save_leg_type_request request;
         request.data = type;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -237,6 +266,11 @@ void LegTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting leg type: " << type_.code;
 
     QPointer<LegTypeDetailDialog> self = this;
@@ -251,7 +285,7 @@ void LegTypeDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::delete_leg_type_request request;
+        refdata::messaging::delete_leg_type_request request;
         request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -284,5 +318,6 @@ void LegTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

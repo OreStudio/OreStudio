@@ -116,12 +116,5 @@
 \ir ./trading_trade_types_notify_trigger_drop.sql
 \ir ./trading_trade_types_drop.sql
 
--- Trading instrument reference data types
-
-\ir ./trading_floating_index_types_notify_trigger_drop.sql
-\ir ./trading_floating_index_types_drop.sql
-\ir ./trading_floating_index_types_validate_fn_drop.sql
-
-\ir ./trading_leg_types_notify_trigger_drop.sql
-\ir ./trading_leg_types_drop.sql
-\ir ./trading_leg_types_validate_fn_drop.sql
+-- Trading instrument reference data types (floating_index_type,
+-- leg_type) moved to ores.refdata; dropped there instead.

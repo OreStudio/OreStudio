@@ -2,105 +2,172 @@
 :ID: EE0459FE-8AC1-4D7B-99C2-747FCF0E4499
 :END:
 #+title: Task: Migrate remaining ores.qt.refdata entities without a codegen model onto the generic HistoryDialog
-#+description: 17 ores.qt.refdata entities still on the legacy per-entity *HistoryDialog have no codegen model reachable from ores.refdata's own codegen -- 5 actually have a model under a different owning component (ores.trading, ores.dq) and can migrate the same way once addressed correctly; the other 12 are hand-crafted Data Catalogue / Change Reason / Coding Scheme cross-cutting infrastructure with no codegen model anywhere and need a scoping decision before any migration.
+#+description: 2 ores.qt.refdata entities (floating_index_type, leg_type) still on the legacy per-entity *HistoryDialog have a codegen model under a different owning component (ores.trading) and migrate via the same full-regeneration process as every other entity in this story. The other 15 entities originally scoped here turned out to already be out of ores.qt.refdata entirely -- see Notes.
 #+type: task
 #+level: s1
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-remaining-non-codegen-refdata-entities
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Retire the last 17 hand-rolled per-entity =*HistoryDialog= classes
-left in =projects/ores.qt/refdata= once [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][the codegen-model-backed
-batch]] closed. None of these 17 have a codegen model reachable from
-=ores.refdata='s own codegen, which split into two genuinely
-different sub-problems investigated when this task was created:
+Retire the last 2 hand-rolled per-entity =*HistoryDialog= classes left
+in =projects/ores.qt/refdata= once [[id:9605CFDB-9732-46D2-A8D3-714BD44653A1][the codegen-model-backed batch]]
+closed: =floating_index_type= and =leg_type=. Both had a codegen model
+under =ores.trading= while their Qt controller (and all hand-written
+NATS wiring) lived under =ores.qt/refdata= — the same organizational
+mismatch Book/BusinessCentre had before their own moves. Resolved by
+moving the backend to match, not the other way round: reassigned
+=#+component:= to =refdata= in both models, relocated their
+domain/repository/service/protocol/generator/eventing layers and SQL
+table/schema from =ores.trading= to =ores.refdata=, then migrated via
+the exact same full-regeneration process as every other entity in
+this story.
 
-1. *5 entities actually have a codegen model, just under a different
-   owning component* — =floating_index_type=, =leg_type=,
-   =payment_frequency_type= (=ores.trading=), and =code_domain=,
-   =dataset_bundle= (=ores.dq=). Their Qt controller happens to live
-   in =ores.qt/refdata= (same organizational pattern as =Book=/
-   =BusinessCentre=, whose backend lives elsewhere too), but the
-   entity itself is addressable via
-   =compass codegen entity generate <entity> --address ores.cpp.qt=
-   once invoked with the right model file — these can migrate via the
-   exact same full-regeneration process as every other entity in this
-   story, no scoping decision needed.
-2. *The other 12 entities have no codegen model anywhere in the
-   codebase* — =catalog=, =change_reason=, =change_reason_category=,
-   =coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
-   =dataset=, =methodology=, =nature_dimension=, =origin_dimension=,
-   =subject_area=, =treatment_dimension=. These are hand-crafted,
-   cross-cutting infrastructure in three families:
-   - *Change Reason* (=change_reason=, =change_reason_category=): the
-     change-reason-cache system itself, used to audit every other
-     entity's save/delete. Self-referential — codegen-ing these would
-     need to special-case (or omit) =has_change_reason_cache= on the
-     entity that backs that very cache.
-   - *Coding Scheme / classification* (=coding_scheme=,
-     =coding_scheme_authority_type=, =code_domain= is the one exception
-     with a model, above): used to validate other entities'
-     classification codes.
-   - *Data Catalogue* (=catalog=, =data_domain=, =dataset=,
-     =methodology=, =nature_dimension=, =origin_dimension=,
-     =subject_area=, =treatment_dimension=): a data-governance/catalogue
-     metadata subsystem (subject areas, methodologies, dimensions)
-     that may have bespoke domain logic not captured by the generic
-     entity model.
-
-   Whether these 12 warrant becoming codegen models (eliminating this
-   exact class of bug — a human forgetting a wiring step that codegen
-   would emit automatically) or are legitimately bespoke enough to stay
-   hand-authored is a real product/architecture decision, not
-   something to default silently either way. This task's first job is
-   making that decision (or handing it back to the story owner with a
-   recommendation per family) before any migration work on the 12
-   starts.
+/2026-07-17 re-scope:/ this task was originally scoped to 17 entities
+(this description said 5 model-backed + 12 model-less). Investigation
+on pickup found that 15 of those 17 — =payment_frequency_type= (a
+naming error; the actual entity, =payment_frequency=, already
+migrated on 2026-07-15, before this task even existed) and all 14
+DQ-owned entities (=code_domain=, =dataset_bundle=, and the 12
+"model-less" ones) — are not =ores.qt.refdata= work at all. The 14 DQ
+entities were already moved out of =RefdataPlugin= into
+=ores.qt.data_management= by [[id:D5DF4CFA-5316-4825-BC4B-37C96726C00C][a prior task in this same story]], which
+this task's original scoping missed. See Notes for where that work
+now lives. That leaves exactly =floating_index_type= and =leg_type=
+as this task's actual scope.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| State        | DONE                              |
+| Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Migrate the 5 already-codegen-model-backed entities first (straightforward, same process as every other entity); then get a decision on whether/how to codegen the other 12 before touching them. |
-| Last touched | 2026-07-16                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
-- =floating_index_type=, =leg_type=, =payment_frequency_type=,
-  =code_domain=, =dataset_bundle= migrated onto the generic
-  =HistoryDialog= via full, unmodified codegen regeneration (addressed
-  via their real owning component), following the same process as
-  task 9605CFDB.
-- A decision is recorded (in this task's =* Notes= and distilled into
-  the parent story's =* Decisions=) for each of the 12 non-codegen
-  entities: codegen them, or explicitly leave them on the legacy
-  dialog with a documented reason.
+- =floating_index_type= and =leg_type='s backend moved from
+  =ores.trading= to =ores.refdata= (model, domain, repository,
+  service, protocol, generator, eventing, SQL create/drop/populate/RLS
+  scripts) and migrated onto the generic =HistoryDialog= via full
+  codegen regeneration, following the same process as task 9605CFDB. ✅
 - Zero remaining =*HistoryDialog.{hpp,cpp,ui}= files in
-  =projects/ores.qt/refdata= once every entity that's getting migrated
-  has migrated.
+  =projects/ores.qt/refdata= for these two entities. ✅
+- Full build green; =ores.refdata.*=, =ores.trading.*=, and
+  =ores.cli.tests= all pass; =validate_schemas.sh= zero warnings; DB
+  recreates clean with both entities' seed data. ✅
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Per entity (=floating_index_type=, then =leg_type=):
+
+1. Author a new =ores.refdata.modeling/ores.refdata.<entity>.org=
+   model (=#+component: refdata=, all Qt-section request/response
+   classes and includes renamed from =trading::= to =refdata::=),
+   =git rm= the old =ores.trading= model file.
+2. Add an explicit =Detail fields= table (=code=, =description= only)
+   — without one, a pre-existing codegen default-fields bug
+   (=core.py=, =Auto-generate default detail_fields if not provided=)
+   unconditionally injects a =name= field even when the entity has no
+   =name= column, breaking the build. Worked around at the model
+   level rather than touching the shared codegen driver.
+3. =compass codegen entity generate <entity>=; =git rm= the legacy
+   per-entity =*HistoryDialog.{hpp,cpp,ui}= files (regeneration
+   confirmed the controller wires the generic =HistoryDialog=
+   directly).
+4. =git rm= the now-superseded =ores.trading= backend files
+   (domain/repository/service/protocol/generator/eventing) and SQL
+   create/drop/populate scripts; wire the freshly generated SQL into
+   =refdata_create.sql=/=refdata_drop.sql=/=refdata_populate.sql=
+   (codegen doesn't auto-wire new entities into the schema manifests).
+5. Wire the generated per-entity registrar/event-registrar/history
+   provider into =ores.refdata.core='s shared =registrar.cpp= and
+   =ores.refdata.service='s =event_registrar.cpp= (the same manual
+   step every other refdata entity's own registration required — not
+   automatic from =entity generate=).
+6. Fix =ores.trading='s hand-written =instrument_ref_handler.hpp=/
+   =registrar_trades.cpp=, which also served =trade_type= (staying in
+   trading) — removed only the two entities' methods/subscriptions,
+   left =trade_type='s untouched.
+7. Fix =ores.cli/src/app/application.cpp='s hand-written
+   =trading::domain=/=trading::repository= includes and namespace
+   usages (CLI support isn't part of the automatic codegen sweep).
+8. Hand-patch =ores.trading.swap_leg='s create SQL: its trigger calls
+   =ores_trading_validate_{leg_type,floating_index_type}_fn= by name
+   (a hand-authored FK-validator, not part of the standard codegen
+   template output) — renamed to the new =ores_refdata_validate_*_fn=
+   names rather than regenerating =swap_leg= itself (explicit decision
+   to avoid snowballing into an unrelated trading-entity regen).
+   Moved/renamed the two validator create/drop files themselves from
+   =ores.sql/{create,drop}/trading/= to =.../refdata/=, and removed
+   the now-stale =RLS_001= ignore entries for the old trading table
+   names from =validation_ignore.txt= (replaced with real RLS policies
+   in =refdata_rls_policies_create.sql=, not another ignore entry —
+   the "no exceptions" policy applies to RLS too).
+9. Full rebuild (required a =cmake --preset= reconfigure first — the
+   file-glob-based =CMakeLists.txt= don't use
+   =CONFIGURE_DEPENDS=, so a deleted source file needs an explicit
+   reconfigure, not just a rebuild), =db recreate=,
+   =validate_schemas.sh=, and the =ores.refdata=/=ores.trading=/
+   =ores.cli= test suites.
 
 * Notes
+
+** Re-scope: 15 of the original 17 entities are not ores.qt.refdata work
+
+Discovered on pickup (2026-07-17), before any migration work started:
+
+- =payment_frequency_type= doesn't exist under that name — the actual
+  entity is =payment_frequency=, owned by =ores.refdata= itself
+  (=ores.refdata.payment_frequency.org=, created 2026-07-15). It
+  already constructs the generic =HistoryDialog= directly in
+  =PaymentFrequencyController::showHistoryWindow= — already migrated,
+  nothing to do. (The original task description's "=ores.trading="
+  attribution for this one was simply wrong.)
+- =code_domain=, =dataset_bundle=, and all 12 "no codegen model"
+  entities (=catalog=, =change_reason=, =change_reason_category=,
+  =coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
+  =dataset=, =methodology=, =nature_dimension=, =origin_dimension=,
+  =subject_area=, =treatment_dimension=) — all 14 DQ-owned entities —
+  no longer have a Qt controller anywhere under =ores.qt/refdata= at
+  all. [[id:D5DF4CFA-5316-4825-BC4B-37C96726C00C][This story's own D5DF4CFA task]] already moved every one of them
+  into the new =ores.qt.data_management= plugin; this task's original
+  scoping was written without noticing that move had already
+  happened. Verified directly: =find projects/ores.qt/data_management
+  -iname "*Controller.cpp"= lists all 14; none remain under
+  =ores.qt/refdata=.
+
+That work isn't abandoned, just relocated: filed as
+[[id:7E714F07-FDAC-4041-9815-04B6219A93BA][Migrate ores.qt.data_management's history dialogs to the generic
+HistoryDialog]] under [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the
+DQ component]] — the story already standing up =ores.qt.dq= as the
+proper plugin =ores.qt.data_management= is a stepping stone toward.
+The "every entity gets a real codegen model, no exceptions" policy
+(including how =change_reason=/=change_reason_category='s
+self-referential change-reason-cache wrinkle doesn't warrant an
+exemption — same category of problem =business_unit_type= solved for
+a different self-referential FK validator in task D4A868F5, via a
+backward-compatible trailing paste-block template extension) carries
+over to that task, not this one.
+
+That leaves this task's actual, final scope: =floating_index_type=
+and =leg_type= only — both confirmed still on a legacy per-entity
+=*HistoryDialog= (=FloatingIndexTypeHistoryDialog=,
+=LegTypeHistoryDialog=), both with an existing =ores.trading= codegen
+model.
 
 * Test Scenarios
 
@@ -126,3 +193,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Re-scoped on pickup from 17 entities to 2 (=floating_index_type=,
+=leg_type=) — the other 15 turned out to already be out of
+=ores.qt.refdata= entirely (a naming error for one already-migrated
+entity, and 14 DQ-owned entities already relocated to
+=ores.qt.data_management= by a prior task); that work is now tracked
+under [[id:7E714F07-FDAC-4041-9815-04B6219A93BA][a new task]] on the DQ commissioning story instead.
+
+Both entities' full backend (domain, repository, service, protocol,
+generator, NATS eventing/history) moved from =ores.trading= to
+=ores.refdata= to match where their Qt UI already lived — mirroring
+Book/BusinessCentre's precedent, matching direction rather than
+copying it verbatim (their mismatch ran the other way). This
+surfaced and fixed a real pre-existing gap along the way: neither
+entity's NATS handler/registrar/event-registrar/history-field-mapper
+had ever actually been wired anywhere — the only NATS support that
+existed was a hand-written combined handler
+(=instrument_ref_handler.hpp=) shared with =trade_type=, with no
+history support at all. Both now have complete, codegen-generated
+stacks wired through =ores.refdata='s standard shared registrar
+pattern.
+
+Also fixed along the way (pre-existing, surfaced only once these
+tables were actually exercised through the standard pipeline for the
+first time): missing RLS policies for both tables (previously masked
+by stale =RLS_001= ignore-list entries under the old trading table
+names, now replaced with real tenant-isolation policies), and a
+codegen default-fields bug that unconditionally injects a =name=
+field even for entities with no =name= column (worked around via an
+explicit =Detail fields= model table rather than touching the shared
+codegen driver).
+
+Verification: full build green (=linux-clang-debug-make=, after a
+=cmake= reconfigure to pick up deleted source files);
+=validate_schemas.sh= 0 warnings (was 2); =db recreate= clean with
+both entities' seed data (13 floating index types, 10 leg types);
+=ores.refdata.{api,client,core,service}.tests=,
+=ores.trading.{api,core,service}.tests=, and =ores.cli.tests= all
+pass (8/8 suites, 0 failures).

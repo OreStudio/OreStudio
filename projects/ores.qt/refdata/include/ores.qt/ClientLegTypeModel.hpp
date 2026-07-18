@@ -25,8 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.trading.api/domain/leg_type.hpp"
-#include <QAbstractTableModel>
+#include "ores.refdata.api/domain/leg_type.hpp"
 #include <QFutureWatcher>
 #include <vector>
 
@@ -77,7 +76,8 @@ public:
      * @param row The row index.
      * @return The leg type, or nullptr if row is invalid.
      */
-    const trading::domain::leg_type* getType(int row) const;
+    const refdata::domain::leg_type* getType(int row) const;
+
 
     /**
      * @brief Load a specific page of data.
@@ -113,7 +113,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<trading::domain::leg_type> types;
+        std::vector<refdata::domain::leg_type> types;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
@@ -122,14 +122,14 @@ private:
     void fetch_types(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<trading::domain::leg_type> types_;
+    std::vector<refdata::domain::leg_type> types_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using LegTypeKeyExtractor = std::string (*)(const trading::domain::leg_type&);
-    RecencyTracker<trading::domain::leg_type, LegTypeKeyExtractor> recencyTracker_;
+    using LegTypeKeyExtractor = std::string (*)(const refdata::domain::leg_type&);
+    RecencyTracker<refdata::domain::leg_type, LegTypeKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

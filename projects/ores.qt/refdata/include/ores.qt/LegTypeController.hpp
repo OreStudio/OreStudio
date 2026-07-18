@@ -24,9 +24,12 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.trading.api/domain/leg_type.hpp"
+#include "ores.refdata.api/domain/leg_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -62,24 +65,42 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const trading::domain::leg_type& type);
+    void onShowDetails(const refdata::domain::leg_type& type);
     void onAddNewRequested();
-    void onShowHistory(const trading::domain::leg_type& type);
-    void onRevertVersion(const trading::domain::leg_type& type);
-    void onOpenVersion(const trading::domain::leg_type& type, int versionNumber);
+    void onShowHistory(const refdata::domain::leg_type& type);
+    void onRevertVersion(const refdata::domain::leg_type& type);
+    void onOpenVersion(const refdata::domain::leg_type& type, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const trading::domain::leg_type& type);
+    void showDetailWindow(const refdata::domain::leg_type& type);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed leg type history (the
+     * existing per-entity refdata::messaging::get_leg_type_history_request/
+     * refdata::messaging::get_leg_type_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed leg type, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchLegTypeHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::leg_type>, QString>)>
+            callback);
 
     LegTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

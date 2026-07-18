@@ -34,9 +34,5 @@
 \ir ./trading_party_role_types_populate.sql
 \ir ./trading_trade_id_types_populate.sql
 
--- Instrument reference data
-\ir ./trading_floating_index_types_populate.sql
-\ir ./trading_leg_types_populate.sql
-
 \echo ''
 \echo '=== Trade Population Complete ==='

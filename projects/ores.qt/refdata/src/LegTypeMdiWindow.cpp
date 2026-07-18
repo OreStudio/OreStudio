@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/leg_type_protocol.hpp"
+#include "ores.refdata.api/messaging/leg_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -51,8 +51,6 @@ LegTypeMdiWindow::LegTypeMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void LegTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -122,8 +121,15 @@ void LegTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(
-        tableView_, model_, "LegTypeListWindow", {ClientLegTypeModel::Description}, {900, 400}, 1);
+
+    initializeTableSettings(tableView_,
+                            model_,
+                            "LegTypeListWindow",
+                            {
+                                ClientLegTypeModel::Description,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void LegTypeMdiWindow::setupConnections() {
@@ -287,12 +293,10 @@ void LegTypeMdiWindow::deleteSelected() {
         if (!self)
             return {};
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " leg types";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << codes.size() << " leg types";
 
-        trading::messaging::delete_leg_type_request request;
+        refdata::messaging::delete_leg_type_request request;
         request.codes = codes;
-
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -307,6 +311,7 @@ void LegTypeMdiWindow::deleteSelected() {
         for (const auto& code : codes) {
             results.push_back({code, {response_result->success, response_result->message}});
         }
+
         return results;
     };
 
@@ -359,5 +364,6 @@ void LegTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

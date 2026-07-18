@@ -18,25 +18,37 @@
  *
  */
 #include "ores.qt/LegTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LegTypeDetailDialog.hpp"
-#include "ores.qt/LegTypeHistoryDialog.hpp"
 #include "ores.qt/LegTypeMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/leg_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/leg_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::leg_type_changed_event>::name;
+}
 
 LegTypeController::LegTypeController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
                                      const QString& username,
                                      QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -82,6 +94,8 @@ void LegTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -120,7 +134,7 @@ void LegTypeController::reloadListWindow() {
     }
 }
 
-void LegTypeController::onShowDetails(const trading::domain::leg_type& type) {
+void LegTypeController::onShowDetails(const refdata::domain::leg_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -130,7 +144,8 @@ void LegTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void LegTypeController::onShowHistory(const trading::domain::leg_type& type) {
+
+void LegTypeController::onShowHistory(const refdata::domain::leg_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -170,7 +185,7 @@ void LegTypeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void LegTypeController::showDetailWindow(const trading::domain::leg_type& type) {
+void LegTypeController::showDetailWindow(const refdata::domain::leg_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -221,6 +236,7 @@ void LegTypeController::showDetailWindow(const trading::domain::leg_type& type) 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<LegTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -246,10 +262,14 @@ void LegTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new LegTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::leg_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &LegTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<LegTypeController>(this)](const QString& message) {
                 if (!self)
@@ -257,7 +277,7 @@ void LegTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &LegTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<LegTypeController>(this)](const QString& message) {
                 if (!self)
@@ -265,13 +285,23 @@ void LegTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &LegTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &LegTypeController::onRevertVersion);
+            [self = QPointer<LegTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &LegTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &LegTypeController::onOpenVersion);
+            [self = QPointer<LegTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -282,10 +312,12 @@ void LegTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Leg Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<LegTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -297,7 +329,7 @@ void LegTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void LegTypeController::onOpenVersion(const trading::domain::leg_type& type, int versionNumber) {
+void LegTypeController::onOpenVersion(const refdata::domain::leg_type& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for leg type: " << type.code;
 
@@ -355,15 +387,107 @@ void LegTypeController::onOpenVersion(const trading::domain::leg_type& type, int
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void LegTypeController::onRevertVersion(const trading::domain::leg_type& type) {
+void LegTypeController::fetchLegTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::leg_type>, QString>)> callback) {
+    refdata::messaging::get_leg_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::leg_type>, QString>;
+
+    QPointer<LegTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void LegTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<LegTypeController> self = this;
+    fetchLegTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::leg_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void LegTypeController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<LegTypeController> self = this;
+    fetchLegTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::leg_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
+void LegTypeController::onRevertVersion(const refdata::domain::leg_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting leg type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(
         detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
@@ -396,6 +520,28 @@ void LegTypeController::onRevertVersion(const trading::domain::leg_type& type) {
 
 EntityListMdiWindow* LegTypeController::listWindow() const {
     return listWindow_;
+}
+
+void LegTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

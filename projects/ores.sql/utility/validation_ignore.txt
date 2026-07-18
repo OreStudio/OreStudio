@@ -311,9 +311,10 @@ RLS_001 ores_compute_grid_samples_tbl
 RLS_001 ores_compute_node_samples_tbl
 
 # Trading type/enum tables — lookup codes seeded at startup; system-wide.
+# floating_index_types/leg_types moved to ores.refdata and now have real
+# tenant-isolation RLS policies (refdata_rls_policies_create.sql), so no
+# ignore entry is needed for them here.
 RLS_001 ores_trading_day_count_fraction_types_tbl
-RLS_001 ores_trading_floating_index_types_tbl
-RLS_001 ores_trading_leg_types_tbl
 RLS_001 ores_trading_lifecycle_events_tbl
 
 # =============================================================================

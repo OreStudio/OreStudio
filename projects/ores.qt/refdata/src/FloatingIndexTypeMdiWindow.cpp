@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -51,8 +51,6 @@ FloatingIndexTypeMdiWindow::FloatingIndexTypeMdiWindow(ClientManager* clientMana
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void FloatingIndexTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -125,10 +124,13 @@ void FloatingIndexTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "FloatingIndexTypeListWindow",
-                            {ClientFloatingIndexTypeModel::Description},
+                            {
+                                ClientFloatingIndexTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -304,11 +306,10 @@ void FloatingIndexTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " floating index types";
+            << "Making delete request for " << codes.size() << " floating index types";
 
-        trading::messaging::delete_floating_index_type_request request;
+        refdata::messaging::delete_floating_index_type_request request;
         request.codes = codes;
-
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -323,6 +324,7 @@ void FloatingIndexTypeMdiWindow::deleteSelected() {
         for (const auto& code : codes) {
             results.push_back({code, {response_result->success, response_result->message}});
         }
+
         return results;
     };
 
@@ -377,5 +379,6 @@ void FloatingIndexTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

@@ -95,21 +95,21 @@
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.api/domain/floating_index_type_json_io.hpp"
+#include "ores.refdata.api/domain/floating_index_type_table_io.hpp"
+#include "ores.refdata.api/domain/leg_type_json_io.hpp"
+#include "ores.refdata.api/domain/leg_type_table_io.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.refdata.core/repository/floating_index_type_repository.hpp"
 #include "ores.refdata.core/repository/fra_convention_repository.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/leg_type_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/password_validator.hpp"
-#include "ores.trading.api/domain/floating_index_type_json_io.hpp"
-#include "ores.trading.api/domain/floating_index_type_table_io.hpp"
-#include "ores.trading.api/domain/leg_type_json_io.hpp"
-#include "ores.trading.api/domain/leg_type_table_io.hpp"
-#include "ores.trading.core/repository/floating_index_type_repository.hpp"
-#include "ores.trading.core/repository/leg_type_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -737,8 +737,8 @@ void application::export_compute_results(const config::export_options& cfg) cons
 void application::export_floating_index_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting floating index types.";
 
-    trading::repository::floating_index_type_repository repo;
-    std::vector<trading::domain::floating_index_type> items;
+    refdata::repository::floating_index_type_repository repo;
+    std::vector<refdata::domain::floating_index_type> items;
 
     if (!cfg.key.empty()) {
         items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
@@ -768,8 +768,8 @@ void application::export_floating_index_types(const config::export_options& cfg)
 void application::export_leg_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting leg types.";
 
-    trading::repository::leg_type_repository repo;
-    std::vector<trading::domain::leg_type> items;
+    refdata::repository::leg_type_repository repo;
+    std::vector<refdata::domain::leg_type> items;
 
     if (!cfg.key.empty()) {
         items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
@@ -1071,7 +1071,7 @@ void application::delete_data(const std::optional<config::delete_options>& ocfg)
 
 void application::delete_floating_index_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting floating index type: " << cfg.key;
-    trading::repository::floating_index_type_repository repo;
+    refdata::repository::floating_index_type_repository repo;
     repo.remove(context_, cfg.key);
     output_stream_ << "Floating index type deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted floating index type: " << cfg.key;
@@ -1080,7 +1080,7 @@ void application::delete_floating_index_type(const config::delete_options& cfg) 
 
 void application::delete_leg_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting leg type: " << cfg.key;
-    trading::repository::leg_type_repository repo;
+    refdata::repository::leg_type_repository repo;
     repo.remove(context_, cfg.key);
     output_stream_ << "Leg type deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted leg type: " << cfg.key;
@@ -1526,7 +1526,7 @@ void application::add_floating_index_type(
     const config::add_floating_index_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding floating index type: " << cfg.code;
 
-    trading::domain::floating_index_type record;
+    refdata::domain::floating_index_type record;
     record.code = cfg.code;
     record.modified_by = cfg.modified_by;
     record.performed_by = cfg.modified_by;
@@ -1534,7 +1534,7 @@ void application::add_floating_index_type(
     if (cfg.description)
         record.description = *cfg.description;
 
-    trading::repository::floating_index_type_repository repo;
+    refdata::repository::floating_index_type_repository repo;
     repo.write(context_, record);
 
     output_stream_ << "Successfully added floating index type: " << cfg.code << std::endl;
@@ -1544,7 +1544,7 @@ void application::add_floating_index_type(
 void application::add_leg_type(const config::add_leg_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding leg type: " << cfg.code;
 
-    trading::domain::leg_type record;
+    refdata::domain::leg_type record;
     record.code = cfg.code;
     record.modified_by = cfg.modified_by;
     record.performed_by = cfg.modified_by;
@@ -1552,7 +1552,7 @@ void application::add_leg_type(const config::add_leg_type_options& cfg) const {
     if (cfg.description)
         record.description = *cfg.description;
 
-    trading::repository::leg_type_repository repo;
+    refdata::repository::leg_type_repository repo;
     repo.write(context_, record);
 
     output_stream_ << "Successfully added leg type: " << cfg.code << std::endl;

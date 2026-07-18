@@ -48,14 +48,8 @@
 \ir ./trading_trade_id_types_create.sql
 \ir ./trading_trade_id_types_notify_trigger_create.sql
 
--- Instrument reference data
-\ir ./trading_floating_index_types_create.sql
-\ir ./trading_floating_index_types_notify_trigger_create.sql
-\ir ./trading_floating_index_types_validate_fn_create.sql
-
-\ir ./trading_leg_types_create.sql
-\ir ./trading_leg_types_notify_trigger_create.sql
-\ir ./trading_leg_types_validate_fn_create.sql
+-- Instrument reference data (floating_index_type, leg_type) moved to
+-- ores.refdata; refdata_create.sql loads before this file.
 
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql

@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -29,7 +29,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-std::string floating_index_type_key_extractor(const trading::domain::floating_index_type& e) {
+std::string floating_index_type_key_extractor(const refdata::domain::floating_index_type& e) {
     return e.code;
 }
 }
@@ -192,19 +192,33 @@ void ClientFloatingIndexTypeModel::fetch_types(std::uint32_t offset, std::uint32
                             .error_details = {}};
                 }
 
-                trading::messaging::get_floating_index_types_request request;
+                refdata::messaging::get_floating_index_types_request request;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch floating index types: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .types = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch floating index types: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
@@ -269,12 +283,13 @@ void ClientFloatingIndexTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const trading::domain::floating_index_type* ClientFloatingIndexTypeModel::getType(int row) const {
+const refdata::domain::floating_index_type* ClientFloatingIndexTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
+
 
 QVariant ClientFloatingIndexTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

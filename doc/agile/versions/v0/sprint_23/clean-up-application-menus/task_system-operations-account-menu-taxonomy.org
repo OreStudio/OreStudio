@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-18
 #+updated: 2026-07-18
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -48,7 +48,7 @@ owns the destination menu's own standing-up.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -61,9 +61,89 @@ owns the destination menu's own standing-up.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Inventory (current state)
+
+- *System* (=ui_->menuSystem=, built in =MainWindow.ui= + contributed
+  to by =AdminPlugin=/=ComputePlugin= via =setup_menus=): Configuration
+  (System Settings; Badge Definitions; Badge Severities); Message
+  Queue (Queue Monitor); Telemetry (Telemetry Viewer, Event Viewer,
+  Shell, Protocol submenu, Telemetry Settings; Service Dashboard);
+  Administration (Accounts, Roles; Tenants, Tenant Types; Onboard
+  Tenant...); Reset System...; Testing (Scenario Runner).
+- *Account* (=accountMenu=, built directly in =MainWindow.cpp=): My
+  Account, My Sessions. No other plugin contributes to it.
+- *Operations* (=operationsMenu=, contributed to by =SchedulerPlugin=
+  and =WorkflowPlugin=): Job Definitions, Job Instances, Job Monitor;
+  Workflow Executions, Workflow Definitions. Thin today — only two
+  plugins have landed here so far.
+- *Data Management* (=dataManagementMenu=, contributed to by
+  =DataManagementPlugin=/=TradingPlugin=/=WorkspacePlugin=):
+  Classifications (Coding Schemes, Code Domains, Coding Scheme
+  Authority Types); Audit Trail (Change Reason Categories, Change
+  Reasons); Data Catalogue (Data Domains, Subject Areas, Catalogues,
+  Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
+  Dimensions); Data Librarian; Import ORE Data...; Workspaces.
+  In scope here because Operations' target shape absorbs Data
+  Transfer/Data Catalogue from it (see scoping decision above).
+- =File= (=ui_->menuFile=, built in =MainWindow.ui=, already exists):
+  Connection Browser, Connect, Disconnect.
+
+** Target taxonomy (signed off)
+
+- *File* (absorbs System + Account — post-cuts System only had two
+  items left, too thin for its own top-level slot, and Account's two
+  personal actions are exactly the kind of app-level miscellany File
+  already houses): Connection Browser, Connect, Disconnect —
+  separator — My Account, My Sessions — separator — Testing (Scenario
+  Runner) — separator — Reset System....
+- *Operations* becomes the real "everything operational" home: Jobs
+  (unchanged); Workflows (unchanged); Data Transfer (Import ORE
+  Data..., Data Librarian, Workspaces — the transfer/import-shaped
+  actions currently misfiled under Data Management); Data Catalogue
+  (moved in as-is); Telemetry (moved from System, unchanged
+  internally); Message Queue (moved from System, unchanged
+  internally); User Accounts, renamed from Administration to avoid
+  colliding with the personal =Account= actions now living in File
+  (Accounts, Roles; Tenants, Tenant Types; Onboard Tenant...).
+- *Data Management* retired as a top-level menu entirely. Its
+  Classifications and Audit Trail submenus, plus System >
+  Configuration's Badge Definitions/Severities, move to the *Data
+  Quality* menu the sibling [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story is standing
+  up — this task lands the moves, that story owns standing up the
+  destination menu itself.
+- *Reference Data* — unchanged (done in the prior task in this
+  story).
+
+Net: four top-level menus (File, Reference Data, Operations, Data
+Quality) instead of today's seven (File, System, Account, Reference
+Data, Operations, Data Management, plus Data Quality once it lands).
+
+** Implementation steps
+
+1. =MainWindow.cpp=/=.ui= — fold =menuSystem=' surviving two items
+   (Testing, Reset System) and =accountMenu='s two items (My Account,
+   My Sessions) into =menuFile=, with separators between the three
+   clusters (connection lifecycle / personal / testing+reset). Remove
+   =menuSystem= and =accountMenu= as separate top-level menus.
+2. =AdminPlugin::setup_menus= — retarget Administration's =QMenu=
+   handle to =operations_menu= instead of =system_menu=; rename its
+   title to =User &Accounts=. Retarget Configuration's Badge
+   Definitions/Severities actions to wherever the Data Quality menu
+   handle lands (coordinate with the =ores.qt.dq= story; may need to
+   land after that menu exists).
+3. =ComputePlugin::setup_menus= — retarget Message Queue and Telemetry
+   contributions to =operations_menu= (Telemetry itself moves whole;
+   =smc.telemetry_menu= handle ownership moves with it).
+4. =DataManagementPlugin::setup_menus= — split: Data Catalogue and the
+   Data Librarian action move to =operations_menu= under a new =Data
+   &Transfer= grouping; Classifications and Audit Trail move to the
+   Data Quality menu handle. Retire =data_management_menu= from
+   =shared_menus_context= once nothing references it.
+5. =TradingPlugin=/=WorkspacePlugin= — retarget their
+   =data_management_menu= contributions (Import ORE Data...,
+   Workspaces) to the new Data Transfer grouping under Operations.
+6. Manual QA pass in the running Qt client against the target
+   taxonomy above.
 
 * Notes
 

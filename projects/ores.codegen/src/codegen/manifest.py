@@ -9,6 +9,8 @@ _COMPONENT_CATALOGUE = Path(__file__).parent.parent.parent / "library" / "compon
 @dataclass
 class Component:
     name: str
+    # Legacy JSON discovery root. "" (empty, not None) for org-only
+    # components like refdata, which have no legacy JSON path at all.
     models_dir: str
     # Either a single glob pattern or a tuple of patterns (the regenerate
     # driver unions the matches). Tuple form supports the org-mode model
@@ -121,13 +123,23 @@ def is_codegen_entity_org(path: Path) -> bool:
     return bool(org_type and org_type in _CODEGEN_ORG_TYPES)
 
 
-def discover_models(comp: Component, project_root: Path) -> List[Path]:
+def discover_models(
+    comp: Component, project_root: Path, apply_exclusions: bool = True
+) -> List[Path]:
     """All model files for a component, across both discovery roots.
 
     The legacy JSON root (models_dir) may no longer exist — the org
     migration deletes JSON models as it converts them — so its absence
     is not an error. Org files under modeling_dir are picked up when
     their frontmatter declares a codegen model type.
+
+    apply_exclusions gates comp.exclude_org_types. It defaults to True
+    for the bulk `codegen regenerate --component` path, which is what
+    exclude_org_types exists to scope (e.g. skipping junction-typed
+    files whose bulk regeneration currently errors on some addresses).
+    Single-entity commands (codegen entity list/generate/show/diff) must
+    still be able to resolve those same files directly, so callers on
+    that path pass apply_exclusions=False.
     """
     matches: set = set()
     if comp.models_dir and (project_root / comp.models_dir).is_dir():
@@ -154,7 +166,7 @@ def discover_models(comp: Component, project_root: Path) -> List[Path]:
                 if org_type not in _CODEGEN_ORG_TYPES:
                     continue
                 short_type = org_type.removeprefix("ores.codegen.")
-                if short_type in comp.exclude_org_types:
+                if apply_exclusions and short_type in comp.exclude_org_types:
                     continue
                 matches.add(org_path)
     return sorted(matches)

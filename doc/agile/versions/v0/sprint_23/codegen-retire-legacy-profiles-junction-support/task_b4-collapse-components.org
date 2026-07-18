@@ -111,7 +111,11 @@ processed.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR/task traceability pointed at the wrong task (bookkeeping bug) | task_b3-merge-parsers.org | Accepted | Already fixed before this comment landed, in commit b7597b9e9 |
+| 2 | No unit test for exclude_org_types/discover_models | tests/test_manifest.py | Accepted | Added test_manifest.py covering bulk-exclusion vs single-entity-resolution |
+| 3 | exclude_org_types also blocks single-entity commands, not just bulk regen | manifest.py, compass_codegen_entity.py | Accepted | Added apply_exclusions param (default True); single-entity discovery passes False |
+| 4 | codegen-model-unification.org still has refdata-cpp mentions | doc/analysis/codegen-model-unification.org | Declined | Intentional — frozen point-in-time investigation doc, same historical-record policy as doc/agile/**, doc/plans/** |
+| 5 | Component.models_dir type/empty-string handling; "no models found" message cosmetics | manifest.py, generate.py, list_cmd.py | Accepted | Added clarifying comment; fixed message to show "(no models_dir)" instead of blank |
 
 * Result
 

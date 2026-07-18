@@ -54,13 +54,19 @@ def _entity_name_from_path(path: Path) -> str:
 
 def _discover_all(base_dir: Path, project_root: Path):
     """Yield (model_path, metatype, component_name, entity_name) for every
-    model file across all components."""
+    model file across all components.
+
+    Passes apply_exclusions=False: exclude_org_types scopes bulk `codegen
+    regenerate --component` regeneration only (see discover_models), and
+    single-entity commands (list/generate/show/diff) must still resolve
+    every model, including excluded types like junctions.
+    """
     from codegen.manifest import all_components, discover_models, get_component  # noqa: PLC0415
     from codegen.core import get_model_type  # noqa: PLC0415
 
     for comp_name in all_components():
         comp = get_component(comp_name)
-        for model_path in discover_models(comp, project_root):
+        for model_path in discover_models(comp, project_root, apply_exclusions=False):
             metatype = get_model_type(model_path.name, model_path)
             entity_name = _entity_name_from_path(model_path)
             yield model_path, metatype, comp_name, entity_name

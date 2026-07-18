@@ -30,6 +30,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Reads and writes currency countries to data storage.
+ */
 class ORES_REFDATA_CORE_EXPORT currency_country_repository {
 private:
     inline static std::string_view logger_name =
@@ -54,9 +57,10 @@ public:
     std::vector<domain::currency_country> read_latest();
     std::vector<domain::currency_country>
     read_latest_by_currency(const std::string& currency_iso_code);
-    std::vector<domain::currency_country> read_latest_by_country(const std::string& alpha2_code);
+    std::vector<domain::currency_country>
+    read_latest_by_country(const std::string& country_alpha2_code);
 
-    void remove(const std::string& currency_iso_code, const std::string& alpha2_code);
+    void remove(const std::string& currency_iso_code, const std::string& country_alpha2_code);
     void remove_by_currency(const std::string& currency_iso_code);
 
 private:

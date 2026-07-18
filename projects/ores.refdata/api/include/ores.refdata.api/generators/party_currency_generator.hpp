@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -27,9 +27,15 @@
 
 namespace ores::refdata::generators {
 
+/**
+ * @brief Generates a synthetic party_currency.
+ */
 ORES_REFDATA_API_EXPORT domain::party_currency
 generate_synthetic_party_currency(utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates N synthetic party_currencies.
+ */
 ORES_REFDATA_API_EXPORT std::vector<domain::party_currency>
 generate_synthetic_party_currencies(std::size_t n, utility::generation::generation_context& ctx);
 

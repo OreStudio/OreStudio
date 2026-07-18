@@ -17,34 +17,85 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_PARTY_CURRENCY_HPP
-#define ORES_REFDATA_API_DOMAIN_PARTY_CURRENCY_HPP
+#ifndef ORES_REFDATA_DOMAIN_PARTY_CURRENCY_HPP
+#define ORES_REFDATA_DOMAIN_PARTY_CURRENCY_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Links a party to a currency it can see.
  *
- * Junction table controlling which currencies are visible to which
- * parties. Currency definitions are shared at tenant level; this junction
- * controls party-level visibility.
+ * Junction table controlling which currencies are visible to which parties.
+ * Currency definitions are shared at tenant level; this junction controls
+ * party-level visibility.
  */
 struct party_currency final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
     int version = 0;
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
+     * @brief ID of the party.
+     *
+     * References ores_refdata_parties_tbl.id (soft FK).
+     */
     boost::uuids::uuid party_id;
+
+    /**
+     * @brief ISO 4217 code of the currency visible to this party.
+     *
+     * References ores_refdata_currencies_tbl.iso_code (soft FK).
+     */
     std::string currency_iso_code;
+
+    /**
+     * @brief Username of the person who last modified this party currency.
+     */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
     std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
     std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
     std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for party_currency, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const party_currency&) {
+    return "ores.refdata.party_currency";
+}
 
 }
 

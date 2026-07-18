@@ -57,7 +57,7 @@ void party_country_repository::write(const std::vector<domain::party_country>& p
 }
 
 std::vector<domain::party_country> party_country_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -75,9 +75,9 @@ std::vector<domain::party_country>
 party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<party_country_entity>> |
         where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
@@ -92,15 +92,17 @@ party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_i
 }
 
 std::vector<domain::party_country>
-party_country_repository::read_latest_by_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: " << alpha2_code;
+party_country_repository::read_latest_by_country(const std::string& country_alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: "
+                               << country_alpha2_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_country_entity>> |
-                       where("tenant_id"_c == tid && "country_alpha2_code"_c == alpha2_code &&
-                             "valid_to"_c == max.value()) |
-                       order_by("party_id"_c);
+    const auto query =
+        sqlgen::read<std::vector<party_country_entity>> |
+        where("tenant_id"_c == tid && "country_alpha2_code"_c == country_alpha2_code &&
+              "valid_to"_c == max.value()) |
+        order_by("party_id"_c);
 
     return execute_read_query<party_country_entity, domain::party_country>(
         ctx_,
@@ -111,15 +113,15 @@ party_country_repository::read_latest_by_country(const std::string& alpha2_code)
 }
 
 void party_country_repository::remove(const boost::uuids::uuid& party_id,
-                                      const std::string& alpha2_code) {
+                                      const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party country from database: " << party_id << "/"
-                               << alpha2_code;
+                               << country_alpha2_code;
 
-    const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_country_entity> |
                        where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                             "country_alpha2_code"_c == alpha2_code);
+                             "country_alpha2_code"_c == country_alpha2_code);
 
     execute_delete_query(ctx_, query, lg(), "removing party country from database");
 }
@@ -127,8 +129,8 @@ void party_country_repository::remove(const boost::uuids::uuid& party_id,
 void party_country_repository::remove_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all party countries from database: " << party_id;
 
-    const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_country_entity> |
                        where("tenant_id"_c == tid && "party_id"_c == party_id_str);
 

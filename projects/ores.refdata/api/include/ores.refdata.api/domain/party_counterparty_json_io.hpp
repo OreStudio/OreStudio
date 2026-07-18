@@ -26,6 +26,9 @@
 
 namespace ores::refdata::domain {
 
+/**
+ * @brief Dumps the party_counterparty to a stream in JSON format.
+ */
 ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const party_counterparty& v);
 
 }

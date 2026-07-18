@@ -60,7 +60,7 @@ void currency_country_repository::write(
 }
 
 std::vector<domain::currency_country> currency_country_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_country_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -79,7 +79,7 @@ currency_country_repository::read_latest_by_currency(const std::string& currency
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
                                << currency_iso_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_country_entity>> |
                        where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
@@ -95,15 +95,17 @@ currency_country_repository::read_latest_by_currency(const std::string& currency
 }
 
 std::vector<domain::currency_country>
-currency_country_repository::read_latest_by_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Country: " << alpha2_code;
+currency_country_repository::read_latest_by_country(const std::string& country_alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Country: "
+                               << country_alpha2_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<currency_country_entity>> |
-                       where("tenant_id"_c == tid && "country_alpha2_code"_c == alpha2_code &&
-                             "valid_to"_c == max.value()) |
-                       order_by("currency_iso_code"_c);
+    const auto query =
+        sqlgen::read<std::vector<currency_country_entity>> |
+        where("tenant_id"_c == tid && "country_alpha2_code"_c == country_alpha2_code &&
+              "valid_to"_c == max.value()) |
+        order_by("currency_iso_code"_c);
 
     return execute_read_query<currency_country_entity, domain::currency_country>(
         ctx_,
@@ -114,14 +116,14 @@ currency_country_repository::read_latest_by_country(const std::string& alpha2_co
 }
 
 void currency_country_repository::remove(const std::string& currency_iso_code,
-                                         const std::string& alpha2_code) {
+                                         const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency country from database: " << currency_iso_code
-                               << "/" << alpha2_code;
+                               << "/" << country_alpha2_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<currency_country_entity> |
                        where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "country_alpha2_code"_c == alpha2_code);
+                             "country_alpha2_code"_c == country_alpha2_code);
 
     execute_delete_query(ctx_, query, lg(), "removing currency country from database");
 }

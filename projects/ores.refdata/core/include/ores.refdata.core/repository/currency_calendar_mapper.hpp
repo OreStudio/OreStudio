@@ -27,6 +27,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Maps currency_calendar domain entities to data storage layer and vice-versa.
+ */
 class ORES_REFDATA_CORE_EXPORT currency_calendar_mapper {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.currency_calendar_mapper";

@@ -61,9 +61,10 @@ void party_counterparty_repository::write(
 }
 
 std::vector<domain::party_counterparty> party_counterparty_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
-                       where("valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("party_id"_c, "counterparty_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
@@ -78,11 +79,13 @@ std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
-    const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
-                       where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-                       order_by("counterparty_id"_c);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<party_counterparty_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+        order_by("counterparty_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
         ctx_,
@@ -97,12 +100,13 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
                                << counterparty_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto query =
-        sqlgen::read<std::vector<party_counterparty_entity>> |
-        where("counterparty_id"_c == counterparty_id_str && "valid_to"_c == max.value()) |
-        order_by("party_id"_c);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+                             "valid_to"_c == max.value()) |
+                       order_by("party_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
         ctx_,
@@ -119,9 +123,10 @@ void party_counterparty_repository::remove(const boost::uuids::uuid& party_id,
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto query =
-        sqlgen::delete_from<party_counterparty_entity> |
-        where("party_id"_c == party_id_str && "counterparty_id"_c == counterparty_id_str);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<party_counterparty_entity> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                             "counterparty_id"_c == counterparty_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing party counterparty from database");
 }
@@ -130,8 +135,9 @@ void party_counterparty_repository::remove_by_party(const boost::uuids::uuid& pa
     BOOST_LOG_SEV(lg(), debug) << "Removing all party counterparties from database: " << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
-    const auto query =
-        sqlgen::delete_from<party_counterparty_entity> | where("party_id"_c == party_id_str);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<party_counterparty_entity> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing all party counterparties from database");
 }

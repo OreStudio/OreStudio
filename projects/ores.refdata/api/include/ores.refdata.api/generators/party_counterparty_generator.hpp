@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_PARTY_COUNTERPARTY_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_PARTY_COUNTERPARTY_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_PARTY_COUNTERPARTY_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_PARTY_COUNTERPARTY_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -27,9 +27,15 @@
 
 namespace ores::refdata::generators {
 
+/**
+ * @brief Generates a synthetic party_counterparty.
+ */
 ORES_REFDATA_API_EXPORT domain::party_counterparty
 generate_synthetic_party_counterparty(utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates N synthetic party_counterparties.
+ */
 ORES_REFDATA_API_EXPORT std::vector<domain::party_counterparty>
 generate_synthetic_party_counterparties(std::size_t n,
                                         utility::generation::generation_context& ctx);

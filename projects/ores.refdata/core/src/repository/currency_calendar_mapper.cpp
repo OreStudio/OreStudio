@@ -31,7 +31,7 @@ domain::currency_calendar currency_calendar_mapper::map(const currency_calendar_
 
     domain::currency_calendar r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.currency_iso_code = v.currency_iso_code.value();
     r.calendar_code = v.calendar_code;
     r.modified_by = v.modified_by;
@@ -49,7 +49,7 @@ currency_calendar_entity currency_calendar_mapper::map(const domain::currency_ca
 
     currency_calendar_entity r;
     r.currency_iso_code = v.currency_iso_code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.calendar_code = v.calendar_code;
     r.version = v.version;
     r.modified_by = v.modified_by;

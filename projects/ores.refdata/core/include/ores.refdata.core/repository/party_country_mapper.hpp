@@ -27,6 +27,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Maps party_country domain entities to data storage layer and vice-versa.
+ */
 class ORES_REFDATA_CORE_EXPORT party_country_mapper {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.party_country_mapper";

@@ -60,7 +60,7 @@ void currency_calendar_repository::write(
 }
 
 std::vector<domain::currency_calendar> currency_calendar_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_calendar_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -79,7 +79,7 @@ currency_calendar_repository::read_latest_by_currency(const std::string& currenc
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
                                << currency_iso_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_calendar_entity>> |
                        where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
@@ -98,7 +98,7 @@ std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest_by_calendar(const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Calendar: " << calendar_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_calendar_entity>> |
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&

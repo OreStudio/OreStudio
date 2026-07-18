@@ -31,7 +31,7 @@ domain::currency_country currency_country_mapper::map(const currency_country_ent
 
     domain::currency_country r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.currency_iso_code = v.currency_iso_code.value();
     r.country_alpha2_code = v.country_alpha2_code;
     r.modified_by = v.modified_by;
@@ -49,7 +49,7 @@ currency_country_entity currency_country_mapper::map(const domain::currency_coun
 
     currency_country_entity r;
     r.currency_iso_code = v.currency_iso_code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.country_alpha2_code = v.country_alpha2_code;
     r.version = v.version;
     r.modified_by = v.modified_by;

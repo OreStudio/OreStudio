@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/currency_country.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -27,21 +27,17 @@
 
 namespace ores::refdata::generators {
 
+/**
+ * @brief Generates a synthetic currency_country.
+ */
 ORES_REFDATA_API_EXPORT domain::currency_country
 generate_synthetic_currency_country(utility::generation::generation_context& ctx);
 
-ORES_REFDATA_API_EXPORT std::vector<domain::currency_country>
-generate_synthetic_currency_countries(std::size_t n, utility::generation::generation_context& ctx);
-
 /**
- * @brief Generates the real currency-to-issuing-country mappings for
- * currencies already present in synthetic/seed data.
- *
- * Real reference data, not fictional test data (e.g. EUR -> DE, FR,
- * IT, ES, ...; USD -> US; GBP -> GB).
+ * @brief Generates N synthetic currency_countries.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency_country>
-generate_currency_countries(utility::generation::generation_context& ctx);
+generate_synthetic_currency_countries(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

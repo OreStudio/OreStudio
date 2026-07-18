@@ -19,6 +19,7 @@
  */
 #include "ores.dq.api/generators/badge_mapping_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 

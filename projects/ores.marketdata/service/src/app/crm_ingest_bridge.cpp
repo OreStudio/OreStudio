@@ -42,8 +42,11 @@ namespace {
 
 // A party's rate_engine never considers a rate fresh past this age, purely
 // as the CRM-internal default; consumers query with their own tolerance
-// in mind via the rate_status returned alongside every rate.
-constexpr auto default_staleness_max_age = std::chrono::minutes(15);
+// in mind via the rate_status returned alongside every rate. Past
+// default_disconnected_after, a rate is reported disconnected rather than
+// merely stale -- its feed has effectively stopped, not just lagged.
+constexpr auto default_staleness_stale_after = std::chrono::minutes(15);
+constexpr auto default_staleness_disconnected_after = std::chrono::minutes(60);
 
 } // namespace
 
@@ -126,7 +129,9 @@ void crm_ingest_bridge::refresh() {
             auto topology =
                 quant::service::topology_builder::build(edges, cfg.pivot_currency_code, majors);
             auto engine = std::make_shared<quant::service::rate_engine>(
-                std::move(topology), quant::domain::staleness_policy{default_staleness_max_age});
+                std::move(topology),
+                quant::domain::staleness_policy{default_staleness_stale_after,
+                                                default_staleness_disconnected_after});
 
             auto& named_engines = (*new_engines)[key];
             named_engines.push_back(

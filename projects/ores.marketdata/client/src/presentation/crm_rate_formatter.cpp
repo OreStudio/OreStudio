@@ -102,13 +102,15 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
         display.rate_text = format_rate(item.rate, request.convention, request.convention_reversed);
 
         if (item.status == "stale") {
-            display.tooltip_text = "Stale as of " + item.as_of;
+            display.tooltip_text = "Stale - " + item.as_of;
+        } else if (item.status == "disconnected") {
+            display.tooltip_text = "Disconnected - " + item.as_of;
         } else if (item.status == "unavailable") {
             display.tooltip_text = "Unavailable";
         } else {
             display.tooltip_text = item.reciprocal ?
-                                       "Computed inverse (1/rate); fresh as of " + item.as_of :
-                                       "Fresh as of " + item.as_of;
+                                       "Computed inverse (1/rate); Live - " + item.as_of :
+                                       "Live - " + item.as_of;
         }
 
         display.change_text = "-";

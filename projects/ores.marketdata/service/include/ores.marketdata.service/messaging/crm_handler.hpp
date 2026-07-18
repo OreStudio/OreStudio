@@ -54,6 +54,8 @@ inline std::string rate_status_to_string(ores::analytics::quant::domain::rate_st
             return "fresh";
         case rate_status::stale:
             return "stale";
+        case rate_status::disconnected:
+            return "disconnected";
         case rate_status::unavailable:
             return "unavailable";
     }

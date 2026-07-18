@@ -587,23 +587,25 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                                                         allCurrencies[col].toStdString());
                 const double display_rate = item.rate;
 
-                // Only the %-change indicator is coloured (matching the
-                // mockup); the rate itself stays neutral unless the cell
-                // is stale/unavailable. Stale/unavailable also colour
-                // the pair-code line, always paired with a distinct
-                // glyph prefix (not colour alone) -- same convention as
-                // FxSpotGridWindow's status icon+colour pairing.
+                // Only the %-change indicator and the pair-code line are
+                // coloured by status (matching the mockup); the rate value
+                // itself always stays neutral. The pair-code colour+glyph
+                // pairing (never colour alone) mirrors FxSpotGridWindow's
+                // own Live/Stale/Disconnected status convention -- status
+                // is computed server-side (rate_engine's staleness_policy
+                // across the whole driver topology), never here.
                 auto rateColor = color_constants::level_text;
                 auto changeColor = color_constants::level_trace;
                 auto pairColor = color_constants::level_trace;
                 QString pairPrefix;
 
                 if (item.status == "stale") {
-                    rateColor = color_constants::level_warn;
                     pairColor = color_constants::level_warn;
                     pairPrefix = QStringLiteral("⚠");
+                } else if (item.status == "disconnected") {
+                    pairColor = color_constants::level_error;
+                    pairPrefix = QStringLiteral("⛔");
                 } else if (item.status == "unavailable") {
-                    rateColor = color_constants::level_trace;
                     pairColor = color_constants::level_trace;
                     pairPrefix = QStringLiteral("✕");
                 } else if (item.delta_pct.has_value() && std::abs(*item.delta_pct) > 1e-9) {

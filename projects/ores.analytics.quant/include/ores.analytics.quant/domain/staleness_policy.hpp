@@ -26,14 +26,25 @@
 namespace ores::analytics::quant::domain {
 
 /// Caller-supplied tolerance for how old a contributing driver may be
-/// before a derived rate is considered stale. The engine never fetches
+/// before a derived rate is considered stale, and how much older still
+/// before it's considered disconnected outright. The engine never fetches
 /// this from anywhere -- it is a plain parameter, per this library's
 /// no-refdata-coupling rule.
+///
+/// @c disconnected_after defaults to "never" (duration::max()) so a
+/// single-threshold caller (existing tests, risk_recentering) keeps its
+/// original fresh/stale-only behaviour without change.
 struct staleness_policy {
-    std::chrono::system_clock::duration max_age;
+    std::chrono::system_clock::duration stale_after;
+    std::chrono::system_clock::duration disconnected_after =
+        std::chrono::system_clock::duration::max();
 
     [[nodiscard]] rate_status evaluate(std::chrono::system_clock::duration age) const {
-        return age <= max_age ? rate_status::fresh : rate_status::stale;
+        if (age <= stale_after)
+            return rate_status::fresh;
+        if (age <= disconnected_after)
+            return rate_status::stale;
+        return rate_status::disconnected;
     }
 };
 

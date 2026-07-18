@@ -155,5 +155,5 @@ TEST_CASE("crm_rate_display_service passes through status/reciprocal/delta metad
     REQUIRE(result.rows[0].status == "stale");
     REQUIRE(result.rows[0].reciprocal);
     REQUIRE(result.rows[0].delta_pct.has_value());
-    REQUIRE(result.rows[0].display.tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
+    REQUIRE(result.rows[0].display.tooltip_text == "Stale - 2026-07-16T10:00:00Z");
 }

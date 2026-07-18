@@ -133,14 +133,13 @@ TEST_CASE("crm_rate_formatter reports a reciprocal-pair tooltip", "[crm_rate_for
     auto item = make_item();
     item.reciprocal = true;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].tooltip_text ==
-            "Computed inverse (1/rate); fresh as of 2026-07-16T10:00:00Z");
+    REQUIRE(displays[0].tooltip_text == "Computed inverse (1/rate); Live - 2026-07-16T10:00:00Z");
 }
 
-TEST_CASE("crm_rate_formatter reports a fresh, non-reciprocal tooltip", "[crm_rate_formatter]") {
+TEST_CASE("crm_rate_formatter reports a live, non-reciprocal tooltip", "[crm_rate_formatter]") {
     auto item = make_item();
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].tooltip_text == "Fresh as of 2026-07-16T10:00:00Z");
+    REQUIRE(displays[0].tooltip_text == "Live - 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports a stale tooltip and does not print a change",
@@ -149,7 +148,14 @@ TEST_CASE("crm_rate_formatter reports a stale tooltip and does not print a chang
     item.status = "stale";
     item.delta_pct = 1.5;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
+    REQUIRE(displays[0].tooltip_text == "Stale - 2026-07-16T10:00:00Z");
+}
+
+TEST_CASE("crm_rate_formatter reports a disconnected tooltip", "[crm_rate_formatter]") {
+    auto item = make_item();
+    item.status = "disconnected";
+    const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
+    REQUIRE(displays[0].tooltip_text == "Disconnected - 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports an unavailable tooltip", "[crm_rate_formatter]") {

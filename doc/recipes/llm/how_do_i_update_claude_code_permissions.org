@@ -31,7 +31,7 @@ treated as part of the command string.
 Note the exact command string that triggered the prompt, e.g.:
 
 #+begin_example
-./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --address ores.cpp.nats-handler
+./projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp.nats-handler
 #+end_example
 
 ** Step 2 — open the org source

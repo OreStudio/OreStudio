@@ -277,8 +277,8 @@ Never use an absolute path; absolute paths do not match the patterns
 below and trigger a permission prompt.
 
 Common invocations:
-- =./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --address ores.cpp=
-- =projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --address ores.cpp=
+- =./projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
+- =projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
 - =projects/ores.codegen/codegen.sh generate --model path/to/model.json --address ores.cpp=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 

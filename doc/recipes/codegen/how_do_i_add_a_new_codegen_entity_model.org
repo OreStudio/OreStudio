@@ -105,7 +105,7 @@ itself. The codegen template is
 * Tested by
 
 The pilot entity =ores.refdata.party= under
-[[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]]. Regenerating =refdata-cpp= picks it
+[[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]]. Regenerating =refdata= picks it
 up via the =modeling_dir= entry and produces byte-identical output to
 the legacy =party_entity.org= location.
 

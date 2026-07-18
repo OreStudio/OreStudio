@@ -61,8 +61,10 @@ junction  [entity]  (13)
   party_country                  ...        refdata              projects/ores.refdata/modeling/ores.refdata.party_country_junction.org
 #+end_example
 
-The same model file may appear under multiple components (e.g. =refdata= and
-=refdata-cpp=) if both components process it; this is expected.
+Junction models live under =projects/ores.refdata/modeling/= but are not
+discovered by the =refdata= component's bulk regeneration (see the
+[[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component catalogue]]'s =exclude_org_types=); use =compass codegen entity
+generate <name>= to target one directly.
 
 * Script
 

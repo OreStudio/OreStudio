@@ -2,35 +2,45 @@
 :ID: B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA
 :END:
 #+title: Component catalogue
-#+description: Literate source for components.json. Maps each codegen component name to its model-discovery roots: where to find legacy JSON models (models_dir, entity_glob, exclude_suffix) and where to find co-located org models (modeling_dir).
+#+description: Literate source for components.json. Maps each codegen component name to its model-discovery roots: where to find legacy JSON models (models_dir, entity_glob, exclude_suffix), where to find co-located org models (modeling_dir), and which codegen org types to skip within modeling_dir (exclude_org_types).
 #+type: ores.codegen.component_catalogue
 
 Consumed directly by =src/codegen/manifest.py= at startup via =_load_components()=. This file is the authoritative source; there is no intermediate JSON.
 
 * Components
 
-The two SQL-side components (=refdata=, =trade=, =dq=, =iam=) use =*_entity.json= /
-=*_table.json= globs to pick up schema models. The twelve C++ components use
+The SQL-side components (=trade=, =dq=, =iam=) use =*_entity.json= /
+=*_table.json= globs to pick up schema models. The C++ components use
 =*_domain_entity.json= with no exclusion (=exclude_suffix: null=) since the
 =_domain_entity.json= suffix /is/ the target for that discovery path.
 
-| name | models_dir | entity_glob | exclude_suffix | modeling_dir |
-|------+-----------+-------------+----------------+--------------|
-| refdata | projects/ores.codegen/models/refdata | *_table.json | _domain_entity.json | projects/ores.refdata/modeling |
-| trade | projects/ores.codegen/models/trade | *_entity.json | _domain_entity.json | projects/ores.trading/modeling |
-| dq | projects/ores.codegen/models/dq | *_entity.json | _domain_entity.json | projects/ores.dq/modeling |
-| iam | projects/ores.codegen/models/iam | *_entity.json | _domain_entity.json | projects/ores.iam/modeling |
-| synthetic | projects/ores.codegen/models/synthetic | *_entity.json | _domain_entity.json | projects/ores.synthetic/modeling |
-| marketdata | projects/ores.codegen/models/marketdata | *_entity.json | _domain_entity.json | projects/ores.marketdata/modeling |
-| analytics-cpp | projects/ores.codegen/models/analytics | *_domain_entity.json | | projects/ores.analytics/modeling |
-| compute-cpp | projects/ores.codegen/models/compute | *_domain_entity.json | | projects/ores.compute/modeling |
-| controller-cpp | projects/ores.codegen/models/controller | *_domain_entity.json | | projects/ores.controller/modeling |
-| database-cpp | projects/ores.codegen/models/database | *_domain_entity.json | | projects/ores.database/modeling |
-| dq-cpp | projects/ores.codegen/models/dq | *_domain_entity.json | | projects/ores.dq/modeling |
-| iam-cpp | projects/ores.codegen/models/iam | *_domain_entity.json | | projects/ores.iam/modeling |
-| refdata-cpp | projects/ores.codegen/models/refdata | *_domain_entity.json | | projects/ores.refdata/modeling |
-| reporting-cpp | projects/ores.codegen/models/reporting | *_domain_entity.json | | projects/ores.reporting/modeling |
-| scheduler-cpp | projects/ores.codegen/models/scheduler | *_domain_entity.json | | projects/ores.scheduler/modeling |
-| trading-cpp | projects/ores.codegen/models/trading | *_domain_entity.json | | projects/ores.trading/modeling |
-| workflow-cpp | projects/ores.codegen/models/workflow | *_domain_entity.json | | projects/ores.workflow/modeling |
-| workspace-cpp | projects/ores.codegen/models/workspace | *_domain_entity.json | | projects/ores.workspace/modeling |
+=refdata= discovers org models only — its legacy JSON =models_dir= is
+retired (the org migration deleted every JSON model), and =--address=,
+not =--component=, already selects the technical space (SQL vs C++ vs
+Qt) to generate, so no separate =refdata-cpp= component is needed.
+=exclude_org_types: junction= keeps junction-typed entity files out of
+bulk =refdata= regeneration; junction codegen (domain/generator/
+repository) is being brought up to parity separately and currently
+errors on some addresses when bulk-regenerated. The module index
+(=ores.codegen.module=) is never picked up by org discovery regardless
+of component, since it isn't in the codegen org type set.
+
+| name | models_dir | entity_glob | exclude_suffix | modeling_dir | exclude_org_types |
+|------+-----------+-------------+----------------+--------------+--------------------|
+| refdata | | | | projects/ores.refdata/modeling | junction |
+| trade | projects/ores.codegen/models/trade | *_entity.json | _domain_entity.json | projects/ores.trading/modeling | |
+| dq | projects/ores.codegen/models/dq | *_entity.json | _domain_entity.json | projects/ores.dq/modeling | |
+| iam | projects/ores.codegen/models/iam | *_entity.json | _domain_entity.json | projects/ores.iam/modeling | |
+| synthetic | projects/ores.codegen/models/synthetic | *_entity.json | _domain_entity.json | projects/ores.synthetic/modeling | |
+| marketdata | projects/ores.codegen/models/marketdata | *_entity.json | _domain_entity.json | projects/ores.marketdata/modeling | |
+| analytics-cpp | projects/ores.codegen/models/analytics | *_domain_entity.json | | projects/ores.analytics/modeling | |
+| compute-cpp | projects/ores.codegen/models/compute | *_domain_entity.json | | projects/ores.compute/modeling | |
+| controller-cpp | projects/ores.codegen/models/controller | *_domain_entity.json | | projects/ores.controller/modeling | |
+| database-cpp | projects/ores.codegen/models/database | *_domain_entity.json | | projects/ores.database/modeling | |
+| dq-cpp | projects/ores.codegen/models/dq | *_domain_entity.json | | projects/ores.dq/modeling | |
+| iam-cpp | projects/ores.codegen/models/iam | *_domain_entity.json | | projects/ores.iam/modeling | |
+| reporting-cpp | projects/ores.codegen/models/reporting | *_domain_entity.json | | projects/ores.reporting/modeling | |
+| scheduler-cpp | projects/ores.codegen/models/scheduler | *_domain_entity.json | | projects/ores.scheduler/modeling | |
+| trading-cpp | projects/ores.codegen/models/trading | *_domain_entity.json | | projects/ores.trading/modeling | |
+| workflow-cpp | projects/ores.codegen/models/workflow | *_domain_entity.json | | projects/ores.workflow/modeling | |
+| workspace-cpp | projects/ores.codegen/models/workspace | *_domain_entity.json | | projects/ores.workspace/modeling | |

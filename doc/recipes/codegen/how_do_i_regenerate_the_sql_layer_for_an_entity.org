@@ -17,14 +17,10 @@ How do I regenerate the SQL DDL files for a domain entity?
 
 * Answer
 
-The =sql= profile supports =domain_entity=, =junction=, =schema=, and =table= model types. For =refdata= entities use the =refdata= component (table models) or =refdata-cpp= (domain_entity models — also fires the SQL template).
+The =sql= profile supports =domain_entity=, =junction=, =schema=, and =table= model types. All =refdata= entity types (table and domain_entity) are discovered by the single =refdata= component:
 
 #+begin_src sh
-# For entities driven by table models (e.g. currency, country)
 ./compass.sh codegen regenerate --component refdata --address ores.sql.schema
-
-# For domain_entity models (e.g. rounding_type, monetary_nature)
-./compass.sh codegen regenerate --component refdata-cpp --address ores.sql.schema
 #+end_src
 
 Expected output (=refdata= component, entity =rounding_type=):
@@ -43,7 +39,7 @@ If the diff contains unexpected differences, classify each delta using the drift
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata --address ores.sql.schema= (table models) or =--component refdata-cpp --address ores.sql.schema= (domain_entity models).
+=./compass.sh codegen regenerate --component refdata --address ores.sql.schema=.
 
 * Tested by
 
@@ -53,6 +49,6 @@ Manual: run the command, inspect =git diff -- projects/ores.sql/create/ projects
 
 - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe for running all profiles.
 - [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] — =sql= profile entry with template → output path table.
-- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] — =refdata= and =refdata-cpp= component definitions.
+- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] — =refdata= component definition.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — drift classification table; output location check.
 - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — tracks open drift and path issues.

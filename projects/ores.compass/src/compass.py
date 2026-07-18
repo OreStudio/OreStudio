@@ -6257,7 +6257,7 @@ def cmd_codegen(argv):
                               help="Regenerate all models for a component.")
     regen_scope = regen_p.add_mutually_exclusive_group(required=True)
     regen_scope.add_argument("--component", metavar="NAME",
-                             help="Component to regenerate (e.g. refdata-cpp)")
+                             help="Component to regenerate (e.g. refdata)")
     regen_scope.add_argument("--all", action="store_true",
                              help="Regenerate all components")
     regen_p.add_argument("--address", required=True, metavar="ADDRESS",

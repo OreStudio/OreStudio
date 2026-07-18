@@ -61,7 +61,7 @@ Generate from a specific org model file:
 Regenerate every entity in a component:
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp
+./compass.sh codegen regenerate --component refdata --address ores.cpp
 ./compass.sh codegen regenerate --component refdata --address ores.sql.schema
 #+end_src
 

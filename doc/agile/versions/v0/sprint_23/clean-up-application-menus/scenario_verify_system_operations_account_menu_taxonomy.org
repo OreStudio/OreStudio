@@ -38,11 +38,23 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
 select *BARCLAYS PLC* as the active party.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** System and Account no longer exist as top-level menus
 
 Confirm the menu bar reads: *File*, *Reference Data*, *Trading*,
 *Operations*, *Data &Quality*, *Market Data*, *Window*, *Help* — no
 separate *System* or *Account* menu.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** File contains connection actions, personal actions, and a System submenu
 
@@ -56,6 +68,12 @@ separator, Test Scenario Runner, separator, Reset System.... Open
 System Settings and confirm it opens. Open Test Scenario Runner and
 confirm it opens (this is the window you're using to run this very
 scenario).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Operations gains Telemetry, Message Queue, User Accounts
 
@@ -72,6 +90,12 @@ distinguishable from the personal *Account* actions in File
 is no separate *Configuration* submenu — System Settings lives in
 File > System instead (previous step).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Operations gains Data Transfer (Data Catalogue moved to Data Quality instead)
 
 Confirm *Operations* has a *Data &Transfer* submenu containing:
@@ -79,6 +103,12 @@ Import ORE Data..., Data Librarian, Manage Workspaces — and nothing
 else (no nested Data Catalogue here; see next step for where it
 actually lives). Open each entry and confirm the correct window
 opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Data Management is retired; Classifications/Audit Trail/Data Catalogue moved to Data Quality
 
@@ -93,6 +123,13 @@ Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
 Dimensions). Open one entry from each and confirm the correct
 window opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | classiciations is a data quality sub menu, not a top level menu. shows up as both |
+
 ** Trading Codes is retired; Purpose Types moved to Reference Data
 
 There is no more *Trading &Codes* submenu anywhere (it used to sit
@@ -105,6 +142,12 @@ Instead, open *Reference Data > &Codes > &Book Codes* and confirm
 and Regulatory Book Types). Open it and confirm the correct window
 opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Synthetic's Advanced (raw tables) submenu is flattened
 
 Open *Market Data > &Synthetic*. Confirm there is no nested
@@ -114,14 +157,21 @@ Template Entries, and Yield Curve Process Types are all directly
 under Synthetic now, alongside Market Simulator. Open one entry and
 confirm the correct window opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | too much stuff, create a Configuration sub menu. |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-18T12:05:29Z |
+| Branch        | feature/system-operations-account-menu-taxonomy |
+| Commit        | 8f7734def |
+| Worktree      | solid_dirac |
 
 * Notes

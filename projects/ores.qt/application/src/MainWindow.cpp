@@ -518,12 +518,15 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataQualityMenu = new QMenu(tr("Data &Quality"), this);
 
-    // Pre-create Data Quality's Classifications submenu and attach it —
-    // both DqPlugin (Code Domains) and DataManagementPlugin (Coding
-    // Schemes, Coding Scheme Authority Types) populate it, so it needs a
-    // single owner for attachment rather than either plugin racing to
-    // create/attach it themselves.
-    auto* classificationsMenu = new QMenu(tr("C&lassifications"), this);
+    // Pre-create Data Quality's Coding Schemes submenu and attach it — both
+    // DqPlugin (Code Domains) and DataManagementPlugin (Coding Schemes,
+    // Coding Scheme Authority Types) populate it, so it needs a single
+    // owner for attachment rather than either plugin racing to create/
+    // attach it themselves. Named "Coding Schemes" rather than
+    // "Classifications" to avoid colliding with Reference Data > Codes'
+    // unrelated Classifications submenu (Asset Class Codes, Curve Roles,
+    // Instrument Codes).
+    auto* classificationsMenu = new QMenu(tr("Coding &Schemes"), this);
     dataQualityMenu->addMenu(classificationsMenu);
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;

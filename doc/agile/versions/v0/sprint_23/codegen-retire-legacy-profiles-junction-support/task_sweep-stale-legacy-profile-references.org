@@ -100,6 +100,8 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Migration-script docstrings still say "the SQL profile"/"service-registry profile" | migrate_{junction,lookup_entity,service_registry,table}_to_org.py | Accepted | Reworded to the actual address (=ores.sql.schema=, =ores.shell.service=) |
 | 2 | "Scaffold profiles" heading not renamed alongside its `#+component_kind:` content | projects/modeling/component_architecture.org | Accepted | Renamed to "Scaffold kinds" |
+| 3 | Broken cross-file heading link `[[*The facet catalogue]]` — org same-file link syntax used cross-file | projects/modeling/variability_model.org | Accepted | Caught by CI's `site` build (`Unable to resolve link`); replaced with plain text |
+| 4 | Sibling `is_field_group` comment still says "field-group profile"; other three branches already say "address" | projects/ores.codegen/src/codegen/core.py:1394 | Accepted | Reworded to match the other three branches |
 
 * Result
 

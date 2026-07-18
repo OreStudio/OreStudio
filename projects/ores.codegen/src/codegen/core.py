@@ -1391,7 +1391,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Enum models use a specific template
         templates_to_process = [t[0] for t in get_enum_template_mappings()]
     elif is_field_group:
-        # Field-group models must be used via the field-group profile (no default templates)
+        # Field-group models must be used via an address (e.g. --address ores.cpp.field-group; no default templates)
         if target_template:
             templates_to_process = [target_template]
         else:

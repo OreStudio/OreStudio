@@ -12,15 +12,11 @@
 #+created: 2026-06-27
 #+updated: 2026-07-16
 
-This page is the literate source for the =ores.sql.populate= facet of the
-codegen template library. Each section documents one template and
-holds its source in a =mustache= block tangled to the sibling
-=.mustache= file consumed by =generator.py=. The =.mustache= files are
-generated artefacts — edit this document, then run the tangle
-(=compass build --direct tangle_codegen_templates= or
-=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership are documented in each template's row
-of the Archetypes table below.
+This page is the node for the =ores.sql.populate= facet of the codegen
+template library, part of the [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
 
 * Summary
 
@@ -65,5 +61,5 @@ via ={{generated_svg}}=. Otherwise the group's standard constructs.
 
 * See also
 
-- (Parent template group doc: =<group>_group.org=.)
+- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — the parent technical space, its shared Mustache conventions, and the full facet list.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

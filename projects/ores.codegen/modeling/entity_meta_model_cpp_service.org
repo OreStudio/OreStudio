@@ -42,12 +42,16 @@ There are no service-level behavioural knobs today (unlike [[id:483EBF89-6151-48
 =has_change_reason_cache= and friends) — everything entity-specific
 at this layer is expressed as one of the paste blocks below.
 
-* Paste block: extra includes (header)
+* Paste blocks
+
+The =ores.cpp.service= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Extra includes (header)
 :PROPERTIES:
 :ID: C5F35C7E-6EED-48D8-99F8-793145586882
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 Extra =#include= directives injected into =<entity>_service.hpp=,
 immediately before the =namespace= opening brace, expecting a
@@ -55,8 +59,12 @@ immediately before the =namespace= opening brace, expecting a
 entity-specific types the generic template doesn't emit — a junction
 repository header, =<boost/uuid/uuid.hpp>=.
 
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Extra includes (header)=. See the following example:
+
 #+begin_src org
-,** Custom service includes
+,** Paste blocks
+,*** Extra includes (header)
 
 ,#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
 #include <boost/uuid/uuid.hpp>
@@ -64,7 +72,7 @@ repository header, =<boost/uuid/uuid.hpp>=.
 ,#+end_src
 #+end_src
 
-* Paste block: custom public methods (header)
+** Custom public methods (header)
 :PROPERTIES:
 :ID: 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
 :END:
@@ -75,7 +83,8 @@ entity-specific query methods beyond the standard CRUD surface —
 party-scoped list/count on a junction table, for example.
 
 #+begin_src org
-,** Custom service methods
+,** Paste blocks
+,*** Custom public methods (header)
 
 ,#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
     std::vector<domain::country> list_countries_for_party(
@@ -84,7 +93,7 @@ party-scoped list/count on a junction table, for example.
 ,#+end_src
 #+end_src
 
-* Paste block: extra private members (header)
+** Extra private members (header)
 :PROPERTIES:
 :ID: 047A96EF-1CC4-4661-B80B-C6C4532076AB
 :END:
@@ -96,14 +105,15 @@ about — most often a junction repository, paired with the custom
 method above.
 
 #+begin_src org
-,** Custom service members
+,** Paste blocks
+,*** Extra private members (header)
 
 ,#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
     repository::party_country_repository junction_repo_;
 ,#+end_src
 #+end_src
 
-* Paste block: extra includes (.cpp)
+** Extra includes (.cpp)
 :PROPERTIES:
 :ID: A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
 :END:
@@ -114,7 +124,7 @@ headers needed only by the custom implementations below —
 implementation details that shouldn't leak into the header (e.g.
 =<algorithm>=, =<boost/uuid/uuid_io.hpp>=).
 
-* Paste block: constructor extra init (.cpp)
+** Constructor extra init (.cpp)
 :PROPERTIES:
 :ID: 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
 :END:
@@ -126,14 +136,15 @@ Pairs with the extra private members block above — whatever member
 you add there, initialise it here.
 
 #+begin_src org
-,** Custom service constructor init
+,** Paste blocks
+,*** Constructor extra init (.cpp)
 
 ,#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
     , junction_repo_(ctx_)
 ,#+end_src
 #+end_src
 
-* Paste block: custom implementations (.cpp)
+** Custom implementations (.cpp)
 :PROPERTIES:
 :ID: D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
 :END:

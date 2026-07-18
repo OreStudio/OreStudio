@@ -40,12 +40,16 @@ generate_synthetic_books(std::size_t n, utility::generation::generation_context&
 }
 #+end_src
 
-* Paste block: custom declarations
+* Paste blocks
+
+The =ores.cpp.generator= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Custom declarations
 :PROPERTIES:
 :ID: E32E358B-56EC-4642-911E-A2EA1D95E3B4
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 Additional free-function declarations after the standard synthetic
 generator declarations, before the closing namespace brace, expecting
@@ -54,8 +58,12 @@ not expressible through the standard
 =generate_synthetic_<entity>= template — a fictional/hardcoded
 generator for a test entity with an authoritative fixed data set.
 
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Custom declarations=. See the following example:
+
 #+begin_src org
-,** Custom generator declarations
+,** Paste blocks
+,*** Custom declarations
 
 ,#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
 ORES_REFDATA_API_EXPORT std::vector<domain::country>
@@ -64,7 +72,7 @@ generate_fictional_countries(std::size_t n,
 ,#+end_src
 #+end_src
 
-* Paste block: custom implementations
+** Custom implementations
 :PROPERTIES:
 :ID: C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
 :END:

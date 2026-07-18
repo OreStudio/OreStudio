@@ -10,3 +10,47 @@
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-07-11
 #+updated: 2026-07-11
+
+This page is the node for the =ores.cpp.presentation= facet of the
+codegen template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each
+archetype below is documented, and holds its =mustache= source, in
+its own linked page — this page is the facet-level summary and the
+routing table to them.
+
+* Summary
+
+Two templates — an hpp/cpp pair — for an entity's history-diff field
+mapper: =render_{entity}_fields()=, which turns a domain value into
+an ordered list of =ores::diff::domain::field_value= for display.
+=presentation= profile.
+
+* The ores.cpp.presentation facet
+
+Server-side rendering of a domain type for display, per [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff
+Architecture]] layer 1: one call per field, in mapper order, no
+runtime reflection. Dispatch is driven by a set of =render_is_*=
+flags computed directly from each column's raw =cpp_type= string —
+deliberately distinct from the =is_uuid=/=is_nullable_string=/
+=is_already_optional=/=is_plain_string= flags [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]/
+[[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] use, since those encode a nullable-to-optional
+/promotion/ for the storage layer that the domain class itself does
+not apply — the mapper must match the domain struct's actual field
+types, not the storage layer's.
+
+This first cut is scoped to flat entities only (no
+=has_identity_group=/=has_audit_group=); enum columns are not yet
+rendered; primary/natural keys support =string= and =uuid= only —
+see the covering task's Notes for the full remaining list.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:19D528D6-50D3-451C-AA83-8A7B449C3A26][ores.cpp.presentation.history_field_mapper_header]] | Declares =render_{entity}_fields()=. =presentation= profile. |
+| [[id:CDB5DA90-3CDC-4496-821E-B1CC0331720B][ores.cpp.presentation.history_field_mapper_impl]] | One =field_value= push per field, dispatched on the column's =render_is_*= type flags. =presentation= profile. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space, its shared Mustache conventions, and the full facet list.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the layered rendering model this facet implements layer 1 of.

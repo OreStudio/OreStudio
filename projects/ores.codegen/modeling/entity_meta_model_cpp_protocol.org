@@ -73,19 +73,23 @@ Every request struct's =nats_subject= follows
 =<component>.v1.<entity_plural>.<verb>= — this is what
 [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]'s sub-registrar wires each handler method to.
 
-* Paste block: custom message includes
+* Paste blocks
+
+The =ores.cpp.protocol= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Custom message includes
 :PROPERTIES:
 :ID: 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 Additional =#include= directives injected after the standard
 generated includes, expecting a =body= block. Use for domain headers
 needed by the custom message types below — e.g. a child entity's
 domain header for a composite as-of response.
 
-* Paste block: custom message types
+** Custom message types
 :PROPERTIES:
 :ID: 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
 :END:
@@ -100,10 +104,13 @@ and its child entities. Pairs with [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C+
 methods" and "custom subscription" paste points, to wire the full
 request/handler/subscription trio.
 
-Entity attachment (=party='s composite-as-of read):
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Custom message types=. See the following example, from
+=party='s composite-as-of read:
 
 #+begin_src org
-,** Custom NATS protocol messages
+,** Paste blocks
+,*** Custom message types
 
 ,#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
 struct get_party_composite_as_of_request {

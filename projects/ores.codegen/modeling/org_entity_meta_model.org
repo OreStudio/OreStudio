@@ -13,7 +13,7 @@
 A codegen *entity model* is a single literate org-mode file that
 describes one entity (e.g. [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][party]]) and drives code generation across
 every technical space that entity touches: [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]] and several independent
-C++ facets (e.g. [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]],
+[[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]] facets (e.g. [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]], [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]],
 [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]). In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, this hub — together with its
 segment pages — is the *metamodel* for one metatype, =ores.codegen.entity=
 (=domain_entity=); it is one entry in the [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] registry of
@@ -28,17 +28,9 @@ are exactly the organising principle this hub uses below.
 This page stays deliberately short: an overview, the file-level
 conventions every entity model shares regardless of which facets it
 uses, and a table routing to the segment page that documents each
-facet's knobs, worked example, and paste blocks in full. Go to a
+facet's fields, worked example, and paste blocks in full. Go to a
 segment page for the exhaustive per-property reference; come back
 here only for the shape of the file as a whole.
-
-* Use of =:ignore:= in models
-
-The =:ignore:= tag asks the codegen loader to skip a heading when
-reading an entity file (it means "skip this heading", not "this
-document is unimportant" — an unfortunate naming collision if you're
-skimming the table of contents of an entity model that uses it).
-Sections without that tag may be consumed by the loader.
 
 * File-level conventions
 
@@ -51,14 +43,20 @@ them.
 * Segments
 
 =Entity='s full specialization of [[id:884C6B00-0849-430D-9D32-F3544269DC56][Base]] (see [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] for
-=Base=/=CommonFrontmatter= alone): its own frontmatter type, and one
-typed field per segment below. Segment classes are drawn empty here —
+=Base= / =CommonFrontmatter= alone): its own frontmatter type, and one
+typed field per segment below. An entity carries one segment per
+technical space it projects into across the full stack — [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
+columns]] and [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] for the database layer, one segment per independent
+C++ facet (domain, repository, service, protocol, NATS, Qt, generator,
+presentation) for the application layer — because each is a distinct
+point in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] with its own fields an author has to fill in
+independently of the others. Segment classes are drawn empty here —
 each has its own structural fields, documented on its own page, not
 duplicated in this overview.
 
 [[proj:projects/ores.codegen/modeling/org_entity_meta_model.png]]
 
-(Source: =projects/ores.codegen/modeling/org_entity_meta_model.puml=,
+(Source: [[proj:projects/ores.codegen/modeling/org_entity_meta_model.puml][org_entity_meta_model.puml]],
 rendered with =plantuml=.)
 
 The body is divided into top-level sections, each read by a
@@ -80,46 +78,14 @@ routing table, not the reference itself.
 | [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | Custom repository methods' generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
 | [[id:F966605D-4321-4499-9304-F8A703C91E26][C++ Presentation]]            | History-diff field rendering.                                     | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                       |
 
-Not itself a segment — a concept applicable *within* several
-segments above — but documented alongside them for navigation:
-[[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]], the shared mechanism for injecting hand-written code
-into an otherwise generated file. Concrete block kinds live on the
-segment page that hosts them, not there.
+One more thing worth knowing about before reading the segment pages:
+several of the segments above (e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]]) carry a
+field for hand-written code — a [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste block]]. Paste blocks are not a
+segment in their own right, so they get no row in the table above;
+[[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] explains the mechanism once, and each segment page that
+has concrete block kinds documents them inline.
 
-=ores.codegen.enum=/=ores.codegen.field-group= are separate MASD
-metatypes with their own facets (=ores.cpp.enum=,
-=ores.cpp.field-group=), not covered by this =domain_entity=-scoped
-hub — they'd get their own metamodel hub if documented to this depth.
-
-* Notes
-
-** Terminology: what a "knob" actually is
-
-The full treatment of this — why a =.org= entity model bundles the
-entity's shape, its authored variability, and its protected regions
-into one document; the mechanical test for telling a variability
-*feature* apart from a *structural predicate*; and the contrast with
-how classical UML+Profile MDE keeps the same three concerns in three
-separate artefacts — now lives in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "The entity model file
-as a unified literate document". Read that first if a knob on one of
-these segment pages doesn't obviously fit "feature" or "structural
-predicate."
-
-Resolving the two open questions that discussion raises for *this*
-hub specifically — full structural/non-structural labelling on every
-segment page, and whether task =EE237306='s domain_entity "shape"
-concept should just be MASD's existing =profile= — is tracked by
-capture [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize the codegen entity knob system as a proper MASD/MDE
-feature model]], not decided piecemeal across these pages.
-
-** Why two levels of UUID (paste blocks)
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the full explanation; in short, a *block kind* is
-a stable, template-referenced UUID (a concept); a *block instance* is
-one entity's per-block =:ID:= (an implementation). This lets
-templates and entity files evolve independently.
-
-** Future work
+* Future work
 
 - *Stage 1.5*: tag-based heading dispatch. Replace title matching
   ("Flags", "Primary key", ...) with tag matching (=:section:flags:=,

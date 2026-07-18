@@ -185,12 +185,16 @@ per-field properties, layered on top of the plain =field=/=label=/
   column, for the complete worked shape. *(Gap: this needs its own
   worked example on this page — flag for follow-up.)*
 
-* Paste block: detail dialog hierarchy tree seam
+* Paste blocks
+
+The =ores.cpp.qt= facet defines the following paste block kinds, one
+per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism
+they assume.
+
+** Detail dialog hierarchy tree seam
 :PROPERTIES:
 :ID: 9B165431-2921-4CAC-A2E8-2C186741E523
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 A placeholder in the generated =<Entity>DetailDialog.cpp= constructor,
 immediately after =setupConnections()=, expecting a
@@ -201,7 +205,7 @@ is the Qt-side consumer of [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =h
 No entity implements this kind yet; it's a seam only, added ahead of
 wiring party/counterparty hierarchy trees into their detail dialogs.
 
-* Paste block: detail dialog private members
+** Detail dialog private members
 :PROPERTIES:
 :ID: F55CB64E-165A-4E15-A50A-5723C0320E97
 :END:
@@ -213,7 +217,7 @@ dialog as a pointer member. Pair with the header extra includes block
 below — a forward declaration alone isn't enough for most such
 members.
 
-* Paste block: detail dialog header extra includes
+** Detail dialog header extra includes
 :PROPERTIES:
 :ID: 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
 :END:
@@ -223,7 +227,7 @@ includes, before the =Ui= forward declaration, expecting a =body=
 block. Needed by whatever type the private-members block above
 declares.
 
-* Paste block: composite child-entity tables seam
+** Composite child-entity tables seam
 :PROPERTIES:
 :ID: 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
 :END:
@@ -241,10 +245,13 @@ child entity's fields, service, and protocol differ too much between
 consumers to templatize usefully with only two consumers (=party=,
 =counterparty=) to date.
 
-Entity attachment (=party='s identifier table, abridged):
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Composite child-entity tables seam=. See the following
+example, from =party='s identifier table (abridged):
 
 #+begin_src org
-,** Custom composite child-entity tables
+,** Paste blocks
+,*** Composite child-entity tables seam
 
 ,#+begin_src cpp :name child_tables_setup :implements 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
     setupIdentifierTab();
@@ -252,7 +259,7 @@ Entity attachment (=party='s identifier table, abridged):
 ,#+end_src
 #+end_src
 
-* Paste block: entity-set load hook
+** Entity-set load hook
 :PROPERTIES:
 :ID: D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
 :END:

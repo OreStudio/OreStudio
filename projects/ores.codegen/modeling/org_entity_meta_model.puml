@@ -57,4 +57,15 @@ class CppQt <<segment>>
 class CppGenerator <<segment>>
 class CppPresentation <<segment>>
 
+Entity "1" *-- "1" KeysAndColumns
+Entity "1" *-- "1" SQL
+Entity "1" *-- "1" CppDomain
+Entity "1" *-- "1" CppRepository
+Entity "1" *-- "1" CppService
+Entity "1" *-- "1" CppProtocol
+Entity "1" *-- "1" CppNats
+Entity "1" *-- "1" CppQt
+Entity "1" *-- "1" CppGenerator
+Entity "1" *-- "1" CppPresentation
+
 @enduml

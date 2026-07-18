@@ -12,16 +12,16 @@
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. It is
 the one segment that does not map to a single facet — a column
-declaration is read by *both* [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] (to generate the table's DDL) and by
+declaration is relevant to *both* [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] (to generate the table's DDL) and
 [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]/[[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] (to generate the domain struct field and the
-sqlgen-mapped entity field). Author a column once here; it becomes a SQL
-column, a domain struct field, and a repository entity field, all
-three kept in sync by construction.
+sqlgen-mapped entity field), so it was abstracted into a segment of
+its own rather than duplicated in each. Author a column once here; it
+becomes a SQL column, a domain struct field, and a repository entity
+field, all three kept in sync by construction.
 
 * Physical model mapping
 
-This segment is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] declaration, not a projection of one
-facet — it [[id:787A7429-71D5-4295-829B-A9B56275B1F8][projects]] into three:
+This segment [[id:787A7429-71D5-4295-829B-A9B56275B1F8][projects]] into three facets in physical space:
 
 | Facet                     | Description                                       |
 |-----------------------------+------------------------------------------------------|
@@ -74,7 +74,7 @@ repository-layer concern).
 | =:type:=      | yes      | SQL type (=uuid=, =text=, etc.).                         |
 | =:cpp_type:=  | yes      | C++ type (=boost::uuids::uuid=, =std::string=, ...).     |
 
-Model:
+=book='s primary key, for example:
 
 #+begin_src org
 ,* Primary key
@@ -131,7 +131,7 @@ into generated code). A column may also carry a =generator= babel
 block: a C++ expression producing a synthetic value for that field,
 used by the [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] facet.
 
-Model:
+=book='s =name= column, for example:
 
 #+begin_src org
 ,** name

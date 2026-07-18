@@ -128,12 +128,16 @@ and easy to miss when commissioning a new entity (party_type and
 ~14 other entities silently never fired eventing because of exactly
 this miss).
 
-* Paste block: handler save() early-exit override
+* Paste blocks
+
+The =ores.cpp.nats-handler= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Handler save() early-exit override
 :PROPERTIES:
 :ID: 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 A placeholder at the very top of the generated =save()= method body,
 before the standard JWT-authenticated request-context flow, expecting
@@ -145,7 +149,7 @@ should contain its own early =return= for the cases it handles;
 anything falling through continues into the generated standard flow.
 =party= uses this for its workflow-step =save= command.
 
-* Paste block: handler extra includes
+** Handler extra includes
 :PROPERTIES:
 :ID: F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
 :END:
@@ -155,7 +159,7 @@ includes in =<entity>_handler.hpp=, expecting a =body= block. Use for
 headers custom handler methods need — =rfl/msgpack.hpp=,
 =storage_transfer.hpp=, extra protocol headers.
 
-* Paste block: handler custom public methods
+** Handler custom public methods
 :PROPERTIES:
 :ID: B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
 :END:
@@ -167,7 +171,7 @@ surface — export-to-storage, bulk operations. Pairs with
 [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]'s custom message types when the method needs its own
 request/response shapes.
 
-* Paste block: handler extra private members
+** Handler extra private members
 :PROPERTIES:
 :ID: A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
 :END:

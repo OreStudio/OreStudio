@@ -9,6 +9,12 @@
 #+created: 2026-06-07
 #+updated: 2026-06-07
 
+C++ is a general-purpose, statically-typed, compiled programming
+language, an extension of C with classes and (in modern revisions)
+templates, RAII, and a large standard library. ORE Studio's C++ code
+is built with CMake and vcpkg, targets Qt 6 for its desktop UI, and
+compiles against Boost and other vcpkg-managed dependencies.
+
 The C++ [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is ORE Studio's primary codegen TS. It contains 9
 [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] and 57 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]] and generates the majority of the
 boilerplate across the domain, repository, messaging, service, and UI layers.

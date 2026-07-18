@@ -109,18 +109,22 @@ column name:
 | party_id | Party |
 #+end_src
 
-* Paste block: additional class-member declarations
+* Paste blocks
+
+The =ores.cpp.repository= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Additional class-member declarations
 :PROPERTIES:
 :ID: DCA78C69-E508-48D9-9972-A9B8094D91FB
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism.
 
 Class-member declarations inserted just before the closing brace of
 the generated =<entity>_repository= class, expecting a =declaration=
 block.
 
-Template usage:
+Example of an inclusion of this paste block in a template:
 
 #+begin_src text
     void remove(context ctx, const std::string& id);
@@ -128,10 +132,14 @@ Template usage:
 };
 #+end_src
 
-Entity attachment (per custom method, one =***= sub-heading each):
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Additional class-member declarations=, one =****=
+sub-heading per custom method. See the following example:
 
 #+begin_src org
-,*** read_system_party
+,** Paste blocks
+,*** Additional class-member declarations
+,**** read_system_party
 ,:PROPERTIES:
 ,:ID: 9B7C5D2E-1A4F-4E7B-9D8A-6F3C2E1B5A4D
 ,:END:
@@ -144,7 +152,7 @@ read_system_party(context ctx, const std::string& tenant_id);
 ,#+end_src
 #+end_src
 
-* Paste block: additional out-of-class implementations
+** Additional out-of-class implementations
 :PROPERTIES:
 :ID: F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 :END:
@@ -155,7 +163,7 @@ the =.cpp= counterpart of the declaration above, expecting a =body=
 block. Multiple implementing blocks concatenate with a blank line
 between them.
 
-* Paste block: additional .cpp includes
+** Additional .cpp includes
 :PROPERTIES:
 :ID: 6141050C-0ED4-4680-B387-7DDDA3A69806
 :END:

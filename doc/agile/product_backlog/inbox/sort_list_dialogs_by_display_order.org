@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 8C699CBA-ABB9-49A3-87DC-7D2F96D38E2F
+:END:
+#+title: Sort list dialogs by display_order when present
+#+description: Any list dialog whose entity has a display_order field should sort by it by default.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ux:list_dialog:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Any Qt list dialog backed by an entity that has a =display_order=
+column (e.g. code-domain-style lookup entities like
+=report_type=, =concurrency_policy=, =code_domain=,
+=badge_severity=, =artefact_type=, =party_id_scheme=,
+=yield_curve_process_type=, and others across
+=ores.reporting=/=ores.dq=/=ores.synthetic=/=ores.refdata=) should
+default its list sort to =display_order= ascending instead of
+whatever the current default is (typically insertion order or
+primary key/code). This is a cross-cutting model-layer sweep across
+every entity carrying the column, not a single-dialog fix.
+
+* Why
+
+=display_order= exists specifically to let curators control the
+order these values appear to end users (e.g. in dropdowns and list
+screens); if the list dialog doesn't sort by it by default, the
+column has no visible effect and users see an arbitrary order that
+doesn't match how the data was curated.
+
+* References
+
+-
+
+* See also
+
+-

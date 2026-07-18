@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 #define ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 
+#include "curve_feed_controller.hpp"
 #include "feed_controller.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
@@ -32,18 +33,22 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief Registers NATS handlers for the FX spot synthetic tick generation PoC.
+ * @brief Registers NATS handlers for the FX spot and IR curve synthetic tick generation PoC.
  *
  * Wires:
- *   marketdata.v1.market_feed_configs.start — starts the EUR/USD GMM feed
- *   marketdata.v1.market_feed_configs.stop  — stops the running feed
- *   synthetic.v1.fx_spot.simulate           — batch dry-run sample paths (auth + RBAC)
+ *   marketdata.v1.market_feed_configs.start   — starts the EUR/USD GMM feed
+ *   marketdata.v1.market_feed_configs.stop    — stops the running feed
+ *   synthetic.v1.fx_spot.simulate             — batch dry-run sample paths (auth + RBAC)
+ *   synthetic.v1.ir_curve_feed_configs.start  — starts an IR curve config's feed on demand
+ *   synthetic.v1.ir_curve_feed_configs.stop   — stops the running IR curve feed
+ *   synthetic.v1.ir_curve_feed_configs.list   — lists running IR curve feed source_names
  */
 class registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       std::shared_ptr<feed_controller> ctrl,
+                      std::shared_ptr<curve_feed_controller> curve_ctrl,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
 };

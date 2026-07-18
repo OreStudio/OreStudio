@@ -19,6 +19,11 @@
  */
 #include "ir_curve_template_resolver.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "ores.refdata.core/repository/instrument_code_repository.hpp"
+#include "ores.refdata.core/repository/payment_frequency_repository.hpp"
+#include "ores.refdata.core/repository/tenor_convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
+#include "ores.refdata.core/repository/tenor_repository.hpp"
 #include <algorithm>
 #include <stdexcept>
 
@@ -149,6 +154,35 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
         return a.sequence_index < b.sequence_index;
     });
     return out;
+}
+
+std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::database::context ctx) {
+    namespace refdata_repo = ores::refdata::repository;
+
+    refdata_repo::instrument_code_repository instrument_code_repo;
+    refdata_repo::payment_frequency_repository payment_frequency_repo;
+    refdata_repo::tenor_repository tenor_repo;
+    refdata_repo::tenor_convention_repository convention_repo;
+    refdata_repo::tenor_convention_resolution_repository resolution_repo(ctx);
+
+    const auto conventions = convention_repo.read_latest(ctx, "RATES_SPOT_FORWARD");
+    if (conventions.empty())
+        return std::nullopt;
+
+    ir_curve_refdata_context refctx;
+    refctx.convention = conventions.front();
+    for (const auto& t : tenor_repo.read_latest(ctx))
+        refctx.tenors_by_code.emplace(t.code, t);
+    for (const auto& ic : instrument_code_repo.read_latest(ctx, 0, 10000))
+        refctx.instrument_codes_by_code.emplace(ic.code, ic);
+    for (const auto& pf : payment_frequency_repo.read_latest(ctx))
+        refctx.payment_frequencies_by_code.emplace(pf.code, pf);
+    for (const auto& r : resolution_repo.read_latest_by_convention(refctx.convention.code))
+        refctx.resolutions_by_tenor.emplace(r.tenor_code, r);
+    refctx.horizon = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
+    refctx.spot = refctx.horizon; // T+0: see resolve()'s doc.
+
+    return refctx;
 }
 
 }

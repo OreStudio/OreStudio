@@ -78,6 +78,8 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void startSelected();
+    void stopSelected();
 
 protected:
     void doReload() override;
@@ -115,6 +117,8 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* startAction_;
+    QAction* stopAction_;
 };
 
 }

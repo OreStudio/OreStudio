@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
@@ -29,6 +30,7 @@
 #include <chrono>
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -105,6 +107,18 @@ std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
        const ir_curve_refdata_context& ctx,
        const std::string& fixed_leg_payment_frequency_code);
+
+/**
+ * @brief Builds the refdata inputs resolve() needs by reading the tenor/instrument_code/
+ * payment_frequency/tenor_convention_resolution catalogs once. Shared by auto-start (once at
+ * service startup) and the on-demand start control-plane (once per start request) -- cheap
+ * enough to rebuild per call given the catalog sizes involved (tens of rows each).
+ *
+ * @return An empty optional if the RATES_SPOT_FORWARD tenor convention is not found (a
+ * misconfigured environment, not a per-request error) -- callers should treat that as fatal to
+ * every curve feed, not just the one being started.
+ */
+std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::database::context ctx);
 
 }
 

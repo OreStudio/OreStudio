@@ -19,9 +19,12 @@
  */
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp"                     // IWYU pragma: keep.
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <rfl/json.hpp>
 #include <span>
@@ -175,6 +178,43 @@ void ir_curve_feed::start() {
 
 void ir_curve_feed::stop() {
     stop_flag_.store(true, std::memory_order_relaxed);
+}
+
+namespace {
+std::string lowercase(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return s;
+}
+}
+
+std::string ir_curve_feed_source_name(const std::string& currency_code, const std::string& index_name) {
+    return "ir_curve." + lowercase(currency_code) + "." + lowercase(index_name);
+}
+
+std::shared_ptr<ir_curve_feed>
+make_ir_curve_feed(ores::nats::service::client& nats,
+                   const ores::synthetic::domain::ir_curve_generation_config& cfg,
+                   const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+                   const ir_curve_refdata_context& refctx) {
+    auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
+
+    auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
+        lowercase(cfg.process_type), cfg.kappa, {cfg.theta}, cfg.sigma, cfg.initial_rate);
+
+    const auto source_name = ir_curve_feed_source_name(cfg.currency_code, cfg.index_name);
+    return std::make_shared<ir_curve_feed>(nats,
+                                           cfg.tenant_id,
+                                           cfg.party_id,
+                                           source_name,
+                                           "synthetic.v1.curve_family." + source_name,
+                                           "RATES",
+                                           "YIELD",
+                                           cfg.currency_code + "/" + cfg.index_name,
+                                           std::move(process),
+                                           static_cast<double>(cfg.ticks_per_hour),
+                                           std::move(resolved));
 }
 
 }

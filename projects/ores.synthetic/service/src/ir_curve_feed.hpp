@@ -23,6 +23,7 @@
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <boost/uuid/uuid.hpp>
@@ -89,6 +90,28 @@ private:
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> publish_count_{0};
 };
+
+/**
+ * @brief Builds the source_name/subject a config's feed publishes under: "ir_curve.<ccy>.<idx>",
+ * lowercased. Shared by construction (make_ir_curve_feed()) and by callers needing to address an
+ * already-running feed by the same key (e.g. a stop request naming currency/index instead of the
+ * raw source_name).
+ */
+std::string ir_curve_feed_source_name(const std::string& currency_code, const std::string& index_name);
+
+/**
+ * @brief Resolves a config's Curve Template entries and constructs its ir_curve_feed, ready to
+ * start() on its own thread. Shared by auto-start and the on-demand start control-plane so the
+ * two paths can never drift (e.g. one lowercasing process_type and the other not).
+ *
+ * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()
+ * and process_factory::make_yield_curve_process()).
+ */
+std::shared_ptr<ir_curve_feed>
+make_ir_curve_feed(ores::nats::service::client& nats,
+                   const ores::synthetic::domain::ir_curve_generation_config& cfg,
+                   const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+                   const ir_curve_refdata_context& refctx);
 
 }
 

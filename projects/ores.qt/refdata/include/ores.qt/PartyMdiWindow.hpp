@@ -74,6 +74,9 @@ signals:
     // request to a related entity's list window) — see
     // paste_blocks_in_codegen.org. Left empty when no entity implements
     // this kind.
+    void showPartyTypesRequested();
+    void showPartyStatusesRequested();
+    void showPartyIdSchemesRequested();
 
 public slots:
     void addNew();

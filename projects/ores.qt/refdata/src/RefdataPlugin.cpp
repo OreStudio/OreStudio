@@ -401,6 +401,43 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                  this);
     connectControllerSignals(partyTypeController_.get());
 
+    // Cross-navigation from Party/Counterparty's toolbar to their shared
+    // auxiliary lookups, mirroring CurrencyPair's Conventions button.
+    connect(partyController_.get(), &PartyController::showPartyTypesRequested, this, [this]() {
+        if (partyTypeController_)
+            partyTypeController_->showListWindow();
+    });
+    connect(partyController_.get(), &PartyController::showPartyStatusesRequested, this, [this]() {
+        if (partyStatusController_)
+            partyStatusController_->showListWindow();
+    });
+    connect(
+        partyController_.get(), &PartyController::showPartyIdSchemesRequested, this, [this]() {
+            if (partyIdSchemeController_)
+                partyIdSchemeController_->showListWindow();
+        });
+    connect(counterpartyController_.get(),
+            &CounterpartyController::showPartyTypesRequested,
+            this,
+            [this]() {
+                if (partyTypeController_)
+                    partyTypeController_->showListWindow();
+            });
+    connect(counterpartyController_.get(),
+            &CounterpartyController::showPartyStatusesRequested,
+            this,
+            [this]() {
+                if (partyStatusController_)
+                    partyStatusController_->showListWindow();
+            });
+    connect(counterpartyController_.get(),
+            &CounterpartyController::showPartyIdSchemesRequested,
+            this,
+            [this]() {
+                if (partyIdSchemeController_)
+                    partyIdSchemeController_->showListWindow();
+            });
+
     // BusinessCentre: backend already lives in ores.refdata; owned here
     // (not PartyPlugin) for the same reason as Book -- no cross-component
     // leakage, achieved via regeneration from the model's component=refdata.

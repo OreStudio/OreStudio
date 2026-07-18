@@ -12,7 +12,8 @@
 This document is aimed at C++ or Python developers with no finance
 background. It explains the mathematical constraints a volatility surface
 must satisfy before it can be used for pricing, how QuantLib checks and
-enforces them, and why synthetic surface generation must respect them.
+enforces them, and why synthetic surface generation must respect them. For
+what volatility itself is, see [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]].
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Summary

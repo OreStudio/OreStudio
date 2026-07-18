@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: B3C14587-D9D2-4631-B764-2D9A71699A93
+:END:
+#+title: Move list-window loading bar to a slim always-visible footer strip
+#+description: Reposition EntityListMdiWindow's loading indicator from a shown/hidden bar above the table to a thin progress strip fixed at the bottom of the window, always present rather than appearing/disappearing.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ui:refdata:ux:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=EntityListMdiWindow::loadingBar()=
+([[file:../../../../projects/ores.qt/api/src/EntityListMdiWindow.cpp][EntityListMdiWindow.cpp]]) currently creates a full-width
+=QProgressBar= in indeterminate (marquee) mode, placed between the
+toolbar and the table, that is hidden by default and only =show()=n
+while a fetch is in flight. Replace it with a slim, fixed-height
+progress strip pinned to the bottom of the window (below the
+=PaginationWidget=, or merged into that same footer row) that is
+*always visible* — present but visually quiet when idle, and animating
+during a load — rather than appearing and disappearing and shifting
+the layout each time.
+
+* Why
+
+A bar that pops in and out of the layout on every reload is a minor
+but repeated visual disruption (nearby widgets shift down when it
+appears), and gives the loading state less consistent screen real
+estate than it deserves given how frequently list windows reload. A
+slim, always-present footer strip is a more standard "busy" affordance
+(cf. VS Code's / most browsers' bottom status bar) and avoids the
+layout shift entirely.
+
+* References
+
+- =projects/ores.qt/api/include/ores.qt/EntityListMdiWindow.hpp= and
+  =projects/ores.qt/api/src/EntityListMdiWindow.cpp= — current
+  =loadingBar()= implementation (show/hide, indeterminate mode, fixed
+  20px height).
+- =projects/ores.qt/api/include/ores.qt/PaginationWidget.hpp= — the
+  existing bottom-row widget this would sit alongside or merge into.
+
+* See also
+
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the design rulebook this change should be
+  checked against.
+- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — the list-window pattern
+  =EntityListMdiWindow= is the base class for; changing its loading
+  affordance affects every generated list window.

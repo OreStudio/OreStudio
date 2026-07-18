@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 1C619F3F-59B3-485F-99AC-E6A92AA25BBD
+:END:
+#+title: Write a manual chapter for business units and business unit types
+#+description: business_unit and business_unit_type have Qt list/detail windows but no user-manual coverage; deserve their own org-structure chapter.
+#+type: capture
+#+level: cross
+#+filetags: :docs:refdata:business_unit:commissioning:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Write a user-manual chapter documenting =business_unit= and
+=business_unit_type= as reference-data entities in their own right, covering
+the org-structure concept, the Business Units and Business Unit Types list
+windows, and their detail dialogs. Both entities have full Qt implementations
+under =ores.qt.refdata=
+([[file:../../../../../projects/ores.qt/refdata/src/BusinessUnitMdiWindow.cpp][BusinessUnitMdiWindow]],
+[[file:../../../../../projects/ores.qt/refdata/src/BusinessUnitDetailDialog.cpp][BusinessUnitDetailDialog]],
+[[file:../../../../../projects/ores.qt/refdata/src/BusinessUnitTypeMdiWindow.cpp][BusinessUnitTypeMdiWindow]],
+[[file:../../../../../projects/ores.qt/refdata/src/BusinessUnitTypeDetailDialog.cpp][BusinessUnitTypeDetailDialog]])
+but neither appears anywhere in the manual.
+
+* Why
+
+Discovered while auditing the party/counterparty/party_status commissioning
+story for manual coverage of auxiliary lookup entities: business unit is a
+distinct org-structure concept (not a party/counterparty combo source like
+party_status/party_id_scheme are), and warrants its own chapter rather than a
+slot inside the Parties chapter.
+
+* References
+
+- Party auxiliary-entity migration task: [[id:C5825F59-3E1A-4E81-98E5-9F9FE8674BF0][Migrate party_status/party_id_scheme/business_unit/business_unit_type from ores.qt.party to ores.qt.refdata]]
+
+* See also
+
+- [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Story: Commission: party, counterparty, and party_status]]

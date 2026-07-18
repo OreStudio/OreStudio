@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: FBA135CD-6534-47B5-BBFF-7973C47B6681
+:END:
+#+title: Task: Add auxiliary-lookup toolbar buttons to Party/Counterparty MDI windows
+#+description: Party and Counterparty MDI windows lack toolbar shortcuts to their auxiliary lookup windows (Party Type, Party Status, Party Id Scheme), unlike Currency's Rounding/Monetary Natures/Market Tiers buttons; add matching buttons, wire signals and plugin, and retake the Parties/Counterparties MDI window screenshots.
+#+type: task
+#+level: s1
+#+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
+#+owner: marco
+#+branch: feature/add-lookup-toolbar-buttons-party-counterparty
+#+pr: 1633
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add toolbar buttons to PartyMdiWindow and CounterpartyMdiWindow that
+open the Party Types, Party Statuses, and Party Id Schemes list
+windows, mirroring CurrencyMdiWindow's Rounding/Monetary
+Natures/Market Tiers buttons: a toolbar separator followed by one
+action per lookup, each emitting a `showXRequested()` signal caught
+by RefdataPlugin to open the corresponding MDI window. Discovered
+while auditing manual-chapter coverage for [[id:0AEAA66B-3B71-4E25-B7FA-145416F46C38][the party_status manual
+chapter task]]: the new "Party types and statuses" and
+"Identification schemes" sections added to the Parties chapter
+document these lookup windows, but users currently have to find them
+via the Reference Data menu with no direct link from the Party
+record they're editing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
+
+* Acceptance
+
+- PartyMdiWindow gains three toolbar buttons (Party Types, Party
+  Statuses, Party Id Schemes), each opening its target list window.
+- CounterpartyMdiWindow gains the same three buttons (counterparty
+  shares all three lookups with party).
+- Signals wired through RefdataPlugin following the Currency
+  precedent exactly (naming, icon choice, separator placement).
+- Both libs build clean; manual smoke-test each button opens the
+  right window.
+- Parties and Counterparties MDI window screenshots retaken to show
+  the new buttons, and the corresponding manual chapter figures
+  updated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:785B49CA-B219-40FE-9968-5D82A99E25C3][Verify Party/Counterparty auxiliary-lookup toolbar buttons]] | PASSED | |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1633][#1633]] | [refdata,qt,doc] Party manual chapter screenshots, section restructure, party_type Display Order fix |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Modeled the three lookup-navigation buttons (Party Types, Party
+Statuses, Party Id Schemes) via the existing codegen paste-block seam
+(=67D24D2F=/=18B9ED63=/=66E078FB=/=52E70F3B=) in
+=ores.refdata.party.org= and =ores.refdata.counterparty.org= — the
+same seam Currency's Rounding/Monetary Natures/Market Tiers buttons
+use, except modeled properly this time rather than hand-copied
+outside the model (Currency's own buttons turned out to be orphaned
+from its model, a pre-existing tech debt noted but left alone).
+Regenerated both entities with a clean, minimal diff; wired the
+relay connections in =RefdataPlugin.cpp= following the
+=CurrencyPairController=/=CurrencyPairConventionController=
+precedent. =ores.qt.refdata.lib= and =ores.qt.exe= both build clean.
+
+Manually smoke-tested end to end against BARCLAYS PLC via a QA
+Validation Runner scenario: all six buttons (three on Parties, three
+on Counterparties) open their correct target windows. Badge colour
+scheme story landed on main in the interim, unblocking the
+Parties/Counterparties MDI window screenshot retake — done as part of
+the sibling manual-chapter task.

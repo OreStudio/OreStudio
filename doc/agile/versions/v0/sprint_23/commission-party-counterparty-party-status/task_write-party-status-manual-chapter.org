@@ -7,35 +7,45 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-party-status-manual-chapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Audit the Parties manual chapter for coverage of party_status (and,
+discovered along the way, its two sibling lookups party_type and
+party_id_scheme): add sections documenting their list/detail windows,
+with real screenshots, wired into the chapter at the point each
+lookup is first used rather than as a bolted-on afterword.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- party_status, party_type, and party_id_scheme all documented in the
+  Parties chapter with real screenshots, integrated into the
+  domain prose rather than segregated into a separate section.
+- All figures resolve in both the PDF and Qt-embedded help; List of
+  Figures entries confirmed.
+- Regressions found along the way (missing Display Order field,
+  missing lookup toolbar buttons) fixed rather than glossed over.
 
 * Plan
 
@@ -54,7 +64,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:8C58BC03-FD26-4530-8C7D-062768D68B3D][Capture screenshots for the auxiliary-lookup sections of the Parties manual chapter]] | PASSED | |
 
 * PRs
 
@@ -67,5 +77,42 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+Audited the Parties manual chapter for coverage of party_status
+(discovered along the way: also party_type and party_id_scheme, its
+two sibling lookups) and added it, following the user's feedback to
+merge domain prose with the screens rather than keep them fully
+separated:
+
+- "Party types and statuses" folds the type/status configurable-lookup
+  concept together with its screenshots, right where type/status are
+  first introduced.
+- The Identifiers tab section now carries the ten-scheme table, the
+  GLEIF/LEI/BIC tangent (moved here from "What is a Party?" per
+  feedback), and the Party Id Schemes configurability screens all
+  together, instead of a separate "Identification schemes" section
+  appearing after Contact Information.
+- The Hierarchy tab section now carries the house-root/single-root
+  domain rule directly, instead of a separate "The party hierarchy"
+  section appearing chapters earlier with its screenshot chapters
+  later.
+
+Six new screenshots captured, cropped, and wired in (Party Types
+list/detail, Party Statuses list/detail, Party Id Schemes list/detail).
+Two real gaps found and fixed along the way rather than glossed over:
+
+- PartyTypeDetailDialog was missing the Display Order field
+  (party_type.org never had a =*** Detail fields= table, unlike its
+  siblings) — added it, regenerated, verified zero-extra-diff.
+- Party/Counterparty windows had no toolbar shortcut to their
+  auxiliary lookups, unlike Currency's Rounding/Monetary
+  Natures/Market Tiers precedent — implemented via the existing
+  codegen paste-block seam (modeled properly, not hand-copied),
+  wired through RefdataPlugin, manually smoke-tested.
+
+Manual PDF and Qt-embedded help both rebuilt; all figures resolve and
+appear in the List of Figures; reviewed rendered PDF pages directly.
 
 * Result

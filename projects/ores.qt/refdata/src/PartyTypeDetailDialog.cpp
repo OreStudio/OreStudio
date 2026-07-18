@@ -138,6 +138,7 @@ void PartyTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
+    ui_->displayOrderEdit->setValue(type_.display_order);
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -156,6 +157,7 @@ void PartyTypeDetailDialog::updateTypeFromUi() {
     }
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    type_.display_order = ui_->displayOrderEdit->value();
     type_.modified_by = username_;
 }
 

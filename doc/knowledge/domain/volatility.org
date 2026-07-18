@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 0CD30407-D67D-499C-B9AB-F268D05F40E4
+:END:
+#+title: Volatility
+#+description: The generic domain concept of volatility: dispersion of returns, standard deviation and variance, annualisation, historical/realised vs implied volatility, and its role as the Black-Scholes sigma parameter -- the foundation the FX Volatility Surface, GARCH, and no-arbitrage pages build on.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:volatility:quantitative_finance:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+If you have hit "vol", "sigma", "implied vol", or "realised vol" in a
+pricing or market-data document without a clear definition, this page
+is for you. No finance background is assumed. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+Volatility is a measure of how much an asset's price fluctuates over
+time — formally, the standard deviation of its returns, usually
+annualised so figures are comparable across time horizons. Two
+fundamentally different ways of arriving at a number both get called
+"volatility": *historical* (or *realised*) volatility, measured
+after the fact from a time series of past prices, and *implied*
+volatility, backed out from a traded option price via a pricing
+model — a forward-looking, model-dependent quantity that is the
+market's own estimate, not a historical statistic. Volatility is
+also, more specifically, the name of the one parameter,
+$\sigma$, that the Black-Scholes model leaves free — everything else
+in the formula (spot, strike, rate, time) is directly observable, but
+$\sigma$ is not, which is exactly why it must be *implied* from an
+observed option price rather than measured directly. This page is the
+foundation for the more specific volatility documents in this
+knowledge base: [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] (how implied vol is quoted and
+structured across strike and tenor), [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH
+models]] (how realised vol evolves through time), and [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface
+no-arbitrage conditions]] (constraints an implied vol surface must
+satisfy).
+
+* Detail
+
+** Returns, variance, and standard deviation
+
+Volatility starts from a series of prices $P_0, P_1, \ldots, P_n$
+observed at regular intervals (daily closes, say). The *return* over
+each interval is usually taken as the log return,
+$r_t = \ln(P_t / P_{t-1})$, rather than the simple percentage change,
+because log returns compound additively over time and are
+approximately symmetric for gains and losses of the same magnitude.
+
+*Variance* is the average squared deviation of these returns from
+their mean:
+
+$$\text{Var}(r) = \frac{1}{n-1}\sum_{t=1}^{n} (r_t - \bar{r})^2$$
+
+*Volatility* is simply the square root of variance —
+$\sigma = \sqrt{\text{Var}(r)}$ — expressed in the same units as the
+return itself (e.g. "1.2% per day"). Variance is the more natural
+object mathematically (it adds under independence, which is why
+GARCH models below are formulated in terms of variance), but
+volatility is the conventional unit quoted in markets because it is
+directly comparable to a return.
+
+** Annualisation
+
+A daily volatility figure is not directly comparable to a monthly or
+yearly one, so volatility is conventionally *annualised* by scaling
+with the square root of the number of periods in a year — the
+$\sqrt{t}$ scaling of a random walk's standard deviation. For daily
+returns, the convention is $\sqrt{252}$ (the typical number of trading
+days in a year), not $\sqrt{365}$: only days the market actually
+trades contribute return observations. A daily vol of 1% therefore
+annualises to roughly $1\% \times \sqrt{252} \approx 15.9\%$. Some
+markets quote vol on calendar days ($\sqrt{365}$) instead — see
+"Normalised Vol" in the [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] page's volatility-kinds
+table for how this ambiguity is handled explicitly rather than
+assumed.
+
+** Historical (realised) volatility
+
+Historical volatility is computed directly from a window of past
+returns using the variance formula above — it is a backward-looking
+statistic, no different in kind from any other sample standard
+deviation. The main design choice is the *window*: how many past
+observations to include (30 days? 252 days?) and whether older
+observations are weighted equally (a simple rolling window) or
+decayed exponentially (an EWMA — exponentially weighted moving
+average — which reacts faster to recent moves). [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering
+and GARCH models]] covers a more sophisticated family of models for
+how realised volatility itself evolves and clusters through time
+(calm periods followed by turbulent ones), rather than being
+constant.
+
+** Implied volatility
+
+Implied volatility is not measured from a price history at all — it
+is *inferred* from a single observed market price. The Black-Scholes
+option pricing formula takes five inputs (spot, strike, time to
+expiry, risk-free rate, and volatility $\sigma$) and produces a
+theoretical option price. Every one of those inputs except $\sigma$
+is directly observable in the market; $\sigma$ is the one degree of
+freedom the model leaves free. Given an actual traded option price,
+implied volatility is the value of $\sigma$ that, plugged back into
+Black-Scholes, reproduces that price exactly — found numerically
+(there is no closed-form inverse), typically via Newton-Raphson or
+bisection on the pricing formula.
+
+Because it is backed out from where the market is actually trading
+an option *right now*, implied volatility is inherently
+forward-looking and reflects the market's collective expectation of
+future volatility over the option's remaining life — as distinct
+from historical volatility, which only reflects the past. The two
+can and routinely do diverge, sometimes sharply (e.g. implied vol
+spiking ahead of an anticipated event while historical vol, measured
+from the calm period before it, stays low).
+
+** The volatility smile
+
+If the Black-Scholes model's constant-$\sigma$ assumption held
+exactly, every option on the same underlying and expiry — regardless
+of strike — would imply the identical $\sigma$ when inverted. In
+practice it does not: implied volatility varies systematically by
+strike (and by expiry), tracing out a curve conventionally called the
+*volatility smile* (or *skew*, when asymmetric). This is the market
+pricing in fatter tails and directional bias than the log-normal
+Black-Scholes model assumes, rather than a flaw in the inversion
+itself. [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] covers how this smile is quoted,
+parameterised (ATM/RR/STR pillars), and modelled (SABR, spline) in
+the FX market specifically, and how the smile is stitched across
+strike *and* expiry into a full two-dimensional surface; [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface
+no-arbitrage conditions]] covers the constraints that surface must
+satisfy to avoid implying a static arbitrage.
+
+** Volatility is not the same thing as risk
+
+Every section above treats volatility as if it were the natural
+measure of risk — the bigger the swings, the riskier the position.
+This is the standard desk assumption, but it is worth stating
+precisely where it can mislead: volatility is a property of what a
+system's path has looked like; risk, in the sense of how close a
+system is to losing stability altogether, is a property of the *law*
+generating that path, and the two are not interchangeable.
+
+Take the canonical mean-reverting process (the same [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck
+process]] behind Vasicek/Hull-White/CIR short-rate models elsewhere in
+this knowledge base):
+
+$$dx_t = -\theta (x_t - \mu)\, dt + \sigma\, dW_t$$
+
+Two parameters, opposite roles: $\sigma$ is the size of the random
+shocks; $\theta$ is the speed at which the system pulls back toward
+its equilibrium $\mu$ — equivalently, the eigenvalue $-\theta$ of the
+linearised system, governing its stability. The process's stationary
+variance — the quantity a volatility estimator actually recovers from
+a sample path — is
+
+$$\text{Var}(x) = \frac{\sigma^2}{2\theta}$$
+
+Observed volatility therefore only pins down the *ratio*
+$\sigma^2 / \theta$, never $\sigma$ and $\theta$ separately. Hold that
+ratio fixed while letting $\theta \to 0$: the restoring force
+vanishes, the process drifts toward a non-stationary random walk and
+edges toward instability, yet its measured volatility stays flat —
+or can even fall. A system moving toward instability can display
+calm, constant volatility the entire way there, because the
+parameter that actually governs the risk, $\theta$, is invisible to
+volatility alone; no amount of historical data recovers it without
+explicitly modelling the dynamics — an identification problem, not a
+sample-size one. This is the content of "critical slowing down" near
+a transition: what changes is not the amplitude of the moves (what
+volatility measures) but the time the system takes to recover from
+them — a different observable entirely.
+
+#+begin_quote
+Every QUANT desk regards LOW VOLATILITY as low risk. At Quantis, this
+is the assumption we oppose most strongly. Volatility is a
+statistical measure that reflects what is observed. But what about
+risk? Risk is a property of the way the system evolves. They are not
+the same thing, and one does not determine the other. [...] Look at
+what this says. Observed volatility fixes only the ratio
+$\sigma^2/\theta$, not the two parameters separately. [...] A system
+marching toward instability can display calm, constant volatility
+the whole way there. [...] Volatility tells you how much the system
+moved. It does not tell you how stable the law that moved it is.
+
+— Alessio Fratini, Quantis Research
+[[https://www.linkedin.com/posts/alessio-fratini-256bb1353_every-quant-desk-regards-low-volatility-as-share-7483905497687965696-hQmJ/][LinkedIn, source]]
+#+end_quote
+
+* See also
+
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting, delta conventions, smile
+  models, and cross-time interpolation for the FX-specific implied
+  vol surface.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — time-series models of
+  how realised volatility itself evolves.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — the constraints an implied
+  vol surface must satisfy before it can be used for pricing.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] —
+  realised vol is naturally a P-measure (real-world) quantity;
+  implied vol is inherently a Q-measure (risk-neutral) one.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the mean-reverting SDE behind the
+  volatility-vs-risk argument above, and the general form Vasicek,
+  Hull-White, and CIR specialise.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — hub note for the process family this
+  argument's SDE belongs to.

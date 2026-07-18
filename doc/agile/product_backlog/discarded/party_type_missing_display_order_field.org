@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 714D28BB-22FD-4B35-877C-AB1E10488927
+:END:
+#+title: PartyTypeDetailDialog is missing the Display Order field
+#+description: party_type's model declares display_order like party_status/party_id_scheme, but the generated PartyTypeDetailDialog.ui has no widget for it -- likely codegen/regen drift, found while capturing manual-chapter screenshots.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:qt:codegen:bug:resolved:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog — resolved inline rather than needing a separate story.
+
+* What
+
+*Fixed inline* while capturing manual-chapter screenshots for the
+Party Types section, rather than left as an open capture: root cause
+was that =ores.refdata.party_type.org= never had a =*** Detail
+fields= table (unlike =party_status=/=party_id_scheme=, which both
+declare one), so codegen fell back to its default field set
+(Code/Name/Description only) and silently dropped =display_order=
+from the generated dialog, even though the column exists on the
+domain model, the list-window columns table, and the SQL
+=order_by=. Added the missing =*** Detail fields= table (mirroring
+=party_status='s) and regenerated — zero-diff except the intended
+=displayOrderEdit= widget appearing.
+
+* Why
+
+The party_type/party_status/party_id_scheme trio is meant to behave
+identically as tenant-configurable lookups (this is the whole premise
+of the Parties chapter's "Party types and statuses" section), so a
+missing field on one of the three was a real, user-visible gap
+rather than a documentation nuance.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.party_type.org= — the
+  fix.
+- =projects/ores.qt/refdata/ui/PartyTypeDetailDialog.ui= —
+  regenerated output.
+
+* See also
+
+- [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Story: Commission: party, counterparty, and party_status]] —
+  discovered while auditing this story's manual-chapter coverage.

@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:615FD100-BCD9-4CF5-B9DF-19744
 | Verifies task | [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] |
 | Parent story  | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]   |
 | Target dialog | =IrCurveGenerationConfigMdiWindow=, =IrCurveTemplateEntryMdiWindow=, =MarketSeriesMdiWindow=, =MarketObservationMdiWindow= — Menu: Synthetic > IR Curve Generation Configs / IR Curve Template Entries; Market Data > Market Series / Market Observations |
-| Clients       | (single client) |
+| Clients       | |
 | State         | PENDING                               |
 
 * Steps

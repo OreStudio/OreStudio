@@ -8,7 +8,7 @@
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
-#+pr:
+#+pr: 1640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -105,7 +105,7 @@ processed.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1640][#1640]] | [codegen] Collapse refdata and refdata-cpp into a single component |
 
 * Review
 

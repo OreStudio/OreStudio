@@ -33,10 +33,16 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="ActionConnectionBrowser"/>
-    <addaction name="separator"/>
-    <addaction name="ActionConnect"/>
-    <addaction name="ActionDisconnect"/>
+    <widget class="QMenu" name="menuConnectivity">
+     <property name="title">
+      <string>&amp;Connectivity</string>
+     </property>
+     <addaction name="ActionConnectionBrowser"/>
+     <addaction name="separator"/>
+     <addaction name="ActionConnect"/>
+     <addaction name="ActionDisconnect"/>
+    </widget>
+    <addaction name="menuConnectivity"/>
    </widget>
    <widget class="QMenu" name="menuTelemetry">
     <property name="title">

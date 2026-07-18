@@ -469,12 +469,13 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // (the latter two contributed by AdminPlugin via setup_menus()).
     auto* windowAction = ui_->menuWindow->menuAction();
 
-    // Personal actions (My Account, My Sessions) go directly into File,
-    // right after the connection actions and before whatever plugins
-    // contribute (Testing, Reset System) via setup_menus() below.
+    // Personal actions (My Account, My Sessions) live in their own Current
+    // User submenu, right after Connectivity and before whatever plugins
+    // contribute (System) via setup_menus() below.
     ui_->menuFile->addSeparator();
-    ui_->menuFile->addAction(ui_->ActionMyAccount);
-    ui_->menuFile->addAction(ui_->ActionMySessions);
+    auto* currentUserMenu = ui_->menuFile->addMenu(tr("Current &User"));
+    currentUserMenu->addAction(ui_->ActionMyAccount);
+    currentUserMenu->addAction(ui_->ActionMySessions);
 
     // Pre-create the shared &Reference Data menu. NOT inserted directly —
     // RefdataPlugin returns it from create_menus() to control bar position.

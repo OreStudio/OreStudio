@@ -43,8 +43,9 @@ const std::string tags("[repository]");
 // session's visible party set). Write a real party first, then return a
 // context scoped to it so every subsequent business_unit read/write can see
 // its own rows.
-ores::database::context write_test_party_and_scope_context(
-    ores::testing::scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
     using ores::refdata::repository::party_repository;
     party_repository party_repo;
     auto party = ores::refdata::generators::generate_synthetic_party(ctx);

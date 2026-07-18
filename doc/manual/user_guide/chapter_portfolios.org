@@ -114,9 +114,8 @@ from what a portfolio contains to where you go to work with one.
 Open the Portfolios window from the /Reference Data/ menu. It lists
 every portfolio defined in the tenant, with one row per portfolio.
 
-#+caption: [SCREENSHOT NEEDED] The Portfolios window showing the full list of portfolios in the tenant.
-# Capture: Log in, open Reference Data > Portfolios. Capture the full list window, showing several rows with a mix of purpose types, statuses, and aggregation currencies so the badge and flag-icon columns are visible.
-[[proj:assets/images/TODO_portfolios_main_dialog.png]]
+#+caption: The Portfolios window showing the full list of portfolios in the tenant.
+[[proj:assets/images/portfolios_main_dialog.png]]
 
 Each row shows the name, purpose type, status (as a colour-coded
 badge), aggregation currency (with flag icon), the virtual flag (as a
@@ -134,9 +133,8 @@ The Portfolio Details dialog has two tabs — *General* and
 
 *** General
 
-#+caption: [SCREENSHOT NEEDED] Portfolio Details — General tab, showing the id, name, purpose type, status, aggregation currency, virtual flag, and description fields.
-# Capture: Double-click a portfolio row to open its Details dialog. Capture the General tab with every field populated, including a non-empty Description.
-[[proj:assets/images/TODO_portfolio_details_general.png]]
+#+caption: Portfolio Details — General tab, showing the id, name, purpose type, status, aggregation currency, virtual flag, and description fields.
+[[proj:assets/images/portfolio_details_general.png]]
 
 The General tab carries the fields of the portfolio:
 
@@ -151,9 +149,8 @@ The General tab carries the fields of the portfolio:
   chosen from a fixed combo box (Active, Inactive, Closed, Frozen,
   Pending) and shown as a colour-coded badge once selected.
 
-  #+caption: [SCREENSHOT NEEDED] The Status combo box open, showing the badge-coloured status values.
-  # Capture: In the Portfolio Details General tab, click the Status combo to open its drop-down. Capture the open combo showing all five values.
-  [[proj:assets/images/TODO_portfolio_status_combo.png]]
+  #+caption: The Status combo box open, showing all five status values.
+  [[proj:assets/images/portfolio_status_combo.png]]
 
 - *Aggregation Currency* — the currency P&L and risk figures roll up
   into at this node, chosen from a combo box populated with ISO
@@ -193,9 +190,8 @@ To view the full change history, open the details dialog and click
 the history icon in the title bar, or right-click the row and choose
 *History*.
 
-#+caption: [SCREENSHOT NEEDED] The Portfolio History dialog, comparing two versions of a portfolio.
-# Capture: Edit a portfolio's status or purpose type and save, then open History on that portfolio. Capture the dialog comparing the two versions, with the Only Changes toggle narrowing the field list to the field that actually differs.
-[[proj:assets/images/TODO_portfolio_history_dialog.png]]
+#+caption: The Portfolio History dialog, comparing two versions of a portfolio.
+[[proj:assets/images/portfolio_history_dialog.png]]
 
 Pick the two versions to compare from the *Compare* drop-downs. The
 *All Fields* / *Only Changes* toggle switches between showing every

@@ -88,8 +88,8 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | not using dynamic combo with labels for both risk purpose type and status |
+| Status | PASS |
+| Notes  | ./tmp/Screenshot from 2026-07-18 12-28-06.png; ; purpose type:; ; ./tmp/Screenshot from 2026-07-18 12-28-45.png |
 
 ** Capture portfolio_history_dialog.png
 
@@ -107,8 +107,8 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Failed to load history:; No history provider registered for entity_type: ores.refdata.portfolio |
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step5_20260718_132044.png]] |
 
 ** Read the manual in the Qt client
 
@@ -148,10 +148,10 @@ Log in against the =prime_origin= environment as
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-18T10:53:09Z |
+| Status        | PENDING |
+| Completed at  | 2026-07-18T12:20:50Z |
 | Branch        | feature/portfolio-manual-chapter |
-| Commit        | 27a1f90f6 |
+| Commit        | 083c2ba97 |
 | Worktree      | prime_origin |
 
 * Notes

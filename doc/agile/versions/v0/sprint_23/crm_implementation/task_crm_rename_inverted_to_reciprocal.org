@@ -150,6 +150,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tooltip "Computed inverse (1/rate)" not renamed per acceptance criteria | crm_rate_formatter.cpp, crm_rate_formatter_tests.cpp | Accepted | Renamed to "reciprocal"; test updated. |
+| 2 | Doc-comment sweep incomplete ("inversion"/"post-inversion"/"inverse" left in several files) | crm_rate_view.hpp, crm_protocol.hpp, rate_reciprocator.hpp, rate_delta_tracker.hpp, crm_ingest_bridge.hpp, crm_commands.hpp, CrmRateCellWidget.hpp, and test names in rate_reciprocator_tests.cpp/app_crm_ingest_bridge_tests.cpp | Accepted | Full sweep completed; only the intentionally out-of-scope rate_engine.cpp "sign inverts" comment remains. |
+| 3 | Grammar bug "For an reciprocal view" | crm_rate_view.hpp | Accepted | Fixed to "For a reciprocal view". |
+| 4 | Qt tooltip/comment still said "inverse" | CrmCrossRatesMatrixMdiWindow.cpp | Accepted | Button tooltip and comment updated to "reciprocal". |
+| 5 | Stray lambda parameter named `inv` | CrmCrossRatesMatrixMdiWindow.cpp | Accepted | Renamed to `reciprocal`. |
+| 6 | `ensure_feed_binding()` (blocking NATS call) held `mu_` in the already_running branch, inconsistent with the started branch | feed_controller.hpp | Accepted | Restructured so both branches compute the outcome under the lock, release it, then call ensure_feed_binding() once outside the lock. |
 
 * Result

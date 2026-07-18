@@ -33,13 +33,13 @@ namespace ores::analytics::quant::service {
 /**
  * @brief Stateful decorator that fills in @c crm_rate_view::delta_pct --
  * the %-change vs. the last value served for the same (base_code,
- * quote_code) pair, i.e. the pair as displayed, after any inversion has
+ * quote_code) pair, i.e. the pair as displayed, after any reciprocal has
  * already been applied by @c rate_reciprocator.
  *
  * Deliberately layered on top of, not inside, @c rate_engine: "delta vs.
  * last served value" is a serving-time/session concept (what a given
  * caller last saw), not a market/topology one, and it must apply to the
- * post-inversion displayed value, not the raw driver rate. Keeping this
+ * post-reciprocal displayed value, not the raw driver rate. Keeping this
  * as a separate wrapper leaves @c rate_engine's own concurrency model
  * (one immer::atom snapshot per batch) untouched.
  *

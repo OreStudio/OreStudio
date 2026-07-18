@@ -51,7 +51,7 @@ int order_of_magnitude(double x) {
 
 /// Derives decimal_places for the reciprocal of a rate whose *own*
 /// direction is described by convention.decimal_places, preserving
-/// significant figures across the inversion instead of reusing
+/// significant figures across the reciprocal instead of reusing
 /// decimal_places verbatim (which is only valid for the convention's own
 /// direction/magnitude). rate is the reciprocal value being rendered, so
 /// 1/rate recovers the direct-direction magnitude the convention assumes.
@@ -109,7 +109,7 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
             display.tooltip_text = "Unavailable";
         } else {
             display.tooltip_text = item.reciprocal ?
-                                       "Computed inverse (1/rate); Live - " + item.as_of :
+                                       "Computed reciprocal (1/rate); Live - " + item.as_of :
                                        "Live - " + item.as_of;
         }
 

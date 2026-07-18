@@ -33,7 +33,7 @@ namespace ores::analytics::quant::service {
 /**
  * @brief Resolves a requested (base, quote) pair against a batch of
  * already-computed @c derived_rate results, falling back to the reverse
- * pair's inverse (1/rate) when no direct entry exists for the requested
+ * pair's reciprocal (1/rate) when no direct entry exists for the requested
  * pair -- e.g. a CRM configured with EUR/CAD but not CAD/EUR.
  *
  * Pure/stateless: no dependency on @c rate_engine, NATS, or any refdata
@@ -54,7 +54,7 @@ public:
     ///  - a direct entry present in @p lookup is returned unchanged
     ///    (reciprocal = false), regardless of its status;
     ///  - absent a direct entry, if @p allow_reciprocal and the reverse pair
-    ///    is present, returns its inverse (rate = 1/rate when the reverse
+    ///    is present, returns its reciprocal (rate = 1/rate when the reverse
     ///    rate is finite and non-zero; otherwise the reverse's own
     ///    status/as_of are kept and rate is left at 0.0 to avoid a
     ///    division by zero);

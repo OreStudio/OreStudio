@@ -271,7 +271,7 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
     CHECK(exotics_count == 1);
 }
 
-TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse isn't configured",
+TEST_CASE("resolved_rates() synthesises a reverse-pair reciprocal when the reverse isn't configured",
           tags) {
     fixture f;
     crm_topology_config_repository config_repo;
@@ -304,7 +304,7 @@ TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse 
     CHECK(reciprocal_count == 2);
 }
 
-TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itself configured",
+TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is itself configured",
           tags) {
     fixture f;
     crm_topology_config_repository config_repo;
@@ -315,7 +315,7 @@ TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itse
     driver_repo.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
     // EUR/USD's reverse, USD/EUR, is also explicitly a configured
     // (derived) pair -- resolved_rates() must serve its own real rate
-    // for USD/EUR, not a synthesised 1/rate inverse of EUR/USD.
+    // for USD/EUR, not a synthesised 1/rate reciprocal of EUR/USD.
     derived_repo.write(f.h.context(), f.make_enabled_derived_pair("USD", "EUR"));
 
     crm_ingest_bridge bridge(f.h.context());

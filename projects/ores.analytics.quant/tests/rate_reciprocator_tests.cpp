@@ -60,7 +60,7 @@ TEST_CASE("a direct entry with unavailable status is still returned as-is", "[ra
     CHECK(view.status == rate_status::unavailable);
 }
 
-TEST_CASE("a missing pair falls back to the reverse pair's inverse when allowed",
+TEST_CASE("a missing pair falls back to the reverse pair's reciprocal when allowed",
           "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::fresh, epoch(200)},
@@ -76,7 +76,8 @@ TEST_CASE("a missing pair falls back to the reverse pair's inverse when allowed"
     CHECK(view.quote_code == "EUR");
 }
 
-TEST_CASE("a missing pair is unavailable when inversion is not allowed", "[rate_reciprocator]") {
+TEST_CASE("a missing pair is unavailable when the reciprocal is not allowed",
+          "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::fresh, epoch(200)},
     };

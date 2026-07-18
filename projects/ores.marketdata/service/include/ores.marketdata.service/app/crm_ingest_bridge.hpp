@@ -51,7 +51,7 @@ struct named_rate {
     quant::domain::derived_rate rate;
 };
 
-/// A resolved (post-inversion, post-delta) view tagged with the name of
+/// A resolved (post-reciprocal, post-delta) view tagged with the name of
 /// the CRM that produced it -- returned by the all-CRMs overload of
 /// @c resolved_rates().
 struct named_rate_view {
@@ -145,7 +145,7 @@ public:
                                                 const std::string& party_id_str) const;
 
     /// Every configured pair for one named CRM, resolved: pairs with no
-    /// direct quote are backfilled with the reverse pair's inverse when
+    /// direct quote are backfilled with the reverse pair's reciprocal when
     /// @p reciprocal is true (and the reverse itself isn't also a
     /// configured pair, in which case its own direct rate wins), and
     /// each view's delta_pct is filled in vs. the last value this

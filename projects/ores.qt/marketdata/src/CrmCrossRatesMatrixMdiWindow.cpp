@@ -140,8 +140,10 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         auto conventionCache = conventionCache_;
         displayService_ =
             std::make_unique<marketdata_client::presentation::crm_rate_display_service>(
-                [crmClient](const std::string& party_id, const std::string& crm_name, bool inv) {
-                    return crmClient->rates(party_id, crm_name, inv);
+                [crmClient](const std::string& party_id,
+                           const std::string& crm_name,
+                           bool reciprocal) {
+                    return crmClient->rates(party_id, crm_name, reciprocal);
                 },
                 [conventionCache](const std::string& tenant_id, const std::string& key) {
                     return conventionCache->lookup(tenant_id, key);
@@ -303,7 +305,7 @@ void CrmCrossRatesMatrixMdiWindow::setupUi() {
             &CrmCrossRatesMatrixMdiWindow::onHideEmptyToggled);
 
     footerLayout->addSpacing(12);
-    // When on, a cell with no direct quote but whose inverse pair *does*
+    // When on, a cell with no direct quote but whose reciprocal pair *does*
     // have one (e.g. no CAD/EUR row entry, but EUR/CAD exists) shows the
     // computed 1/rate instead of a dash -- pure arithmetic, no new data
     // needed. Off by default: still opt-in, since a reciprocal rate is a
@@ -312,7 +314,7 @@ void CrmCrossRatesMatrixMdiWindow::setupUi() {
     showReciprocalButton_->setCheckable(true);
     showReciprocalButton_->setCursor(Qt::PointingHandCursor);
     showReciprocalButton_->setToolTip(
-        tr("Show computed inverse rates (1/rate) for pairs with no direct quote"));
+        tr("Show computed reciprocal rates (1/rate) for pairs with no direct quote"));
     {
         const QColor accent = palette().color(QPalette::Highlight);
         const QColor accentText = palette().color(QPalette::HighlightedText);

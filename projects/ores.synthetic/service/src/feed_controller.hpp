@@ -142,43 +142,49 @@ public:
         }
 
         const std::string key = source_name.empty() ? ore_key : source_name;
+        bool already_running = false;
         {
             std::lock_guard lock(mu_);
-            if (feeds_.contains(key)) {
-                ensure_feed_binding(ore_key, key, caller_bearer_token);
-                return start_result::already_running;
-            }
-
-            // Use a persistent random_device so the OS entropy pool is not
-            // re-seeded between rapid successive calls (which can produce equal
-            // values on some platforms when called on separate temporaries).
-            static std::random_device rd;
-            const std::uint32_t seed = rd();
-            BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-            auto process =
-                ores::analytics::quant::service::process_factory::make_process(process_type,
-                                                                               std::move(means),
-                                                                               std::move(stdevs),
-                                                                               std::move(weights),
-                                                                               initial_price,
-                                                                               seed);
-            auto feed = std::make_shared<fx_spot_feed>(
-                nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
-            running_feed rf;
-            rf.feed = feed;
-            rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
-            feeds_.emplace(key, std::move(rf));
-            BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key << "' subject='"
-                << producer_subject(key) << "' ticks_per_hour=" << ticks_per_hour << " — now "
-                << feeds_.size() << " feed(s) running";
-            if (!status_thread_.joinable()) {
-                status_thread_ = std::thread(&feed_controller::status_loop, this);
+            already_running = feeds_.contains(key);
+            if (!already_running) {
+                // Use a persistent random_device so the OS entropy pool is not
+                // re-seeded between rapid successive calls (which can produce
+                // equal values on some platforms when called on separate
+                // temporaries).
+                static std::random_device rd;
+                const std::uint32_t seed = rd();
+                BOOST_LOG_SEV(lg(), ores::logging::info)
+                    << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
+                auto process =
+                    ores::analytics::quant::service::process_factory::make_process(process_type,
+                                                                                   std::move(means),
+                                                                                   std::move(stdevs),
+                                                                                   std::move(weights),
+                                                                                   initial_price,
+                                                                                   seed);
+                auto feed = std::make_shared<fx_spot_feed>(
+                    nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
+                running_feed rf;
+                rf.feed = feed;
+                rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
+                feeds_.emplace(key, std::move(rf));
+                BOOST_LOG_SEV(lg(), ores::logging::info)
+                    << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key
+                    << "' subject='" << producer_subject(key)
+                    << "' ticks_per_hour=" << ticks_per_hour << " — now " << feeds_.size()
+                    << " feed(s) running";
+                if (!status_thread_.joinable()) {
+                    status_thread_ = std::thread(&feed_controller::status_loop, this);
+                }
             }
         }
+        // Binding creation does a blocking NATS round-trip -- always done
+        // after mu_ has been released, for both outcomes, so a caller
+        // re-starting an already-running feed (e.g. "enable all") never
+        // blocks every other start()/stop()/running_count()/list() call for
+        // the duration of that round-trip.
         ensure_feed_binding(ore_key, key, caller_bearer_token);
-        return start_result::started;
+        return already_running ? start_result::already_running : start_result::started;
     }
 
     /**

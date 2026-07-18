@@ -133,7 +133,8 @@ TEST_CASE("crm_rate_formatter reports a reciprocal-pair tooltip", "[crm_rate_for
     auto item = make_item();
     item.reciprocal = true;
     const auto displays = format_one(item, make_convention(0.0001, 1.0, 5));
-    REQUIRE(displays[0].tooltip_text == "Computed inverse (1/rate); Live - 2026-07-16T10:00:00Z");
+    REQUIRE(displays[0].tooltip_text ==
+            "Computed reciprocal (1/rate); Live - 2026-07-16T10:00:00Z");
 }
 
 TEST_CASE("crm_rate_formatter reports a live, non-reciprocal tooltip", "[crm_rate_formatter]") {

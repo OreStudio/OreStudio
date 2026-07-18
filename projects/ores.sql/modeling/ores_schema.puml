@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-04-21T22:09:54.950184Z
+' Generated: 2026-07-18T01:52:27.470465Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -99,9 +99,9 @@ package "iam" #E8F4FD {
         * description : text
         * display_order : integer
         * modified_by : text
+        * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * performed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -122,6 +122,7 @@ package "iam" #E8F4FD {
           service_password_hash : text
         * totp_secret : text
         * email : text
+          default_party_id : uuid <<FK>>
         * modified_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
@@ -301,9 +302,9 @@ package "iam" #E8F4FD {
         --
         * tenant_id : uuid
         * version : integer
-        * type : text
         * code : text
         * name : text
+        * type : text
           description : text
         * hostname : text
         * status : text
@@ -314,6 +315,20 @@ package "iam" #E8F4FD {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_iam_tenants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenant Table
+    Core entity for multi-tenancy support. Each tenant represents an isolated
+    organisation with its own users, roles, and data. The system tenant (UUID all zeros)
+    is a special tenant used for shared reference data and system administration.
+    Tenants are identified by:
+    - id: UUID primary key (SQL also has tenant_id = id for self-reference)
+    - code: Unique text code for stable referencing (e.g., 'system', 'acme')
+    - hostname: Unique hostname for tenant routing during login
+    end note
 
 }
 
@@ -403,6 +418,37 @@ package "refdata" #FFF3E0 {
     Contains a code representing the type of an account, for example in a clearing or exchange model.
     end note
 
+    entity ores_refdata_asset_class_codes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_asset_class_codes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Asset Class Code Table
+    General-purpose classification of the top-level asset class a market
+    series, instrument, or curve belongs to. Mirrors
+    ores::marketdata::domain::asset_class (a plain, non-persisted C++
+    enum used for market-series filtering) as a managed, persisted
+    refdata code table, so other entities (instrument_code, and
+    anything else needing to classify by asset class) can FK-validate
+    against it instead of duplicating a hardcoded string list. Managed by
+    the system tenant, like other shared code tables.
+    end note
+
     entity ores_refdata_asset_classes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -463,6 +509,40 @@ package "refdata" #FFF3E0 {
     FpML Benchmark rates
     end note
 
+    entity ores_refdata_book_purpose_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_book_purpose_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Book Purpose Type Table
+    Reference data table defining the risk role a book plays — what kind
+    of trading/operational activity happens in it, as distinct from its
+    regulatory type (see regulatory_book_type) or how its ledger balance
+    is fed. Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'Write-off',
+    'Test', 'Sales', 'Sweep target', 'Remittance target'.
+    Book purpose types are mutually exclusive — a book carries exactly one
+    at a time — and managed by the system tenant. See
+    [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] for the full analysis of why this is a lookup
+    entity rather than independent boolean flags, and why the values are
+    mutually exclusive with each other but independent of regulatory type
+    and ledger feed.
+    end note
+
     entity ores_refdata_book_statuses_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -480,7 +560,14 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_book_statuses_tbl
-    Book Statuses - Lifecycle states for book records (Active, Closed, Frozen)
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Book Status Table
+    Reference data table defining valid book status values.
+    Examples: 'Active', 'Closed', 'Frozen'.
+    Book statuses are managed by the system tenant and are used to
+    track the lifecycle of book records.
     end note
 
     entity ores_refdata_books_tbl <<temporal>> #C6F0D8 {
@@ -490,14 +577,17 @@ package "refdata" #FFF3E0 {
         * version : integer
         * party_id : uuid <<FK>>
         * name : text
-        * description : text
+          description : text
         * parent_portfolio_id : uuid <<FK>>
+          owner_unit_id : uuid <<FK>>
         * functional_currency : text
           gl_account_ref : text
           cost_center : text
         * book_status : text
         * regulatory_book_type : text
-          owner_unit_id : uuid <<FK>>
+        * is_sweepable : boolean
+        * rates_centre_code : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -510,7 +600,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Book Table
     Operational ledger leaves. The only entity that holds trades.
     Serves as the basis for accounting, ownership, and regulatory
     capital treatment. Must belong to exactly one portfolio.
@@ -519,14 +609,13 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_business_centres_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
-        * coding_scheme_code : text <<PK, FK>>
         --
         * version : integer
           source : text
           description : text
           city_name : text
           country_alpha2_code : text
-          image_id : uuid <<FK>>
+        * coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -536,7 +625,47 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_business_centres_tbl
-    The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Business Centre Table
+    Business centres identify financial trading locations used for holiday
+    calendar determination (e.g. "USNY" for New York, "GBLO" for London),
+    using FpML-style codes. Each code is unique per tenant regardless of
+    coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's
+    code-only primary key -- and optionally linked to a country for
+    flag-icon display in the Qt UI. Referenced by business_unit as a
+    soft FK.
+    end note
+
+    entity ores_refdata_business_day_convention_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_business_day_convention_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Business Day Convention Type Table
+    Reference data table defining valid business day conventions used to
+    adjust dates that fall on a non-business day (e.g. for coupon/settlement
+    dates on instrument legs and currency pair conventions). Values are
+    sourced from ORE's ore_types.xsd. Moved here from ores.trading
+    (see [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]]) since every consumer of
+    this type — the *_convention entities and now
+    [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][currency_pair_convention]] — lives in ores.refdata, not ores.trading.
     end note
 
     entity ores_refdata_business_processes_tbl <<temporal>> #C6F0D8 {
@@ -578,10 +707,15 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_business_unit_types_tbl
-    Business Unit Types - Classification of organisational unit roles.
-    Defines the level-based hierarchy of business unit types (Division,
-    Branch, Business Area, Desk, Cost Centre). The `level` field enforces
-    hierarchy ordering: 0 = top-level, higher = lower in hierarchy.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Business Unit Type Table
+    Defines the type and level of a business unit (e.g. Division, Desk).
+    The level field enforces hierarchy ordering: 0 = top-level (e.g.
+    Division or Branch), higher values = lower in the hierarchy.
+    Business units referencing a type must satisfy: child.level >
+    parent.level.
     end note
 
     entity ores_refdata_business_units_tbl <<temporal>> #C6F0D8 {
@@ -592,9 +726,9 @@ package "refdata" #FFF3E0 {
         * party_id : uuid <<FK>>
         * unit_name : text
           parent_business_unit_id : uuid <<FK>>
-          unit_type_id : uuid <<FK>>
           unit_code : text
           business_centre_code : text
+          unit_type_id : uuid <<FK>>
         * status : text
         * modified_by : text
         * performed_by : text
@@ -608,10 +742,76 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Business Unit Table
     Represents internal organizational units (e.g., desks, departments, branches).
     Supports hierarchical structure via self-referencing parent_business_unit_id.
     Each unit belongs to a top-level legal entity (party).
+    end note
+
+    entity ores_refdata_calendar_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_calendar_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calendar Type Table
+    Reference data classifying what a calendar represents. Values
+    include: public_holiday, central_bank_meeting, financial_centre,
+    data_release, other. Lets a single calendar table hold
+    heterogeneous entries (a national holiday calendar, a central bank's
+    meeting schedule, a financial-centre business-day calendar) without
+    collapsing their distinct provenance.
+    end note
+
+    entity ores_refdata_calendars_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * calendar_type : text
+        * country_code : text <<FK>>
+          image_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_calendars_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calendar Table
+    Validated enumeration of named date collections consumed by ORE and
+    QuantLib: business-day/holiday calendars (TARGET, UnitedStates,
+    UnitedStates.GovernmentBond, ...), central-bank meeting calendars,
+    and other calendar-shaped reference data. Each row is one concrete
+    QuantLib/ORE calendar token — sub-market variants (e.g.
+    UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate
+    rows, not a joined variant field, so the code column always matches
+    ORE's XML <Calendar> vocabulary verbatim. Classified by
+    [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and
+    associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]]
+    whose calendar it is — supranational calendars (TARGET) use the
+    ZZ sentinel (ISO 3166-1's own reserved user-assigned code) rather
+    than a nullable country reference, since no single country owns them.
     end note
 
     entity ores_refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
@@ -634,6 +834,40 @@ package "refdata" #FFF3E0 {
     The type of cash flows associated with OTC derivatives contracts and their lifecycle events.
     end note
 
+    entity ores_refdata_cds_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * settlement_days : integer
+        * calendar : text
+        * frequency : text
+        * payment_convention : text
+        * rule : text
+        * day_count_fraction : text
+        * settles_accrual : boolean
+        * pays_at_default_time : boolean
+          upfront_settlement_days : integer
+          last_period_day_count_fraction : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cds_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CDS Convention Table
+    Defines the settlement lag, premium payment schedule, and accrual rules
+    for a vanilla CDS. Corresponds to the <CDS> element in ORE conventions.xml.
+    The rule field governs IMM dates and standard CDS roll dates.
+    end note
+
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -651,7 +885,14 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_contact_types_tbl
-    Contact Types - Classification of contact information purpose (Legal, Operations, Settlement, Billing)
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Contact Type Table
+    Reference data table defining valid contact type classifications.
+    Examples: 'Legal', 'Operations', 'Settlement', 'Billing'.
+    Contact types are managed by the system tenant and are used to
+    categorise contact information records for parties and counterparties.
     end note
 
     entity ores_refdata_counterparties_tbl <<temporal>> #C6F0D8 {
@@ -659,8 +900,8 @@ package "refdata" #FFF3E0 {
         * id : uuid <<PK>>
         --
         * version : integer
-        * full_name : text
         * short_code : text
+        * full_name : text
           transliterated_name : text
         * party_type : text
           parent_counterparty_id : uuid <<FK>>
@@ -678,7 +919,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Counterparty Table
     External trading partners and counterparties that participate in financial
     transactions with the organisation. Counterparties form a hierarchy through
     parent_counterparty_id for group structures.
@@ -712,7 +953,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Counterparty Contact Information Table
     Contact details for counterparties organised by purpose (Legal, Operations,
     Settlement, Billing). Each counterparty can have one contact record per type.
     end note
@@ -738,7 +979,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Counterparty Identifier Table
     External identifiers for counterparties, such as LEI codes, BIC/SWIFT codes,
     national registration numbers, and tax identifiers. Each counterparty can have
     multiple identifiers across different schemes.
@@ -753,8 +994,8 @@ package "refdata" #FFF3E0 {
         * numeric_code : text
         * name : text
         * official_name : text
-          coding_scheme_code : text <<FK>>
           image_id : uuid <<FK>>
+          coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -764,10 +1005,109 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_countries_tbl
-    ISO 3166-1 country definitions.
-    Includes alpha-2, alpha-3, and numeric codes.
-    Optional flag image reference.
-    coding_scheme_code tracks data provenance.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Country Table
+    ISO 3166-1 country definitions used for reference data.
+    Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
+    end note
+
+    entity ores_refdata_crm_driver_pairs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_crm_driver_pairs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CRM Driver Pair Table
+    A single [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge for its parent crm_topology_config: the
+    directly-quoted pair a producer publishes ticks for. The enabled rows for
+    a (tenant, party) are read by ores.marketdata.service and fed straight
+    into ores.analytics.quant::topology_builder::build as its
+    ccy_pair_input list -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]].
+    Scoped to a tenant and a party, matching its parent config.
+    end note
+
+    entity ores_refdata_crm_enabled_derived_pairs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_crm_enabled_derived_pairs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CRM Enabled Derived Pair Table
+    A currency pair that is *not* a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge (see crm_driver_pair)
+    but is nonetheless curated as available for on-demand triangulation via
+    marketdata.v1.crm.rate -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast
+    the full reachable derived set, only serve a config-driven list on
+    request. Owned by a crm_topology_config alongside its driver pairs.
+    Scoped to a tenant and a party, matching its parent config.
+    end note
+
+    entity ores_refdata_crm_topology_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * pivot_currency_code : text
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_crm_topology_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CRM Topology Config Table
+    A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency
+    and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (crm_driver_pair, a separate,
+    config_id-referencing entity) that hang off it. ores.marketdata.service
+    reads the enabled config per (tenant, party) and its enabled driver pairs,
+    feeds them through ores.analytics.quant::topology_builder::build, and
+    keeps one service::rate_engine per (tenant, party) up to date -- see
+    [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Qt UI is deferred to a later task
+    (ores.cpp.qt.enabled: false above), same as market_series.
+    Scoped to a tenant and a party so each party runs its own, independent
+    CRM -- two parties in the same tenant may have entirely different
+    topologies and never share an engine.
     end note
 
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {
@@ -785,8 +1125,10 @@ package "refdata" #FFF3E0 {
         * format : text
         * monetary_nature : text
         * market_tier : text
-          coding_scheme_code : text <<FK>>
           image_id : uuid <<FK>>
+        * spot_days : integer
+        * day_basis : text
+        * base_precedence : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -796,7 +1138,124 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_currencies_tbl
-    ISO 4217 currency definitions
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Currency Table
+    ISO 4217 currency definitions used for reference data.
+    Currencies are managed per-tenant and drive financial calculations,
+    rounding, and display formatting across the system.
+    end note
+
+    entity ores_refdata_currency_calendars_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * currency_iso_code : text <<PK>>
+        * calendar_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_calendars_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Currency Calendar Table
+    Many-to-many junction between currency and calendar: a currency's
+    spot/settlement date computation can depend on more than one calendar
+    (e.g. a country calendar and a financial-centre calendar). Replaces
+    [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][currency's]] free-text
+    holiday_calendar column with a proper FK relationship to
+    [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]].
+    end note
+
+    entity ores_refdata_currency_countries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * currency_iso_code : text <<PK>>
+        * country_alpha2_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_countries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Currency Country Table
+    Many-to-many junction between currency and country: a currency can be
+    issued by more than one country (e.g. EUR spans DE, FR, IT, ES, ...).
+    Independent reference data in its own right, not a prerequisite for
+    [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][the calendar entity]], which
+    carries its own country_code rather than deriving a currency's
+    calendars transitively through this junction.
+    end note
+
+    entity ores_refdata_currency_currency_groups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * currency_iso_code : text <<PK>>
+        * currency_group_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_currency_groups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Currency Currency Group Table
+    Many-to-many junction between currency and currency_group, mirroring
+    the existing party_currencies pattern. A currency can belong to any
+    number of groups simultaneously (e.g. NOK: G11 *and* SCANDIES *and*
+    COMMODITY) — see
+    [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the design rationale
+    (replacing the original boolean is_g11 flag).
+    end note
+
+    entity ores_refdata_currency_groups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_groups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Currency Group Table
+    Reference data defining desk-style currency groupings. Unlike
+    currency.market_tier (single-valued primary liquidity tier), a
+    currency can belong to any number of groups simultaneously via
+    [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] (e.g. NOK: G11 *and*
+    SCANDIES *and* COMMODITY). Seeded with G11, SCANDIES, ANTIPODEANS,
+    COMMODITY, ASIANS, LATAMS — extensible by inserting a row, no schema
+    change needed for a new group.
     end note
 
     entity ores_refdata_currency_market_tiers_tbl <<temporal>> #C6F0D8 {
@@ -819,6 +1278,229 @@ package "refdata" #FFF3E0 {
     Currency market tier classification. Drives UI priority, liquidity expectations, and risk limits.
     end note
 
+    entity ores_refdata_currency_pair_classifications_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_pair_classifications_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Currency Pair Classification Table
+    Reference data defining valid currency pair liquidity classifications.
+    Values include: major, minor, exotic — independent of either leg's own
+    market_tier (e.g. USD/NOK is major by liquidity even though NOK is
+    individually classified via the currency_group G11/Scandies system, not
+    this classification).
+    end note
+
+    entity ores_refdata_currency_pair_convention_calendars_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * pair_code : text <<PK>>
+        * calendar_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_pair_convention_calendars_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Currency Pair Convention Calendar Table
+    Many-to-many junction between currency_pair_convention and calendar:
+    [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][a convention's AdvanceCalendar]]
+    almost always names the union of both legs' calendars (e.g.
+    TARGET,UnitedKingdom), so a convention needs more than one calendar
+    row. Replaces currency_pair_convention.advance_calendar's
+    comma-joined free-text value with a proper FK relationship to
+    [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]]. The
+    advance_calendar name is kept (not renamed to calendar/holiday_calendar)
+    since it matches ORE's own AdvanceCalendar XML field verbatim and
+    denotes a distinct concept from currency.holiday_calendar — it drives
+    date-advancing (Calendar::advance()), not business/settlement-day
+    membership tests.
+    end note
+
+    entity ores_refdata_currency_pair_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * pair_code : text <<PK>>
+        --
+        * version : integer
+        * pip_factor : double
+        * tick_size : double
+        * decimal_places : integer
+          business_day_convention : text
+          spot_relative : boolean
+          end_of_month : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_pair_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Currency Pair Convention Table
+    Quoting and date-convention fields for a currency pair — pip factor,
+    tick size, calendars, business day convention, spot-relative/end-of-
+    month flags — folded in from the retired fx_convention entity (see
+    [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]). Keyed 1:1 by
+    pair_code, the same value space as
+    [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]'s own primary key — every pair has at
+    most one convention record, so a separate identifier scheme would be
+    pure overhead. Like every other soft-FK relationship in this codebase,
+    pair_code is validated via trigger, not a hard DB foreign key.
+    end note
+
+    entity ores_refdata_currency_pairs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * pair_code : text <<PK>>
+        --
+        * version : integer
+        * base_currency : text
+        * quote_currency : text
+        * classification : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_currency_pairs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Currency Pair Table
+    Currency pair identity: base/quote legs, deliverability, classification,
+    and fixing source. Conventions (pip factor, tick size, calendars,
+    business day convention) live 1:1 in
+    [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase's
+    existing *_convention entity family. spot_days, calendars, and G11
+    membership are *derived* at read time from the two legs, not stored
+    here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design
+    rationale.
+    end note
+
+    entity ores_refdata_curve_roles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Role Table
+    Reference data table defining the valid [[id:4A02B9BB-B4B5-45DE-9036-C81EAEE3E921][instrument_code]] curve-role
+    values: DEPOSIT, FRA, SWAP -- the three pricing derivations
+    ores.analytics.quant's curve_instrument_pricer implements (simple
+    rate, implied forward, par-rate solve respectively) -- and the sentinel
+    NONE for the great majority of instrument_code rows that are not
+    curve instruments at all (options, credit, equity, and so on). NONE
+    exists so instrument_code.curve_role can stay a required, FK-validated
+    column rather than nullable free text, the same pattern
+    [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit.NONE]] already
+    establishes for tenor.unit. Managed by the system tenant, like other
+    refdata code tables.
+    end note
+
+    entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_day_count_fraction_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Day Count Fraction Type Table
+    Reference data table defining valid day count fraction conventions used to
+    compute accrual fractions between two dates (e.g. for coupon accrual on
+    instrument legs and the *_convention entities). Values are sourced from
+    ORE's ore_types.xsd. Follows the same aux-type pattern (code / name /
+    description / display_order) as
+    [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][business_day_convention_type]].
+    end note
+
+    entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * index_based : boolean
+          index : text
+          calendar : text
+          convention : text
+          end_of_month : boolean
+          day_count_fraction : text
+          settlement_days : integer
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_deposit_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Deposit Convention Table
+    Specifies the settlement lag, calendar, and day count for short-term
+    deposits used as the near-end instruments when bootstrapping a yield
+    curve. Corresponds to the <Deposit> element in ORE conventions.xml.
+    When index_based is true the remaining fields may be omitted and are
+    instead inherited from the referenced IBOR index convention.
+    end note
+
     entity ores_refdata_entity_classifications_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -837,6 +1519,201 @@ package "refdata" #FFF3E0 {
 
     note right of ores_refdata_entity_classifications_tbl
     Financial Entity Indicator as defined by the CFTC.
+    end note
+
+    entity ores_refdata_floating_index_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_floating_index_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Floating Index Type Table
+    Reference data table defining valid floating rate indices used in
+    instrument floating leg definitions. Values are sourced from ORE
+    ore_types.xsd.
+    /2026-07-18 moved from ores.trading to ores.refdata/: the Qt UI
+    already lived in ores.qt/refdata's RefdataPlugin, hand-wired
+    outside codegen; the backend followed to match, same direction as
+    Book/BusinessCentre's own moves to ores.refdata.
+    end note
+
+    entity ores_refdata_fra_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * index : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fra_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FRA Convention Table
+    A FRA convention ties a FRA instrument to an IBOR index whose own
+    conventions (calendar, day count, settlement) govern the FRA.
+    Corresponds to the <FRA> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * fixing_calendar : text
+        * day_count_fraction : text
+        * settlement_days : integer
+        * business_day_convention : text
+        * end_of_month : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_ibor_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IBOR Index Convention Table
+    Defines the fixing calendar, day count, settlement lag, and business day
+    convention for a term IBOR index such as EURIBOR or USD LIBOR.
+    Corresponds to the <IborIndex> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_instrument_codes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * asset_class : text
+          ore_trade_type : text
+        * display_order : integer
+        * curve_role : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_instrument_codes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Code Table
+    General-purpose product catalogue: one row per instrument/product type
+    the system knows about, covering every trade type in ORE's own
+    authoritative oreTradeType enumeration
+    (external/ore/xsd/instruments.xsd), plus one ORE Studio-specific
+    addition, DEPO (ORE has no distinct money-market-deposit trade type
+    — it models a deposit as a single-period Swap — so DEPO is added
+    purely to give the IR Curve Template a distinct short-end label; its
+    pricing still derives from the same par-rate formula a single-period
+    swap would use). The code column is deliberately not ORE's own
+    oreTradeType spelling: traders need something they can actually type
+    quickly, and ORE's names (FxDoubleBarrierOption,
+    EquityStrikeResettableOption) don't serve that. code is instead a
+    short, FIX-inspired mnemonic (FRA, IRS, CDS, FXBAR, EQVS...),
+    unique and typically under 10 characters. The literal ORE
+    oreTradeType string, where one exists, is preserved separately in
+    ore_trade_type (nullable — null only for DEPO) for future ORE
+    trade-file interop; it is not itself validated or FK'd anywhere, only
+    carried as a reference. Each row is tagged with the asset_class_code
+    it belongs to. Not scoped to any single consumer: the IR Curve
+    Template (which consumes the DEPO/FRA/IRS rates entries for its
+    tenor roles) is the first consumer, but this catalogue exists
+    independently for any future feature needing to classify or enumerate
+    the instrument types the system supports. Managed by the system
+    tenant, like other shared code tables.
+    end note
+
+    entity ores_refdata_ledger_feed_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_ledger_feed_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ledger Feed Type Table
+    Reference data table defining how a book's ledger balance is fed --
+    independent of its regulatory type (see regulatory_book_type) or its
+    risk role (see book_purpose_type). Values: 'None' (not fed from any
+    source book), 'Automatic' (fed by an automated ledger process), and
+    'Manual' (fed by manual entry). Replaces the originally-scoped
+    is_ledger_book/is_manual_ledger_book boolean pair, which allowed an
+    invalid state (manual true while ledger false).
+    Ledger feed types are mutually exclusive -- a book has exactly one at
+    a time -- and managed by the system tenant. See
+    [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] for the full analysis of why this is a 3-state
+    lookup entity rather than two booleans.
+    end note
+
+    entity ores_refdata_leg_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_leg_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Leg Type Table
+    Reference data table defining valid leg types used in instrument leg
+    definitions. Values are sourced from ORE ore_types.xsd LegType
+    enumeration.
+    /2026-07-18 moved from ores.trading to ores.refdata/: the Qt UI
+    already lived in ores.qt/refdata's RefdataPlugin, hand-wired
+    outside codegen; the backend followed to match, same direction as
+    Book/BusinessCentre's own moves to ores.refdata, and the same move
+    floating_index_type made alongside this one.
     end note
 
     entity ores_refdata_local_jurisdictions_tbl <<temporal>> #C6F0D8 {
@@ -876,7 +1753,71 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_monetary_natures_tbl
-    Monetary nature classification. Defines the nature of the currency instrument.
+    Reference data defining valid monetary natures for currencies.
+    Values include: Fiat, Commodity, Synthetic, Supranational.
+    end note
+
+    entity ores_refdata_ois_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * spot_lag : integer
+        * index : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          payment_lag : integer
+          end_of_month : boolean
+          fixed_frequency : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          rule : text
+          payment_calendar : text
+          rate_cutoff : integer
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_ois_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    OIS Convention Table
+    Defines the fixed-leg and overnight floating-leg parameters for an OIS.
+    OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA,
+    SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_overnight_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * fixing_calendar : text
+        * day_count_fraction : text
+        * settlement_days : integer
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_overnight_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Overnight Index Convention Table
+    Defines the fixing calendar, day count, and settlement lag for a risk-free
+    overnight rate index. Corresponds to the <OvernightIndex> element in
+    ORE conventions.xml.
     end note
 
     entity ores_refdata_parties_tbl <<temporal>> #C6F0D8 {
@@ -955,7 +1896,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Party Contact Information Table
     Contact details for parties organised by purpose (Legal, Operations,
     Settlement, Billing). Each party can have one contact record per type.
     end note
@@ -1075,7 +2016,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Party Identifier Table
     External identifiers for parties, such as LEI codes, BIC/SWIFT codes,
     national registration numbers, and tax identifiers. Each party can have
     multiple identifiers across different schemes.
@@ -1137,10 +2078,6 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_party_statuses_tbl
-    Party Statuses - Lifecycle states for party and counterparty records (Active, Inactive, Suspended)
-    end note
-
     entity ores_refdata_party_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1158,7 +2095,65 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_party_types_tbl
-    Party Types - Classification of legal entities (Bank, Corporate, HedgeFund, etc.)
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Party Type Table
+    Reference data table defining valid party type classifications.
+    Examples: 'Bank', 'Corporate', 'HedgeFund', 'Government'.
+    Party types are managed by the system tenant and are used to
+    categorise parties and counterparties.
+    end note
+
+    entity ores_refdata_payment_frequencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * period_unit : text
+          period_multiplier : integer
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_payment_frequencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Payment Frequency Table
+    Reference data table for how often a leg's cashflows occur, sourced
+    from ORE's authoritative frequencyType enumeration
+    (external/ore/xsd/ore_types.xsd) -- Once, Annual, Semiannual,
+    Quarterly, Bimonthly, Monthly, Lunarmonth, Weekly, Daily
+    (the canonical long-form names; ORE also accepts single-letter
+    aliases -- Z/A/S/Q/B/M/L/W/D -- not modelled here since this table's
+    code is the long form other components store and display). Each row
+    carries a period_unit/period_multiplier pair reusing
+    [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit]]'s own vocabulary
+    (DAY/WEEK/MONTH/YEAR, plus the NONE sentinel for Once, which
+    has no periodic step at all -- a single payment at termination), so a
+    caller building a payment schedule (e.g. the IR Curve Template's swap
+    fixed leg) can reuse the exact same period-stepping arithmetic
+    ores::refdata::domain::resolve_end_date() already implements for
+    tenors, rather than re-deriving month/day counts from the code string.
+    Not scoped to any single consumer -- this table exists as reusable
+    reference data, the same category as day_count_fraction_type or
+    business_day_convention_type. Managed by the system tenant.
+    This table replaces ores.trading's older payment_frequency_type
+    entity outright -- there is no case for two types modelling the same
+    ORE enumeration ("payment frequency conventions" vs "payment
+    frequencies" is a flimsy distinction); every ores.trading column
+    that stored a payment-frequency code (swap_leg, credit_instrument,
+    commodity_instrument, equity_swap_instrument) now validates
+    against this table instead. See the parent story's * Decisions for
+    the full reasoning.
     end note
 
     entity ores_refdata_person_roles_tbl <<temporal>> #C6F0D8 {
@@ -1188,13 +2183,14 @@ package "refdata" #FFF3E0 {
         * version : integer
         * party_id : uuid <<FK>>
         * name : text
-        * description : text
+          description : text
           parent_portfolio_id : uuid <<FK>>
           owner_unit_id : uuid <<FK>>
         * purpose_type : text
           aggregation_ccy : text
-        * is_virtual : integer
+        * is_virtual : boolean
         * status : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1207,7 +2203,7 @@ package "refdata" #FFF3E0 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Portfolio Table
     Represents organizational, risk, or reporting groupings.
     Never holds trades directly. Supports hierarchical structure
     via self-referencing parent_portfolio_id.
@@ -1230,7 +2226,42 @@ package "refdata" #FFF3E0 {
     }
 
     note right of ores_refdata_purpose_types_tbl
-    Purpose Types - Classification of portfolio purpose (Risk, Regulatory, ClientReporting, Internal)
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Purpose Type Table
+    Reference data table defining valid purpose type values.
+    Examples: 'Hedging', 'Trading', 'Investment'.
+    Purpose types are managed by the system tenant and are used to
+    classify the intent of portfolio records.
+    end note
+
+    entity ores_refdata_regulatory_book_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_regulatory_book_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Regulatory Book Type Table
+    Reference data table defining the Basel III/IV FRTB trading book /
+    banking book classification a book carries. Examples: 'Trading',
+    'Banking'.
+    Regulatory book types are managed by the system tenant and determine
+    which capital regime (market risk vs credit risk) applies to a book.
     end note
 
     entity ores_refdata_regulatory_corporate_sectors_tbl <<temporal>> #C6F0D8 {
@@ -1313,6 +2344,314 @@ package "refdata" #FFF3E0 {
     Contains a code representing a supervisory-body that may be supervising this transaction.
     end note
 
+    entity ores_refdata_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          fixed_calendar : text
+        * fixed_frequency : text
+          fixed_convention : text
+        * fixed_day_count_fraction : text
+        * index : text
+          float_frequency : text
+          sub_periods_coupon_type : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Convention Table
+    Defines the fixed-leg schedule and the floating-leg index for a standard
+    interest rate swap. Used by ORE to bootstrap par swap rates off a yield
+    curve. Corresponds to the <Swap> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_anchors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Anchor Table
+    Small, mostly-static lookup of the reference points a
+    [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] can be resolved from.
+    Referenced by tenor_convention.measured_from as a convention's default
+    anchor, and — for spot/forward-style conventions specifically — by a
+    curve or ladder's own quoting-basis override (see
+    [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
+    out of scope for this model and lives on the curve/ladder entity instead.
+    end note
+
+    entity ores_refdata_tenor_convention_resolutions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * convention_code : text <<PK>>
+        * tenor_code : text <<PK>>
+        --
+        * version : integer
+          anchor_override : text
+          offset_unit : text
+          offset_multiplier : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_convention_resolutions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Convention Resolution Table
+    A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
+    same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
+    convention]] — O/N resolves from horizon to tomorrow under the
+    spot/forward convention, but means "today" (zero offset) under the FX
+    swap convention — and not every tenor belongs to every convention's set
+    at all (the swap convention's tenor set stops at S/N; the credit/CDS
+    convention only uses IMM-quarter labels). This junction records all of
+    that as one row per valid (convention, tenor) pair: the row's mere
+    presence is set membership; its optional anchor_override column carries
+    the per-row exception to the convention's own default anchor; and its
+    optional offset_unit/offset_multiplier columns carry the
+    convention-specific duration for a SPECIAL tenor, which — unlike a
+    PERIOD tenor — has no unit/multiplier of its own to fall back on
+    (see [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][Tenor]]'s kind column).
+    A PERIOD tenor's resolution never needs an offset override — its
+    duration is fixed by its own unit/multiplier regardless of
+    convention, so only the anchor itself (the convention's measured_from,
+    or this row's anchor_override) can vary for those rows. For a
+    convention whose resolution_algorithm is IMM_ROLL rather than
+    ANCHOR_OFFSET, offset_unit is ROLL_QUARTER and offset_multiplier
+    is the roll-quarter count (e.g. 1Y 1RQ, per
+    [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
+    convention) — the same two columns, reused rather than requiring a
+    separate schema for the different algorithm. The runtime resolver for
+    IMM_ROLL rows is not implemented yet; see the capture referenced below.
+    end note
+
+    entity ores_refdata_tenor_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * measured_from : text
+        * resolution_algorithm : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Convention Table
+    Persisted catalog of the resolution schemes described in
+    [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "Tenor conventions by
+    curve type" section — spot/forward curves, FX swap curves (near-leg
+    quoting), and credit/CDS curves (IMM-anchored). Each row names the
+    *default* [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] a
+    convention's regular PERIOD tenors resolve from, and which *algorithm*
+    governs resolution for the convention at all: ANCHOR_OFFSET (anchor
+    date plus a fixed offset — spot/forward and FX swap conventions) or
+    IMM_ROLL (stepping through [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
+    Dates]]' quarterly roll schedule — credit/CDS convention; the resolver
+    for this algorithm is not yet implemented, see the capture referenced in
+    [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention
+    Resolution]]). Which [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+    labels actually belong to a given convention, and any per-tenor anchor or
+    offset override (needed for SPECIAL tenors such as O/N, which resolve
+    differently under the spot/forward convention than under the swap
+    convention, and for every IMM_ROLL tenor, which has no intrinsic
+    duration at all), is recorded in
+    [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]],
+    not here.
+    end note
+
+    entity ores_refdata_tenor_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Kind Table
+    Reference data table defining the valid [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+    kind values: PERIOD for a regular nD/nW/nM/nY duration with a fixed
+    offset from the convention's anchor, or SPECIAL for labels (O/N, SPOT,
+    TODAY, ...) with no fixed offset, resolved by rule per convention. Managed
+    by the system tenant, like other tenor code tables.
+    end note
+
+    entity ores_refdata_tenor_resolution_algorithms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_resolution_algorithms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Resolution Algorithm Table
+    Reference data table defining the valid [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
+    convention]] resolution algorithm values: ANCHOR_OFFSET (the common case —
+    a tenor resolves from the convention's anchor plus a fixed or per-row
+    offset) or IMM_ROLL (the convention resolves by rolling forward a count of
+    IMM quarters instead of a calendar offset). Managed by the system tenant,
+    like other tenor code tables.
+    end note
+
+    entity ores_refdata_tenor_units_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_units_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Unit Table
+    Reference data table defining the valid [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+    period unit values: DAY, WEEK, MONTH, YEAR for PERIOD tenors, and the
+    sentinel NONE for SPECIAL tenors (which carry no fixed unit/multiplier of
+    their own). NONE exists so tenor.unit can stay a required, FK-validated
+    column rather than nullable free text. Managed by the system tenant, like
+    other tenor code tables.
+    end note
+
+    entity ores_refdata_tenors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * display_name : text
+          description : text
+        * sort_order : integer
+        * kind : text
+        * unit : text
+          multiplier : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Table
+    Persisted catalog of the standard [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+    labels, so a user can see, manage, and order the set of tenors the system
+    knows about rather than relying on labels implied by parsing logic alone.
+    This table carries convention-independent identity only — how a given
+    tenor resolves under a particular curve type is
+    [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][Tenor Convention]]'s concern,
+    recorded via [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention
+    Resolution]]. [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken dates]]
+    are deliberately out of scope — they are per-instance ladder data, not
+    master data, and reference a row here only when they happen to coincide
+    with a standard label.
+    end note
+
+    entity ores_refdata_zero_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * tenor_based : boolean
+        * day_count_fraction : text
+          compounding : text
+          compounding_frequency : text
+          tenor_calendar : text
+          spot_lag : integer
+          spot_calendar : text
+          roll_convention : text
+          end_of_month : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_zero_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Zero Convention Table
+    Specifies the day count fraction and compounding method used when bootstrapping
+    a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
+    ORE conventions.xml. The id field is the natural key (ORE <Id> element).
+    end note
+
 }
 
 '
@@ -1361,6 +2700,42 @@ package "dq_staging" #F3E5F5 {
     The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table
     end note
 
+    entity ores_dq_badge_definitions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * background_colour : text
+        * text_colour : text
+        * severity_code : text
+          css_class : text
+        * display_order : integer
+    }
+
+    entity ores_dq_badge_mappings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code_domain_code : text
+        * entity_code : text
+        * badge_code : text
+        * version : integer
+    }
+
+    entity ores_dq_badge_severities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
     entity ores_dq_benchmark_rates_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1388,6 +2763,7 @@ package "dq_staging" #F3E5F5 {
           cost_center : text
         * book_status : text
         * regulatory_book_type : text
+        * is_sweepable : boolean
     }
 
     entity ores_dq_business_centres_artefact_tbl  #F7E5FF {
@@ -1431,6 +2807,29 @@ package "dq_staging" #F3E5F5 {
           unit_type_code : text
     }
 
+    entity ores_dq_calendar_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    entity ores_dq_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * calendar_type : text
+        * country_code : text <<FK>>
+          image_id : uuid <<FK>>
+    }
+
     entity ores_dq_cashflow_types_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1444,6 +2843,17 @@ package "dq_staging" #F3E5F5 {
     note right of ores_dq_cashflow_types_artefact_tbl
     The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table
     end note
+
+    entity ores_dq_code_domains_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
 
     entity ores_dq_coding_schemes_artefact_tbl  #F7E5FF {
         --
@@ -1472,6 +2882,17 @@ package "dq_staging" #F3E5F5 {
           image_id : uuid <<FK>>
     }
 
+    entity ores_dq_crm_topology_bundles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * crm_name : text
+        * pivot_currency_code : text
+        * base_currency_code : text
+        * quote_currency_code : text
+        * row_kind : text
+    }
+
     entity ores_dq_currencies_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1489,6 +2910,36 @@ package "dq_staging" #F3E5F5 {
         * monetary_nature : text
         * market_tier : text
           image_id : uuid <<FK>>
+        * spot_days : integer
+        * day_basis : text
+        * base_precedence : integer
+          holiday_calendar : text
+    }
+
+    entity ores_dq_currency_pair_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * version : integer
+        * pip_factor : double
+        * tick_size : double
+        * decimal_places : integer
+          advance_calendar : text
+          business_day_convention : text
+          spot_relative : boolean
+          end_of_month : boolean
+    }
+
+    entity ores_dq_currency_pairs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * version : integer
+        * base_currency : text
+        * quote_currency : text
+        * classification : text
     }
 
     entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
@@ -1624,6 +3075,22 @@ package "dq_staging" #F3E5F5 {
     This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
     end note
 
+    entity ores_dq_market_data_observations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * series_type : text
+        * metric : text
+        * qualifier : text
+        * point_id : text <<FK>>
+        * observation_date : date
+        * value : numeric
+        * source : text
+          source_url : text
+          retrieved_at : timestamptz
+    }
+
     entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1651,6 +3118,19 @@ package "dq_staging" #F3E5F5 {
     note right of ores_dq_party_roles_artefact_tbl
     Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
     end note
+
+    entity ores_dq_payment_frequencies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * period_unit : text
+          period_multiplier : integer
+        * display_order : integer
+    }
 
     entity ores_dq_person_roles_artefact_tbl  #F7E5FF {
         --
@@ -1738,6 +3218,48 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_supervisory_bodies_artefact_tbl
     Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_fx_spot_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * base_currency_code : text
+        * quote_currency_code : text
+        * gmm_initial_price : double
+        * ticks_per_hour : integer
+        * process_type : text
+        * price_source : text
+          vintage_source : text
+          vintage_date : text
+    }
+
+    note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
+    Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_gmm_components_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * component_index : integer
+          description : text
+        * mean : double
+        * stdev : double
+        * weight : double
+    }
+
+    note right of ores_dq_synthetic_gmm_components_artefact_tbl
+    Synthetic GMM Components artefacts - per-pair Gaussian mixture components
+    backing an fx_spot_configs artefact row, keyed by currency pair within the
+    same dataset - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {
@@ -2066,7 +3588,7 @@ package "dq_metadata" #E1F5FE {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Badge Definition Table
     The badge catalogue. Each entry defines the complete visual presentation
     of a badge: display label, tooltip, background colour, text colour,
     severity level, and an optional Bootstrap CSS class hint for Wt.
@@ -2127,7 +3649,7 @@ package "dq_metadata" #E1F5FE {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Badge Severity Table
     Reference data defining severity levels used to classify badges.
     Codes align with Bootstrap 5 contextual classes so Wt rendering
     requires no translation layer.
@@ -2210,7 +3732,7 @@ package "dq_metadata" #E1F5FE {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Code Domain Table
     A code domain is a classification registry that names the context in
     which a code value exists. It disambiguates identical codes used in
     different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE'
@@ -2390,6 +3912,7 @@ package "dq_metadata" #E1F5FE {
 package "variability" #E8F5E9 {
     entity ores_variability_system_settings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
+        * party_id : uuid <<PK, FK>>
         * name : text <<PK>>
         --
         * version : integer
@@ -2407,8 +3930,11 @@ package "variability" #E8F5E9 {
     note right of ores_variability_system_settings_tbl
     Unified typed system settings table.
     Supports boolean, integer, string, and json value types. Uses name as
-    natural key. System-wide settings use the system tenant; per-tenant
-    settings use the tenant's own tenant_id.
+    natural key, scoped by (tenant_id, party_id). System- and tenant-wide
+    settings use the tenant's system party (party_category='System');
+    party-specific settings (e.g. onboarding.party) use the party's own id.
+    party_id is not-null: a caller may omit it (send SQL NULL) and the insert
+    trigger defaults it to the tenant's system party, same pattern as tenant_id.
     end note
 
 }
@@ -2542,14 +4068,15 @@ package "trading" #E8F5E9 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           lockout_days : integer
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2557,6 +4084,15 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_balance_guaranteed_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Balance Guaranteed Swap Instrument Table
+    Represents a Balance Guaranteed Swap instrument where the notional
+    amortises in line with an underlying pool of assets (e.g., mortgages).
+    end note
 
     entity ores_trading_bond_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -2578,6 +4114,7 @@ package "trading" #E8F5E9 {
           call_date : date
           conversion_ratio : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2585,38 +4122,21 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
-
-    entity ores_trading_business_day_convention_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_business_day_convention_types_tbl
-    Business Day Convention Types - ORE business day adjustment codes
-    end note
 
     entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           call_dates_json : text
           call_type : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2625,17 +4145,27 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
+    note right of ores_trading_callable_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Callable Swap Instrument Table
+    Represents a callable interest rate swap where one party has the right
+    to terminate the swap early on specified call dates.
+    end note
+
     entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2643,6 +4173,15 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_cap_floor_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cap/Floor Instrument Table
+    Represents an interest rate cap or floor instrument.
+    Legs are defined separately in the swap_legs table.
+    end note
 
     entity ores_trading_commodity_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -2679,6 +4218,7 @@ package "trading" #E8F5E9 {
           payment_frequency_code : text
           swaption_expiry_date : date
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2696,6 +4236,7 @@ package "trading" #E8F5E9 {
           trade_id : uuid <<FK>>
         * trade_type_code : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2713,6 +4254,7 @@ package "trading" #E8F5E9 {
         * instrument_id : uuid <<FK>>
         * leg_sequence : integer
         * constituent_trade_id : text <<FK>>
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2744,6 +4286,7 @@ package "trading" #E8F5E9 {
           seniority : text
           restructuring : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2751,24 +4294,6 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
-
-    entity ores_trading_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_day_count_fraction_types_tbl
-    Day Count Fraction Types - ORE day count convention codes (Act360, Act365F, etc.)
-    end note
 
     entity ores_trading_equity_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -2791,6 +4316,7 @@ package "trading" #E8F5E9 {
           target_type : text
         * payoff_type : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2819,6 +4345,7 @@ package "trading" #E8F5E9 {
         * averaging_start_date : date
         * averaging_end_date : date
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2849,6 +4376,7 @@ package "trading" #E8F5E9 {
           upper_barrier_type : text
           rebate : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2876,6 +4404,7 @@ package "trading" #E8F5E9 {
         * long_short : text
           payout_amount : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2900,6 +4429,7 @@ package "trading" #E8F5E9 {
         * long_short : text
           settlement_type : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2927,6 +4457,7 @@ package "trading" #E8F5E9 {
           settlement_type : text
           cliquet_frequency : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2949,6 +4480,7 @@ package "trading" #E8F5E9 {
           price : numeric(28, 10)
           option_data_json : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2975,6 +4507,7 @@ package "trading" #E8F5E9 {
         * long_short : text
         * payment_frequency : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2999,6 +4532,7 @@ package "trading" #E8F5E9 {
         * maturity_date : date
         * long_short : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3006,24 +4540,6 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
-
-    entity ores_trading_floating_index_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_floating_index_types_tbl
-    Floating Index Types - interest rate index codes (EURIBOR6M, SOFR, etc.)
-    end note
 
     entity ores_trading_fpml_event_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3048,10 +4564,10 @@ package "trading" #E8F5E9 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * end_date : date
         * currency : text
@@ -3060,6 +4576,7 @@ package "trading" #E8F5E9 {
         * strike : numeric(18, 10)
         * notional : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3067,6 +4584,15 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_fra_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FRA Instrument Table
+    Represents a Forward Rate Agreement instrument that fixes a future
+    interest rate for a notional principal amount over a specified period.
+    end note
 
     entity ores_trading_fx_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3084,6 +4610,7 @@ package "trading" #E8F5E9 {
         * start_date : date
           knock_out_barrier : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3112,6 +4639,7 @@ package "trading" #E8F5E9 {
           target_amount : numeric(28, 10)
           strike : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3140,6 +4668,7 @@ package "trading" #E8F5E9 {
           upper_barrier : numeric(28, 10)
           underlying_code : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3168,6 +4697,7 @@ package "trading" #E8F5E9 {
           lower_barrier : numeric(28, 10)
           upper_barrier : numeric(28, 10)
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3191,32 +4721,7 @@ package "trading" #E8F5E9 {
         * value_date : date
           settlement : text
           description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    entity ores_trading_fx_instruments_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
-        * trade_type_code : text
-        * bought_currency : text
-        * bought_amount : numeric(28, 10)
-        * sold_currency : text
-        * sold_amount : numeric(28, 10)
-          value_date : date
-          settlement : text
-          option_type : text
-          strike_price : numeric(28, 10)
-          expiry_date : date
-          description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3242,6 +4747,7 @@ package "trading" #E8F5E9 {
         * exercise_style : text
           settlement : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3267,6 +4773,7 @@ package "trading" #E8F5E9 {
         * notional : numeric(28, 10)
         * moment_type : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3274,48 +4781,22 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
-
-    entity ores_trading_identifiers_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * trade_id : uuid <<FK>>
-          issuing_party_id : uuid <<FK>>
-        * id_value : text
-        * id_type : text
-          id_scheme : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_identifiers_tbl
-    Junction table for trade external identifiers (UTI, USI, Internal).
-    Each trade can have multiple identifiers of different types.
-    issuing_party_id validates against both parties and counterparties
-    tables since UUIDs are globally unique.
-    Hand-crafted: inline soft FK validations for trade_id, issuing_party_id
-    cannot be expressed by the standard templates.
-    end note
 
     entity ores_trading_inflation_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * inflation_index_code : text
           base_cpi : numeric(18, 10)
           lag_convention : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3324,20 +4805,30 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
+    note right of ores_trading_inflation_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Swap Instrument Table
+    Represents an inflation-linked swap where one leg pays a fixed or floating
+    rate and the other is linked to an inflation index (e.g., CPI, RPI).
+    end note
+
     entity ores_trading_knock_out_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * barrier_level : numeric(18, 10)
         * barrier_type : text
           knock_out_dates_json : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3346,12 +4837,23 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
-    entity ores_trading_leg_types_tbl <<temporal>> #C6F0D8 {
+    note right of ores_trading_knock_out_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Knock-Out Swap Instrument Table
+    Represents a knock-out interest rate swap that terminates automatically
+    if the floating rate breaches a specified barrier level.
+    end note
+
+    entity ores_trading_lifecycle_events_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
         --
         * version : integer
           description : text
+          fsm_state_id : uuid <<FK>>
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3360,8 +4862,13 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
-    note right of ores_trading_leg_types_tbl
-    Leg Types - swap leg type codes (Fixed, Floating, CMS, etc.)
+    note right of ores_trading_lifecycle_events_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Lifecycle Event Table
+    Reference data table defining valid trade lifecycle event types.
+    Examples: 'New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'.
     end note
 
     entity ores_trading_party_role_types_tbl <<temporal>> #C6F0D8 {
@@ -3405,38 +4912,20 @@ package "trading" #E8F5E9 {
     cannot be expressed by the standard templates.
     end note
 
-    entity ores_trading_payment_frequency_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_payment_frequency_types_tbl
-    Payment Frequency Types - coupon/payment frequency codes
-    end note
-
     entity ores_trading_rpa_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
+        * party_id : uuid <<FK>>
           trade_id : uuid <<FK>>
-        * trade_type_code : text
         * start_date : date
         * maturity_date : date
         * reference_counterparty : text
-        * participation_rate : numeric(18, 10)
-          protection_fee : numeric(18, 10)
+        * participation_rate : double
+        * protection_fee : double
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3444,6 +4933,16 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_rpa_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    RPA Instrument Table
+    Represents a Risk Participation Agreement where one bank (protection
+    buyer) pays a fee to another (protection seller) to assume a portion of
+    credit risk on a reference counterparty.
+    end note
 
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3459,6 +4958,7 @@ package "trading" #E8F5E9 {
           underlyings_json : text
           parameters_json : text
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3484,6 +4984,7 @@ package "trading" #E8F5E9 {
           spread : numeric(18, 10)
         * notional : numeric(28, 10)
         * currency : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3496,10 +4997,10 @@ package "trading" #E8F5E9 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * expiry_date : date
         * exercise_type : text
         * settlement_type : text
@@ -3507,14 +5008,24 @@ package "trading" #E8F5E9 {
           start_date : date
           maturity_date : date
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-          maturity_date : is
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_swaption_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swaption Instrument Table
+    Represents a swaption — an option granting the right to enter into an
+    interest rate swap at a future date. Exercise type may be European,
+    Bermudan, or American.
+    end note
 
     entity ores_trading_trade_id_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3532,6 +5043,35 @@ package "trading" #E8F5E9 {
 
     note right of ores_trading_trade_id_types_tbl
     Trade Identifier Types - Identifier type codes for trade identifiers (UTI, USI, Internal)
+    end note
+
+    entity ores_trading_trade_identifiers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * trade_id : uuid <<FK>>
+          issuing_party_id : uuid <<FK>>
+        * id_value : text
+        * id_type : text
+          id_scheme : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_identifiers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Identifier Table
+    Junction entity assigning external identifiers to trades.
+    Each trade can have multiple identifiers of different types.
+    The issuing_party_id references either a party or counterparty.
     end note
 
     entity ores_trading_trade_types_tbl <<temporal>> #C6F0D8 {
@@ -3565,8 +5105,8 @@ package "trading" #E8F5E9 {
         * book_id : uuid <<FK>>
         * portfolio_id : uuid <<FK>>
           successor_trade_id : uuid <<FK>>
-          counterparty_id : uuid <<FK>>
         * trade_type : text
+          counterparty_id : uuid <<FK>>
           product_type : product_type_t
           instrument_id : uuid <<FK>>
           asset_class : text
@@ -3577,6 +5117,7 @@ package "trading" #E8F5E9 {
           execution_timestamp : timestamptz
           effective_date : date
           termination_date : date
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3586,26 +5127,29 @@ package "trading" #E8F5E9 {
     }
 
     note right of ores_trading_trades_tbl
-    Temporal trade record capturing FpML Trade Header properties. Each lifecycle
-    event (New, Amendment, Novation, etc.) creates a new temporal row for the
-    same trade id. The internal party is derived from book_id -> books.party_id.
-    Hand-crafted: inline soft FK validations for book_id, portfolio_id, and
-    successor_trade_id cannot be expressed by the standard templates.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Table
+    Temporal trade record. Each lifecycle event (New, Amendment, Novation,
+    etc.) creates a new temporal row for the same trade id. The internal party
+    is derived from book_id via books.party_id.
     end note
 
     entity ores_trading_vanilla_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
-          trade_id : uuid <<FK>>
         * trade_type_code : text
+        * party_id : uuid <<FK>>
+          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           settlement_lag : integer
           netting_set_id : text <<FK>>
           description : text
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3613,6 +5157,15 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_vanilla_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Vanilla Swap Instrument Table
+    Represents a plain vanilla interest rate swap or cross-currency swap
+    instrument linking two legs via the swap_legs table.
+    end note
 
 }
 
@@ -3731,17 +5284,12 @@ package "scheduler" #F1F8E9 {
     }
 
     note right of ores_scheduler_job_definitions_tbl
-    Stores job definitions for OreStudio's built-in scheduler. Each row
-    represents a versioned, auditable job definition with tenant/party
-    isolation, human-readable description, and a soft-pause mechanism
-    (is_active).
-    Jobs can be system-scoped (tenant_id IS NULL, party_id IS NULL),
-    tenant-scoped (tenant_id set, party_id IS NULL), or party-scoped
-    (both tenant_id and party_id set).
-    The action_type column controls how the scheduler executes the job:
-    - 'execute_sql'    : run the SQL in the command column directly.
-    - 'nats_publish'  : publish a NATS message; action_payload carries
-    the subject and body.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Job Definition Table
+    Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
+    cron expression, SQL command, target database, and active state.
     end note
 
     entity ores_scheduler_job_instances_tbl  #F7E5FF {
@@ -3789,11 +5337,14 @@ package "reporting" #E0F7FA {
     }
 
     note right of ores_reporting_concurrency_policies_tbl
-    Enum table for report instance concurrency strategies (skip, queue, fail).
-    Controls what happens when a new report instance is triggered while one for
-    the same definition is already running.
-    The validation function is called from the report_definitions insert trigger
-    so that new policies can be added without schema migrations.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Table
+    Reference data table defining valid concurrency policies for report definitions.
+    Examples: 'skip', 'queue', 'fail'.
+    Concurrency policies control what happens when a scheduler trigger fires
+    for a report definition that already has a running instance.
     end note
 
     entity ores_reporting_report_definitions_tbl <<temporal>> #C6F0D8 {
@@ -3801,14 +5352,15 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
-        * party_id : uuid <<FK>>
         * name : text
+        * party_id : uuid <<FK>>
         * description : text
         * report_type : text
           fsm_state_id : uuid <<FK>>
         * schedule_expression : text
         * concurrency_policy : text
           scheduler_job_id : uuid <<FK>>
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3818,6 +5370,10 @@ package "reporting" #E0F7FA {
     }
 
     note right of ores_reporting_report_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Definition Table
     The persistent template for a report. Describes what to run, when to run it,
     and how to handle concurrent executions. Type-specific configuration (e.g.
     risk parameters) lives in a separate table keyed by report_definition_id.
@@ -3874,16 +5430,14 @@ package "reporting" #E0F7FA {
     }
 
     note right of ores_reporting_report_instances_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Instance Table
     A single execution of a report_definition. Created automatically when the
     scheduler fires a trigger for an active definition.
     Lifecycle is managed through the report_instance_lifecycle FSM machine.
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
-    The initial fsm_state depends on the definition's concurrency_policy and
-    whether another instance for the same definition is already running:
-    - No running instance          -> pending
-    - Running + policy = queue     -> queued
-    - Running + policy = skip      -> skipped (terminal)
-    - Running + policy = fail      -> failed  (terminal)
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
     end note
@@ -3905,10 +5459,14 @@ package "reporting" #E0F7FA {
     }
 
     note right of ores_reporting_report_types_tbl
-    Enum table for the available report types (e.g. risk, grid). Each tenant
-    carries its own copy, populated from system seed data at provisioning time.
-    The validation function is called from the report_definitions insert trigger
-    so that new types can be added without schema migrations.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Table
+    Reference data table defining valid report type classifications.
+    Examples: 'risk', 'grid'.
+    Report types are managed by the system tenant and drive which
+    configuration block is used when creating a report definition.
     end note
 
     entity ores_reporting_risk_report_config_books_tbl <<junction>> #ECECEC {
@@ -4287,6 +5845,7 @@ package "workflow" #FFF8E1 {
         * created_by : text
         * current_step_index : integer
         * step_count : integer
+        * materialised_steps_json : text
           completed_at : timestamptz
           last_event_at : timestamptz
         * created_at : timestamptz
@@ -4296,7 +5855,7 @@ package "workflow" #FFF8E1 {
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_non_temporal_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Workflow Instance Table
     Tracks the lifecycle of a workflow execution, including its type, status,
     the serialised request that triggered it, and any result or error produced.
     Instances are append-mostly; status transitions are the primary mutation.
@@ -4321,13 +5880,14 @@ package "workflow" #FFF8E1 {
           started_at : timestamptz
           completed_at : timestamptz
         * created_at : timestamptz
+          step_log_json : jsonb
     }
 
     note right of ores_workflow_workflow_steps_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_non_temporal_create.mustache
     To modify, update the template and regenerate.
-    Table
+    Workflow Step Table
     Records the execution of one step in a saga workflow, including the step
     index, name, status, request/response payloads, and timing. Steps reference
     their parent workflow instance via workflow_id.
@@ -4365,6 +5925,38 @@ package "database" #EFEBE9 {
 ' ==================== marketdata (Market Data (Quotes, Fixings, Series)) ====================
 '
 package "marketdata" #E3F2FD {
+    entity ores_marketdata_feed_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * ore_key : text
+        * source_name : text
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_feed_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Feed Binding Table
+    A feed binding records which raw producer channel feeds an official market
+    series. The marketdata service reads all enabled bindings at startup, subscribes
+    to synthetic.v1.tick.<source_name>, persists each arriving tick as a
+    market_observation, and republishes on the official tenant-scoped stream
+    marketdata.v1.tick.<tenant_id>.<ore_key>.
+    Rebinding (editing source_name) switches the ingest source without restarting
+    producers. Setting enabled  false= suspends the subscription without deleting
+    the binding.
+    end note
+
     entity ores_marketdata_fixings_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * fixing_date : date <<PK>>
@@ -4373,19 +5965,112 @@ package "marketdata" #E3F2FD {
         * series_id : uuid <<FK>>
         * value : text
           source : text
+        * workspace_id : uuid <<FK>>
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
+    entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * fixing_date : date <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * series_id : uuid <<FK>>
+        * value : text
+          source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_fixings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Fixing Table
+    A historical index fixing: the official value of a fixing index (identified via
+    series_id) on a given fixing_date. Separate from observations: fixings are
+    historical facts (e.g. EUR-EURIBOR-3M fixed at X on date Y) rather than
+    forward-looking curve points.
+    TimescaleDB hypertable partitioned by fixing_date with 30-day chunks.
+    Corrections use the soft-update/soft-delete pattern (no GIST, no DELETE RULEs).
+    No audit trail columns — volume makes them impractical.
+    end note
+
+    entity ores_marketdata_market_observations_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * observation_datetime : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * series_id : uuid <<FK>>
+          point_id : text <<FK>>
+        * value : text
+          source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_observations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Observation Table
+    A single market data observation: the value of a series at a given
+    observation_datetime and optional point_id (tenor/surface coordinate).
+    observation_datetime is the financial valid-time (UTC); valid_from/valid_to
+    is the transaction time. Corrections replace the previous value via the
+    soft-update trigger.
+    TimescaleDB hypertable partitioned by observation_datetime with 30-day chunks;
+    GIST exclusion and DELETE RULEs are incompatible with hypertables — uniqueness
+    is enforced via partial unique index and the soft-update/soft-delete trigger pair.
+    No audit trail columns (version, modified_by, performed_by, change_reason_code,
+    change_commentary) — tick-level data volumes make these impractical.
+    end note
+
+    entity ores_marketdata_market_series_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * series_type : text
+        * metric : text
+        * qualifier : text
+        * asset_class : text
+        * series_subclass : text
+        * is_scalar : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_series_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Series Table
+    A catalog entry for a market data series — it records what is being observed:
+    a yield curve, vol surface, spot rate, fixing index, or similar. Standard
+    temporal reference data; changes infrequently so a regular table with GIST
+    exclusion is appropriate.
+    Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
+    asset_class and series_subclass carry the coarse taxonomy for filtering.
+    end note
+
     entity ores_marketdata_observations_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
-        * observation_date : date <<PK>>
+        * observation_datetime : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
         * series_id : uuid <<FK>>
           point_id : text <<FK>>
         * value : text
           source : text
+        * workspace_id : uuid <<FK>>
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -4401,6 +6086,7 @@ package "marketdata" #E3F2FD {
         * asset_class : text
         * series_subclass : text
         * is_scalar : boolean
+        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4616,6 +6302,314 @@ package "analytics" #E8F5E9 {
     (e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and
     numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in
     pricing_model_product_parameters.
+    end note
+
+}
+
+'
+' ==================== workspace (Workspace — Isolated Data Contexts) ====================
+'
+package "workspace" #E8F5E9 {
+    entity ores_workspace_trade_scope_tbl  #F7E5FF {
+        * workspace_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+    }
+
+    note right of ores_workspace_trade_scope_tbl
+    Trade scope whitelist (references workspace UUID, not integer).
+    end note
+
+    entity ores_workspaces_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+        * version : integer
+        * name : text
+        * description : text
+          source_path : text
+          parent_workspace_id : uuid <<FK>>
+          scope_portfolio_id : uuid <<FK>>
+        * owner_id : uuid <<FK>>
+        * status_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+}
+
+'
+' ==================== synthetic (Synthetic Data Generation) ====================
+'
+package "synthetic" #F9FBE7 {
+    entity ores_synthetic_folders_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+          parent_id : uuid <<FK>>
+        * name : text
+        * kind : text
+          collection_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_folders_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Folder Table
+    A generic, self-referencing hierarchy node. The Market Simulator tree is
+    drawn directly from these rows rather than parsed out of a feed's
+    source_name string: one root folder per party ("Synthetic"), with
+    market_data_generation_config collections, asset-class folders (e.g.
+    "FX"), and instrument-type folders (e.g. "FX Rates") nested beneath it.
+    fx_spot_generation_config rows reference their immediate parent folder
+    via folder_id. kind distinguishes what a given row represents; =
+    collection_id= is populated only for kind  'collection'= rows, linking
+    back to the market_data_generation_config it represents (that entity
+    remains the source of truth for name/description/enabled/dataset_id;
+    this row's own name is kept in sync for uniform hierarchy display).
+    Having real, queryable folder rows (rather than string-parsing) lets any
+    caller -- Qt, ores.shell, or a wt workflow -- resolve "everything under
+    this folder" the same way, via the generated hierarchy function, instead
+    of each reimplementing the tree-walk itself.
+    end note
+
+    entity ores_synthetic_fx_spot_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * source_name : text
+        * ore_key : text
+        * price_source : text
+        * gmm_initial_price : double
+        * ticks_per_hour : integer
+        * process_type : text
+        * enabled : boolean
+        * vintage_source : text
+        * vintage_date : text
+          folder_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_spot_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Spot Generation Config Table
+    A typed sub-configuration owned by a market_data_generation_config. Describes
+    how to synthesise the tick stream for a single FX spot rate: which ORE market
+    key it produces, the starting price, the tick cadence, and the price process.
+    The price process is a Gaussian Mixture Model whose components are held
+    separately as gmm_component rows. Scoped to a tenant and a party.
+    end note
+
+    entity ores_synthetic_gmm_components_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * fx_spot_config_id : uuid <<FK>>
+        * component_index : integer
+        * description : text
+        * mean : double
+        * stdev : double
+        * weight : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_gmm_components_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    GMM Component Table
+    A single weighted Gaussian component (mean, standard deviation, weight) of the
+    Gaussian Mixture Model that drives an fx_spot_generation_config's price
+    process. Components belong to a parent FX spot config via fx_spot_config_id;
+    their weights are normalised at generation time. Party- and tenant-scoped.
+    end note
+
+    entity ores_synthetic_ir_curve_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * index_name : text
+        * process_type : text
+        * kappa : double
+        * theta : double
+        * sigma : double
+        * initial_rate : double
+        * ticks_per_hour : integer
+        * enabled : boolean
+        * fixed_leg_payment_frequency_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_ir_curve_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Generation Config Table
+    A typed sub-configuration owned by a market_data_generation_config. Describes
+    how to synthesise a single currency+index interest-rate curve: which
+    short-rate process drives it (vasicek/cir/hull_white, per
+    ores.analytics.quant's IYieldCurveProcess engines) and that process's
+    parameters. The actual instrument grid (which tenors to publish at which
+    role) is held separately as ordered ir_curve_template_entry rows, the
+    same one-config-many-children shape fx_spot_generation_config uses for
+    its gmm_component rows. Scoped to a tenant and a party.
+    end note
+
+    entity ores_synthetic_ir_curve_template_entries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * ir_curve_config_id : uuid <<FK>>
+        * sequence_index : integer
+        * start_tenor_code : text
+        * end_tenor_code : text
+        * instrument_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_ir_curve_template_entries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Template Entry Table
+    One row of the raw instrument grid (the "Curve Template") an
+    ir_curve_generation_config publishes: which tenor period, priced as
+    which instrument type (deposit-equivalent, FRA-equivalent,
+    swap-equivalent -- see ores.refdata.instrument_code), in what order.
+    Every entry is modelled as a genuine [start, end) period rather than
+    a single maturity label: start_tenor_code/end_tenor_code are both
+    ordinary tenor references resolved through the same
+    ores::refdata::domain::resolve_window/resolve_end_date machinery
+    (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments
+    (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine
+    zero-duration PERIOD/DAY tenor already in the catalog, resolving
+    directly to the horizon's spot date -- not a null/sentinel hack);
+    interval instruments (FRAs) set it to the period's own front tenor
+    (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This
+    symmetric shape is what lets the tenor-collision validator
+    (validate_curve_template in ores.synthetic.api) detect genuine
+    period overlaps via plain windows_overlap(), without a special case
+    for point vs. interval instruments. Entries belong to a parent config
+    via ir_curve_config_id, the same one-config-many-children shape
+    fx_spot_generation_config's gmm_component rows use. Every entry's
+    published rate is derived from the parent config's short-rate
+    process's discount_factor() at the tenor's maturity -- never an
+    independently-noised value -- so the published tick batch is, by
+    construction, a slice of one internally consistent curve. Party- and
+    tenant-scoped.
+    end note
+
+    entity ores_synthetic_market_data_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * description : text
+        * enabled : boolean
+          dataset_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_market_data_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Generation Config Table
+    A top-level container that owns one or more typed sub-configurations (FX spot
+    now; vol surface, interest-rate curves later). It is the recipe for how
+    synthetic market data is produced. Scoped to a tenant and a party so each
+    party manages its own configurations and its own generated data.
+    end note
+
+    entity ores_synthetic_yield_curve_process_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_yield_curve_process_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Yield Curve Process Type Table
+    Reference data table enumerating the IYieldCurveProcess engines
+    ores.analytics.quant's process_factory::make_yield_curve_process()
+    can construct: VASICEK, CIR, HULL_WHITE. Replaces an inline
+    CHECK ("process_type" in ('vasicek', 'cir', 'hull_white')) constraint
+    on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
+    catalogue row per engine -- same reasoning as promoting
+    instrument_code from a hardcoded list to a real reference-data table.
+    Scoped to ores.synthetic (not ores.refdata) since
+    IYieldCurveProcess engine selection is specific to synthetic IR curve
+    generation, its only consumer today; not promoted to shared refdata
+    until it is genuinely shared by something else, per this story's own
+    payment_frequency precedent. Managed by the system tenant.
     end note
 
 }

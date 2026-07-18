@@ -63,9 +63,7 @@ whichever UI happened to need it first.
 
 The facet's generated output path is
 =projects/ores.{cache_component}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache.hpp=
-(see the =nats-event-cache= entry in
-[[proj:projects/ores.codegen/library/facet_catalogue.org][the facet
-catalogue]]). =cache_subcomponent= defaults to =core= (case 2 above:
+(see the [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache facet]]). =cache_subcomponent= defaults to =core= (case 2 above:
 =cached_by: iam= → =ores.iam.core=, every consumer's shape until
 =ores.refdata.client= existed) but is derived from =cached_by= itself
 whenever it carries a dot -- =cached_by: refdata.client= splits into

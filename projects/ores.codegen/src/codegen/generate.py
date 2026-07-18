@@ -46,30 +46,6 @@ def clang_format_files(paths: list[Path]) -> None:
     subprocess.run([exe, "-i", *[str(p) for p in cpp]], check=True)
     log.info("clang-formatted %d generated C++ file(s)", len(cpp))
 
-# Backward-compat shim: legacy --profile names were *curated facet sets*
-# (facet_catalogue groups), not address subtrees, so map each to its exact
-# set of facet addresses to preserve byte-identical output. Removed in
-# stage 6 once every caller passes --address. A value not listed here is
-# treated as a physical-space address and expanded by the graph.
-_CPP_CORE = {"ores.cpp.domain", "ores.cpp.generator", "ores.cpp.repository",
-             "ores.cpp.service", "ores.cpp.protocol"}
-_PROFILE_TO_FACETS = {
-    "sql": {"ores.sql.schema"},
-    "domain": {"ores.cpp.domain"},
-    "generator": {"ores.cpp.generator"},
-    "repository": {"ores.cpp.repository"},
-    "service": {"ores.cpp.service"},
-    "protocol": {"ores.cpp.protocol"},
-    "nats-eventing": {"ores.cpp.nats-eventing"},
-    "nats-handler": {"ores.cpp.nats-handler"},
-    "nats-sub-registrar": {"ores.cpp.nats-sub-registrar"},
-    "qt": {"ores.cpp.qt"},
-    "enum": {"ores.cpp.enum"},
-    "field-group": {"ores.cpp.field-group"},
-    "all-cpp": set(_CPP_CORE),
-    "all": _CPP_CORE | {"ores.sql.schema"},
-}
-
 # Filter for org files in a component's modeling/ dir: only files whose
 # frontmatter declares a codegen model type are picked up. Other org
 # files (overviews, knowledge docs, plantuml source) are skipped.
@@ -95,16 +71,15 @@ def resolve_targets(
     model_path: Path,
     base_dir: Path,
     *,
-    profile: str | None = None,
     address: str | None = None,
     properties: dict[str, Any] | None = None,
 ) -> tuple[list[dict], str, dict]:
     """Traverse the physical-space graph; return what to generate for a model.
 
     THE single resolver — used by the codegen CLI and the compass wrapper, so
-    there is one place that maps (model, selector) → archetypes. Selector
-    precedence: ``address`` (real physical-space address) > ``profile``
-    (legacy compat shim) > neither (the entity's full supported set).
+    there is one place that maps (model, selector) → archetypes. ``address``
+    restricts generation to a physical-space subtree; omitted, it generates
+    the entity's full supported set.
 
     Returns ``(units, model_type, model_data)`` where each unit is
     ``{"template": <name>, "output": <project-root-relative path>}``.
@@ -115,17 +90,7 @@ def resolve_targets(
     if properties is None:
         properties = _read_drawer_properties(model_path)
 
-    if address:
-        target = compute_target_set(address, graph)
-    elif profile in _PROFILE_TO_FACETS:
-        log.warning("--profile %r is deprecated; use --address (e.g. %s). "
-                    "The shim is removed once callers migrate (task B11).",
-                    profile, " ".join(sorted(_PROFILE_TO_FACETS[profile])))
-        target = frozenset(_PROFILE_TO_FACETS[profile])
-    elif profile:
-        target = compute_target_set(profile, graph)     # profile is an address
-    else:
-        target = compute_target_set(None, graph)         # all facets
+    target = compute_target_set(address, graph)
 
     # S_e: model-type-admissible facets narrowed by the entity's :ores.*.enabled:
     # drawer (read above from the model file; empty => full supported set).
@@ -190,7 +155,6 @@ def resolve_targets(
 
 def _generate_single(
     model_path: Path,
-    profile: str,
     dry_run: bool,
     base_dir: Path,
     address: str | None = None,
@@ -201,7 +165,7 @@ def _generate_single(
 
     try:
         units, model_type, model_data = resolve_targets(
-            model_path, base_dir, profile=profile, address=address)
+            model_path, base_dir, address=address)
     except ValueError as exc:
         log.error("%s", exc)
         return 1
@@ -209,7 +173,7 @@ def _generate_single(
     if not units:
         # Empty intersection is a warning, not an error (spec): nothing to do.
         log.warning("%s: nothing to generate for %r (model type %r)",
-                    model_path.name, address or profile, model_type)
+                    model_path.name, address, model_type)
         return 0
 
     project_root = base_dir.parent.parent
@@ -279,10 +243,9 @@ def _generate_single(
 def cmd_generate(args: Any, base_dir: Path) -> int:
     return _generate_single(
         Path(args.model).resolve(),
-        args.profile,
         args.dry_run,
         base_dir,
-        address=getattr(args, "address", None),
+        address=args.address,
     )
 
 
@@ -312,16 +275,16 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
             continue
 
         log.info(
-            "Regenerating %d models for component %r (profile: %s)%s...",
+            "Regenerating %d models for component %r (address: %s)%s...",
             len(model_files),
             comp_name,
-            args.profile,
+            args.address,
             " [dry-run]" if args.dry_run else "",
         )
 
         for model_path in model_files:
-            rc = _generate_single(model_path, args.profile, args.dry_run, base_dir,
-                                  address=getattr(args, "address", None))
+            rc = _generate_single(model_path, args.dry_run, base_dir,
+                                  address=args.address)
             if rc != 0:
                 total_errors += 1
 

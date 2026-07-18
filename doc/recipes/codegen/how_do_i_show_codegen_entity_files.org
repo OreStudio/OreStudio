@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-For background on entity metatypes and profiles, see
+For background on entity metatypes and the physical-space graph, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
 
 * Question
@@ -51,10 +51,10 @@ Staleness is determined as =output mtime < max(template mtime, model mtime)=.
 A file is stale if either the template or the model file is newer than
 the last generated output.
 
-To restrict to a single profile (facet):
+To restrict to a single facet:
 
 #+begin_src sh
-./compass.sh codegen entity show country --profile sql
+./compass.sh codegen entity show country --address ores.sql.schema
 #+end_src
 
 * Script

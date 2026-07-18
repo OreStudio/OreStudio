@@ -115,11 +115,11 @@ def _resolve_entity(name_or_id: str, base_dir: Path, project_root: Path):
 
 
 def _output_paths_for_entity(model_path: Path, base_dir: Path, project_root: Path,
-                              profile=None, address=None) -> list:
+                              address=None) -> list:
     """(output_path, template_path) pairs for an entity, via the shared
     codegen resolver — no duplicated resolution logic here."""
     from codegen.generate import resolve_targets  # noqa: PLC0415
-    units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
+    units, _, _ = resolve_targets(model_path, base_dir, address=address)
     templates_dir = base_dir / "library" / "templates"
     return [(project_root / u["output"], templates_dir / u["template"]) for u in units]
 
@@ -164,7 +164,7 @@ def _cmd_list(args, base_dir: Path, project_root: Path) -> int:
 
 
 def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
-                 profile=None, address=None) -> int:
+                 address=None) -> int:
     """Generate to a tempdir via the shared resolver and print a unified diff
     against the on-disk files."""
     import difflib  # noqa: PLC0415
@@ -175,7 +175,7 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
     from codegen.core import generate_from_model  # noqa: PLC0415
     from codegen.generate import clang_format_files, resolve_targets  # noqa: PLC0415
 
-    units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
+    units, _, _ = resolve_targets(model_path, base_dir, address=address)
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
     has_diff = False
@@ -240,31 +240,26 @@ def _cmd_generate(args, base_dir: Path, project_root: Path) -> int:
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
 
-    profile_filter = getattr(args, "profile", None)
     address = getattr(args, "address", None)
     dry_run = getattr(args, "dry_run", False)
     diff_mode = getattr(args, "diff", False)
-    scope = address or profile_filter or "supported set"
+    scope = address or "supported set"
 
     if diff_mode:
         print(f"Diffing {entity_name} ({metatype}, {comp_name}) — {scope}")
-        return _diff_entity(model_path, base_dir, project_root,
-                            profile=profile_filter, address=address)
+        return _diff_entity(model_path, base_dir, project_root, address=address)
 
     print(f"{'[dry-run] ' if dry_run else ''}Generating {entity_name} "
           f"({metatype}, {comp_name}) — {scope}")
-    return _generate_single(model_path, profile_filter, dry_run, base_dir,
-                            address=address)
+    return _generate_single(model_path, dry_run, base_dir, address=address)
 
 
 def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
 
-    profile_filter = getattr(args, "profile", None)
     address = getattr(args, "address", None)
-    pairs = _output_paths_for_entity(model_path, base_dir, project_root,
-                                     profile=profile_filter, address=address)
+    pairs = _output_paths_for_entity(model_path, base_dir, project_root, address=address)
 
     if not pairs:
         print(f"No generated files found for {entity_name!r} ({metatype}).")
@@ -295,10 +290,8 @@ def _cmd_diff(args, base_dir: Path, project_root: Path) -> int:
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
 
-    profile_filter = getattr(args, "profile", None)
     address = getattr(args, "address", None)
-    pairs = _output_paths_for_entity(model_path, base_dir, project_root,
-                                     profile=profile_filter, address=address)
+    pairs = _output_paths_for_entity(model_path, base_dir, project_root, address=address)
 
     existing = [str(p.relative_to(project_root)) for p, _ in pairs if p.exists()]
     if not existing:
@@ -334,13 +327,11 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
 
     # generate
     gp = sub.add_parser("generate", aliases=["gen"],
-                         help="Regenerate all applicable profiles for an entity.")
+                         help="Regenerate an entity's full supported set, or one address.")
     gp.add_argument("entity", help="Entity name or org-roam ID prefix.")
-    gp.add_argument("--profile", metavar="PROFILE",
-                    help="DEPRECATED (use --address): restrict to one legacy profile.")
     gp.add_argument("--address", metavar="ADDRESS",
-                    help="Physical-space address to generate (e.g. ores.sql, "
-                         "ores.cpp.qt); overrides --profile.")
+                    help="Physical-space address to generate (e.g. ores.sql.schema, "
+                         "ores.cpp.qt); omit for the entity's full supported set.")
     gmode = gp.add_mutually_exclusive_group()
     gmode.add_argument("--dry-run", action="store_true",
                        help="Print output paths without writing.")
@@ -350,16 +341,12 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     # show
     sp = sub.add_parser("show", help="Show generated files with staleness.")
     sp.add_argument("entity", help="Entity name or org-roam ID prefix.")
-    sp.add_argument("--profile", metavar="PROFILE",
-                    help="DEPRECATED (use --address): restrict to one legacy profile.")
     sp.add_argument("--address", metavar="ADDRESS",
                     help="Restrict to a physical-space address.")
 
     # diff
     dp = sub.add_parser("diff", help="Git diff of all generated files for an entity.")
     dp.add_argument("entity", help="Entity name or org-roam ID prefix.")
-    dp.add_argument("--profile", metavar="PROFILE",
-                    help="DEPRECATED (use --address): restrict to one legacy profile.")
     dp.add_argument("--address", metavar="ADDRESS",
                     help="Restrict to a physical-space address.")
 

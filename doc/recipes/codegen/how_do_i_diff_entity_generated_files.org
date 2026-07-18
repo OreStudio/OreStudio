@@ -38,10 +38,10 @@ The output is a standard unified diff that can be piped or paged:
 ./compass.sh codegen entity diff country | delta
 #+end_src
 
-To restrict the diff to a single profile's files:
+To restrict the diff to a single facet's files:
 
 #+begin_src sh
-./compass.sh codegen entity diff country --profile sql
+./compass.sh codegen entity diff country --address ores.sql.schema
 #+end_src
 
 Once satisfied, stage the changes normally:
@@ -59,8 +59,8 @@ git commit -m "[ores.refdata] Regenerate country"
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --profile sql= followed
-by =./compass.sh codegen entity diff country --profile sql= and verify the
+Run =./compass.sh codegen entity generate country --address ores.sql.schema= followed
+by =./compass.sh codegen entity diff country --address ores.sql.schema= and verify the
 diff covers only the SQL output files.
 
 * See also

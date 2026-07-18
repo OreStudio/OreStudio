@@ -67,7 +67,7 @@ to add another entity.
 
 #+begin_src sh :results verbatim
 ./compass.sh codegen regenerate \
-    --component <component>-cpp --profile all-cpp
+    --component <component>-cpp --address ores.cpp
 #+end_src
 
 Codegen unions matches from the legacy JSON glob and the new

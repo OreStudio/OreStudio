@@ -6,11 +6,11 @@
 #
 # To add a new domain service:
 #   1. Add an entry to:
-#        projects/ores.codegen/models/services/ores_services_service_registry.json
+#        projects/modeling/service_registry.org
 #   2. Run the generator:
-#        cd projects/ores.codegen
-#        ./run_generator.sh models/services/ores_services_service_registry.json \
-#            --profile service-registry
+#        ./projects/ores.codegen/codegen.sh generate \
+#            --model projects/modeling/service_registry.org \
+#            --address ores.shell.service
 #   3. Commit all generated files.
 #   4. Re-run compass db recreate to provision the new service in the database.
 #

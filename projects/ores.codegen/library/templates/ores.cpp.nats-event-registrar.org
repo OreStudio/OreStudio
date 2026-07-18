@@ -27,7 +27,7 @@ and republishes the resulting event to NATS. Unlike the sibling
 layer, not =.core=, because the eventing pipeline types
 (=postgres_event_source=, =event_bus=) live in =ores.eventing.core=, which
 no =.core= component depends on. Consumed by the default (no
-=--address=/=--profile=) generation set for every =domain_entity=.
+=--address=) generation set for every =domain_entity=.
 
 * The ores.cpp.nats-event-registrar facet
 

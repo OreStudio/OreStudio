@@ -41,8 +41,8 @@ it is out of scope for this entity.
 
 | # | Layer | Sub-skill | Codegen |
 |---|---|---|---|
-| 1 | Domain · SQL · repository · service · protocol · generator | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--profile all= |
-| 2 | Qt UI (model, windows, dialogs, controller) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--profile qt= |
+| 1 | Domain · SQL · repository · service · protocol · generator | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--address ores.cpp= (SQL via [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]]) |
+| 2 | Qt UI (model, windows, dialogs, controller) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--address ores.cpp.qt= |
 | 3 | Qt plugin wiring (menus, toolbar) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] §wiring | see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] |
 | 4 | HTTP REST endpoints | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] | ❌ GAP |
 | 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP |
@@ -81,7 +81,7 @@ and phase boundaries). Use =feature-branch-manager= between phases and
 
 * Reference
 
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profile catalogue, =run_generator.sh= usage.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, physical-space graph, =codegen.sh= usage.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
 - [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
 

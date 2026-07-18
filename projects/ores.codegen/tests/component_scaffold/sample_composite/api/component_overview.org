@@ -15,6 +15,6 @@
 * Summary
 
 The =.api= layer of the =sample_composite= group — equivalent in shape to
-=ores.iam.api=, =ores.dq.api=, etc. Codegen running =--profile component-api=
+=ores.iam.api=, =ores.dq.api=, etc. Codegen running =--address ores.cpp.component=
 against this overview should produce the public API scaffold (CMakeLists,
 export.hpp, public header, stub header/impl, stub tests).

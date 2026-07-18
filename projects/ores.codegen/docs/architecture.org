@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-05-30
+#+updated: 2026-07-17
 
 * Summary
 
@@ -29,23 +29,30 @@ projects/ores.codegen/
 │   ├── component_catalogue.org  # Component → models-dir/glob/modeling-dir (read by manifest.py)
 │   ├── data/                # Static data (licences, modelines)
 │   │   ├── licence-GPL-v3.txt
-│   │   └── modeline.org     # Editor modelines — MASD-style org, read directly by generator.py
+│   │   └── modeline.org     # Editor modelines — MASD-style org, read directly by core.py
 │   └── templates/           # Mustache templates + the ores.* physical-space
 │                             # graph (root -> technical space -> facet ->
-│                             # archetype), profile/output-path mapping
+│                             # archetype), one org node per graph element,
+│                             # tangled to the .mustache files alongside them
+│       ├── ores.*.org       # Physical-space graph nodes (root/ts/facet/archetype)
 │       ├── sql_*.mustache
 │       └── doc_*.org.mustache
-├── models/                  # JSON model files driving generation
+├── models/                  # Legacy JSON model files (being migrated to org)
 │   └── <component>/         # e.g. refdata/, trade/, dq/, iam/
 ├── output/                  # Default destination for generated files
 ├── scripts/                 # Shell scripts for common operations
 ├── src/                     # Python source
 │   ├── codegen/             # CLI package (codegen.py entry point)
 │   │   ├── __init__.py
-│   │   ├── generate.py      # generate / regenerate subcommands
-│   │   ├── manifest.py      # named component registry
-│   │   └── diff.py          # diff subcommand
-│   ├── generator.py         # Core generator: JSON models + templates → output
+│   │   ├── cli.py           # argparse entry point; dispatches subcommands
+│   │   ├── core.py          # Model classification, rendering, output resolution
+│   │   ├── generate.py      # generate / regenerate subcommand implementations
+│   │   ├── org_loader.py    # Parses org-mode model files (entity/junction/...)
+│   │   ├── physical_space.py # Loads the ores.* graph; computes supported/target sets
+│   │   ├── manifest.py      # Named component registry
+│   │   ├── list_cmd.py      # =list= subcommand
+│   │   ├── diff_cmd.py      # =diff= subcommand
+│   │   └── migrate_*.py     # One-off JSON → org migration scripts, per model type
 │   ├── doc_generate.py      # v2 information-architecture doc generator
 │   ├── fpml_parser.py       # FPML Genericode XML → JSON models
 │   ├── images_generate_sql.py
@@ -59,43 +66,62 @@ projects/ores.codegen/
 │   └── doc_generator.md
 ├── requirements.txt
 ├── codegen.sh               # Wrapper: activates venv and calls codegen.py
-├── run_generator.sh         # Legacy wrapper (kept for non-CLI uses)
 ├── generate_doc.sh          # Wrapper for doc_generate.py
 └── generate_*_schema.sh     # Legacy per-component schema scripts (being retired)
 #+end_example
 
 ** Internal modules
 
-| File                                  | Purpose                                                                  |
-|---------------------------------------+--------------------------------------------------------------------------|
-| =src/generator.py=                    | Core generator: JSON models + Mustache templates → SQL / C++ / etc.      |
-| =src/codegen/generate.py=             | =generate= and =regenerate= subcommand implementations                   |
-| =src/codegen/manifest.py=             | Named component registry (maps component name → models dir + glob)       |
-| =src/codegen/diff.py=                 | =diff= subcommand implementation                                         |
-| =src/doc_generate.py=                 | v2 information-architecture document generator (task/story/sprint/...)   |
-| =src/fpml_parser.py=                  | FPML Genericode XML → JSON models                                        |
-| =src/iso_generate_metadata_sql.py=    | ISO standards → SQL                                                      |
-| =src/images_generate_sql.py=          | Image artefacts (flags, crypto icons) → SQL                              |
-| =src/lei_extract_subset.py=           | LEI dataset subset extractor                                             |
-| [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]         | Declares which templates each profile runs per model type; read directly by =generator.py= |
-| [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]]     | Maps component names to discovery roots; read directly by =manifest.py=  |
-| [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]           | Editor modeline strings per language; read directly by =generator.py=    |
-| =library/data/=                       | Static data files (licences, modelines)                                  |
-| =library/templates/=                  | Mustache templates                                                       |
-| =models/=                             | JSON model files                                                         |
-| =output/=                             | Default destination for generated files                                  |
+| File                                     | Purpose                                                                  |
+|-------------------------------------------+--------------------------------------------------------------------------|
+| =src/codegen/cli.py=                     | Argparse entry point; parses subcommands and dispatches                  |
+| =src/codegen/core.py=                    | Model classification (=get_model_type=), rendering, output-path resolution |
+| =src/codegen/generate.py=                | =generate= and =regenerate= subcommand implementations                   |
+| =src/codegen/org_loader.py=              | Parses org-mode model files (entity, junction, field-group, ...) into model data |
+| =src/codegen/physical_space.py=          | Loads the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]; computes supported/target archetype sets |
+| =src/codegen/manifest.py=                | Named component registry (maps component name → models dir + glob)       |
+| =src/codegen/list_cmd.py=                | =list= subcommand implementation                                         |
+| =src/codegen/diff_cmd.py=                | =diff= subcommand implementation                                         |
+| =src/doc_generate.py=                    | v2 information-architecture document generator (task/story/sprint/...)   |
+| =src/fpml_parser.py=                     | FPML Genericode XML → JSON models                                       |
+| =src/iso_generate_metadata_sql.py=       | ISO standards → SQL                                                      |
+| =src/images_generate_sql.py=             | Image artefacts (flags, crypto icons) → SQL                              |
+| =src/lei_extract_subset.py=              | LEI dataset subset extractor                                             |
+| [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]            | One org node per graph element (root/technical-space/facet/archetype); declares which templates generate for which model types |
+| [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]]    | Maps component names to discovery roots; read directly by =manifest.py=  |
+| [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]          | Editor modeline strings per language; read directly by =core.py=         |
+| =library/data/=                          | Static data files (licences, modelines)                                  |
+| =library/templates/=                     | Mustache templates + the physical-space graph nodes                      |
+| =models/=                                | Legacy JSON model files (component-by-component migration to org is ongoing) |
+| =output/=                                | Default destination for generated files                                  |
 
 ** Main generator functions
 
-In =src/generator.py=:
+In =src/codegen/core.py= (model classification and rendering) and
+=src/codegen/physical_space.py= (graph traversal):
 
-- =is_table_model(filename)= — returns =True= for =*_table.json= filenames.
-- =get_model_type(filename)= — maps filename suffix to model type string (=table=, =schema=, =domain_entity=, =junction=, ...).
-- =load_profiles(base_dir)= — parse [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] directly via =_load_profiles_from_org()=.
-- =resolve_profile_templates(profile, profiles, model_type)= — return the template list for a given profile and model type.
-- =resolve_output_path(pattern, model_data, model_type)= — expand an output path pattern using model fields.
-- =load_data(data_dir)= — load JSON and text files from a data directory.
-- =render_template(template_path, data)= — render a Mustache template with the given data.
+- =get_model_type(filename, path=None)= — classify a model file's type
+  (=domain_entity=, =junction=, =table=, =schema=, =field_group=, ...).
+  Org models are classified via their =#+type:= frontmatter first;
+  filename-suffix predicates (=is_table_model=, =is_junction_model=, ...)
+  are the fallback for legacy JSON models with no frontmatter.
+- =load_graph(templates_dir)= (in =physical_space.py=) — parse the
+  [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] org nodes into a =Graph= of technical
+  spaces, facets, and archetypes.
+- =compute_supported_set(properties, graph, model_type)= — the
+  archetypes an entity *can* generate, from facet =#+model_types:= plus
+  the entity's =:ores.*.enabled:= drawer overrides.
+- =compute_target_set(address, graph)= — the archetypes to generate
+  *this run*: all facets under an =--address=, or every facet if none given.
+- =resolve_targets(model_path, base_dir, address=, properties=)=
+  (in =generate.py=) — the single resolver used by both the CLI and the
+  compass wrapper; combines supported ∩ target into concrete
+  (template, output path) units. See [[*Addressing system][Addressing system]] below for how
+  =address= narrows the target set.
+- =resolve_output_path(pattern, model_data, model_type)= — expand an
+  output path pattern using model fields.
+- =render_template(template_path, data)= — render a Mustache template
+  with the given data.
 - =generate_from_model()= — orchestrate generation for one model file.
 
 ** Template system
@@ -111,17 +137,24 @@ In =src/generator.py=:
 
 - =library/data/licence-GPL-v3.txt= — full GPL v3 licence text used in
   generated headers.
-- [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]] — per-language editor modeline strings (MASD-style org hierarchy; read directly by =generator.py= via =_load_modelines_from_org()=).
+- [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]] — per-language editor modeline strings (MASD-style org hierarchy; read directly by =core.py= via =_load_modelines_from_org()=).
 
 ** Model types and file naming
 
-The generator detects a model's type from its filename suffix.  Each
-type has a root JSON key of the same name and is associated with one or
-more templates through [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].
+/This section covers the legacy JSON model path only/ — org-mode
+models (the current standard; see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema
+reference]]) declare their type via =#+type:= frontmatter instead of a
+filename suffix, and =get_model_type()= checks that frontmatter first.
+Filename-suffix detection, described below, is the fallback used only
+for JSON models that carry no frontmatter.
+
+Each legacy JSON type has a root JSON key of the same name and is
+associated with one or more templates through the
+[[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].
 
 | Filename suffix       | Model type      | Root JSON key   | Primary template                             |
 |-----------------------+-----------------+-----------------+----------------------------------------------|
-| =*_table.json=        | =table=         | =table=         | =sql_schema_create.mustache= (profile: sql)  |
+| =*_table.json=        | =table=         | =table=         | =sql_schema_create.mustache= (address: ores.sql.schema) |
 | =*_entity.json=       | =schema=        | =entity=        | =sql_schema_table_create.mustache= (legacy)  |
 | =*_domain_entity.json=| =domain_entity= | =domain_entity= | C++ templates + =sql_schema_domain_entity_create.mustache= |
 | =*_junction.json=     | =junction=      | (varies)        | =sql_schema_junction_create.mustache=        |
@@ -133,13 +166,13 @@ tables (refdata and similar).  It replaces the legacy =_entity.json= →
 ** Model-template mapping
 
 The active mapping is declared in [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]], not hard-coded
-in Python.  Each profile entry lists which templates apply to which model
+in Python.  Each facet entry lists which templates apply to which model
 types and the output path pattern.
 
 *** Table schema mappings (=*_table.json= files)
 
 These files drive unified SQL generation via =sql_schema_create.mustache=.
-Run with =codegen.sh regenerate --component <name> --profile sql=.
+Run with =codegen.sh regenerate --component <name> --address ores.sql.schema=.
 
 | Template                          | Output file pattern                                                    |
 |-----------------------------------+------------------------------------------------------------------------|
@@ -183,7 +216,7 @@ the C++ portion.
 | =sql_schema_domain_entity_create.mustache=     | ={component}_{entity}_create.sql=          |
 | =sql_schema_notify_trigger.mustache=           | ={component}_{entity}_notify_trigger.sql=  |
 | =sql_schema_artefact_create.mustache=          | =dq_{entity}_artefact_create.sql=          |
-| C++ templates (via =--profile all-cpp=)        | =.hpp= / =.cpp= files                     |
+| C++ templates (via =--address ores.cpp=)        | =.hpp= / =.cpp= files                     |
 
 *** Standard data mappings
 
@@ -202,25 +235,21 @@ the C++ portion.
 |-------------------------------------+------------------------------------------|
 | =sql_populate_refdata.mustache=     | ={component}_{entity}_populate.sql=      |
 
-** Profile system
+** Addressing system
 
-Profiles are declared in [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]].  Each profile maps to a
-list of template entries; each entry specifies the template name, the
-output path pattern, and the model types it applies to.
+The physical-space *address* is the selector: every entity's
+generation footprint is its supported set on the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
+graph]] (root → technical space → facet → archetype), narrowed by
+=--address= to a subtree of that graph and by the model's own
+=:ores.*.enabled:= drawer overrides. There is no separate profile
+declaration to maintain — an entity's =ores.*= binding *is* its
+generation footprint.
 
-Built-in profiles:
-
-| Profile     | Description                                      |
-|-------------+--------------------------------------------------|
-| =sql=        | SQL DDL only (table create / domain entity create) |
-| =all-cpp=    | C++ headers, implementations, JSON and table I/O |
-| =all=        | =sql= + =all-cpp= — *not allowed* for =_table.json= or =_entity.json= models (see below) |
-
-The =--profile all= guard: running =all= on a SQL model (=table= or
-=schema= type) is refused by the CLI because a matching
-=_domain_entity.json= may exist for the same entity, and running =all=
-would silently overwrite the production SQL with the wrong template.
-Use =--profile sql= or =--profile all-cpp= explicitly.
+Examples: =--address ores.sql.schema= generates SQL DDL only;
+=--address ores.cpp= generates every C++ facet (domain, generator,
+repository, service, protocol, ...); =--address ores.cpp.qt= generates
+just the Qt facet; omitting =--address= generates an entity's full
+supported set.
 
 ** Component registry
 
@@ -234,7 +263,7 @@ The following shell scripts have been deleted and replaced by =codegen.sh=:
 
 | Deleted script                    | Replacement command                                                  |
 |-----------------------------------+----------------------------------------------------------------------|
-| =generate_refdata_schema.sh=      | =codegen.sh regenerate --component refdata --profile sql=            |
+| =generate_refdata_schema.sh=      | =codegen.sh regenerate --component refdata --address ores.sql.schema=            |
 
 ** Modeline configurations
 
@@ -252,8 +281,11 @@ From [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]:
   appropriate per-language comment formatting.
 - /Multi-language comment support/. SQL and C++ use =/* ... */= with a
   =* = line prefix; Python uses ="""=, JavaScript uses =/** */=.
-- /Flexible output/. Default output directory is =output/=; overridable
-  via the second positional argument; created automatically if absent.
+- /Graph-resolved output/. Each archetype's output path pattern (on
+  its [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] node) is expanded against the model's
+  own fields and written project-root-relative; parent directories are
+  created automatically. =--dry-run= prints the resolved paths without
+  writing.
 - /Overall models/. A =model.json= can orchestrate generation of
   multiple artefacts in dependency order.
 - /Dynamic prefixing/. A =model_name= property on an overall model
@@ -290,14 +322,14 @@ The =sql_catalog_populate.mustache= template generates SQL that:
 To add a new =_table.json= model for an existing component:
 
 1. Create the =*_table.json= file in the component's =models/= directory.
-2. Run =codegen.sh regenerate --component <name> --profile sql= to generate the SQL.
+2. Run =codegen.sh regenerate --component <name> --address ores.sql.schema= to generate the SQL.
 
-To add a new profile or template:
+To add a new facet or template:
 
 1. Add the Mustache template to =library/templates/=.
-2. Add an entry to [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under the relevant profile heading,
+2. Add an entry to [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under the relevant facet heading,
    adding a row to the templates table with =template=, =output= pattern, and optionally =model_types=.
-3. If adding a new model type, update =get_model_type()= in =src/generator.py=
+3. If adding a new model type, update =get_model_type()= in =src/codegen/core.py=
    and add any preprocessing logic in the =generate_from_model()= dispatch block.
 
 To add a new named component:

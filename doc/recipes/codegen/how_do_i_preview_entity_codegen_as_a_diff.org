@@ -11,7 +11,7 @@
 
 Useful when a template has changed and you want to audit the impact on a
 specific entity before committing any regenerated files. See
-[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] for background on profiles and templates.
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] for background on the physical-space graph and templates.
 
 * Question
 
@@ -26,20 +26,20 @@ Pass =--diff= to =compass codegen entity generate=:
 ./compass.sh codegen entity generate country --diff
 #+end_src
 
-This generates all applicable profiles into a temp directory and prints a
-unified diff against the on-disk files. Nothing is written to the working
-tree.
+This generates the entity's full supported set into a temp directory and
+prints a unified diff against the on-disk files. Nothing is written to the
+working tree.
 
-To restrict to one profile:
+To restrict to one facet:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --profile sql --diff
+./compass.sh codegen entity generate country --address ores.sql.schema --diff
 #+end_src
 
 Sample output:
 
 #+begin_example
-Diffing country (domain_entity, refdata) — 1 profile(s): sql
+Diffing country (domain_entity, refdata) — ores.sql.schema
 --- a/projects/ores.sql/create/refdata/refdata_countries_create.sql
 +++ b/projects/ores.sql/create/refdata/refdata_countries_create.sql
 @@ -17,15 +17,16 @@
@@ -60,14 +60,14 @@ output paths; use =--diff= to see content changes.
 
 * Script
 
-=--diff= is handled by =_diff_profiles= in
+=--diff= is handled by =_diff_entity= in
 [[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]]. It calls
 =generate_from_model= from =codegen.core= directly, capturing stdout and
 suppressing logging to keep diff output clean.
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --profile sql --diff=
+Run =./compass.sh codegen entity generate country --address ores.sql.schema --diff=
 against a stale entity and verify a non-empty unified diff is printed with
 no spurious log lines.
 

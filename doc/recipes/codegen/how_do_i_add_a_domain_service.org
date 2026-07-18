@@ -68,7 +68,7 @@ all created consistently?
 
 * Script
 
-Generation: =./compass.sh codegen generate --model projects/modeling/service_registry.org --profile service-registry=.
+Generation: =./compass.sh codegen generate --model projects/modeling/service_registry.org --address ores.shell.service=.
 Credentials: =compass env configure=. Provisioning: =compass db recreate=.
 
 * Tested by

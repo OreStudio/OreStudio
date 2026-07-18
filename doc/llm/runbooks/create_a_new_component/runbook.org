@@ -35,7 +35,7 @@ source of truth for codegen — it must come *before* the C++ scaffold:
    optional (used for navigation + group-level scalars).
 
 2. /Scaffold the C++ + CMake./ Use [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] to run codegen
-   against each overview: =codegen.sh generate --model <overview> --profile component(-api|-core|-service)=.
+   against each overview: =codegen.sh generate --model <overview> --address ores.cpp.component= (the overview's =#+component_kind:= frontmatter picks the flat/api/core/service variant).
 
 3. /Wire CMake./ Add the component to the top-level [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]
    and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].

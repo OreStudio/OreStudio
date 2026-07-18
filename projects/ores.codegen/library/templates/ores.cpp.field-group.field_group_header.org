@@ -52,13 +52,14 @@ The full template source. Edit here and re-tangle with
 
     MODEL TYPE
     ----------
-    field_group  (filename must end with _field_group.json)
+    field_group  (org #+type: field_group, or legacy filename suffix
+                  _field_group.json)
 
-    PROFILE
+    ADDRESS
     -------
-    field-group  — use via:
-      python src/generator.py models/.../foo_field_group.json \
-             <repo-root>/ --profile field-group
+    ores.cpp.field-group  — use via:
+      codegen.sh generate --model path/to/foo_field_group.org \
+             --address ores.cpp.field-group
 
     WHAT NOT TO USE IT FOR
     ----------------------

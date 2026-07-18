@@ -143,8 +143,8 @@ grant :rw_role to :shell_user;
 alter  role :shell_user set search_path to public;
 
 -- Domain service users — generated from service registry model.
--- To add a service: update projects/ores.codegen/models/services/ores_services_service_registry.json
--- and regenerate with: ./run_generator.sh models/services/... --profile service-registry
+-- To add a service: update projects/modeling/service_registry.org
+-- and regenerate with: codegen.sh generate --model projects/modeling/service_registry.org --address ores.shell.service
 \i create/iam/service_users_create.sql
 
 -- HTTP user

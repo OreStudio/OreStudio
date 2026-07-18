@@ -57,9 +57,9 @@ either way.
 
 2. /Generate the C++ artefacts/ via compass, not the generator script
    directly:
-   =compass codegen generate --model <path/to/model.org> --profile all-cpp=
+   =compass codegen generate --model <path/to/model.org> --address ores.cpp=
    (=compass codegen entity generate <entity>= regenerates an
-   already-modelled entity's applicable profiles;
+   already-modelled entity's full supported set;
    =compass codegen entity list= / =show= / =diff= inspect what
    exists and whether it's stale).
 
@@ -92,17 +92,17 @@ and which library it uses.
 
 * Templates
 
-Runs via =--profile all-cpp= (combines domain · generator · repository ·
+Runs via =--address ores.cpp= (combines domain · generator · repository ·
 service · protocol).  Full output paths are in
 [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Complete entity file checklist".
 
-| Sub-profile | Key templates |
+| Sub-address | Key templates |
 |---|---|
-| =--profile domain= | =cpp_domain_type_class.hpp.mustache= (+ 6) |
-| =--profile generator= | =cpp_domain_type_generator.hpp.mustache= (+ 1) |
-| =--profile repository= | =cpp_domain_type_entity.hpp.mustache= (+ 5) |
-| =--profile service= | =cpp_service.hpp.mustache= (+ 1) |
-| =--profile protocol= | =cpp_protocol.hpp.mustache= |
+| =--address ores.cpp.domain= | =cpp_domain_type_class.hpp.mustache= (+ 6) |
+| =--address ores.cpp.generator= | =cpp_domain_type_generator.hpp.mustache= (+ 1) |
+| =--address ores.cpp.repository= | =cpp_domain_type_entity.hpp.mustache= (+ 5) |
+| =--address ores.cpp.service= | =cpp_service.hpp.mustache= (+ 1) |
+| =--address ores.cpp.protocol= | =cpp_protocol.hpp.mustache= |
 
 Read the template directly for the authoritative implementation — do not
 reproduce it here.

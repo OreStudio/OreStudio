@@ -211,14 +211,15 @@ adjust to actual deps after generation):
 
 * Scaffold profiles
 
-Codegen (=--profile <name>=) generates all boilerplate for each part.
-See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] §"Profile catalogue" for the template list.
+Codegen (=--address ores.cpp.component=) generates all boilerplate for
+each part; the overview's =#+component_kind:= frontmatter picks the
+variant. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the template list.
 
-| Profile | Part | Files generated |
+| =#+component_kind:= | Part | Files generated |
 |---------|------|-----------------|
-| =component-api= | =api= | CMakeLists (root, src, tests, modeling), component header, stub header+impl, test main+stub |
-| =component-core= | =core= | same set with core-flavoured CMake deps |
-| =component-service= | =service= | same core set + app/config headers+impls + main.cpp |
+| =api= | =api= | CMakeLists (root, src, tests, modeling), component header, stub header+impl, test main+stub |
+| =core= | =core= | same set with core-flavoured CMake deps |
+| =service= | =service= | same core set + app/config headers+impls + main.cpp |
 
 After generation, register each part in =projects/CMakeLists.txt= in
 dependency order (=api= → =core= → =service=). Each part also needs

@@ -25,22 +25,25 @@ There are three entry points depending on scope:
 Resolve by name — no need to know the model file path or component:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity> --profile <profile>
+./compass.sh codegen entity generate <entity> --address <address>
 #+end_src
 
 Examples:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --profile qt
-./compass.sh codegen entity generate country --profile sql
-./compass.sh codegen entity generate country --profile all
+./compass.sh codegen entity generate country --address ores.cpp.qt
+./compass.sh codegen entity generate country --address ores.sql.schema
+./compass.sh codegen entity generate country --address ores
 #+end_src
+
+Omit =--address= to generate the entity's full supported set — =ores=
+is the graph root, so =--address ores= is equivalent.
 
 Preview what would change without writing:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --profile qt --diff
-./compass.sh codegen entity generate country --profile qt --dry-run
+./compass.sh codegen entity generate country --address ores.cpp.qt --diff
+./compass.sh codegen entity generate country --address ores.cpp.qt --dry-run
 #+end_src
 
 See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full workflow.
@@ -50,7 +53,7 @@ See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entit
 Generate from a specific org model file:
 
 #+begin_src sh
-./compass.sh codegen generate --model projects/path/to/model.org --profile <profile>
+./compass.sh codegen generate --model projects/path/to/model.org --address <address>
 #+end_src
 
 ** Across a whole component
@@ -58,20 +61,20 @@ Generate from a specific org model file:
 Regenerate every entity in a component:
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile all-cpp
-./compass.sh codegen regenerate --component refdata --profile sql
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp
+./compass.sh codegen regenerate --component refdata --address ores.sql.schema
 #+end_src
 
 * Script
 
 All three entry points are implemented in
-[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] and
-[[proj:projects/ores.compass/src/compass_codegen.py][=projects/ores.compass/src/compass_codegen.py=]], dispatched from
-[[proj:projects/ores.compass/src/compass.py][=compass.py=]].
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] (entity-name
+workflow) and =cmd_codegen= in
+[[proj:projects/ores.compass/src/compass.py][=compass.py=]] (model-file and component-wide workflows).
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --profile qt --dry-run=
+Run =./compass.sh codegen entity generate country --address ores.cpp.qt --dry-run=
 and verify twelve Qt file paths are printed without errors.
 
 * See also

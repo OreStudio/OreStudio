@@ -83,11 +83,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         auto admin = nats.make_admin();
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>"),
-                             nats.make_subject("synthetic.v1.curve_family.>")});
+                            {nats.make_subject("synthetic.v1.tick.>")});
+        // Separate from synthetic_ticks: see ores.synthetic.service's application.cpp for why
+        // (ensure_stream only creates a missing stream; it never updates an existing one's
+        // subjects, and synthetic_ticks predates this subject everywhere it already exists).
+        admin.ensure_stream(nats.make_stream_name("synthetic_curve_ticks"),
+                            {nats.make_subject("synthetic.v1.curve_family.>")});
         admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
                             {nats.make_subject("marketdata.v1.tick.>")});
-        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
+        BOOST_LOG_SEV(lg(), info)
+            << "JetStream streams ready: synthetic_ticks, synthetic_curve_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();
         throw;

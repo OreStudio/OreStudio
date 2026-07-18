@@ -136,29 +136,39 @@ void ir_curve_feed::start() {
         process_->next();
         const auto now = system_clock::now();
 
-        for (const auto& e : entries_) {
-            ores::marketdata::domain::ir_curve_tick tick;
-            tick.tenant_id = tenant_id_;
-            tick.party_id = party_id_;
-            tick.series_type = series_type_;
-            tick.metric = metric_;
-            tick.qualifier = qualifier_;
-            tick.subclass = subclass_for(e.curve_role);
-            tick.point_id = e.point_id;
-            tick.source_name = source_name_;
-            tick.datetime = now;
-            tick.value = price_entry(*process_, e);
+        // A tick-loop thread has no caller to propagate an exception to (see
+        // curve_feed_controller::add()) -- an uncaught throw here would std::terminate() the
+        // whole service process, taking down every other feed and NATS handler with it. Log and
+        // skip this batch instead; the next tick tries again.
+        try {
+            for (const auto& e : entries_) {
+                ores::marketdata::domain::ir_curve_tick tick;
+                tick.tenant_id = tenant_id_;
+                tick.party_id = party_id_;
+                tick.series_type = series_type_;
+                tick.metric = metric_;
+                tick.qualifier = qualifier_;
+                tick.subclass = subclass_for(e.curve_role);
+                tick.point_id = e.point_id;
+                tick.source_name = source_name_;
+                tick.datetime = now;
+                tick.value = price_entry(*process_, e);
 
-            const auto json = rfl::json::write(tick);
-            const auto data = std::as_bytes(std::span{json.data(), json.size()});
-            nats_.js_publish(nats_subject_, data);
-        }
+                const auto json = rfl::json::write(tick);
+                const auto data = std::as_bytes(std::span{json.data(), json.size()});
+                nats_.js_publish(nats_subject_, data);
+            }
 
-        const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
-        if (n == 1 || n % 100 == 0) {
-            BOOST_LOG_SEV(lg(), info)
-                << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='"
-                << source_name_ << "' batch=" << n << " points=" << entries_.size();
+            const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
+            if (n == 1 || n % 100 == 0) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='"
+                    << source_name_ << "' batch=" << n << " points=" << entries_.size();
+            }
+        } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC CURVE PUBLISH FAILED: subject='"
+                                       << nats_subject_ << "' source='" << source_name_
+                                       << "': " << ex.what();
         }
     }
 }

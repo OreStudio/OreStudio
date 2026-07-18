@@ -36,7 +36,9 @@ namespace ores::marketdata::service::app {
 using namespace ores::logging;
 
 namespace {
-constexpr auto* wildcard_subject = "synthetic.v1.curve_family.*";
+// '>' (multi-token wildcard), not '*' (single-token): source_name is dotted
+// (e.g. "ir_curve.usd.sofr"), so the subject has more than one token after the prefix.
+constexpr auto* wildcard_subject = "synthetic.v1.curve_family.>";
 }
 
 curve_feed_ingest_loop::curve_feed_ingest_loop(ores::nats::service::client& nats,

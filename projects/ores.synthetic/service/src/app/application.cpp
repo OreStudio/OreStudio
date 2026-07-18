@@ -293,9 +293,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         auto admin = nats.make_admin();
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>"),
-                             nats.make_subject("synthetic.v1.curve_family.>")});
-        BOOST_LOG_SEV(lg(), info) << "JetStream stream ready: synthetic_ticks";
+                            {nats.make_subject("synthetic.v1.tick.>")});
+        // A separate, dedicated stream -- not appended onto synthetic_ticks -- because
+        // ensure_stream() only creates a stream when it does not already exist; it never
+        // updates an existing stream's subject list. synthetic_ticks predates the curve
+        // family subject on every environment that already has it, so adding the subject
+        // here would silently never take effect there.
+        admin.ensure_stream(nats.make_stream_name("synthetic_curve_ticks"),
+                            {nats.make_subject("synthetic.v1.curve_family.>")});
+        BOOST_LOG_SEV(lg(), info)
+            << "JetStream streams ready: synthetic_ticks, synthetic_curve_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
         throw;

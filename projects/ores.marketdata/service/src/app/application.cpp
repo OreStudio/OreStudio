@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/curve_feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.nats/service/client.hpp"
@@ -82,7 +83,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         auto admin = nats.make_admin();
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>")});
+                            {nats.make_subject("synthetic.v1.tick.>"),
+                             nats.make_subject("synthetic.v1.curve_family.>")});
         admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
                             {nats.make_subject("marketdata.v1.tick.>")});
         BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
@@ -103,6 +105,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
+    auto curve_ingest =
+        std::make_shared<curve_feed_ingest_loop>(nats, make_context(cfg.database));
 
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;
@@ -172,11 +176,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   }));
             return subs;
         },
-        [&nats, ingest](boost::asio::io_context& ioc) {
+        [&nats, ingest, curve_ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
             ingest->start();
+            curve_ingest->start();
         });
 
     event_source.stop();

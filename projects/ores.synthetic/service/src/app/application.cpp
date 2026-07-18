@@ -18,8 +18,12 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
+#include "../curve_feed_controller.hpp"
 #include "../feed_controller.hpp"
+#include "../ir_curve_feed.hpp"
+#include "../ir_curve_template_resolver.hpp"
 #include "../registrar.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
@@ -28,22 +32,31 @@
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.core/repository/instrument_code_repository.hpp"
+#include "ores.refdata.core/repository/payment_frequency_repository.hpp"
+#include "ores.refdata.core/repository/tenor_convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
+#include "ores.refdata.core/repository/tenor_repository.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
+#include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
+#include <algorithm>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <map>
 #include <memory>
 #include <rfl/json.hpp>
@@ -117,6 +130,115 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
 }
+
+std::string lowercase(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return s;
+}
+
+// Build the producer subject from source_name -- same sanitisation feed_controller applies for
+// its own (scalar tick) subjects, kept in sync here since curve family subjects share the same
+// NATS token constraints.
+std::string curve_producer_subject(const std::string& source_name) {
+    std::string token;
+    token.reserve(source_name.size());
+    for (unsigned char c : source_name) {
+        const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
+        token += safe ? static_cast<char>(c) : '_';
+    }
+    return "synthetic.v1.curve_family." + token;
+}
+
+// Start every enabled ir_curve_generation_config as its own ir_curve_feed producer. Phase-1,
+// auto-start only (see the tick-batch-publishing task) -- no NATS control-plane for curve feeds
+// yet, mirroring how auto_start_enabled_feeds() above bootstraps FX feeds from config tables.
+void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
+                                      ores::synthetic::service::curve_feed_controller& ctrl,
+                                      const ores::database::context& ctx) {
+    namespace synth_repo = ores::synthetic::repository;
+    namespace refdata_repo = ores::refdata::repository;
+    using ores::synthetic::service::ir_curve_feed;
+    using ores::synthetic::service::ir_curve_refdata_context;
+
+    synth_repo::ir_curve_generation_config_repository config_repo;
+    synth_repo::ir_curve_template_entry_repository entry_repo;
+    refdata_repo::instrument_code_repository instrument_code_repo;
+    refdata_repo::payment_frequency_repository payment_frequency_repo;
+    refdata_repo::tenor_repository tenor_repo;
+    refdata_repo::tenor_convention_repository convention_repo;
+    refdata_repo::tenor_convention_resolution_repository resolution_repo(ctx);
+
+    const auto configs = config_repo.read_latest(ctx);
+    const auto entries = entry_repo.read_latest(ctx);
+    const auto conventions = convention_repo.read_latest(ctx, "RATES_SPOT_FORWARD");
+    if (conventions.empty()) {
+        BOOST_LOG_SEV(auto_start_lg(), error)
+            << "RATES_SPOT_FORWARD tenor convention not found — no IR curve feeds started.";
+        return;
+    }
+
+    ir_curve_refdata_context refctx;
+    refctx.convention = conventions.front();
+    for (const auto& t : tenor_repo.read_latest(ctx))
+        refctx.tenors_by_code.emplace(t.code, t);
+    for (const auto& ic : instrument_code_repo.read_latest(ctx))
+        refctx.instrument_codes_by_code.emplace(ic.code, ic);
+    for (const auto& pf : payment_frequency_repo.read_latest(ctx))
+        refctx.payment_frequencies_by_code.emplace(pf.code, pf);
+    for (const auto& r : resolution_repo.read_latest_by_convention(refctx.convention.code))
+        refctx.resolutions_by_tenor.emplace(r.tenor_code, r);
+    refctx.horizon = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
+    refctx.spot = refctx.horizon; // T+0: see ir_curve_template_resolver.hpp's resolve() doc.
+
+    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::ir_curve_template_entry>>
+        entries_by_config;
+    for (const auto& e : entries)
+        entries_by_config[e.ir_curve_config_id].push_back(e);
+
+    int started = 0;
+    for (const auto& cfg : configs) {
+        if (!cfg.enabled)
+            continue;
+        const auto it = entries_by_config.find(cfg.id);
+        if (it == entries_by_config.end() || it->second.empty()) {
+            BOOST_LOG_SEV(auto_start_lg(), warn)
+                << "Skipping enabled IR curve config " << cfg.currency_code << "/" << cfg.index_name
+                << " — no template entries.";
+            continue;
+        }
+
+        try {
+            auto resolved = ores::synthetic::service::resolve(
+                it->second, refctx, cfg.fixed_leg_payment_frequency_code);
+
+            auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
+                lowercase(cfg.process_type), cfg.kappa, {cfg.theta}, cfg.sigma, cfg.initial_rate);
+
+            const std::string source_name = "ir_curve." + lowercase(cfg.currency_code) + "." +
+                                            lowercase(cfg.index_name);
+            auto feed = std::make_shared<ir_curve_feed>(nats,
+                                                        cfg.tenant_id,
+                                                        cfg.party_id,
+                                                        source_name,
+                                                        curve_producer_subject(source_name),
+                                                        "RATES",
+                                                        "YIELD",
+                                                        cfg.currency_code + "/" + cfg.index_name,
+                                                        std::move(process),
+                                                        static_cast<double>(cfg.ticks_per_hour),
+                                                        std::move(resolved));
+            ctrl.add(std::move(feed));
+            ++started;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Failed to start IR curve feed for " << cfg.currency_code << "/"
+                << cfg.index_name << ": " << e.what();
+        }
+    }
+    BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled IR curve feed(s).";
+}
 }
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
@@ -171,7 +293,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         auto admin = nats.make_admin();
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>")});
+                            {nats.make_subject("synthetic.v1.tick.>"),
+                             nats.make_subject("synthetic.v1.curve_family.>")});
         BOOST_LOG_SEV(lg(), info) << "JetStream stream ready: synthetic_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
@@ -186,6 +309,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto_start_enabled_feeds(*ctrl, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
+
+    auto curve_ctrl = std::make_shared<ores::synthetic::service::curve_feed_controller>();
+    auto_start_enabled_ir_curve_feeds(nats, *curve_ctrl, db_ctx);
+    BOOST_LOG_SEV(lg(), info) << "Curve feed controller ready — " << curve_ctrl->running_count()
+                              << " feed(s) auto-started";
 
     co_await ores::service::service::run(
         io_ctx,
@@ -208,6 +336,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         });
 
     ctrl->shutdown();
+    curve_ctrl->shutdown();
     event_source.stop();
     co_return;
 }

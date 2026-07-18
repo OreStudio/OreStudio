@@ -126,7 +126,7 @@ toggles the backfill, same as the Qt "Show Reciprocal" button.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm Live/Stale/Disconnected status colouring and tooltips
 
@@ -149,26 +149,14 @@ the rate value itself stays neutral.
 |--------+-------|
 | Status | PENDING |
 
-# For a multi-client scenario (Clients field above is non-empty),
-# nest steps one level deeper instead, under one sub-heading per
-# client, e.g.:
-#
-#   ** blue
-#   *** Open the counterparty lookup and search
-#   ** red
-#   *** Confirm the notification arrived and the list refreshed
-#
-# Single-client scenarios (the common case) keep steps as direct
-# children of * Steps, as above.
-
 * Results
 
 | Field         | Value |
 |---------------+-------|
 | Status        | PENDING |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Completed at  | 2026-07-18T12:39:25Z |
+| Branch        | feature/crm-rename-inverted-to-reciprocal |
+| Commit        | 405a123a3 |
+| Worktree      | clever_dijkstra |
 
 * Notes

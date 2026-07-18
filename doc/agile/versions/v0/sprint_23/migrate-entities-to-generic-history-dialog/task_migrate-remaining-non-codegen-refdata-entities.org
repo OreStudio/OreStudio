@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-remaining-non-codegen-refdata-entities
-#+pr:
+#+pr: 1619
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -184,7 +184,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1619][#1619]] | [refdata,trading,qt,cli,sql] Migrate floating_index_type/leg_type to refdata + generic HistoryDialog |
 
 * Review
 

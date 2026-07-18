@@ -8,7 +8,7 @@
 #+filetags: :clean-up-application-menus:sprint_23:v0:
 #+owner: marco
 #+branch: feature/system-operations-account-menu-taxonomy
-#+pr:
+#+pr: 1632
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1632][#1632]] | [qt] Consolidate System/Operations/Account menus into a four-menu structure |
 
 * Review
 

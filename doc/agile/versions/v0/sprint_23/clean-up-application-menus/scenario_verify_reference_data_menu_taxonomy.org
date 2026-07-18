@@ -57,8 +57,7 @@ submenu hop).
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | overall looks good but business units show up twice, first in correct location then at bottom of screen. bottom of screen fails:; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.business-units.list' |
+| Status | PASS |
 
 ** Conventions submenu merges Trading and Curve Building
 
@@ -101,8 +100,7 @@ correct list window opens for each.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Overall looks good, but submenus should also be sorted so that all book menu entries are next to each other, party etc. also party id schemes is failing:; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.party-id-schemes.list'; ; also; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.business-unit-types.list' |
+| Status | PASS |
 
 ** Cross Rates Matrix unchanged
 
@@ -120,10 +118,10 @@ Enabled Derived Pairs unchanged.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-18T02:23:10Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-18T09:54:41Z |
 | Branch        | feature/implement-clean-up-application-menus |
-| Commit        | ed38d40e2 |
+| Commit        | 486b96962 |
 | Worktree      | solid_dirac |
 
 * Notes

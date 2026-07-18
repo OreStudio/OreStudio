@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | FAILED | Retest against latest commit pending — 2 steps failed on first pass (duplicate Business Units/Business Unit Types, root-caused to a stale =libores.qt.party.so= build artifact and fixed; transient NATS "no responder" from refdata.service still starting up). Submenus also alphabetised per reviewer feedback. |
+| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | PASSED | Retested against the fixed commit (stale plugin artifact removed, services fully warmed up before testing) — all 6 steps PASSED. |
 
 * PRs
 
@@ -137,7 +137,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Verification claim didn't match committed scenario record (still FAILED, retest pending) | scenario_verify_reference_data_menu_taxonomy.org | Accepted | Retested against the fixed commit with services fully warmed up; all steps now PASSED, doc updated to match. |
+| 2 | =&Codes= mnemonic collides with =&Currencies=/=&Counterparties=; and within Codes, Book/Currency/Organisation Codes all collide on =C= | RefdataPlugin.cpp, MainWindow.cpp | Accepted | =Codes= → =Co&des=; =Book &Codes= → =&Book Codes=; =Currency &Codes= → =Curre&ncy Codes=; =Organisation &Codes= → =&Organisation Codes=. |
 
 * Result
 
@@ -161,3 +162,10 @@ startup race (client's first requests landed before
 =ores.refdata.service= finished registering all its handlers), not a
 code defect — confirmed via the service log showing the same
 subjects succeeding once the service had been running a while.
+
+Review round on PR #1621 found the new =Codes= submenu's mnemonic
+collided with =&Currencies=/=&Counterparties= on Reference Data, and
+within =Codes= three of its four children (Book/Currency/Organisation
+Codes) all used =C=. Fixed with distinct mnemonics for each. Retested
+end to end with services fully warmed up before testing (avoiding
+the earlier startup race): all 6 scenario steps PASSED.

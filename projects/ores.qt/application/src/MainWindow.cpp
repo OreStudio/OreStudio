@@ -505,7 +505,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
 
     // Pre-create Organisation Codes submenu (NOT inserted directly;
     // RefdataPlugin appends it to the Reference Data menu).
-    auto* organisationCodesMenu = new QMenu(tr("Organisation &Codes"), this);
+    auto* organisationCodesMenu = new QMenu(tr("&Organisation Codes"), this);
 
     // Phase 1 — let plugins contribute to shared menus.
     // Phase 2 — collect standalone menus returned by create_menus().

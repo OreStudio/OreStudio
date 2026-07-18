@@ -842,14 +842,14 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         // Book Codes, Organisation Codes) that used to sit as indistinguishable
         // peers directly on Reference Data. All four are lookup values, not
         // primary entities, hence the shared umbrella.
-        auto* menuCodes = ref->addMenu(tr("&Codes"));
+        auto* menuCodes = ref->addMenu(tr("Co&des"));
 
         // Book Codes submenu: auxiliary/classification data for books and
         // portfolios (Book Statuses, Regulatory Book Types, Book Purpose
         // Types, Ledger Feed Types today; room for portfolio-side codes as
         // they land). Reference-data lookups belong here, not in the
         // Trading menu's Trading Codes submenu. Entries alphabetical.
-        auto* menuBookCodes = menuCodes->addMenu(tr("Book &Codes"));
+        auto* menuBookCodes = menuCodes->addMenu(tr("&Book Codes"));
         auto* actBookPurposeTypes =
             menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Purpose Types"));
         connect(actBookPurposeTypes, &QAction::triggered, this, [this]() {
@@ -896,7 +896,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         // Currency Codes submenu (Monetary Natures + Rounding Types).
         // Entries alphabetical.
-        auto* menuCurrencyCodes = menuCodes->addMenu(tr("Currency &Codes"));
+        auto* menuCurrencyCodes = menuCodes->addMenu(tr("Curre&ncy Codes"));
         auto* actCurrencyMarketTiers =
             menuCurrencyCodes->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
         connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {

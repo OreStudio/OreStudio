@@ -104,6 +104,10 @@ tick size, not just in the limit of small ticks.
 - [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — OU applied to a short rate.
 - [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]] — OU with a time-varying reversion target.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]] — OU with a state-dependent volatility term.
+- [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]] — uses this process's stationary variance
+  $\sigma^2/2\theta$ to argue that observed volatility alone cannot
+  distinguish a stable, mean-reverting system from one whose
+  restoring force ($\theta$) is vanishing toward instability.
 
 ** Further reading
 

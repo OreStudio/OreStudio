@@ -39,6 +39,10 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — hub note for the FX cross-rates matrix: the
   no-arbitrage spanning-tree of driver/derived spot rates that lives in
   =ores.marketdata=. Companion to the Currency pairs hub above.
+- [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]] — the generic concept: dispersion of returns,
+  variance vs standard deviation, annualisation, historical/realised
+  vs implied volatility, and the Black-Scholes sigma parameter —
+  foundational for the three volatility pages below.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting (ATM/RR/STR), delta
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.

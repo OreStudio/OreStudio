@@ -14,7 +14,9 @@ and keep hitting "GARCH", "GJR-GARCH", "volatility clustering", or
 "leverage effect" without a clear definition, this document is for you.
 No finance background is assumed — if you know what a time series is and
 have ever written an exponential moving average, you already have the
-right mental model.  Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+right mental model. For what volatility itself is (before this document's
+discussion of how it evolves through time), see [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Summary
 

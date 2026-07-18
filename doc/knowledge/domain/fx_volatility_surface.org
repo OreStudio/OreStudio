@@ -13,8 +13,9 @@ The FX volatility surface is the primary market data input for pricing and
 risk-managing FX options in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is a two-dimensional function of
 implied Black-Scholes volatility across strike (or delta) and expiry tenor.
 This document covers pillar structure, delta conventions, smile models, and
-surface construction. For how vol surfaces interact with pricing configuration
-see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
+surface construction. For the generic concept of volatility and implied vol
+this page assumes, see [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]]. For how vol surfaces interact with pricing
+configuration see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Overview

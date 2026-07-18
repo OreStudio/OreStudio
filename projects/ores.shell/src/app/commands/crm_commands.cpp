@@ -78,7 +78,7 @@ void crm_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                      process_rates(std::ref(out), std::ref(session), args);
                  },
                  "List CRM rates for a party",
-                 {"[<crm-name>] [--party <id-or-full-name>] [--inverted] [--matrix]"});
+                 {"[<crm-name>] [--party <id-or-full-name>] [--reciprocal] [--matrix]"});
 
     root_menu.Insert(std::move(menu));
 }
@@ -118,7 +118,7 @@ void crm_commands::process_rates(std::ostream& out,
                                  const std::vector<std::string>& args) {
     auto parsed = parse_args(args,
                              {{.name = "party", .requires_value = true, .default_value = ""},
-                              {.name = "inverted", .requires_value = false},
+                              {.name = "reciprocal", .requires_value = false},
                               {.name = "matrix", .requires_value = false}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -131,7 +131,7 @@ void crm_commands::process_rates(std::ostream& out,
     }
 
     const std::string crm_name = parsed->positionals.empty() ? "" : parsed->positionals.front();
-    const bool inverted = parsed->flag_set("inverted");
+    const bool reciprocal = parsed->flag_set("reciprocal");
     const bool matrix = parsed->flag_set("matrix");
     if (matrix && crm_name.empty()) {
         fail(out) << "--matrix requires a named CRM (mixing CRMs in a grid is ambiguous)."
@@ -159,12 +159,12 @@ void crm_commands::process_rates(std::ostream& out,
 
     BOOST_LOG_SEV(lg(), info) << "Listing CRM rates for party " << *party_id
                               << " (crm: " << (crm_name.empty() ? "all" : crm_name)
-                              << ", inverted: " << std::boolalpha << inverted << ")";
+                              << ", reciprocal: " << std::boolalpha << reciprocal << ")";
 
     marketdata_msg::get_crm_rates_request rates_req;
     rates_req.party_id = *party_id;
     rates_req.crm_name = crm_name;
-    rates_req.inverted = inverted;
+    rates_req.reciprocal = reciprocal;
     auto rates_result = do_auth_request<marketdata_msg::get_crm_rates_response>(
         out, session, std::string(rates_req.nats_subject), rfl::json::write(rates_req));
     if (!rates_result)
@@ -205,7 +205,7 @@ void crm_commands::process_rates(std::ostream& out,
         });
 
     const auto display_result =
-        display_service.rates(session.auth().tenant_id, *party_id, crm_name, inverted);
+        display_service.rates(session.auth().tenant_id, *party_id, crm_name, reciprocal);
     if (!display_result.success) {
         fail(out) << "Failed to format CRM rates: " << display_result.error << std::endl;
         return;

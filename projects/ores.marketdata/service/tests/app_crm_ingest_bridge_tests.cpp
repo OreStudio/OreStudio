@@ -292,16 +292,16 @@ TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse 
 
     const auto results = bridge.resolved_rates(tenant_id_str, party_id_str, "test", true);
 
-    // Two configured driver pairs (EUR/USD, USD/JPY); inverted=true adds
+    // Two configured driver pairs (EUR/USD, USD/JPY); reciprocal=true adds
     // a synthesised reverse for each, since neither EUR/USD's reverse
     // (USD/EUR) nor USD/JPY's reverse (JPY/USD) is itself a configured
     // pair here: 2 direct + 2 synthesised = 4.
     REQUIRE(results.size() == 4);
-    std::size_t inverted_count = 0;
+    std::size_t reciprocal_count = 0;
     for (const auto& r : results)
-        if (r.inverted)
-            ++inverted_count;
-    CHECK(inverted_count == 2);
+        if (r.reciprocal)
+            ++reciprocal_count;
+    CHECK(reciprocal_count == 2);
 }
 
 TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itself configured",
@@ -331,7 +331,7 @@ TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itse
     // Both directions are already configured pairs -- no synthesis.
     REQUIRE(results.size() == 2);
     for (const auto& r : results)
-        CHECK_FALSE(r.inverted);
+        CHECK_FALSE(r.reciprocal);
 
     const auto usd_eur = std::ranges::find_if(
         results, [](const auto& r) { return r.base_code == "USD" && r.quote_code == "EUR"; });

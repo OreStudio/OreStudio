@@ -19,14 +19,14 @@
  */
 #include "ores.analytics.quant/domain/derived_rate.hpp"
 #include "ores.analytics.quant/domain/rate_status.hpp"
-#include "ores.analytics.quant/service/rate_inverter.hpp"
+#include "ores.analytics.quant/service/rate_reciprocator.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
 using ores::analytics::quant::domain::derived_rate;
 using ores::analytics::quant::domain::rate_status;
-using ores::analytics::quant::service::rate_inverter;
+using ores::analytics::quant::service::rate_reciprocator;
 
 namespace {
 
@@ -36,39 +36,39 @@ auto epoch(int seconds) {
 
 } // namespace
 
-TEST_CASE("a direct entry is returned unchanged, not inverted", "[rate_inverter]") {
+TEST_CASE("a direct entry is returned unchanged, not reciprocal", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "USD", 1.10, rate_status::fresh, epoch(100)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("EUR", "USD", lookup, true);
-    CHECK_FALSE(view.inverted);
+    const auto view = rate_reciprocator::resolve("EUR", "USD", lookup, true);
+    CHECK_FALSE(view.reciprocal);
     CHECK(view.rate == Catch::Approx(1.10));
     CHECK(view.status == rate_status::fresh);
     CHECK(view.as_of == epoch(100));
 }
 
-TEST_CASE("a direct entry with unavailable status is still returned as-is", "[rate_inverter]") {
+TEST_CASE("a direct entry with unavailable status is still returned as-is", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "USD", 0.0, rate_status::unavailable, std::chrono::system_clock::time_point{}},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("EUR", "USD", lookup, true);
-    CHECK_FALSE(view.inverted);
+    const auto view = rate_reciprocator::resolve("EUR", "USD", lookup, true);
+    CHECK_FALSE(view.reciprocal);
     CHECK(view.status == rate_status::unavailable);
 }
 
 TEST_CASE("a missing pair falls back to the reverse pair's inverse when allowed",
-          "[rate_inverter]") {
+          "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::fresh, epoch(200)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("CAD", "EUR", lookup, true);
-    CHECK(view.inverted);
+    const auto view = rate_reciprocator::resolve("CAD", "EUR", lookup, true);
+    CHECK(view.reciprocal);
     CHECK(view.status == rate_status::fresh);
     CHECK(view.rate == Catch::Approx(1.0 / 1.50));
     CHECK(view.as_of == epoch(200));
@@ -76,62 +76,62 @@ TEST_CASE("a missing pair falls back to the reverse pair's inverse when allowed"
     CHECK(view.quote_code == "EUR");
 }
 
-TEST_CASE("a missing pair is unavailable when inversion is not allowed", "[rate_inverter]") {
+TEST_CASE("a missing pair is unavailable when inversion is not allowed", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::fresh, epoch(200)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("CAD", "EUR", lookup, false);
-    CHECK_FALSE(view.inverted);
+    const auto view = rate_reciprocator::resolve("CAD", "EUR", lookup, false);
+    CHECK_FALSE(view.reciprocal);
     CHECK(view.status == rate_status::unavailable);
 }
 
-TEST_CASE("a stale reverse pair inverts but keeps the stale status", "[rate_inverter]") {
+TEST_CASE("a stale reverse pair reciprocates but keeps the stale status", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 1.50, rate_status::stale, epoch(50)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("CAD", "EUR", lookup, true);
-    CHECK(view.inverted);
+    const auto view = rate_reciprocator::resolve("CAD", "EUR", lookup, true);
+    CHECK(view.reciprocal);
     CHECK(view.status == rate_status::stale);
     CHECK(view.rate == Catch::Approx(1.0 / 1.50));
 }
 
-TEST_CASE("an unavailable reverse pair does not divide by its zero rate", "[rate_inverter]") {
+TEST_CASE("an unavailable reverse pair does not divide by its zero rate", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "CAD", 0.0, rate_status::unavailable, std::chrono::system_clock::time_point{}},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("CAD", "EUR", lookup, true);
-    CHECK(view.inverted);
+    const auto view = rate_reciprocator::resolve("CAD", "EUR", lookup, true);
+    CHECK(view.reciprocal);
     CHECK(view.status == rate_status::unavailable);
     CHECK(view.rate == Catch::Approx(0.0));
 }
 
-TEST_CASE("neither direction present is unavailable regardless of allow_invert",
-          "[rate_inverter]") {
+TEST_CASE("neither direction present is unavailable regardless of allow_reciprocal",
+          "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "USD", 1.10, rate_status::fresh, epoch(100)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("GBP", "JPY", lookup, true);
-    CHECK_FALSE(view.inverted);
+    const auto view = rate_reciprocator::resolve("GBP", "JPY", lookup, true);
+    CHECK_FALSE(view.reciprocal);
     CHECK(view.status == rate_status::unavailable);
     CHECK(view.rate == Catch::Approx(0.0));
 }
 
-TEST_CASE("make_lookup keeps the last entry for a duplicated pair", "[rate_inverter]") {
+TEST_CASE("make_lookup keeps the last entry for a duplicated pair", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {
         {"EUR", "USD", 1.10, rate_status::fresh, epoch(100)},
         {"EUR", "USD", 1.11, rate_status::fresh, epoch(200)},
     };
-    const auto lookup = rate_inverter::make_lookup(rates);
+    const auto lookup = rate_reciprocator::make_lookup(rates);
 
-    const auto view = rate_inverter::resolve("EUR", "USD", lookup, true);
+    const auto view = rate_reciprocator::resolve("EUR", "USD", lookup, true);
     CHECK(view.rate == Catch::Approx(1.11));
     CHECK(view.as_of == epoch(200));
 }

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_QUANT_SERVICE_RATE_INVERTER_HPP
-#define ORES_ANALYTICS_QUANT_SERVICE_RATE_INVERTER_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_RATE_RECIPROCATOR_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_RATE_RECIPROCATOR_HPP
 
 #include "ores.analytics.quant/domain/crm_rate_view.hpp"
 #include "ores.analytics.quant/domain/derived_rate.hpp"
@@ -41,7 +41,7 @@ namespace ores::analytics::quant::service {
  * lookup once per batch via @c make_lookup, then calls @c resolve per
  * requested cell.
  */
-class ORES_ANALYTICS_QUANT_EXPORT rate_inverter {
+class ORES_ANALYTICS_QUANT_EXPORT rate_reciprocator {
 public:
     using rate_lookup = std::map<std::pair<std::string, std::string>, domain::derived_rate>;
 
@@ -52,8 +52,8 @@ public:
 
     /// Resolves @p base_code / @p quote_code against @p lookup:
     ///  - a direct entry present in @p lookup is returned unchanged
-    ///    (inverted = false), regardless of its status;
-    ///  - absent a direct entry, if @p allow_invert and the reverse pair
+    ///    (reciprocal = false), regardless of its status;
+    ///  - absent a direct entry, if @p allow_reciprocal and the reverse pair
     ///    is present, returns its inverse (rate = 1/rate when the reverse
     ///    rate is finite and non-zero; otherwise the reverse's own
     ///    status/as_of are kept and rate is left at 0.0 to avoid a
@@ -63,7 +63,7 @@ public:
     [[nodiscard]] static domain::crm_rate_view resolve(const std::string& base_code,
                                                        const std::string& quote_code,
                                                        const rate_lookup& lookup,
-                                                       bool allow_invert);
+                                                       bool allow_reciprocal);
 };
 
 } // namespace ores::analytics::quant::service

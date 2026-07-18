@@ -111,7 +111,7 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
     , refreshIntervalCombo_(nullptr)
     , reloadAction_(nullptr)
     , hideEmptyButton_(nullptr)
-    , showInvertedButton_(nullptr)
+    , showReciprocalButton_(nullptr)
     , autoRefreshTimer_(nullptr)
     , table_(nullptr)
     , footerLabel_(nullptr)
@@ -306,33 +306,33 @@ void CrmCrossRatesMatrixMdiWindow::setupUi() {
     // When on, a cell with no direct quote but whose inverse pair *does*
     // have one (e.g. no CAD/EUR row entry, but EUR/CAD exists) shows the
     // computed 1/rate instead of a dash -- pure arithmetic, no new data
-    // needed. Off by default: still opt-in, since an inverted rate is a
+    // needed. Off by default: still opt-in, since a reciprocal rate is a
     // derived display value, not something the CRM actually quotes.
-    showInvertedButton_ = new QPushButton(tr("Show Inverted"), this);
-    showInvertedButton_->setCheckable(true);
-    showInvertedButton_->setCursor(Qt::PointingHandCursor);
-    showInvertedButton_->setToolTip(
+    showReciprocalButton_ = new QPushButton(tr("Show Reciprocal"), this);
+    showReciprocalButton_->setCheckable(true);
+    showReciprocalButton_->setCursor(Qt::PointingHandCursor);
+    showReciprocalButton_->setToolTip(
         tr("Show computed inverse rates (1/rate) for pairs with no direct quote"));
     {
         const QColor accent = palette().color(QPalette::Highlight);
         const QColor accentText = palette().color(QPalette::HighlightedText);
-        showInvertedButton_->setStyleSheet(
+        showReciprocalButton_->setStyleSheet(
             QStringLiteral("QPushButton { padding: 3px 10px; border: 1px solid %1; "
                            "border-radius: 3px; } "
                            "QPushButton:checked { background: %1; color: %2; }")
                 .arg(accent.name(), accentText.name()));
     }
-    footerLayout->addWidget(showInvertedButton_);
+    footerLayout->addWidget(showReciprocalButton_);
     {
         QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
         settings.beginGroup(settingsGroup_);
-        showInvertedButton_->setChecked(
-            settings.value(QStringLiteral("showInverted"), false).toBool());
+        showReciprocalButton_->setChecked(
+            settings.value(QStringLiteral("showReciprocal"), false).toBool());
     }
-    connect(showInvertedButton_,
+    connect(showReciprocalButton_,
             &QPushButton::toggled,
             this,
-            &CrmCrossRatesMatrixMdiWindow::onShowInvertedToggled);
+            &CrmCrossRatesMatrixMdiWindow::onShowReciprocalToggled);
 
     footerLayout->addStretch(1);
 
@@ -391,10 +391,10 @@ void CrmCrossRatesMatrixMdiWindow::onHideEmptyToggled(bool checked) {
     reload();
 }
 
-void CrmCrossRatesMatrixMdiWindow::onShowInvertedToggled(bool checked) {
+void CrmCrossRatesMatrixMdiWindow::onShowReciprocalToggled(bool checked) {
     QSettings settings(QStringLiteral("OreStudio"), QStringLiteral("OreStudio"));
     settings.beginGroup(settingsGroup_);
-    settings.setValue(QStringLiteral("showInverted"), checked);
+    settings.setValue(QStringLiteral("showReciprocal"), checked);
     reload();
 }
 
@@ -442,14 +442,14 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     const auto party_id = boost::uuids::to_string(clientManager_->currentPartyId());
     const auto crm_name = crmName_.toStdString();
     QPointer<CrmCrossRatesMatrixMdiWindow> self = this;
-    const bool inverted = showInvertedButton_->isChecked();
+    const bool reciprocal = showReciprocalButton_->isChecked();
 
     using DisplayResult = marketdata_client::presentation::crm_rate_display_service::result;
     QFuture<DisplayResult> future =
-        QtConcurrent::run([self, tenant_id, party_id, crm_name, inverted]() -> DisplayResult {
+        QtConcurrent::run([self, tenant_id, party_id, crm_name, reciprocal]() -> DisplayResult {
             if (!self || !self->displayService_)
                 return {};
-            return self->displayService_->rates(tenant_id, party_id, crm_name, inverted);
+            return self->displayService_->rates(tenant_id, party_id, crm_name, reciprocal);
         });
 
     auto* watcher = new QFutureWatcher<DisplayResult>(this);
@@ -581,7 +581,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                 const auto& item = it->second;
                 exportedRates.push_back(item);
                 auto* cellWidget = new CrmRateCellWidget(self->table_);
-                cellWidget->setPastelBackground(item.inverted);
+                cellWidget->setPastelBackground(item.reciprocal);
 
                 const auto display_key = std::make_pair(rowCurrencies[row].toStdString(),
                                                         allCurrencies[col].toStdString());
@@ -652,8 +652,8 @@ QString CrmCrossRatesMatrixMdiWindow::exportFileNameSlug() const {
     if (!baseFilter.isEmpty())
         parts << baseFilter;
 
-    if (showInvertedButton_->isChecked())
-        parts << QStringLiteral("inverted");
+    if (showReciprocalButton_->isChecked())
+        parts << QStringLiteral("reciprocal");
     if (hideEmptyButton_->isChecked())
         parts << QStringLiteral("hideempty");
 

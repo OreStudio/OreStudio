@@ -48,10 +48,10 @@ straight rename is safe rather than needing a deprecation shim.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Now          | Rename applied across quant/marketdata/qt/shell; build+tests green. |
+| Waiting on   | Manual Qt smoke, then PR.              |
+| Next         | Manual smoke test, then raise PR.      |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
@@ -94,6 +94,38 @@ straight rename is safe rather than needing a deprecation shim.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Mechanical rename of the CRM 1/rate-backfill concept only --
+=CurrencyPairDetailDialog='s unrelated "inverted pair" duplicate-reject
+feature and =rate_engine='s "sign inverts" comment (log-rate delta
+math) were both left alone as distinct concepts, per the task's own
+scope note.
+
+- =ores.analytics.quant=: =rate_inverter= -> =rate_reciprocator=
+  (file + class, both include/src and its test file); =allow_invert=
+  -> =allow_reciprocal=; =crm_rate_view.inverted= -> =reciprocal=.
+- =ores.marketdata.api=: =crm_protocol.hpp='s =crm_rate_item.inverted=
+  and =get_crm_rates_request.inverted= -> =reciprocal=.
+- =ores.marketdata.service=: =crm_ingest_bridge=, =crm_handler= and
+  their tests updated to the renamed field/parameter.
+- =ores.marketdata.client=: =crm_client=, =crm_rate_display_service=,
+  =crm_rate_formatter= (+ tests) -- =inverted= parameters/fields ->
+  =reciprocal=; tooltip text updated.
+- =ores.qt.marketdata=: =CrmCrossRatesMatrixMdiWindow= -- "Show
+  Inverted" -> "Show Reciprocal" (button label/tooltip/handler/member),
+  =QSettings= key =showInverted= -> =showReciprocal= (silent rename,
+  acceptable pre-1.0, no released version depends on the old key).
+- =ores.shell=: =crm rates='s =--inverted= flag -> =--reciprocal=.
+- Docs: the CRM shell recipes under =doc/recipes/shell/marketdata/crm/=
+  were checked and contain no "inverted" references needing update.
+  The sprint's own DONE task/scenario journals were left as historical
+  record of what was true when that work happened, rather than rewritten.
+- Full build of the affected targets (=ores.analytics.quant.lib=,
+  =ores.marketdata.client.lib=, =ores.marketdata.service.lib=,
+  =ores.qt.marketdata.lib=, =ores.shell.lib=) plus their =.tests=
+  binaries succeeded; =[rate_reciprocator]=, =[rate_delta_tracker]=,
+  =[crm_rate_formatter]=, =[crm_rate_display_service]= and =[crm]=
+  (marketdata.service) test tags all green.
 
 * Notes
 

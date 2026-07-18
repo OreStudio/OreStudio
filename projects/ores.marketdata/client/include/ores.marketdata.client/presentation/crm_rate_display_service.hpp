@@ -58,14 +58,14 @@ public:
     crm_rate_display_service(rates_fn_t rates_fn, lookup_fn_t lookup_fn);
 
     /// One CRM cell, fully ready to bind -- the grid-placement fields
-    /// (base/quote/status/inverted) a UI needs alongside the formatted
+    /// (base/quote/status/reciprocal) a UI needs alongside the formatted
     /// display strings.
     struct row {
         std::string crm_name;
         std::string base_currency_code;
         std::string quote_currency_code;
         std::string status;
-        bool inverted = false;
+        bool reciprocal = false;
         std::optional<double> delta_pct;
         double rate = 0.0;
         std::string as_of;
@@ -88,7 +88,7 @@ public:
     [[nodiscard]] result rates(const std::string& tenant_id,
                                const std::string& party_id,
                                const std::string& crm_name,
-                               bool inverted);
+                               bool reciprocal);
 
 private:
     rates_fn_t rates_fn_;

@@ -84,7 +84,7 @@ inline crm_rate_item to_item(const std::string& crm_name,
                          .rate = v.rate,
                          .status = rate_status_to_string(v.status),
                          .as_of = as_of_to_string(v.as_of),
-                         .inverted = v.inverted,
+                         .reciprocal = v.reciprocal,
                          .delta_pct = v.delta_pct};
 }
 } // namespace
@@ -184,13 +184,13 @@ public:
         if (req->crm_name.empty()) {
             // No CRM selected -- every enabled CRM the party has, tagged.
             const auto results =
-                bridge_->resolved_rates(tenant_id_str, req->party_id, req->inverted);
+                bridge_->resolved_rates(tenant_id_str, req->party_id, req->reciprocal);
             resp.rates.reserve(results.size());
             for (const auto& r : results)
                 resp.rates.push_back(to_item(r.crm_name, r.view));
         } else {
             const auto results =
-                bridge_->resolved_rates(tenant_id_str, req->party_id, req->crm_name, req->inverted);
+                bridge_->resolved_rates(tenant_id_str, req->party_id, req->crm_name, req->reciprocal);
             resp.rates.reserve(results.size());
             for (const auto& v : results)
                 resp.rates.push_back(to_item(req->crm_name, v));

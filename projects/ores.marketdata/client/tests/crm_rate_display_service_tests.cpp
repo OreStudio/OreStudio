@@ -36,7 +36,7 @@ marketdata_msg::crm_rate_item make_item(std::string base, std::string quote, dou
     item.rate = rate;
     item.status = "fresh";
     item.as_of = "2026-07-16T10:00:00Z";
-    item.inverted = false;
+    item.reciprocal = false;
     return item;
 }
 
@@ -141,11 +141,11 @@ TEST_CASE("crm_rate_display_service propagates a rates-source failure without fo
     REQUIRE(result.rows.empty());
 }
 
-TEST_CASE("crm_rate_display_service passes through status/inverted/delta metadata",
+TEST_CASE("crm_rate_display_service passes through status/reciprocal/delta metadata",
           "[crm_rate_display_service]") {
     auto item = make_item("EUR", "USD", 1.10285);
     item.status = "stale";
-    item.inverted = true;
+    item.reciprocal = true;
     item.delta_pct = -0.5;
     auto service = make_service({item}, {});
 
@@ -153,7 +153,7 @@ TEST_CASE("crm_rate_display_service passes through status/inverted/delta metadat
 
     REQUIRE(result.success);
     REQUIRE(result.rows[0].status == "stale");
-    REQUIRE(result.rows[0].inverted);
+    REQUIRE(result.rows[0].reciprocal);
     REQUIRE(result.rows[0].delta_pct.has_value());
     REQUIRE(result.rows[0].display.tooltip_text == "Stale as of 2026-07-16T10:00:00Z");
 }

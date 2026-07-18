@@ -8,7 +8,7 @@
 #+filetags: :clean-up-application-menus:sprint_23:v0:
 #+owner: marco
 #+branch: feature/implement-clean-up-application-menus
-#+pr:
+#+pr: 1621
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1621][#1621]] | [refdata] Reorganise Reference Data menu into a cohesive taxonomy |
 
 * Review
 

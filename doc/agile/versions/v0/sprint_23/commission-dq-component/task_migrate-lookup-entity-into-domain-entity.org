@@ -45,7 +45,7 @@ unblock 819B050A.
 
 - [X] Pilot-migrate one DQ entity (=catalog=) to =domain_entity=, verify both SQL and C++ generation end to end against the real hand-written table/pre-existing generated files, before committing to the rest.
 - [X] Migrate the remaining four DQ entities (=change_reason_category=, =change_reason=, =data_domain=, =subject_area=) the same way, each SQL-verified.
-- [ ] ~~Add has_coding_scheme/has_image_id/has_artefact_insert_fn as domain_entity knobs~~ -- not needed: =coding_scheme=/=image_id= already exist on =domain_entity= (=domain_entity_to_table_context=/=normalise_sql_table_context=, used by dozens of existing refdata entities); =has_artefact_insert_fn= turned out to be unused/dead even on =lookup_entity= (never referenced by any template), so it wasn't ported.
+- [ ] ~~Add has_coding_scheme/has_image_id/has_artefact_insert_fn as domain_entity knobs~~ -- =coding_scheme=/=image_id= not needed: they already exist on =domain_entity= (=domain_entity_to_table_context=/=normalise_sql_table_context=, used by dozens of existing refdata entities). =has_artefact_insert_fn= is genuinely live (=sql_schema_artefact_create.mustache=) but none of these 5 entities used it, so porting it to domain_entity was out of scope here -- see Notes and AEFAE247.
 - [ ] Migrate the remaining 10 lookup_entity models (iam/trading/analytics) -- deferred to a follow-up task, not required to unblock 819B050A.
 - [ ] Retire =ores.codegen.lookup_entity='s =#+type:=/loader/dispatch entirely -- blocked on the above (still 10 live consumers).
 
@@ -70,12 +70,21 @@ scope:
   templates, same behaviour). Dozens of real refdata entities
   (=country=, =currency=, ...) already exercise this. No new knobs
   needed.
-- =has_artefact_insert_fn= is not consumed by any SQL or C++ template
-  today (=grep= across =projects/ores.codegen/library/templates/*.mustache=
-  found it only in the lookup_entity scaffold template itself, never in
-  a render path) -- effectively dead metadata even on the =lookup_entity=
-  models that set it =true= (=lei_entity=, =lei_relationship=). Not
-  ported; noted here in case it resurfaces.
+- =has_artefact_insert_fn= *is* live: =sql_schema_artefact_create.mustache=
+  (line 43) renders =\{\{#entity.has_artefact_insert_fn\}\}=, wired in
+  via =get_schema_template_mappings()= for lookup_entity/schema-model
+  entities -- an earlier grep pass here wrongly called it dead, only
+  having checked =sql_schema_table_create.mustache=, not the artefact
+  template too. =lei_entity=/=lei_relationship= (both still
+  lookup_entity, not touched by this migration) genuinely depend on it
+  to generate their artefact-table insert function. Harmless for *this*
+  PR -- =domain_entity_to_table_context()=/
+  =get_domain_entity_template_mappings()= never read the flag at all,
+  so dropping it from these 5 migrated models changes nothing -- but
+  AEFAE247 (the follow-up migrating =lei_entity=/=lei_relationship=)
+  must explicitly preserve/port this behaviour, since =domain_entity=
+  has no equivalent hook today. Not ported here because none of these
+  5 entities used it (all had =has_artefact_insert_fn: false=).
 - =domain_entity= supports =natural_keys= (plural) as extra
   human-meaningful columns, but -- checked directly in
   =sql_schema_create.mustache= -- they are *not* part of the actual SQL
@@ -136,7 +145,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "has_artefact_insert_fn is dead metadata" claim is wrong -- sql_schema_artefact_create.mustache actively renders it, and lei_entity/lei_relationship genuinely depend on it | task_migrate-lookup-entity-into-domain-entity.org, task_migrate-remaining-lookup-entities-to-domain-entity.org | Accepted | Earlier grep only checked sql_schema_table_create.mustache, missing the separate artefact template. Harmless for this PR (none of the 5 migrated entities used the flag, and domain_entity has no equivalent hook regardless), but corrected the claim and added an explicit warning to AEFAE247 so it doesn't silently drop lei_entity/lei_relationship's artefact insert function when migrated. |
 
 * Result
 
@@ -169,8 +178,16 @@ enforcement at all.
 =has_coding_scheme=/=has_image_id= knobs did not need porting to
 domain_entity -- they already exist there as
 =coding_scheme=/=image_id=, used by dozens of real refdata entities.
-=has_artefact_insert_fn= turned out to be dead metadata (unused by
-any template, on either metatype) and was not ported.
+=has_artefact_insert_fn= is genuinely live
+(=sql_schema_artefact_create.mustache=, wired via
+=get_schema_template_mappings()=), not dead as first suspected here --
+none of these 5 entities used it, so it wasn't ported to domain_entity
+in this task, but =domain_entity_to_table_context()=/
+=get_domain_entity_template_mappings()= have no equivalent hook for it
+today. Two of the still-unmigrated lookup_entity models
+(=lei_entity=, =lei_relationship=) genuinely depend on it; AEFAE247
+must preserve/port this behaviour explicitly when migrating them, not
+assume it can be dropped.
 
 10 lookup_entity models remain outside =dq= (iam/trading/analytics);
 migrating them and retiring =ores.codegen.lookup_entity='s

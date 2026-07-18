@@ -45,6 +45,23 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+*Warning carried over from 464B5EC6's review round*: =lei_entity= and
+=lei_relationship= (both in this task's scope) set
+=has_artefact_insert_fn: true= and genuinely depend on it --
+=sql_schema_artefact_create.mustache= (line 43) renders
+=\{\{#entity.has_artefact_insert_fn\}\}= to generate their
+artefact-table insert function, wired in via
+=get_schema_template_mappings()= for lookup_entity/schema-model
+entities. =domain_entity_to_table_context()=/
+=get_domain_entity_template_mappings()= have *no* equivalent hook for
+this flag today. Migrating these two the same way 464B5EC6 migrated
+the 5 DQ entities (which all had =has_artefact_insert_fn: false=, so
+the gap never surfaced) would silently drop their artefact insert
+function. Before migrating =lei_entity=/=lei_relationship=, either
+port =has_artefact_insert_fn= support into domain_entity's SQL
+template set, or verify/accept the behaviour change explicitly --
+don't assume dropping it is safe by analogy with the other 8 entities.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

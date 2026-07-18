@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: FE30471F-CE4C-4056-B5AA-D7E2FBC3464A
+:END:
+#+title: ores.dq.subject_area
+#+description: Codegen lookup-entity model for the dq subject_area table.
+#+type: ores.codegen.lookup_entity
+#+component: dq
+#+filetags: :model:lookup_entity:dq:
+#+product: ores
+#+schema: public
+#+entity_singular: subject_area
+#+entity_plural: subject_areas
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+Sub-classification within a data domain. Examples: currencies,
+countries, images. Rows are authored directly (not mirrored from an
+external source).
+
+* Primary key
+:PROPERTIES:
+:column:  name
+:type:    text
+:is_text: true
+:END:
+
+Unique name identifying this subject area within its data domain.
+Examples: "currencies", "countries", "images".
+
+* Columns
+
+** domain_name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+Name of the data domain this subject area belongs to. References
+=ores_dq_data_domains_tbl= (soft FK). The real table's natural key is
+compound (=name= + =domain_name=), but =lookup_entity= only supports
+a single-column primary key today
+([[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][52FE40FA]]); per that
+descoping decision =domain_name= is modeled as a plain =Column=
+rather than part of a true composite key -- the generated DDL's
+primary key/exclusion constraint/uniqueness index cover
+=(tenant_id, name, valid_from, valid_to)= only, weaker than the
+hand-written table's =(tenant_id, name, domain_name, ...)=. Do not
+regenerate/swap this table over the hand-written one until 52FE40FA
+lands.
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+Human-readable description of this subject area.
+
+* Validations
+
+| column      | validation_function          |
+|-------------+-------------------------------|
+| domain_name | ores_dq_validate_data_domain_fn |
+
+* Artefact indexes
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

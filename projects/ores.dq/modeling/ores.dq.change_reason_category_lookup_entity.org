@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: CC7A9D6D-100B-4217-9233-976B62178BE5
+:END:
+#+title: ores.dq.change_reason_category
+#+description: Codegen lookup-entity model for the dq change_reason_category table.
+#+type: ores.codegen.lookup_entity
+#+component: dq
+#+filetags: :model:lookup_entity:dq:
+#+product: ores
+#+schema: public
+#+entity_singular: change_reason_category
+#+entity_plural: change_reason_categories
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+A change reason category groups related change reasons into a
+taxonomy used to classify why a change was made. Examples: "Data
+Correction", "Regulatory Update", "Source System Change". Rows are
+authored directly (not mirrored from an external source).
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+Unique code identifying this change reason category. Examples:
+"data_correction", "regulatory_update".
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+Human-readable description of this change reason category.
+
+* Artefact indexes
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

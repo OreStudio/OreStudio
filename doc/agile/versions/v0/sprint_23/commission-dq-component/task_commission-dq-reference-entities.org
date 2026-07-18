@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on: F71E530F-EB53-4644-AE07-2FDA88E0AE73
+#+blocked_on: 464B5EC6-0F5A-4B6F-B77E-02806CBEAE94
 #+blocked_since: 2026-07-18
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-07-18
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,9 +28,9 @@ Commission the five no-model DQ entities named in the story description onto the
 |--------------+----------------------------------------|
 | State        | BLOCKED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Blocked on [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding to cover DQ's simple entities' variability]]. |
-| Waiting on   | [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding]] |
-| Next         | Resume once the scaffold supports compound natural keys and the coding_scheme/image_id/artefact_insert_fn knobs. |
+| Now          | All five .org models authored and SQL-verified (catalog, change_reason_category, change_reason, data_domain, subject_area). |
+| Waiting on   | [[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] (lookup_entity -> domain_entity migration) for C++ generation and hand-written-code retirement. |
+| Next         | Once 464B5EC6 lands: regenerate C++, diff against the hand-written core/repository/service/handler/protocol, swap over, delete hand-written equivalents, build and test green. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -62,6 +62,69 @@ doesn't fit =doc_lookup_entity.org.mustache='s current single-column
 =Primary key= section, and =has_coding_scheme=/=has_image_id=/
 =has_artefact_insert_fn= are hardcoded =false= in that template with
 no CLI flag at all. Filed [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][F71E530F]] to fix both before resuming here.
+
+Discovered a second, separate bug while verifying catalog.org: no
+lookup_entity model in the repo could regenerate SQL or C++ at all
+(core.py mapped its #+type: to a model_type no archetype matched).
+Filed and fixed [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] (SQL
+only -- C++ needs a bigger fix, tracked separately as
+[[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]], migrating
+lookup_entity into domain_entity rather than patching a duplicate C++
+pipeline). catalog.org now verified: =compass codegen generate
+--model ... --address ores.sql.schema= produces DDL structurally
+matching =projects/ores.sql/create/dq/dq_catalog_create.sql= (only
+cosmetic differences -- comment formatting, NEW/OLD case -- plus an
+auto-generated =validate_catalog_fn= the hand-written original
+predates). C++ generation and swapping the hand-written table over to
+generated SQL are deferred to 464B5EC6/a later step, not blocking
+authoring the remaining four entities' models.
+
+Remaining four entities authored and each SQL-verified the same way
+(=compass codegen generate --model ... --address ores.sql.schema=,
+diffed against the real hand-written table, generated file reverted
+afterwards -- only the =.org= model is committed):
+
+- =change_reason_category= (=code= PK) -- structurally correct;
+  generated DDL adds =change_reason_code=, a column the hand-written
+  table predates (every other DQ entity's table already has it).
+- =change_reason= (=code= PK, soft FK to =change_reason_category= via
+  a =Validations= entry reusing =ores_dq_validate_change_reason_category_fn=,
+  boolean/integer columns with defaults, an =Indexes= entry for the
+  =category_code= lookup index) -- structurally correct match, with
+  the same =change_reason_code=-column caveat as
+  =change_reason_category= above (=sql_schema_table_create.mustache=
+  emits it unconditionally for every =lookup_entity=; the hand-written
+  table predates it, same reasoning: a change-reason record
+  referencing its own change reason would be circular).
+- =data_domain= (=name= PK) -- structurally correct match, same shape
+  as =catalog=.
+- =subject_area= -- the real table's natural key is compound (=name=
+  + =domain_name=), which =lookup_entity= can't express
+  ([[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][52FE40FA]], still
+  BACKLOG); per the earlier user-approved descoping decision,
+  =domain_name= is a plain =Column= with a soft-FK =Validations=
+  entry rather than part of the primary key. Generated DDL is
+  therefore intentionally *weaker* than the hand-written table
+  (PK/exclusion/uniqueness cover =(tenant_id, name, ...)= only, not
+  the pair) -- do not regenerate/swap this table over the hand-written
+  one until 52FE40FA lands.
+
+All five models' SQL generation is verified; none of the five hand-
+written tables have actually been swapped over yet (deliberately --
+see per-entity notes above and 464B5EC6 below). C++ generation
+(core/repository/service/handler/protocol) remains blocked on
+464B5EC6: attempting it directly on lookup_entity's own pipeline
+during DDBD522D surfaced that the shared C++ templates only render
+=\{\{#domain_entity\}\}= sections, and lookup_entity's org
+format/loader carries none of the C++-facing column metadata
+(=cpp_type=, derived uuid/int/enum flags, doxygen formatting) that
+pipeline needs -- porting that in place would build a second,
+permanently-duplicate pipeline rather than fixing the real
+architectural overlap. 464B5EC6 migrates lookup_entity into
+domain_entity instead, which this task's remaining acceptance
+(generated core/repository/service/handler/protocol replacing the
+hand-written equivalents, build and tests green) depends on.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -83,6 +146,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task_fix-lookup-entity-model-type-mapping.org reverted from DONE to a blank BACKLOG stub -- branch not rebased onto main after PR #1634 merged | doc/agile/versions/v0/sprint_23/commission-dq-component/task_fix-lookup-entity-model-type-mapping.org | Accepted | Root cause: an earlier rebase-conflict resolution used --theirs, which in a rebase means "the commit being replayed" (this branch's stale stub), not main's content -- inverted from what was intended. Restored from origin/main verbatim. |
+| 2 | change_reason bullet omits the change_reason_code-column caveat that change_reason_category's bullet states, even though the same template gap applies to both | doc/agile/versions/v0/sprint_23/commission-dq-component/task_commission-dq-reference-entities.org, PR description | Accepted | Added the same caveat to the change_reason bullet and to the PR description's Summary/Test plan. |
 
 * Result

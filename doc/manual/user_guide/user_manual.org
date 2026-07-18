@@ -95,24 +95,24 @@
 
 * Introduction
 :PROPERTIES:
-:CUSTOM_ID: chapter_1_introduction
+:CUSTOM_ID: chapter_introduction
 :END:
 
-#+include: "chapter_1_introduction.org" :minlevel 2
+#+include: "chapter_introduction.org" :minlevel 2
 
 * Connecting to ORE Studio
 :PROPERTIES:
-:CUSTOM_ID: chapter_2_connecting
+:CUSTOM_ID: chapter_connecting
 :END:
 
-#+include: "chapter_2_connecting.org" :minlevel 2
+#+include: "chapter_connecting.org" :minlevel 2
 
 * Initial Setup
 :PROPERTIES:
-:CUSTOM_ID: chapter_3_initial_setup
+:CUSTOM_ID: chapter_initial_setup
 :END:
 
-#+include: "chapter_3_initial_setup.org" :minlevel 2
+#+include: "chapter_initial_setup.org" :minlevel 2
 
 * Provisioning from the Shell
 :PROPERTIES:
@@ -145,56 +145,63 @@
 
 * Reference Data
 :PROPERTIES:
-:CUSTOM_ID: chapter_4_reference_data
+:CUSTOM_ID: chapter_reference_data
 :END:
 
-#+include: "chapter_4_reference_data.org" :minlevel 2
+#+include: "chapter_reference_data.org" :minlevel 2
 
 * Currencies
 :PROPERTIES:
-:CUSTOM_ID: chapter_5_currencies
+:CUSTOM_ID: chapter_currencies
 :END:
 
-#+include: "chapter_5_currencies.org" :minlevel 2
+#+include: "chapter_currencies.org" :minlevel 2
 
 * Currency Pairs
 :PROPERTIES:
-:CUSTOM_ID: chapter_5b_currency_pairs
+:CUSTOM_ID: chapter_currency_pairs
 :END:
 
-#+include: "chapter_5b_currency_pairs.org" :minlevel 2
+#+include: "chapter_currency_pairs.org" :minlevel 2
 
 * Countries
 :PROPERTIES:
-:CUSTOM_ID: chapter_6_countries
+:CUSTOM_ID: chapter_countries
 :END:
 
-#+include: "chapter_6_countries.org" :minlevel 2
+#+include: "chapter_countries.org" :minlevel 2
 
 * Business Centres
 :PROPERTIES:
-:CUSTOM_ID: chapter_6b_business_centres
+:CUSTOM_ID: chapter_business_centres
 :END:
 
-#+include: "chapter_6b_business_centres.org" :minlevel 2
+#+include: "chapter_business_centres.org" :minlevel 2
+
+* Portfolios
+:PROPERTIES:
+:CUSTOM_ID: chapter_portfolios
+:END:
+
+#+include: "chapter_portfolios.org" :minlevel 2
 
 * Books
 :PROPERTIES:
-:CUSTOM_ID: chapter_7_books
+:CUSTOM_ID: chapter_books
 :END:
 
-#+include: "chapter_7_books.org" :minlevel 2
+#+include: "chapter_books.org" :minlevel 2
 
 * Parties
 :PROPERTIES:
-:CUSTOM_ID: chapter_8_parties
+:CUSTOM_ID: chapter_parties
 :END:
 
-#+include: "chapter_8_parties.org" :minlevel 2
+#+include: "chapter_parties.org" :minlevel 2
 
 * Counterparties
 :PROPERTIES:
-:CUSTOM_ID: chapter_9_counterparties
+:CUSTOM_ID: chapter_counterparties
 :END:
 
-#+include: "chapter_9_counterparties.org" :minlevel 2
+#+include: "chapter_counterparties.org" :minlevel 2

@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: code-run-feature-test
-description: Test a feature after finishing implementation: full build, run all tests, validate schemas, recreate the database, provision the Barclays Plc tenant, write a test scenario (CRUD + eventing for entity features), and hand the client to the user to execute.
+description: Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provision Barclays Plc yourself via ores.shell, run all tests, write a test scenario (CRUD + eventing + history for entity features), and hand the client to the user to execute.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -21,49 +21,40 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 When implementation of a feature or task is otherwise complete and it's
-time to verify it before raising a PR: a full build, the full test
-suite, schema/docs validation, a fresh database, the Barclays Plc
-tenant, a written test scenario, and a client handed to the user to
-execute it.
+time to verify it before raising a PR: a confirmed build, a fresh
+Barclays-provisioned database, the full test suite, a written test
+scenario, and a client handed to the user to execute it.
 
 * How to use this skill
 
 Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] end to end:
 
-1. Build the affected targets, then run the full test suite (=rat=)
-   — treat any failure as a blocker.
-2. Validate SQL schemas, and codegen docs if the feature is a codegen
-   entity.
-3. Recreate the database from scratch so the feature is exercised
-   against a clean load.
-4. Provision the Barclays Plc tenant (default; ask if a different
-   tenant fits better).
-5. Create a =test_scenario= doc for the feature. Set *Target dialog* to
-   the dialog class(es) *and* the menu path to reach them — a bare
-   class name leaves the tester hunting through menus. Give every
-   client its own leading connect/login step sourced from the
-   provisioning script's credentials — never hardcode or guess them,
-   and never assume a second client instance inherits the first one's
-   session. For an entity/CRUD feature, include the
-   Create/Read/Update/Delete/History/Eventing test plan the recipe
-   lays out; the eventing step needs a second client instance to
-   actually exercise the NATS relay, not just the repository layer
-   ctest already covers.
-6. Start the Qt client with =--open-scenario= pointing at the new
-   scenario (absolute path) and ask the user to execute it — do not
-   run the UI steps yourself.
+1. Its *Prerequisites* section — build/test if needed, validate
+   schemas, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the environment]] (fresh database, Barclays Plc
+   provisioned by you, not the user). Non-negotiable, in order.
+2. Its *Writing and running the scenario* section — a =test_scenario=
+   doc covering every aspect of the feature (CRUD + eventing + history
+   for an entity), then a client started with the scenario preloaded
+   and handed to the user to execute.
+
+*Leave =Clients= in =* Scenario Info= genuinely empty* for a
+single-client scenario (the common case) — any non-empty value there,
+even a placeholder like "single client", makes the Runner load *zero*
+steps, silently.
 
 * Recipes
 
 - [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]
-- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
 - [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
-- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
 
 * Reference
 
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]] — the =test_scenario= doc shape.
 - [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — the sibling skill this one hands off to for =--open-scenario=.
+- [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] — sibling skill sharing the same
+  environment-readying recipe, applied to manual-chapter screenshots
+  instead of feature verification.
 
 * Artefacts                                                        :noexport:
 

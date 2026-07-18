@@ -177,6 +177,7 @@
 #include "ores.refdata.core/presentation/party_status_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/party_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/payment_frequency_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/portfolio_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/purpose_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/regulatory_book_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/rounding_type_history_field_mapper.hpp"
@@ -226,6 +227,7 @@
 #include "ores.refdata.core/service/party_status_service.hpp"
 #include "ores.refdata.core/service/party_type_service.hpp"
 #include "ores.refdata.core/service/payment_frequency_service.hpp"
+#include "ores.refdata.core/service/portfolio_service.hpp"
 #include "ores.refdata.core/service/purpose_type_service.hpp"
 #include "ores.refdata.core/service/regulatory_book_type_service.hpp"
 #include "ores.refdata.core/service/rounding_type_service.hpp"
@@ -470,6 +472,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_book_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_book_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.portfolio",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::portfolio_service svc(scoped_ctx);
+                auto versions = svc.get_portfolio_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_portfolio_fields);
             });
 
         hist_registry.register_history_provider(

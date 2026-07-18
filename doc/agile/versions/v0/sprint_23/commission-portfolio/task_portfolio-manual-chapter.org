@@ -7,13 +7,11 @@
 #+level: s1
 #+filetags: :commission-portfolio:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
-#+blocked_since:
+#+branch: feature/portfolio-manual-chapter
+#+pr: 1636
 #+created: 2026-07-16
-#+updated: 2026-07-16
-#+environment:
+#+updated: 2026-07-18
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,18 +27,18 @@ the codegen/drift task has landed a commissioned baseline.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
-- [ ] Portfolio entity chapter added to the manual, documenting the
+- [X] Portfolio entity chapter added to the manual, documenting the
   Qt list, detail, and history windows and their behaviours.
-- [ ] Manual builds cleanly (PDF/site) with the new chapter included.
+- [X] Manual builds cleanly (PDF/site) with the new chapter included.
 
 * Plan
 
@@ -49,6 +47,19 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- 2026-07-17: While working the screenshot-capture scenario ([[id:169B33B9-D673-4BA9-9AC1-14FBF3B63AA0][Capture
+  screenshots for the Portfolios manual chapter]]), the Portfolios
+  list and detail screens showed wrong badge colours (Status,
+  IsVirtual). Traced to [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]
+  (sprint 23, owned by =bright_faraday=) being started but not
+  finished — its highest-leverage task (the =badge_mapping= browser
+  UI) is itself BLOCKED, and the coverage-audit/self-badging tasks
+  are still BACKLOG. Screenshotting the Portfolios chapter now would
+  capture the wrong colours into shipped manual images. Blocked this
+  task on that story rather than working around it with a one-off
+  fix scoped to portfolio; see the badge story for the actual
+  remediation work.
 
 * Test Scenarios
 
@@ -59,18 +70,51 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:169B33B9-D673-4BA9-9AC1-14FBF3B63AA0][Capture screenshots for the Portfolios manual chapter]] | PASSED | 7/7 steps passed. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1636][#1636]] | [refdata,doc] Add portfolio manual chapter, fix history provider |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 (PR #1636, round 1) | Scenario Notes field has raw scratch text instead of a proper [[file:...]] link | scenario_portfolios-manual-screenshots.org | Accepted | Replaced with a link to the wired-in image plus context on the deleted raw capture and the follow-up task it informed. |
+| 2 (PR #1636, round 1) | portfolio_* includes out of alphabetical order relative to party_status_*/party_type_* | registrar.cpp | Accepted | Reordered. |
+| 3 (PR #1636, round 2) | Round 1's reorder was incomplete: portfolio_* still sat before payment_frequency_* | registrar.cpp | Accepted | Fixed properly this time (party_type -> payment_frequency -> portfolio -> purpose_type), verified with a sort diff over both include blocks, not just the immediate neighbours. |
 
 * Result
+
+Resumed once the badge colour scheme story's mapping-browser task
+landed (PR #1622) and Portfolios badge colours were confirmed
+correct. Captured all four screenshots via the QA Validation Runner
+and manual desktop captures, cropped with PIL, and wired into
+=chapter_portfolios.org=, replacing the =[SCREENSHOT NEEDED]=
+placeholders: =portfolios_main_dialog=, =portfolio_details_general=,
+=portfolio_status_combo=, =portfolio_history_dialog=.
+
+Found and fixed one real bug along the way: opening a portfolio's
+History dialog failed with "No history provider registered for
+entity_type: ores.refdata.portfolio" -- every supporting piece
+(=portfolio_service::get_portfolio_history=,
+=render_portfolio_fields=) already existed, just the
+=registrar.cpp= registration was never added. Also found (separately,
+not fixed here) that the Qt-embedded manual differed from the PDF
+because =deploy_help_qch= alone doesn't take effect until
+=ores.qt.exe= is rebuilt (the =.qch= is a compiled-in Qt resource),
+and that =user_manual_site.org='s Chapters table was missing two
+pre-existing chapters (=chapter_parties=/=chapter_counterparties=)
+entirely -- fixed both, and hardened
+[[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]]'s validation
+step with an automated cross-check instead of manual eyeballing.
+
+Filed two follow-up tasks, neither blocking this chapter:
+[[id:23C571DD-40EE-4768-A90D-8D0AF6B7EAB2][Model portfolio_status as a proper lookup entity]] (currently a
+hardcoded static_combo, unlike book_status) and
+[[id:1335C42D-DA3F-44EC-9B5E-055B4BF7CB08][Purpose Type combo shows raw codes, not display labels]].
+
+Verified: manual QA scenario 7/7 steps PASSED, including the Qt
+client's Help viewer and the rebuilt PDF.

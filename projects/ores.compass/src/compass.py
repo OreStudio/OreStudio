@@ -5814,16 +5814,17 @@ def _build_log_tail(slot_name, n=10):
     return lines[-n:] if lines else None
 
 
-def _run_logged(cmd, cwd, log):
+def _run_logged(cmd, cwd, log, env=None):
     """Run cmd, streaming combined stdout/stderr to both the console and
     the already-open log file handle, so `tail -f` on that file shows
-    exactly what a build-lock slot is doing right now.
+    exactly what a long-running compass command (a build-lock slot, a
+    scripted `compass shell -f` run, ...) is doing right now.
 
     Returns the process return code.
     """
     log.write(f"$ {' '.join(cmd)}\n")
     log.flush()
-    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, bufsize=1)
     for line in proc.stdout:
         sys.stdout.write(line)
@@ -6193,7 +6194,18 @@ def cmd_shell(argv):
     # only sees registered nats-* options. CLI flags (passed above) win over env.
     child_env = {**os.environ, **env}
 
-    return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
+    if not args.file:
+        # Interactive REPL: inherit the terminal directly. Piping stdout
+        # through us (as the scripted path below does) would break
+        # readline/TTY behaviour, so only scripted (-f/--load) runs get the
+        # progress log.
+        return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
+
+    label = env.get("ORES_CHECKOUT_LABEL", "local1")
+    log_path = Path(f"/tmp/ores_{label}_shell.log")
+    print(f"📝 Progress log: {log_path} (tail -f to follow)")
+    with open(log_path, "w") as log:
+        return _run_logged(cmd, PROJECT_ROOT, log, env=child_env)
 
 
 # --- Codegen pillar ---

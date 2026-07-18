@@ -2,41 +2,59 @@
 :ID: 0A22B752-D5CF-4B36-8429-2950130AAABD
 :END:
 #+title: How do I ready up an environment?
-#+description: Stop services, recreate the database, start services, provision the Barclays Plc tenant, and start the Qt client — the full sequence to get a fresh, usable environment.
+#+description: Check whether the database is already recent before recreating it, start services, provision the Barclays Plc tenant yourself via ores.shell, and optionally start the Qt client — the shared sequence every verification/testing recipe builds on.
 #+type: recipe
 #+level: cross
 #+filetags: :ops:environment:recipe:
 #+created: 2026-07-07
-#+updated: 2026-07-07
+#+updated: 2026-07-17
 
 Chains the individual environment-lifecycle recipes ([[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the
 ORE Studio services?]], [[id:4342B077-85EA-4C6A-9BDF-D38560C80B37][How do I recreate the database?]], [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the
 system with Barclays (GLEIF)?]]) into one end-to-end sequence for getting a
-checkout from "unknown state" to "usable, logged-in-ready environment" —
-the sequence most sessions need at the start of a verification or manual
-testing task.
+checkout from "unknown state" to "usable, logged-in-ready environment".
+This is the *shared* prerequisite chain — [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after
+implementation?]] and [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] both
+call this recipe rather than duplicating it; add anything generically
+useful to "get a fresh, tenant-ready environment" here, not to either of
+those.
 
 * Question
 
-How do I ready up an environment: stop services if running, recreate the
-database, start services, provision the tenant, and start the client?
+How do I ready up an environment: confirm a recent database (recreating
+only if needed), start services, provision the tenant, and optionally
+start the client?
 
 * Answer
 
-1. /Stop services/ if any are running (safe to run even if none are up):
+1. /Check whether the database is already recent/ — never recreate
+   unconditionally; a fresh recreate + re-provision costs real minutes,
+   so only pay for it when the check says to:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh db status
+   #+end_src
+
+   Recreate if =drift= is not =current=, if =built from= predates the
+   commit you're testing against, or if you're simply not sure the
+   schema reflects the change under test. If the =barclays= tenant
+   already shows =[active]= and the database is current, skip straight
+   to step 4 (services) — steps 2-3 are not needed.
+
+2. /Stop services/ before recreating (safe to run even if none are up):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh services stop
    #+end_src
 
-2. /Recreate the database/ — drops and rebuilds roles, schema, and seed
+3. /Recreate the database/ — drops and rebuilds roles, schema, and seed
    data from scratch:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh db recreate -y
+   ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-3. /Start services/ — NATS and all backend services:
+4. /Start services/ — NATS and all backend services:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh services start
@@ -48,34 +66,48 @@ database, start services, provision the tenant, and start the client?
    ./projects/ores.compass/compass.sh services status
    #+end_src
 
-4. /Provision the tenant/ — the default is the Barclays Plc (GLEIF)
-   tenant and party, sourced from the golden copy. Unless the user asks
-   for a different tenant (e.g. the synthetic Acme provisioner, see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How
-   do I provision the system with Acme (synthetic)?]]), run:
+5. /Provision the tenant yourself, via =ores.shell=/ — the default is
+   the Barclays Plc (GLEIF) tenant and party, sourced from the golden
+   copy. Unless the user asks for a different tenant (e.g. the
+   synthetic Acme provisioner, see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with
+   Acme (synthetic)?]]), run this yourself — never hand it to the user:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh shell -f \
      projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
    #+end_src
 
-   If this fails with a Postgres "remaining connection slots are reserved"
-   error, see [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]] — another
+   *Any failure here must be diagnosed and fixed before continuing* —
+   do not proceed against a partially-provisioned tenant, and do not
+   hand a broken environment to the user to work around. A
+   provisioning failure is frequently a real bug (schema drift, a
+   stale DQ-publish function, a type mismatch) rather than an
+   environment problem; fix the underlying cause, redeploy the changed
+   SQL, and re-run from step 3 (a fresh =db recreate=) until it
+   completes cleanly. If it fails instead with a Postgres "remaining
+   connection slots are reserved" error, see
+   [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]] — another
    environment on the shared instance is usually holding excess
    connections; diagnose before assuming this environment is at fault.
 
-5. /Start the client/, detached, with a distinct colour so it does not
-   clash with other environments' running instances. The instance name
-   is always this environment's own =ORES_CHECKOUT_LABEL= (e.g.
-   =jolly_knuth=) — not overridable — so the status bar and window
-   title always show which environment the client actually belongs to.
+6. /Start the client — only if the caller needs a bare, unscripted
+   client/. Skip this step entirely if what you actually need is a
+   client with a test scenario preloaded (=--open-scenario=, an
+   absolute path via =realpath=) — start it directly with that flag
+   instead of starting a bare client here and restarting it later; see
+   [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]].
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh client start --colour <colour>
    #+end_src
 
-   Log in with the =super_admin= credentials used in the provisioning
-   step (or the tenant admin credentials, once a tenant party is
-   selected).
+   Detached, with a distinct colour so it does not clash with other
+   environments' running instances. The instance name is always this
+   environment's own =ORES_CHECKOUT_LABEL= (e.g. =jolly_knuth=) — not
+   overridable — so the status bar and window title always show which
+   environment the client actually belongs to. Log in with the
+   =super_admin= credentials used in the provisioning step (or the
+   tenant admin credentials, once a tenant party is selected).
 
 * Script
 
@@ -96,3 +128,6 @@ client logs in and lists Barclays Plc party data.
 - [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics for step 6's alternative.
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] — calls this recipe.
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — calls this recipe.

@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:documentation:manual:
 #+created: 2026-07-10
-#+updated: 2026-07-10
+#+updated: 2026-07-17
 
 #+begin_export markdown
 ---
@@ -48,15 +48,16 @@ manual — ending with a chapter ready for human review.
    to stop: a chapter that reads correctly and compiles, but has no real
    screenshots yet.
 
-3. /Capture the screenshots/ by following [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for
-   a manual chapter?]] in full: scaffold a =test_scenario= with one step
-   per placeholder, run it through the QA Validation Runner (falling
-   back to a manual desktop screenshot for any step blocked by a modal
-   dialog — capture that gap separately rather than working around it
-   in the scenario), crop each raw capture to just the dialog or window,
-   name it per the plural/singular convention, wire the real images and
-   captions into the chapter, and rebuild the manual to confirm every
-   figure resolves.
+3. /Capture the screenshots/ using the [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] skill:
+   confirm the environment (build, fresh Barclays-provisioned database)
+   before touching placeholders, scaffold a =test_scenario= with one
+   step per placeholder, run it through the QA Validation Runner
+   (falling back to a manual desktop screenshot for any step blocked by
+   a modal dialog — capture that gap separately rather than working
+   around it in the scenario), crop each raw capture to just the dialog
+   or window, name it per the plural/singular convention, wire the real
+   images and captions into the chapter, and rebuild the manual to
+   confirm every figure resolves.
 
 4. /Hand off for human review/. The skill's job ends here — do not mark
    the underlying task DONE and do not merge; the chapter is
@@ -70,7 +71,8 @@ manual — ending with a chapter ready for human review.
 - [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — chapter structure, prose tone, domain
   grounding, screenshot placeholders, manual wiring.
 - [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — test scenario,
-  capture, crop, rename, wire in.
+  capture, crop, rename, wire in; wrapped by the
+  [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] skill step 3 uses.
 
 * Reference
 

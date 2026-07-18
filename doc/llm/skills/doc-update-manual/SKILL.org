@@ -38,8 +38,8 @@ behaviour, even if the user did not explicitly ask for a manual update.
 
    | Feature area                       | Chapter file                |
    |------------------------------------+-----------------------------|
-   | Login, connections, status bar, CLI | =chapter_2_connecting.org=  |
-   | Bootstrapping, tenants, parties    | =chapter_3_initial_setup.org= |
+   | Login, connections, status bar, CLI | =chapter_connecting.org=  |
+   | Bootstrapping, tenants, parties    | =chapter_initial_setup.org= |
    | Reference data (currencies, etc.)  | (future chapter)            |
    | Instruments and trades             | (future chapter)            |
    | Market data                        | (future chapter)            |

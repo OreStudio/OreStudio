@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 169B33B9-D673-4BA9-9AC1-14FBF3B63AA0
+:END:
+#+title: Test Scenario: Capture screenshots for the Portfolios manual chapter
+#+description: Set up UI state and capture the 4 screenshot placeholders in chapter_portfolios.org.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission-portfolio:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] in [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]]. Captures the four =[SCREENSHOT NEEDED]= placeholders in [[proj:doc/manual/user_guide/chapter_portfolios.org][=chapter_portfolios.org=]] — the Portfolios list window, the Portfolio Details General tab, the Status combo open, and the Portfolio History dialog comparing two versions — then confirms the wired-in chapter reads correctly in both the Qt client's help viewer and the built PDF. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] |
+| Parent story  | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]]   |
+| Target dialog | =PortfolioMdiWindow= / =PortfolioDetailDialog= — Menu: Reference Data > Portfolios |
+| Clients       |                                          |
+| State         | PASSED                               |
+
+* Steps
+
+** Connect to tenant Barclays Plc
+
+Log in against the =prime_origin= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Capture portfolios_main_dialog.png
+
+- Open /Reference Data > Portfolios/.
+- Confirm the list shows several rows with a mix of purpose types,
+  statuses (as colour-coded badges), and aggregation currencies (with
+  flag icons) — if the seeded data doesn't already vary enough, edit
+  a couple of rows first so at least three different Status values
+  and two different Purpose Type values are visible.
+- Click the QA Validation Runner's *Screenshot* button with the full
+  Portfolios list window in frame, then *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step2_20260718_115130.png]] |
+
+** Capture portfolio_details_general.png
+
+- Double-click any portfolio row to open its Details dialog.
+- On the General tab, ensure every field is populated — if
+  Description is empty, type a sentence into it and leave the dialog
+  in edit mode (do not save yet).
+- Click *Screenshot* with the General tab showing Id, Name, Purpose
+  Type, Status, Aggregation Currency, Virtual, and Description all
+  filled in, then *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step3_20260718_115151.png]] |
+
+** Capture portfolio_status_combo.png
+
+- Still in the Portfolio Details General tab from the previous step,
+  click the Status combo box to open its drop-down.
+- Click *Screenshot* with the open combo showing all five values
+  (Active, Inactive, Closed, Frozen, Pending), then *Pass*.
+- Close the combo and cancel out of the dialog without saving (or
+  save if you'd rather keep the edited description — either is fine
+  for the next step).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Captured via manual desktop screenshot (raw file since deleted); cropped and wired in as [[file:../../../../../../assets/images/portfolio_status_combo.png]]. A second capture of the Purpose Type combo (raw codes, not labels) informed [[id:1335C42D-DA3F-44EC-9B5E-055B4BF7CB08][Purpose Type combo shows raw codes, not display labels]]. |
+
+** Capture portfolio_history_dialog.png
+
+- Open a portfolio's Details dialog, change its Status or Purpose
+  Type, and Save — enter a change reason when prompted.
+- Open History on that same portfolio (history icon in the dialog's
+  title bar, or right-click the row and choose History).
+- Select the two most recent versions in the Compare drop-downs and
+  toggle *Only Changes* on, so the field list narrows to just the one
+  field that differs.
+- Click *Screenshot* with the History dialog in this state, then
+  *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step5_20260718_132044.png]] |
+
+** Read the manual in the Qt client
+
+- Rebuild the Qt-embedded help (=compass build --direct help= then
+  =compass build deploy_help_qch --preset <preset>=) and restart the
+  client so it picks up the new chapter.
+- Open the Portfolios chapter in the client's own manual viewer
+  (Help → User Manual) and read it top to bottom.
+- Confirm the prose reads correctly, the segues between sections
+  work, and every screenshot appears where expected and actually
+  shows what its caption claims.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Confirmed after rebuilding ores.qt.exe to embed the fresh .qch (deploy_help_qch alone doesn't take effect until the exe recompiles). |
+
+** Check the built PDF
+
+- Rebuild the manual (=compass build --direct manual=) and open the
+  rebuilt =user_manual.pdf= at the Portfolios chapter's pages (e.g.
+  via =zathura= or =evince=).
+- Confirm layout, figure numbering, and captions look correct in the
+  PDF's own rendering, and that all four new figures appear in the
+  List of Figures.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Confirmed in Chrome after rebuild -- layout, figures, and captions all correct. |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-18T14:41:00Z |
+| Branch        | feature/portfolio-manual-chapter |
+| Commit        | 046725658 |
+| Worktree      | prime_origin |
+
+* Notes

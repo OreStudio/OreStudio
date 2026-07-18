@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 9CCEF67E-1BCF-440B-8112-093B40085A7C
+:END:
+#+title: Doc Run Manual Screenshots
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:documentation:testing:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+#+begin_export markdown
+---
+name: doc-run-manual-screenshots
+description: Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build and a fresh Barclays-provisioned database (self-provisioned via ores.shell), run a test scenario through the QA Validation Runner, crop and wire the images in, rebuild, and hand off for human review.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When a manual chapter is content-complete (per [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]])
+but still carries =[SCREENSHOT NEEDED]= placeholders that need turning
+into real, correctly-cropped images before the chapter is ready for
+human review.
+
+* How to use this skill
+
+Run [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] end to end:
+
+1. Its *Prerequisites* section — build if needed, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the
+   environment]] (fresh database, Barclays Plc provisioned by you, not
+   the user), then confirm the chapter itself already builds.
+   Non-negotiable, in order — never capture against a build or
+   database that predates the entity's current state.
+2. Its capture/wire-in sections — a =test_scenario= with one step per
+   placeholder, run through the QA Validation Runner, each capture
+   cropped and named per convention, wired into the chapter, both the
+   PDF and the Qt-embedded help rebuilt, then handed off for human
+   review — this skill's job ends at a chapter with real images in
+   place, not at marking the task DONE.
+
+*Leave =Clients= in =* Scenario Info= genuinely empty* for a
+single-client scenario (the common case) — any non-empty value there,
+even a placeholder like "single client", makes the Runner load *zero*
+steps, silently.
+
+* Recipes
+
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the recipe this one follows on from.
+
+* Reference
+
+- [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]] — the =test_scenario= doc shape.
+- [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
+  — the panel this skill drives.
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics.
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — sibling skill sharing the same
+  environment-readying recipe, applied to feature verification instead
+  of screenshot capture.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

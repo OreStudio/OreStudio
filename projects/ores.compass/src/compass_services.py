@@ -15,6 +15,7 @@ hygiene for anything else found under publish/run/.
 """
 
 import argparse
+import contextlib
 import os
 import shutil
 import signal
@@ -26,6 +27,41 @@ from pathlib import Path
 from compass_db import load_env, validate_env_version
 
 CLIENT_COLOURS = {"red": "F44336", "green": "4CAF50", "blue": "2196F3"}
+
+
+class _Tee:
+    """Minimal stdout/stderr-like object writing to several streams at once."""
+
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for s in self.streams:
+            s.write(data)
+            s.flush()
+        return len(data)
+
+    def flush(self):
+        for s in self.streams:
+            s.flush()
+
+
+@contextlib.contextmanager
+def _tee_to_file(log_path: Path):
+    """Mirror everything printed inside the block to log_path as well as the
+    console, so `tail -f log_path` from any shell shows exactly what a
+    long-running compass command (services start, shell -f) is doing right
+    now -- the same well-known-log-file pattern `compass build` uses.
+    """
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(log_path, "w") as f:
+        old_out, old_err = sys.stdout, sys.stderr
+        sys.stdout = _Tee(old_out, f)
+        sys.stderr = _Tee(old_err, f)
+        try:
+            yield
+        finally:
+            sys.stdout, sys.stderr = old_out, old_err
 
 # Port bases match ores-prodigy.el ores/port-bases.
 PORT_BASES = {"remote": 50000, "local1": 51000, "local2": 52000,
@@ -239,6 +275,13 @@ def client_status(ctx):
 # --- subcommands ------------------------------------------------------------
 
 def cmd_start(ctx, args):
+    log_path = Path(f"/tmp/ores_{ctx.label}_services_start.log")
+    print(f"📝 Progress log: {log_path} (tail -f to follow)")
+    with _tee_to_file(log_path):
+        return _cmd_start(ctx, args)
+
+
+def _cmd_start(ctx, args):
     if not ctx.bin_dir.is_dir():
         print(f"error: binary directory not found: {ctx.bin_dir}",
               file=sys.stderr)

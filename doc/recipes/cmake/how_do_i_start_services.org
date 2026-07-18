@@ -40,7 +40,11 @@ How do I start all ORE Studio backend services for a local checkout?
    ./projects/ores.compass/compass.sh services start --log-level info
    #+end_src
 
-   The script blocks until the controller logs =All services started=, then exits.
+   The script blocks until the controller logs =All services started=, then
+   exits. Its own progress output (not the per-service logs below) also
+   streams live to =/tmp/ores_<env>_services_start.log= (overwritten each
+   run) — =tail -f= that path from another shell to watch startup without
+   waiting on this command's own output.
 
 ** Check status
 

@@ -177,50 +177,62 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
 }
 
 void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
-    BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Management menu handle."
-                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
-    data_management_menu_ = smc.data_management_menu;
-    auto* dt = data_management_menu_;
-    if (!dt)
-        return;
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+                               << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
+                               << " operations=" << (smc.operations_menu ? "ok" : "null")
+                               << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
 
     using IC = IconUtils;
     auto ico = [](Icon i) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // Classifications submenu (Coding Schemes + Coding Scheme Authority
-    // Types; Code Domains now live under DqPlugin's Data Quality menu)
-    auto* menuClassifications = dt->addMenu(tr("C&lassifications"));
-    auto* actCodingSchemes = menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
-    connect(actCodingSchemes, &QAction::triggered, this, [this]() {
-        if (codingSchemeController_)
-            codingSchemeController_->showListWindow();
-    });
-    auto* actCodingSchemeAuthorityTypes =
-        menuClassifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
-    connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
-        if (codingSchemeAuthorityTypeController_)
-            codingSchemeAuthorityTypeController_->showListWindow();
-    });
+    // ---- Data Quality > Classifications / Audit Trail ---------------------
+    // The Data Management menu is retired; these two submenus (and their
+    // controllers, unchanged) move to Data Quality alongside DqPlugin's own
+    // Badges/Code Domains — all auxiliary classification/lookup data, not
+    // primary entities.
+    if (auto* dq = smc.data_quality_menu) {
+        dq->addSeparator();
 
-    dt->addSeparator();
+        auto* menuClassifications = dq->addMenu(tr("C&lassifications"));
+        auto* actCodingSchemes =
+            menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
+        connect(actCodingSchemes, &QAction::triggered, this, [this]() {
+            if (codingSchemeController_)
+                codingSchemeController_->showListWindow();
+        });
+        auto* actCodingSchemeAuthorityTypes =
+            menuClassifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
+        connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
+            if (codingSchemeAuthorityTypeController_)
+                codingSchemeAuthorityTypeController_->showListWindow();
+        });
 
-    // Audit Trail submenu (Change Reason Categories + Change Reasons)
-    auto* menuAuditTrail = dt->addMenu(tr("&Audit Trail"));
-    auto* actChangeReasonCategories =
-        menuAuditTrail->addAction(ico(Icon::Tag), tr("Change Reason &Categories"));
-    connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
-        if (changeReasonCategoryController_)
-            changeReasonCategoryController_->showListWindow();
-    });
-    auto* actChangeReasons = menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
-    connect(actChangeReasons, &QAction::triggered, this, [this]() {
-        if (changeReasonController_)
-            changeReasonController_->showListWindow();
-    });
+        auto* menuAuditTrail = dq->addMenu(tr("&Audit Trail"));
+        auto* actChangeReasonCategories =
+            menuAuditTrail->addAction(ico(Icon::Tag), tr("Change Reason &Categories"));
+        connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
+            if (changeReasonCategoryController_)
+                changeReasonCategoryController_->showListWindow();
+        });
+        auto* actChangeReasons =
+            menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
+        connect(actChangeReasons, &QAction::triggered, this, [this]() {
+            if (changeReasonController_)
+                changeReasonController_->showListWindow();
+        });
+    }
 
-    dt->addSeparator();
+    // ---- Operations > Data Transfer ---------------------------------------
+    // Import/transfer-shaped actions (Data Catalogue, Data Librarian; also
+    // contributed to by TradingPlugin and WorkspacePlugin) move to Operations
+    // under a shared Data Transfer submenu this plugin owns attaching.
+    auto* dt = smc.data_transfer_menu;
+    if (smc.operations_menu && dt)
+        smc.operations_menu->addMenu(dt);
+    if (!dt)
+        return;
 
     auto* menuCatalogue = dt->addMenu(tr("Data Ca&talogue"));
 
@@ -322,14 +334,10 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> DataManagementPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus." << " data_management_menu="
-                               << (data_management_menu_ ? "ok" : "null");
-    if (!data_management_menu_) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Data Management menu handle is missing — no menu will appear.";
-        return {};
-    }
-    return {data_management_menu_};
+    BOOST_LOG_SEV(lg(), debug)
+        << "No standalone menu — all entries contributed to Data Quality/Operations via "
+           "setup_menus().";
+    return {};
 }
 
 void DataManagementPlugin::on_logout() {

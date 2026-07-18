@@ -627,7 +627,6 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
-                               << " data_management=" << (smc.data_management_menu ? "ok" : "null")
                                << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) {

@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 48783B41-101D-41DC-90B0-C7F9C6CA80AF
+:END:
+#+title: Test Scenario: Verify System/Operations/Account menu taxonomy
+#+description: Checks the consolidated menu structure: File absorbs System+Account, Operations absorbs Message Queue/Telemetry/User Accounts/Data Transfer/Data Catalogue, Data Management retired with Classifications/Audit Trail moved to Data Quality.
+#+type: test_scenario
+#+level: s1
+#+filetags: :clean-up-application-menus:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] in [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] |
+| Parent story  | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]   |
+| Target dialog | File, Operations, and Data Quality menus (menu structure only) — Menu: top-level menu bar |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC* as the active party.
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+** System and Account no longer exist as top-level menus
+
+Confirm the menu bar reads: *File*, *Reference Data*, *Operations*,
+*Data &Quality*, *Window*, *Help* — no separate *System* or *Account*
+menu.
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+** File absorbs System and Account
+
+Open *File*. Confirm, in order: Connections..., separator, Connect,
+Disconnect, separator, My Account..., My Sessions..., separator,
+Testing (submenu, containing Scenario Runner), separator, Reset
+System..., separator, Exit. Open My Account and My Sessions and
+confirm they still work. Open Testing > Scenario Runner and confirm
+it opens.
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+** Operations gains Telemetry, Message Queue, Configuration, User Accounts
+
+Open *Operations*. Confirm it now contains, alongside the existing
+Jobs and Workflows sections: *Configuration* (System Settings),
+*Message Queue* (Queue Monitor), *Telemetry* (Log Viewer, Event
+Viewer, Shell, Protocol, Settings — plus Service Dashboard as the
+first item), and *User &Accounts* (Accounts, Roles, Tenants, Tenant
+Types, Onboard Tenant...). Open one entry from each and confirm the
+correct window/dialog opens. Confirm *User Accounts* is clearly
+distinguishable from the personal *Account* actions now in File
+(different labels: "User Accounts" vs "My Account").
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+** Operations gains Data Transfer and Data Catalogue
+
+Confirm *Operations* also has a *Data &Transfer* submenu containing:
+Import ORE Data..., Data Librarian, Manage Workspaces, and a nested
+*Data Catalogue* submenu (Data Domains, Subject Areas, Catalogues,
+Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
+Dimensions). Open one entry from each and confirm the correct
+window opens.
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+** Data Management is retired; Classifications/Audit Trail moved to Data Quality
+
+Confirm there is no more top-level *Data Management* menu. Open
+*Data &Quality* and confirm it now contains, alongside the existing
+Badges and Code Domains: a *Classifications* submenu (Coding
+Schemes, Coding Scheme Authority Types) and an *Audit Trail*
+submenu (Change Reason Categories, Change Reasons). Open one entry
+from each and confirm the correct window opens.
+
+*** Result
+
+| Field | Value |
+|-------+-------|
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -43,12 +43,14 @@ class SubjectAreaController;
 class TreatmentDimensionController;
 
 /**
- * @brief Qt plugin providing the Data Management top-level menu, and
- * owning the ores.dq-backed entities' controllers (Data Catalogue,
- * Change Reason, Coding Scheme, Data Librarian).
+ * @brief Qt plugin owning the ores.dq-backed entities' controllers (Data
+ * Catalogue, Change Reason, Coding Scheme, Data Librarian).
  *
- * Owns the pre-created data_management_menu handle. Also contributed to
- * by TradingPlugin (Import) and WorkspacePlugin (Manage Workspaces) via
+ * No standalone top-level menu of its own (the former Data Management
+ * menu is retired) — contributes Classifications/Audit Trail to the
+ * shared data_quality_menu, and Data Catalogue/Data Librarian to the
+ * shared data_transfer_menu (which it also attaches to operations_menu;
+ * also contributed to by TradingPlugin and WorkspacePlugin) via
  * setup_menus.
  */
 class DataManagementPlugin : public PluginBase {
@@ -74,10 +76,6 @@ public:
 
 private:
     plugin_context ctx_;
-
-    // The data_management_menu is pre-created by MainWindow and passed via
-    // setup_menus context. We hold a reference to return it from create_menus.
-    QMenu* data_management_menu_{nullptr};
 
     QAction* act_data_librarian_{nullptr};
 

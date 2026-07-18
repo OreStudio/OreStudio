@@ -37,35 +37,27 @@
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
-    <addaction name="separator"/>
-    <addaction name="ExitAction"/>
    </widget>
-   <widget class="QMenu" name="menuSystem">
+   <widget class="QMenu" name="menuTelemetry">
     <property name="title">
-     <string>&amp;System</string>
+     <string>&amp;Telemetry</string>
     </property>
-    <widget class="QMenu" name="menuTelemetry">
+    <widget class="QMenu" name="menuProtocol">
      <property name="title">
-      <string>&amp;Telemetry</string>
+      <string>&amp;Protocol</string>
      </property>
-     <widget class="QMenu" name="menuProtocol">
-      <property name="title">
-       <string>&amp;Protocol</string>
-      </property>
-      <addaction name="ActionRecordSession"/>
-      <addaction name="ActionOpenRecording"/>
-      <addaction name="separator"/>
-      <addaction name="ActionSetRecordingDirectory"/>
-     </widget>
-     <addaction name="ActionTelemetryViewer"/>
-     <addaction name="ActionEventViewer"/>
-     <addaction name="ActionShell"/>
+     <addaction name="ActionRecordSession"/>
+     <addaction name="ActionOpenRecording"/>
      <addaction name="separator"/>
-     <addaction name="menuProtocol"/>
-     <addaction name="separator"/>
-     <addaction name="ActionTelemetrySettings"/>
+     <addaction name="ActionSetRecordingDirectory"/>
     </widget>
-    <addaction name="menuTelemetry"/>
+    <addaction name="ActionTelemetryViewer"/>
+    <addaction name="ActionEventViewer"/>
+    <addaction name="ActionShell"/>
+    <addaction name="separator"/>
+    <addaction name="menuProtocol"/>
+    <addaction name="separator"/>
+    <addaction name="ActionTelemetrySettings"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -83,7 +75,6 @@
     <addaction name="ActionAbout"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuSystem"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>

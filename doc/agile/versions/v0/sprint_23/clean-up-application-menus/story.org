@@ -73,7 +73,7 @@ Data), not the DQ entity migration itself.
 |------+-------+-------+-----+-------------|
 | [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] | DONE | 2026-07-18 | 2026-07-18 | Audit current Reference Data menu entries, propose a target taxonomy with rationale, sign-off, then implement. |
-| [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] | BACKLOG | | | Audit System, Account, and Operations menus (plus Data Management, since Operations' target absorbs Data Transfer/Data Catalogue from it), propose a target taxonomy with rationale for sign-off before implementing. |
+| [[id:9EFB51CC-5D4D-4A20-85B4-8A686854AC56][System/Operations/Account menu taxonomy]] | STARTED | 2026-07-18 | | Audit System, Account, and Operations menus (plus Data Management, since Operations' target absorbs Data Transfer/Data Catalogue from it), propose a target taxonomy with rationale for sign-off before implementing. |
 
 * Out of scope
 

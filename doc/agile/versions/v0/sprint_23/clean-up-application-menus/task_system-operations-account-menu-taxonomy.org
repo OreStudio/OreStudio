@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:48783B41-101D-41DC-90B0-C7F9C6CA80AF][Verify System/Operations/Account menu taxonomy]] | PENDING | |
 
 * PRs
 

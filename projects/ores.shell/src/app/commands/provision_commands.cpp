@@ -694,14 +694,14 @@ void provision_commands::process_party(std::ostream& out,
         }
     }
 
-    // Phase 4: publish the synthetic FX spot config dataset — a member
-    // of the synthetic_realistic bundle (alongside report definitions;
-    // not the plain 2-pair ore_analytics fx_spot_configs starter, so
-    // the party's driver feeds cover all 11 currency pairs the CRM
-    // story's majors/exotics topologies need real, live ticks for),
-    // opted in on its own so this doesn't re-trigger report creation
-    // already handled by Phase 3.
-    out << "[4/6] Publishing synthetic FX spot configs for the party..." << std::endl;
+    // Phase 4: publish the synthetic FX spot and IR curve config
+    // datasets — both members of the synthetic_realistic bundle
+    // (alongside report definitions; FX is not the plain 2-pair
+    // ore_analytics fx_spot_configs starter, so the party's driver
+    // feeds cover all 11 currency pairs the CRM story's majors/exotics
+    // topologies need real, live ticks for), opted in together so this
+    // doesn't re-trigger report creation already handled by Phase 3.
+    out << "[4/6] Publishing synthetic data configuration for the party..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "synthetic_realistic";
@@ -711,13 +711,14 @@ void provision_commands::process_party(std::ostream& out,
         dq::messaging::publish_bundle_params params;
         params.party_id = boost::uuids::to_string(party->id);
         params.opted_in_datasets.push_back("synthetic.fx_spot_configs.realistic");
+        params.opted_in_datasets.push_back("synthetic.ir_curve_configs.realistic");
         req.params_json = dq::messaging::build_params_json(params);
         auto published = do_request(out, session, req, publish_timeout, true);
         if (!published)
             return;
         if (!published->success) {
-            fail(out) << "Failed to publish synthetic FX spot configs: " << published->error_message
-                      << std::endl;
+            fail(out) << "Failed to publish synthetic data configuration: "
+                      << published->error_message << std::endl;
             return;
         }
         out << "  Dispatched " << published->datasets_dispatched

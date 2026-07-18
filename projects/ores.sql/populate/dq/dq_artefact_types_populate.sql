@@ -160,6 +160,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'badge_mappings', 0, 'Badge Mappings', '(code_domain, entity_code) -> badge_definition mappings, self-published into DQ''s own table like coding_schemes/badge_severities/badge_definitions/code_domains',
      'dq_badge_mappings_artefact_tbl', 'dq_badge_mappings_tbl', 'dq.v1.badge-mappings.publish-from-dq', 53,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'synthetic_ir_curve_configs', 0, 'Synthetic IR Curve Configs', 'Synthetic IR curve generation configs (writes both market_data_generation_configs and ir_curve_generation_configs)',
+     'dq_synthetic_ir_curve_configs_artefact_tbl', 'synthetic_market_data_generation_configs_tbl', 'synthetic.v1.ir-curve-configs.publish-from-dq', 54,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

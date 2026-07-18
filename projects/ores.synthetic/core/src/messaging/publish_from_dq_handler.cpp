@@ -65,10 +65,9 @@ std::string subject_to_fn(std::string_view subject) {
 /**
  * @brief Allow-list of SQL functions subject_to_fn() may resolve to.
  *
- * Today the only queue_subscribe for this handler is the exact literal
- * subject "synthetic.v1.fx-spot-configs.publish-from-dq" (see
- * registrar.cpp), so subject_to_fn() can only ever produce the one entry
- * below. It is written generically, though, so a future wildcard
+ * Each entry corresponds to one literal queue_subscribe subject in
+ * registrar.cpp, so subject_to_fn() can only ever produce one of the
+ * entries below. It is written generically, though, so a future wildcard
  * subscription (e.g. "synthetic.v1.*.publish-from-dq") would make
  * fn_name attacker/publisher-influenced and interpolated directly into
  * raw SQL. Check against this allow-list before use so that remains
@@ -76,8 +75,9 @@ std::string subject_to_fn(std::string_view subject) {
  * the subscription, when a new entity is wired up.
  */
 bool is_known_fn(std::string_view fn_name) {
-    static constexpr std::array<std::string_view, 1> known = {
-        "ores_synthetic_publish_fx_spot_configs_from_dq_fn"};
+    static constexpr std::array<std::string_view, 2> known = {
+        "ores_synthetic_publish_fx_spot_configs_from_dq_fn",
+        "ores_synthetic_publish_ir_curve_configs_from_dq_fn"};
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 

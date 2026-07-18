@@ -459,3 +459,341 @@ begin
     where v_deleted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- IR Curve Configs: synthetic.v1.ir-curve-configs.publish-from-dq
+--
+-- Parent+child publish, same shape as FX spot configs above: each artefact
+-- row is a denormalized IR curve config (currency/index, Vasicek
+-- parameters, tick cadence), with its Curve Template entries carried in a
+-- second artefact table keyed by (dataset, currency, index) instead of GMM
+-- components. The container (market_data_generation_config) is shared
+-- across all curves published from the same dataset for the same (tenant,
+-- party), keyed by dataset_id exactly like FX's container resolution.
+-- =============================================================================
+
+create or replace function ores_synthetic_publish_ir_curve_configs_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_party_id uuid;
+    v_config_id uuid;
+    v_config_name text;
+    v_root_folder_id uuid;
+    v_collection_folder_id uuid;
+    v_asset_class_folder_id uuid;
+    v_folder_id uuid;
+    v_ir_config_id uuid;
+    v_dataset_name text;
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    r record;
+    er record;
+    v_exists boolean;
+    v_new_version integer;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    v_party_id := (p_params ->> 'party_id')::uuid;
+    if v_party_id is null then
+        raise exception 'p_params.party_id is required to publish synthetic IR curve configs';
+    end if;
+
+    if p_mode = 'replace_all' then
+        create temp table replaced_ir_configs (id uuid) on commit drop;
+
+        insert into replaced_ir_configs (id)
+        select id from ores_synthetic_ir_curve_generation_configs_tbl
+        where tenant_id = p_target_tenant_id
+          and party_id = v_party_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        update ores_synthetic_ir_curve_generation_configs_tbl
+        set valid_to = current_timestamp
+        where id in (select id from replaced_ir_configs);
+
+        get diagnostics v_deleted = row_count;
+
+        update ores_synthetic_ir_curve_template_entries_tbl
+        set valid_to = current_timestamp
+        where ir_curve_config_id in (select id from replaced_ir_configs)
+          and valid_to = ores_utility_infinity_timestamp_fn();
+    end if;
+
+    -- Container resolution: identical to FX's, keyed by dataset_id so
+    -- "Basic" and "Realistic" IR curve datasets each get their own
+    -- container rather than merging.
+    select id into v_config_id
+    from ores_synthetic_market_data_generation_configs_tbl
+    where tenant_id = p_target_tenant_id
+      and party_id = v_party_id
+      and dataset_id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    v_config_name := coalesce(nullif(split_part(v_dataset_name, ': ', 2), ''), v_dataset_name);
+
+    if v_config_id is null then
+        v_config_id := gen_random_uuid();
+        insert into ores_synthetic_market_data_generation_configs_tbl (
+            tenant_id, id, version, party_id, name, description, enabled, dataset_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_config_id, 0, v_party_id,
+            v_config_name,
+            'Published from DQ dataset: ' || v_dataset_name,
+            true, p_dataset_id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+        );
+    else
+        select name into v_config_name
+        from ores_synthetic_market_data_generation_configs_tbl
+        where tenant_id = p_target_tenant_id and id = v_config_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+    end if;
+
+    if v_config_id is null then
+        return query select 'skipped_no_config'::text, 0::bigint;
+        return;
+    end if;
+
+    -- Folder chain: root ("Synthetic") > collection > asset class ("Rates")
+    -- > instrument type ("IR Curves") -- same shape as FX's FX/FX Rates
+    -- chain, distinguished by asset class so both instrument families can
+    -- coexist under one party's synthetic tree.
+    select id into v_root_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and parent_id is null and kind = 'root'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_root_folder_id is null then
+        v_root_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_root_folder_id, 0, v_party_id, null, 'Synthetic', 'root', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Root folder for synthetic feeds'
+        );
+    end if;
+
+    select id into v_collection_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'collection' and collection_id = v_config_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_collection_folder_id is null then
+        v_collection_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_collection_folder_id, 0, v_party_id, v_root_folder_id,
+            v_config_name, 'collection', v_config_id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Collection folder for ' || v_config_name
+        );
+    else
+        update ores_synthetic_folders_tbl
+        set name = v_config_name
+        where tenant_id = p_target_tenant_id and id = v_collection_folder_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and name <> v_config_name;
+    end if;
+
+    select id into v_asset_class_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'asset_class' and parent_id = v_collection_folder_id and name = 'Rates'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_asset_class_folder_id is null then
+        v_asset_class_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_asset_class_folder_id, 0, v_party_id, v_collection_folder_id,
+            'Rates', 'asset_class', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Asset class folder'
+        );
+    end if;
+
+    select id into v_folder_id
+    from ores_synthetic_folders_tbl
+    where tenant_id = p_target_tenant_id and party_id = v_party_id
+      and kind = 'instrument_type' and parent_id = v_asset_class_folder_id and name = 'IR Curves'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_folder_id is null then
+        v_folder_id := gen_random_uuid();
+        insert into ores_synthetic_folders_tbl (
+            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_folder_id, 0, v_party_id, v_asset_class_folder_id,
+            'IR Curves', 'instrument_type', null,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Instrument type folder'
+        );
+    end if;
+
+    for r in
+        select
+            a.currency_code,
+            a.index_name,
+            a.process_type,
+            a.kappa,
+            a.theta,
+            a.sigma,
+            a.initial_rate,
+            a.ticks_per_hour,
+            a.fixed_leg_payment_frequency_code,
+            a.enabled
+        from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        order by a.currency_code, a.index_name
+    loop
+        select exists (
+            select 1 from ores_synthetic_ir_curve_generation_configs_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.party_id = v_party_id
+              and existing.config_id = v_config_id
+              and existing.currency_code = r.currency_code
+              and existing.index_name = r.index_name
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_synthetic_ir_curve_generation_configs_tbl (
+            tenant_id, id, version, party_id, config_id,
+            currency_code, index_name, process_type,
+            kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
+            fixed_leg_payment_frequency_code,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id,
+            coalesce(existing.id, gen_random_uuid()),
+            coalesce(existing.version, 0),
+            v_party_id, v_config_id,
+            r.currency_code, r.index_name, r.process_type,
+            r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
+            coalesce(r.enabled, true),
+            r.fixed_leg_payment_frequency_code,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+        from (select 1) as _dummy
+        left join ores_synthetic_ir_curve_generation_configs_tbl existing
+            on existing.tenant_id = p_target_tenant_id
+           and existing.party_id = v_party_id
+           and existing.config_id = v_config_id
+           and existing.currency_code = r.currency_code
+           and existing.index_name = r.index_name
+           and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        returning id, version into v_ir_config_id, v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+
+        -- Curve Template entries are a complete set per (curve, dataset),
+        -- not a sparse independently-upserted list: void any existing entry
+        -- whose sequence_index is no longer part of this dataset's template
+        -- (e.g. switching a curve from Realistic's 7-entry template to
+        -- Basic's 3-entry one must not keep Realistic's orphaned tail
+        -- entries), same rule as FX's GMM component sync above.
+        update ores_synthetic_ir_curve_template_entries_tbl existing
+        set valid_to = current_timestamp
+        where existing.tenant_id = p_target_tenant_id
+          and existing.ir_curve_config_id = v_ir_config_id
+          and existing.valid_to = ores_utility_infinity_timestamp_fn()
+          and existing.sequence_index not in (
+              select e.sequence_index
+              from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
+              where e.dataset_id = p_dataset_id
+                and e.currency_code = r.currency_code
+                and e.index_name = r.index_name
+          );
+
+        for er in
+            select e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
+            from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
+            where e.dataset_id = p_dataset_id
+              and e.currency_code = r.currency_code
+              and e.index_name = r.index_name
+            order by e.sequence_index
+        loop
+            select exists (
+                select 1 from ores_synthetic_ir_curve_template_entries_tbl existing
+                where existing.tenant_id = p_target_tenant_id
+                  and existing.ir_curve_config_id = v_ir_config_id
+                  and existing.sequence_index = er.sequence_index
+                  and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            ) into v_exists;
+
+            if not (p_mode = 'insert_only' and v_exists) then
+                insert into ores_synthetic_ir_curve_template_entries_tbl (
+                    tenant_id, id, version, party_id, ir_curve_config_id, sequence_index,
+                    start_tenor_code, end_tenor_code, instrument_code,
+                    modified_by, performed_by, change_reason_code, change_commentary
+                )
+                select
+                    p_target_tenant_id,
+                    coalesce(existing_e.id, gen_random_uuid()),
+                    coalesce(existing_e.version, 0),
+                    v_party_id, v_ir_config_id, er.sequence_index,
+                    er.start_tenor_code, er.end_tenor_code, er.instrument_code,
+                    coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                    'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+                from (select 1) as _dummy2
+                left join ores_synthetic_ir_curve_template_entries_tbl existing_e
+                    on existing_e.tenant_id = p_target_tenant_id
+                   and existing_e.ir_curve_config_id = v_ir_config_id
+                   and existing_e.sequence_index = er.sequence_index
+                   and existing_e.valid_to = ores_utility_infinity_timestamp_fn();
+            end if;
+        end loop;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

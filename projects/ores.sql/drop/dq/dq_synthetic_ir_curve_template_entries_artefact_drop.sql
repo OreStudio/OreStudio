@@ -17,32 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * Synthetic Component Population Script
- *
- * Seeds DQ artefact/dataset data for synthetic market data configs, so
- * they can be published from the Librarian into a party. All scripts are
- * idempotent.
- */
-
-\echo '=== Synthetic Component Population ==='
-\echo ''
-
-\echo '--- FX Spot Config Seed Data ---'
-\ir ./synthetic_fx_spot_configs_populate.sql
-
-\echo '--- FX Spot Config Seed Data: Basic ---'
-\ir ./synthetic_fx_spot_configs_basic_populate.sql
-
-\echo '--- FX Spot Config Seed Data: Realistic ---'
-\ir ./synthetic_fx_spot_configs_realistic_populate.sql
-
-\echo '--- IR Curve Config Seed Data: Basic ---'
-\ir ./synthetic_ir_curve_configs_basic_populate.sql
-
-\echo '--- IR Curve Config Seed Data: Realistic ---'
-\ir ./synthetic_ir_curve_configs_realistic_populate.sql
-
-\echo ''
-\echo '=== Synthetic Component Population Complete ==='
+drop table if exists "ores_dq_synthetic_ir_curve_template_entries_artefact_tbl";

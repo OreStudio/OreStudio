@@ -46,11 +46,11 @@ straight rename is safe rather than needing a deprecation shim.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Rename applied across quant/marketdata/qt/shell; build+tests green. |
+| Now          | Nothing. |
 | Waiting on   | Manual Qt smoke, then PR.              |
-| Next         | Manual smoke test, then raise PR.      |
+| Next         | Nothing. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -159,3 +159,55 @@ via its "Verifies task" field.
 | 6 | `ensure_feed_binding()` (blocking NATS call) held `mu_` in the already_running branch, inconsistent with the started branch | feed_controller.hpp | Accepted | Restructured so both branches compute the outcome under the lock, release it, then call ensure_feed_binding() once outside the lock. |
 
 * Result
+
+Renamed the CRM 1/rate-backfill concept from "inverted" to "reciprocal"
+end-to-end: the =crm_rate_item=/=get_crm_rates_request= protocol field,
+=ores.analytics.quant='s =rate_inverter= (renamed =rate_reciprocator=,
+file+class+tests), =crm_ingest_bridge=/=crm_handler=, the marketdata
+client's =crm_client=/=crm_rate_display_service=/=crm_rate_formatter=
+(tooltip text included), the Qt matrix's "Show Reciprocal" button/
+handler/member/=QSettings= key, and the shell's =--reciprocal= flag.
+All acceptance criteria met, including the full doc-comment sweep
+(four review rounds caught and fixed remaining "inverse"/"inversion"
+wording, a grammar bug, and a stray lambda parameter name) --
+=CurrencyPairDetailDialog='s unrelated "inverted pair" feature and
+=rate_engine='s "sign inverts" comment were correctly left alone as a
+distinct concept.
+
+Manual QA (=scenario_verify_crm_reciprocal_rename.org=) exercised the
+Qt toggle/tooltip, the CSV export, and the shell's =--reciprocal=
+flag (=crm rates majors=: 36 direct-only rows vs.
+=crm rates majors --reciprocal=: 72 rows, confirming the flag
+correctly doubles coverage via backfill).
+
+Two unrelated bugs were found and fixed during this task's manual
+smoke testing, beyond the rename's own scope:
+- "Enable all FX rates" (folder-scoped feed start in the Market
+  Simulator window) only ever created a =feed_binding= for one pair
+  -- moved binding auto-creation into =feed_controller::start()=
+  server-side (idempotent, delegated via the caller's bearer token)
+  so every caller gets correct behaviour without duplicating the
+  logic client-side; removed the now-redundant logic from
+  =MarketSimulatorWindow=.
+- CRM gave no visual indication of a stale/disconnected rate -- added
+  a =disconnected= tier to =rate_status=/=staleness_policy=
+  (server-side, across the whole driver topology), reusing
+  =FxSpotGridWindow='s own Live/Stale/Disconnected colour convention;
+  only the pair-code text is tinted, never the rate value.
+
+Also, incidentally while investigating: recoloured the Market
+Simulator's running-status badge (blue=running, yellow=paused,
+previously green/gray) since the fully-running green was clashing
+with the vintage-validity badge's own green; added FX Spot and
+Cross-Rates Matrix icons to the main toolbar; added a post-build
+integrity check to =compass build= (zero-byte/broken-symlink
+detection) after two unrelated broken-symlink crashes
+(=ores.controller.core=, then =ores.scheduler.core=/
+=ores.analytics.core=) were traced to concurrent-build contention
+across worktrees sharing this machine, not to any code in this PR.
+
+Full local rebuild clean throughout; =ores.analytics.quant.tests=
+(11674/11674), =ores.marketdata.client.tests= (50/50),
+=ores.marketdata.service.tests=, =ores.synthetic.service.tests=, and
+the full =ctest= suite (74/74 at the point it was last run) all
+green. PR #1623, four review rounds, all comments addressed.

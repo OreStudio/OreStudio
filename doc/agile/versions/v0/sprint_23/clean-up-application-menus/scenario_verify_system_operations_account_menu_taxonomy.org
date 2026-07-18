@@ -2,7 +2,7 @@
 :ID: 48783B41-101D-41DC-90B0-C7F9C6CA80AF
 :END:
 #+title: Test Scenario: Verify System/Operations/Account menu taxonomy
-#+description: Checks the consolidated menu structure: File absorbs System+Account, Operations absorbs Message Queue/Telemetry/User Accounts/Data Transfer/Data Catalogue, Data Management retired with Classifications/Audit Trail moved to Data Quality.
+#+description: Checks the consolidated menu structure: File absorbs System+Account with a nested System submenu, Operations absorbs Message Queue/Telemetry/User Accounts/Data Transfer, Data Management retired with Classifications/Audit Trail/Data Catalogue moved to Data Quality, Trading Codes retired with Purpose Types moved to Reference Data, Synthetic's Advanced submenu flattened.
 #+type: test_scenario
 #+level: s1
 #+filetags: :clean-up-application-menus:sprint_23:v0:
@@ -38,97 +38,90 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
 select *BARCLAYS PLC* as the active party.
 
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
-
 ** System and Account no longer exist as top-level menus
 
-Confirm the menu bar reads: *File*, *Reference Data*, *Operations*,
-*Data &Quality*, *Window*, *Help* — no separate *System* or *Account*
-menu.
+Confirm the menu bar reads: *File*, *Reference Data*, *Trading*,
+*Operations*, *Data &Quality*, *Market Data*, *Window*, *Help* — no
+separate *System* or *Account* menu.
 
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
-
-** File absorbs System and Account
+** File contains connection actions, personal actions, and a System submenu
 
 Open *File*. Confirm, in order: Connections..., separator, Connect,
 Disconnect, separator, My Account..., My Sessions..., separator,
-Testing (submenu, containing Scenario Runner), separator, Reset
-System..., separator, Exit. Open My Account and My Sessions and
-confirm they still work. Open Testing > Scenario Runner and confirm
-it opens.
+*S&ystem* (submenu), separator, Exit. Open My Account and My
+Sessions and confirm they still work.
 
-*** Result
+Open File > System. Confirm it contains, in order: System Settings,
+separator, Test Scenario Runner, separator, Reset System.... Open
+System Settings and confirm it opens. Open Test Scenario Runner and
+confirm it opens (this is the window you're using to run this very
+scenario).
 
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
-
-** Operations gains Telemetry, Message Queue, Configuration, User Accounts
+** Operations gains Telemetry, Message Queue, User Accounts
 
 Open *Operations*. Confirm it now contains, alongside the existing
-Jobs and Workflows sections: *Configuration* (System Settings),
-*Message Queue* (Queue Monitor), *Telemetry* (Log Viewer, Event
-Viewer, Shell, Protocol, Settings — plus Service Dashboard as the
-first item), and *User &Accounts* (Accounts, Roles, Tenants, Tenant
-Types, Onboard Tenant...). Open one entry from each and confirm the
-correct window/dialog opens. Confirm *User Accounts* is clearly
-distinguishable from the personal *Account* actions now in File
-(different labels: "User Accounts" vs "My Account").
+*Scheduler* (Scheduled Job Definitions, Scheduled Job Instances,
+Scheduled Job Monitor) and *Workflows* sections: *Message Queue*
+(Queue Monitor), *Telemetry* (Log Viewer, Event Viewer, Shell,
+Protocol, Settings — plus Service Dashboard as the first item), and
+*User &Accounts* (Accounts, Roles, Tenants, Tenant Types, Onboard
+Tenant...). Open one entry from each and confirm the correct
+window/dialog opens. Confirm *User Accounts* is clearly
+distinguishable from the personal *Account* actions in File
+(different labels: "User Accounts" vs "My Account"). Confirm there
+is no separate *Configuration* submenu — System Settings lives in
+File > System instead (previous step).
 
-*** Result
+** Operations gains Data Transfer (Data Catalogue moved to Data Quality instead)
 
-| Field  | Value |
-|--------+-------|
-| Status | FAIL |
-| Notes  | - in file add a system sub menu. add reset system and system settings to it. also add scenario runner but call it test scenario runner |
+Confirm *Operations* has a *Data &Transfer* submenu containing:
+Import ORE Data..., Data Librarian, Manage Workspaces — and nothing
+else (no nested Data Catalogue here; see next step for where it
+actually lives). Open each entry and confirm the correct window
+opens.
 
-** Operations gains Data Transfer and Data Catalogue
+** Data Management is retired; Classifications/Audit Trail/Data Catalogue moved to Data Quality
 
-Confirm *Operations* also has a *Data &Transfer* submenu containing:
-Import ORE Data..., Data Librarian, Manage Workspaces, and a nested
+Confirm there is no more top-level *Data Management* menu. Open
+*Data &Quality* and confirm it contains: *Badges* (Badge
+Definitions, Badge Severities), a *Classifications* submenu (Code
+Domains, Coding Schemes, Coding Scheme Authority Types — Code
+Domains nested here now, not loose at the top level), an *Audit
+Trail* submenu (Change Reason Categories, Change Reasons), and a
 *Data Catalogue* submenu (Data Domains, Subject Areas, Catalogues,
 Datasets, Dataset Bundles, Methodologies, Origin/Nature/Treatment
 Dimensions). Open one entry from each and confirm the correct
 window opens.
 
-*** Result
+** Trading Codes is retired; Purpose Types moved to Reference Data
 
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
-| Notes  | data catalogue does not make sense in operations. are these types in DQ or refdata? move them accordingly to the correct menu |
+There is no more *Trading &Codes* submenu anywhere (it used to sit
+nested inside the *Trading* menu with a single entry, Purpose
+Types). Open *Trading* and confirm it now ends at *Trades* — no
+Trading Codes submenu after it.
 
-** Data Management is retired; Classifications/Audit Trail moved to Data Quality
+Instead, open *Reference Data > &Codes > &Book Codes* and confirm
+*Purpose Types* is there (alphabetical, between Ledger Feed Types
+and Regulatory Book Types). Open it and confirm the correct window
+opens.
 
-Confirm there is no more top-level *Data Management* menu. Open
-*Data &Quality* and confirm it now contains, alongside the existing
-Badges and Code Domains: a *Classifications* submenu (Coding
-Schemes, Coding Scheme Authority Types) and an *Audit Trail*
-submenu (Change Reason Categories, Change Reasons). Open one entry
-from each and confirm the correct window opens.
+** Synthetic's Advanced (raw tables) submenu is flattened
 
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
+Open *Market Data > &Synthetic*. Confirm there is no nested
+*&Advanced (raw tables)* submenu — Generation Configs, FX Spot
+Configs, GMM Components, IR Curve Generation Configs, IR Curve
+Template Entries, and Yield Curve Process Types are all directly
+under Synthetic now, alongside Market Simulator. Open one entry and
+confirm the correct window opens.
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-18T11:54:11Z |
-| Branch        | feature/system-operations-account-menu-taxonomy |
-| Commit        | 71cdebcd5 |
-| Worktree      | solid_dirac |
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
 
 * Notes

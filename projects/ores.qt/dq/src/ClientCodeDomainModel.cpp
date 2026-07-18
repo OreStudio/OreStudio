@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientCodeDomainModel.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.api/messaging/code_domain_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -215,10 +215,10 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->code_domains.size() << " code domains";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->code_domains.size());
+                    << "Fetched " << result->domains.size() << " code domains";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->domains.size());
                 return {.success = true,
-                        .domains = std::move(result->code_domains),
+                        .domains = std::move(result->domains),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

@@ -17,25 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_REPOSITORY_HPP
-#define ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_REPOSITORY_HPP
+#ifndef ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_MAPPER_HPP
+#define ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_MAPPER_HPP
 
-#include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/badge_mapping.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/badge_mapping_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <sqlgen/postgres.hpp>
-#include <string>
-#include <vector>
 
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes badge mappings to data storage.
+ * @brief Maps badge_mapping domain entities to data storage layer and vice-versa.
  */
-class ORES_DQ_CORE_EXPORT badge_mapping_repository {
+class ORES_DQ_CORE_EXPORT badge_mapping_mapper {
 private:
-    inline static std::string_view logger_name = "ores.dq.repository.badge_mapping_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.badge_mapping_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -44,25 +41,11 @@ private:
     }
 
 public:
-    using context = ores::database::context;
+    static domain::badge_mapping map(const badge_mapping_entity& v);
+    static badge_mapping_entity map(const domain::badge_mapping& v);
 
-    explicit badge_mapping_repository(context ctx);
-
-    std::string sql();
-
-    void write(const domain::badge_mapping& mapping);
-    void write(const std::vector<domain::badge_mapping>& mappings);
-
-    std::vector<domain::badge_mapping> read_latest();
-    std::vector<domain::badge_mapping>
-    read_latest_by_code_domain(const std::string& code_domain_code);
-    std::vector<domain::badge_mapping> read_latest_by_entity(const std::string& entity_code);
-
-    void remove(const std::string& code_domain_code, const std::string& entity_code);
-    void remove_by_code_domain(const std::string& code_domain_code);
-
-private:
-    context ctx_;
+    static std::vector<domain::badge_mapping> map(const std::vector<badge_mapping_entity>& v);
+    static std::vector<badge_mapping_entity> map(const std::vector<domain::badge_mapping>& v);
 };
 
 }

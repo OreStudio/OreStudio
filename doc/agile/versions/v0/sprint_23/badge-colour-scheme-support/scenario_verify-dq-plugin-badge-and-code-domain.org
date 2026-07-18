@@ -39,6 +39,12 @@ Log in against the =prime_origin= environment as
 =tenant_admin@barclays_plc= / =Secure-Password-123= and select
 *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm Data Quality menu exists
 
 - Menu bar shows a top-level *Data &Quality* menu (between Data
@@ -46,16 +52,35 @@ Log in against the =prime_origin= environment as
 - It contains *Badge Definitions*, *Badge Severities*, and *Code
   Domains* actions.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | in data quality, do not place badge entities in the top level menu. add a badges sub menu |
+
 ** Open Badge Definitions list
 
 - Trigger Data Quality > Badge Definitions.
 - List window opens showing seeded rows (active/inactive, etc.),
   each with a colour swatch, not raw hex text.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Badge Severities list
 
 - Trigger Data Quality > Badge Severities.
 - List window opens showing seeded severities with swatches.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Open Code Domains list and a detail dialog
 
@@ -64,6 +89,12 @@ Log in against the =prime_origin= environment as
 - Open a detail dialog for a domain that has mappings (e.g.
   =book_status= or =tenant_status=).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Verify the Badge Mappings tab
 
 - On the open Code Domain detail dialog, select the *Badge Mappings*
@@ -71,6 +102,13 @@ Log in against the =prime_origin= environment as
 - It lists every =entity_code -> badge_definition= mapping for that
   domain, each cell rendered as a real coloured badge pill (not hex
   text), matching the colour shown in the Badge Definitions list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | shows duplicates. RLS problems?; [[file:scenario_verify-dq-plugin-badge-and-code-domain_step6_20260718_042929.png]] |
 
 ** Spot-check Portfolios badge colours
 
@@ -81,14 +119,21 @@ Log in against the =prime_origin= environment as
 - Open a portfolio's detail dialog and confirm the same badges
   render correctly there too.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | looks good;  |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-18T03:30:23Z |
+| Branch        | feature/badge-mapping-browser-ui-resume |
+| Commit        | 9cf657b46 |
+| Worktree      | prime_origin |
 
 * Notes

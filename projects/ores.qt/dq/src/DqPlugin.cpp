@@ -80,17 +80,25 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
     if (!dq)
         return;
 
-    auto* actBadgeDefs = dq->addAction(tr("Badge &Definitions"));
+    // &Badges submenu: every badge_definition/badge_severity/badge_mapping
+    // entry point lives here, not loose at the Data Quality top level.
+    auto* badges = dq->addMenu(tr("&Badges"));
+
+    auto* actBadgeDefs = badges->addAction(tr("Badge &Definitions"));
     connect(actBadgeDefs, &QAction::triggered, this, [this]() {
         if (badgeDefinitionController_)
             badgeDefinitionController_->showListWindow();
     });
 
-    auto* actBadgeSevs = dq->addAction(tr("Badge &Severities"));
+    auto* actBadgeSevs = badges->addAction(tr("Badge &Severities"));
     connect(actBadgeSevs, &QAction::triggered, this, [this]() {
         if (badgeSeverityController_)
             badgeSeverityController_->showListWindow();
     });
+
+    // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
+    // Domain's detail dialog (see BadgeMappingsTab), not a standalone
+    // window here.
 
     dq->addSeparator();
 
@@ -99,10 +107,6 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
         if (codeDomainController_)
             codeDomainController_->showListWindow();
     });
-
-    // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
-    // Domain's detail dialog (see BadgeMappingsTab), not a standalone
-    // window here.
 }
 
 QList<QMenu*> DqPlugin::create_menus() {

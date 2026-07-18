@@ -101,6 +101,11 @@ std::string(faker::word::adjective())
 
 * C++
 
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
 ** Domain includes
 
 #+begin_src cpp :name includes

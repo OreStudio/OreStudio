@@ -30,7 +30,10 @@
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.dq.core/messaging/badge_definition_registrar.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
+#include "ores.dq.core/messaging/badge_severity_registrar.hpp"
+#include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
@@ -454,70 +457,30 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Badges (severities, code domains, definitions, mappings)
+    // Badges: severities, code domains, and definitions are on the standard
+    // generated stack (see badge_definition_handler/badge_severity_handler/
+    // code_domain_handler); badge_mapping is a junction with no generated
+    // handler of its own, so it stays on the bespoke badge_handler.
     // =========================================================================
 
+    {
+        auto badge_definition_subs = register_badge_definition_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(badge_definition_subs.begin()),
+                   std::make_move_iterator(badge_definition_subs.end()));
+
+        auto badge_severity_subs = register_badge_severity_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(badge_severity_subs.begin()),
+                   std::make_move_iterator(badge_severity_subs.end()));
+
+        auto code_domain_subs = register_code_domain_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(code_domain_subs.begin()),
+                   std::make_move_iterator(code_domain_subs.end()));
+    }
+
     auto badge = std::make_shared<badge_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_badge_severities_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->list_severities(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_badge_severity_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->save_severity(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_badge_severity_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->delete_severities(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_badge_severity_history_request::nats_subject,
-        queue_group,
-        [badge](ores::nats::message msg) { badge->severity_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_code_domains_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->list_code_domains(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_code_domain_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->save_code_domain(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_code_domain_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->delete_code_domains(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_code_domain_history_request::nats_subject,
-        queue_group,
-        [badge](ores::nats::message msg) { badge->code_domain_history(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_badge_definitions_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->list_definitions(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_badge_definition_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->save_definition(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_badge_definition_request::nats_subject,
-        queue_group,
-        [badge](ores::nats::message msg) { badge->delete_definitions(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_badge_definition_history_request::nats_subject,
-        queue_group,
-        [badge](ores::nats::message msg) { badge->definition_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
         get_badge_mappings_request::nats_subject, queue_group, [badge](ores::nats::message msg) {

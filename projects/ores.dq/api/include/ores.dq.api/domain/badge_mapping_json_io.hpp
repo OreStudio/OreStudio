@@ -17,17 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/badge_mapping_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_DQ_API_DOMAIN_BADGE_MAPPING_JSON_IO_HPP
+#define ORES_DQ_API_DOMAIN_BADGE_MAPPING_JSON_IO_HPP
 
-namespace ores::dq::repository {
+#include "ores.dq.api/domain/badge_mapping.hpp"
+#include "ores.dq.api/export.hpp"
+#include <iosfwd>
 
-std::ostream& operator<<(std::ostream& s, const badge_mapping_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::dq::domain {
+
+/**
+ * @brief Dumps the badge_mapping to a stream in JSON format.
+ */
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const badge_mapping& v);
+
 }
 
-}
+#endif

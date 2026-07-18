@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.api/messaging/badge_severity_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -216,11 +216,11 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->badge_severities.size() << " badge severities";
+                    << "Fetched " << result->severities.size() << " badge severities";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->badge_severities.size());
+                    static_cast<std::uint32_t>(result->severities.size());
                 return {.success = true,
-                        .severities = std::move(result->badge_severities),
+                        .severities = std::move(result->severities),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

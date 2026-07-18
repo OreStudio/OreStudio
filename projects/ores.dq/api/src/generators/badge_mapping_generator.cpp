@@ -1,0 +1,55 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.dq.api/generators/badge_mapping_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
+
+namespace ores::dq::generators {
+
+using ores::utility::generation::generation_keys;
+
+domain::badge_mapping
+generate_synthetic_badge_mapping(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+
+    domain::badge_mapping r;
+    r.version = 0;
+    r.tenant_id = tenant_id;
+    r.code_domain_code = std::string(faker::word::noun()) + "_status";
+    r.entity_code = std::string(faker::word::adjective()).substr(0, 1);
+    r.badge_code = std::string(faker::word::adjective());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
+    return r;
+}
+
+std::vector<domain::badge_mapping>
+generate_synthetic_badge_mappings(std::size_t n, utility::generation::generation_context& ctx) {
+    std::vector<domain::badge_mapping> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_badge_mapping(ctx));
+    return r;
+}
+
+}

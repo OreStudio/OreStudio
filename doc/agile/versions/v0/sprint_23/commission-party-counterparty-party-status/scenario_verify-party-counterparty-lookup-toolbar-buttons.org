@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 785B49CA-B219-40FE-9968-5D82A99E25C3
+:END:
+#+title: Test Scenario: Verify Party/Counterparty auxiliary-lookup toolbar buttons
+#+description: Verify the new Party Types, Party Statuses, and Party Id Schemes toolbar buttons on the Parties and Counterparties windows each open the correct lookup list window.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:verification:party:counterparty:commission-party-counterparty-party-status:sprint_23:v0:
+#+target_dialog: PartyMdiWindow / CounterpartyMdiWindow
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment: brave_hopper
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FBA135CD-6534-47B5-BBFF-7973C47B6681][Add auxiliary-lookup toolbar buttons to Party/Counterparty MDI windows]] in [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FBA135CD-6534-47B5-BBFF-7973C47B6681][Add auxiliary-lookup toolbar buttons to Party/Counterparty MDI windows]] |
+| Parent story  | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]]   |
+| Target dialog | PartyMdiWindow / CounterpartyMdiWindow  |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Provision Barclays Plc, then connect
+
+The database was recently recreated and has no tenant data yet. Run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first. Then log in against the =brave_hopper= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Parties and confirm the three new toolbar buttons appear
+
+Open /Reference Data/ > /Parties/. After the existing Reload, Add,
+Edit, Delete, History group and a separator, confirm three new
+buttons appear: *Party Types*, *Party Statuses*, and *Id Schemes*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Click each Parties toolbar button and confirm it opens the right window
+
+Click *Party Types* — confirm the Party Types list window opens.
+Close it. Click *Party Statuses* — confirm the Party Statuses list
+window opens. Close it. Click *Id Schemes* — confirm the Party Id
+Schemes list window opens. Close it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Counterparties and confirm the same three buttons appear
+
+Open /Reference Data/ > /Counterparties/. Confirm the same *Party
+Types*, *Party Statuses*, and *Id Schemes* buttons appear after the
+same separator.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Click each Counterparties toolbar button and confirm it opens the right window
+
+Click each of the three buttons in turn and confirm they open the
+same Party Types / Party Statuses / Party Id Schemes windows as from
+the Parties window (both entities share the same three lookups).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-18T09:48:04Z |
+| Branch        | feature/add-lookup-toolbar-buttons-party-counterparty |
+| Commit        | 009647645 |
+| Worktree      | brave_hopper |
+
+* Notes

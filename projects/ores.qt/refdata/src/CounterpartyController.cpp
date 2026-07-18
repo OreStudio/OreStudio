@@ -97,6 +97,18 @@ void CounterpartyController::showListWindow() {
             &CounterpartyMdiWindow::showCounterpartyHistory,
             this,
             &CounterpartyController::onShowHistory);
+    connect(listWindow_,
+            &CounterpartyMdiWindow::showPartyTypesRequested,
+            this,
+            &CounterpartyController::showPartyTypesRequested);
+    connect(listWindow_,
+            &CounterpartyMdiWindow::showPartyStatusesRequested,
+            this,
+            &CounterpartyController::showPartyStatusesRequested);
+    connect(listWindow_,
+            &CounterpartyMdiWindow::showPartyIdSchemesRequested,
+            this,
+            &CounterpartyController::showPartyIdSchemesRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

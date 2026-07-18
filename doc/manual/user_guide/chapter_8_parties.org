@@ -28,13 +28,17 @@ The chapter advances the argument that managing a party well means
 first understanding what it represents and how it fits into the
 organisation's structure, then the interface that governs its
 lifecycle. It begins by establishing what a party is in
-[[*What is a Party?][What is a Party?]], and by working through the [[*The party hierarchy][The party
-hierarchy]] rule that every party but the tenant's house root must
-supply a parent — the premise the rest of the chapter builds on. From
-there it surveys the
+[[*What is a Party?][What is a Party?]], then shows that a party's type and status are
+themselves configurable lookups with their own windows in
+[[*Party types and statuses][Party types and statuses]], before working through the
+[[*The party hierarchy][The party hierarchy]] rule that every party but the tenant's house root
+must supply a parent — the premise the rest of the chapter builds
+on. From there it surveys the
 body of records in [[*The Parties window][The Parties window]] before narrowing to a single
 record in [[*Party Details][Party Details]] and its General, Identifiers, Contact
-Information, Hierarchy, and Provenance tabs. It then turns to
+Information, Hierarchy, and Provenance tabs, returning to the
+Identifiers tab's scheme combo in [[*Identification schemes][Identification schemes]] to show
+that it, too, is tenant-configurable. It then turns to
 changing a record under audit — [[*Editing a party][Editing]], [[*Deleting a party][Deleting]], and
 [[*Party history][Party history]] — culminating in reverting to an earlier version, the
 point at which the bitemporal audit trail does its work. The
@@ -109,6 +113,44 @@ both shown as colour-coded badges once selected. A party also carries
 a *business center* — an FpML business center code identifying the
 entity's primary location, the same code list documented in the
 [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] chapter.
+
+** Party types and statuses
+
+A party's *type* and *status* are not fixed enumerations built into
+OreStudio; they are themselves tenant-configured reference-data
+lookups, each with its own list and detail window under the
+/Reference Data/ menu, alongside the Party Types and Party Statuses
+entries. Both follow the same small shape — a *Code* (the value
+stored against the party), a *Name* (the label shown in the combo
+and, once selected, on the colour-coded badge), an optional
+*Description*, and a *Display Order* controlling where the value
+falls in the combo's drop-down list — plus the standard Provenance
+tab described in [[*Provenance][Provenance]] below.
+
+#+caption[The Party Types window]: The Party Types window, listing the tenant's configured party types by code, name, description, and display order.
+# Capture: open Reference Data > Party Types and screenshot the list window.
+[SCREENSHOT NEEDED — party_types_main_dialog.png]
+
+#+caption[Party Type Details]: The Party Type Details dialog, showing its General tab (Code, Name, Description, Display Order) and Provenance tab.
+# Capture: open a party type record and screenshot the General tab of Party Type Details.
+[SCREENSHOT NEEDED — party_type_details_general.png]
+
+#+caption[The Party Statuses window]: The Party Statuses window, listing the tenant's configured party statuses by code, name, description, and display order.
+# Capture: open Reference Data > Party Statuses and screenshot the list window.
+[SCREENSHOT NEEDED — party_statuses_main_dialog.png]
+
+#+caption[Party Status Details]: The Party Status Details dialog, showing its General tab (Code, Name, Description, Display Order) and Provenance tab.
+# Capture: open a party status record and screenshot the General tab of Party Status Details.
+[SCREENSHOT NEEDED — party_status_details_general.png]
+
+Editing, deleting, and history for party type and party status
+records follow the same pattern described later in this chapter for
+the party record itself — a change reason on save, a soft close on
+delete, and a full version history with revert. Because both lookups
+are shared across every party (and, for status, every counterparty
+too — see the [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] chapter), changing a code or renaming
+a value here is immediately visible wherever that type or status is
+displayed.
 
 ** The party hierarchy
 
@@ -277,6 +319,32 @@ The Provenance tab is read-only and shows the audit metadata for the
 current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
 description of the provenance fields common to all reference data
 entities.
+
+** Identification schemes
+
+The ten schemes listed in the table above are seeded on tenant
+provisioning, but the *Identification Scheme* combo in the
+Identifiers tab is not a fixed list either — it is populated from the
+Party Id Schemes lookup, its own reference-data entity with a list
+and detail window under the /Reference Data/ menu. Each scheme record
+carries a *Code* (=LEI=, =BIC=, and so on — the value stored against
+each identifier row), a *Name*, an optional *Description*, a *Coding
+Scheme* field (an external coding-scheme identifier, used where the
+value needs to resolve against an outside standard such as an FpML
+scheme URI), and a *Display Order*, plus the standard Provenance tab.
+
+#+caption[The Party Id Schemes window]: The Party Id Schemes window, listing the tenant's configured identification schemes by code, name, description, coding scheme, and display order.
+# Capture: open Reference Data > Party Id Schemes and screenshot the list window.
+[SCREENSHOT NEEDED — party_id_schemes_main_dialog.png]
+
+#+caption[Party Id Scheme Details]: The Party Id Scheme Details dialog, showing its General tab (Code, Name, Description, Coding Scheme, Display Order) and Provenance tab.
+# Capture: open a party id scheme record and screenshot the General tab of Party Id Scheme Details.
+[SCREENSHOT NEEDED — party_id_scheme_details_general.png]
+
+A tenant can add, edit, or retire schemes here rather than being
+limited to the ten in the table above; editing, deleting, and history
+for a scheme record follow the same change-reason, soft-close, and
+revert pattern as the party record itself, described next.
 
 ** Editing a party
 

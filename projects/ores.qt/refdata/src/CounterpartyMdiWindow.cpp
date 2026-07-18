@@ -114,6 +114,35 @@ void CounterpartyMdiWindow::setupToolbar() {
     historyAction_->setToolTip(tr("View counterparty history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &CounterpartyMdiWindow::viewHistorySelected);
+    {
+        toolbar_->addSeparator();
+        auto* partyTypesAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            tr("Party Types"));
+        partyTypesAction->setToolTip(tr("Open Party Types"));
+        connect(partyTypesAction,
+                &QAction::triggered,
+                this,
+                &CounterpartyMdiWindow::showPartyTypesRequested);
+
+        auto* partyStatusesAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor),
+            tr("Party Statuses"));
+        partyStatusesAction->setToolTip(tr("Open Party Statuses"));
+        connect(partyStatusesAction,
+                &QAction::triggered,
+                this,
+                &CounterpartyMdiWindow::showPartyStatusesRequested);
+
+        auto* partyIdSchemesAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+            tr("Id Schemes"));
+        partyIdSchemesAction->setToolTip(tr("Open Party Id Schemes"));
+        connect(partyIdSchemesAction,
+                &QAction::triggered,
+                this,
+                &CounterpartyMdiWindow::showPartyIdSchemesRequested);
+    }
 }
 
 void CounterpartyMdiWindow::setupTable() {

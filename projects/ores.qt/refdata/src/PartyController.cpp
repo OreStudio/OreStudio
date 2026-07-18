@@ -82,6 +82,18 @@ void PartyController::showListWindow() {
     connect(
         listWindow_, &PartyMdiWindow::addNewRequested, this, &PartyController::onAddNewRequested);
     connect(listWindow_, &PartyMdiWindow::showPartyHistory, this, &PartyController::onShowHistory);
+    connect(listWindow_,
+            &PartyMdiWindow::showPartyTypesRequested,
+            this,
+            &PartyController::showPartyTypesRequested);
+    connect(listWindow_,
+            &PartyMdiWindow::showPartyStatusesRequested,
+            this,
+            &PartyController::showPartyStatusesRequested);
+    connect(listWindow_,
+            &PartyMdiWindow::showPartyIdSchemesRequested,
+            this,
+            &PartyController::showPartyIdSchemesRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

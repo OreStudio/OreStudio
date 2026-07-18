@@ -455,6 +455,60 @@ generated dialog.
     childTables_->setReadOnly(readOnly);
 #+end_src
 
+** Qt: auxiliary lookup toolbar buttons
+
+Cross-navigation from the Counterparties list window to the same
+three lookup entities Party links to —
+[[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]], [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]], and
+[[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] — via the identical seam
+[[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] implements.
+
+#+begin_src cpp :name mdi_window_signal :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A
+void showPartyTypesRequested();
+void showPartyStatusesRequested();
+void showPartyIdSchemesRequested();
+#+end_src
+
+#+begin_src cpp :name mdi_window_toolbar :implements 18B9ED63-78C2-4259-93AC-CCDFBC88EFBD
+{
+    toolbar_->addSeparator();
+    auto* partyTypesAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Party Types"));
+    partyTypesAction->setToolTip(tr("Open Party Types"));
+    connect(partyTypesAction, &QAction::triggered, this,
+            &CounterpartyMdiWindow::showPartyTypesRequested);
+
+    auto* partyStatusesAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor),
+        tr("Party Statuses"));
+    partyStatusesAction->setToolTip(tr("Open Party Statuses"));
+    connect(partyStatusesAction, &QAction::triggered, this,
+            &CounterpartyMdiWindow::showPartyStatusesRequested);
+
+    auto* partyIdSchemesAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+        tr("Id Schemes"));
+    partyIdSchemesAction->setToolTip(tr("Open Party Id Schemes"));
+    connect(partyIdSchemesAction, &QAction::triggered, this,
+            &CounterpartyMdiWindow::showPartyIdSchemesRequested);
+}
+#+end_src
+
+#+begin_src cpp :name controller_signal :implements 66E078FB-D6A6-4DF6-814B-65995D948090
+void showPartyTypesRequested();
+void showPartyStatusesRequested();
+void showPartyIdSchemesRequested();
+#+end_src
+
+#+begin_src cpp :name controller_relay :implements 52E70F3B-5903-4359-91FB-B533054A18AC
+connect(listWindow_, &CounterpartyMdiWindow::showPartyTypesRequested,
+        this, &CounterpartyController::showPartyTypesRequested);
+connect(listWindow_, &CounterpartyMdiWindow::showPartyStatusesRequested,
+        this, &CounterpartyController::showPartyStatusesRequested);
+connect(listWindow_, &CounterpartyMdiWindow::showPartyIdSchemesRequested,
+        this, &CounterpartyController::showPartyIdSchemesRequested);
+#+end_src
+
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

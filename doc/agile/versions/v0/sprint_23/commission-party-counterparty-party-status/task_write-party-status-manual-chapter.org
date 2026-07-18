@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-party-status-manual-chapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Audited chapter_8_parties.org for auxiliary-lookup coverage: added "Party types and statuses" and "Identification schemes" sections with [SCREENSHOT NEEDED] placeholders; filed a follow-up task for missing toolbar buttons and a capture for business_unit's own chapter. |
+| Waiting on   | Screenshots: new-section captures need the toolbar-button task done first, and both those and any retaken party/counterparty screenshots need [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][the badge colour scheme story]] (bright_faraday) to land first, since party/counterparty rows and badges are colour-coded. |
+| Next         | Decide whether to proceed with the toolbar-button implementation now (code only, screenshots deferred) or pause this task until both blockers clear. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 

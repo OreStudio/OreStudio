@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 996E0E3B-5389-4648-B153-7F8487591133
+:END:
+#+title: Test Scenario: Verify CRM 'Show Reciprocal' after the inverted-to-reciprocal rename
+#+description: Manual QA pass confirming the CRM cross-rates matrix's renamed Show Reciprocal toggle (formerly Show Inverted) still computes and displays 1/rate backfill cells correctly, with updated labels/tooltips, after the code-wide inverted-to-reciprocal rename.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog: CrmCrossRatesMatrixMdiWindow
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow             |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =clever_dijkstra= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*. If the DB has been recreated since Barclays was last
+provisioned, re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first.
+
+** Open the CRM Cross Rates Matrix
+
+Market Data menu > Cross Rates Matrix (or the MDI window if already
+open). Pick a CRM with at least one pair lacking a direct quote in one
+direction, so the reciprocal-backfill path is exercised (e.g. one of
+the majors/scandies/exotics CRMs used in the shell recipes).
+
+** Confirm the toggle reads "Show Reciprocal"
+
+The footer button that used to read "Show Inverted" now reads *Show
+Reciprocal*; hover it and confirm the tooltip text also says
+"reciprocal" rather than "inverted".
+
+** Toggle "Show Reciprocal" on and check the backfilled cells
+
+With the toggle off, note a cell with no direct quote shows a dash.
+Turn "Show Reciprocal" on and confirm that cell now shows a
+pastel-tinted computed 1/rate value instead of a dash, and that its
+sparkline/history still populates correctly.
+
+** Toggle "Show Reciprocal" off and confirm the cell reverts
+
+Turn the toggle back off; the previously-backfilled cell should
+return to showing a dash (no direct quote), confirming the toggle
+still round-trips correctly.
+
+** Export CSV with "Show Reciprocal" on and check the header
+
+With the toggle on, use the matrix's CSV export. Open the exported
+file and confirm the reciprocal cells are present in the export, and
+that the filename/metadata reflects "reciprocal" rather than
+"inverted" (matching the renamed filter state).
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -61,6 +61,58 @@ TYPE_TO_TEMPLATE = {
     "archetype": "doc_archetype.org.mustache",
 }
 
+# entity_org --shape presets: knob bundles sampled from a known-good
+# reference entity for each named domain_entity shape (see task EE237306 /
+# Codegen entity meta-model -- keys and columns / C++ Qt). Reconnaissance
+# picks per the task's Plan table, not a final catalogue -- refine as more
+# entities are commissioned through this scaffold.
+ENTITY_ORG_KNOBS = (
+    "has_tenant_id", "has_workspace_id", "has_parent_id",
+    "has_foreign_keys", "has_insert_trigger_validations", "has_qt",
+    "qt_has_uuid_primary_key", "qt_has_change_reason_cache",
+    "qt_has_explorer_api", "qt_has_pagination", "qt_has_csv_xml_io",
+    "qt_has_export_macro", "qt_has_version_navigation",
+    "qt_has_parent_scoping",
+)
+
+ENTITY_ORG_SHAPE_PRESETS = {
+    # ores.refdata.country.org: text natural key, no hierarchy, minimal Qt.
+    "simple-text-key": {
+        "has_tenant_id": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_change_reason_cache": True,
+        "qt_has_pagination": True,
+    },
+    # ores.refdata.book.org: soft-FK scoped under a parent entity.
+    "fk-scoped": {
+        "has_tenant_id": True, "has_workspace_id": True,
+        "has_foreign_keys": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_uuid_primary_key": True,
+        "qt_has_explorer_api": True, "qt_has_export_macro": True,
+        "qt_has_parent_scoping": True,
+    },
+    # ores.refdata.counterparty.org (the richer of party.org's two
+    # exemplars): self-referencing hierarchy, foreign keys, insert-trigger
+    # validations, uuid primary key, change-reason cache.
+    "hierarchical-composite": {
+        "has_tenant_id": True, "has_parent_id": True,
+        "has_foreign_keys": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_uuid_primary_key": True,
+        "qt_has_change_reason_cache": True,
+    },
+    # ores.refdata.currency.org: every optional knob exercised at least once.
+    "richest": {
+        "has_tenant_id": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_change_reason_cache": True,
+        "qt_has_csv_xml_io": True, "qt_has_version_navigation": True,
+    },
+    # ores.marketdata.market_observation.org: TimescaleDB hypertable, no Qt,
+    # no soft-FK section (its party_id/series_id references are documented
+    # as plain Natural keys, not a Foreign keys section).
+    "timeseries": {
+        "has_tenant_id": True, "has_qt": False,
+    },
+}
+
 DEFAULT_INITIAL_STATE = {
     "task": "BACKLOG",
     "story": "BACKLOG",
@@ -309,6 +361,22 @@ def parse_args(argv=None):
     parser.add_argument("--has-tenant-id", dest="has_tenant_id", default="true",
                         choices=["true", "false"],
                         help="For --type table/lookup_entity/junction: Default: true.")
+    parser.add_argument("--shape", dest="shape", default="",
+                        choices=[""] + list(ENTITY_ORG_SHAPE_PRESETS),
+                        help="For --type entity_org: a named domain_entity "
+                             "shape (see Codegen entity meta-model -- keys "
+                             "and columns / C++ Qt) whose knob combination "
+                             "pre-populates the scaffold's Flags/SQL/Qt "
+                             "sections, sampled from a known-good reference "
+                             "entity. Individual --entity-* flags below "
+                             "override any preset value.")
+    for _knob in ENTITY_ORG_KNOBS:
+        parser.add_argument(f"--entity-{_knob.replace('_', '-')}",
+                             dest=f"entity_{_knob}", default=None,
+                             choices=["true", "false"],
+                             help=f"For --type entity_org: override the "
+                                  f"'{_knob}' knob set by --shape (or its "
+                                  f"default of false if no --shape is given).")
     parser.add_argument("--coding-scheme", dest="coding_scheme", default="none",
                         choices=["none", "required", "nullable"],
                         help="For --type table: Default: none.")
@@ -539,6 +607,18 @@ def main(argv=None):
         has_tenant_id = ""
         coding_scheme = ""
 
+    # entity_org knobs: --shape preset, then per-knob --entity-<knob>
+    # overrides, then a false default for anything neither set.
+    entity_org_knobs = {}
+    if args.type == "entity_org":
+        preset = ENTITY_ORG_SHAPE_PRESETS.get(args.shape, {})
+        for knob in ENTITY_ORG_KNOBS:
+            override = getattr(args, f"entity_{knob}", None)
+            if override is not None:
+                entity_org_knobs[knob] = (override == "true")
+            else:
+                entity_org_knobs[knob] = preset.get(knob, False)
+
     # entity_title / name_title: title-case version of slug.
     if args.type == "entity_org":
         entity_title = " ".join(w.capitalize() for w in args.slug.split("_"))
@@ -639,6 +719,9 @@ def main(argv=None):
         "source_methodology": source_methodology,
         "end_date": (date.today() + timedelta(days=7)).isoformat(),
     }
+    # entity_org's shape-driven knobs take precedence over the legacy string
+    # "has_tenant_id" above (which entity_org never sets — see _PLURAL_TYPES).
+    variables.update(entity_org_knobs)
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
     template_text = template_path.read_text(encoding="utf-8")

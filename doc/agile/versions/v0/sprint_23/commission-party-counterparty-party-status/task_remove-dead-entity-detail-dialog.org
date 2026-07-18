@@ -8,7 +8,7 @@
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
 #+branch: feature/remove-dead-entity-detail-dialog
-#+pr:
+#+pr: 1639
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1639][#1639]] | [qt,doc] Remove dead EntityDetailDialog/EntityDetailOperations abstraction |
 
 * Review
 

@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on: F71E530F-EB53-4644-AE07-2FDA88E0AE73
-#+blocked_since: 2026-07-18
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-17
 #+updated: 2026-07-17
 #+environment: bright_faraday
@@ -26,11 +26,11 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Blocked on [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding to cover DQ's simple entities' variability]]. |
-| Waiting on   | [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][Extend lookup_entity scaffolding]] |
-| Next         | Resume once the scaffold supports compound natural keys and the coding_scheme/image_id/artefact_insert_fn knobs. |
+| Now          | Unblocked ([[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][F71E530F]] merged). Author catalog.org as lookup_entity, using the plain-Column workaround for subject_area's domain_name. |
+| Waiting on   | Nothing.                               |
+| Next         | catalog, then change_reason_category, change_reason, data_domain, subject_area. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance

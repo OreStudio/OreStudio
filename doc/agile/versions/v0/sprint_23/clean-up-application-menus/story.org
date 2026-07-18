@@ -72,7 +72,7 @@ Data), not the DQ entity migration itself.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] | STARTED | 2026-07-18 | | Audit current Reference Data menu entries, propose a target taxonomy with rationale, sign-off, then implement. |
+| [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] | DONE | 2026-07-18 | 2026-07-18 | Audit current Reference Data menu entries, propose a target taxonomy with rationale, sign-off, then implement. |
 
 * Out of scope
 

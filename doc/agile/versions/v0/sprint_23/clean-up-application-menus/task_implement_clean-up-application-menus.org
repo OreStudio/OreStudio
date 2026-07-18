@@ -35,11 +35,11 @@ on the taxonomy.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | PASSED | All steps passed manually in the Qt client. |
+| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | FAILED | Retest against latest commit pending — 2 steps failed on first pass (duplicate Business Units/Business Unit Types, root-caused to a stale =libores.qt.party.so= build artifact and fixed; transient NATS "no responder" from refdata.service still starting up). Submenus also alphabetised per reviewer feedback. |
 
 * PRs
 
@@ -140,3 +140,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Reference Data menu reorganised in =RefdataPlugin::setup_menus=
+per the signed-off taxonomy: entities stay flat in FX/market +
+org/trading clusters; Trading Conventions and Conventions merged
+into one =Conventions= submenu with nested Trading/Curve Building
+groups; new =Codes= umbrella submenu nests Classifications, Currency
+Codes, Book Codes, Organisation Codes; Tenors and Cross Rates Matrix
+unchanged in placement. All Codes/Conventions/Tenors/Cross Rates
+Matrix submenu entries alphabetised per manual-QA feedback.
+
+Manual QA surfaced a real bug: Business Units and Business Unit
+Types appeared twice. Root-caused to a stale =libores.qt.party.so=
+build artifact left in =publish/bin/= from before the party plugin
+was merged into =ores.qt.refdata= — no CMake target still builds it,
+so the plugin loader kept picking up its old menu contributions
+alongside the current =RefdataPlugin=. Deleted; nothing regenerates
+it. The two NATS "no responder" failures in the same QA pass were a
+startup race (client's first requests landed before
+=ores.refdata.service= finished registering all its handlers), not a
+code defect — confirmed via the service log showing the same
+subjects succeeding once the service had been running a while.

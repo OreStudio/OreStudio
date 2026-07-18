@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
-#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -44,13 +43,11 @@ std::vector<ores::diff::domain::field_value> render_currency_fields(const domain
     fields.push_back({.name = "Spot Days", .value = std::to_string(v.spot_days)});
     fields.push_back({.name = "Day Basis", .value = v.day_basis});
     fields.push_back({.name = "Base Precedence", .value = std::to_string(v.base_precedence)});
-    using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
-    fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
-    fields.push_back({.name = provenance_fields::recorded_at,
+    fields.push_back({.name = "Modified By", .value = v.modified_by});
+    fields.push_back({.name = "Performed By", .value = v.performed_by});
+    fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});
+    fields.push_back({.name = "Change Commentary", .value = v.change_commentary});
+    fields.push_back({.name = "Recorded At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;

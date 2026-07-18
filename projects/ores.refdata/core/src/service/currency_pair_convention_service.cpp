@@ -29,7 +29,8 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 currency_pair_convention_service::currency_pair_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+    : ctx_(std::move(ctx))
+    , calendar_repo_(ctx_) {}
 
 std::vector<domain::currency_pair_convention>
 currency_pair_convention_service::list_conventions(std::uint32_t offset, std::uint32_t limit) {
@@ -98,4 +99,27 @@ currency_pair_convention_service::get_convention_history(const std::string& pair
     return repo_.read_all(ctx_, pair_code);
 }
 
+std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+currency_pair_convention_service::list_calendars_for_pair_convention(const std::string& pair_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing calendars for pair convention: " << pair_code;
+    return calendar_repo_.read_latest_by_pair(pair_code);
+}
+
+void currency_pair_convention_service::assign_calendar_to_pair_convention(
+    const ores::refdata::domain::currency_pair_convention_calendar& row) {
+    BOOST_LOG_SEV(lg(), debug) << "Assigning calendar to pair convention: " << row.pair_code << "/"
+                               << row.calendar_code;
+    calendar_repo_.write(row);
+    BOOST_LOG_SEV(lg(), info) << "Assigned calendar to pair convention: " << row.pair_code << "/"
+                              << row.calendar_code;
+}
+
+void currency_pair_convention_service::revoke_calendar_from_pair_convention(
+    const std::string& pair_code, const std::string& calendar_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Revoking calendar from pair convention: " << pair_code << "/"
+                               << calendar_code;
+    calendar_repo_.remove(pair_code, calendar_code);
+    BOOST_LOG_SEV(lg(), info) << "Revoked calendar from pair convention: " << pair_code << "/"
+                              << calendar_code;
+}
 }

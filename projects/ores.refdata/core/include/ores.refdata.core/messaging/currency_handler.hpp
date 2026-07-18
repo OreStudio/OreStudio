@@ -175,6 +175,102 @@ public:
         }
     }
 
+    void list_calendars(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<get_currency_calendars_request>(msg)) {
+            get_currency_calendars_response resp;
+            try {
+                resp.calendars = svc.list_calendars_for_currency(req->currency_iso_code);
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void assign_calendar(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<assign_currency_calendar_request>(msg)) {
+            try {
+                domain::currency_calendar row;
+                row.currency_iso_code = req->currency_iso_code;
+                row.calendar_code = req->calendar_code;
+                row.change_reason_code = req->change_reason_code;
+                row.change_commentary = req->change_commentary;
+                ores::service::messaging::stamp(row, req_ctx);
+                svc.assign_calendar_to_currency(row);
+                BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, assign_currency_calendar_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      assign_currency_calendar_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void revoke_calendar(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<revoke_currency_calendar_request>(msg)) {
+            try {
+                svc.revoke_calendar_from_currency(req->currency_iso_code, req->calendar_code);
+                BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, revoke_currency_calendar_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      revoke_currency_calendar_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

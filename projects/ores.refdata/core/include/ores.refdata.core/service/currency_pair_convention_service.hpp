@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include <chrono>
 #include <cstdint>
@@ -131,9 +132,43 @@ public:
     std::vector<domain::currency_pair_convention>
     get_convention_history(const std::string& pair_code);
 
+    /**
+     * @brief Lists the calendars assigned to a currency pair convention for
+     * advancing its spot/maturity dates, via the
+     * currency_pair_convention_calendars junction.
+     *
+     * @param pair_code The currency pair code (e.g. EURGBP).
+     * @return Vector of calendar assignment rows for the convention.
+     */
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+    list_calendars_for_pair_convention(const std::string& pair_code);
+
+    /**
+     * @brief Assigns a calendar to a currency pair convention (creates the
+     * junction row).
+     *
+     * @param row The currency_pair_convention_calendar row to write; caller
+     * is responsible for stamping tenant_id/modified_by/performed_by/
+     * change_reason_code before calling (see
+     * ores::service::messaging::stamp()).
+     */
+    void assign_calendar_to_pair_convention(
+        const ores::refdata::domain::currency_pair_convention_calendar& row);
+
+    /**
+     * @brief Revokes a calendar from a currency pair convention (removes the
+     * junction row).
+     *
+     * @param pair_code The currency pair code (e.g. EURGBP).
+     * @param calendar_code The QuantLib/ORE calendar token to revoke.
+     */
+    void revoke_calendar_from_pair_convention(const std::string& pair_code,
+                                              const std::string& calendar_code);
+
 private:
     context ctx_;
     repository::currency_pair_convention_repository repo_;
+    repository::currency_pair_convention_calendar_repository calendar_repo_;
 };
 
 }

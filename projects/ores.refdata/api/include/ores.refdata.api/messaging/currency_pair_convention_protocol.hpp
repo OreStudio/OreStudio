@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PAIR_CONVENTION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -96,6 +97,46 @@ struct read_currency_pair_conventions_for_cache_response {
     std::vector<ores::refdata::domain::currency_pair_convention> conventions;
 };
 
+struct get_currency_pair_convention_calendars_request {
+    using response_type = struct get_currency_pair_convention_calendars_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.list";
+    std::string pair_code;
+};
+
+struct get_currency_pair_convention_calendars_response {
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar> calendars;
+    bool success = false;
+    std::string message;
+};
+
+struct assign_currency_pair_convention_calendar_request {
+    using response_type = struct assign_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.assign";
+    std::string pair_code;
+    std::string calendar_code;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct assign_currency_pair_convention_calendar_response {
+    bool success = false;
+    std::string message;
+};
+
+struct revoke_currency_pair_convention_calendar_request {
+    using response_type = struct revoke_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.revoke";
+    std::string pair_code;
+    std::string calendar_code;
+};
+
+struct revoke_currency_pair_convention_calendar_response {
+    bool success = false;
+    std::string message;
+};
 }
 
 #endif

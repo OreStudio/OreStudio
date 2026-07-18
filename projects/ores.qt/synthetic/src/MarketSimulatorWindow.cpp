@@ -657,9 +657,9 @@ static QString feedItemText(const synthetic::domain::market_data_generation_conf
 // bottom-left corner of every node's icon (folder or feed).
 static QIcon runningBadge(int running, int total) {
     if (running == 0)
-        return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
+        return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(250, 204, 21));
     if (running == total)
-        return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(60, 180, 80));
+        return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(37, 99, 235));
     return IconUtils::createRecoloredIcon(Icon::PlayFilled,
                                           QColor(200, 160, 40)); // partially running
 }

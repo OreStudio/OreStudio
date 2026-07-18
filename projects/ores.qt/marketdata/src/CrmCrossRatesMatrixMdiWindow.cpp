@@ -681,10 +681,10 @@ void CrmCrossRatesMatrixMdiWindow::exportToCsv() {
     try {
         std::ostringstream out;
         out << std::fixed << std::setprecision(5);
-        out << "base,quote,rate,status,as_of\n";
+        out << "base,quote,rate,status,reciprocal,as_of\n";
         for (const auto& r : displayedRates_) {
             out << r.base_currency_code << ',' << r.quote_currency_code << ',' << r.rate << ','
-                << r.status << ',' << r.as_of << '\n';
+                << r.status << ',' << (r.reciprocal ? "true" : "false") << ',' << r.as_of << '\n';
         }
 
         QFile file(fileName);

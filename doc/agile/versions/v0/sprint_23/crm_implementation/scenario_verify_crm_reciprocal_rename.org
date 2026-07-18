@@ -98,12 +98,56 @@ still round-trips correctly.
 |--------+-------|
 | Status | PASS |
 
-** Export CSV with "Show Reciprocal" on and check the header
+** Export CSV with "Show Reciprocal" on and check the reciprocal column
 
 With the toggle on, use the matrix's CSV export. Open the exported
-file and confirm the reciprocal cells are present in the export, and
-that the filename/metadata reflects "reciprocal" rather than
-"inverted" (matching the renamed filter state).
+file and confirm:
+- its filename reflects "reciprocal" rather than "inverted" (matching
+  the renamed filter state);
+- the header row now includes a =reciprocal= column
+  (=base,quote,rate,status,reciprocal,as_of=), and every backfilled
+  row shows =true= there, every directly-quoted row shows =false=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Check the shell's =--reciprocal= flag
+
+From =ores.shell=, run =crm rates <crm-name> --reciprocal= for the
+same CRM used above and confirm the output includes the same
+backfilled pairs seen in the Qt matrix, with rates matching. Compare
+against =crm rates <crm-name>= (no flag) to confirm the flag is what
+toggles the backfill, same as the Qt "Show Reciprocal" button.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm Live/Stale/Disconnected status colouring and tooltips
+
+For a rate that is currently ticking, hover its cell and confirm the
+tooltip reads "Live - <timestamp>" and the pair-code text is neutral
+(no colour tint). Stop the underlying synthetic feed (Market
+Simulator window) for one pair in the CRM, wait past the 15-minute
+stale threshold *or* substitute a shorter wait by checking with a
+pair whose feed has already been stopped for a while, and confirm:
+- between 15 and 60 minutes stale, the pair-code text turns amber
+  and the tooltip reads "Stale - <timestamp>";
+- past 60 minutes stale, the pair-code text turns red with a ⛔
+  glyph and the tooltip reads "Disconnected - <timestamp>".
+Confirm in all cases that only the pair-code text changes colour --
+the rate value itself stays neutral.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 # For a multi-client scenario (Clients field above is non-empty),
 # nest steps one level deeper instead, under one sub-heading per
@@ -117,20 +161,14 @@ that the filename/metadata reflects "reciprocal" rather than
 # Single-client scenarios (the common case) keep steps as direct
 # children of * Steps, as above.
 
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
-
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
-| Completed at  | 2026-07-18T07:07:36Z |
-| Branch        | feature/crm-rename-inverted-to-reciprocal |
-| Commit        | 50619dc25 |
-| Worktree      | clever_dijkstra |
+| Status        | PENDING |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
 
 * Notes

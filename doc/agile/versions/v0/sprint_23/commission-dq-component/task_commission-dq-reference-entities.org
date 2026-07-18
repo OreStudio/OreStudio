@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on: DDBD522D-D348-44ED-8C43-ECE7F60CD1B4
-#+blocked_since: 2026-07-18
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-17
 #+updated: 2026-07-18
 #+environment: bright_faraday
@@ -26,11 +26,11 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Blocked on [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] (lookup_entity model_type mapping bug -- discovered while verifying catalog.org: no lookup_entity model in the repo, new or pre-existing, can regenerate SQL or C++). |
-| Waiting on   | [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] |
-| Next         | Once fixed: verify catalog.org generates, commit, then change_reason_category, change_reason, data_domain, subject_area. |
+| Now          | catalog.org verified (generates correct SQL DDL via ores.sql.schema, structurally matches the hand-written dq_catalog_create.sql). Moving to change_reason_category next. |
+| Waiting on   | Nothing.                               |
+| Next         | change_reason_category, then change_reason, data_domain, subject_area. C++ regeneration and hand-written-code retirement deferred to [[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] (lookup_entity -> domain_entity migration). |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -62,6 +62,23 @@ doesn't fit =doc_lookup_entity.org.mustache='s current single-column
 =Primary key= section, and =has_coding_scheme=/=has_image_id=/
 =has_artefact_insert_fn= are hardcoded =false= in that template with
 no CLI flag at all. Filed [[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][F71E530F]] to fix both before resuming here.
+
+Discovered a second, separate bug while verifying catalog.org: no
+lookup_entity model in the repo could regenerate SQL or C++ at all
+(core.py mapped its #+type: to a model_type no archetype matched).
+Filed and fixed [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] (SQL
+only -- C++ needs a bigger fix, tracked separately as
+[[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]], migrating
+lookup_entity into domain_entity rather than patching a duplicate C++
+pipeline). catalog.org now verified: =compass codegen generate
+--model ... --address ores.sql.schema= produces DDL structurally
+matching =projects/ores.sql/create/dq/dq_catalog_create.sql= (only
+cosmetic differences -- comment formatting, NEW/OLD case -- plus an
+auto-generated =validate_catalog_fn= the hand-written original
+predates). C++ generation and swapping the hand-written table over to
+generated SQL are deferred to 464B5EC6/a later step, not blocking
+authoring the remaining four entities' models.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:tooling:documentation:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sweep-stale-legacy-profile-references
+#+pr: 1629
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -52,11 +52,11 @@ description of dead functionality.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -92,12 +92,53 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1629][#1629]] | [codegen] Remove --profile entirely; --address is the only selector |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Migration-script docstrings still say "the SQL profile"/"service-registry profile" | migrate_{junction,lookup_entity,service_registry,table}_to_org.py | Accepted | Reworded to the actual address (=ores.sql.schema=, =ores.shell.service=) |
+| 2 | "Scaffold profiles" heading not renamed alongside its `#+component_kind:` content | projects/modeling/component_architecture.org | Accepted | Renamed to "Scaffold kinds" |
+| 3 | Broken cross-file heading link (same-file link syntax used cross-file) | projects/modeling/variability_model.org | Accepted | Caught by CI's `site` build (unresolved link); replaced with plain text |
+| 4 | Sibling `is_field_group` comment still says "field-group profile"; other three branches already say "address" | projects/ores.codegen/src/codegen/core.py:1394 | Accepted | Reworded to match the other three branches |
 
 * Result
+
+Swept every non-agile-history doc, skill, recipe, runbook, and template
+comment referencing the retired =facet_catalogue.org=/=--profile=
+system. Along the way this widened into fully completing B11 (see that
+task): rather than leaving =--profile= as a deprecated shim to document
+around, it was removed outright from the codebase, which turned this
+into a real code change, not just a doc sweep.
+
+Fixed ~35 files: =projects/ores.codegen/docs/architecture.org= (full
+rewrite — it referenced the deleted =src/generator.py= module layout,
+not just the profile system), all =doc/recipes/codegen/*.org=,
+=doc/recipes/qt/how_do_i_create_entity_ui.org=,
+=doc/recipes/sql/how_do_i_create_entity_schema.org=, the
+=codegen-add-*=/=code-add-domain-type= skills, the
+=create_a_new_component= runbook, =doc/llm/claude_code_settings.org=
+(permission allowlist), the =projects/modeling/*.org= physical-space
+design docs (=applied_masd.org=, =variability_model.org=, per-facet
+docs), =component_overview.org= for =ores.codegen= and the
+component-scaffold test fixtures, and the =*.mustache=/literate
+template comments (re-tangled and the derived
+=projects/ores.sql/service_vars.sh= regenerated to match).
+
+Also found and removed two pieces of fully dead code discovered along
+the way: =run_generator.sh= and =generate_workspace_entities.sh= both
+called the long-deleted =src/generator.py= against a =models/=
+directory that no longer exists in the repo.
+
+=doc/knowledge/architecture/entity_mirror_cache_placement.org= had a
+dead link to the deleted =facet_catalogue.org=; repointed to the live
+=ores.cpp.nats-event-cache= facet node.
+
+Left =projects/modeling/variability_model.org='s historical "Profile
+catalogue" table and =doc/analysis/=/=doc/plans/= snapshots alone —
+correctly framed as point-in-time historical record, not live docs.
+
+Verified: 50 =pytest= unit tests pass, the component-scaffold verify
+script passes, and =codegen generate=/=regenerate --dry-run=/=entity
+generate|show= were exercised end-to-end against real entities.

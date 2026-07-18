@@ -1212,7 +1212,7 @@ def _parse_org_table_rows(node: OrgNode) -> list[dict[str, str]]:
 def load_org_table_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode table model into the ``{table: {...}}`` dict
     shape that ``sql_schema_create.mustache`` consumes via the
-    ``--profile sql`` model_types=["table"] route."""
+    ``--address ores.sql.schema`` model_types=["table"] route."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     fm = doc.frontmatter
@@ -1384,7 +1384,7 @@ _LOOKUP_ENTITY_BOOL_SCALARS = (
 def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode lookup-entity model into the ``{entity: {...}}``
     dict shape that ``sql_schema_table_create.mustache`` consumes via the
-    ``--profile sql`` model_types=["schema"] route.
+    ``--address ores.sql.schema`` model_types=["schema"] route.
 
     Lookup entities share the bi-temporal DDL shape with table models
     but route through codegen's "schema" model_type (JSON root key

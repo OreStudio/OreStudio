@@ -11,7 +11,7 @@
 
 ClientModel layout, async fetch pattern, and file locations are in
 [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]. The [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] skill drives this process;
-codegen (=--profile qt=) is the primary path.
+codegen (=--address ores.cpp.qt=) is the primary path.
 
 * Question
 
@@ -22,13 +22,13 @@ How do I add Qt UI components for a new entity in =ores.qt=?
 *Codegen path (preferred)*:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity> --profile qt
+./compass.sh codegen entity generate <entity> --address ores.cpp.qt
 #+end_src
 
 Preview changes before writing:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity> --profile qt --diff
+./compass.sh codegen entity generate <entity> --address ores.cpp.qt --diff
 #+end_src
 
 Then proceed to Phase 4 (controller wiring) below.

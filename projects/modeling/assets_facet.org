@@ -13,8 +13,8 @@
 
 The assets facet groups the non-code artefacts =ores.codegen= projects
 for a component: Qt Designer =.ui= forms, the PlantUML ER diagram, and
-shell environment-variable snippets. It is generated under =--profile
-assets= from the model, so these supporting files track the logical
+shell environment-variable snippets. It is generated under =--address
+ores.cpp.qt= from the model, so these supporting files track the logical
 model alongside the C++, SQL and build facets rather than drifting.
 
 * Detail

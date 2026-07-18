@@ -40,17 +40,10 @@ def main() -> None:
         help="Path to the model file (e.g. models/refdata/currency_entity.json)",
     )
     gen_p.add_argument(
-        "--profile",
-        default="sql",
-        metavar="PROFILE",
-        help="DEPRECATED (use --address): legacy profile (sql, all-cpp, ...); default: sql",
-    )
-    gen_p.add_argument(
         "--address",
-        default=None,
+        required=True,
         metavar="ADDRESS",
-        help="Physical-space address to generate (e.g. ores.sql, ores.cpp.qt); "
-             "overrides --profile.",
+        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt).",
     )
     gen_p.add_argument(
         "--dry-run",
@@ -76,16 +69,10 @@ def main() -> None:
         help="Regenerate all components",
     )
     regen_p.add_argument(
-        "--profile",
-        default="sql",
-        metavar="PROFILE",
-        help="DEPRECATED (use --address): legacy profile; default: sql",
-    )
-    regen_p.add_argument(
         "--address",
-        default=None,
+        required=True,
         metavar="ADDRESS",
-        help="Physical-space address to generate; overrides --profile.",
+        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt).",
     )
     regen_p.add_argument(
         "--dry-run",
@@ -125,12 +112,6 @@ def main() -> None:
         "--all",
         action="store_true",
         help="Diff all components",
-    )
-    diff_p.add_argument(
-        "--profile",
-        default="sql",
-        metavar="PROFILE",
-        help="Generation profile; default: sql",
     )
 
     args = parser.parse_args()

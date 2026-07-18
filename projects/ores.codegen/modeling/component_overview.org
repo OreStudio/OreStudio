@@ -50,27 +50,27 @@ licence headers and editor modelines.
 By default, output lands in =output/= alongside the wrapper script;
 each entry point accepts a custom output directory.
 
-* Profile catalogue
+* Facet catalogue
 
-C++ profiles are declared in each facet's Archetypes table across the
+C++ facets are declared as nodes in the
 [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] and invoked with
-=--profile <name>=. Each profile is a named collection of Mustache
+=--address <address>=. Each facet is a named collection of Mustache
 templates; every template's literate source — prose on role, model
 inputs and outputs, plus the tangle block — lives in its facet doc
 under [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][the template library]]. The type mappings that apply across all
-profiles are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Type mappings".
+facets are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Type mappings".
 
-| Profile | Covers | Key library |
+| Address | Covers | Key library |
 |---|---|---|
-| =--profile domain= | Domain class, JSON I/O, table I/O | =reflectcpp=, =libfort= |
-| =--profile generator= | Test data generator | =faker-cxx= |
-| =--profile repository= | Entity, mapper, repository | =sqlgen= |
-| =--profile service= | Service layer | — |
-| =--profile protocol= | NATS messaging protocol header | — |
-| =--profile sql= | SQL schema, notify triggers, drop scripts | — |
-| =--profile qt= | Qt UI (ClientModel, MdiWindow, dialogs, controller) | Qt6 |
-| =--profile all-cpp= | domain + generator + repository + service + protocol | all above |
-| =--profile all= | all-cpp + sql | all above |
+| =--address ores.cpp.domain= | Domain class, JSON I/O, table I/O | =reflectcpp=, =libfort= |
+| =--address ores.cpp.generator= | Test data generator | =faker-cxx= |
+| =--address ores.cpp.repository= | Entity, mapper, repository | =sqlgen= |
+| =--address ores.cpp.service= | Service layer | — |
+| =--address ores.cpp.protocol= | NATS messaging protocol header | — |
+| =--address ores.sql.schema= | SQL schema, notify triggers, drop scripts | — |
+| =--address ores.cpp.qt= | Qt UI (ClientModel, MdiWindow, dialogs, controller) | Qt6 |
+| =--address ores.cpp= | domain + generator + repository + service + protocol | all above |
+| =--address ores= | ores.cpp + ores.sql.schema | all above |
 
 ** domain
 
@@ -138,16 +138,18 @@ controller, and the two =.ui= form files.  Patterns are in
 
 ** Component scaffold profiles
 
-These profiles create a new component skeleton rather than entity code.
-They generate CMakeLists, a master header, a stub header+impl, and test
+All variants run via =--address ores.cpp.component=; the overview's
+=#+component_kind:= frontmatter (=api=/=core=/=service=/=flat=) picks
+which one. They create a new component skeleton rather than entity
+code: CMakeLists, a master header, a stub header+impl, and test
 harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split model and CMake dep chain.
 
-| Profile | Part | Files |
+| =#+component_kind:= | Part | Files |
 |---|---|---|
-| =--profile component-api= | =ores.COMPONENT.api= | 10 (CMakeLists ×4, export.hpp, header, stub header+impl, test main+stub) |
-| =--profile component-core= | =ores.COMPONENT.core= | 10 (same set, core CMake deps) |
-| =--profile component-service= | =ores.COMPONENT.service= | 19 (core set + export.hpp + app/config headers+impls + main.cpp) |
-| =--profile component= | standalone (no split) | 10 (generic CMake deps + export.hpp) |
+| =api= | =ores.COMPONENT.api= | 10 (CMakeLists ×4, export.hpp, header, stub header+impl, test main+stub) |
+| =core= | =ores.COMPONENT.core= | 10 (same set, core CMake deps) |
+| =service= | =ores.COMPONENT.service= | 19 (core set + export.hpp + app/config headers+impls + main.cpp) |
+| =flat= (default) | standalone (no split) | 10 (generic CMake deps + export.hpp) |
 
 * Test fixtures
 
@@ -155,20 +157,20 @@ Component-scaffold integration tests use fixture components under
 =tests/component_scaffold/=. Each fixture is a minimal component tree
 that exercises the scaffold profiles end-to-end.
 
-| Fixture | Profile exercised |
+| Fixture | Address exercised |
 |---+---|
-| [[id:22222222-2222-4222-9222-222222222222][ores.sample_composite]] | =--profile component= (group-level composite) |
-| [[id:33333333-3333-4333-9333-333333333333][ores.sample_composite.api]] | =--profile component-api= |
-| [[id:44444444-4444-4444-9444-444444444444][ores.sample_composite.core]] | =--profile component-core= |
+| [[id:22222222-2222-4222-9222-222222222222][ores.sample_composite]] | =--address ores.cpp.component= (group-level composite) |
+| [[id:33333333-3333-4333-9333-333333333333][ores.sample_composite.api]] | =--address ores.cpp.component= (API subcomponent) |
+| [[id:44444444-4444-4444-9444-444444444444][ores.sample_composite.core]] | =--address ores.cpp.component= (core subcomponent) |
 
 * Entry points
 
-- =run_generator.sh= — the C++/SQL wrapper. Accepts a model path, an
-  optional output directory, and =--template= / =--profile= /
-  =--list-profiles=.
+- =codegen.sh= — the CLI wrapper (activates venv, calls =codegen.py=).
+  =generate= takes a model path and =--address= (physical-space
+  address); =regenerate= takes =--component= or =--all=.
 - =generate_doc.sh= — the org-document wrapper. See its CLI in
   =docs/doc_generator.md=.
-- =src/generator.py= — the main Python generator.
+- =src/codegen/cli.py= — the CLI entry point.
 - =src/doc_generate.py= — the org-document generator.
 - =src/fpml_parser.py= — FPML Genericode XML → JSON converter.
 - =src/iso_generate_metadata_sql.py=, =src/images_generate_sql.py=,

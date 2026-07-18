@@ -35,7 +35,7 @@ case, extend the template first, then generate.
    for composite-text-PK association tables.
 
 2. /Generate the SQL schema/ (output goes to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
-   =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql=
+   =cd projects/ores.codegen && ./codegen.sh generate --model models/{component}/{entity}_domain_entity.json --address ores.sql.schema=
 
 3. /Register/ the generated file in the component orchestration script.
 
@@ -53,13 +53,13 @@ case, extend the template first, then generate.
 
 - [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] — naming conventions, suffix catalogue,
   idempotency patterns.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema and =--profile sql= details.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema and =--address ores.sql.schema= details.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — full schema mental model and PostgreSQL setup.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
 
 * Templates
 
-Runs via =--profile sql=.  Read the template directly for the
+Runs via =--address ores.sql.schema=.  Read the template directly for the
 authoritative implementation — do not reproduce it here.
 
 | Template | Output |

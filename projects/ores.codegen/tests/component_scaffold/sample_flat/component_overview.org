@@ -18,7 +18,7 @@ Test fixture for the component-scaffold verifier. Represents a flat component
 (no api/core/service subdivision) — equivalent in shape to =ores.nats=,
 =ores.storage=, or =ores.service=.
 
-Codegen running =--profile component= against this overview should produce:
+Codegen running =--address ores.cpp.component= against this overview should produce:
 - =CMakeLists.txt= at the component root
 - =src/CMakeLists.txt= / =tests/CMakeLists.txt= / =modeling/CMakeLists.txt=
 - =include/<full_name>/export.hpp= and =<full_name>.hpp=

@@ -15,6 +15,6 @@
 * Summary
 
 The =.core= layer of the =sample_composite= group — equivalent in shape to
-=ores.iam.core=, =ores.dq.core=, etc. Codegen running =--profile component-core=
+=ores.iam.core=, =ores.dq.core=, etc. Codegen running =--address ores.cpp.component=
 against this overview should produce the core implementation scaffold
 (CMakeLists, export.hpp, public header, stub header/impl, stub tests).

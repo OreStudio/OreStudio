@@ -2,14 +2,14 @@
 :ID: 8010834F-9179-4ECD-999D-5D017D393D36
 :END:
 #+title: How do I generate a codegen entity?
-#+description: Use compass codegen entity generate to regenerate all applicable profiles for an entity. Supports --address to restrict to one facet (per-layer commands table included) and --dry-run to preview paths.
+#+description: Use compass codegen entity generate to regenerate an entity's full supported set. Supports --address to restrict to one facet (per-layer commands table included) and --dry-run to preview paths.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:recipe:
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-For background on profiles (facets) and metatypes, see
+For background on the physical-space graph (facets) and metatypes, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
 
 * Question
@@ -24,19 +24,17 @@ Run =compass codegen entity generate <name-or-id>= from the project root:
 ./compass.sh codegen entity generate country
 #+end_src
 
-The entity resolves by name or org-roam UUID prefix. All applicable leaf
-facets are run automatically (e.g. =domain=, =repository=, =service=,
-=sql=, =qt=, =protocol=, …):
+The entity resolves by name or org-roam UUID prefix. Omitting =--address=
+generates the entity's full supported set — every facet its model type and
+=:ores.*.enabled:= overrides admit (e.g. =ores.cpp.domain=,
+=ores.cpp.repository=, =ores.cpp.service=, =ores.sql.schema=, =ores.cpp.qt=,
+=ores.cpp.protocol=, …):
 
 #+begin_example
-Generating country (domain_entity, refdata) — 12 profile(s): domain, generator,
-  nats-eventing, nats-handler, non-temporal-domain, non-temporal-repository,
-  non-temporal-sql, protocol, qt, repository, service, sql
+Generating country (domain_entity, refdata) — supported set
 #+end_example
 
-*Restrict to one facet* with =--address= (the current, non-deprecated flag;
-=--profile= still accepts the same address strings but prints a deprecation
-warning and will be removed — see =projects/ores.compass/src/compass_codegen_entity.py=):
+*Restrict to one facet* with =--address=:
 
 #+begin_src sh
 ./compass.sh codegen entity generate country --address ores.sql.schema
@@ -63,9 +61,9 @@ when regenerating a single layer (e.g. during a commissioning task):
 | C++ enum                 | =ores.cpp.enum=                | enum type + string conversion              |
 | CMake component wiring   | =ores.cmake.component=         | component CMakeLists.txt entries           |
 
-=--address= (like =--profile=) accepts only one facet per invocation — there is
-no accumulating flag. To touch several layers without regenerating the whole
-entity, run the command once per address:
+=--address= accepts only one facet per invocation — there is no accumulating
+flag. To touch several layers without regenerating the whole entity, run
+the command once per address:
 
 #+begin_src sh
 ./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.repository
@@ -106,8 +104,9 @@ handler in [[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects
 * Tested by
 
 Run =./compass.sh codegen entity generate country --dry-run= and verify
-36 output paths are printed across 12 profiles. Run without =--dry-run=
-and verify the stale files are updated (=entity show= should then show ✅).
+the entity's full output-path set is printed across every applicable facet.
+Run without =--dry-run= and verify the stale files are updated (=entity
+show= should then show ✅).
 
 * See also
 

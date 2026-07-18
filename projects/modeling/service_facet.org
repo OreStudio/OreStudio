@@ -14,7 +14,7 @@
 The service application facet is the runnable-process projection of a
 domain service: the application class, its host, the configuration
 options and parser, and the =main()= entry point that =ores.codegen=
-generates under =--profile service=. It turns a domain component into a
+generates under =--address ores.cpp.service-app=. It turns a domain component into a
 deployable NATS service with consistent start-up, configuration and
 logging, so every service in the fleet is wired the same way.
 

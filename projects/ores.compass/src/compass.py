@@ -6189,8 +6189,8 @@ def cmd_codegen(argv):
                             help="Generate from a single model file.")
     gen_p.add_argument("--model", required=True, metavar="PATH",
                        help="Path to the model file")
-    gen_p.add_argument("--profile", default="sql", metavar="PROFILE",
-                       help="Generation profile (sql, all-cpp, domain, …); default: sql")
+    gen_p.add_argument("--address", required=True, metavar="ADDRESS",
+                       help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt)")
     gen_p.add_argument("--dry-run", action="store_true",
                        help="Print output paths without writing")
 
@@ -6201,8 +6201,8 @@ def cmd_codegen(argv):
                              help="Component to regenerate (e.g. refdata-cpp)")
     regen_scope.add_argument("--all", action="store_true",
                              help="Regenerate all components")
-    regen_p.add_argument("--profile", default="sql", metavar="PROFILE",
-                         help="Generation profile; default: sql")
+    regen_p.add_argument("--address", required=True, metavar="ADDRESS",
+                         help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt)")
     regen_p.add_argument("--dry-run", action="store_true",
                          help="Print output paths without writing")
 

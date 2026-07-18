@@ -48,13 +48,13 @@ justification before proceeding.
 
 #+begin_src sh
 # SQL (table DDL, trigger, RLS, artefact table)
-./compass.sh codegen entity generate <entity> --profile sql
+./compass.sh codegen entity generate <entity> --address ores.sql.schema
 
 # C++ API and core (domain type, repository, service, handler)
-./compass.sh codegen entity generate <entity> --profile all-cpp
+./compass.sh codegen entity generate <entity> --address ores.cpp
 
 # Qt UI (model, MDI window, detail dialog, history dialog, controller)
-./compass.sh codegen entity generate <entity> --profile qt
+./compass.sh codegen entity generate <entity> --address ores.cpp.qt
 #+end_src
 
 Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] skill for CMakeLists integration, controller

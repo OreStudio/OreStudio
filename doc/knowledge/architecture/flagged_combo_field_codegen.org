@@ -102,7 +102,7 @@ tracks giving this a build-time-or-earlier signal instead.
 
 =./compass.sh codegen entity generate <entity> [--address <addr>]=
 targets exactly one entity. =./compass.sh codegen regenerate
---component <c> --profile <p>= regenerates *every* entity in the
+--component <c> --address <addr>= regenerates *every* entity in the
 component — on a component with accumulated template drift against
 stale entities (common in this codebase), that diff can span dozens
 of unrelated files needing manual discard. See

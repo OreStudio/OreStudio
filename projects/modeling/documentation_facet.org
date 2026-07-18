@@ -13,7 +13,7 @@
 
 The documentation facet is the literate-document projection of the
 model: the agile and knowledge docs, skills, recipes and runbooks that
-=ores.codegen= scaffolds under =--profile doc=. It is the largest facet
+=ores.codegen= scaffolds under =--address ores.doc=. It is the largest facet
 by template count, because ORE Studio's working knowledge is itself a
 generated artefact — scaffolded with consistent frontmatter, IDs and
 structure, then filled in by hand.

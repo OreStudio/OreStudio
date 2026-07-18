@@ -55,14 +55,16 @@ truth for both humans and codegen — the standalone
    [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]].
 
 3. /Run codegen against each overview/ to scaffold the C++ + CMake
-   project:
+   project. Each overview's =#+component_kind:= frontmatter (=api=,
+   =core=, =service=, or the default =flat=) selects the scaffolding
+   variant; the address is the same =ores.cpp.component= for all of them:
    #+begin_src sh
    ./projects/ores.codegen/codegen.sh generate \
      --model projects/ores.COMPONENT/api/modeling/component_overview.org \
-     --profile component-api
+     --address ores.cpp.component
    #+end_src
-   Repeat with =--profile component-core= and
-   =--profile component-service= as needed.
+   Repeat per part (=.api=, =.core=, =.service=), each against its own
+   overview file.
 
 4. /(Optional) Add a group-level overview/ at
    =projects/ores.COMPONENT/modeling/component_overview.org=.
@@ -88,16 +90,18 @@ truth for both humans and codegen — the standalone
 
 * Templates
 
-Scaffold profiles (each generates 9 files for =.api=/=.core=; 18 for =.service=):
+All scaffolding runs via the single address =--address ores.cpp.component=;
+the overview's =#+component_kind:= frontmatter picks the variant (each
+generates 9 files for =.api=/=.core=; 18 for =.service=):
 
-| Profile | Key templates |
+| =#+component_kind:= | Key templates |
 |---|---|
-| =--profile component= | Flat component (no =.api=/=.core=/=.service= split) — produces all 10 files including =stub.hpp= / =stub.cpp= |
-| =--profile component-api= | =cmake_component_root.mustache= + =cmake_component_api_src.mustache= + 7 others |
-| =--profile component-core= | =cmake_component_root.mustache= + =cmake_component_core_src.mustache= + 7 others |
-| =--profile component-service= | =cmake_component_root.mustache= + =cmake_component_service_src.mustache= + 16 others |
+| =flat= (default) | Flat component (no =.api=/=.core=/=.service= split) — produces all 10 files including =stub.hpp= / =stub.cpp= |
+| =api= | =cmake_component_root.mustache= + =cmake_component_api_src.mustache= + 7 others |
+| =core= | =cmake_component_root.mustache= + =cmake_component_core_src.mustache= + 7 others |
+| =service= | =cmake_component_root.mustache= + =cmake_component_service_src.mustache= + 16 others |
 
-All four profiles consume the same model type =component=, read
+All four kinds consume the same model type =component=, read
 from a =component_overview.org= via =load_org_component_overview_model=.
 Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue".
 
@@ -110,7 +114,7 @@ group + 3 subs).
 * Reference
 
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — split rules, facet placement, CMake dep chain.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, =run_generator.sh= usage.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, physical-space graph, =codegen.sh= usage.
 - [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — write the architecture docs once scaffold is working.
 - [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 

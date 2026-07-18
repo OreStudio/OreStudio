@@ -109,13 +109,12 @@ profile membership.
 single flat file, =facet_catalogue.org=, parsed directly by
 =generator.py= via =_load_profiles_from_org()=. That file and function
 were retired once the ores.* graph above fully absorbed its content
-(story: [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system]]). The =--profile=-based
-example, the flat "Profile catalogue" table, and the "Profile
-activation" CLI invocation below describe that retired system's shape
-and are kept for historical continuity pending a fuller rewrite of
-this document to the current =ores.*=/=--address= element-scope model
-described in [[*Element-scope activation — the supported/target set model][Element-scope activation]] below, which has already
-superseded =--profile= as the primary mechanism.
+(story: [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system]]). The =--profile= CLI flag
+that named those legacy profiles has since been removed outright (task
+B11) — =--address= against the =ores.*= graph is now the only
+selector. The "Profile catalogue" table below is kept as a historical
+map from each retired profile name to its current facet address, for
+readers translating old commands or docs.
 
 There is no feature graph and no inheritance chain in the activation
 layer. The simplicity is deliberate: ORE Studio's physical space is small
@@ -127,9 +126,9 @@ and LLMs.
 In MASD's VMM, feature values are set at product / component / element
 scope. In ORE Studio the primary scope filter for activation is the
 *model type* — a tag that classifies each model file and controls which
-profile templates can apply to it. A profile's =model_types= list acts as
+facet's archetypes can apply to it. A facet's =model_types= list acts as
 the filter: only a model whose type appears in that list is a valid
-target for the profile.
+target for the facet.
 
 Model type is derived from the filename suffix (JSON route) or the
 =#+type:= frontmatter field (org-mode route):
@@ -146,14 +145,21 @@ Model type is derived from the filename suffix (JSON route) or the
 | =service_registry= | —                      | =ores.codegen.service_registry= | DB service registration (users, grants, accounts) |
 | =data=           | —                        | —                              | PlantUML ER diagrams |
 
-This filter prevents, for instance, the =component= scaffold profile from
-inadvertently running against entity models, and the =domain= profile from
+This filter prevents, for instance, the =component= scaffold facet from
+inadvertently running against entity models, and the =domain= facet from
 running against SQL-only table models.
 
-** Profile catalogue
+** Profile catalogue (historical)
 
 All profiles defined in the (now-retired) =facet_catalogue.org= as of
-its last state — see the historical note above:
+its last state, and later exposed as the deprecated =--profile= CLI
+shim (removed by task B11) — see the historical note above. Each name
+below maps 1:1 to the current facet address of the same purpose (e.g.
+=domain= → =ores.cpp.domain=, =sql= → =ores.sql.schema=; see
+the facet catalogue in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for the full current mapping).
+The =all=/=all-cpp=/=non-temporal= composite aliases have no single
+address equivalent — use the relevant technical-space or root address
+(=ores.cpp=, =ores=) instead:
 
 | Profile | Model types | Templates | Description |
 |---------+-------------+-----------+-------------|
@@ -186,31 +192,33 @@ shortcuts for CLI use. The generator resolves them by running the
 constituent profiles in sequence. The alias itself carries no templates;
 the resolution logic is in =src/generator.py=.
 
-** Profile activation
+** Address activation
 
-Profiles are activated explicitly at invocation time via the CLI:
+Generation is scoped at invocation time via the CLI's =--address=:
 
 #+begin_src sh
 ./projects/ores.codegen/codegen.sh generate \
   --component refdata \
-  --profile domain
+  --address ores.cpp.domain
 #+end_src
 
-The generator filters the profile's template list by the current model
-file's model type, then renders each matching template against the model's
-data. No profile is activated implicitly — every invocation names the
-profile explicitly.
+Omitting =--address= generates the entity's full supported set (every
+facet its model type and =ores.*= drawer overrides admit); giving an
+address restricts the run to the facets under that physical-space
+subtree. See [[*Element-scope activation — the supported/target set model]] below
+for the full address hierarchy, specificity resolution rules, and
+target/supported-set semantics.
 
 *Component scope* is handled by =src/codegen/manifest.py=: the manifest
-maps component names to their model discovery roots (=models_dir= for JSON
-models; =modeling_dir= for org-mode model files). It does not assign default
-profiles. The profile is always specified at the point of invocation —
-by the developer at the command line or by the [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]] or compass recipe
-driving the regeneration.
+maps component names to their model discovery roots (=models_dir= for
+legacy JSON models; =modeling_dir= for org-mode model files). It does
+not assign a default address — that is always either omitted (full
+supported set) or given explicitly by the developer, a [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]], or a
+compass recipe.
 
-*Product scope* — a MASD concept meaning a profile applies across the
-whole product — is approximated by the composite alias profiles (=all=,
-=all-cpp=, =non-temporal=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-profile
+*Product scope* — a MASD concept meaning activation applies across the
+whole product — is expressed by a technical-space or root address
+(=ores.cpp=, =ores=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-facet
 invocations into a single command.
 
 *Element scope* — individual entities can enable or disable specific technical
@@ -431,7 +439,7 @@ natural scope is the element.
 | Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | An authored knob on the model: a =sql.*= / =qt.*= / licence feature (Part 2) |
 | Feature bundle | Cohesive group of features | =licence= / =masd.sql= / =masd.qt= bundles (Part 2) |
 | Profile | Named bundle of feature values + activation | Split: activation is an =ores.*= graph archetype entry (Part 1); feature values are authored per element (Part 2) |
-| Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases (activation only) |
+| Base profile | Product-wide defaults | A technical-space or root address (=ores.cpp=, =ores=) (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
 | Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation (Part 1 element scope); authored =sql.*=/=qt.*= features for projection configuration (Part 2) |
 | VMM | Meta-model of the full configuration space | =ores.*= physical-space graph (activation) + the feature catalogue in Part 2 (configuration) |

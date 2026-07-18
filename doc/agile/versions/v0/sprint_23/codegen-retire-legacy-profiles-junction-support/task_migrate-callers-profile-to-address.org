@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-28
 #+updated: 2026-06-28
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ Every live caller of codegen generation uses --address with the correct physical
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-28                               |
 
 * Acceptance
@@ -60,3 +60,41 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Went further than the acceptance criteria's "optionally remove the
+shim" — removed =--profile= outright rather than leaving it as a
+documented-around deprecated path, since keeping it added no value
+once every live caller was migrated.
+
+Code: deleted =_PROFILE_TO_FACETS=/=_CPP_CORE= and the =profile=
+parameter from =resolve_targets=/=_generate_single=/=cmd_generate=/
+=cmd_regenerate= in =generate.py=; removed =--profile= from the
+argparse definitions in =cli.py=, =compass.py= (=cmd_codegen=), and
+=compass_codegen_entity.py= (=entity generate|show|diff=); =--address=
+is now required on the top-level =codegen generate|regenerate= and
+optional (defaults to full supported set) on =codegen entity=. Removed
+the now-fully-dead =resolve_profile_templates=/
+=validate_profile_for_model=/=list_profiles= from =core.py= (never
+called outside themselves). Updated the =--profile= guard messages in
+=core.py= and the docstrings in =org_loader.py= to reference addresses.
+
+Docs: every live caller across recipes, skills, runbooks, the
+component-scaffold test fixtures, and the =projects/modeling/*.org=
+physical-space design docs now uses =--address=; composite legacy
+profile names (=all=, =all-cpp=, =non-temporal=, =component-api=/
+=-core=/=-service=) were mapped to their real equivalents
+(=ores.cpp=/=ores= root/technical-space addresses, or — for component
+kind — the =#+component_kind:= frontmatter property, which several
+docs had wrong even before this task). Full file list and the two
+dead-code deletions (=run_generator.sh=,
+=generate_workspace_entities.sh=) found along the way are recorded on
+the sibling sweep task
+[[id:31C868B9-306E-4282-BA8C-07E647021B34][05C64B72]], since the two
+tasks were done together in one pass.
+
+Verified: =grep -rn -- "--profile"= across the repo returns only the
+one intentionally-preserved historical table in
+=variability_model.org= plus point-in-time agile/plan/analysis
+records. 50 =pytest= unit tests pass; component-scaffold verify passes;
+=codegen generate=, =regenerate --dry-run=, and =entity generate|show=
+exercised end-to-end with real addresses against real entities.

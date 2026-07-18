@@ -25,12 +25,12 @@ server-side handlers must be implemented. See [[id:608675E1-4284-4902-99AC-4DA56
 full layer ordering. If real-time updates are needed, the eventing
 infrastructure must also be in place.
 
-Codegen (=--profile qt=) is the primary path — always try it first.
+Codegen (=--address ores.cpp.qt=) is the primary path — always try it first.
 
 * How to use this skill
 
 1. /Generate with codegen/ (preferred):
-   =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt=
+   =cd projects/ores.codegen && ./codegen.sh generate --model models/{component}/{entity}_domain_entity.json --address ores.cpp.qt=
    Then go directly to Phase 4 (controller wiring).
 
 2. /If manual creation is needed/, work through four phases:
@@ -56,14 +56,14 @@ Build after every step (via =compass build=, not raw =cmake --build=, so it take
 * Reference
 
 - [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel layout, async fetch, recency highlighting, dialog shapes, file locations.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — =--profile qt= details and template catalogue.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — =--address ores.cpp.qt= details and template catalogue.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — plugin lifecycle and menu registration.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — icon selection for toolbar actions.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
 
 * Templates
 
-Runs via =--profile qt= (12 templates).  Full output paths are in
+Runs via =--address ores.cpp.qt= (12 templates).  Full output paths are in
 [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]§"Templates".  Read the template directly for the
 authoritative implementation — do not reproduce it here.
 

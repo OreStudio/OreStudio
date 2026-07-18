@@ -793,109 +793,6 @@ def resolve_output_path(output_pattern, model_data, model_type):
     return result
 
 
-def resolve_profile_templates(profile_name, profiles, model_type=None, resolved=None):
-    """
-    Resolve all templates for a profile, including any included profiles.
-
-    Args:
-        profile_name (str): Name of the profile to resolve
-        profiles (dict): Dictionary of all profile definitions
-        model_type (str): The model type for filtering templates
-        resolved (set): Set of already resolved profile names (for cycle detection)
-
-    Returns:
-        list: List of template info dicts with 'template' and optional 'output' keys
-    """
-    if resolved is None:
-        resolved = set()
-
-    if profile_name in resolved:
-        return []  # Avoid infinite recursion
-
-    if profile_name not in profiles:
-        print(f"Warning: Unknown profile '{profile_name}'")
-        return []
-
-    resolved.add(profile_name)
-    profile = profiles[profile_name]
-    templates = []
-
-    # Process templates - handle both old string format and new object format
-    for tmpl in profile.get('templates', []):
-        if isinstance(tmpl, str):
-            # Old format: just template name
-            templates.append({'template': tmpl})
-        elif isinstance(tmpl, dict):
-            # New format: object with template and output
-            # Check if template is compatible with model type
-            tmpl_model_types = tmpl.get('model_types')
-            if tmpl_model_types and model_type and model_type not in tmpl_model_types:
-                continue  # Skip this template - not compatible with model type
-            templates.append(tmpl)
-
-    # Resolve included profiles
-    for included in profile.get('includes', []):
-        templates.extend(resolve_profile_templates(included, profiles, model_type, resolved))
-
-    return templates
-
-
-def validate_profile_for_model(profile_name, profiles, model_type):
-    """
-    Check if a profile is compatible with a model type.
-
-    Args:
-        profile_name (str): Name of the profile
-        profiles (dict): Dictionary of all profile definitions
-        model_type (str): The model type
-
-    Returns:
-        tuple: (is_valid, error_message)
-    """
-    if profile_name not in profiles:
-        return False, f"Unknown profile: {profile_name}"
-
-    profile = profiles[profile_name]
-    model_types = profile.get('model_types', [])
-
-    if model_type not in model_types:
-        return False, (f"Profile '{profile_name}' is not compatible with model type '{model_type}'. "
-                      f"Supported types: {', '.join(model_types)}")
-
-    # Also check included profiles
-    for included in profile.get('includes', []):
-        is_valid, error = validate_profile_for_model(included, profiles, model_type)
-        if not is_valid:
-            return False, error
-
-    return True, None
-
-
-def list_profiles(profiles):
-    """
-    Print a formatted list of available profiles.
-
-    Args:
-        profiles (dict): Dictionary of profile definitions
-    """
-    print("Available profiles:")
-    print()
-    for name, profile in sorted(profiles.items()):
-        description = profile.get('description', 'No description')
-        model_types = ', '.join(profile.get('model_types', []))
-        template_count = len(profile.get('templates', []))
-        includes = profile.get('includes', [])
-
-        print(f"  {name}")
-        print(f"    Description:  {description}")
-        print(f"    Model types:  {model_types}")
-        if includes:
-            print(f"    Includes:     {', '.join(includes)}")
-        else:
-            print(f"    Templates:    {template_count}")
-        print()
-
-
 def normalise_sql_table_context(table):
     """Compute the derived render fields the unified SQL schema template
     (``sql_schema_create.mustache``) expects on its ``table`` context.
@@ -1494,32 +1391,32 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Enum models use a specific template
         templates_to_process = [t[0] for t in get_enum_template_mappings()]
     elif is_field_group:
-        # Field-group models must be used via the field-group profile (no default templates)
+        # Field-group models must be used via an address (e.g. --address ores.cpp.field-group; no default templates)
         if target_template:
             templates_to_process = [target_template]
         else:
-            print(f"Field-group model '{model_filename}' requires --profile field-group")
+            print(f"Field-group model '{model_filename}' requires --address ores.cpp.field-group")
             return
     elif is_component:
-        # Component scaffold models must be used via a profile (no default templates)
+        # Component scaffold models must be used via an address (no default templates)
         if target_template:
             templates_to_process = [target_template]
         else:
-            print(f"Component model '{model_filename}' requires --profile component")
+            print(f"Component model '{model_filename}' requires --address ores.cpp.component")
             return
     elif is_service_registry:
-        # Service registry models must be used via a profile (no default templates)
+        # Service registry models must be used via an address (no default templates)
         if target_template:
             templates_to_process = [target_template]
         else:
-            print(f"Service registry model '{model_filename}' requires --profile service-registry")
+            print(f"Service registry model '{model_filename}' requires --address ores.shell.service")
             return
     elif is_table:
-        # Table models must be used via a profile (e.g. --profile sql)
+        # Table models must be used via an address (e.g. --address ores.sql.schema)
         if target_template:
             templates_to_process = [target_template]
         else:
-            print(f"Table model '{model_filename}' requires --profile sql")
+            print(f"Table model '{model_filename}' requires --address ores.sql.schema")
             return
     elif is_schema_model:
         # Entity schema models use a different template set

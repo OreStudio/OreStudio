@@ -88,7 +88,7 @@ distinguishable from the personal *Account* actions now in File
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | - configuration should go to file, not a regular operation.; - job definitions, job... become Scheduled job...; - trading codes top level menu- is this ref data? find proper ref data menu for it. Also, in trading we also have trading codes. remove.; - add code domains to  classifications; ;  |
+| Notes  | - in file add a system sub menu. add reset system and system settings to it. also add scenario runner but call it test scenario runner |
 
 ** Operations gains Data Transfer and Data Catalogue
 
@@ -126,9 +126,9 @@ from each and confirm the correct window opens.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-18T11:37:32Z |
+| Completed at  | 2026-07-18T11:54:11Z |
 | Branch        | feature/system-operations-account-menu-taxonomy |
-| Commit        | 422abb979 |
+| Commit        | 71cdebcd5 |
 | Worktree      | solid_dirac |
 
 * Notes

@@ -329,7 +329,11 @@ void CalendarAssignmentWidget::commitChanges(
             [self, watcher, onComplete]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
-                if (self && result.success) {
+                if (self) {
+                    // Reload regardless of outcome: on partial failure, items
+                    // already applied server-side before the failing one must
+                    // be dropped from pendingAdds_/pendingRemoves_, else a
+                    // retry would resend them.
                     self->load();
                 }
                 if (onComplete)

@@ -203,10 +203,9 @@ void CurrencyDetailDialog::setupConnections() {
             &CalendarAssignmentWidget::errorMessage,
             this,
             [this](const QString&, const QString& message) { emit errorMessage(message); });
-    connect(calendarWidget_,
-            &CalendarAssignmentWidget::assignmentsChanged,
-            this,
-            &CurrencyDetailDialog::onFieldChanged);
+    connect(calendarWidget_, &CalendarAssignmentWidget::assignmentsChanged, this, [this]() {
+        ui_->saveButton->setEnabled(!readOnly_);
+    });
     connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
         if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
             return;
@@ -279,6 +278,8 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->deleteButton->setVisible(!readOnly);
     if (revertAction_)
         revertAction_->setVisible(readOnly);
+    if (calendarWidget_ && calendarsTab_ && tabWidget()->currentWidget() == calendarsTab_)
+        calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
 }
 
 void CurrencyDetailDialog::setHistory(const std::vector<refdata::domain::currency>& history,
@@ -551,6 +552,8 @@ void CurrencyDetailDialog::onSaveClicked() {
         return;
     }
 
+    if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+        return;
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;

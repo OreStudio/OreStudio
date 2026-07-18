@@ -75,6 +75,11 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+
+    /**
+     * @brief Relayed from CurrencyPairConventionMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
     void showCalendarsRequested();
 
 protected:

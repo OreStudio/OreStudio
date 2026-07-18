@@ -470,7 +470,7 @@ in the UI yet; out of scope for this sync, tracked separately).
     connect(calendarWidget_,
             &CalendarAssignmentWidget::assignmentsChanged,
             this,
-            &CurrencyDetailDialog::onFieldChanged);
+            [this]() { ui_->saveButton->setEnabled(!readOnly_); });
     connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
         if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
             return;
@@ -493,6 +493,34 @@ in the UI yet; out of scope for this sync, tracked separately).
                     MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
             });
     });
+#+end_src
+
+** Calendars tab: skip the currency save when only calendars changed
+
+Calendar assignments are committed by their own change-reason prompt
+(see the =calendars_tab_connections= block above) via
+=CalendarAssignmentWidget::commitChanges=. Without this guard, staging
+a calendar add/remove alone would still enable the Save button (see
+=calendars_tab_connections=) and =onSaveClicked= would unconditionally
+re-save the currency's own fields too, popping a second, unrelated
+change-reason dialog and bumping the currency's version for no real
+change.
+
+#+begin_src cpp :name calendars_tab_save_guard :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
+if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+    return;
+#+end_src
+
+** Calendars tab: keep read-only state in sync while browsing history
+
+=setReadOnly= is also invoked when paging through historical versions
+via the version-nav actions. Without this, a user already on the
+Calendars tab who pages to a historical version could still stage
+calendar edits against a read-only entity.
+
+#+begin_src cpp :name calendars_tab_read_only_override :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
+if (calendarWidget_ && calendarsTab_ && tabWidget()->currentWidget() == calendarsTab_)
+    calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
 #+end_src
 
 ** Calendars tab: implementation

@@ -118,6 +118,7 @@ void CurrencyPairConventionMdiWindow::setupToolbar() {
             this,
             &CurrencyPairConventionMdiWindow::viewHistorySelected);
 
+
     toolbar_->addSeparator();
 
     {

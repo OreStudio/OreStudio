@@ -266,6 +266,12 @@ entity has no separate base/quote fields of its own.
 |----------+------------------------------------+-----------+---------|
 | PairCode | currency_flag_icon_from_pair_code | pair_code | true    |
 
+*** Related entity shortcuts
+
+| signal    | icon          | label     | tooltip             |
+|-----------+---------------+-----------+----------------------|
+| Calendars | CalendarClock | Calendars | Open Calendars list |
+
 *** Detail fields
 
 | field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        | combo_values                                                                               | badge_key                                          | flag_source | combo_fetch | combo_fetch_include |
@@ -576,7 +582,7 @@ struct revoke_currency_pair_convention_calendar_response {
     connect(calendarWidget_,
             &CalendarAssignmentWidget::assignmentsChanged,
             this,
-            &CurrencyPairConventionDetailDialog::onFieldChanged);
+            [this]() { ui_->saveButton->setEnabled(!readOnly_); });
     connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
         if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
             return;
@@ -711,6 +717,28 @@ if (createMode_) {
         return;
     }
 }
+#+end_src
+
+** Calendars tab: skip the convention save when only calendars changed
+
+Same reasoning as [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][ores.refdata.currency]]'s own guard: calendar
+assignments are committed by their own change-reason prompt (see the
+=calendars_tab_connections= block above) via
+=CalendarAssignmentWidget::commitChanges=. Without this guard, staging
+a calendar add/remove alone would still enable the Save button and
+=onSaveClicked= would unconditionally re-save the convention's own
+fields too, popping a second, unrelated change-reason dialog.
+
+#+begin_src cpp :name calendars_tab_save_guard :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
+if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+    return;
+#+end_src
+
+** Calendars tab: keep read-only state in sync while browsing history
+
+#+begin_src cpp :name calendars_tab_read_only_override :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
+if (calendarWidget_ && calendarsTab_ && tabWidget()->currentWidget() == calendarsTab_)
+    calendarWidget_->setReadOnly(readOnly_ || convention_.pair_code.empty());
 #+end_src
 
 * See also

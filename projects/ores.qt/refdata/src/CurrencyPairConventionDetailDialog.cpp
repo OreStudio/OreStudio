@@ -149,10 +149,9 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             &CalendarAssignmentWidget::errorMessage,
             this,
             [this](const QString&, const QString& message) { emit errorMessage(message); });
-    connect(calendarWidget_,
-            &CalendarAssignmentWidget::assignmentsChanged,
-            this,
-            &CurrencyPairConventionDetailDialog::onFieldChanged);
+    connect(calendarWidget_, &CalendarAssignmentWidget::assignmentsChanged, this, [this]() {
+        ui_->saveButton->setEnabled(!readOnly_);
+    });
     connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
         if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
             return;
@@ -260,6 +259,9 @@ void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     WidgetUtils::set_combo_locked(ui_->pairCodeCombo, true);
+
+    if (calendarWidget_ && calendarsTab_ && tabWidget()->currentWidget() == calendarsTab_)
+        calendarWidget_->setReadOnly(readOnly_ || convention_.pair_code.empty());
 }
 
 void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
@@ -390,6 +392,9 @@ void CurrencyPairConventionDetailDialog::onSaveClicked() {
             return;
         }
     }
+
+    if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+        return;
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;

@@ -127,14 +127,18 @@ public:
 
     /**
      * @brief Sends every staged add/remove to the server (assign/revoke
-     * per item, via the callbacks supplied to setCallbacks()), then
-     * reloads on success. Runs asynchronously; @p onComplete is invoked
-     * on the UI thread once every staged change has been attempted.
+     * per item, via the callbacks supplied to setCallbacks()), stopping at
+     * the first failure. Always reloads afterwards -- on a partial
+     * failure this drops the already-applied items from pendingAdds()/
+     * pendingRemoves() (they succeeded server-side), leaving only the
+     * unattempted remainder staged for a retry. Runs asynchronously;
+     * @p onComplete is invoked on the UI thread once the batch completes
+     * or stops.
      *
      * @param changeReasonCode Applied to every assign in this batch.
      * @param changeCommentary Applied to every assign in this batch.
-     * @param onComplete Called with success=false and the first failure's
-     * message if any staged change failed; the rest are still attempted.
+     * @param onComplete Called with success=false and the failing item's
+     * message if a staged change failed; items after it are not attempted.
      */
     void commitChanges(const std::string& changeReasonCode,
                        const std::string& changeCommentary,

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: A5AA7904-04DC-4A99-A7F0-68EDC2AA8148
+:END:
+#+title: ores.dq.change_reason
+#+description: Codegen lookup-entity model for the dq change_reason table.
+#+type: ores.codegen.lookup_entity
+#+component: dq
+#+filetags: :model:lookup_entity:dq:
+#+product: ores
+#+schema: public
+#+entity_singular: change_reason
+#+entity_plural: change_reasons
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+A change reason is a specific, selectable reason for making a change
+to a record, scoped to a change reason category. Examples: "Typo
+Fix" (category: data_correction), "New Regulation" (category:
+regulatory_update). Rows are authored directly (not mirrored from an
+external source).
+
+* Primary key
+:PROPERTIES:
+:column:  code
+:type:    text
+:is_text: true
+:END:
+
+Unique code identifying this change reason. Examples: "typo_fix",
+"new_regulation".
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+Human-readable description of this change reason.
+
+** category_code
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+Code of the change reason category this reason belongs to.
+References =ores_dq_change_reason_categories_tbl= (soft FK).
+
+** applies_to_new
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  false
+:END:
+
+Whether this reason may be selected when creating a new record.
+
+** applies_to_amend
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  true
+:END:
+
+Whether this reason may be selected when amending an existing
+record.
+
+** applies_to_delete
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  true
+:END:
+
+Whether this reason may be selected when deleting a record.
+
+** requires_commentary
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:default:  false
+:END:
+
+Whether selecting this reason requires free-text commentary.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+* Indexes
+
+** category
+:PROPERTIES:
+:columns:      category_code
+:current_only: true
+:END:
+
+* Validations
+
+| column        | validation_function                        |
+|---------------+---------------------------------------------|
+| category_code | ores_dq_validate_change_reason_category_fn |
+
+* Artefact indexes
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

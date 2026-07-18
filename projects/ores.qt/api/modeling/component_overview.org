@@ -24,7 +24,7 @@ application. It defines the =IPlugin= interface and =PluginBase= that all
 feature plugins implement, the =plugin_context= and =shared_menus_context=
 structs passed through the plugin lifecycle, and the base classes for the
 entity UI pattern: =EntityController=, =EntityListMdiWindow=,
-=EntityDetailDialog=, and =AbstractClientModel=. It also provides
+=DetailDialogBase=, and =AbstractClientModel=. It also provides
 =ClientManager= (the NATS client wrapper), shared caches (badge, image,
 change-reason), MDI utilities, icon utilities, and common dialog helpers
 used across all plugins.
@@ -39,7 +39,7 @@ used across all plugins.
 
 - =IPlugin= / =PluginBase= — the interface every Qt plugin implements.
 - =plugin_context= / =shared_menus_context= — lifecycle context structs.
-- =EntityController=, =EntityListMdiWindow=, =EntityDetailDialog=,
+- =EntityController=, =EntityListMdiWindow=, =DetailDialogBase=,
   =AbstractClientModel= — base classes for the entity UI pattern.
 - =ClientManager= — typed NATS request/response wrapper for all domain calls.
 - =BadgeCache=, =ChangeReasonCache=, =ImageCache= — session-scoped caches.

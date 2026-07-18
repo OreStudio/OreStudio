@@ -12,23 +12,27 @@
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 The entity detail dialogs (party, counterparty) load all entities into a combo
-box for parent selection using a single request with =offset=0, limit=1000=.
-If the system has more than 1,000 entities, the dropdown silently truncates
-results, meaning users cannot select the correct parent and the hierarchy tree
-is incomplete. The same pattern exists for country image maps and lookup
-fetchers.
+box for parent selection using a single request with =limit=1000= (via
+=LookupFetcher::fetch_parties=/=fetch_counterparties=). If the system has more
+than 1,000 entities, the dropdown silently truncates results, meaning users
+cannot select the correct parent and the hierarchy tree is incomplete. The
+same pattern exists for country image maps and lookup fetchers.
 
 The fix is to replace the plain =QComboBox= with a searchable type-ahead widget
 backed by =QCompleter= that issues server-side search requests as the user
 types. This is the scalable solution and avoids loading the full dataset into
 memory.
 
-Affected locations:
+Affected locations (updated 2026-07-18 -- the codebase has since moved off the
+hand-written =EntityDetailDialog=/=PartyDetailOperations=/
+=CounterpartyDetailOperations= pattern these originally named onto
+codegen-generated dialogs; the underlying concern is unchanged, just relocated):
 
-- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
-- =PartyDetailOperations.cpp:118= - =load_all_entities()=
-- =EntityDetailDialog.cpp:346= - =loadCountryImageMap()=
-- =LookupFetcher.cpp:80,145= - lookup reference data loading
+- =projects/ores.qt/api/src/LookupFetcher.cpp:373= - =fetch_parties()=
+- =projects/ores.qt/api/src/LookupFetcher.cpp:386= - =fetch_counterparties()=
+- =projects/ores.qt/refdata/src/PartyDetailDialog.cpp:264= - =populateParentPartyCombo()=
+- =projects/ores.qt/refdata/src/CounterpartyDetailDialog.cpp:269= - =populateParentCounterpartyCombo()=
+- =LookupFetcher.cpp= - country and lookup reference data loading
 
 Note: the =MdiWindow= list views already have proper server-side pagination
 via =ClientCounterpartyModel= / =ClientPartyModel=; this issue only affects
@@ -36,5 +40,9 @@ detail dialog combo boxes and related data loading.
 
 - Introduce a reusable =SearchableEntityComboBox= widget with =QCompleter=
 - Add server-side search endpoints for parties and counterparties
-- Replace =load_all_entities()= calls with on-demand search
+- Replace the =LookupFetcher= all-in-one fetches with on-demand search
 - Consider the same approach for country and lookup fetcher if volumes warrant it
+
+See also: [[id:43C835A9-8F80-428F-9690-7021B46CADEA][Replace parent entity combo box with server-side searchable widget]]
+-- likely a duplicate of this capture, filed six days apart; worth merging
+during backlog refinement.

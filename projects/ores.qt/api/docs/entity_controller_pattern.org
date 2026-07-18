@@ -14,7 +14,7 @@
 Every domain entity in ORE Studio's Qt UI is managed by a four-layer stack:
 a *controller* that owns MDI windows and orchestrates NATS calls, a
 *list-window* (=EntityListMdiWindow=) that displays a paginated table of
-records, a *detail-dialog* (=EntityDetailDialog=) for create/edit/view, and
+records, a *detail-dialog* (=DetailDialogBase=, subclassed per entity as =FooDetailDialog=) for create/edit/view, and
 an *abstract client model* (=AbstractClientModel=) that fetches and caches
 the entity's rows from the NATS service. This pattern is implemented by base
 classes in =ores.qt.api= and followed consistently across all entity types.
@@ -42,14 +42,24 @@ classes in =ores.qt.api= and followed consistently across all entity types.
 - Opened and closed by the controller; only one instance per entity type lives
   in the MDI area at a time.
 
-*** EntityDetailDialog
+*** DetailDialogBase / FooDetailDialog
 
-- Modal dialog for create, edit, and read-only view.
+- =DetailDialogBase= is a =QWidget= base class (not a modal =QDialog=);
+  each entity's generated =FooDetailDialog= subclasses it and is opened
+  embedded in its own =DetachableMdiSubWindow=, for create, edit, and
+  read-only view.
 - Opened from the list-window toolbar or via controller action.
-- On accept: sends a NATS create or update request; on completion refreshes
-  the list model.
+- On save: sends a NATS create or update request; on completion emits
+  =closeRequested()= (via =notifySaveSuccess()=), which the controller
+  connects to close the container window and refresh the list model.
 - Change reason dialog (=ChangeReasonDialog=) is injected from
-  =ChangeReasonCache= for entities requiring audit trail entries.
+  =ChangeReasonCache= (via =setChangeReasonCache()=) for entities
+  requiring audit trail entries; =promptChangeReason()= centralises the
+  Create/Amend/Delete prompt flow.
+- =DetailDialogBase= also centralises the Provenance tab
+  (=populateProvenance()=/=setProvenanceEnabled()=) and the optional
+  flag/icon editor (=initFlagButton()=/=entityImageId()=) shared across
+  entities that carry either.
 - Temporal entities show bitemporal fields; non-temporal entities omit them.
 
 *** EntityController
@@ -68,10 +78,11 @@ and provides typed request/response helpers. The general flow:
 #+begin_example
 User action (button click)
   → EntityController::onNew/onEdit
-    → EntityDetailDialog::exec()
-      → on accept: ClientManager::send<Request>(payload)
+    → open FooDetailDialog in a DetachableMdiSubWindow
+      → on save: ClientManager::send<Request>(payload)
         → NATS response callback (lambda on Qt event loop)
           → model->refresh()  or  emit statusMessage
+          → notifySaveSuccess() → closeRequested() → container window closes
 #+end_example
 
 Responses arrive asynchronously; lambdas captured in the controller marshal
@@ -111,4 +122,4 @@ live alongside the model.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — how controllers are created/destroyed via the
   plugin lifecycle.
 - [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — the base classes (EntityController, AbstractClientModel,
-  EntityListMdiWindow, EntityDetailDialog) that implement this pattern.
+  EntityListMdiWindow, DetailDialogBase) that implement this pattern.

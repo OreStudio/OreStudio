@@ -7,35 +7,46 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-dead-entity-detail-dialog
+#+pr: 1639
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Confirm no entity implements =entity_detail_operations= any more, then
+delete =EntityDetailDialog=/=EntityDetailOperations= and their =.ui=
+from =ores.qt.api=, and fix up the docs (component overview,
+entity-controller-pattern knowledge doc, PlantUML class diagram) that
+still described the dead abstraction as if it were current.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- Repo-wide search confirms no entity implements entity_detail_operations.
+- EntityDetailDialog.{hpp,cpp,ui} and EntityDetailOperations.{hpp,cpp}
+  deleted from ores.qt.api.
+- ores.qt.exe builds clean with the deletion (CMake globs sources, no
+  explicit file-list edits needed).
+- Docs that described the dead abstraction as current (component
+  overview, entity-controller-pattern knowledge doc, PlantUML diagram)
+  corrected to describe DetailDialogBase/FooDetailDialog instead.
 
 * Plan
 
@@ -60,12 +71,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1639][#1639]] | [qt,doc] Remove dead EntityDetailDialog/EntityDetailOperations abstraction |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two active (non-historical) backlog captures still cite deleted files by name/line as "affected code sites" for a live pagination-truncation concern (raised independently by all 3 review passes) | replace_parent_entity_combo_box_with_server_side_searchable_widget.org, replace_parent_combo_boxes_with_server_side_type_ahead_search.org | Accepted | Updated both to point at the current equivalents (LookupFetcher::fetch_parties/fetch_counterparties, PartyDetailDialog/CounterpartyDetailDialog); flagged the two as likely duplicates for backlog refinement. |
 
 * Result
+
+Confirmed via repo-wide search that no entity implements
+=entity_detail_operations= any more, then deleted all 5 dead files
+(=EntityDetailDialog.{hpp,cpp,ui}=, =EntityDetailOperations.{hpp,cpp}=
+— ~2000 lines) from =ores.qt.api=. CMake globs its sources, so no
+build-file edits were needed; verified =ores.qt.exe= still builds
+clean.
+
+Found and fixed three docs that had gone stale by describing the dead
+abstraction as if it were current, rather than leaving them
+inaccurate: =entity_controller_pattern.org= claimed =EntityDetailDialog=
+was the current detail-dialog base class and used its (never actually
+called) =.exec()= in the NATS-flow example — corrected to
+=DetailDialogBase=/=FooDetailDialog=, the non-modal
+=DetachableMdiSubWindow=-embedded pattern every generated dialog
+actually follows, and to =DetailDialogBase='s real
+=notifySaveSuccess()=/=closeRequested()= flow. =component_overview.org=
+updated the same way. The PlantUML class diagram
+(=ores.qt.api.puml=) had =EntityDetailDialog= plus 8 supporting dead
+structs (=entity_detail_operations=, =operation_result=,
+=parent_entity_entry=, =identifier_entry=, =contact_entry=,
+=entity_data=, =load_all_entities_result=, =load_identifiers_result=,
+=load_contacts_result=) — removed all of them and regenerated the PNG.
+Left historical docs (sprint 12/22 task/story records, the completed
+Qt plugin refactor plan) untouched, since they document what was true
+at the time rather than current state.

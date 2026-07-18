@@ -11,9 +11,9 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
-The parent entity combo boxes in =EntityDetailDialog= (used by both
-=PartyDetailOperations= and =CounterpartyDetailOperations=) use a single request
-with =offset=0, limit=1000= which silently truncates results if there are more
+The parent entity combo boxes in =PartyDetailDialog=/=CounterpartyDetailDialog=
+(via =LookupFetcher::fetch_parties=/=fetch_counterparties=) use a single
+request with =limit=1000= which silently truncates results if there are more
 than 1000 entities. The same pattern exists in =LookupFetcher= for country and
 business centre lookups.
 
@@ -22,10 +22,14 @@ using =QCompleter= that searches server-side as the user types (like the
 =ClientPartyModel=/=ClientCounterpartyModel= pagination used in the MdiWindow
 list views).
 
-Affected code sites:
-- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
-- =PartyDetailOperations.cpp:118= - =load_all_entities()=
-- =EntityDetailDialog.cpp:346= - =loadAllEntities()=
-- =LookupFetcher.cpp:80,145= - country and business centre fetches
+Affected code sites (updated 2026-07-18 -- the codebase has since moved off
+the hand-written =EntityDetailDialog=/=PartyDetailOperations=/
+=CounterpartyDetailOperations= pattern these originally named onto
+codegen-generated dialogs; the underlying concern is unchanged, just relocated):
+- =projects/ores.qt/api/src/LookupFetcher.cpp:373= - =fetch_parties()=
+- =projects/ores.qt/api/src/LookupFetcher.cpp:386= - =fetch_counterparties()=
+- =projects/ores.qt/refdata/src/PartyDetailDialog.cpp:264= - =populateParentPartyCombo()=
+- =projects/ores.qt/refdata/src/CounterpartyDetailDialog.cpp:269= - =populateParentCounterpartyCombo()=
+- =LookupFetcher.cpp= - country and business centre fetches
 
 Note: this is low priority - won't impact us until we have >1000 entities.

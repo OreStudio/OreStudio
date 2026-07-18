@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 464B5EC6-0F5A-4B6F-B77E-02806CBEAE94
+#+blocked_since: 2026-07-18
 #+created: 2026-07-17
 #+updated: 2026-07-18
 #+environment: bright_faraday
@@ -26,11 +26,11 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | catalog.org verified (generates correct SQL DDL via ores.sql.schema, structurally matches the hand-written dq_catalog_create.sql). Moving to change_reason_category next. |
-| Waiting on   | Nothing.                               |
-| Next         | change_reason_category, then change_reason, data_domain, subject_area. C++ regeneration and hand-written-code retirement deferred to [[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] (lookup_entity -> domain_entity migration). |
+| Now          | All five .org models authored and SQL-verified (catalog, change_reason_category, change_reason, data_domain, subject_area). |
+| Waiting on   | [[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] (lookup_entity -> domain_entity migration) for C++ generation and hand-written-code retirement. |
+| Next         | Once 464B5EC6 lands: regenerate C++, diff against the hand-written core/repository/service/handler/protocol, swap over, delete hand-written equivalents, build and test green. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -78,6 +78,47 @@ auto-generated =validate_catalog_fn= the hand-written original
 predates). C++ generation and swapping the hand-written table over to
 generated SQL are deferred to 464B5EC6/a later step, not blocking
 authoring the remaining four entities' models.
+
+Remaining four entities authored and each SQL-verified the same way
+(=compass codegen generate --model ... --address ores.sql.schema=,
+diffed against the real hand-written table, generated file reverted
+afterwards -- only the =.org= model is committed):
+
+- =change_reason_category= (=code= PK) -- structurally correct;
+  generated DDL adds =change_reason_code=, a column the hand-written
+  table predates (every other DQ entity's table already has it).
+- =change_reason= (=code= PK, soft FK to =change_reason_category= via
+  a =Validations= entry reusing =ores_dq_validate_change_reason_category_fn=,
+  boolean/integer columns with defaults, an =Indexes= entry for the
+  =category_code= lookup index) -- structurally correct match.
+- =data_domain= (=name= PK) -- structurally correct match, same shape
+  as =catalog=.
+- =subject_area= -- the real table's natural key is compound (=name=
+  + =domain_name=), which =lookup_entity= can't express
+  ([[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][52FE40FA]], still
+  BACKLOG); per the earlier user-approved descoping decision,
+  =domain_name= is a plain =Column= with a soft-FK =Validations=
+  entry rather than part of the primary key. Generated DDL is
+  therefore intentionally *weaker* than the hand-written table
+  (PK/exclusion/uniqueness cover =(tenant_id, name, ...)= only, not
+  the pair) -- do not regenerate/swap this table over the hand-written
+  one until 52FE40FA lands.
+
+All five models' SQL generation is verified; none of the five hand-
+written tables have actually been swapped over yet (deliberately --
+see per-entity notes above and 464B5EC6 below). C++ generation
+(core/repository/service/handler/protocol) remains blocked on
+464B5EC6: attempting it directly on lookup_entity's own pipeline
+during DDBD522D surfaced that the shared C++ templates only render
+=\{\{#domain_entity\}\}= sections, and lookup_entity's org
+format/loader carries none of the C++-facing column metadata
+(=cpp_type=, derived uuid/int/enum flags, doxygen formatting) that
+pipeline needs -- porting that in place would build a second,
+permanently-duplicate pipeline rather than fixing the real
+architectural overlap. 464B5EC6 migrates lookup_entity into
+domain_entity instead, which this task's remaining acceptance
+(generated core/repository/service/handler/protocol replacing the
+hand-written equivalents, build and tests green) depends on.
 
 * Test Scenarios
 

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: FC800706-1673-4E48-84C2-22569E836DF5
 :END:
-#+title: Task: Seed realistic IR curve sample data (vintage + DQ datasets)
-#+description: Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern.
+#+title: Task: Seed realistic IR curve sample data (vintage + manual-start control-plane)
+#+description: Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, and give IR curve configs a manual per-tenant start control-plane (mirroring FX's market_feed_config_handler). The basic+realistic synthetic.ir_curve_configs DQ datasets and day-scaled defaults were delivered directly in the tick-batch-publishing task.
 #+type: task
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
@@ -37,6 +37,37 @@ Mirrors =synthetic_fx_spot_configs_basic_populate.sql= /
 =synthetic_fx_spot_configs_realistic_populate.sql=, which both seed
 =initial_price= from a real vintage (2016-02-05 Fed H.10), differing
 only in per-pair-calibrated vs exaggerated-uniform volatility.
+
+** Already delivered (tick-batch-publishing task, not this one)
+
+While verifying =ir_curve_feed= manually, this task's DQ-dataset and
+day-scaling scope turned out to be needed immediately (there was
+nothing else to test against), so it was built directly rather than
+deferred:
+- =synthetic.ir_curve_configs.basic= and
+  =.realistic= DQ datasets, each with catalog/dataset registration, a
+  Curve Template entries artefact table, and an
+  =ores_synthetic_publish_ir_curve_configs_from_dq_fn= SQL function
+  mirroring the FX one (container/folder resolution, replace-all
+  sync), wired into the =synthetic_realistic=/=synthetic_basic=
+  bundles and the Barclays provisioning flow.
+- Day-scaled default =kappa=/=sigma= for the "1 tick = 1 calendar day"
+  convention (per-currency-calibrated in =.realistic=, uniform in
+  =.basic=).
+
+Manual verification also surfaced a second gap this task now owns:
+=ir_curve_feed= only ever auto-starts at service startup, for
+system-tenant configs read via the service's own unscoped context --
+=market_data_generation_config_repository= has no cross-tenant read
+method at all (confirmed: FX's =auto_start_enabled_feeds= has the
+identical limitation, so Barclays' provisioned FX configs don't
+auto-start either -- this is existing, expected Phase 1 behaviour, not
+new). FX works around it with a manual per-tenant *Start* button
+(=market_feed_config_handler=, driven from Qt's Market Simulator
+window, scoped to the caller's own JWT/tenant); IR curves have no
+equivalent, so a config published to a real tenant (e.g. Barclays) can
+never actually tick without restarting the whole service under that
+tenant's context -- not a viable path for a real UI workflow.
 
 ** Sourcing historical IR data
 
@@ -80,15 +111,11 @@ curve archive.
   (mirroring =feed_controller::start()='s =vintage_source=/
   =vintage_date=), so =initial_rate= comes from a real imported
   observation rather than an arbitrary config value.
-- Default =kappa=/=theta=/=sigma= are day-scaled for the "1 tick = 1
-  calendar day" convention =ir_curve_template_resolver= uses, so an
-  out-of-the-box config produces plausible (not triple-digit-percent)
-  published rates and FRA/swap points that visibly move tick to tick.
-- Two DQ datasets exist: =synthetic.ir_curve_configs.basic= (uniform,
-  exaggerated volatility for easy demoing) and
-  =synthetic.ir_curve_configs.realistic= (per-currency-calibrated),
-  each with its own catalog/dataset registration and SQL
-  publish-from-DQ function, mirroring the FX pattern exactly.
+- IR curve configs gain a manual per-tenant start/stop/list control
+  plane (mirroring =market_feed_config_handler=), with a UI entry
+  point in Qt (mirroring the Market Simulator's Start button), so a
+  config published to a real tenant (not just system) can actually be
+  started without restarting the whole service.
 
 * Plan
 

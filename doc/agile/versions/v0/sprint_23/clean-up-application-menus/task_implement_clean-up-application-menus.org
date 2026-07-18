@@ -1,36 +1,45 @@
 :PROPERTIES:
 :ID: 6EDBF119-34AC-4108-A5C9-E91C1DA0E78B
 :END:
-#+title: Task: Design target menu structure and inventory current state
-#+description: Initial task for: Clean up application menus
+#+title: Task: Reference Data menu — inventory and taxonomy
+#+description: Audit every entry currently in the Reference Data menu, then propose a target taxonomy with rationale for sign-off before implementing.
 #+type: task
 #+level: s1
 #+filetags: :clean-up-application-menus:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-clean-up-application-menus
+#+pr: 1621
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Two-phase task, second phase gated on sign-off:
+
+1. Inventory: list every entry currently under the Reference Data
+   menu (menu items, submenus, the plugin/dialog each opens).
+2. Taxonomy proposal: group the inventoried entries into a cohesive
+   structure with a rationale per grouping decision, for review
+   before any =QMenu=/plugin rewiring happens.
+
+Implementation (the actual menu rewiring) only starts after sign-off
+on the taxonomy.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -39,9 +48,71 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Inventory (current state)
+
+Single owner: =RefdataPlugin::setup_menus= /
+=RefdataPlugin.cpp:627-989=. No other plugin contributes to
+=reference_data_menu=.
+
+Flat top-level entries (11, no grouping): Currencies, Countries,
+Currency Pairs, Books, Portfolios, Business Centres, Calendars,
+Currency Groups, Parties, Counterparties, Business Units.
+
+Submenus (8, ~35 sub-entries): Trading Conventions (Day Count
+Fraction Types, Business Day Convention Types, Floating Index
+Types, Payment Frequencies, Leg Types); Conventions/curve-building
+(Zero/Deposit/Swap/OIS/FRA/IBOR Index/Overnight Index/Currency Pair/
+CDS Conventions); Tenors (Tenors, Tenor Conventions / Tenor Anchors,
+Kinds, Units, Resolution Algorithms); Classifications (Asset Class
+Codes, Curve Roles, Instrument Codes); Currency Codes (Monetary
+Natures, Rounding Types, Currency Market Tiers); Book Codes (Book
+Statuses, Regulatory Book Types, Book Purpose Types, Ledger Feed
+Types); Cross Rates Matrix (Topology, Driver Pairs, Enabled Derived
+Pairs); Organisation Codes, shared with =ores.qt.party= (Party
+Types, Contact Types, Party Statuses, Party ID Schemes, Business
+Unit Types).
+
+** Target taxonomy (signed off)
+
+- *Entities* — stay flat, one click, unchanged set, reordered into
+  two visually separated clusters (no submenu nesting, so no extra
+  click for traders/middle office): FX & market cluster (Currencies,
+  Currency Pairs, Currency Groups, Countries, Business Centres,
+  Calendars) — divider — org/trading cluster (Books, Portfolios,
+  Parties, Counterparties, Business Units).
+- *Conventions* — merge today's "Trading Conventions" and
+  "Conventions" submenus into one =Conventions= submenu with two
+  nested groups, *Trading* (Day Count/BDC/Floating Index/Payment
+  Frequency/Leg Types) and *Curve Building* (Zero/Deposit/Swap/OIS/
+  FRA/IBOR/Overnight/Currency Pair/CDS Conventions). Removes the
+  two-near-identical-names confusion.
+- *Tenors* — unchanged, already self-contained.
+- *Codes* (new umbrella submenu) — nest today's four peer submenus
+  (Classifications, Currency Codes, Book Codes, Organisation Codes)
+  as sub-submenus underneath it, since all four are the same kind of
+  thing (auxiliary classification/lookup values) rather than primary
+  entities.
+- *Cross Rates Matrix* — unchanged, standalone submenu (configuration
+  data, not live market data — see existing code comment).
+
+Net: top-level Reference Data drops from ~19 items to ~15 (11
+entities + Conventions + Tenors + Codes + Cross Rates Matrix), and
+the two real sources of confusion (duplicate "Conventions" naming,
+four indistinguishable code submenus) are resolved.
+
+** Implementation steps
+
+1. =RefdataPlugin::setup_menus= — merge Trading Conventions +
+   Conventions into one =Conventions= submenu with two nested
+   sub-submenus.
+2. Add a =Codes= submenu; move Classifications, Currency Codes, Book
+   Codes, Organisation Codes under it as sub-submenus (contents
+   unchanged).
+3. Reorder the 11 flat entity actions into the two clusters with a
+   separator between them.
+4. Leave Tenors and Cross Rates Matrix as-is.
+5. Manual QA pass in the running Qt client against the target
+   taxonomy above.
 
 * Notes
 
@@ -54,18 +125,47 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | PASSED | Retested against the fixed commit (stale plugin artifact removed, services fully warmed up before testing) — all 6 steps PASSED. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1621][#1621]] | [refdata] Reorganise Reference Data menu into a cohesive taxonomy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Verification claim didn't match committed scenario record (still FAILED, retest pending) | scenario_verify_reference_data_menu_taxonomy.org | Accepted | Retested against the fixed commit with services fully warmed up; all steps now PASSED, doc updated to match. |
+| 2 | =&Codes= mnemonic collides with =&Currencies=/=&Counterparties=; and within Codes, Book/Currency/Organisation Codes all collide on =C= | RefdataPlugin.cpp, MainWindow.cpp | Accepted | =Codes= → =Co&des=; =Book &Codes= → =&Book Codes=; =Currency &Codes= → =Curre&ncy Codes=; =Organisation &Codes= → =&Organisation Codes=. |
 
 * Result
+
+Reference Data menu reorganised in =RefdataPlugin::setup_menus=
+per the signed-off taxonomy: entities stay flat in FX/market +
+org/trading clusters; Trading Conventions and Conventions merged
+into one =Conventions= submenu with nested Trading/Curve Building
+groups; new =Codes= umbrella submenu nests Classifications, Currency
+Codes, Book Codes, Organisation Codes; Tenors and Cross Rates Matrix
+unchanged in placement. All Codes/Conventions/Tenors/Cross Rates
+Matrix submenu entries alphabetised per manual-QA feedback.
+
+Manual QA surfaced a real bug: Business Units and Business Unit
+Types appeared twice. Root-caused to a stale =libores.qt.party.so=
+build artifact left in =publish/bin/= from before the party plugin
+was merged into =ores.qt.refdata= — no CMake target still builds it,
+so the plugin loader kept picking up its old menu contributions
+alongside the current =RefdataPlugin=. Deleted; nothing regenerates
+it. The two NATS "no responder" failures in the same QA pass were a
+startup race (client's first requests landed before
+=ores.refdata.service= finished registering all its handlers), not a
+code defect — confirmed via the service log showing the same
+subjects succeeding once the service had been running a while.
+
+Review round on PR #1621 found the new =Codes= submenu's mnemonic
+collided with =&Currencies=/=&Counterparties= on Reference Data, and
+within =Codes= three of its four children (Book/Currency/Organisation
+Codes) all used =C=. Fixed with distinct mnemonics for each. Retested
+end to end with services fully warmed up before testing (avoiding
+the earlier startup race): all 6 scenario steps PASSED.

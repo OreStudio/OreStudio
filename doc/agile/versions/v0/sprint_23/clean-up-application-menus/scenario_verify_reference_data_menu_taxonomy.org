@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3
+:END:
+#+title: Test Scenario: Verify Reference Data menu taxonomy
+#+description: Checks the reorganised Reference Data menu: flat entity clusters, merged Conventions submenu, new Codes umbrella, unchanged Tenors and Cross Rates Matrix.
+#+type: test_scenario
+#+level: s1
+#+filetags: :clean-up-application-menus:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] in [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] |
+| Parent story  | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]]   |
+| Target dialog | Reference Data menu itself (=RefdataPlugin= menu wiring) — Menu: Reference Data (top-level) |
+| Clients       |                                          |
+| State         | PASSED                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC* as the active party.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Entities are flat, in FX/market then org/trading order
+
+Open the *Reference Data* menu. Confirm the top section (no submenu)
+reads, in order: Currencies, Currency Pairs, Currency Groups,
+Countries, Business Centres, Calendars — a separator — then Books,
+Portfolios, Parties, Counterparties, Business Units. All items should
+open their list window directly with a single click (no extra
+submenu hop).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Conventions submenu merges Trading and Curve Building
+
+Confirm there is now a single *Conventions* submenu (no more separate
+"Trading Conventions" and "Conventions" peers). Inside it, confirm
+two nested groups: *Trading* (Day Count Fraction Types, Business Day
+Convention Types, Floating Index Types, Payment Frequencies, Leg
+Types) and *Curve Building* (Zero/Deposit/Swap/OIS/FRA/IBOR Index/
+Overnight Index/Currency Pair/CDS Conventions). Open one entry from
+each group and confirm the correct list window opens.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Tenors unchanged
+
+Confirm *Tenors* submenu is unchanged: Tenors, Tenor Conventions,
+separator, Tenor Anchors, Tenor Kinds, Tenor Units, Tenor Resolution
+Algorithms.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Codes umbrella nests the four lookup submenus
+
+Confirm a new *Codes* submenu exists, and that Classifications,
+Currency Codes, Book Codes, and Organisation Codes are now
+sub-submenus nested under it (not peers of Reference Data directly).
+Open one entry from each of the four (e.g. Asset Class Codes,
+Monetary Natures, Book Statuses, Party Types) and confirm the
+correct list window opens for each.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Cross Rates Matrix unchanged
+
+Confirm *Cross Rates Matrix* is still a direct Reference Data
+submenu (not nested under Codes), with Topology, Driver Pairs,
+Enabled Derived Pairs unchanged.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-18T09:54:41Z |
+| Branch        | feature/implement-clean-up-application-menus |
+| Commit        | 486b96962 |
+| Worktree      | solid_dirac |
+
+* Notes

@@ -638,30 +638,26 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     reference_data_menu_ = smc.reference_data_menu;
     auto* ref = reference_data_menu_;
     if (ref) {
+        // FX & market cluster.
         act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
         connect(act_currencies_, &QAction::triggered, this, [this]() {
             if (currencyController_)
                 currencyController_->showListWindow();
-        });
-        act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
-        connect(act_countries_, &QAction::triggered, this, [this]() {
-            if (countryController_)
-                countryController_->showListWindow();
         });
         act_currency_pairs_ = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
         connect(act_currency_pairs_, &QAction::triggered, this, [this]() {
             if (currencyPairController_)
                 currencyPairController_->showListWindow();
         });
-        act_books_ = ref->addAction(ico(Icon::BookOpen), tr("&Books"));
-        connect(act_books_, &QAction::triggered, this, [this]() {
-            if (bookController_)
-                bookController_->showListWindow();
+        act_currency_groups_ = ref->addAction(ico(Icon::Currency), tr("Currency &Groups"));
+        connect(act_currency_groups_, &QAction::triggered, this, [this]() {
+            if (currencyGroupController_)
+                currencyGroupController_->showListWindow();
         });
-        act_portfolios_ = ref->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
-        connect(act_portfolios_, &QAction::triggered, this, [this]() {
-            if (portfolioController_)
-                portfolioController_->showListWindow();
+        act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
+        connect(act_countries_, &QAction::triggered, this, [this]() {
+            if (countryController_)
+                countryController_->showListWindow();
         });
         act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
         connect(act_business_centres_, &QAction::triggered, this, [this]() {
@@ -673,24 +669,30 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (calendarController_)
                 calendarController_->showListWindow();
         });
-        act_currency_groups_ = ref->addAction(ico(Icon::Currency), tr("Currency &Groups"));
-        connect(act_currency_groups_, &QAction::triggered, this, [this]() {
-            if (currencyGroupController_)
-                currencyGroupController_->showListWindow();
-        });
 
+        ref->addSeparator();
+
+        // Organisation & books cluster.
+        act_books_ = ref->addAction(ico(Icon::BookOpen), tr("&Books"));
+        connect(act_books_, &QAction::triggered, this, [this]() {
+            if (bookController_)
+                bookController_->showListWindow();
+        });
+        act_portfolios_ = ref->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
+        connect(act_portfolios_, &QAction::triggered, this, [this]() {
+            if (portfolioController_)
+                portfolioController_->showListWindow();
+        });
         act_parties_ = ref->addAction(ico(Icon::Organization), tr("&Parties"));
         connect(act_parties_, &QAction::triggered, this, [this]() {
             if (partyController_)
                 partyController_->showListWindow();
         });
-
         act_counterparties_ = ref->addAction(ico(Icon::Handshake), tr("&Counterparties"));
         connect(act_counterparties_, &QAction::triggered, this, [this]() {
             if (counterpartyController_)
                 counterpartyController_->showListWindow();
         });
-
         act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
         connect(act_business_units_, &QAction::triggered, this, [this]() {
             if (businessUnitController_)
@@ -699,108 +701,114 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         ref->addSeparator();
 
-        // Trading Conventions submenu (unchanged)
-        auto* menuConventions = ref->addMenu(tr("Trading &Conventions"));
-        auto* actDayCountFractionTypes =
-            menuConventions->addAction(ico(Icon::Tag), tr("&Day Count Fraction Types"));
-        connect(actDayCountFractionTypes, &QAction::triggered, this, [this]() {
-            if (dayCountFractionTypeController_)
-                dayCountFractionTypeController_->showListWindow();
-        });
-        auto* actBusinessDayConventionTypes =
-            menuConventions->addAction(ico(Icon::Tag), tr("&Business Day Convention Types"));
-        connect(actBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
-            if (businessDayConventionTypeController_)
-                businessDayConventionTypeController_->showListWindow();
-        });
-        auto* actFloatingIndexTypes =
-            menuConventions->addAction(ico(Icon::Tag), tr("&Floating Index Types"));
-        connect(actFloatingIndexTypes, &QAction::triggered, this, [this]() {
-            if (floatingIndexTypeController_)
-                floatingIndexTypeController_->showListWindow();
-        });
-        auto* actPaymentFrequencies =
-            menuConventions->addAction(ico(Icon::Clock), tr("Payment Fre&quencies"));
-        connect(actPaymentFrequencies, &QAction::triggered, this, [this]() {
-            if (paymentFrequencyController_)
-                paymentFrequencyController_->showListWindow();
-        });
-        auto* actLegTypes = menuConventions->addAction(ico(Icon::Tag), tr("&Leg Types"));
-        connect(actLegTypes, &QAction::triggered, this, [this]() {
-            if (legTypeController_)
-                legTypeController_->showListWindow();
-        });
+        // Conventions submenu: merges what used to be two near-identically
+        // named peer submenus ("Trading Conventions" and "Conventions")
+        // into nested Trading / Curve Building groups.
+        auto* menuConventions = ref->addMenu(tr("Con&ventions"));
 
-        // Conventions submenu (curve-building conventions from conventions.xml)
-        auto* menuOreConventions = ref->addMenu(tr("Con&ventions"));
-        auto* actZeroConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&Zero Conventions"));
-        connect(actZeroConventions, &QAction::triggered, this, [this]() {
-            if (zeroConventionController_)
-                zeroConventionController_->showListWindow();
+        // Curve Building group. Entries alphabetical.
+        auto* menuCurveBuildingConventions = menuConventions->addMenu(tr("&Curve Building"));
+        auto* actCdsConventions =
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&CDS Conventions"));
+        connect(actCdsConventions, &QAction::triggered, this, [this]() {
+            if (cdsConventionController_)
+                cdsConventionController_->showListWindow();
+        });
+        auto* actCurrencyPairConventions =
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("Currency Pair Conve&ntions"));
+        connect(actCurrencyPairConventions, &QAction::triggered, this, [this]() {
+            if (currencyPairConventionController_)
+                currencyPairConventionController_->showListWindow();
         });
         auto* actDepositConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&Deposit Conventions"));
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&Deposit Conventions"));
         connect(actDepositConventions, &QAction::triggered, this, [this]() {
             if (depositConventionController_)
                 depositConventionController_->showListWindow();
         });
-        auto* actSwapConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&Swap Conventions"));
-        connect(actSwapConventions, &QAction::triggered, this, [this]() {
-            if (swapConventionController_)
-                swapConventionController_->showListWindow();
-        });
-        auto* actOisConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&OIS Conventions"));
-        connect(actOisConventions, &QAction::triggered, this, [this]() {
-            if (oisConventionController_)
-                oisConventionController_->showListWindow();
-        });
         auto* actFraConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&FRA Conventions"));
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&FRA Conventions"));
         connect(actFraConventions, &QAction::triggered, this, [this]() {
             if (fraConventionController_)
                 fraConventionController_->showListWindow();
         });
         auto* actIborIndexConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&IBOR Index Conventions"));
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&IBOR Index Conventions"));
         connect(actIborIndexConventions, &QAction::triggered, this, [this]() {
             if (iborIndexConventionController_)
                 iborIndexConventionController_->showListWindow();
         });
+        auto* actOisConventions =
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&OIS Conventions"));
+        connect(actOisConventions, &QAction::triggered, this, [this]() {
+            if (oisConventionController_)
+                oisConventionController_->showListWindow();
+        });
         auto* actOvernightIndexConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("O&vernight Index Conventions"));
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("O&vernight Index Conventions"));
         connect(actOvernightIndexConventions, &QAction::triggered, this, [this]() {
             if (overnightIndexConventionController_)
                 overnightIndexConventionController_->showListWindow();
         });
-        auto* actCurrencyPairConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("Currency Pair Conve&ntions"));
-        connect(actCurrencyPairConventions, &QAction::triggered, this, [this]() {
-            if (currencyPairConventionController_)
-                currencyPairConventionController_->showListWindow();
+        auto* actSwapConventions =
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&Swap Conventions"));
+        connect(actSwapConventions, &QAction::triggered, this, [this]() {
+            if (swapConventionController_)
+                swapConventionController_->showListWindow();
         });
-        auto* actCdsConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("&CDS Conventions"));
-        connect(actCdsConventions, &QAction::triggered, this, [this]() {
-            if (cdsConventionController_)
-                cdsConventionController_->showListWindow();
+        auto* actZeroConventions =
+            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&Zero Conventions"));
+        connect(actZeroConventions, &QAction::triggered, this, [this]() {
+            if (zeroConventionController_)
+                zeroConventionController_->showListWindow();
+        });
+
+        // Trading group. Entries alphabetical.
+        auto* menuTradingConventions = menuConventions->addMenu(tr("&Trading"));
+        auto* actBusinessDayConventionTypes =
+            menuTradingConventions->addAction(ico(Icon::Tag), tr("&Business Day Convention Types"));
+        connect(actBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
+            if (businessDayConventionTypeController_)
+                businessDayConventionTypeController_->showListWindow();
+        });
+        auto* actDayCountFractionTypes =
+            menuTradingConventions->addAction(ico(Icon::Tag), tr("&Day Count Fraction Types"));
+        connect(actDayCountFractionTypes, &QAction::triggered, this, [this]() {
+            if (dayCountFractionTypeController_)
+                dayCountFractionTypeController_->showListWindow();
+        });
+        auto* actFloatingIndexTypes =
+            menuTradingConventions->addAction(ico(Icon::Tag), tr("&Floating Index Types"));
+        connect(actFloatingIndexTypes, &QAction::triggered, this, [this]() {
+            if (floatingIndexTypeController_)
+                floatingIndexTypeController_->showListWindow();
+        });
+        auto* actLegTypes = menuTradingConventions->addAction(ico(Icon::Tag), tr("&Leg Types"));
+        connect(actLegTypes, &QAction::triggered, this, [this]() {
+            if (legTypeController_)
+                legTypeController_->showListWindow();
+        });
+        auto* actPaymentFrequencies =
+            menuTradingConventions->addAction(ico(Icon::Clock), tr("Payment Fre&quencies"));
+        connect(actPaymentFrequencies, &QAction::triggered, this, [this]() {
+            if (paymentFrequencyController_)
+                paymentFrequencyController_->showListWindow();
         });
 
         // Tenors submenu: primary entities (Tenors, Tenor Conventions) at the
-        // top; auxiliary code lookups (Anchors, Kinds, Units, Resolution
-        // Algorithms) directly below a separator, not nested in a submenu.
+        // top; auxiliary code lookups (Anchors, Kinds, Resolution Algorithms,
+        // Units) directly below a separator, not nested in a submenu. Each
+        // group alphabetical.
         auto* menuTenors = ref->addMenu(tr("&Tenors"));
-        auto* actTenors = menuTenors->addAction(ico(Icon::Tag), tr("&Tenors"));
-        connect(actTenors, &QAction::triggered, this, [this]() {
-            if (tenorController_)
-                tenorController_->showListWindow();
-        });
         auto* actTenorConventions = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Conventions"));
         connect(actTenorConventions, &QAction::triggered, this, [this]() {
             if (tenorConventionController_)
                 tenorConventionController_->showListWindow();
+        });
+        auto* actTenors = menuTenors->addAction(ico(Icon::Tag), tr("&Tenors"));
+        connect(actTenors, &QAction::triggered, this, [this]() {
+            if (tenorController_)
+                tenorController_->showListWindow();
         });
 
         menuTenors->addSeparator();
@@ -815,22 +823,59 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (tenorKindController_)
                 tenorKindController_->showListWindow();
         });
-        auto* actTenorUnits = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Units"));
-        connect(actTenorUnits, &QAction::triggered, this, [this]() {
-            if (tenorUnitController_)
-                tenorUnitController_->showListWindow();
-        });
         auto* actTenorResolutionAlgorithms =
             menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Resolution Algorithms"));
         connect(actTenorResolutionAlgorithms, &QAction::triggered, this, [this]() {
             if (tenorResolutionAlgorithmController_)
                 tenorResolutionAlgorithmController_->showListWindow();
         });
+        auto* actTenorUnits = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Units"));
+        connect(actTenorUnits, &QAction::triggered, this, [this]() {
+            if (tenorUnitController_)
+                tenorUnitController_->showListWindow();
+        });
 
         ref->addSeparator();
 
-        // Classifications submenu
-        auto* menuClassifications = ref->addMenu(tr("C&lassifications"));
+        // Codes umbrella submenu: nests the four auxiliary
+        // classification/lookup submenus (Classifications, Currency Codes,
+        // Book Codes, Organisation Codes) that used to sit as indistinguishable
+        // peers directly on Reference Data. All four are lookup values, not
+        // primary entities, hence the shared umbrella.
+        auto* menuCodes = ref->addMenu(tr("Co&des"));
+
+        // Book Codes submenu: auxiliary/classification data for books and
+        // portfolios (Book Statuses, Regulatory Book Types, Book Purpose
+        // Types, Ledger Feed Types today; room for portfolio-side codes as
+        // they land). Reference-data lookups belong here, not in the
+        // Trading menu's Trading Codes submenu. Entries alphabetical.
+        auto* menuBookCodes = menuCodes->addMenu(tr("&Book Codes"));
+        auto* actBookPurposeTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Purpose Types"));
+        connect(actBookPurposeTypes, &QAction::triggered, this, [this]() {
+            if (bookPurposeTypeController_)
+                bookPurposeTypeController_->showListWindow();
+        });
+        auto* actBookStatuses = menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
+        connect(actBookStatuses, &QAction::triggered, this, [this]() {
+            if (bookStatusController_)
+                bookStatusController_->showListWindow();
+        });
+        auto* actLedgerFeedTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("&Ledger Feed Types"));
+        connect(actLedgerFeedTypes, &QAction::triggered, this, [this]() {
+            if (ledgerFeedTypeController_)
+                ledgerFeedTypeController_->showListWindow();
+        });
+        auto* actRegulatoryBookTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
+        connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
+            if (regulatoryBookTypeController_)
+                regulatoryBookTypeController_->showListWindow();
+        });
+
+        // Classifications submenu. Entries alphabetical.
+        auto* menuClassifications = menuCodes->addMenu(tr("C&lassifications"));
         auto* actAssetClassCodes =
             menuClassifications->addAction(ico(Icon::Tag), tr("Asset &Class Codes"));
         connect(actAssetClassCodes, &QAction::triggered, this, [this]() {
@@ -849,10 +894,15 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 instrumentCodeController_->showListWindow();
         });
 
-        ref->addSeparator();
-
-        // Currency Codes submenu (Monetary Natures + Rounding Types)
-        auto* menuCurrencyCodes = ref->addMenu(tr("Currency &Codes"));
+        // Currency Codes submenu (Monetary Natures + Rounding Types).
+        // Entries alphabetical.
+        auto* menuCurrencyCodes = menuCodes->addMenu(tr("Curre&ncy Codes"));
+        auto* actCurrencyMarketTiers =
+            menuCurrencyCodes->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
+        connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
+            if (currencyMarketTierController_)
+                currencyMarketTierController_->showListWindow();
+        });
         auto* actMonetaryNatures =
             menuCurrencyCodes->addAction(ico(Icon::Classification), tr("&Monetary Natures"));
         connect(actMonetaryNatures, &QAction::triggered, this, [this]() {
@@ -865,53 +915,56 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (roundingTypeController_)
                 roundingTypeController_->showListWindow();
         });
-        auto* actCurrencyMarketTiers =
-            menuCurrencyCodes->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
-        connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
-            if (currencyMarketTierController_)
-                currencyMarketTierController_->showListWindow();
-        });
 
-        // Book Codes submenu: auxiliary/classification data for books and
-        // portfolios (Book Statuses, Regulatory Book Types, Book Purpose
-        // Types, Ledger Feed Types today; room for portfolio-side codes as
-        // they land). Reference-data lookups belong here, not in the
-        // Trading menu's Trading Codes submenu.
-        auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
-        auto* actBookStatuses = menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
-        connect(actBookStatuses, &QAction::triggered, this, [this]() {
-            if (bookStatusController_)
-                bookStatusController_->showListWindow();
-        });
-        auto* actRegulatoryBookTypes =
-            menuBookCodes->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
-        connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
-            if (regulatoryBookTypeController_)
-                regulatoryBookTypeController_->showListWindow();
-        });
-        auto* actBookPurposeTypes =
-            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Purpose Types"));
-        connect(actBookPurposeTypes, &QAction::triggered, this, [this]() {
-            if (bookPurposeTypeController_)
-                bookPurposeTypeController_->showListWindow();
-        });
-        auto* actLedgerFeedTypes =
-            menuBookCodes->addAction(ico(Icon::Flag), tr("&Ledger Feed Types"));
-        connect(actLedgerFeedTypes, &QAction::triggered, this, [this]() {
-            if (ledgerFeedTypeController_)
-                ledgerFeedTypeController_->showListWindow();
-        });
+        // Organisation Codes submenu: shared with ores.qt.party (host-owned,
+        // see shared_menus_context::organisation_codes_menu), since
+        // party-domain aux types migrate from ores.qt.party to
+        // ores.qt.refdata entity-by-entity as each is (re-)commissioned;
+        // see Commission: party_type story. Entries alphabetical.
+        if (smc.organisation_codes_menu) {
+            menuCodes->addMenu(smc.organisation_codes_menu);
+            auto* actBizUnitTypes = smc.organisation_codes_menu->addAction(
+                ico(Icon::PeopleTeam), tr("Business Unit &Types"));
+            connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
+                if (businessUnitTypeController_)
+                    businessUnitTypeController_->showListWindow();
+            });
+            auto* actContactTypes = smc.organisation_codes_menu->addAction(
+                ico(Icon::PersonAccounts), tr("&Contact Types"));
+            connect(actContactTypes, &QAction::triggered, this, [this]() {
+                if (contactTypeController_)
+                    contactTypeController_->showListWindow();
+            });
+            auto* actPartyIdSchemes =
+                smc.organisation_codes_menu->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
+            connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
+                if (partyIdSchemeController_)
+                    partyIdSchemeController_->showListWindow();
+            });
+            auto* actPartyStatuses =
+                smc.organisation_codes_menu->addAction(ico(Icon::Flag), tr("Party &Statuses"));
+            connect(actPartyStatuses, &QAction::triggered, this, [this]() {
+                if (partyStatusController_)
+                    partyStatusController_->showListWindow();
+            });
+            auto* actPartyTypes =
+                smc.organisation_codes_menu->addAction(ico(Icon::Tag), tr("Party &Types"));
+            connect(actPartyTypes, &QAction::triggered, this, [this]() {
+                if (partyTypeController_)
+                    partyTypeController_->showListWindow();
+            });
+        }
+
+        ref->addSeparator();
 
         // Cross Rates Matrix submenu: configuration data (changes
         // infrequently, curated per party) that drives ores.marketdata's
         // rate_engine but is not itself live market data -- see the
-        // reclassification decision on the codegen task doc.
+        // reclassification decision on the codegen task doc. Kept as a
+        // direct Reference Data child, not nested under Codes: it is
+        // configuration, not a lookup/classification value. Entries
+        // alphabetical.
         auto* menuCrossRatesMatrix = ref->addMenu(tr("Cross Rates &Matrix"));
-        auto* actCrmTopology = menuCrossRatesMatrix->addAction(ico(Icon::Chart), tr("&Topology"));
-        connect(actCrmTopology, &QAction::triggered, this, [this]() {
-            if (crmTopologyConfigController_)
-                crmTopologyConfigController_->showListWindow();
-        });
         auto* actCrmDriverPairs =
             menuCrossRatesMatrix->addAction(ico(Icon::ArrowSync), tr("&Driver Pairs"));
         connect(actCrmDriverPairs, &QAction::triggered, this, [this]() {
@@ -924,45 +977,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (crmEnabledDerivedPairController_)
                 crmEnabledDerivedPairController_->showListWindow();
         });
-
-        // Organisation Codes submenu: shared with ores.qt.party (host-owned,
-        // see shared_menus_context::organisation_codes_menu), since
-        // party-domain aux types migrate from ores.qt.party to
-        // ores.qt.refdata entity-by-entity as each is (re-)commissioned;
-        // see Commission: party_type story.
-        if (smc.organisation_codes_menu) {
-            ref->addMenu(smc.organisation_codes_menu);
-            auto* actPartyTypes =
-                smc.organisation_codes_menu->addAction(ico(Icon::Tag), tr("Party &Types"));
-            connect(actPartyTypes, &QAction::triggered, this, [this]() {
-                if (partyTypeController_)
-                    partyTypeController_->showListWindow();
-            });
-            auto* actContactTypes = smc.organisation_codes_menu->addAction(
-                ico(Icon::PersonAccounts), tr("&Contact Types"));
-            connect(actContactTypes, &QAction::triggered, this, [this]() {
-                if (contactTypeController_)
-                    contactTypeController_->showListWindow();
-            });
-            auto* actPartyStatuses =
-                smc.organisation_codes_menu->addAction(ico(Icon::Flag), tr("Party &Statuses"));
-            connect(actPartyStatuses, &QAction::triggered, this, [this]() {
-                if (partyStatusController_)
-                    partyStatusController_->showListWindow();
-            });
-            auto* actPartyIdSchemes =
-                smc.organisation_codes_menu->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
-            connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
-                if (partyIdSchemeController_)
-                    partyIdSchemeController_->showListWindow();
-            });
-            auto* actBizUnitTypes = smc.organisation_codes_menu->addAction(
-                ico(Icon::PeopleTeam), tr("Business Unit &Types"));
-            connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
-                if (businessUnitTypeController_)
-                    businessUnitTypeController_->showListWindow();
-            });
-        }
+        auto* actCrmTopology = menuCrossRatesMatrix->addAction(ico(Icon::Chart), tr("&Topology"));
+        connect(actCrmTopology, &QAction::triggered, this, [this]() {
+            if (crmTopologyConfigController_)
+                crmTopologyConfigController_->showListWindow();
+        });
     }
 
     // ---- Trading Codes menu — contribute Purpose Types ------------------

@@ -8,7 +8,7 @@
 #+filetags: :qt:menus:ux:refactor:sprint_23:v0:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment: bright_faraday
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -72,7 +72,7 @@ Data), not the DQ entity migration itself.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9012508D-58A4-45E1-8D14-31EC45F2B748][Scaffold story: Clean up application menus]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Design target menu structure and inventory current state]] | BACKLOG | | | Initial task for: Clean up application menus |
+| [[id:6EDBF119-34AC-4108-A5C9-E91C1DA0E78B][Reference Data menu — inventory and taxonomy]] | DONE | 2026-07-18 | 2026-07-18 | Audit current Reference Data menu entries, propose a target taxonomy with rationale, sign-off, then implement. |
 
 * Out of scope
 

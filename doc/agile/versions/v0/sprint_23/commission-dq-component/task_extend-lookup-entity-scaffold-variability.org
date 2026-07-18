@@ -7,35 +7,44 @@
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/extend-lookup-entity-scaffold-variability
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
 #+updated: 2026-07-18
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=compass add lookup_entity= should be as safe against silent
+knob-omission as =compass add entity_org --shape= now is: parameterize
+=has_coding_scheme=/=has_image_id=/=has_artefact_insert_fn= via
+=--entity-<knob>= flags instead of the current hardcoded =false=, and
+extend the scaffold's =Primary key= section to support a compound
+natural key (more than one column), so [[id:819B050A-A877-4B9A-BB24-942B95DA1206][the sibling DQ commissioning
+task]] can model =subject_area= (keyed by =name= + =domain_name=)
+accurately instead of misrepresenting its uniqueness constraint.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Reconnaissance: read the current lookup_entity template and its five real DQ exemplars. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Extend doc_lookup_entity.org.mustache and its CLI flags. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- =--entity-has-coding-scheme=/=--entity-has-image-id=/=--entity-has-artefact-insert-fn= flags exist and are wired into the scaffold output, mirroring entity_org's =--entity-<knob>= convention.
+- The =Primary key= section supports declaring more than one natural-key column (compound key), matching how a real compound-keyed lookup table (=subject_area=) is actually shaped in SQL.
+- =projects/ores.dq/modeling/ores.dq.subject_area.org= (or an equivalent scratch test) round-trips through the extended scaffold and matches the real =ores_dq_subject_areas_tbl= schema.
 
 * Plan
 

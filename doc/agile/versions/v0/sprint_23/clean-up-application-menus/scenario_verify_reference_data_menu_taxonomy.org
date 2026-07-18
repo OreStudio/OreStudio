@@ -40,9 +40,9 @@ select *BARCLAYS PLC* as the active party.
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Entities are flat, in FX/market then org/trading order
 
@@ -55,9 +55,10 @@ submenu hop).
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | overall looks good but business units show up twice, first in correct location then at bottom of screen. bottom of screen fails:; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.business-units.list' |
 
 ** Conventions submenu merges Trading and Curve Building
 
@@ -71,9 +72,9 @@ each group and confirm the correct list window opens.
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Tenors unchanged
 
@@ -83,9 +84,9 @@ Algorithms.
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Codes umbrella nests the four lookup submenus
 
@@ -98,9 +99,10 @@ correct list window opens for each.
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Overall looks good, but submenus should also be sorted so that all book menu entries are next to each other, party etc. also party id schemes is failing:; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.party-id-schemes.list'; ; also; ; Dynamic exception type: ores::nats::service::nats_connect_error; std::exception::what: NATS request failed: no service is handling subject 'ores.dev.solid.dirac.refdata.v1.business-unit-types.list' |
 
 ** Cross Rates Matrix unchanged
 
@@ -110,18 +112,18 @@ Enabled Derived Pairs unchanged.
 
 *** Result
 
-| Field | Value  |
-|-------+--------|
-| State | PASSED |
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 * Results
 
-| Field         | Value                                        |
-|---------------+-----------------------------------------------|
-| Status        | PASSED                                       |
-| Completed at  | 2026-07-18                                    |
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-18T02:23:10Z |
 | Branch        | feature/implement-clean-up-application-menus |
-| Commit        | c3e7aca24                                     |
-| Worktree      | solid_dirac                                   |
+| Commit        | ed38d40e2 |
+| Worktree      | solid_dirac |
 
 * Notes

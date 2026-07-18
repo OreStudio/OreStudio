@@ -302,6 +302,12 @@ change. Tracked as its own task: curve-snapshot-builder-viewer.
 
 * Notes
 
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:24976F4B-7F04-4430-8DA6-361FF8108AD6][Verify ir_curve_feed tick-batch publishing]] | PENDING | Manual verification via Qt client. |
+
 * PRs
 
 | PR | Title |

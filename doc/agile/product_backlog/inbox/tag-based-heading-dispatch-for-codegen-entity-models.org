@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0FCE310C-D292-456E-9364-BF1E2A688FFC
+:END:
+#+title: Tag-based heading dispatch for codegen entity models (Stage 1.5)
+#+description: Replace codegen's title-matching heading dispatch ("Flags", "Primary key", ...) with tag matching (e.g. :section:flags:), so headings can be renamed without breaking the loader.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:org_mode:literate:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -10,15 +10,11 @@
 #+created: 2026-06-27
 #+updated: 2026-07-16
 
-This page is the literate source for the =ores.doc.template= facet of the
-codegen template library. Each section documents one template and
-holds its source in a =mustache= block tangled to the sibling
-=.mustache= file consumed by =generator.py=. The =.mustache= files are
-generated artefacts — edit this document, then run the tangle
-(=compass build --direct tangle_codegen_templates= or
-=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership are documented in each template's row
-of the Archetypes table below.
+This page is the node for the =ores.doc.template= facet of the codegen
+template library, part of the [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
 
 * Summary
 
@@ -43,19 +39,6 @@ its own output survives rendering as literal mustache — the same
 trick this library uses one level up, applied recursively to its own
 scaffold.
 
-* Templates
-
-(One subheading per template: prose covering role, model inputs,
-output artefact and profiles, followed by the source block. The first
-line of every block is the output-neutral GENERATED FILE header:)
-
-#+begin_example
-,#+begin_src mustache :tangle <name>.mustache
-{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}
-...template source...
-,#+end_src
-#+end_example
-
 * Archetypes
 
 | Archetype | Description |
@@ -67,5 +50,6 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * See also
 
-- (Parent template group doc: =<group>_group.org=.)
+- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]] § "Doc Technical Space" — the domain-concept overview of this technical space.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

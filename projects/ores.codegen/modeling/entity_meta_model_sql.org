@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27
+:END:
+#+title: Codegen entity meta-model — SQL
+#+description: The * SQL section of an entity model: table naming and the has_parent_id hierarchy knob. Generates the bi-temporal table DDL, insert triggers, and notify triggers via the ores.sql.schema facet.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the =* SQL= section and the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] facet it feeds: bi-temporal
+table create/drop, insert triggers, and notify triggers.
+The columns it operates on are declared once, shared with C++, on the
+[[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] page — this page is only the SQL-specific fields
+layered on top.
+
+This page splits its fields across two diagrams, per [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
+"The entity model file as a unified literate document":
+
+- *Structural* fields — always part of the entity's shape, never
+  toggled — drawn as a UML class diagram under [[*Flags][Flags]] below.
+  =:tablename:= is one: a required identity field with no default,
+  every entity needs exactly one value. =:parent_id_column:= and
+  =:hierarchy_name_field:= are also structural — they name *real
+  columns* — but only exist conditionally, once =:has_parent_id:= is
+  on; the UML diagram marks them =[0..1]= for that reason, and a note
+  on the diagram cross-references the UVL feature that gates them.
+- *Non-structural* — a single authored, optional [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] feature — drawn
+  as a UVL feature diagram under [[*Hierarchy: =has_parent_id=][Hierarchy]] below: =:has_parent_id:=
+  itself, the toggle that decides whether the two conditional
+  structural fields above exist at all.
+
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]            | Bi-temporal schema: table create/drop, insert triggers, notify triggers. |
+
+* Flags
+
+The section always opens with a =** Flags= drawer:
+
+#+begin_src org
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename: ores_refdata_books_tbl
+,:END:
+#+end_src
+
+| Property        | Required | Meaning                                          |
+|-----------------+----------+-----------------------------------------------------|
+| =:tablename:=   | yes      | The generated table's name. Convention: =<product>_<component>_<entity_plural>_tbl=. |
+
+Structural view — the =SQL= segment's fields, per the split above,
+plus its one [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste block]] kind (extra drop statements, [[*Extra drop statements][below]]), drawn
+as its own class: a block kind's =ID= is the well-known kind UUID,
+distinct from any entity's per-instance implementing block:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_sql_structural.png]]
+
+(Source: [[proj:projects/ores.codegen/modeling/entity_meta_model_sql_structural.puml][entity_meta_model_sql_structural.puml]],
+rendered with =plantuml=.)
+
+The =:tablename:= flag above (=ores_refdata_books_tbl=) drives the
+generated =create table= statement's identifier directly:
+
+#+begin_src sql
+create table if not exists "ores_refdata_books_tbl" (
+    "id" uuid not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
+    -- ... columns from Keys and columns ...
+);
+#+end_src
+
+Future SQL sub-sections (custom triggers, indices) live alongside
+this =Flags= sub-heading.
+
+* Hierarchy: =has_parent_id=
+
+Some entities form a tree via a self-referencing soft foreign key —
+a =book= belongs to a =portfolio=, a =counterparty= can have a parent
+=counterparty=. Setting =:has_parent_id: true= tells the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
+facet to generate a recursive-CTE function that walks that tree, so
+consumers don't each hand-write their own recursive query.
+
+Non-structural view — =:has_parent_id:=, the one feature on this page:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_sql.svg]]
+
+| Property                | Required | Meaning                                                    |
+|--------------------------+----------+-----------------------------------------------------------|
+| =:has_parent_id:=        | no       | Turns the knob on.                                          |
+| =:parent_id_column:=     | if set   | The self-referencing FK column name, e.g. =parent_party_id=. |
+| =:hierarchy_name_field:= | if set   | An existing column used as the display label in the tree.  |
+
+=counterparty= is one such self-referencing entity; its model sets
+all three properties together:
+
+#+begin_src org
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename:            ores_refdata_counterparties_tbl
+,:has_parent_id:        true
+,:parent_id_column:     parent_counterparty_id
+,:hierarchy_name_field: full_name
+,:END:
+#+end_src
+
+Generates a
+=<product>_<component>_<entity_plural>_hierarchy_fn(p_tenant_id, p_root_id, p_from_root)=
+recursive-CTE function returning flat =(id, parent_id, name)= rows —
+the subtree rooted at =p_root_id= when =p_from_root= is false, or
+(resolving up to the real root first) the whole tenant tree when
+true.
+
+The generated function only produces flat rows; it does not build a
+tree. Turning those rows into an actual tree is generic work that
+does not vary from one hierarchical entity to the next, so it is not
+generated at all — every consumer instead calls the same hand-written
+[[proj:projects/ores.utility/include/ores.utility/domain/hierarchy.hpp][=ores::utility::domain::hierarchy.hpp=]], whose =build_tree()= turns a
+vector of flat =hierarchy_flat_row= into a tree of =hierarchy_node=.
+
+=:has_parent_id:= does *not* generate everything a hierarchical
+entity needs, though. The self-referencing FK column itself
+(=parent_<entity>_id=) and its insert-trigger validation are still
+hand-written today. The hierarchy function does not depend on that
+column being generated; it composes independently either way.
+
+* Paste blocks
+
+The =SQL= segment defines the following paste block kinds, one per
+sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism they
+assume.
+
+** Extra drop statements
+:PROPERTIES:
+:ID: 5E47F108-1350-4540-B3C2-E83DD5379B2D
+:END:
+
+This paste block defines additional =DROP= statements inserted into
+the generated =<component>_<entity_plural>_drop.sql=, just before
+=drop table if exists=. Use this when the entity's companion
+=_table.org= model generates database objects (e.g. a validate
+function) that the entity template itself has no way to know about.
+If no entity implements this kind, the marker collapses to nothing.
+
+Example of an inclusion of this paste block in a template
+([[id:3D9951F8-C68B-4EA1-93FE-2229769997E8][sql_schema_domain_entity_drop]]):
+
+#+begin_src text
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
+<<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>
+drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
+#+end_src
+
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Extra drop statements=, with the body in a block named
+=body=. See the following example:
+
+#+begin_src org
+,** Paste blocks
+,*** Extra drop statements
+
+,#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_rounding_type_fn;
+,#+end_src
+#+end_src
+
+An entity is not limited to a single =drop= statement, nor to a
+single block: it may write several statements inside one =body=
+block, or spread them across several =*** Extra drop statements=
+sub-headings. Either way, codegen collects them all, in the order
+they appear in the model, and concatenates them with a blank line
+between each.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the column declarations this section's DDL is built from.
+- [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] — the shared paste-block mechanism.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for =:tablename:=/=:has_parent_id:= as configuration points.

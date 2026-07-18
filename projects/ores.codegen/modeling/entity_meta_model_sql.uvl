@@ -1,0 +1,15 @@
+namespace OresCodegenSql
+
+// UVL model of entity_meta_model_sql.org's non-structural variability.
+// Only has_parent_id itself is a genuine VMM feature (authored, read
+// through by the generator, toggling whether the hierarchy function is
+// emitted). Its two dependent properties, parent_id_column and
+// hierarchy_name_field, are structural -- they name real columns on the
+// entity -- and are drawn on the page's UML structural diagram instead,
+// not modeled here. Tablename is likewise structural (a required
+// identity field, not a toggle) and lives on that same UML diagram.
+
+features
+    Sql {abstract}
+        optional
+            HasParentId

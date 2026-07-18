@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: EE237306-7782-4625-8880-47E8975530EA
+:END:
+#+title: Task: Scaffold model .org files per entity type (regular/enum/junction)
+#+description: Generate model .org skeletons from mustache templates keyed by entity type (regular entity, enum entity, junction), pre-populated with the correct variability knobs already enabled, derived by sampling known-good reference entities (e.g. book, currency) rather than ad-hoc copy-paste.
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch: feature/commission-dq-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generate correct, fully-knobbed entity .org model skeletons per entity
+*metatype* (domain_entity/junction/lookup_entity — the MASD-established
+classification, see Plan), with domain_entity further split into named
+*shapes* by knob combination, by sampling correctly-modeled reference
+entities, so new DQ (and future) entity models start from a known-good
+baseline instead of copy-paste. Also document the fixed set of manual
+post-generation integration steps (registrar wiring, NATS relay
+wiring, CMake/plugin wiring, ...) so the scaffold — or the LLM using
+it — knows what still needs doing by hand, with a pointer to the
+capture/task ID tracking each step not yet automated.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- =org_entity_meta_model.org= documents every variability knob actually in use (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/coding_scheme wiring, etc.) -- today's doc omits all of them.
+- A codegen command/template exists per entity metatype/shape that scaffolds a new model .org with the correct knobs already present -- either set from the sampled exemplar or left as an explicit TODO with a one-line reason -- so a knob can never be silently omitted.
+- A "Post-generation checklist" is authored (in the scaffolded file or a companion doc, decide during implementation) enumerating every fixed manual integration step (registrar sub-registration, application.cpp NATS-relay wiring, CMakeLists entry, Qt plugin/menu wiring, manual chapter), each linking to a capture/task ID if the step is separately tracked for automation.
+- Used to author the DQ reference-entity models in the sibling commissioning task ([[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]]).
+
+* Plan
+
+Not "stereotype" (UML mechanism) and not "profile" -- *metatype*: the
+MASD term for an entity's classification, per [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § Metatypes,
+facets, archetypes, and transforms (=domain_entity=, =junction=,
+=enumeration=, ... -- "do not use 'stereotype' to mean 'metatype'").
+Codegen's =#+type:= frontmatter already dispatches on exactly this:
+=ores.codegen.entity= (metatype =domain_entity=), =ores.codegen.junction=
+(metatype =junction=), =ores.codegen.lookup_entity= (maps to metatype
+=enumeration=? naming mismatch to confirm during implementation --
+the established metatype table in Applied MASD says =enumeration=,
+codegen's doc-type says =lookup_entity=; reconcile or document why
+they differ).
+
+=market_observation= is =#+type: ores.codegen.entity= today (metatype
+=domain_entity=) despite being structurally quite different
+(TimescaleDB hypertable, immutable observation semantics, no Qt) --
+so per the current, established metatype list it is *not* a distinct
+metatype, it is a =domain_entity= with =:ores.cpp.qt.enabled: false=
+and a different natural-key/temporal shape. The four "regular" rows
+below are the same situation: same metatype (=domain_entity=),
+different knob combinations. Calling all five "metatypes" would be
+exactly the kind of stretching Applied MASD warns against, so this
+task uses *shape* for that finer, sub-metatype grouping -- a shape is
+"which optional domain_entity knobs this kind of entity needs", not a
+new classification codegen dispatches on. Whether timeseries entities
+are common/different enough to eventually warrant becoming their own
+metatype (a real =#+type: ores.codegen.timeseries=, dispatching to a
+different archetype set) is a legitimate future question, out of
+scope for this task -- flag it rather than deciding it here.
+
+Candidate metatypes/shapes and their sampled exemplars (to
+confirm/revise once we start, these are reconnaissance picks, not final):
+
+| Metatype       | Shape                     | Exemplar(s)                    | Why |
+|-----------------+----------------------------+---------------------------------+-----|
+| domain_entity   | simple text-key            | =ores.refdata.country.org=      | text natural key, has_uuid_primary_key: false, no hierarchy |
+| domain_entity   | FK-scoped                  | =ores.refdata.book.org=         | party_id soft-FK scoping, moderate size |
+| domain_entity   | hierarchical composite     | =ores.refdata.party.org=, =ores.refdata.counterparty.org= | has_parent_id, has_uuid_primary_key: true, composite child-entity tables |
+| domain_entity   | richest/all-knobs          | =ores.refdata.currency.org=     | every optional knob exercised at least once, custom generator/service code |
+| domain_entity   | timeseries/hypertable      | =ores.marketdata.market_observation.org= | TimescaleDB hypertable, (series, observation_datetime, point_id) triple, =ores.cpp.qt.enabled: false= today (see Notes on future UI/chart work), transaction-time vs financial valid-time distinction |
+| lookup_entity   | (none needed yet)          | =ores.iam.tenant_type_lookup_entity.org= (candidate) | small closed code set, minimal knobs |
+| junction        | (none needed yet)          | =ores.refdata.party_counterparty_junction.org= (candidate) | two-sided FK association |
+
+Existing doc-type split (=ores.codegen.entity=/=lookup_entity=/
+=junction=) already gives us the metatype boundary; extend within
+=ores.codegen.entity= for the domain_entity shapes rather than adding
+new doc types.
+
+* Notes
+
+Promoted from a backlog capture (same =:ID:=, preserved for traceability).
+
+Today every entity's model =.org= file (e.g.
+=projects/ores.refdata/modeling/ores.refdata.<entity>.org=) is
+hand-authored from scratch or copy-pasted from a similar entity, so
+variability knobs (=has_change_reason_cache=,
+=history_response_data_field=, =delete_request_id_field=,
+=has_uuid_primary_key=, badge wiring for enum-like lookups, junction
+wiring for many-to-many association entities, etc.) get set
+inconsistently or omitted entirely depending on which entity someone
+copied from. In practice there are really only a handful of *entity
+kinds* driving these knobs: a plain domain entity, an enum/lookup
+entity (small closed set of codes, usually badge-rendered in list
+views), and a junction/association entity (links two entities, often
+read-only or list-only). Add a mustache template per kind under
+=projects/ores.codegen/library/templates/= that scaffolds a new model
+=.org= with the correct knobs for that kind already present and set
+to sensible defaults -- derived by sampling known-good reference
+entities (e.g. =ores.refdata.book.org=, =ores.refdata.currency.org=)
+that are already proven to fill in every knob correctly, rather than
+generic per-kind defaults alone.
+
+This traces back to task [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]] (PRs #1571/#1590), which found 8
+=*_convention= entities missing =has_change_reason_cache: true=
+despite their schema requiring =change_reason_code= (saves silently
+failed with an empty change-reason dropdown), and the same 8 missing
+=history_response_data_field=/=delete_request_id_field= overrides
+because their protocol field names don't follow the codegen
+defaults. All three gaps trace back to the model =.org= file being
+authored without a checklist for "what does an entity of this kind
+need". A kind-aware scaffold sampled from correct entities would make
+these knobs impossible to silently omit.
+
+See also: [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Story: Migrate all entities onto the generic HistoryDialog]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: F966605D-4321-4499-9304-F8A703C91E26
+:END:
+#+title: Codegen entity meta-model — C++ presentation
+#+description: The ores.cpp.presentation facet: rendering a domain type to an ordered field list for history-diff display.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] facet — the smallest facet on this hub after
+[[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]. It exists to answer one question: when the Qt history
+dialog shows "what changed between version 3 and version 4", what
+does it show, and in what order?
+
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]      | Server-side rendering of a domain type for display: history field mapper. |
+
+* What gets generated, unconditionally
+
+A history field mapper: a function rendering the entity to an
+ordered list of =(field name, value)= pairs, in mapper order, with no
+runtime reflection. The [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] declarations drive the field
+list directly — there is nothing further to configure.
+
+Generates, in =badge_definition_history_field_mapper.hpp=:
+
+#+begin_src cpp
+namespace ores::dq::presentation {
+
+/**
+ * @brief Renders a badge_definition to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_badge_definition_fields(const domain::badge_definition& v);
+
+}
+#+end_src
+
+No paste blocks or behavioural knobs exist for this facet today.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the field list this facet renders.

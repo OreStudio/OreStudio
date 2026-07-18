@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5FFB587D-D85A-4B51-8C80-0F8D485754A7
+:END:
+#+title: Migrate remaining ~100 entity models from JSON to org
+#+description: Complete the org-migration story: convert the remaining legacy JSON-format entity models to the literate .org entity-model format.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:org_mode:literate:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

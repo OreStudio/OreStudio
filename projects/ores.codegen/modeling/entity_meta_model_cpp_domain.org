@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE
+:END:
+#+title: Codegen entity meta-model — C++ domain
+#+description: The domain includes sub-section and what the ores.cpp.domain facet generates: the plain domain struct, its JSON I/O, and table I/O.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
+the =* C++ > ** Domain includes= sub-section and the [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]
+facet it feeds. This is the smallest facet: the domain struct is
+plain data (see the [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] page for where its fields come
+from), so there is very little left for this section to configure —
+just the =#include= directives the generated struct header needs
+that aren't inferred automatically from column types.
+
+* Physical model mapping
+
+| Facet                     | Description                                       |
+|-----------------------------+------------------------------------------------------|
+| [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]            | Domain types: class, JSON I/O, table I/O.           |
+
+* Domain includes
+
+A named =includes= babel block: one =#include= directive per line,
+copied verbatim into the generated domain struct header.
+
+#+begin_src org
+,** Domain includes
+
+,#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+,#+end_src
+#+end_src
+
+Generates, at the top of =book.hpp=:
+
+#+begin_src cpp
+#ifndef ORES_REFDATA_API_DOMAIN_BOOK_HPP
+#define ORES_REFDATA_API_DOMAIN_BOOK_HPP
+
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#include <string_view>
+
+namespace ores::refdata::domain {
+// ...
+#+end_src
+
+No paste blocks or behavioural knobs exist for this facet today —
+the domain struct's shape is fully determined by the entity's
+columns, with nothing entity-specific left to override.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — where the struct's fields are declared.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — the persistence-layer counterpart to this plain struct.

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: EAD8E0DF-EB0F-45FC-BE94-89FFD64515DE
+:END:
+#+title: Analyse whether timeseries/observation entities need their own codegen metatype
+#+description: market_observation is frontmattered ores.codegen.entity (metatype domain_entity) today, but its shape (TimescaleDB hypertable, high-volume append-mostly, no CRUD Qt layer) is quite different from a standard domain entity. Analyse whether timeseries entities warrant a real distinct metatype (a new #+type dispatch value, its own archetype set) or whether they are adequately expressed as a domain_entity variability knob combination -- then, either way, do the codegen work needed to support a proper list/chart-style UI for observations (not the standard generated CRUD detail dialog).
+#+type: capture
+#+level: cross
+#+filetags: :codegen:masd:timeseries:marketdata:qt:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+First analyse, don't decide up front: is a timeseries/observation
+entity (append-mostly, high-volume, TimescaleDB hypertable, keyed by
+series + observation time + optional point rather than a single
+temporal-versioned row) different enough from a standard
+=domain_entity= to warrant its own MASD metatype (a real
+=#+type: ores.codegen.timeseries_entity=-style dispatch value, its own
+archetype set), or whether it's adequately expressed today as a
+=domain_entity= with a particular variability-knob combination (as
+=market_observation= currently is, with =:ores.cpp.qt.enabled: false=
+disabling the standard Qt layer). Once that's settled, do the codegen
+work to support an appropriate UI for observations -- a list/chart
+view, not the standard generated CRUD detail dialog -- since we want
+observation data browsable and eventually plottable, not just
+queryable via the API.
+
+* Why
+
+Raised while reviewing the codegen entity meta-model doc
+([[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]]) during task [[id:EE237306-7782-4625-8880-47E8975530EA][EE237306]] (scaffold
+entity .org templates per metatype). =ores.marketdata.market_observation=
+was picked as a candidate exemplar and immediately raised the
+question of whether it belongs in the same bucket as =currency=/=party=
+at all. Answering that properly needs an actual look at the codegen
+archetype system and TimescaleDB hypertable specifics, not a snap
+call made in passing while documenting an unrelated task -- hence
+this as its own capture.
+
+* References
+
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § Metatypes, facets, archetypes, and transforms — the established metatype list (domain_entity/junction/enumeration/field_group/component) this analysis would extend if warranted.
+- =projects/ores.marketdata/modeling/ores.marketdata.market_observation.org= — the entity that prompted this.
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — documents the =:ores.cpp.qt.enabled:= flag currently used to opt =market_observation= out of Qt generation.
+
+* See also
+
+- [[id:EE237306-7782-4625-8880-47E8975530EA][Task: Scaffold model .org files per entity type (regular/enum/junction)]]

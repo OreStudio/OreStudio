@@ -56,11 +56,44 @@ of them are variability. The mechanical test — verifiable by reading
   generator *reads through* (=section.get('flag')=). Nobody computes it;
   a human sets it to tune the projection.
 - A *structural predicate* (not variability) is a value the generator
-  *computes* from the object graph (=entity['has_tenant_id'] =
-  bool(...)=, =field['is_uuid'] = type == 'uuid'=). It is a /consequence/
-  of the structure, not a choice about projection. These belong to the
-  logical model and are listed under [[*Excluded: structural predicates][Excluded: structural predicates]] so they
-  are never mistaken for configuration.
+  *computes* from other, already-known facts about the entity
+  (=table['has_tenant_in_pk'] = has_tenant_id and not
+  sql_section.get('system_scope')...=, =field['is_uuid'] = type ==
+  'uuid'=). It is a /consequence/ of the structure, not a choice about
+  projection. These belong to the logical model and are listed under
+  [[*Excluded: structural predicates][Excluded: structural predicates]] so they are never mistaken for
+  configuration.
+
+The test above is necessary but, read alone, invites a mistake: a
+knob whose effect is to add a field or column — =:has_tenant_id:=,
+say — looks structural, because what it produces (a =tenant_id=
+column) plainly is. It is not. Structure is measured strictly by what
+appears in the generated type system: the classes, structs, fields,
+and methods a facet emits. A knob is never itself one of those
+things — authoring =:has_tenant_id: true= in an entity model's Flags
+drawer produces no field, method, or class named =has_tenant_id=
+anywhere in the generated code. It is an internal variable the
+generator reads (=domain_entity.get('has_tenant_id', False)= in
+=core.py=) to decide *whether* to branch into the template logic that
+emits a =tenant_id= column, nothing more. That decision, and every
+knob like it, is non-structural variability, full stop — whether it
+goes on to add a field to the type system (=:has_tenant_id:=) or only
+changes template behaviour that never touches the type system at all
+(a naming convention, a cosmetic default). The resulting field or
+column, once emitted, is of course a structural fact about that
+particular entity — but the fact and the knob that decided it belong
+to different models: the fact is logical, the knob is variability.
+
+=:has_tenant_id:= and =:has_workspace_id:= (documented on [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
+columns]]) are exactly this case, and were previously misclassified
+below as computed structural predicates — checked against
+=core.py=/=org_loader.py=, both are read straight from the model's
+frontmatter, with a default applied (=bool(table.get('has_tenant_id',
+True))=), not derived from any other fact about the entity. They are
+genuine features and are removed from the exclusion table below.
+=has_tenant_in_pk=, by contrast, /is/ correctly excluded: it is
+computed from =has_tenant_id= together with other already-known
+facts, never authored directly.
 
 * Part 1 — Physical-space activation (the ores.* graph)
 
@@ -341,14 +374,28 @@ binding — without touching the domain object graph. (The many /computed/
 ** Excluded: structural predicates
 
 The following are the values templates branch on that are *not*
-variability. Every one is *computed* by =generator.py= from the object
-graph, so it is a structural fact, not a configuration choice. They are
-listed here so they are never re-imported into the variability model;
-their home is the logical model.
+variability. Every one is *computed* by =generator.py= from other,
+already-known facts about the entity — reflecting the structure of
+the types the facets will generate, not a choice about how to project
+them — so each is a structural fact, not a configuration choice. They
+are listed here so they are never re-imported into the variability
+model; their home is the logical model. =has_tenant_id=,
+=has_workspace_id=, and =has_display_order= — genuine authored
+features, all read verbatim from frontmatter with no derivation from
+other facts — do *not* belong on this list and were removed from it;
+=has_tenant_id=/=has_workspace_id= are documented on [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
+columns]]. See § "The test: authored knob vs computed predicate"
+above. =has_image_id= and =has_coding_scheme= are split-personality:
+for =domain_entity=/=table= models (the row below) they are genuinely
+computed in =core.py=; for =lookup_entity= models the *same-named*
+frontmatter key is instead read verbatim in =org_loader.py=
+(=_LOOKUP_ENTITY_BOOL_SCALARS=) — a feature for that metatype, not a
+predicate. Which one applies depends on the model's metatype.
 
 | Group | Predicates | Computed from |
 |-------+------------+---------------|
-| Presence gates | =has_tenant_id=, =has_workspace_id=, =has_tenant_in_pk=, =has_image_id=, =has_coding_scheme=, =has_nullable_coding_scheme=, =has_display_order=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right= | "does the entity have attribute / key X" |
+| Presence gates | =has_tenant_in_pk=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right= | "does the entity have attribute / key X" |
+| Presence gates (=domain_entity=/=table= only) | =has_image_id=, =has_coding_scheme=, =has_nullable_coding_scheme= | computed in =core.py= from other fields (=image_id=, =coding_scheme=) — /for these two model types only/ |
 | Type predicates | =is_uuid=, =is_text=, =primary_key.is_uuid/is_text=, =left.is_uuid=, =right.is_uuid= | attribute SQL / C++ type |
 | Nullability predicates | =nullable=, =is_optional(_string/_uuid/_timestamp)=, =is_nullable_int/_string=, =is_already_optional=, =is_tristate= | attribute nullability |
 | Widget predicates | =is_line_edit=, =is_text_edit=, =is_spin_box=, =is_check_box=, =is_dynamic_combo=, =is_static_combo=, =is_simple=, =is_fk=, =is_key=, =is_unique= | =field.type= |

@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: DA3C5B05-1214-44D5-A5A9-E92344EA0680
+:END:
+#+title: Task: Consolidate the five ores.cpp.nats-* facets into one facet with five archetypes
+#+description: The physical-space graph currently models the NATS command pipeline (handler, sub-registrar) and event pipeline (eventing, event-registrar, event-cache) as five independent ores.cpp.nats-* facets, all sharing the C++ Technical Space with every other C++ facet -- nothing distinguishes them as a NATS sub-grouping. A single ores.cpp.nats facet with five archetypes underneath would model this more accurately, matching how the entity meta-model's C++ NATS segment page already documents them as one conceptual flow.
+#+type: task
+#+level: s1
+#+filetags: :commission-dq-component:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Merge the five ores.cpp.nats-* facet nodes in the physical-space graph (projects/ores.codegen/library/templates/ores.cpp.nats-*.org) into one ores.cpp.nats facet with five archetypes (handler, sub-registrar, eventing, event-registrar, event-cache), updating every template/doc reference to the old five facet IDs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- One ores.cpp.nats facet node exists with five archetypes; the five old facet .org files are retired; every reference to the old facet IDs (entity_meta_model_cpp_nats.org, applied_masd.org's facet catalogue table, any others found via grep) is updated to the new facet/archetype addresses; zero-diff regeneration verified against at least one entity using NATS (e.g. book).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Raised while authoring [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][Codegen entity meta-model — C++ NATS]], which
+documents the five facets together as one conceptual flow (command
+pipeline: handler + sub-registrar; event pipeline: eventing +
+event-registrar + event-cache) precisely because the physical-space
+graph doesn't. All five currently belong to the [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]
+with no intermediate grouping — there is no MASD concept of a "facet
+group" between technical space and facet; five separate facet nodes
+is simply five separate facet nodes today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 40AD7EFB-AACE-472F-B767-8FD3FF2F5C03
+:END:
+#+title: Codegen meta-model — paste blocks
+#+description: ORE Studio's implementation of the MDE "protected region" mechanism, project-specific naming: how a segment injects hand-written code into an otherwise fully-generated file, and why. Concrete block kinds live on each segment page, not here.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:paste_blocks:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is the *concept* note for paste blocks, applicable to any
+metaclass's segments, not only [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Entity]]'s. It is ORE Studio's extension
+to the MASD logical model: [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] already has a notion of
+protected regions (see § "Protected regions" below), but as a
+mechanism belonging to physical space, scanned from generated output.
+ORE Studio instead models a paste block *as a field on the logical
+metaentity itself* — a segment composes zero or more =PasteBlock=
+instances, each with its own kind =ID=, the same way it composes any
+other typed field:
+
+[[proj:projects/ores.codegen/modeling/codegen_meta_model_paste_blocks.png]]
+
+This page explains the mechanism once; every segment page that has
+concrete block kinds ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][Repository]], [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][Service]], [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][Protocol]], [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][NATS]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Qt]],
+[[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][Generator]]) links back here instead of re-explaining it, and hosts
+its own block kinds inline rather than in one central registry — a
+Repository paste block belongs on the Repository page,
+not in a separate index, because you need it while reading about the
+repository facet, not some other time.
+
+* Physical model mapping
+
+Paste blocks are not a segment themselves — this page is a concept
+note, not a hub-and-spokes segment page — so there is no facet of
+its own to map to here. A paste block *exists within* a segment (see
+each segment's own structural diagram, e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =SqlSchemaExtraDropStatements=),
+and it is that owning segment's facet the content ultimately projects
+into. See "Finding a block kind" below for which segment page (and
+therefore which facet) hosts each concrete block kind.
+
+* Terminology: this is a protected region
+
+"Paste block" is *not* a MASD concept — it is ORE Studio's
+project-specific name for an instance of the formally-named MDE
+mechanism, the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § "Protected regions", the same naming
+mismatch already flagged for =stereotype= /metatype (see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied
+MASD]]'s note on that). Read that section first for the general
+mechanism, the tool-naming survey across XPand/Acceleo/EGL/JET/
+MOFScript, and the formal comparison this is drawn from
+([[https://arxiv.org/pdf/1509.04498][Greifenberg /et al./ 2015]]).
+
+One thing worth being precise about: ORE Studio's paste blocks are
+*not* the classic protected-region implementation described there.
+The classic mechanism is a *round-trip* one — the generator scans
+the *previous* generated output for marker comments, extracts
+whatever handwritten content it finds inside them, and reinserts it
+into the newly generated file; this is exactly the mechanism whose
+known drawback is an unstable/non-unique marker ID silently losing
+content, because the source of truth for the handwritten content is
+the generated file itself. ORE Studio's paste blocks invert this:
+the handwritten content lives in the *entity model* (the =.org=
+file), never in generated output, and codegen does a one-directional,
+stateless substitution — render the template, then regex-replace
+=<<paste:UUID>>= markers with content read straight from the model.
+There is no "scan the old output" step and nothing to lose on
+regeneration, because generated output is never the source of truth
+for anything. Whether this project-specific variant deserves its own
+name distinct from "protected region," or whether "paste block" should
+just be retired in favour of a MASD-aligned term for it, is an open
+question — not decided on this page.
+
+* Why the mechanism exists
+
+Most of a generated file is fully templated: given the entity's
+fields and knobs, the output is fully determined. But some code is
+genuinely entity-specific and cannot be derived from the model —
+a bespoke query method, a custom NATS message type, a hand-written
+constructor initialiser. Rather than making that entity's file
+partially hand-written (losing regeneration safety for the *whole*
+file), codegen defines fixed *slots* inside its templates that an
+entity model may fill with verbatim code. The generated file stays
+100% regenerable; only the slot's content is entity-authored.
+
+* The two levels of identity
+
+A *block kind* is the slot itself — a concept, like an interface.
+It has a stable UUID, declared once by whichever segment page owns
+it, and referenced by that facet's templates via a
+=<<paste:UUID>>= marker.
+
+A *block instance* is one entity's concrete filling of that slot —
+like a class implementing an interface. Its own =:ID:= is per-entity,
+per-block; many entities may implement the same kind, each with a
+different instance UUID for their own copy.
+
+This split means templates and entity files never need to coordinate
+UUID changes: a template references a fixed kind UUID forever; each
+entity file independently declares what it implements.
+
+* How an entity attaches a block
+
+Inside the entity model, a sub-heading under the relevant section
+(e.g. =** Custom service methods= under =* C++=) carries a babel
+block whose =:implements:= header argument names the kind UUID:
+
+#+begin_src org
+,** Custom service methods
+
+,#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+,    std::vector<domain::country> list_countries_for_party(
+,        const boost::uuids::uuid& party_id,
+,        std::uint32_t offset, std::uint32_t limit);
+,#+end_src
+#+end_src
+
+The babel block's =:name= (=declaration= above) is for human/Emacs
+navigation only — =:implements= is what codegen actually reads.
+
+* How the marker resolves
+
+Codegen is a *post-rendering* substitution pass: mustache renders the
+whole template first, using the entity's ordinary fields and knobs;
+then a regex pass replaces every =<<paste:UUID>>= marker with the
+concatenated bodies of every sub-heading in the current entity whose
+=:implements:= matches that UUID. If no sub-heading implements a
+given kind, the marker is replaced with an empty string (and a
+single trailing newline collapses), so an entity that needs none of
+a facet's paste blocks produces exactly the same output as if the
+markers weren't there.
+
+The well-known babel block name inside an implementing sub-heading is
+=body= for a single free-form insertion. Some kinds instead expect
+=declaration=/=implementation= pairs (a header slot and a matching
+=.cpp= slot for the same custom method) — each segment page states
+which name(s) its kinds expect.
+
+* Finding a block kind
+
+Concrete block kinds are documented on the segment page for the
+facet whose generated file they inject into:
+
+- [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] — extra =DROP= statements.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — extra member declarations, out-of-class implementations, =.cpp= includes.
+- [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]] — extra includes, custom public methods, extra private members, constructor init, =.cpp= implementations.
+- [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] — custom message includes and types.
+- [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — handler early-exit override, extra includes, custom methods, extra private members.
+- [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]] — detail-dialog hierarchy tree seam, private members, header includes, composite child-entity tables seam, entity-set load hook.
+- [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] — custom declarations and implementations.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub this page is a segment of.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] § "Protected regions" — the formal MDE concept this page's mechanism is a project-specific instance of.
+- Greifenberg /et al./, [[https://arxiv.org/pdf/1509.04498][A Comparison of Mechanisms for Integrating Handwritten and Generated Code for Object-Oriented Programming Languages]] (2015) — the formal comparison across tools/mechanisms.

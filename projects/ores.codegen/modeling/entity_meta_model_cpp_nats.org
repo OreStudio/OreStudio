@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: B5D8D007-499C-4BFB-8D79-FDA1E33F9513
+:END:
+#+title: Codegen entity meta-model — C++ NATS
+#+description: The five ores.cpp.nats-* facets as one pipeline — command (handler + sub-registrar) and event (eventing + event-registrar + event-cache) — and their paste blocks.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:org_mode:literate:
+#+startup: inlineimages
+#+created: 2026-07-17
+#+updated: 2026-07-17
+
+This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. It covers
+five separate physical-space facets together, because they are one
+conceptual flow, not five independent concerns: [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]],
+[[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]], [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]],
+[[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]], [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]. (All five
+currently belong to the one [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] alongside every other
+C++ facet on this hub — there is no MASD concept of a "facet group"
+one level below technical space; nothing in the physical-space graph
+distinguishes these five as a NATS sub-grouping within it. A single
+=ores.cpp.nats= facet with five archetypes underneath would model
+this more accurately than five separate facets; that's a
+physical-space graph change, tracked as task [[id:DA3C5B05-1214-44D5-A5A9-E92344EA0680][Consolidate the five
+ores.cpp.nats-* facets into one facet with five archetypes]] rather
+than done as part of this documentation task.)
+
+* Physical model mapping
+
+| Facet                          | Description                                                              |
+|-----------------------------------+------------------------------------------------------------------------------|
+| [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]]            | NATS subscription handlers.                                               |
+| [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]]      | Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler. |
+| [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]]           | NATS changed-event publishers.                                            |
+| [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]]    | Per-entity NATS event-mapping registrar pair wiring an entity's Postgres LISTEN/NOTIFY channel to its changed-event pipeline. |
+| [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]        | Consumer-side in-process cache mirroring a producer entity, kept fresh via eventing. |
+
+* Two independent pipelines
+
+NATS transport is used for two unrelated purposes per entity, and it
+helps to keep them mentally separate:
+
+** Command pipeline — client asks, server answers
+
+A client sends a request (defined by [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]), a *handler*
+receives it and dispatches to the [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]], and a *sub-registrar*
+wires the handler's methods to their NATS subjects.
+
+- =ores.cpp.nats-handler= → =<entity>_handler.hpp= — subject handler
+  skeleton dispatching protocol messages to the service.
+- =ores.cpp.nats-sub-registrar= → =<entity>_registrar.hpp= — declares
+  =register_<entity>_handlers()=, the per-entity function that
+  subscribes the handler's methods to their subjects.
+
+Generates, in =book_registrar.hpp=:
+
+#+begin_src cpp
+namespace ores::refdata::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_book_handlers(ores::nats::service::client& nats,
+                       ores::database::context ctx,
+                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+}
+#+end_src
+
+That function has to actually be *called* somewhere for the entity to
+work at all — see the story-level "manual wiring" note under [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][the
+hub]]'s frontmatter, this is one of the fixed post-generation steps.
+
+** Event pipeline — server tells everyone something changed
+
+Independent of any client request: whenever a row changes, Postgres
+=NOTIFY='s a channel; the *event-registrar* bridges that
+=LISTEN=/=NOTIFY= channel into the *eventing* pipeline's changed-event
+type; any consumer wanting a fast local view of the entity keeps a
+*event-cache* warm by listening for that changed-event.
+
+- =ores.cpp.nats-eventing= → =<entity>_changed_event.hpp= — the event
+  type itself.
+- =ores.cpp.nats-event-registrar= → =<entity>_event_registrar.hpp= —
+  declares =register_<entity>_event_mapping()=, bridging the DB
+  notify channel to the changed-event pipeline.
+- =ores.cpp.nats-event-cache= → =<entity>_cache.hpp= — a
+  consumer-side in-process mirror, kept fresh via the changed-event
+  above. Not every entity needs a cache; this facet only fires for
+  entities another component actually mirrors (=party= is mirrored
+  by [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]], for example).
+
+Generates, in =book_changed_event.hpp=:
+
+#+begin_src cpp
+namespace ores::refdata::eventing {
+
+/**
+ * @brief Domain event indicating that book data has changed.
+ *
+ * Published when any book entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
+ */
+struct book_changed_event final {
+    std::chrono::system_clock::time_point timestamp;
+    // ...
+};
+
+}
+#+end_src
+
+And, in another component's =party_event_registrar.hpp= (the
+event-registrar pattern, illustrated from a real consumer):
+
+#+begin_src cpp
+namespace ores::synthetic::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_gmm_component_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                     ores::eventing::service::event_bus& event_bus,
+                                     ores::nats::service::client& nats);
+
+}
+#+end_src
+
+This registrar also has to be *called* somewhere — the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity
+evaluation checklist]]'s Service-layer criterion calls this out
+specifically: it is hand-maintained with no AUTO-GENERATED marker,
+and easy to miss when commissioning a new entity (party_type and
+~14 other entities silently never fired eventing because of exactly
+this miss).
+
+* Paste blocks
+
+The =ores.cpp.nats-handler= facet defines the following paste block
+kinds, one per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general
+mechanism they assume.
+
+** Handler save() early-exit override
+:PROPERTIES:
+:ID: 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
+:END:
+
+A placeholder at the very top of the generated =save()= method body,
+before the standard JWT-authenticated request-context flow, expecting
+a =body= block. Use for an entity whose =save= subject must
+special-case some inbound messages before falling through to the
+standard flow — e.g. workflow-step orchestration commands that bypass
+JWT auth and use a header-supplied tenant id instead. The block
+should contain its own early =return= for the cases it handles;
+anything falling through continues into the generated standard flow.
+=party= uses this for its workflow-step =save= command.
+
+** Handler extra includes
+:PROPERTIES:
+:ID: F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+:END:
+
+Additional =#include= directives after the standard generated
+includes in =<entity>_handler.hpp=, expecting a =body= block. Use for
+headers custom handler methods need — =rfl/msgpack.hpp=,
+=storage_transfer.hpp=, extra protocol headers.
+
+** Handler custom public methods
+:PROPERTIES:
+:ID: B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+:END:
+
+Additional public method definitions just before the =private:=
+label in =<entity>_handler.hpp=, expecting a =declaration= block. Use
+for entity-specific NATS handler methods beyond the standard CRUD
+surface — export-to-storage, bulk operations. Pairs with
+[[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]'s custom message types when the method needs its own
+request/response shapes.
+
+** Handler extra private members
+:PROPERTIES:
+:ID: A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
+:END:
+
+Additional private member declarations inside the private section of
+=<entity>_handler.hpp=, expecting a =declaration= block. Use when the
+handler needs extra members the generic template doesn't generate,
+e.g. =http_base_url_=.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
+- [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] — the message shapes this pipeline moves.
+- [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]] — what the handler dispatches to, and where the changed-event is published from.

@@ -11,15 +11,11 @@
 #+created: 2026-06-27
 #+updated: 2026-07-16
 
-This page is the literate source for the =ores.cpp.nats-handler= facet of the
-codegen template library. Each section documents one template and
-holds its source in a =mustache= block tangled to the sibling
-=.mustache= file consumed by =generator.py=. The =.mustache= files are
-generated artefacts — edit this document, then run the tangle
-(=compass build --direct tangle_codegen_templates= or
-=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
-Output paths and profile membership are documented in each template's row
-of the Archetypes table below.
+This page is the node for the =ores.cpp.nats-handler= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
 
 * Summary
 
@@ -34,26 +30,6 @@ to [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]]. Wired to its s
 [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]]; the component-side host that runs the
 handler lives in [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]].
 
-* Mustache incantations
-
-(Document the Mustache constructs the templates rely on — sections,
-escaped vs triple-stache interpolation, comments — where they are not
-obvious. Delete this section if the facet only uses constructs
-already covered by its group doc.)
-
-* Templates
-
-(One subheading per template: prose covering role, model inputs,
-output artefact and profiles, followed by the source block. The first
-line of every block is the output-neutral GENERATED FILE header:)
-
-#+begin_example
-,#+begin_src mustache :tangle <name>.mustache
-{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}
-...template source...
-,#+end_src
-#+end_example
-
 * Archetypes
 
 | Archetype | Description |
@@ -62,5 +38,6 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 * See also
 
-- (Parent template group doc: =<group>_group.org=.)
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — the domain-concept overview of this technical space.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

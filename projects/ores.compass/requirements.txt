@@ -7,3 +7,9 @@
 # library, which renders Mustache templates — hence pystache. It is only
 # needed for `add`; the other commands work without it.
 pystache>=0.6.0
+
+# `uvl compile` renders a UVL feature model to an SVG feature diagram via
+# flamapy's UVLReader (the same parser https://ide.flamapy.org/ runs
+# in-browser via Pyodide). Not pinned as a hard requirement here since it's
+# a heavy dependency needed only by that one subcommand — install manually
+# with: projects/ores.compass/venv/bin/pip install flamapy

@@ -25,6 +25,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <type_traits>
 
 namespace {
 
@@ -126,7 +127,10 @@ void prepare_for_publish(generated_organisation& org,
     const auto tid = ores::utility::uuid::tenant_id::from_string(tenant_id).value();
     const auto stamp = [&](auto& entities) {
         for (auto& e : entities) {
-            e.tenant_id = tid;
+            if constexpr (std::is_assignable_v<decltype(e.tenant_id)&, std::string>)
+                e.tenant_id = tid.to_string();
+            else
+                e.tenant_id = tid;
             e.modified_by = modified_by;
             e.performed_by = modified_by;
         }

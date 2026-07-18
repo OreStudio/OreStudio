@@ -1,0 +1,15 @@
+namespace OresCodegenKeysAndColumns
+
+// UVL model of entity_meta_model_keys_and_columns.org's non-structural
+// variability. HasTenantId and HasWorkspaceId are authored, read
+// through by the generator, and control template conditional logic --
+// they do not themselves become a field called "has_tenant_id" on the
+// entity. Whether the resulting tenant_id/workspace_id column exists
+// is a structural consequence of that decision, not the decision
+// itself, so the columns are not modeled here.
+
+features
+    KeysAndColumns {abstract}
+        optional
+            HasTenantId
+            HasWorkspaceId

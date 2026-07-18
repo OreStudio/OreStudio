@@ -57,5 +57,6 @@ the group doc's shared conventions. List sections
 
 * See also
 
-- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the parent technical space, its shared Mustache conventions, and the full facet list.
+- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]] § "Doc Technical Space" — the domain-concept overview of this technical space.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

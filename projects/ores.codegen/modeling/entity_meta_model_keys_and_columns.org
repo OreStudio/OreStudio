@@ -19,6 +19,17 @@ its own rather than duplicated in each. Author a column once here; it
 becomes a SQL column, a domain struct field, and a repository entity
 field, all three kept in sync by construction.
 
+This page splits its fields across two diagrams, per [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
+"The entity model file as a unified literate document":
+
+- *Structural* fields — always part of the entity's shape — drawn as
+  a UML class diagram under [[*Flags][Flags]] below: the identity properties
+  (=:schema:=, =:product:=, =:component:=) and the Primary key,
+  Natural key, and Column property sets.
+- *Non-structural* — two authored, optional [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] features — drawn as a
+  UVL feature diagram under [[*Multi-tenancy: =has_tenant_id=/=has_workspace_id=][Multi-tenancy]] below: =:has_tenant_id:= and
+  =:has_workspace_id:=.
+
 * Physical model mapping
 
 This segment [[id:787A7429-71D5-4295-829B-A9B56275B1F8][projects]] into three facets in physical space:
@@ -31,23 +42,25 @@ This segment [[id:787A7429-71D5-4295-829B-A9B56275B1F8][projects]] into three fa
 
 * Flags
 
-Cross-cutting properties read by both the SQL and C++ pipelines, set
-once at the top of the file:
+Cross-cutting properties consulted by both the SQL and C++ pipelines,
+set once at the top of the file:
 
 | Property              | Required | Meaning                                              |
 |-----------------------+----------+-------------------------------------------------------|
 | =:schema:=            | yes      | Postgres schema (almost always =public=).              |
 | =:product:=           | yes      | Top-level C++ namespace (=ores=).                       |
 | =:component:=         | yes      | Component name (=refdata=, =trading=, ...) — drives both the C++ namespace and the =<product>_<component>_...= SQL naming convention. |
-| =:has_tenant_id:=     | no       | Adds a =tenant_id uuid not null= column to the table and a matching field to the domain struct — multi-tenancy isolation. Omit only for genuinely global entities (currencies, countries). |
-| =:has_workspace_id:=  | no       | Same idea, for workspace-scoped isolation.             |
+| =:has_tenant_id:=     | no       | See [[*Multi-tenancy: =has_tenant_id=/=has_workspace_id=][Multi-tenancy]] below.                                  |
+| =:has_workspace_id:=  | no       | See [[*Multi-tenancy: =has_tenant_id=/=has_workspace_id=][Multi-tenancy]] below.                                  |
 
-Unlike most knobs documented elsewhere on these segment pages (see
-e.g. [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s Behavioural group), =:has_tenant_id:=/=:has_workspace_id:=
-are *not* [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] in the strict sense — they change the
-entity's own logical shape (an added column/field), which MASD calls
-*structural* variability, a different category from the VMM's
-non-structural, rendering-only "variability" proper.
+Structural view — the identity properties above, plus the Primary
+key, Natural key, and Column property sets documented further down
+this page:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.png]]
+
+(Source: [[proj:projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.puml][entity_meta_model_keys_and_columns.puml]], rendered with
+=plantuml=.)
 
 #+begin_src org
 ,* Flags
@@ -58,6 +71,25 @@ non-structural, rendering-only "variability" proper.
 ,:has_tenant_id: true
 ,:END:
 #+end_src
+
+* Multi-tenancy: =has_tenant_id=/=has_workspace_id=
+
+Setting =:has_tenant_id: true= tells the generator to emit a
+=tenant_id uuid not null= column on the table and a matching field on
+the domain struct, isolating the entity's rows by tenant; omit it
+only for genuinely global entities (currencies, countries).
+=:has_workspace_id:= does the same for workspace-scoped isolation.
+
+Non-structural view — neither property is itself a field of the
+entity: authoring =:has_tenant_id: true= produces no field named
+=has_tenant_id= anywhere in the generated code. Rather, the generator
+reads it to decide whether to branch into the template logic that
+emits the =tenant_id= column and field. That the resulting column
+exists is a structural fact about the entity once the decision is
+made; the decision itself is a genuine, authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] feature, no
+different in kind from [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =:has_parent_id:=:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.svg]]
 
 * Primary key
 
@@ -74,7 +106,7 @@ repository-layer concern).
 | =:type:=      | yes      | SQL type (=uuid=, =text=, etc.).                         |
 | =:cpp_type:=  | yes      | C++ type (=boost::uuids::uuid=, =std::string=, ...).     |
 
-=book='s primary key, for example:
+Example of =book='s primary key:
 
 #+begin_src org
 ,* Primary key
@@ -131,7 +163,7 @@ into generated code). A column may also carry a =generator= babel
 block: a C++ expression producing a synthetic value for that field,
 used by the [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] facet.
 
-=book='s =name= column, for example:
+Example of =book='s =name= column:
 
 #+begin_src org
 ,** name

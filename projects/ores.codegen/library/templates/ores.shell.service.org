@@ -39,5 +39,5 @@ inside the ={{#service_registry}}= section.
 
 * See also
 
-- [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] — the parent technical space, its shared Mustache conventions, and the full facet list.
+- [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

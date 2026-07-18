@@ -62,5 +62,6 @@ book/cross-check validation fragments gated by ={{#declare_vars}}=,
 
 * See also
 
-- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — the parent technical space, its shared Mustache conventions, and the full facet list.
+- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — the domain-concept overview of this technical space.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

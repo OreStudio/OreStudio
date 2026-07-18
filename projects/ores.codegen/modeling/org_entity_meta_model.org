@@ -42,28 +42,26 @@ them.
 
 * Segments
 
-=Entity='s full specialization of [[id:884C6B00-0849-430D-9D32-F3544269DC56][Base]] (see [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] for
-=Base= / =CommonFrontmatter= alone): its own frontmatter type, and one
-typed field per segment below. An entity carries one segment per
-technical space it projects into across the full stack — [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
-columns]] and [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] for the database layer, one segment per independent
-C++ facet (domain, repository, service, protocol, NATS, Qt, generator,
-presentation) for the application layer — because each is a distinct
-point in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] with its own fields an author has to fill in
-independently of the others. Segment classes are drawn empty here —
-each has its own structural fields, documented on its own page, not
-duplicated in this overview.
+=Entity= specializes [[id:884C6B00-0849-430D-9D32-F3544269DC56][Base]] with its own frontmatter type and one typed
+field per segment below — [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] documents =Base= and
+=CommonFrontmatter= on their own, without any metaclass's
+specialization. An entity is modelled as a set of segments, which loosely correspond
+to the properties needed to support the various aspects of the
+technical spaces the entity targets — [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] and [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]
+for the database layer, one segment per independent C++ facet
+(domain, repository, service, protocol, NATS, Qt, generator,
+presentation) for the application layer. Segment classes are drawn
+empty here — each has its own structural fields, documented on its
+own page, not duplicated in this overview. Several segments also
+document their own [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste blocks]].
 
 [[proj:projects/ores.codegen/modeling/org_entity_meta_model.png]]
 
 (Source: [[proj:projects/ores.codegen/modeling/org_entity_meta_model.puml][org_entity_meta_model.puml]],
 rendered with =plantuml=.)
 
-The body is divided into top-level sections, each read by a
-different facet's templates. Unrecognised section names (e.g.
-=* About this file=, typically tagged =:ignore:=) are skipped by the
-loader. Every segment below is its own page — this table is the
-routing table, not the reference itself.
+Every segment below is its own page — this table is the routing
+table, not the reference itself.
 
 | Segment                                        | What it covers                                                  | Facets                                                    |
 |--------------------------------------------------+-------------------------------------------------------------------+---------------------------------------------------------------|
@@ -77,26 +75,6 @@ routing table, not the reference itself.
 | [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]                      | MDI window, detail dialog, controller, client model.              | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                                                 |
 | [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]]               | Custom repository methods' generator sibling: fake-data generators. | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]]                                          |
 | [[id:F966605D-4321-4499-9304-F8A703C91E26][C++ Presentation]]            | History-diff field rendering.                                     | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                       |
-
-One more thing worth knowing about before reading the segment pages:
-several of the segments above (e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]]) carry a
-field for hand-written code — a [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste block]]. Paste blocks are not a
-segment in their own right, so they get no row in the table above;
-[[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] explains the mechanism once, and each segment page that
-has concrete block kinds documents them inline.
-
-* Future work
-
-- *Stage 1.5*: tag-based heading dispatch. Replace title matching
-  ("Flags", "Primary key", ...) with tag matching (=:section:flags:=,
-  etc.). Lets us rename headings without breaking codegen.
-- Migration of remaining ~100 entity models from JSON to org.
-- Compass scaffold for =compass add entity-org=, kind-aware and
-  knob-complete by construction — see task =EE237306=.
-- The five =ores.cpp.nats-*= facets covered together on the [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++
-  NATS]] segment page arguably should be one =ores.cpp.nats= facet
-  with five archetypes, not five facets in the physical-space graph —
-  raised there, not fixed here.
 
 * See also
 

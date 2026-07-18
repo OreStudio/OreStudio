@@ -22,25 +22,19 @@ Group-level literate source: [[id:CA666722-1F34-4591-BC54-BC161BE45EB2][ores.cma
 
 The CMake [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers the build system wiring: =CMakeLists.txt= files that
 define library targets, executable targets, Catch2 test binaries, and the
-PlantUML modeling targets. One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 8 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]].
+PlantUML modeling targets.
 
 The SRPP is the component build target pattern: every component has a
 root =CMakeLists.txt= and a src-level =CMakeLists.txt=. The src variant
 differs by component flavour (plain library / api library / core library /
 service — which adds an executable).
 
-| Archetype | Description |
-|-----------+-------------|
-| Component root | Top-level =CMakeLists.txt= (declares component, links targets) |
-| Component src (plain) | Library-only =CMakeLists.txt= |
-| Component src (api) | API-flavour library (exports macros, umbrella header) |
-| Component src (core) | Core-flavour library (depends on matching api) |
-| Component src (service) | Library + executable (the service binary) |
-| Service src | Standalone service =CMakeLists.txt= |
-| Component tests | Catch2 test binary target |
-| Component modeling | PlantUML diagram generation target |
+| Facet | Profile | Literate source |
+|---------+-----------------+---------------------|
+| Component | =--profile cmake= | [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] |
+| Service | =--profile cmake= | [[id:88E4746E-DB9A-4BDB-8C7E-5F4571D3024D][ores.cmake.service]] |
 
-Profile: =--profile cmake=. Literate source: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]].
+Both are [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] of this technical space.
 
 ** Assets Technical Space (retired)
 
@@ -66,39 +60,24 @@ Group-level literate source: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc
 
 The Doc [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers all org-mode document scaffolding: agile artefacts
 (sprint, story, task, capture), knowledge and reference documents
-(knowledge, recipe, runbook, skill, memory), and entity model files.
-One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 20 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]]. This is the TS that compass =add=
-commands and =task new= / =story new= delegate to internally.
+(knowledge, recipe, runbook, skill, memory), entity model files, and
+this library's own self-hosting scaffolds. This is the TS that
+compass =add= commands and =task new= / =story new= delegate to
+internally.
 
 The SRPP here is the org-mode document contract: frontmatter fields
 (=#+title=, =#+type=, =#+level=, =#+filetags=, =#+created=, =#+updated=),
 a =:PROPERTIES:= drawer with an ID, and the standard section structure
 for each document type.
 
-| Archetype | Description |
-|-----------+-------------|
-| Version doc | =doc_version.org= — version planning document |
-| Sprint doc | =doc_sprint.org= — sprint with status, stories, charts |
-| Story doc | =doc_story.org= — story with goal, tasks, decisions |
-| Task doc | =doc_task.org= — task with goal, plan, review, result |
-| Capture | =doc_capture.org= — product backlog inbox item |
-| Knowledge doc | =doc_knowledge.org= — knowledge article |
-| Recipe | =doc_recipe.org= — step-by-step how-to |
-| Runbook | =doc_runbook.org= — operational procedure |
-| Skill | =doc_skill.org= — Claude Code skill document |
-| Memory | =doc_memory.org= — project memory entry |
-| Investigation | =doc_investigation.org= — open-ended investigation |
-| Release notes | =doc_release_notes.org= — sprint release notes |
-| Manual chapter | =doc_manual.org= — user manual chapter |
-| Product identity | =doc_product_identity.org= — product identity page |
-| Component overview | =doc_component.org= — component =component_overview.org= |
-| Entity org-model | =doc_entity_org.org= — entity model file (authored route) |
-| Field group org-model | =doc_field_group.org= — nested value struct model file |
-| Dataset overview | =doc_dataset.org= — dataset documentation |
-| Facet doc | =doc_facet.org= — facet reference document |
-| Template group doc | =doc_facet_group.org= — template group reference document |
+| Facet | Profile | Literate source |
+|-----------+----------------+---------------------|
+| Agile | =--profile doc= | [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] |
+| Knowledge | =--profile doc= | [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] |
+| Modeling | =--profile doc= | [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] |
+| Template | =--profile doc= | [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] |
 
-Profile: =--profile doc=. Literate source: [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]].
+All four are [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] of this technical space.
 
 * Manually-authored technical spaces
 

@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: DDBD522D-D348-44ED-8C43-ECE7F60CD1B4
+#+blocked_since: 2026-07-18
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-07-18
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Unblocked ([[id:F71E530F-EB53-4644-AE07-2FDA88E0AE73][F71E530F]] merged). Author catalog.org as lookup_entity, using the plain-Column workaround for subject_area's domain_name. |
-| Waiting on   | Nothing.                               |
-| Next         | catalog, then change_reason_category, change_reason, data_domain, subject_area. |
+| Now          | Blocked on [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] (lookup_entity model_type mapping bug -- discovered while verifying catalog.org: no lookup_entity model in the repo, new or pre-existing, can regenerate SQL or C++). |
+| Waiting on   | [[id:DDBD522D-D348-44ED-8C43-ECE7F60CD1B4][DDBD522D]] |
+| Next         | Once fixed: verify catalog.org generates, commit, then change_reason_category, change_reason, data_domain, subject_area. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance

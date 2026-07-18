@@ -361,6 +361,21 @@ def parse_args(argv=None):
     parser.add_argument("--has-tenant-id", dest="has_tenant_id", default="true",
                         choices=["true", "false"],
                         help="For --type table/lookup_entity/junction: Default: true.")
+    parser.add_argument("--entity-has-coding-scheme", dest="entity_has_coding_scheme",
+                        default="false", choices=["true", "false"],
+                        help="For --type lookup_entity: whether rows carry a "
+                             "coding_scheme_code column (FpML-style coded "
+                             "reference data). Default: false.")
+    parser.add_argument("--entity-has-image-id", dest="entity_has_image_id",
+                        default="false", choices=["true", "false"],
+                        help="For --type lookup_entity: whether rows carry an "
+                             "image_id column (e.g. a flag/icon asset "
+                             "reference). Default: false.")
+    parser.add_argument("--entity-has-artefact-insert-fn", dest="entity_has_artefact_insert_fn",
+                        default="false", choices=["true", "false"],
+                        help="For --type lookup_entity: whether an "
+                             "artefact-insert helper function is generated "
+                             "alongside the table. Default: false.")
     parser.add_argument("--shape", dest="shape", default="",
                         choices=[""] + list(ENTITY_ORG_SHAPE_PRESETS),
                         help="For --type entity_org: a named domain_entity "
@@ -713,6 +728,9 @@ def main(argv=None):
         "name_title": name_title,
         "has_tenant_id": has_tenant_id,
         "coding_scheme": coding_scheme,
+        "lookup_has_coding_scheme": args.entity_has_coding_scheme,
+        "lookup_has_image_id": args.entity_has_image_id,
+        "lookup_has_artefact_insert_fn": args.entity_has_artefact_insert_fn,
         "dataset_name": dataset_name,
         "dataset_version": dataset_version,
         "dataset_type": dataset_type,

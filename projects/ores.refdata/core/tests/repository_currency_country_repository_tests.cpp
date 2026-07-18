@@ -55,7 +55,7 @@ currency_country make_currency_country(scoped_database_helper& h,
                                        const std::string& currency_iso_code,
                                        const std::string& country_alpha2_code) {
     currency_country cc;
-    cc.tenant_id = h.tenant_id();
+    cc.tenant_id = h.tenant_id().to_string();
     cc.currency_iso_code = currency_iso_code;
     cc.country_alpha2_code = country_alpha2_code;
     cc.modified_by = h.db_user();

@@ -62,7 +62,7 @@ party_currency make_party_currency(scoped_database_helper& h,
                                    const boost::uuids::uuid& party_id,
                                    const std::string& iso_code) {
     party_currency pc;
-    pc.tenant_id = h.tenant_id();
+    pc.tenant_id = h.tenant_id().to_string();
     pc.party_id = party_id;
     pc.currency_iso_code = iso_code;
     pc.modified_by = h.db_user();

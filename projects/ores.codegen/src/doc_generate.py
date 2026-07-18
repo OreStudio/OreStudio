@@ -78,7 +78,9 @@ ENTITY_ORG_KNOBS = (
 ENTITY_ORG_SHAPE_PRESETS = {
     # ores.refdata.country.org: text natural key, no hierarchy, minimal Qt.
     "simple-text-key": {
-        "has_tenant_id": True, "has_qt": True, "qt_has_export_macro": True,
+        "has_tenant_id": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_change_reason_cache": True,
+        "qt_has_pagination": True,
     },
     # ores.refdata.book.org: soft-FK scoped under a parent entity.
     "fk-scoped": {
@@ -88,23 +90,26 @@ ENTITY_ORG_SHAPE_PRESETS = {
         "qt_has_explorer_api": True, "qt_has_export_macro": True,
         "qt_has_parent_scoping": True,
     },
-    # ores.refdata.party.org / counterparty.org: self-referencing hierarchy,
-    # composite child-entity tables.
+    # ores.refdata.counterparty.org (the richer of party.org's two
+    # exemplars): self-referencing hierarchy, foreign keys, insert-trigger
+    # validations, uuid primary key, change-reason cache.
     "hierarchical-composite": {
         "has_tenant_id": True, "has_parent_id": True,
-        "has_foreign_keys": True, "has_qt": True,
-        "qt_has_uuid_primary_key": True, "qt_has_change_reason_cache": True,
-        "qt_has_export_macro": True,
+        "has_foreign_keys": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_uuid_primary_key": True,
+        "qt_has_change_reason_cache": True,
     },
     # ores.refdata.currency.org: every optional knob exercised at least once.
     "richest": {
-        "has_insert_trigger_validations": True, "has_qt": True,
-        "qt_has_change_reason_cache": True, "qt_has_csv_xml_io": True,
-        "qt_has_version_navigation": True, "qt_has_export_macro": True,
+        "has_tenant_id": True, "has_insert_trigger_validations": True,
+        "has_qt": True, "qt_has_change_reason_cache": True,
+        "qt_has_csv_xml_io": True, "qt_has_version_navigation": True,
     },
-    # ores.marketdata.market_observation.org: TimescaleDB hypertable, no Qt.
+    # ores.marketdata.market_observation.org: TimescaleDB hypertable, no Qt,
+    # no soft-FK section (its party_id/series_id references are documented
+    # as plain Natural keys, not a Foreign keys section).
     "timeseries": {
-        "has_tenant_id": True, "has_foreign_keys": True, "has_qt": False,
+        "has_tenant_id": True, "has_qt": False,
     },
 }
 

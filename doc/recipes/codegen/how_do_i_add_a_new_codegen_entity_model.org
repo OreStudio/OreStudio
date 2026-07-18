@@ -26,22 +26,44 @@ How do I add a new codegen entity model?
 #+begin_src sh :results verbatim
 projects/ores.compass/compass.sh add entity_org \
     --slug <entity> --component <component> \
-    --description "<one-line description of the modelled entity>"
+    --description "<one-line description of the modelled entity>" \
+    --shape <shape>
 #+end_src
+
+=--shape= is the important part: pick the =domain_entity= shape that
+matches the entity being commissioned —
+=simple-text-key= (country-like), =fk-scoped= (book-like),
+=hierarchical-composite= (party/counterparty-like), =richest=
+(currency-like, every optional knob exercised), or =timeseries=
+(market_observation-like, no Qt). Each pre-populates the scaffold's
+Flags/SQL/Qt sections with that shape's knobs already set correctly,
+sampled from a real, proven-correct reference entity — omit =--shape=
+only to get the old bare, unknobbed skeleton. Individual
+=--entity-<knob>= flags (e.g. =--entity-has-workspace-id false=)
+override any preset value. Anything a shape can't derive (actual
+columns, foreign-key targets, display fields, ...) is left as a
+visible, one-line =TODO= in the output — never silently omitted. See
+[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] for the full knob catalogue behind each
+shape.
 
 The scaffold writes
 =projects/ores.<component>/modeling/ores.<component>.<entity>.org=
 with the required frontmatter (=#+type: ores.codegen.entity= and
-friends) and skeleton sections (=Flags=, =Primary key=, =Natural keys=,
-=Columns=, =SQL=, =C++=). It also embeds an inline pointer to the
-meta-model so authors land on the spec without searching for it.
+friends) and the shape's knobbed sections (=Flags=, =Primary key=,
+=Natural keys=, =Columns=, =SQL=, optionally =Foreign keys=/=Insert
+trigger=, =C++=, optionally =Qt=).
 
 ** 2. Fill in the model
 
-Open the scaffolded file and complete each section. The
-[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][meta-model]] documents every required property and the well-known
-block kinds (e.g. additional repository declarations / implementations
-/ includes) that custom methods attach to via =:implements <kind-UUID>=.
+Open the scaffolded file and resolve every =TODO= — the shape sets
+knobs, not entity-specific facts like actual columns, foreign-key
+targets, or display fields. The [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][meta-model]] documents every required
+property and the well-known block kinds (e.g. additional repository
+declarations / implementations / includes) that custom methods attach
+to via =:implements <kind-UUID>=. Once the model compiles and
+generates cleanly, work through the [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][post-generation checklist]] — the
+fixed manual integration steps (registrar wiring, NATS event-relay
+wiring, ...) codegen does not and will not wire up for you.
 
 ** 3. Wire the component (first entity in a component only)
 
@@ -90,5 +112,6 @@ the legacy =party_entity.org= location.
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the spec the scaffold mirrors.
+- [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][Codegen entity — post-generation checklist]] — the manual wiring codegen doesn't do for you.
 - [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — the older JSON-based recipe (kept
   for components not yet migrated).

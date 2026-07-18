@@ -8,7 +8,7 @@
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/badge-mapping-browser-ui
-#+pr: 1599
+#+pr: 1622
 #+created: 2026-07-15
 #+updated: 2026-07-17
 #+environment: bright_faraday
@@ -124,6 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1622][#1622]] | [dq,qt] Make ores.qt.dq a plugin; fix badge crash and RLS dupes |
 | [[https://github.com/OreStudio/OreStudio/pull/1599][#1599]] | [refdata,qt,admin] Embed badge mappings tab in Code Domain detail dialog |
 
 * Review

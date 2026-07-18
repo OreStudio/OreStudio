@@ -5,7 +5,7 @@ Convert ``ores_services_service_registry.json`` to a literate
 The service registry is the catalogue of ORE Studio backend
 services with their psql var, IAM role, DDL grant prefixes and
 read-only select prefixes. Codegen renders it through the
-``service-registry`` profile into shell vars, IAM user/role
+``ores.shell.service`` address into shell vars, IAM user/role
 SQL, and matching grant scripts.
 
 Org shape: one ``* <service name>`` heading per service with a

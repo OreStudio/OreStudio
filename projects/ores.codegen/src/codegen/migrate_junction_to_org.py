@@ -4,7 +4,7 @@ Convert ``*_junction.json`` codegen models to literate
 component's ``modeling/`` directory.
 
 Junctions are many-to-many association tables. Codegen runs them only
-through the SQL profile today (one ``*_create.sql`` per junction
+through the ores.sql.schema address today (one ``*_create.sql`` per junction
 under ``projects/ores.sql/create/<component>/``).
 
 The org file mirrors the JSON one-for-one: frontmatter for the

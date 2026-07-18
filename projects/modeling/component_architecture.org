@@ -209,7 +209,7 @@ adjust to actual deps after generation):
 - =reflectcpp= arrives transitively via =ores.platform.lib= (PUBLIC)
 - =Boost::program_options= arrives via =ores.telemetry.lib= (PUBLIC)
 
-* Scaffold profiles
+* Scaffold kinds
 
 Codegen (=--address ores.cpp.component=) generates all boilerplate for
 each part; the overview's =#+component_kind:= frontmatter picks the

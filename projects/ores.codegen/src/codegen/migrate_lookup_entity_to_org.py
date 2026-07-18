@@ -6,7 +6,7 @@ files under each owning component's ``modeling/`` directory.
 Lookup entities are bi-temporal lookup tables (with the same DDL
 shape as ``*_table.json``, but routed through codegen's "schema"
 model_type — JSON root key ``entity``). Codegen runs them through
-the SQL profile today (``sql_schema_table_create.mustache``), but
+the ores.sql.schema address today (``sql_schema_table_create.mustache``), but
 the JSON carries the full C++/Qt/protocol scalar vocabulary
 (``entity_singular_upper``, ``entity_title``, ``component_include``,
 ...). The org file preserves every scalar verbatim so future

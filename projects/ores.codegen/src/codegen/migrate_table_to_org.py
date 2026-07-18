@@ -4,7 +4,7 @@ Convert ``*_table.json`` codegen models to literate
 component's ``modeling/`` directory.
 
 Table models are bi-temporal reference-data tables (lookup
-tables). Codegen runs them only through the SQL profile today
+tables). Codegen runs them only through the ores.sql.schema address today
 (one ``*_create.sql`` per table under
 ``projects/ores.sql/create/<component>/``, plus
 ``ores_<component>_validate_<entity>_fn`` when

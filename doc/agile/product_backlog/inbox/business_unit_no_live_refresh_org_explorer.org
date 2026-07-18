@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 3243279D-883F-4005-BDFB-92F2EA64D452
+:END:
+#+title: Editing a business unit doesn't live-refresh Org Explorer
+#+description: Saving a business unit edit from the Business Units window doesn't trigger Org Explorer's tree to refresh/reflect the change -- missing cross-component eventing wiring.
+#+type: capture
+#+level: cross
+#+filetags: :qt:trading:refdata:eventing:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=OrgExplorerMdiWindow= has a manual *Reload* toolbar button
+(=EntityListMdiWindow::reload= wired at construction) but no
+subscription to =business_unit_changed_event= (or the equivalent for
+book/trade) — grepped the source for =notifyOpenDialogs=/
+=BusinessUnitChanged=/any reload-on-event pattern and found none.
+Editing a business unit from the standalone Business Units window
+therefore leaves an already-open Org Explorer showing stale data
+until the user manually clicks Reload.
+
+* Why
+
+Every other generated list window auto-refreshes on its own entity's
+change event (the standard =*_changed_event= NATS subscription
+codegen wires in); Org Explorer, being hand-written and aggregating
+three entity types into one tree, doesn't get this for free and
+appears to have never had it added by hand either.
+
+* References
+
+- =projects/ores.qt/trading/src/OrgExplorerMdiWindow.cpp= — no event
+  subscription found; =doReload()= is the only refresh path.
+
+* See also
+
+-

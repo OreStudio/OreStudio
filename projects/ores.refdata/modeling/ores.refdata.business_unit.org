@@ -273,6 +273,8 @@ std::string("Active")
 :key_field:               unit_code
 :has_uuid_primary_key:    true
 :has_change_reason_cache: true
+:has_explorer_api:        true
+:explorer_interface:      IBusinessUnitBrowser
 :get_request_class:       refdata::messaging::get_business_units_request
 :get_response_class:      refdata::messaging::get_business_units_response
 :get_message_type:        get_business_units_request

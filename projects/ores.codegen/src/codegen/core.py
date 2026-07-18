@@ -2259,6 +2259,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 qt['parent_entity_pascal'] = parent_pascal
                 qt.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
                 qt.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
+            # explorer_interface is an optional companion to has_explorer_api:
+            # when a cross-component explorer window (e.g. OrgExplorerMdiWindow
+            # in ores.qt.trading) needs to drive this controller's openEdit/
+            # openHistory without linking against its concrete header, the
+            # entity model names an abstract interface (hand-authored
+            # elsewhere, e.g. ores.qt.api/IBusinessUnitBrowser.hpp) that the
+            # generated Controller additionally implements. Same-component
+            # explorers (PortfolioExplorer/OrgExplorer for Book, both in
+            # ores.qt.trading) need no such interface — leave unset.
+            qt['has_explorer_interface'] = bool(qt.get('explorer_interface'))
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided

@@ -224,6 +224,8 @@ Variables for Qt model/view and dialog archetypes.
 | =parent_entity_pascal= | Derived PascalCase of =parent_entity_singular=. | =Portfolio= |
 | =parent_id_field_camel= | Derived constructor-parameter name for the parent id: =parent<Pascal>Id=. | =parentPortfolioId= |
 | =parent_id_field=     | Derived snake_case domain field the parent id is written into: =parent_<singular>_id=. | =parent_portfolio_id= |
+| =explorer_interface=  | Authored knob (companion to =has_explorer_api=): name of an abstract interface (hand-authored elsewhere, e.g. =ores.qt.api/IBusinessUnitBrowser.hpp=) the generated Controller additionally implements, for a cross-component explorer window that must drive =openEdit=/=openHistory= without linking against this entity's concrete Controller header. Unset for same-component explorers. | =IBusinessUnitBrowser= |
+| =has_explorer_interface= | Derived: true iff =explorer_interface= is set. Adds the =#include=, the extra base class, and =override= on =openEdit=/=openHistory=. | =true= |
 | =image_linking=       | True if the Qt view links to an image asset.             | =true=              |
 | =list_filter_column=  | Column used for live filtering in list views.            | =name=              |
 | =filter_column=       | Alias for list filter column.                            | =name=              |

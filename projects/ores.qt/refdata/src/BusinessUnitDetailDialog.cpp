@@ -189,7 +189,8 @@ void BusinessUnitDetailDialog::populateUnitTypeCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void BusinessUnitDetailDialog::updateUiFromUnit() {
     ui_->codeEdit->setText(QString::fromStdString(business_unit_.unit_code));

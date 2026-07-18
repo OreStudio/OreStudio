@@ -14,6 +14,9 @@
 {{#domain_entity.qt.has_export_macro}}
 #include "ores.qt/{{domain_entity.qt.export_header}}"
 {{/domain_entity.qt.has_export_macro}}
+{{#domain_entity.qt.has_explorer_interface}}
+#include "ores.qt/{{domain_entity.qt.explorer_interface}}.hpp"
+{{/domain_entity.qt.has_explorer_interface}}
 #include <expected>
 #include <functional>
 #include <vector>
@@ -38,7 +41,7 @@ class ImageCache;
  * Manages the lifecycle of {{domain_entity.entity_singular_words}} list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController {
+class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController{{#domain_entity.qt.has_explorer_interface}}, public {{domain_entity.qt.explorer_interface}}{{/domain_entity.qt.has_explorer_interface}} {
     Q_OBJECT
 
 private:
@@ -77,8 +80,8 @@ public:
 {{#domain_entity.qt.has_parent_relationship}}
     void openAddWithParent(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}});
 {{/domain_entity.qt.has_parent_relationship}}
-    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
-    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}){{#domain_entity.qt.has_explorer_interface}} override{{/domain_entity.qt.has_explorer_interface}};
+    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}){{#domain_entity.qt.has_explorer_interface}} override{{/domain_entity.qt.has_explorer_interface}};
 {{/domain_entity.qt.has_explorer_api}}
 
 signals:

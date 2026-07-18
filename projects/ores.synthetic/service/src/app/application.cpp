@@ -183,7 +183,7 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
     refctx.convention = conventions.front();
     for (const auto& t : tenor_repo.read_latest(ctx))
         refctx.tenors_by_code.emplace(t.code, t);
-    for (const auto& ic : instrument_code_repo.read_latest(ctx))
+    for (const auto& ic : instrument_code_repo.read_latest(ctx, 0, 10000))
         refctx.instrument_codes_by_code.emplace(ic.code, ic);
     for (const auto& pf : payment_frequency_repo.read_latest(ctx))
         refctx.payment_frequencies_by_code.emplace(pf.code, pf);

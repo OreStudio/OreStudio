@@ -156,7 +156,7 @@ its last state, and later exposed as the deprecated =--profile= CLI
 shim (removed by task B11) — see the historical note above. Each name
 below maps 1:1 to the current facet address of the same purpose (e.g.
 =domain= → =ores.cpp.domain=, =sql= → =ores.sql.schema=; see
-[[*The facet catalogue][the facet catalogue]] in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for the full current mapping).
+the facet catalogue in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for the full current mapping).
 The =all=/=all-cpp=/=non-temporal= composite aliases have no single
 address equivalent — use the relevant technical-space or root address
 (=ores.cpp=, =ores=) instead:

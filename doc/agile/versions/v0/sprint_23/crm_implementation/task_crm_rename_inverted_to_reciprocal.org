@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-rename-inverted-to-reciprocal
-#+pr:
+#+pr: 1623
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -144,7 +144,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1623][#1623]] | [marketdata,analytics.quant,qt,shell] Rename CRM 'inverted' concept to 'reciprocal' |
 
 * Review
 

@@ -5765,6 +5765,39 @@ def build_lock_status():
             for name, jobs in BUILD_LOCK_SLOTS]
 
 
+def _check_publish_artifacts(build_dir):
+    """Scan build_dir/publish/{lib,bin} for zero-byte files and broken
+    symlinks among shared libraries/archives.
+
+    Concurrent cmake builds across worktrees sharing this machine's CPUs
+    have been observed to corrupt shared library outputs (see cmd_build's
+    docstring) -- typically a stale `libfoo.so.0 -> libfoo.so.0.0.23`
+    versioned symlink left dangling because the actual `.so.0.0.23` file
+    never got (re)written, or got truncated to zero bytes mid-link. Both
+    are silent at build time (the target still reports "Built") and only
+    surface later as a runtime "cannot open shared object file" crash or
+    segfault, so this checks for them right after a build completes.
+
+    Returns a list of relative-path strings for anything suspicious; empty
+    if all clear. Purely diagnostic -- callers decide whether to warn or
+    fail on a non-empty result.
+    """
+    problems = []
+    for sub in ("lib", "bin"):
+        d = build_dir / "publish" / sub
+        if not d.is_dir():
+            continue
+        for f in d.iterdir():
+            if not (f.name.endswith(".so") or ".so." in f.name or f.name.endswith(".a")):
+                continue
+            if f.is_symlink() and not f.exists():
+                problems.append(f"{f.relative_to(build_dir)} -> "
+                                f"{os.readlink(f)} (broken symlink)")
+            elif f.is_file() and not f.is_symlink() and f.stat().st_size == 0:
+                problems.append(f"{f.relative_to(build_dir)} (zero bytes)")
+    return problems
+
+
 def _build_log_path(slot_name):
     """Well-known output-log path for a build-lock slot, for `tail -f`."""
     return Path(f"/tmp/ores-build.log.{slot_name}")
@@ -6006,6 +6039,20 @@ def cmd_build(argv):
                 print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
                       file=sys.stderr)
                 return rc
+        if not args.dry_run:
+            problems = _check_publish_artifacts(build_dir)
+            if problems:
+                print(f"⚠️  {len(problems)} suspicious publish artefact(s) found "
+                      "(zero-byte file or broken symlink -- a known symptom of "
+                      "concurrent-build contention on this machine; see "
+                      "cmd_build's docstring). These will crash or fail to "
+                      "load at runtime even though the build reported success:",
+                      file=sys.stderr)
+                for p in problems:
+                    print(f"   {p}", file=sys.stderr)
+                print("   Fix: rebuild the affected component's .lib target "
+                      "directly, e.g. compass build <component>.lib",
+                      file=sys.stderr)
         return 0
     finally:
         if log is not None:

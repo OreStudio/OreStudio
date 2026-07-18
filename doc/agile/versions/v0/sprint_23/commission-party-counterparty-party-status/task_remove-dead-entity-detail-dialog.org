@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two active (non-historical) backlog captures still cite deleted files by name/line as "affected code sites" for a live pagination-truncation concern (raised independently by all 3 review passes) | replace_parent_entity_combo_box_with_server_side_searchable_widget.org, replace_parent_combo_boxes_with_server_side_type_ahead_search.org | Accepted | Updated both to point at the current equivalents (LookupFetcher::fetch_parties/fetch_counterparties, PartyDetailDialog/CounterpartyDetailDialog); flagged the two as likely duplicates for backlog refinement. |
 
 * Result
 

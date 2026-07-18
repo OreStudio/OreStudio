@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: B6E4D3E4-1257-40F8-982D-F92C4CAC74D2
+:END:
+#+title: ores.dq.data_domain
+#+description: Codegen entity model for the dq =data_domain= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: High-level data classification.
+#+entity_singular: data_domain
+#+entity_plural: data_domains
+#+entity_title: Data Domain
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+High-level data classification. Examples: reference_data, market_data,
+trade_data. Rows are authored directly (not mirrored from an external
+source).
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   name
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique name identifying this data domain.
+
+Examples: "reference_data", "market_data", "trade_data".
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_data"
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable description of this data domain.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_data_domains_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: tenant
+:order_by:     name
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: domain
+:entity_plural_short:   domains
+:entity_singular_words: data domain
+:entity_plural_words:   data domains
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: d
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

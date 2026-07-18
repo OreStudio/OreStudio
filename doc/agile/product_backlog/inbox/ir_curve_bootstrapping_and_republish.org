@@ -53,6 +53,15 @@ just a sentence in another story's Out-of-scope section.
   -- the pricer functions already deriving par rates from one
   short-rate draw's discount factors; a bootstrapper would consume
   the published ticks, not this pricer directly.
+- [[https://obrienjoey.github.io/post/ore_sofr_bootstrap/][Bootstrapping a SOFR curve in ORE]] -- worked example bootstrapping a
+  USD SOFR OIS discounting/forecasting curve from overnight deposits
+  and 1M-30Y OIS quotes, directly against the underlying ORE/QuantLib
+  engine (ore.xml/todaysmarket.xml/curveconfig.xml/conventions.xml,
+  the Python API for curve extraction and zero-rate output, and
+  calibration reports verifying zero-PV repricing of the calibrated
+  swaps) rather than a wrapper library -- a concrete reference for
+  piece 1's conventions and multi-curve framework, and for how ORE's
+  own config/quote-string plumbing would map onto this bootstrapper.
 
 * See also
 

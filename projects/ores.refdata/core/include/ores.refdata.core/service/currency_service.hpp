@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/currency_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -153,10 +154,40 @@ public:
      */
     std::uint32_t count_currencies_for_party(const boost::uuids::uuid& party_id);
 
+    /**
+     * @brief Lists the calendars assigned to a currency for spot/settlement
+     * date computation, via the currency_calendars junction.
+     *
+     * @param currency_iso_code The ISO 4217 code of the currency.
+     * @return Vector of calendar assignment rows for the currency.
+     */
+    std::vector<ores::refdata::domain::currency_calendar>
+    list_calendars_for_currency(const std::string& currency_iso_code);
+
+    /**
+     * @brief Assigns a calendar to a currency (creates the junction row).
+     *
+     * @param row The currency_calendar row to write; caller is responsible
+     * for stamping tenant_id/modified_by/performed_by/change_reason_code
+     * before calling (see ores::service::messaging::stamp()).
+     */
+    void assign_calendar_to_currency(const ores::refdata::domain::currency_calendar& row);
+
+    /**
+     * @brief Revokes a calendar from a currency (removes the junction row).
+     *
+     * @param currency_iso_code The ISO 4217 code of the currency.
+     * @param calendar_code The QuantLib/ORE calendar token to revoke.
+     */
+    void revoke_calendar_from_currency(const std::string& currency_iso_code,
+                                       const std::string& calendar_code);
+
 private:
     context ctx_;
     repository::currency_repository repo_;
     repository::party_currency_repository junction_repo_;
+
+    repository::currency_calendar_repository calendar_repo_;
 };
 
 }

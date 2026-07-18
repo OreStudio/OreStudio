@@ -59,7 +59,7 @@ void party_currency_repository::write(const std::vector<domain::party_currency>&
 }
 
 std::vector<domain::party_currency> party_currency_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_currency_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -77,9 +77,9 @@ std::vector<domain::party_currency>
 party_currency_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Party: " << party_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<party_currency_entity>> |
         where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
@@ -94,13 +94,14 @@ party_currency_repository::read_latest_by_party(const boost::uuids::uuid& party_
 }
 
 std::vector<domain::party_currency>
-party_currency_repository::read_latest_by_currency(const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Currency: " << iso_code;
+party_currency_repository::read_latest_by_currency(const std::string& currency_iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Currency: "
+                               << currency_iso_code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_currency_entity>> |
-                       where("tenant_id"_c == tid && "currency_iso_code"_c == iso_code &&
+                       where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
                              "valid_to"_c == max.value()) |
                        order_by("party_id"_c);
 
@@ -113,15 +114,15 @@ party_currency_repository::read_latest_by_currency(const std::string& iso_code) 
 }
 
 void party_currency_repository::remove(const boost::uuids::uuid& party_id,
-                                       const std::string& iso_code) {
+                                       const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party currency from database: " << party_id << "/"
-                               << iso_code;
+                               << currency_iso_code;
 
-    const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_currency_entity> |
                        where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                             "currency_iso_code"_c == iso_code);
+                             "currency_iso_code"_c == currency_iso_code);
 
     execute_delete_query(ctx_, query, lg(), "removing party currency from database");
 }
@@ -129,8 +130,8 @@ void party_currency_repository::remove(const boost::uuids::uuid& party_id,
 void party_currency_repository::remove_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all party currencies from database: " << party_id;
 
-    const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_currency_entity> |
                        where("tenant_id"_c == tid && "party_id"_c == party_id_str);
 

@@ -31,6 +31,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Reads and writes party currencies to data storage.
+ */
 class ORES_REFDATA_CORE_EXPORT party_currency_repository {
 private:
     inline static std::string_view logger_name =
@@ -54,9 +57,10 @@ public:
 
     std::vector<domain::party_currency> read_latest();
     std::vector<domain::party_currency> read_latest_by_party(const boost::uuids::uuid& party_id);
-    std::vector<domain::party_currency> read_latest_by_currency(const std::string& iso_code);
+    std::vector<domain::party_currency>
+    read_latest_by_currency(const std::string& currency_iso_code);
 
-    void remove(const boost::uuids::uuid& party_id, const std::string& iso_code);
+    void remove(const boost::uuids::uuid& party_id, const std::string& currency_iso_code);
     void remove_by_party(const boost::uuids::uuid& party_id);
 
 private:

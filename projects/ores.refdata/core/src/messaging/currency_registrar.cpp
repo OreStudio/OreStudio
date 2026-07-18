@@ -48,6 +48,18 @@ register_currency_handlers(ores::nats::service::client& nats,
         get_currency_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->history(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_currency_calendars_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_calendars(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        assign_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->assign_calendar(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->revoke_calendar(std::move(msg));
+        }));
     return subs;
 }
 

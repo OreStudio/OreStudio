@@ -58,7 +58,7 @@ currency_calendar make_currency_calendar(scoped_database_helper& h,
                                          const std::string& currency_iso_code,
                                          const std::string& calendar_code) {
     currency_calendar cc;
-    cc.tenant_id = h.tenant_id();
+    cc.tenant_id = h.tenant_id().to_string();
     cc.currency_iso_code = currency_iso_code;
     cc.calendar_code = calendar_code;
     cc.modified_by = h.db_user();

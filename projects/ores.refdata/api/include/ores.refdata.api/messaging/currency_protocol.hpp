@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency_calendar.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -79,6 +80,43 @@ struct get_currency_history_response {
     std::string message;
 };
 
+struct get_currency_calendars_request {
+    using response_type = struct get_currency_calendars_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.calendars.list";
+    std::string currency_iso_code;
+};
+
+struct get_currency_calendars_response {
+    std::vector<ores::refdata::domain::currency_calendar> calendars;
+    bool success = false;
+    std::string message;
+};
+
+struct assign_currency_calendar_request {
+    using response_type = struct assign_currency_calendar_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.calendars.assign";
+    std::string currency_iso_code;
+    std::string calendar_code;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct assign_currency_calendar_response {
+    bool success = false;
+    std::string message;
+};
+
+struct revoke_currency_calendar_request {
+    using response_type = struct revoke_currency_calendar_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.calendars.revoke";
+    std::string currency_iso_code;
+    std::string calendar_code;
+};
+
+struct revoke_currency_calendar_response {
+    bool success = false;
+    std::string message;
+};
 }
 
 #endif

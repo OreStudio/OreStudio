@@ -31,6 +31,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Reads and writes party counterparties to data storage.
+ */
 class ORES_REFDATA_CORE_EXPORT party_counterparty_repository {
 private:
     inline static std::string_view logger_name =

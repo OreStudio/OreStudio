@@ -33,7 +33,9 @@ using namespace ores::logging;
 
 currency_service::currency_service(context ctx)
     : ctx_(std::move(ctx))
-    , junction_repo_(ctx_) {}
+    , junction_repo_(ctx_)
+
+    , calendar_repo_(ctx_) {}
 
 std::vector<domain::currency> currency_service::list_currencies(std::uint32_t offset,
                                                                 std::uint32_t limit) {
@@ -126,5 +128,29 @@ std::uint32_t currency_service::count_currencies_for_party(const boost::uuids::u
     BOOST_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     return static_cast<std::uint32_t>(junctions.size());
+}
+
+std::vector<ores::refdata::domain::currency_calendar>
+currency_service::list_calendars_for_currency(const std::string& currency_iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing calendars for currency: " << currency_iso_code;
+    return calendar_repo_.read_latest_by_currency(currency_iso_code);
+}
+
+void currency_service::assign_calendar_to_currency(
+    const ores::refdata::domain::currency_calendar& row) {
+    BOOST_LOG_SEV(lg(), debug) << "Assigning calendar to currency: " << row.currency_iso_code << "/"
+                               << row.calendar_code;
+    calendar_repo_.write(row);
+    BOOST_LOG_SEV(lg(), info) << "Assigned calendar to currency: " << row.currency_iso_code << "/"
+                              << row.calendar_code;
+}
+
+void currency_service::revoke_calendar_from_currency(const std::string& currency_iso_code,
+                                                     const std::string& calendar_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Revoking calendar from currency: " << currency_iso_code << "/"
+                               << calendar_code;
+    calendar_repo_.remove(currency_iso_code, calendar_code);
+    BOOST_LOG_SEV(lg(), info) << "Revoked calendar from currency: " << currency_iso_code << "/"
+                              << calendar_code;
 }
 }

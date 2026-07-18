@@ -31,6 +31,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Reads and writes party countries to data storage.
+ */
 class ORES_REFDATA_CORE_EXPORT party_country_repository {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.party_country_repository";
@@ -53,9 +56,10 @@ public:
 
     std::vector<domain::party_country> read_latest();
     std::vector<domain::party_country> read_latest_by_party(const boost::uuids::uuid& party_id);
-    std::vector<domain::party_country> read_latest_by_country(const std::string& alpha2_code);
+    std::vector<domain::party_country>
+    read_latest_by_country(const std::string& country_alpha2_code);
 
-    void remove(const boost::uuids::uuid& party_id, const std::string& alpha2_code);
+    void remove(const boost::uuids::uuid& party_id, const std::string& country_alpha2_code);
     void remove_by_party(const boost::uuids::uuid& party_id);
 
 private:

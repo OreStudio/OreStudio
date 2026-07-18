@@ -27,6 +27,9 @@
 
 namespace ores::refdata::domain {
 
+/**
+ * @brief Dumps the currency_calendar objects to a stream in table format.
+ */
 ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
                                                  const std::vector<currency_calendar>& v);
 

@@ -495,7 +495,7 @@ void generate_party_counterparty_links(generation_context& ctx,
     for (const auto& cpty : result.counterparties) {
         refdata::domain::party_counterparty pc;
         pc.version = 1;
-        pc.tenant_id = tenant_id;
+        pc.tenant_id = tenant_id.to_string();
         pc.party_id = root_party.id;
         pc.counterparty_id = cpty.id;
         pc.modified_by = modified_by;

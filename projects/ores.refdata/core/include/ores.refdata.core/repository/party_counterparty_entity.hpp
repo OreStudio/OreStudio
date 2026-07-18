@@ -22,12 +22,19 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
 
+/**
+ * @brief Represents a party counterparty in the database.
+ *
+ * Junction table with composite primary key (party_id, counterparty_id, valid_from).
+ */
 struct party_counterparty_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_party_counterparties_tbl";

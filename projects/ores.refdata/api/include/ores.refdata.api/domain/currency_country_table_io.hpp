@@ -27,6 +27,9 @@
 
 namespace ores::refdata::domain {
 
+/**
+ * @brief Dumps the currency_country objects to a stream in table format.
+ */
 ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
                                                  const std::vector<currency_country>& v);
 

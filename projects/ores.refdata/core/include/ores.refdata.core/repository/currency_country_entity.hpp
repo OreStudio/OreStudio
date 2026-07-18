@@ -22,12 +22,19 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
 
+/**
+ * @brief Represents a currency country in the database.
+ *
+ * Junction table with composite primary key (currency_iso_code, country_alpha2_code, valid_from).
+ */
 struct currency_country_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_currency_countries_tbl";

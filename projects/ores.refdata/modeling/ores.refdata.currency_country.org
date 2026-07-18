@@ -80,6 +80,11 @@ std::string("DE")
 
 * C++
 
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
 ** Domain includes
 
 #+begin_src cpp :name includes

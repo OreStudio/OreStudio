@@ -280,6 +280,268 @@ entity has no separate base/quote fields of its own.
 
 ** Custom repository methods
 
+** Calendar assignment: custom service constructor init
+
+#+begin_src cpp :name calendar_ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+    , calendar_repo_(ctx_)
+#+end_src
+
+** Calendar assignment: custom service includes
+
+#+begin_src cpp :name calendar_includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#+end_src
+
+** Calendar assignment: custom service methods
+
+#+begin_src cpp :name calendar_declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Lists the calendars assigned to a currency pair convention for
+     * advancing its spot/maturity dates, via the
+     * currency_pair_convention_calendars junction.
+     *
+     * @param pair_code The currency pair code (e.g. EURGBP).
+     * @return Vector of calendar assignment rows for the convention.
+     */
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+    list_calendars_for_pair_convention(const std::string& pair_code);
+
+    /**
+     * @brief Assigns a calendar to a currency pair convention (creates the
+     * junction row).
+     *
+     * @param row The currency_pair_convention_calendar row to write; caller
+     * is responsible for stamping tenant_id/modified_by/performed_by/
+     * change_reason_code before calling (see
+     * ores::service::messaging::stamp()).
+     */
+    void assign_calendar_to_pair_convention(
+        const ores::refdata::domain::currency_pair_convention_calendar& row);
+
+    /**
+     * @brief Revokes a calendar from a currency pair convention (removes the
+     * junction row).
+     *
+     * @param pair_code The currency pair code (e.g. EURGBP).
+     * @param calendar_code The QuantLib/ORE calendar token to revoke.
+     */
+    void revoke_calendar_from_pair_convention(const std::string& pair_code,
+                                              const std::string& calendar_code);
+
+#+end_src
+
+** Calendar assignment: custom service members
+
+#+begin_src cpp :name calendar_member :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+    repository::currency_pair_convention_calendar_repository calendar_repo_;
+#+end_src
+
+** Calendar assignment: custom service implementations
+
+#+begin_src cpp :name calendar_implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+currency_pair_convention_service::list_calendars_for_pair_convention(const std::string& pair_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing calendars for pair convention: " << pair_code;
+    return calendar_repo_.read_latest_by_pair(pair_code);
+}
+
+void currency_pair_convention_service::assign_calendar_to_pair_convention(
+    const ores::refdata::domain::currency_pair_convention_calendar& row) {
+    BOOST_LOG_SEV(lg(), debug) << "Assigning calendar to pair convention: " << row.pair_code
+                               << "/" << row.calendar_code;
+    calendar_repo_.write(row);
+    BOOST_LOG_SEV(lg(), info) << "Assigned calendar to pair convention: " << row.pair_code
+                              << "/" << row.calendar_code;
+}
+
+void currency_pair_convention_service::revoke_calendar_from_pair_convention(
+    const std::string& pair_code, const std::string& calendar_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Revoking calendar from pair convention: " << pair_code
+                               << "/" << calendar_code;
+    calendar_repo_.remove(pair_code, calendar_code);
+    BOOST_LOG_SEV(lg(), info) << "Revoked calendar from pair convention: " << pair_code
+                              << "/" << calendar_code;
+}
+#+end_src
+
+** Calendar assignment: custom protocol includes
+
+#+begin_src cpp :name calendar_protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
+#+end_src
+
+** Calendar assignment: custom protocol messages
+
+#+begin_src cpp :name calendar_protocol_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+struct get_currency_pair_convention_calendars_request {
+    using response_type = struct get_currency_pair_convention_calendars_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.list";
+    std::string pair_code;
+};
+
+struct get_currency_pair_convention_calendars_response {
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar> calendars;
+    bool success = false;
+    std::string message;
+};
+
+struct assign_currency_pair_convention_calendar_request {
+    using response_type = struct assign_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.assign";
+    std::string pair_code;
+    std::string calendar_code;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct assign_currency_pair_convention_calendar_response {
+    bool success = false;
+    std::string message;
+};
+
+struct revoke_currency_pair_convention_calendar_request {
+    using response_type = struct revoke_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency-pair-conventions.calendars.revoke";
+    std::string pair_code;
+    std::string calendar_code;
+};
+
+struct revoke_currency_pair_convention_calendar_response {
+    bool success = false;
+    std::string message;
+};
+#+end_src
+
+** Calendar assignment: custom handler methods
+
+#+begin_src cpp :name calendar_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void list_calendars(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::currency_pair_convention_service svc(req_ctx);
+        if (auto req = decode<get_currency_pair_convention_calendars_request>(msg)) {
+            get_currency_pair_convention_calendars_response resp;
+            try {
+                resp.calendars = svc.list_calendars_for_pair_convention(req->pair_code);
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void assign_calendar(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_conventions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        if (auto req = decode<assign_currency_pair_convention_calendar_request>(msg)) {
+            try {
+                domain::currency_pair_convention_calendar row;
+                row.pair_code = req->pair_code;
+                row.calendar_code = req->calendar_code;
+                row.change_reason_code = req->change_reason_code;
+                row.change_commentary = req->change_commentary;
+                ores::service::messaging::stamp(row, req_ctx);
+                svc.assign_calendar_to_pair_convention(row);
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg,
+                    assign_currency_pair_convention_calendar_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, assign_currency_pair_convention_calendar_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void revoke_calendar(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_conventions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        if (auto req = decode<revoke_currency_pair_convention_calendar_request>(msg)) {
+            try {
+                svc.revoke_calendar_from_pair_convention(req->pair_code, req->calendar_code);
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg,
+                    revoke_currency_pair_convention_calendar_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, revoke_currency_pair_convention_calendar_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+#+end_src
+
+** Calendar assignment: custom registrar subscriptions
+
+#+begin_src cpp :name calendar_custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        get_currency_pair_convention_calendars_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->list_calendars(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        assign_currency_pair_convention_calendar_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->assign_calendar(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_currency_pair_convention_calendar_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->revoke_calendar(std::move(msg)); }));
+#+end_src
+
 ** Qt: pair_code stays visually normal while locked
 :PROPERTIES:
 :ID: B8D3E6F1-4A29-4C7E-9B1D-3F5A8C2E7D64

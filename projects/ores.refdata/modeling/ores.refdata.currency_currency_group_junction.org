@@ -80,6 +80,11 @@ std::string("G11")
 
 * C++
 
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
 ** Domain includes
 
 #+begin_src cpp :name includes

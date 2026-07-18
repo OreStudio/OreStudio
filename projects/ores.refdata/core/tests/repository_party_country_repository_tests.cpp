@@ -68,7 +68,7 @@ party_country make_party_country(scoped_database_helper& h,
                                  const boost::uuids::uuid& party_id,
                                  const std::string& alpha2_code) {
     party_country pc;
-    pc.tenant_id = h.tenant_id();
+    pc.tenant_id = h.tenant_id().to_string();
     pc.party_id = party_id;
     pc.country_alpha2_code = alpha2_code;
     pc.modified_by = h.db_user();

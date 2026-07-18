@@ -31,11 +31,10 @@ generate_synthetic_party_country(utility::generation::generation_context& ctx) {
     const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::party_country r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.version = 0;
+    r.tenant_id = tenant_id;
     r.party_id = ctx.generate_uuid();
-    r.country_alpha2_code = "US";
+    r.country_alpha2_code = std::string("US");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

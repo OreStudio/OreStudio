@@ -30,6 +30,9 @@
 
 namespace ores::refdata::repository {
 
+/**
+ * @brief Reads and writes currency calendars to data storage.
+ */
 class ORES_REFDATA_CORE_EXPORT currency_calendar_repository {
 private:
     inline static std::string_view logger_name =

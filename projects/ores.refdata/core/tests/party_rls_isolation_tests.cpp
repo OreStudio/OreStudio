@@ -64,7 +64,7 @@ party_counterparty make_pc(scoped_database_helper& h,
                            const boost::uuids::uuid& party_id,
                            const boost::uuids::uuid& counterparty_id) {
     party_counterparty pc;
-    pc.tenant_id = h.tenant_id();
+    pc.tenant_id = h.tenant_id().to_string();
     pc.party_id = party_id;
     pc.counterparty_id = counterparty_id;
     pc.modified_by = h.db_user();

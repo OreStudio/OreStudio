@@ -66,12 +66,12 @@ See [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]]
 #+begin_src bash
 # Run a single profile for one entity (recommended for targeted sync)
 ./projects/ores.codegen/codegen.sh regenerate \
-    --component refdata-cpp --profile qt \
+    --component refdata --profile qt \
     --entity rounding_type
 
 # Run a single profile for all entities in a component (generates everything)
 ./projects/ores.codegen/codegen.sh regenerate \
-    --component refdata-cpp --profile qt
+    --component refdata --profile qt
 #+end_src
 
 When running =--component= without =--entity= (once that flag lands; see
@@ -94,7 +94,7 @@ git status --short | grep '^?' | awk '{print $2}' | xargs rm -f
 * Codegen output map
 
 Complete map of profile → template → output file, using =rounding_type= in
-=refdata-cpp= as the reference (=component=refdata=, =component_include=refdata.api=,
+=refdata= as the reference (=component=refdata=, =component_include=refdata.api=,
 =component_core=refdata.core=).
 
 ** sql profile

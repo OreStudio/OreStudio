@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A single refdata component entry in the component catalogue discovers all ores.r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -42,11 +42,64 @@ A single refdata component entry in the component catalogue discovers all ores.r
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigation confirmed the =refdata= / =refdata-cpp= split in
+=component_catalogue.org= is vestigial: both rows already point at the
+same =modeling_dir= (=projects/ores.refdata/modeling=), and their
+=models_dir= (legacy JSON) no longer exists on disk for either.
+=manifest.py='s org discovery doesn't split by component at all — it
+picks up every codegen-typed org file in =modeling_dir= regardless of
+which row is used — so =--component refdata= and =--component
+refdata-cpp= already discover an identical file set today.
+=--address=, not =--component=, selects the technical space
+(SQL/C++/Qt/...); the component only scopes which entities are
+processed.
+
+1. Add an exclude filter to =manifest.py='s org-discovery path so the
+   merged =refdata= component skips =ores.codegen.module= and
+   =ores.codegen.junction= typed files (junction bulk regeneration
+   currently produces spurious errors on some profiles; module is a
+   docs-only index, never a codegen target).
+2. Collapse the two =component_catalogue.org= rows into one =refdata=
+   row; drop the dead =models_dir=/=entity_glob=/=exclude_suffix=
+   (legacy JSON) columns.
+3. Update all =--component refdata-cpp= references to =refdata= across
+   recipes (=doc/recipes/codegen/*.org=), analysis docs
+   (=codegen-model-unification.org=, =entity_commissioning_reference.org=),
+   =claude_code_settings.org=, and the =compass codegen regenerate=
+   help string in =compass.py=.
+4. Diff-check: regenerate every address via the old dual-component
+   invocation vs the new single-component one and confirm zero diff
+   (acceptance criterion 1).
+5. Run the codegen regression test suite; confirm zero diff.
 
 * Notes
+
+- =module= type (=ores.codegen.module=) was already excluded from org
+  discovery pre-change — its type was never in =manifest.py='s
+  =_CODEGEN_ORG_TYPES= set. Only =junction= needed an explicit new
+  exclusion mechanism (=exclude_org_types= catalogue column).
+- Verified via a script harness that =refdata= and =refdata-cpp=
+  discovered an identical 73-file set before the change (both point at
+  the same =modeling_dir=, and the legacy =models_dir= is dead for
+  both) — confirming the split was already vestigial. After the merge,
+  =refdata= discovers 65 files (73 minus the 8 junction-typed files).
+- Zero-diff confirmed via =compass codegen entity generate <name>
+  --address <addr> --diff= across SQL/C++/Qt addresses. One entity
+  (=rounding_type=, =ores.sql.schema=) showed a diff, but it is
+  pre-existing template drift unrelated to this change (documented as
+  an open issue in =entity_commissioning_reference.org=: "sql profile
+  dual-fires old and new SQL templates").
+- Left =refdata-cpp= mentions untouched in historical docs
+  (=doc/agile/**=, =doc/plans/**=) and in
+  =migrate_json_to_org.py='s docstring, which narrates a past
+  migration task by name — editing these would misrepresent history.
+- Codegen regression suite (=projects/ores.codegen/tests/=) requires
+  =pystache= on the path; the codegen venv's own interpreter is
+  version-skewed against its installed packages (stale symlink to
+  =/usr/bin/python3= after a system Python upgrade). Ran via system
+  =pytest= with =PYTHONPATH= pointed at the sibling
+  =ores.compass/venv= site-packages (which has =pystache= for a
+  matching interpreter) plus =src=. All 50 tests pass.
 
 * PRs
 
@@ -61,3 +114,16 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The =refdata= / =refdata-cpp= split in the component catalogue was
+already vestigial (both discovered an identical 73-file set via the
+same =modeling_dir=; the legacy JSON =models_dir= was dead for both).
+Collapsed into a single =refdata= row backed by a new
+=exclude_org_types= catalogue column, which excludes the 8
+junction-typed files from bulk regeneration (65 files remain). All
+=--component refdata-cpp= references updated to =refdata= across
+recipes, analysis docs, and the =compass= help string; historical
+agile/plans records intentionally left untouched. Zero-diff confirmed
+across SQL/C++/Qt addresses (one pre-existing, unrelated drift noted,
+not introduced here). Codegen regression suite: 50/50 pass. All four
+acceptance criteria met.

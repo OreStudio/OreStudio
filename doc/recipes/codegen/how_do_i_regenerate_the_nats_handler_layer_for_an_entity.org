@@ -20,7 +20,7 @@ How do I regenerate the NATS message handler files for a domain entity?
 The =nats-handler= profile generates the per-entity NATS handler header and implementation in the core sub-component.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.nats-handler
+./compass.sh codegen regenerate --component refdata --address ores.cpp.nats-handler
 #+end_src
 
 Expected output (entity =rounding_type=, =component_core=refdata.core=):
@@ -33,7 +33,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.nats-handler=.
+=./compass.sh codegen regenerate --component refdata --address ores.cpp.nats-handler=.
 
 * Tested by
 

@@ -24,6 +24,13 @@ class Component:
     # as an entity model. Other org files (component overviews, plantuml
     # source, knowledge docs) are skipped. None means no second root.
     modeling_dir: Optional[str] = None
+    # Codegen org types to skip within modeling_dir even though they
+    # otherwise qualify (e.g. "junction" while junction codegen is still
+    # being brought up to parity with entity codegen, or "module" since
+    # it is a docs-only index, never a generation target). Values are the
+    # short suffix after "ores.codegen." (see _CODEGEN_ORG_TYPES). Empty
+    # means no exclusion.
+    exclude_org_types: Tuple[str, ...] = ()
 
 
 def _load_components() -> Dict[str, "Component"]:
@@ -68,12 +75,16 @@ def _load_components() -> Dict[str, "Component"]:
     for row in rows[1:]:
         entry = dict(zip(headers, row))
         name = entry["name"]
+        exclude_org_types = entry.get("exclude_org_types") or ""
         result[name] = Component(
             name=name,
             models_dir=entry["models_dir"],
-            entity_glob=entry.get("entity_glob", "*_entity.json"),
+            entity_glob=entry.get("entity_glob") or "*_entity.json",
             exclude_suffix=entry.get("exclude_suffix") or None,
             modeling_dir=entry.get("modeling_dir") or None,
+            exclude_org_types=tuple(
+                t.strip() for t in exclude_org_types.split(",") if t.strip()
+            ),
         )
     return result
 
@@ -96,12 +107,18 @@ _CODEGEN_ORG_TYPES = frozenset({
 })
 
 
-def is_codegen_entity_org(path: Path) -> bool:
-    """True if the file's frontmatter declares it a codegen org-model."""
+def _org_type(path: Path) -> Optional[str]:
+    """The file's `#+type:` frontmatter value, or None if absent."""
     with path.open(encoding="utf-8", errors="replace") as f:
         head = f.read(4096)
     match = _ORG_TYPE_RE.search(head)
-    return bool(match and match.group(1) in _CODEGEN_ORG_TYPES)
+    return match.group(1) if match else None
+
+
+def is_codegen_entity_org(path: Path) -> bool:
+    """True if the file's frontmatter declares it a codegen org-model."""
+    org_type = _org_type(path)
+    return bool(org_type and org_type in _CODEGEN_ORG_TYPES)
 
 
 def discover_models(comp: Component, project_root: Path) -> List[Path]:
@@ -113,8 +130,8 @@ def discover_models(comp: Component, project_root: Path) -> List[Path]:
     their frontmatter declares a codegen model type.
     """
     matches: set = set()
-    models_dir = project_root / comp.models_dir
-    if models_dir.is_dir():
+    if comp.models_dir and (project_root / comp.models_dir).is_dir():
+        models_dir = project_root / comp.models_dir
         globs = (
             (comp.entity_glob,)
             if isinstance(comp.entity_glob, str)
@@ -131,8 +148,15 @@ def discover_models(comp: Component, project_root: Path) -> List[Path]:
         modeling_dir = project_root / comp.modeling_dir
         if modeling_dir.is_dir():
             for org_path in modeling_dir.glob("*.org"):
-                if org_path.is_file() and is_codegen_entity_org(org_path):
-                    matches.add(org_path)
+                if not org_path.is_file():
+                    continue
+                org_type = _org_type(org_path)
+                if org_type not in _CODEGEN_ORG_TYPES:
+                    continue
+                short_type = org_type.removeprefix("ores.codegen.")
+                if short_type in comp.exclude_org_types:
+                    continue
+                matches.add(org_path)
     return sorted(matches)
 
 

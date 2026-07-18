@@ -81,6 +81,7 @@ Qt). Concretely:
 |------+-------+-------+-----+-------------|
 | [[id:2590F0EB-007D-4AD2-98E2-27A6AB957555][Scaffold story: Commission ores.qt.dq — full-stack codegen for the DQ component]] | DONE | 2026-07-16 | 2026-07-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:206FCFAE-6617-4FEE-BE81-9DC7468FAE1A][Inventory all DQ entities and their current codegen/hand-written status]] | BACKLOG | | | Initial task for: Commission ores.qt.dq — full-stack codegen for the DQ component |
+| [[id:7E714F07-FDAC-4041-9815-04B6219A93BA][Migrate ores.qt.data_management's history dialogs to the generic HistoryDialog]] | BACKLOG | | | 14 DQ-owned entities (catalog, change_reason, change_reason_category, code_domain, coding_scheme, coding_scheme_authority_type, data_domain, dataset, dataset_bundle, methodology, nature_dimension, origin_dimension, subject_area, treatment_dimension) live in ores.qt.data_management with hand-written backend glue and legacy per-entity *HistoryDialog classes. Author codegen models for the 12 that have none, then migrate all 14 onto the generic HistoryDialog via full-stack codegen -- as part of this story standing up ores.qt.dq as the proper plugin. |
 
 * Decisions
 

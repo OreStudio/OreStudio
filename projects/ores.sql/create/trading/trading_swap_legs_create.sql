@@ -106,8 +106,8 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate leg_type_code
-    NEW.leg_type_code := ores_trading_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
+    -- Validate leg_type_code (moved to ores.refdata)
+    NEW.leg_type_code := ores_refdata_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 
     -- Validate day_count_fraction_code (moved to ores.refdata)
     NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(
@@ -121,9 +121,9 @@ begin
     NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(
         NEW.tenant_id, NEW.payment_frequency_code);
 
-    -- Validate floating_index_code (optional, required for floating legs)
+    -- Validate floating_index_code (optional, required for floating legs; moved to ores.refdata)
     if NEW.floating_index_code is not null then
-        NEW.floating_index_code := ores_trading_validate_floating_index_type_fn(
+        NEW.floating_index_code := ores_refdata_validate_floating_index_type_fn(
             NEW.tenant_id, NEW.floating_index_code);
     end if;
 

@@ -41,4 +41,10 @@
 \ir ./refdata_crm_topology_bundles_populate.sql
 
 \echo ''
+\ir ./refdata_floating_index_types_populate.sql
+
+\echo ''
+\ir ./refdata_leg_types_populate.sql
+
+\echo ''
 \echo '=== Refdata Component Population Complete ==='

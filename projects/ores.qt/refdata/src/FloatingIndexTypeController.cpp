@@ -18,25 +18,37 @@
  *
  */
 #include "ores.qt/FloatingIndexTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FloatingIndexTypeDetailDialog.hpp"
-#include "ores.qt/FloatingIndexTypeHistoryDialog.hpp"
 #include "ores.qt/FloatingIndexTypeMdiWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/floating_index_type_changed_event.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::floating_index_type_changed_event>::name;
+}
 
 FloatingIndexTypeController::FloatingIndexTypeController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
                                                          ClientManager* clientManager,
                                                          const QString& username,
                                                          QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +104,8 @@ void FloatingIndexTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -130,7 +144,7 @@ void FloatingIndexTypeController::reloadListWindow() {
     }
 }
 
-void FloatingIndexTypeController::onShowDetails(const trading::domain::floating_index_type& type) {
+void FloatingIndexTypeController::onShowDetails(const refdata::domain::floating_index_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -140,7 +154,8 @@ void FloatingIndexTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void FloatingIndexTypeController::onShowHistory(const trading::domain::floating_index_type& type) {
+
+void FloatingIndexTypeController::onShowHistory(const refdata::domain::floating_index_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -185,7 +200,7 @@ void FloatingIndexTypeController::showAddWindow() {
 }
 
 void FloatingIndexTypeController::showDetailWindow(
-    const trading::domain::floating_index_type& type) {
+    const refdata::domain::floating_index_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -240,6 +255,7 @@ void FloatingIndexTypeController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<FloatingIndexTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -266,10 +282,14 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new FloatingIndexTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(refdata::domain::floating_index_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &FloatingIndexTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
                 if (!self)
@@ -277,7 +297,7 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &FloatingIndexTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
                 if (!self)
@@ -285,13 +305,23 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &FloatingIndexTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &FloatingIndexTypeController::onRevertVersion);
+            [self = QPointer<FloatingIndexTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &FloatingIndexTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &FloatingIndexTypeController::onOpenVersion);
+            [self = QPointer<FloatingIndexTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -302,10 +332,12 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Floating Index Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<FloatingIndexTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -317,7 +349,7 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void FloatingIndexTypeController::onOpenVersion(const trading::domain::floating_index_type& type,
+void FloatingIndexTypeController::onOpenVersion(const refdata::domain::floating_index_type& type,
                                                 int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for floating index type: " << type.code;
@@ -377,16 +409,110 @@ void FloatingIndexTypeController::onOpenVersion(const trading::domain::floating_
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void FloatingIndexTypeController::fetchFloatingIndexTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<refdata::domain::floating_index_type>, QString>)>
+        callback) {
+    refdata::messaging::get_floating_index_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<refdata::domain::floating_index_type>, QString>;
+
+    QPointer<FloatingIndexTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void FloatingIndexTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<FloatingIndexTypeController> self = this;
+    fetchFloatingIndexTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::floating_index_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void FloatingIndexTypeController::onRevertHistoryVersion(const QString& entityId,
+                                                         int versionNumber) {
+    QPointer<FloatingIndexTypeController> self = this;
+    fetchFloatingIndexTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::floating_index_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void FloatingIndexTypeController::onRevertVersion(
-    const trading::domain::floating_index_type& type) {
+    const refdata::domain::floating_index_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting floating index type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &FloatingIndexTypeDetailDialog::statusMessage,
@@ -424,6 +550,28 @@ void FloatingIndexTypeController::onRevertVersion(
 
 EntityListMdiWindow* FloatingIndexTypeController::listWindow() const {
     return listWindow_;
+}
+
+void FloatingIndexTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

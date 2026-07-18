@@ -18,6 +18,16 @@
  *
  */
 
+-- Instrument leg reference data, moved from ores.trading: drop first,
+-- ores.trading.swap_leg (which soft-FKs these by code) already dropped
+-- before refdata in the top-level drop order.
+\ir ./refdata_leg_types_validate_fn_drop.sql
+\ir ./refdata_leg_types_notify_trigger_drop.sql
+\ir ./refdata_leg_types_drop.sql
+\ir ./refdata_floating_index_types_validate_fn_drop.sql
+\ir ./refdata_floating_index_types_notify_trigger_drop.sql
+\ir ./refdata_floating_index_types_drop.sql
+
 -- Payment frequency: no dependents yet, drop first.
 \ir ./refdata_payment_frequencies_notify_trigger_drop.sql
 \ir ./refdata_payment_frequencies_drop.sql

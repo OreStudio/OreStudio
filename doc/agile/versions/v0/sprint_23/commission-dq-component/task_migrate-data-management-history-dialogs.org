@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 7E714F07-FDAC-4041-9815-04B6219A93BA
+:END:
+#+title: Task: Migrate ores.qt.data_management's history dialogs to the generic HistoryDialog
+#+description: 14 DQ-owned entities (catalog, change_reason, change_reason_category, code_domain, coding_scheme, coding_scheme_authority_type, data_domain, dataset, dataset_bundle, methodology, nature_dimension, origin_dimension, subject_area, treatment_dimension) live in ores.qt.data_management with hand-written backend glue and legacy per-entity *HistoryDialog classes. Author codegen models for the 12 that have none, then migrate all 14 onto the generic HistoryDialog via full-stack codegen -- as part of this story standing up ores.qt.dq as the proper plugin.
+#+type: task
+#+level: s1
+#+filetags: :codegen:dq:qt:history:sprint_23:commission-dq-component:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-17
+#+updated: 2026-07-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Retire the legacy hand-rolled per-entity =*HistoryDialog= classes for
+all 14 DQ-owned entities currently living in =ores.qt.data_management=
+(=CodeDomainHistoryDialog=, =DatasetBundleHistoryDialog=, etc.),
+replacing them with the generic =HistoryDialog= widget — same pattern
+every other component's migration in this backlog follows (currency,
+PR #1553; the full refdata batch, task 9605CFDB).
+
+Discovered while scoping [[id:EE0459FE-8AC1-4D7B-99C2-747FCF0E4499][the ores.qt.refdata story's last straggler
+task]]: these 14 entities were originally thought to be
+=ores.qt.refdata= entities whose Qt controller "happened to live"
+there (same pattern as =Book=/=BusinessCentre=), but
+[[id:D5DF4CFA-5316-4825-BC4B-37C96726C00C][a prior task]] already moved all 14 out of =RefdataPlugin= into
+=ores.qt.data_management= — so they're not =ores.qt.refdata= work at
+all, and belong here instead, under the DQ component's own
+commissioning story (which is already standing up =ores.qt.dq= as the
+proper plugin =ores.qt.data_management= is a stepping stone toward).
+
+Two of the 14 (=code_domain=, =dataset_bundle=) already have a
+codegen model; the other 12 (=catalog=, =change_reason=,
+=change_reason_category=, =coding_scheme=,
+=coding_scheme_authority_type=, =data_domain=, =dataset=,
+=methodology=, =nature_dimension=, =origin_dimension=,
+=subject_area=, =treatment_dimension=) have none anywhere in the
+codebase and need one authored from scratch before they can migrate
+— no entity in this backlog is left hand-authored as a matter of
+policy (see the sibling task's Notes for the reasoning, including how
+=change_reason=/=change_reason_category='s self-referential
+change-reason-cache wrinkle doesn't change that).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Author codegen models for the 12 model-less entities; migrate all 14 via full-stack codegen once ores.qt.dq exists as a proper plugin. |
+| Last touched | 2026-07-17                               |
+
+* Acceptance
+
+- Codegen models authored for all 12 entities with none (=catalog=,
+  =change_reason=, =change_reason_category=, =coding_scheme=,
+  =coding_scheme_authority_type=, =data_domain=, =dataset=,
+  =methodology=, =nature_dimension=, =origin_dimension=,
+  =subject_area=, =treatment_dimension=).
+- All 14 entities migrated onto the generic =HistoryDialog= via
+  full, unmodified codegen regeneration — no exceptions, no entity
+  left on hand-authored backend glue or a per-entity dialog.
+- Zero remaining =*HistoryDialog.{hpp,cpp,ui}= files for these 14
+  entities anywhere in =ores.qt=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

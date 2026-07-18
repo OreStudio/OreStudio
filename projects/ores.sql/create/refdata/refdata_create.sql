@@ -211,3 +211,13 @@
 \ir ./refdata_tenor_conventions_create.sql
 \ir ./refdata_tenor_conventions_notify_trigger_create.sql
 \ir ./refdata_tenor_convention_resolution_create.sql
+
+-- Instrument leg reference data, moved from ores.trading: floating
+-- rate index codes and leg types used in leg definitions
+-- (ores.trading.swap_leg's leg_type_code/floating_index_code soft FKs).
+\ir ./refdata_floating_index_types_create.sql
+\ir ./refdata_floating_index_types_notify_trigger_create.sql
+\ir ./refdata_floating_index_types_validate_fn_create.sql
+\ir ./refdata_leg_types_create.sql
+\ir ./refdata_leg_types_notify_trigger_create.sql
+\ir ./refdata_leg_types_validate_fn_create.sql

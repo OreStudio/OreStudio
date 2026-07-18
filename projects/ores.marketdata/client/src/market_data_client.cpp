@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -160,6 +161,27 @@ market_data_client::save_observations(const std::vector<domain::market_observati
         ++count;
     }
     return count;
+}
+
+std::expected<std::vector<domain::feed_binding>, std::string>
+market_data_client::list_feed_bindings() {
+    messaging::get_feed_bindings_request req;
+    req.limit = 10000;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    return std::move(resp->feed_bindings);
+}
+
+std::expected<bool, std::string>
+market_data_client::save_feed_binding(const domain::feed_binding& binding) {
+    auto req = messaging::save_feed_binding_request::from(binding);
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (!resp->success)
+        return std::unexpected(resp->message.empty() ? "save_feed_binding failed" : resp->message);
+    return true;
 }
 
 }

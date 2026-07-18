@@ -141,38 +141,43 @@ public:
             initial_price = resolved_price;
         }
 
-        std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
-        if (feeds_.contains(key))
-            return start_result::already_running;
+        {
+            std::lock_guard lock(mu_);
+            if (feeds_.contains(key)) {
+                ensure_feed_binding(ore_key, key, caller_bearer_token);
+                return start_result::already_running;
+            }
 
-        // Use a persistent random_device so the OS entropy pool is not
-        // re-seeded between rapid successive calls (which can produce equal
-        // values on some platforms when called on separate temporaries).
-        static std::random_device rd;
-        const std::uint32_t seed = rd();
-        BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-        auto process =
-            ores::analytics::quant::service::process_factory::make_process(process_type,
-                                                                           std::move(means),
-                                                                           std::move(stdevs),
-                                                                           std::move(weights),
-                                                                           initial_price,
-                                                                           seed);
-        auto feed = std::make_shared<fx_spot_feed>(
-            nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
-        running_feed rf;
-        rf.feed = feed;
-        rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
-        feeds_.emplace(key, std::move(rf));
-        BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key << "' subject='"
-            << producer_subject(key) << "' ticks_per_hour=" << ticks_per_hour << " — now "
-            << feeds_.size() << " feed(s) running";
-        if (!status_thread_.joinable()) {
-            status_thread_ = std::thread(&feed_controller::status_loop, this);
+            // Use a persistent random_device so the OS entropy pool is not
+            // re-seeded between rapid successive calls (which can produce equal
+            // values on some platforms when called on separate temporaries).
+            static std::random_device rd;
+            const std::uint32_t seed = rd();
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
+            auto process =
+                ores::analytics::quant::service::process_factory::make_process(process_type,
+                                                                               std::move(means),
+                                                                               std::move(stdevs),
+                                                                               std::move(weights),
+                                                                               initial_price,
+                                                                               seed);
+            auto feed = std::make_shared<fx_spot_feed>(
+                nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
+            running_feed rf;
+            rf.feed = feed;
+            rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
+            feeds_.emplace(key, std::move(rf));
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key << "' subject='"
+                << producer_subject(key) << "' ticks_per_hour=" << ticks_per_hour << " — now "
+                << feeds_.size() << " feed(s) running";
+            if (!status_thread_.joinable()) {
+                status_thread_ = std::thread(&feed_controller::status_loop, this);
+            }
         }
+        ensure_feed_binding(ore_key, key, caller_bearer_token);
         return start_result::started;
     }
 
@@ -277,6 +282,59 @@ private:
     static std::string date_part(std::chrono::system_clock::time_point tp) {
         const auto days = std::chrono::floor<std::chrono::days>(tp);
         return std::format("{:%F}", days);
+    }
+
+    // Auto-creates the marketdata feed_binding for a feed once it is
+    // running, so ingestion is wired up without any caller (Qt, ores.shell,
+    // a wt workflow step) having to know that bindings are a separate
+    // concept from starting a feed. Idempotent — checks for an existing
+    // (ore_key, source_name) binding first, since start() calls this on
+    // every start (including the already-running path) so a feed started
+    // once, stopped, then restarted stays bound instead of silently
+    // ticking with nothing ingesting it.
+    //
+    // Silently skipped (not an error) when there is no caller bearer token
+    // — an internal/ad-hoc start with no end-user session has no party to
+    // bind under. Failures are logged but non-fatal: the feed itself has
+    // already started either way, and a missing binding is visible (no
+    // ticks reach the CRM/market series) rather than silently wrong.
+    void ensure_feed_binding(const std::string& ore_key,
+                             const std::string& source_name,
+                             const std::string& caller_bearer_token) {
+        if (caller_bearer_token.empty())
+            return;
+
+        auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
+        ores::marketdata::client::market_data_client md_client(delegated_nats);
+
+        auto existing = md_client.list_feed_bindings();
+        if (!existing) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Could not check existing feed bindings for " << source_name << ": "
+                << existing.error();
+            return;
+        }
+        for (const auto& b : *existing)
+            if (b.ore_key == ore_key && b.source_name == source_name)
+                return; // already bound
+
+        ores::marketdata::domain::feed_binding b;
+        boost::uuids::random_generator uuid_gen;
+        b.id = uuid_gen();
+        b.ore_key = ore_key;
+        b.source_name = source_name;
+        b.enabled = true;
+        b.change_reason_code = "system.new_record";
+        b.change_commentary = "Auto-created by feed_controller on feed start.";
+        const auto saved = md_client.save_feed_binding(b);
+        if (!saved) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Failed to auto-create feed binding for " << source_name << ": "
+                << saved.error();
+            return;
+        }
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Auto-created feed binding: " << ore_key << " <- " << source_name;
     }
 
     // Core vintage-availability check shared by start() and validate(). Uses a

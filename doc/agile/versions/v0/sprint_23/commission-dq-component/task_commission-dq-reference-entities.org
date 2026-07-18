@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
 #+pr:
-#+blocked_on: 464B5EC6-0F5A-4B6F-B77E-02806CBEAE94
-#+blocked_since: 2026-07-18
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-17
 #+updated: 2026-07-18
 #+environment: bright_faraday
@@ -26,11 +26,11 @@ Commission the five no-model DQ entities named in the story description onto the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | All five .org models authored and SQL-verified (catalog, change_reason_category, change_reason, data_domain, subject_area). |
-| Waiting on   | [[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] (lookup_entity -> domain_entity migration) for C++ generation and hand-written-code retirement. |
-| Next         | Once 464B5EC6 lands: regenerate C++, diff against the hand-written core/repository/service/handler/protocol, swap over, delete hand-written equivalents, build and test green. |
+| Now          | Unblocked ([[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] merged). All five entities migrated from lookup_entity to domain_entity org models, SQL-verified. |
+| Waiting on   | Nothing.                               |
+| Next         | Regenerate C++ for real, diff against the hand-written core/repository/service/handler/protocol, swap over, delete hand-written equivalents, build and test green. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -124,6 +124,17 @@ architectural overlap. 464B5EC6 migrates lookup_entity into
 domain_entity instead, which this task's remaining acceptance
 (generated core/repository/service/handler/protocol replacing the
 hand-written equivalents, build and tests green) depends on.
+
+[[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] merged: all five
+=.org= models here are now =#+type: ores.codegen.entity=
+(=domain_entity=), not =lookup_entity= (the five
+=ores.dq.<entity>_lookup_entity.org= files were deleted and replaced
+by =ores.dq.<entity>.org=, same =:ID:= each, preserving org-roam
+identity). Re-verified SQL generation against the real hand-written
+tables through the new pipeline (structurally correct, same shape as
+before). C++ generation is now unblocked -- next step is regenerating
+it for real and doing the actual swap-over described in this task's
+Acceptance.
 
 * Test Scenarios
 

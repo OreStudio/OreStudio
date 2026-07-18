@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 55C9F620-03D7-421C-BC6B-911CF956AC7F
+:END:
+#+title: ores.dq.catalog
+#+description: Codegen entity model for the dq =catalog= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Named collection of related datasets.
+#+entity_singular: catalog
+#+entity_plural: catalogs
+#+entity_title: Catalog
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+A catalog is a named collection of related datasets, providing a
+high-level grouping mechanism for datasets that share a common theme,
+source, or purpose. Examples: "ISO Standards" (ISO 3166 countries,
+ISO 4217 currencies), "Cryptocurrency" (crypto reference data and
+icons). Catalogs are optional for datasets but provide useful
+organizational structure for managing large numbers of them. Rows are
+authored directly (not mirrored from an external source).
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   name
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique name identifying this catalog.
+
+Examples: "ISO Standards", "Cryptocurrency", "FpML Standards".
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Catalog"
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable description of the catalog's purpose.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** owner
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional owner or responsible party for this catalog.
+
+#+begin_src cpp :name generator
+std::string(faker::person::fullName())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_catalogs_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: tenant
+:order_by:     name
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: catalog
+:entity_plural_short:   catalogs
+:entity_singular_words: catalog
+:entity_plural_words:   catalogs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| description | Description |
+| owner       | Owner       |
+| modified_by | Modified By |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

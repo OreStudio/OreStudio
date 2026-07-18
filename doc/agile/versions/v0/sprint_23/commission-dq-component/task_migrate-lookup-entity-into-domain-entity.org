@@ -7,35 +7,47 @@
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-lookup-entity-into-domain-entity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
 #+updated: 2026-07-18
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Migrate the five DQ =lookup_entity= models from 819B050A onto
+=domain_entity= (=has_uuid_primary_key= implied by the primary key
+column's own =:type:=, not a separate flag), so they generate through
+the mature, actively-maintained =domain_entity= C++/SQL pipeline
+instead of =lookup_entity='s separate, under-built one. Full retirement
+of the =ores.codegen.lookup_entity= type/loader/dispatch is deferred
+to a follow-up task covering the remaining 10 lookup_entity models
+outside =dq= (iam/trading/analytics) -- this task only needed to
+unblock 819B050A.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing -- follow-up filed as AEFAE247. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- [X] Pilot-migrate one DQ entity (=catalog=) to =domain_entity=, verify both SQL and C++ generation end to end against the real hand-written table/pre-existing generated files, before committing to the rest.
+- [X] Migrate the remaining four DQ entities (=change_reason_category=, =change_reason=, =data_domain=, =subject_area=) the same way, each SQL-verified.
+- [ ] ~~Add has_coding_scheme/has_image_id/has_artefact_insert_fn as domain_entity knobs~~ -- =coding_scheme=/=image_id= not needed: they already exist on =domain_entity= (=domain_entity_to_table_context=/=normalise_sql_table_context=, used by dozens of existing refdata entities). =has_artefact_insert_fn= is genuinely live (=sql_schema_artefact_create.mustache=) but none of these 5 entities used it, so porting it to domain_entity was out of scope here -- see Notes and AEFAE247.
+- [ ] Migrate the remaining 10 lookup_entity models (iam/trading/analytics) -- deferred to a follow-up task, not required to unblock 819B050A.
+- [ ] Retire =ores.codegen.lookup_entity='s =#+type:=/loader/dispatch entirely -- blocked on the above (still 10 live consumers).
 
 * Plan
 
@@ -44,6 +56,73 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Discovered while planning the migration that =domain_entity= is
+substantially more capable than expected, changing the task's actual
+scope:
+
+- =coding_scheme=/=image_id= are already first-class domain_entity
+  frontmatter fields (=#+coding_scheme: none/required/nullable=,
+  =#+image_id:=), wired through =domain_entity_to_table_context()= and
+  =normalise_sql_table_context()= into the same SQL template lookup_entity
+  used (=sql_schema_create.mustache= for domain_entity vs
+  =sql_schema_table_create.mustache= for lookup_entity -- two different
+  templates, same behaviour). Dozens of real refdata entities
+  (=country=, =currency=, ...) already exercise this. No new knobs
+  needed.
+- =has_artefact_insert_fn= *is* live: =sql_schema_artefact_create.mustache=
+  (line 43) renders =\{\{#entity.has_artefact_insert_fn\}\}=, wired in
+  via =get_schema_template_mappings()= for lookup_entity/schema-model
+  entities -- an earlier grep pass here wrongly called it dead, only
+  having checked =sql_schema_table_create.mustache=, not the artefact
+  template too. =lei_entity=/=lei_relationship= (both still
+  lookup_entity, not touched by this migration) genuinely depend on it
+  to generate their artefact-table insert function. Harmless for *this*
+  PR -- =domain_entity_to_table_context()=/
+  =get_domain_entity_template_mappings()= never read the flag at all,
+  so dropping it from these 5 migrated models changes nothing -- but
+  AEFAE247 (the follow-up migrating =lei_entity=/=lei_relationship=)
+  must explicitly preserve/port this behaviour, since =domain_entity=
+  has no equivalent hook today. Not ported here because none of these
+  5 entities used it (all had =has_artefact_insert_fn: false=).
+- =domain_entity= supports =natural_keys= (plural) as extra
+  human-meaningful columns, but -- checked directly in
+  =sql_schema_create.mustache= -- they are *not* part of the actual SQL
+  primary key or exclusion constraint, only separate unique indexes
+  (mirroring how =country.org='s =alpha3_code=/=numeric_code= natural
+  keys get their own =* Indexes= entries, not a composite PK). So
+  migrating =subject_area= to domain_entity does *not* solve 52FE40FA
+  for free, as first hoped -- =domain_name= is still a plain =Column=
+  with a soft-FK validation, now paired with a compound *unique index*
+  (=:columns: name, domain_name=, =:unique: true=) enforcing the pair's
+  uniqueness for current rows -- stronger than the lookup_entity
+  version (no compound enforcement at all) but still short of a true
+  composite primary key/exclusion constraint. 52FE40FA remains open
+  and necessary for the real fix.
+
+Pilot (=catalog=) surfaced a process trap worth flagging: =catalog=
+(and other DQ entities) already had *pre-existing, tracked* C++
+domain files sitting unwired in the tree (per the story's own
+description: "3 entities' generated files already exist from the
+badge migration work, just never wired into the build") predating
+their demotion to =lookup_entity=-only. A first attempt to clean up
+post-verification with =rm -f= on the regenerated output
+*deleted these tracked files* rather than just removing untracked
+test-generation output -- caught immediately via =git status= showing
+=D= (deleted, tracked) rather than =??= (untracked), restored via
+=git checkout --=. Every regeneration in this task was verified with
+=git status --short= before cleanup afterwards specifically to catch
+this.
+
+Each entity's SQL generation was verified via
+=compass codegen generate --model ... --address ores.sql.schema=
+(real, non-dry-run), diffed against the hand-written table it
+replaces (or the pre-existing generated file, for =catalog='s C++),
+then reverted (=git checkout --= or =rm= as appropriate, per the trap
+above) -- only the =.org= models are committed, matching 819B050A's
+own verification pattern. None of the five hand-written DQ tables or
+pre-existing generated files have actually been swapped over yet --
+that remains 819B050A's own remaining acceptance, now unblocked.
 
 * Test Scenarios
 
@@ -66,6 +145,52 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "has_artefact_insert_fn is dead metadata" claim is wrong -- sql_schema_artefact_create.mustache actively renders it, and lei_entity/lei_relationship genuinely depend on it | task_migrate-lookup-entity-into-domain-entity.org, task_migrate-remaining-lookup-entities-to-domain-entity.org | Accepted | Earlier grep only checked sql_schema_table_create.mustache, missing the separate artefact template. Harmless for this PR (none of the 5 migrated entities used the flag, and domain_entity has no equivalent hook regardless), but corrected the claim and added an explicit warning to AEFAE247 so it doesn't silently drop lei_entity/lei_relationship's artefact insert function when migrated. |
 
 * Result
+
+Migrated all five DQ entities (=catalog=, =change_reason_category=,
+=change_reason=, =data_domain=, =subject_area=) from
+=#+type: ores.codegen.lookup_entity= to
+=#+type: ores.codegen.entity= (=domain_entity=), routing them through
+the mature, actively-used domain_entity C++/SQL pipeline instead of
+lookup_entity's separate, under-built one -- no template changes
+needed (unlike the abandoned in-place C++ fix attempted during
+DDBD522D), since domain_entity already generates correct SQL and C++
+for this exact shape (natural-key-only, =has_tenant_id: true=, no
+coding scheme). Each entity's SQL generation was verified directly
+against its real hand-written table; =catalog='s C++ was additionally
+verified against pre-existing (unwired, tracked) generated files,
+producing a real improvement (proper =tenant_id= type instead of
+=std::string=, an added =entity_type_of()= dispatch function,
+=clock_timestamp()= instead of =current_timestamp= for same-
+transaction correctness, =security definer set search_path=
+hardening) -- confirming domain_entity's pipeline is not just
+equivalent but more mature than lookup_entity's ever was.
+
+=subject_area='s compound natural key (=name= + =domain_name=) is
+still not a true composite primary key/exclusion constraint under
+domain_entity (52FE40FA remains open and necessary), but now carries
+a compound *unique index* enforcing the pair for current rows --
+stronger than the lookup_entity version, which had no such
+enforcement at all.
+
+=has_coding_scheme=/=has_image_id= knobs did not need porting to
+domain_entity -- they already exist there as
+=coding_scheme=/=image_id=, used by dozens of real refdata entities.
+=has_artefact_insert_fn= is genuinely live
+(=sql_schema_artefact_create.mustache=, wired via
+=get_schema_template_mappings()=), not dead as first suspected here --
+none of these 5 entities used it, so it wasn't ported to domain_entity
+in this task, but =domain_entity_to_table_context()=/
+=get_domain_entity_template_mappings()= have no equivalent hook for it
+today. Two of the still-unmigrated lookup_entity models
+(=lei_entity=, =lei_relationship=) genuinely depend on it; AEFAE247
+must preserve/port this behaviour explicitly when migrating them, not
+assume it can be dropped.
+
+10 lookup_entity models remain outside =dq= (iam/trading/analytics);
+migrating them and retiring =ores.codegen.lookup_entity='s
+=#+type:=/loader/dispatch entirely is filed as a follow-up,
+[[id:AEFAE247-7FBC-4F0D-9146-4E4561DF2DFD][AEFAE247]], since it isn't
+required to unblock 819B050A.

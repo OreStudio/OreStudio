@@ -8,7 +8,7 @@
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch: feature/calendar-qt-screens
-#+pr: 1625
+#+pr: 1638
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
@@ -59,6 +59,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1638][#1638]] | [qt] Add calendar assignment UI: combo picker, flag icons, junction widgets |
 | [[https://github.com/OreStudio/OreStudio/pull/1625][#1625]] | [refdata,codegen] Regenerate all junction repository layers |
 
 * Review

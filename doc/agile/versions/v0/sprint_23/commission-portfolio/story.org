@@ -57,6 +57,7 @@ counterparty chapters.
 |------+-------+-------+-----+-------------|
 | [[id:1217C1E2-E07E-426F-93E5-5A6B9C4609E6][Codegen full stack for portfolio and address codegen drift]] | DONE | 2026-07-16 | 2026-07-17 | Regenerate portfolio's api/core/sql (and shell/cli/qt/wt/http as applicable) from current codegen templates against ores.refdata.portfolio.org, updating the model as needed. Drive compass codegen entity show to all-✅. Restore any silently-dropped SQL validations via paste blocks/variability knobs, following the book_codegen_drift_remediation pattern (sprint_23). |
 | [[id:FA3A1BE7-A030-4164-92DB-41EA84BC838C][Add portfolio entity chapter to the user manual]] | STARTED | 2026-07-17 | | Chapter written, screenshot scenario scaffolded; unblocked now that [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]'s mapping-browser task fixed the Portfolios badge-colour bug (PR #1622). Resuming screenshot capture. |
+| [[id:23C571DD-40EE-4768-A90D-8D0AF6B7EAB2][Model portfolio_status as a proper lookup entity]] | BACKLOG | | | portfolio.status is a hardcoded static_combo (literal string list), unlike book_status which is a real codegen'd lookup entity (own table, seeded descriptions, dynamic combo, badge colours). Model portfolio_status the same way as book_status: table, seed data, codegen regen, dynamic combo + badge wiring. |
 
 * Decisions
 

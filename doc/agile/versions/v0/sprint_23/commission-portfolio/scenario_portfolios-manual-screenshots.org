@@ -33,6 +33,12 @@ Log in against the =prime_origin= environment as
 =tenant_admin@barclays_plc= / =Secure-Password-123= and select
 *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Capture portfolios_main_dialog.png
 
 - Open /Reference Data > Portfolios/.
@@ -44,6 +50,13 @@ Log in against the =prime_origin= environment as
 - Click the QA Validation Runner's *Screenshot* button with the full
   Portfolios list window in frame, then *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step2_20260718_115130.png]] |
+
 ** Capture portfolio_details_general.png
 
 - Double-click any portfolio row to open its Details dialog.
@@ -54,6 +67,13 @@ Log in against the =prime_origin= environment as
   Type, Status, Aggregation Currency, Virtual, and Description all
   filled in, then *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step3_20260718_115151.png]] |
+
 ** Capture portfolio_status_combo.png
 
 - Still in the Portfolio Details General tab from the previous step,
@@ -63,6 +83,13 @@ Log in against the =prime_origin= environment as
 - Close the combo and cancel out of the dialog without saving (or
   save if you'd rather keep the edited description — either is fine
   for the next step).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | not using dynamic combo with labels for both risk purpose type and status |
 
 ** Capture portfolio_history_dialog.png
 
@@ -76,6 +103,13 @@ Log in against the =prime_origin= environment as
 - Click *Screenshot* with the History dialog in this state, then
   *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Failed to load history:; No history provider registered for entity_type: ores.refdata.portfolio |
+
 ** Read the manual in the Qt client
 
 - Rebuild the Qt-embedded help (=compass build --direct help= then
@@ -87,6 +121,13 @@ Log in against the =prime_origin= environment as
   work, and every screenshot appears where expected and actually
   shows what its caption claims.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+| Notes  | need to wait for rebuild |
+
 ** Check the built PDF
 
 - Rebuild the manual (=compass build --direct manual=) and open the
@@ -96,14 +137,21 @@ Log in against the =prime_origin= environment as
   PDF's own rendering, and that all four new figures appear in the
   List of Figures.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+| Notes  | need to wait for rebuild |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-18T10:53:09Z |
+| Branch        | feature/portfolio-manual-chapter |
+| Commit        | 27a1f90f6 |
+| Worktree      | prime_origin |
 
 * Notes

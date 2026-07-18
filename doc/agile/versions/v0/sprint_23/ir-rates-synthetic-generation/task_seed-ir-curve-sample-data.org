@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: FC800706-1673-4E48-84C2-22569E836DF5
+:END:
+#+title: Task: Seed realistic IR curve sample data (vintage + DQ datasets)
+#+description: Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give IR curve synthetic feeds the same "grounded in real data, easy to
+demo" quality FX spot feeds already have. Today an
+=ir_curve_generation_config= must be hand-entered with arbitrary
+=kappa=/=theta=/=sigma=/=initial_rate= values — nothing stops (and
+nothing guides away from) unrealistic numbers, since there's no
+reference. Manual verification of the tick-batch-publishing task
+surfaced this concretely: an ad hoc test config using annual-scale
+Vasicek parameters (=kappa=0.5=, =sigma=0.01=) under the resolver's "1
+tick = 1 calendar day" convention produced ~150% published rates and a
+FRA point that never moved (its discount factors decay to
+r_t-independence within days at that reversion speed) — mechanically
+correct, but not demoable.
+
+Mirrors =synthetic_fx_spot_configs_basic_populate.sql= /
+=synthetic_fx_spot_configs_realistic_populate.sql=, which both seed
+=initial_price= from a real vintage (2016-02-05 Fed H.10), differing
+only in per-pair-calibrated vs exaggerated-uniform volatility.
+
+** Sourcing historical IR data
+
+No vintage IR/yield dataset exists anywhere in this codebase today
+(only =marketdata_fx_driver_rates_populate.sql= for FX) — this is new
+data sourcing, not a lookup of something already half-done. Candidate
+public sources for a small set of currency/tenor points on one
+reference date, to evaluate for licensing/reuse terms and data shape
+before picking one:
+- *FRED (St. Louis Fed)* — SOFR and historical USD OIS/Treasury
+  series, freely redistributable, CSV/API access.
+- *ECB Data Portal* — €STR and historical euro-area yield curve
+  points.
+- *Bank of England Statistical Interactive Database* — SONIA history.
+- *ICE Benchmark Administration* — historical IBOR-successor fixings,
+  licensing needs checking before use.
+
+Only a handful of (currency, tenor, date) points are needed to seed
+one vintage row per Curve Template entry — not a full historical
+curve archive.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-18                               |
+
+* Acceptance
+
+- A small set of real historical (currency, tenor, date) IR points is
+  sourced and added as a new vintage populate script (mirroring
+  =marketdata_fx_driver_rates_populate.sql=), covering enough
+  currencies/tenors to seed the =DEPO=/=FRA=/=IRS= entries a basic
+  Curve Template needs.
+- =ir_curve_feed=/auto-start gains a vintage-aware seeding path
+  (mirroring =feed_controller::start()='s =vintage_source=/
+  =vintage_date=), so =initial_rate= comes from a real imported
+  observation rather than an arbitrary config value.
+- Default =kappa=/=theta=/=sigma= are day-scaled for the "1 tick = 1
+  calendar day" convention =ir_curve_template_resolver= uses, so an
+  out-of-the-box config produces plausible (not triple-digit-percent)
+  published rates and FRA/swap points that visibly move tick to tick.
+- Two DQ datasets exist: =synthetic.ir_curve_configs.basic= (uniform,
+  exaggerated volatility for easy demoing) and
+  =synthetic.ir_curve_configs.realistic= (per-currency-calibrated),
+  each with its own catalog/dataset registration and SQL
+  publish-from-DQ function, mirroring the FX pattern exactly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

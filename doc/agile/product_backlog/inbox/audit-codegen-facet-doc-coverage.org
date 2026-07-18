@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 639DBEC2-0756-4062-8544-D2C1A2B05498
+:END:
+#+title: Audit: does every facet have both a TS-inventory and TS-description link?
+#+description: Check whether every facet doc in projects/ores.codegen/library/templates/ is linked from both its generated TS-inventory page (ores.cpp, ores.sql, ores.cmake, ores.doc, ores.plantuml, ores.shell) and, where one exists, a hand-authored TS-description page (technical_space_cpp.org, technical_space_sql.org, technical_spaces_other.org). Specifically check whether ores.codegen itself (the Python generator implementation) needs this same doc pair, or whether the existing 'Python Technical Space' section in technical_spaces_other.org already covers it. Create whatever's missing.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:meta_model:documentation:audit:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

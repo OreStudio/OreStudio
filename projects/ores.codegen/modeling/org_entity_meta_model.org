@@ -40,6 +40,16 @@ entity model shares regardless of which facets it uses, and the
 document-type archetype ([[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]]) that scaffolds
 them.
 
+=compass add entity_org --shape <name>= scaffolds a new entity model
+with a named domain_entity shape's knobs already set correctly
+(=simple-text-key=, =fk-scoped=, =hierarchical-composite=, =richest=,
+=timeseries= — sampled from the reference entities in the shape
+table below), rather than the bare, unknobbed skeleton a plain
+=compass add entity_org= produces. Anything the shape can't derive
+(actual columns, foreign-key targets, display fields, ...) is left as
+an explicit =TODO= in the scaffolded file, never silently omitted.
+Individual =--entity-<knob>= flags override any preset value.
+
 * Segments
 
 =Entity= specializes [[id:884C6B00-0849-430D-9D32-F3544269DC56][Base]] with its own frontmatter type and one typed
@@ -78,6 +88,7 @@ table, not the reference itself.
 
 * See also
 
+- [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][Codegen entity — post-generation checklist]] — the fixed manual integration steps every newly-generated entity still needs.
 - [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] — the registry this hub is one entry of, and the common frontmatter every metatype (including this one) specializes.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the methodology this hub instantiates.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] / [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — MASD's feature/feature bundle/profile/binding point/configuration scope vocabulary that most of these segment pages' knobs should be described in.

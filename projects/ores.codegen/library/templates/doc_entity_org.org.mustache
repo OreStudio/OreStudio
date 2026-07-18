@@ -1,4 +1,4 @@
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.doc.modeling.entity_org.org. Edit the org source. }}
 :PROPERTIES:
 :ID: {{id}}
 :END:
@@ -23,6 +23,20 @@ invariants.)
 :schema:    public
 :product:   ores
 :component: {{component}}
+{{#has_tenant_id}}
+:has_tenant_id:    true
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+:has_tenant_id:    false
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+:has_workspace_id: true
+{{/has_workspace_id}}
+{{#has_parent_id}}
+:has_parent_id:         true
+:parent_id_column:      parent_{{slug}}_id
+:hierarchy_name_field:  TODO -- name an existing column used as the display label in the hierarchy tree.
+{{/has_parent_id}}
 :END:
 
 * Primary key
@@ -36,15 +50,53 @@ invariants.)
 
 * Natural keys
 
+TODO -- one =**= sub-heading per natural key, the human-meaningful
+column(s) that uniquely identify a record within a tenant. See
+=Codegen entity meta-model — keys and columns= for the property shape
+and a worked example.
+
 * Columns
+
+TODO -- one =**= sub-heading per remaining column, same property
+shape as Natural keys above.
 
 * SQL
 
 ** Flags
 :PROPERTIES:
-:tablename:
+:tablename: ores_{{component}}_{{entity_plural}}_tbl
+{{#has_parent_id}}
+:parent_id_column:     parent_{{slug}}_id
+:hierarchy_name_field: TODO -- same value as the Flags drawer above.
+{{/has_parent_id}}
 :END:
 
+{{#has_foreign_keys}}
+* Foreign keys
+
+TODO -- one =**= sub-heading per soft foreign-key column, e.g.:
+
+#+begin_src org
+,** parent_id_column
+,,:PROPERTIES:
+,,:table:         ores_<component>_<parent_entity_plural>_tbl
+,,:nullable:      false
+,,:error_message: Invalid parent_id_column: %. No active <parent> found with this id.
+,,:END:
+#+end_src
+
+{{/has_foreign_keys}}
+{{#has_insert_trigger_validations}}
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+TODO -- one row per column needing an insert-time validation function.
+
+{{/has_insert_trigger_validations}}
 * C++
 
 ** Flags
@@ -79,18 +131,87 @@ invariants.)
 | Column | Header |
 |--------+--------|
 
+{{#has_qt}}
 ** Qt
 :PROPERTIES:
+:domain_include:          ores.{{component}}.api/domain/{{slug}}.hpp
+:domain_class:            {{component}}::domain::{{slug}}
+:protocol_include:        ores.{{component}}.api/messaging/{{slug}}_protocol.hpp
+:collection_name:         {{entity_plural}}
+:item_var:                {{slug}}
+:key_field:                TODO -- field used as the user-facing key in the GUI, e.g. name.
+:get_request_class:       {{component}}::messaging::get_{{entity_plural}}_request
+:get_response_class:      {{component}}::messaging::get_{{entity_plural}}_response
+:get_message_type:        get_{{entity_plural}}_request
+:save_request_class:      {{component}}::messaging::save_{{slug}}_request
+:save_response_class:     {{component}}::messaging::save_{{slug}}_response
+:save_message_type:       save_{{slug}}_request
+:save_request_item_field: {{slug}}
+:delete_request_class:    {{component}}::messaging::delete_{{slug}}_request
+:delete_response_class:   {{component}}::messaging::delete_{{slug}}_response
+:delete_message_type:     delete_{{slug}}_request
+:history_request_class:   {{component}}::messaging::get_{{slug}}_history_request
+:history_response_class:  {{component}}::messaging::get_{{slug}}_history_response
+:history_message_type:    get_{{slug}}_history_request
+{{#qt_has_uuid_primary_key}}
+:has_uuid_primary_key:    true
+{{/qt_has_uuid_primary_key}}
+{{^qt_has_uuid_primary_key}}
+:has_uuid_primary_key:    false
+{{/qt_has_uuid_primary_key}}
+{{#qt_has_change_reason_cache}}
+:has_change_reason_cache: true
+{{/qt_has_change_reason_cache}}
+{{^qt_has_change_reason_cache}}
+:has_change_reason_cache: false
+{{/qt_has_change_reason_cache}}
+{{#qt_has_explorer_api}}
+:has_explorer_api:        true
+{{/qt_has_explorer_api}}
+{{#qt_has_pagination}}
+:has_pagination:          true
+{{/qt_has_pagination}}
+{{#qt_has_csv_xml_io}}
+:has_csv_xml_io:          true
+:csv_export_class:        TODO
+:csv_export_include:      TODO
+:xml_export_class:        TODO
+:xml_export_include:      TODO
+:xml_import_class:        TODO
+:xml_import_include:      TODO
+{{/qt_has_csv_xml_io}}
+{{#qt_has_export_macro}}
+:has_export_macro:        true
+{{/qt_has_export_macro}}
+{{#qt_has_version_navigation}}
+:has_version_navigation:  true
+{{/qt_has_version_navigation}}
+{{#qt_has_parent_scoping}}
+:parent_entity_singular:  TODO -- singular name of the parent entity this one is listed under.
+{{/qt_has_parent_scoping}}
+:settings_group:          {{entity_title}}ListWindow
+:window_title:            {{entity_title}}
+:icon:                    {{entity_title}}
 :END:
 
 *** Detail fields
 
-| Field | Label |
-|-------+-------|
+| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_allow_blank | combo_fetch | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | badge_key |
+|-------+-------+--------+------+--------+-------------+-------------+-------------+--------------------+-------------+--------------------+----------------------+-----------------+---------------------+-------------------+----------------------+-------------------+-------------+----------------------+-----------|
 
 *** Columns (Qt model)
 
-| Column | Header |
-|--------+--------|
+| enum_name | field | header | type | width | is_badge | badge_key | formatter | formatter_include |
+|-----------+-------+--------+------+-------+----------+-----------+-----------+--------------------|
 
-** Custom repository methods
+{{/has_qt}}
+** Paste blocks
+
+TODO -- one =***= sub-heading per custom repository method. See
+=Codegen entity meta-model — C++ repository= and =Paste blocks= for
+the mechanism and heading convention.
+
+* See also
+
+TODO -- link the component group overview and any related entities,
+e.g. =- [[id:<uuid>][ores.<component>]] — component group overview.=

@@ -66,8 +66,8 @@ register_book_handlers(ores::nats::service::client& nats,
 #+end_src
 
 That function has to actually be *called* somewhere for the entity to
-work at all — see the story-level "manual wiring" note under [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][the
-hub]]'s frontmatter, this is one of the fixed post-generation steps.
+work at all — see [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][Codegen entity — post-generation checklist]], this is
+one of the fixed post-generation steps.
 
 ** Event pipeline — server tells everyone something changed
 

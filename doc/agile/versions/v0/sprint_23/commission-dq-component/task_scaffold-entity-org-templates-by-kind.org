@@ -35,19 +35,19 @@ capture/task ID tracking each step not yet automated.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-17                               |
 
 * Acceptance
 
-- =org_entity_meta_model.org= documents every variability knob actually in use (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/coding_scheme wiring, etc.) -- today's doc omits all of them.
-- A codegen command/template exists per entity metatype/shape that scaffolds a new model .org with the correct knobs already present -- either set from the sampled exemplar or left as an explicit TODO with a one-line reason -- so a knob can never be silently omitted.
-- A "Post-generation checklist" is authored (in the scaffolded file or a companion doc, decide during implementation) enumerating every fixed manual integration step (registrar sub-registration, application.cpp NATS-relay wiring, CMakeLists entry, Qt plugin/menu wiring, manual chapter), each linking to a capture/task ID if the step is separately tracked for automation.
-- Used to author the DQ reference-entity models in the sibling commissioning task ([[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]]).
+- [X] =org_entity_meta_model.org= documents every variability knob actually in use (has_change_reason_cache, history_response_data_field, delete_request_id_field, has_uuid_primary_key, badge/coding_scheme wiring, etc.) -- today's doc omits all of them.
+- [X] A codegen command/template exists per entity metatype/shape that scaffolds a new model .org with the correct knobs already present -- either set from the sampled exemplar or left as an explicit TODO with a one-line reason -- so a knob can never be silently omitted.
+- [X] A "Post-generation checklist" is authored (in the scaffolded file or a companion doc, decide during implementation) enumerating every fixed manual integration step (registrar sub-registration, application.cpp NATS-relay wiring, CMakeLists entry, Qt plugin/menu wiring, manual chapter), each linking to a capture/task ID if the step is separately tracked for automation.
+- [ ] Used to author the DQ reference-entity models in the sibling commissioning task ([[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]]) -- that task's own job, not blocking this one's completion.
 
 * Plan
 
@@ -159,3 +159,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The documentation half of this task (org_entity_meta_model.org and its
+segment pages documenting every variability knob in use) shipped in
+[[https://github.com/OreStudio/OreStudio/pull/1620][PR #1620]]. This PR ships the remaining two acceptance criteria:
+
+- =compass add entity_org --shape <name>= (=simple-text-key=,
+  =fk-scoped=, =hierarchical-composite=, =richest=, =timeseries=)
+  scaffolds a knobbed entity model instead of the previous bare,
+  unknobbed skeleton. The template itself (=doc_entity_org.org.mustache=,
+  tangled from =ores.doc.modeling.entity_org.org=) carries the
+  non-structural variability as mustache section-conditionals gated by
+  the shape's knob bundle (=ENTITY_ORG_SHAPE_PRESETS= in
+  =doc_generate.py=) -- one template covers every shape, no per-shape
+  file copying. Individual =--entity-<knob>= flags override any preset
+  value. Anything a shape can't derive (actual columns, FK targets,
+  display fields, ...) is left as a visible, one-line =TODO= in the
+  scaffolded output, never silently omitted.
+- [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][Codegen entity — post-generation checklist]] enumerates the fixed
+  manual integration steps (sub-registrar wiring, event-registrar
+  wiring, CMake wiring, Qt plugin wiring), each explaining why it
+  isn't generated yet and linking the capture/task tracking automation
+  where one exists. Linked from the entity hub and from
+  [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]], replacing a dangling "see the hub's frontmatter" reference
+  that pointed nowhere.
+
+The five shape presets are reconnaissance picks sampled from one
+exemplar each (per the Plan table above), not a final catalogue --
+expect to refine them as [[id:819B050A-A877-4B9A-BB24-942B95DA1206][819B050A]] actually uses the scaffold to author
+the DQ reference entities.

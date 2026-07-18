@@ -11,7 +11,7 @@
 #+pr: 1622
 #+created: 2026-07-15
 #+updated: 2026-07-17
-#+environment: bright_faraday
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 
@@ -25,11 +25,11 @@ A user viewing a Code Domain's detail dialog can see every entity_code -> badge 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | BadgeMappingsTab built and embedded in CodeDomainDetailDialog (PR #1599, merged). Unblocked: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] is DONE (PR #1608, merged) -- tenants can now publish/see their own badge catalogue data. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run manual QA against real tenant-scoped rows (scenario 1FCD0C68); confirm the tab renders correctly, then close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-07-17                               |
 
 * Acceptance
@@ -126,6 +126,62 @@ via its "Verifies task" field.
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1622][#1622]] | [dq,qt] Make ores.qt.dq a plugin; fix badge crash and RLS dupes |
 | [[https://github.com/OreStudio/OreStudio/pull/1599][#1599]] | [refdata,qt,admin] Embed badge mappings tab in Code Domain detail dialog |
+
+* Result
+
+Resumed after its blocker (D4DE4138, badge datasets migrated to
+standard codegen + DQ publishing) landed. Manual QA against real
+tenant-scoped data (PR #1599's BadgeMappingsTab) surfaced three
+previously-hidden bugs, all fixed in PR #1622:
+
+- *Crash*: =ores.dq.service= segfaulted on every Badge Definitions/
+  Severities list request. Root cause: =registrar.cpp= still routed
+  those subjects to the pre-migration bespoke =badge_handler=, whose
+  =list_definitions()= had a heap-corruption bug -- dead code left
+  wired after D4DE4138 generated the real handlers but never switched
+  the registrar over. Rewired to the generated handlers; =badge_handler=
+  now only serves =badge_mapping= (no generated handler exists for it
+  yet).
+- *Protocol drift*: =ClientBadgeSeverityModel=/=ClientCodeDomainModel=
+  still included the old bespoke =badge_protocol.hpp=, whose response
+  field names (=badge_severities=/=code_domains=) don't match the
+  generated protocol's (=severities=/=domains=), causing deserialization
+  failures. Switched both to the correct generated protocol headers.
+- *Duplicate rows in the Badge Mappings tab*: =badge_mapping_junction.org=
+  was missing the =:subcomponent: api= flag every correctly-codegen'd
+  junction sets, so =compass codegen entity generate= silently targeted
+  a stale, pre-split output path and the hand-authored repository (with
+  no =tenant_id= filter on its list query) never got replaced --
+  Postgres RLS on this table deliberately allows both the caller's own
+  tenant AND the system tenant's rows (global-registry-with-override
+  pattern), so any tenant with its own published copy saw every mapping
+  twice. Added the missing model flag, genuinely regenerated the
+  repository (retiring the hand-authored one), and along the way fixed
+  a real codegen template bug too: the junction Mustache branch was
+  missing the =faker-cxx= include the domain_entity branch has, so any
+  junction using =faker::= in a custom column-generator block (like
+  =badge_mapping='s) failed to compile.
+
+Along the way, moved =badge_definition=/=badge_severity=/=code_domain=
+Qt (+ =BadgeMappingsTab=) out of =ores.qt.admin=/
+=ores.qt.data_management= into a new =ores.qt.dq= plugin, matching the
+=ores.dq= C++ component boundary -- a new "Data &Quality" menu with a
+"&Badges" submenu, per user direction.
+
+Filed [[id:6794A8E9-863C-4AFC-A983-5E9F418D09AB][a follow-up task]]
+documenting that 6 of the 12 =has_tenant_id= junctions across the
+codebase have the same wrong-path codegen issue =badge_mapping= had,
+3 of which (=dataset_bundle_member=, =account_party=,
+=party_counterparty=) share the exact missing-tenant-filter bug --
+real, unfixed duplicate-rows risk, tracked separately.
+
+Verified: full local build clean (=ores.dq.service.exe=,
+=ores.qt.exe=), =ores.dq.core.tests=/=ores.refdata.core.tests= both
+100% passing, and the manual QA scenario
+([[id:AE98D13F-BDB0-4DCE-ACF8-FDAA97B0A707][Verify ores.qt.dq plugin]])
+7/7 steps PASSED, including a spot-check confirming the original
+Portfolios badge-colour regression that started this whole
+investigation is fixed.
 
 * Review
 

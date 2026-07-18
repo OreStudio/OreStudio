@@ -66,6 +66,7 @@ private:
     QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<FeedBindingController> feedBindingController_;
     std::unique_ptr<CrmCrossRatesMatrixController> crmCrossRatesMatrixController_;
+    QAction* actCrmMatrix_ = nullptr;
 };
 
 }

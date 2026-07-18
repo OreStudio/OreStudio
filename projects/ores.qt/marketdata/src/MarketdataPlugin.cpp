@@ -111,8 +111,8 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
             feedBindingController_->showListWindow();
     });
 
-    auto* actCrmMatrix = marketDataMenu_->addAction(ico(Icon::Currency), tr("Cross-&Rates Matrix"));
-    connect(actCrmMatrix, &QAction::triggered, this, [this]() {
+    actCrmMatrix_ = marketDataMenu_->addAction(ico(Icon::Currency), tr("Cross-&Rates Matrix"));
+    connect(actCrmMatrix_, &QAction::triggered, this, [this]() {
         if (crmCrossRatesMatrixController_)
             crmCrossRatesMatrixController_->showMatrix();
     });
@@ -123,7 +123,9 @@ QList<QMenu*> MarketdataPlugin::create_menus() {
 }
 
 QList<QAction*> MarketdataPlugin::toolbar_actions() {
-    return {};
+    if (!actCrmMatrix_)
+        BOOST_LOG_SEV(lg(), warn) << "Toolbar action is uninitialised.";
+    return {actCrmMatrix_};
 }
 
 void MarketdataPlugin::on_logout() {

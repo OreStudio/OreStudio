@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:FA3A1BE7-A030-4164-92DB-41EA8
 | Parent story  | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]]   |
 | Target dialog | =PortfolioMdiWindow= / =PortfolioDetailDialog= — Menu: Reference Data > Portfolios |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED                               |
 
 * Steps
 
@@ -125,8 +125,8 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
-| Notes  | need to wait for rebuild |
+| Status | PASS |
+| Notes  | Confirmed after rebuilding ores.qt.exe to embed the fresh .qch (deploy_help_qch alone doesn't take effect until the exe recompiles). |
 
 ** Check the built PDF
 
@@ -141,17 +141,17 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
-| Notes  | need to wait for rebuild |
+| Status | PASS |
+| Notes  | Confirmed in Chrome after rebuild -- layout, figures, and captions all correct. |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  | 2026-07-18T12:20:50Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-18T14:41:00Z |
 | Branch        | feature/portfolio-manual-chapter |
-| Commit        | 083c2ba97 |
+| Commit        | 046725658 |
 | Worktree      | prime_origin |
 
 * Notes

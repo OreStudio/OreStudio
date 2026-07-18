@@ -55,6 +55,19 @@ deferred:
   convention (per-currency-calibrated in =.realistic=, uniform in
   =.basic=).
 
+Manual verification of the published =synthetic.ir_curve_configs.basic=
+dataset itself (not just the earlier ad hoc test) still produced
+unrealistic (~150-250) published rates despite day-scaled
+=kappa=0.5/365=. Suspected cause: at that small a =kappa=, the Vasicek
+discount-factor recursion's variance term (proportional to
+=sigma^2/kappa^2=) is numerically unstable over the tick counts a 2Y
+entry needs (730 daily ticks) -- a genuine calibration/numerical-
+stability problem, not a mechanical one (the tick-batch pipeline
+itself -- generation, batching, publish, ingest, persistence -- is
+proven correct via this same dataset). Needs a properly-conditioned
+=kappa=/=sigma= relationship, not just "divide the annual number by
+365", before this task's own day-scaling claim is actually true.
+
 Manual verification also surfaced a second gap this task now owns:
 =ir_curve_feed= only ever auto-starts at service startup, for
 system-tenant configs read via the service's own unscoped context --

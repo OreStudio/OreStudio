@@ -113,7 +113,7 @@ public:
     }
 
 private slots:
-    void onSeveritysLoaded();
+    void onSeveritiesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 

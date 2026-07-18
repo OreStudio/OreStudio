@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientBadgeDefinitionModel.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.api/messaging/badge_definition_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -225,6 +225,16 @@ void ClientBadgeDefinitionModel::fetch_definitions(std::uint32_t offset, std::ui
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch badge definitions: " + result.error()),
+                            .error_details = {}};
+                }
+
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .definitions = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 

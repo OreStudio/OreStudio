@@ -57,7 +57,7 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest() {
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code_domain_code"_c, "code_domain_code"_c);
+                       order_by("code_domain_code"_c, "entity_code"_c);
 
     return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
@@ -77,7 +77,7 @@ badge_mapping_repository::read_latest_by_code_domain(const std::string& code_dom
     const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("code_domain_code"_c);
+                       order_by("entity_code"_c);
 
     return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,

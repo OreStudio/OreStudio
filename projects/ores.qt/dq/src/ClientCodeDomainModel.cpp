@@ -214,6 +214,16 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                             .error_details = {}};
                 }
 
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .domains = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->domains.size() << " code domains";
                 const std::uint32_t count = static_cast<std::uint32_t>(result->domains.size());

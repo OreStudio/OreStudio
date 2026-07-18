@@ -44,7 +44,7 @@ ClientBadgeSeverityModel::ClientBadgeSeverityModel(ClientManager* clientManager,
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &ClientBadgeSeverityModel::onSeveritysLoaded);
+            &ClientBadgeSeverityModel::onSeveritiesLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
@@ -215,6 +215,16 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                             .error_details = {}};
                 }
 
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .severities = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->severities.size() << " badge severities";
                 const std::uint32_t count =
@@ -231,7 +241,7 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
     watcher_->setFuture(future);
 }
 
-void ClientBadgeSeverityModel::onSeveritysLoaded() {
+void ClientBadgeSeverityModel::onSeveritiesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();

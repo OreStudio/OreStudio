@@ -148,16 +148,14 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " file=" << (smc.file_menu ? "ok" : "null")
-                               << " operations=" << (smc.operations_menu ? "ok" : "null")
-                               << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
+                               << " configuration=" << (smc.configuration_menu ? "ok" : "null")
+                               << " user_accounts=" << (smc.user_accounts_menu ? "ok" : "null");
 
-    if (!(smc.file_menu && smc.operations_menu && smc.telemetry_menu))
+    if (!(smc.file_menu && smc.configuration_menu && smc.user_accounts_menu))
         return;
 
-    // ---- Operations > Configuration (inserted before Telemetry) ----------
-    auto* telemetryAction = smc.telemetry_menu->menuAction();
-    auto* config = new QMenu(tr("&Configuration"), smc.operations_menu);
-    smc.operations_menu->insertMenu(telemetryAction, config);
+    // ---- Operations > Configuration ---------------------------------------
+    auto* config = smc.configuration_menu;
     configMenu_ = config;
     configMenu_->setEnabled(false); // enabled on login, like everything below it
 
@@ -167,13 +165,11 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
             systemSettingController_->showListWindow();
     });
 
-    // ---- Operations > User Accounts (appended at end, admin-only) --------
+    // ---- Operations > User Accounts (admin-only) --------------------------
     // Named "User Accounts" rather than "Administration" to avoid colliding
     // with the personal &Account actions (My Account, My Sessions) that
     // live in File — this menu manages every account in the tenant.
-    smc.operations_menu->addSeparator();
-
-    auto* admin = smc.operations_menu->addMenu(tr("User &Accounts"));
+    auto* admin = smc.user_accounts_menu;
     adminMenu_ = admin;
     adminMenu_->setEnabled(false); // enabled on login
 

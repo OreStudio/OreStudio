@@ -46,12 +46,10 @@ class TreatmentDimensionController;
  * @brief Qt plugin owning the ores.dq-backed entities' controllers (Data
  * Catalogue, Change Reason, Coding Scheme, Data Librarian).
  *
- * No standalone top-level menu of its own (the former Data Management
- * menu is retired) — contributes Classifications/Audit Trail to the
- * shared data_quality_menu, and Data Catalogue/Data Librarian to the
- * shared data_transfer_menu (which it also attaches to operations_menu;
- * also contributed to by TradingPlugin and WorkspacePlugin) via
- * setup_menus.
+ * No standalone top-level menu of its own — contributes Classifications,
+ * Audit Trail, and Data Catalogue to the shared data_quality_menu, and
+ * Data Librarian to the shared data_transfer_menu (also contributed to
+ * by TradingPlugin and WorkspacePlugin) via setup_menus.
  */
 class DataManagementPlugin : public PluginBase {
     Q_OBJECT

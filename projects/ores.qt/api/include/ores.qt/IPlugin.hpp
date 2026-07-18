@@ -71,7 +71,12 @@ struct shared_menus_context {
     QMenu* analytics_menu = nullptr;
     QMenu* analytics_codes_menu = nullptr;
     QMenu* operations_menu = nullptr;
+    QMenu* configuration_menu = nullptr;
     QMenu* data_transfer_menu = nullptr;
+    QMenu* message_queue_menu = nullptr;
+    QMenu* scheduler_menu = nullptr;
+    QMenu* user_accounts_menu = nullptr;
+    QMenu* workflows_menu = nullptr;
     QMenu* organisation_codes_menu = nullptr;
 };
 

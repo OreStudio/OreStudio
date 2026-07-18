@@ -464,10 +464,9 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // on_login() / on_logout() enable/disable them without recreating them.
     //
     // Insertion point: before &Window so plugin menus sit between File and
-    // Window, keeping Window/Help always last. System and Account no longer
-    // exist as separate top-level menus — File absorbs both (connection
-    // lifecycle + personal actions + Testing/Reset System, the latter two
-    // contributed by AdminPlugin via setup_menus()).
+    // Window, keeping Window/Help always last. File holds all app-chrome:
+    // connection lifecycle, personal actions, and Testing/Reset System
+    // (the latter two contributed by AdminPlugin via setup_menus()).
     auto* windowAction = ui_->menuWindow->menuAction();
 
     // Personal actions (My Account, My Sessions) go directly into File,
@@ -499,23 +498,27 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // returns it from create_menus() to control bar position.
     auto* operationsMenu = new QMenu(tr("&Operations"), this);
 
-    // Telemetry (static from .ui, formerly nested under the now-retired
-    // System menu) becomes a direct Operations submenu. Added before the
-    // plugin setup_menus() loop below since AdminPlugin/ComputePlugin
-    // insert Configuration/Message Queue relative to its menuAction(),
-    // which requires it already be a child of operationsMenu.
+    // Pre-create every Operations submenu shell and attach them all up
+    // front, in alphabetical order — each plugin then only populates its
+    // assigned handle (addAction/addMenu), never decides insertion order
+    // itself. Telemetry is static from .ui; the rest are plain QMenus.
+    auto* configurationMenu = new QMenu(tr("&Configuration"), this);
+    auto* dataTransferMenu = new QMenu(tr("Data &Transfer"), this);
+    auto* messageQueueMenu = new QMenu(tr("&Message Queue"), this);
+    auto* schedulerMenu = new QMenu(tr("&Scheduler"), this);
+    auto* userAccountsMenu = new QMenu(tr("User &Accounts"), this);
+    auto* workflowsMenu = new QMenu(tr("&Workflows"), this);
+    operationsMenu->addMenu(configurationMenu);
+    operationsMenu->addMenu(dataTransferMenu);
+    operationsMenu->addMenu(messageQueueMenu);
+    operationsMenu->addMenu(schedulerMenu);
     operationsMenu->addMenu(ui_->menuTelemetry);
+    operationsMenu->addMenu(userAccountsMenu);
+    operationsMenu->addMenu(workflowsMenu);
 
     // Pre-create trading codes menu (NOT inserted directly; TradingPlugin
     // appends it to its own Trading menu in create_menus()).
     auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
-
-    // Pre-create Data Transfer submenu (NOT inserted directly;
-    // DataManagementPlugin appends it to Operations — the transfer/import
-    // shaped actions formerly misfiled under the now-retired Data
-    // Management menu, also contributed to by TradingPlugin and
-    // WorkspacePlugin).
-    auto* dataTransferMenu = new QMenu(tr("Data &Transfer"), this);
 
     // Pre-create &Data Quality menu. NOT inserted directly; DqPlugin
     // returns it from create_menus() so it appears in plugin load_order.
@@ -545,7 +548,12 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
     smc.operations_menu = operationsMenu;
+    smc.configuration_menu = configurationMenu;
     smc.data_transfer_menu = dataTransferMenu;
+    smc.message_queue_menu = messageQueueMenu;
+    smc.scheduler_menu = schedulerMenu;
+    smc.user_accounts_menu = userAccountsMenu;
+    smc.workflows_menu = workflowsMenu;
     smc.organisation_codes_menu = organisationCodesMenu;
 
     BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";

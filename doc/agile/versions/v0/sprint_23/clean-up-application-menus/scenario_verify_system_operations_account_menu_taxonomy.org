@@ -40,8 +40,9 @@ select *BARCLAYS PLC* as the active party.
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** System and Account no longer exist as top-level menus
 
@@ -51,8 +52,9 @@ menu.
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** File absorbs System and Account
 
@@ -65,8 +67,9 @@ it opens.
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Operations gains Telemetry, Message Queue, Configuration, User Accounts
 
@@ -82,8 +85,10 @@ distinguishable from the personal *Account* actions now in File
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | moves look good. but existing ones should also have submenus:; ; - jobs; - workflows; ; also sort menu alphabetically. |
 
 ** Operations gains Data Transfer and Data Catalogue
 
@@ -96,8 +101,10 @@ window opens.
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | data catalogue does not make sense in operations. are these types in DQ or refdata? move them accordingly to the correct menu |
 
 ** Data Management is retired; Classifications/Audit Trail moved to Data Quality
 
@@ -110,17 +117,18 @@ from each and confirm the correct window opens.
 
 *** Result
 
-| Field | Value |
-|-------+-------|
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-18T10:57:15Z |
+| Branch        | feature/system-operations-account-menu-taxonomy |
+| Commit        | f20211749 |
+| Worktree      | solid_dirac |
 
 * Notes

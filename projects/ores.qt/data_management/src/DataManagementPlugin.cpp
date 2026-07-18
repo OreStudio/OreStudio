@@ -179,7 +179,6 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
 void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
-                               << " operations=" << (smc.operations_menu ? "ok" : "null")
                                << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
 
     using IC = IconUtils;
@@ -187,11 +186,9 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // ---- Data Quality > Classifications / Audit Trail ---------------------
-    // The Data Management menu is retired; these two submenus (and their
-    // controllers, unchanged) move to Data Quality alongside DqPlugin's own
-    // Badges/Code Domains — all auxiliary classification/lookup data, not
-    // primary entities.
+    // ---- Data Quality > Classifications / Audit Trail / Data Catalogue ---
+    // All auxiliary classification/lookup/catalogue data (not primary
+    // entities), alongside DqPlugin's own Badges/Code Domains.
     if (auto* dq = smc.data_quality_menu) {
         dq->addSeparator();
 
@@ -222,115 +219,110 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
             if (changeReasonController_)
                 changeReasonController_->showListWindow();
         });
+
+        auto* menuCatalogue = dq->addMenu(tr("Data Ca&talogue"));
+
+        auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
+        connect(actDataDomains, &QAction::triggered, this, [this]() {
+            if (dataDomainController_)
+                dataDomainController_->showListWindow();
+        });
+
+        auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
+        connect(actSubjectAreas, &QAction::triggered, this, [this]() {
+            if (subjectAreaController_)
+                subjectAreaController_->showListWindow();
+        });
+
+        auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogues"));
+        connect(actCatalogs, &QAction::triggered, this, [this]() {
+            if (catalogController_)
+                catalogController_->showListWindow();
+        });
+
+        auto* actDatasets = menuCatalogue->addAction(ico(Icon::Folder), tr("&Datasets"));
+        connect(actDatasets, &QAction::triggered, this, [this]() {
+            if (datasetController_)
+                datasetController_->showListWindow();
+        });
+
+        auto* actDatasetBundles =
+            menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
+        connect(actDatasetBundles, &QAction::triggered, this, [this]() {
+            if (datasetBundleController_)
+                datasetBundleController_->showListWindow();
+        });
+
+        auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
+        connect(actMethodologies, &QAction::triggered, this, [this]() {
+            if (methodologyController_)
+                methodologyController_->showListWindow();
+        });
+
+        menuCatalogue->addSeparator();
+
+        auto* actOriginDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
+        connect(actOriginDimensions, &QAction::triggered, this, [this]() {
+            if (originDimensionController_)
+                originDimensionController_->showListWindow();
+        });
+
+        auto* actNatureDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
+        connect(actNatureDimensions, &QAction::triggered, this, [this]() {
+            if (natureDimensionController_)
+                natureDimensionController_->showListWindow();
+        });
+
+        auto* actTreatmentDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Treatment Dimensions"));
+        connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
+            if (treatmentDimensionController_)
+                treatmentDimensionController_->showListWindow();
+        });
     }
 
-    // ---- Operations > Data Transfer ---------------------------------------
-    // Import/transfer-shaped actions (Data Catalogue, Data Librarian; also
-    // contributed to by TradingPlugin and WorkspacePlugin) move to Operations
-    // under a shared Data Transfer submenu this plugin owns attaching.
-    auto* dt = smc.data_transfer_menu;
-    if (smc.operations_menu && dt)
-        smc.operations_menu->addMenu(dt);
-    if (!dt)
-        return;
+    // ---- Operations > Data Transfer > Data Librarian -----------------------
+    if (auto* dt = smc.data_transfer_menu) {
+        act_data_librarian_ = dt->addAction(
+            IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
+            tr("Data &Librarian"));
+        connect(act_data_librarian_, &QAction::triggered, this, [this]() {
+            if (data_librarian_window_) {
+                ctx_.mdi_area->setActiveSubWindow(data_librarian_window_);
+                return;
+            }
 
-    auto* menuCatalogue = dt->addMenu(tr("Data Ca&talogue"));
+            auto* librarianWindow = new DataLibrarianWindow(
+                ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
 
-    auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
-    connect(actDataDomains, &QAction::triggered, this, [this]() {
-        if (dataDomainController_)
-            dataDomainController_->showListWindow();
-    });
+            auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+            subWindow->setWidget(librarianWindow);
+            subWindow->setWindowTitle(tr("Data Librarian"));
+            subWindow->setWindowIcon(
+                IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
+            subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
-    auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
-    connect(actSubjectAreas, &QAction::triggered, this, [this]() {
-        if (subjectAreaController_)
-            subjectAreaController_->showListWindow();
-    });
+            connect(librarianWindow,
+                    &DataLibrarianWindow::statusChanged,
+                    this,
+                    [this](const QString& msg) { emit statusMessage(msg); });
+            connect(librarianWindow,
+                    &DataLibrarianWindow::errorOccurred,
+                    this,
+                    [this](const QString& msg) { emit statusMessage(msg); });
 
-    auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogues"));
-    connect(actCatalogs, &QAction::triggered, this, [this]() {
-        if (catalogController_)
-            catalogController_->showListWindow();
-    });
+            data_librarian_window_ = subWindow;
+            connect(subWindow, &QObject::destroyed, this, [this]() {
+                data_librarian_window_ = nullptr;
+            });
 
-    auto* actDatasets = menuCatalogue->addAction(ico(Icon::Folder), tr("&Datasets"));
-    connect(actDatasets, &QAction::triggered, this, [this]() {
-        if (datasetController_)
-            datasetController_->showListWindow();
-    });
-
-    auto* actDatasetBundles = menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
-    connect(actDatasetBundles, &QAction::triggered, this, [this]() {
-        if (datasetBundleController_)
-            datasetBundleController_->showListWindow();
-    });
-
-    auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
-    connect(actMethodologies, &QAction::triggered, this, [this]() {
-        if (methodologyController_)
-            methodologyController_->showListWindow();
-    });
-
-    menuCatalogue->addSeparator();
-
-    auto* actOriginDimensions =
-        menuCatalogue->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
-    connect(actOriginDimensions, &QAction::triggered, this, [this]() {
-        if (originDimensionController_)
-            originDimensionController_->showListWindow();
-    });
-
-    auto* actNatureDimensions =
-        menuCatalogue->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
-    connect(actNatureDimensions, &QAction::triggered, this, [this]() {
-        if (natureDimensionController_)
-            natureDimensionController_->showListWindow();
-    });
-
-    auto* actTreatmentDimensions =
-        menuCatalogue->addAction(ico(Icon::Database), tr("&Treatment Dimensions"));
-    connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
-        if (treatmentDimensionController_)
-            treatmentDimensionController_->showListWindow();
-    });
-
-    act_data_librarian_ =
-        dt->addAction(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
-                      tr("Data &Librarian"));
-    connect(act_data_librarian_, &QAction::triggered, this, [this]() {
-        if (data_librarian_window_) {
-            ctx_.mdi_area->setActiveSubWindow(data_librarian_window_);
-            return;
-        }
-
-        auto* librarianWindow = new DataLibrarianWindow(
-            ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
-
-        auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
-        subWindow->setWidget(librarianWindow);
-        subWindow->setWindowTitle(tr("Data Librarian"));
-        subWindow->setWindowIcon(
-            IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
-        subWindow->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(librarianWindow,
-                &DataLibrarianWindow::statusChanged,
-                this,
-                [this](const QString& msg) { emit statusMessage(msg); });
-        connect(librarianWindow,
-                &DataLibrarianWindow::errorOccurred,
-                this,
-                [this](const QString& msg) { emit statusMessage(msg); });
-
-        data_librarian_window_ = subWindow;
-        connect(
-            subWindow, &QObject::destroyed, this, [this]() { data_librarian_window_ = nullptr; });
-
-        ctx_.mdi_area->addSubWindow(subWindow);
-        subWindow->resize(librarianWindow->sizeHint());
-        subWindow->show();
-    });
+            ctx_.mdi_area->addSubWindow(subWindow);
+            subWindow->resize(librarianWindow->sizeHint());
+            subWindow->show();
+        });
+    }
 }
 
 QList<QMenu*> DataManagementPlugin::create_menus() {

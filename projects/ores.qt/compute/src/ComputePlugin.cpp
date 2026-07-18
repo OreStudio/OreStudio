@@ -197,7 +197,7 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-                               << " operations=" << (smc.operations_menu ? "ok" : "null")
+                               << " message_queue=" << (smc.message_queue_menu ? "ok" : "null")
                                << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
 
     // ---- Analytics menu: reporting + compute items ----------------------
@@ -265,12 +265,9 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // ---- Operations > Message Queue (before Telemetry) --------------------
-    if (smc.operations_menu && smc.telemetry_menu) {
-        auto* telemetryAction = smc.telemetry_menu->menuAction();
-
-        auto* msgQueue = new QMenu(tr("&Message Queue"), smc.operations_menu);
-        smc.operations_menu->insertMenu(telemetryAction, msgQueue);
+    // ---- Operations > Message Queue ---------------------------------------
+    if (smc.message_queue_menu && smc.telemetry_menu) {
+        auto* msgQueue = smc.message_queue_menu;
         messageQueueMenu_ = msgQueue;
         messageQueueMenu_->setEnabled(false); // enabled on login
 

@@ -84,6 +84,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 (PR #1636, round 1) | Scenario Notes field has raw scratch text instead of a proper [[file:...]] link | scenario_portfolios-manual-screenshots.org | Accepted | Replaced with a link to the wired-in image plus context on the deleted raw capture and the follow-up task it informed. |
 | 2 (PR #1636, round 1) | portfolio_* includes out of alphabetical order relative to party_status_*/party_type_* | registrar.cpp | Accepted | Reordered. |
+| 3 (PR #1636, round 2) | Round 1's reorder was incomplete: portfolio_* still sat before payment_frequency_* | registrar.cpp | Accepted | Fixed properly this time (party_type -> payment_frequency -> portfolio -> purpose_type), verified with a sort diff over both include blocks, not just the immediate neighbours. |
 
 * Result
 

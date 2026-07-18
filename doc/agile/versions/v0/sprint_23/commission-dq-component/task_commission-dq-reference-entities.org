@@ -90,7 +90,12 @@ afterwards -- only the =.org= model is committed):
 - =change_reason= (=code= PK, soft FK to =change_reason_category= via
   a =Validations= entry reusing =ores_dq_validate_change_reason_category_fn=,
   boolean/integer columns with defaults, an =Indexes= entry for the
-  =category_code= lookup index) -- structurally correct match.
+  =category_code= lookup index) -- structurally correct match, with
+  the same =change_reason_code=-column caveat as
+  =change_reason_category= above (=sql_schema_table_create.mustache=
+  emits it unconditionally for every =lookup_entity=; the hand-written
+  table predates it, same reasoning: a change-reason record
+  referencing its own change reason would be circular).
 - =data_domain= (=name= PK) -- structurally correct match, same shape
   as =catalog=.
 - =subject_area= -- the real table's natural key is compound (=name=
@@ -141,6 +146,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task_fix-lookup-entity-model-type-mapping.org reverted from DONE to a blank BACKLOG stub -- branch not rebased onto main after PR #1634 merged | doc/agile/versions/v0/sprint_23/commission-dq-component/task_fix-lookup-entity-model-type-mapping.org | Accepted | Root cause: an earlier rebase-conflict resolution used --theirs, which in a rebase means "the commit being replayed" (this branch's stale stub), not main's content -- inverted from what was intended. Restored from origin/main verbatim. |
+| 2 | change_reason bullet omits the change_reason_code-column caveat that change_reason_category's bullet states, even though the same template gap applies to both | doc/agile/versions/v0/sprint_23/commission-dq-component/task_commission-dq-reference-entities.org, PR description | Accepted | Added the same caveat to the change_reason bullet and to the PR description's Summary/Test plan. |
 
 * Result

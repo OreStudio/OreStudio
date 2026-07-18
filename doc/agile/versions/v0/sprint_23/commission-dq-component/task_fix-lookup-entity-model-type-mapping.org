@@ -13,29 +13,38 @@
 #+blocked_since:
 #+created: 2026-07-18
 #+updated: 2026-07-18
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make =lookup_entity= org models (=#+type: ores.codegen.lookup_entity=)
+actually generate SQL via =compass codegen regenerate=/=generate=, so
+819B050A's five DQ entities (and every pre-existing lookup_entity
+model) can be verified end to end for SQL. C++ generation is
+descoped to a new task once investigation showed =lookup_entity= is
+architectural duplication of =domain_entity= rather than a real gap
+to patch in place -- see Notes and the new migration task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing -- C++ generation tracked separately by the new domain_entity migration task. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
 
--
+- [X] =compass codegen generate --model <any lookup_entity .org> --profile sql --dry-run= (or its =--address= equivalent) produces SQL DDL, not a "nothing to generate" warning.
+- [ ] ~~Same for C++ (=--profile all-cpp= or equivalent).~~ Descoped -- see Result.
+- [X] Verified against =projects/ores.dq/modeling/ores.dq.catalog_lookup_entity.org= (new) and at least one pre-existing entity (=ores.iam.tenant_type_lookup_entity.org=).
+- [X] No regression to any existing generated output for other model types (domain_entity, junction, table, field_group, ...) -- =refdata=/=refdata-cpp= dry-run output byte-identical before/after; full =ores.codegen= pytest suite (50 tests) green.
 
 * Plan
 
@@ -43,7 +52,72 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Root cause: =core.py='s =_ORG_TYPE_TO_MODEL_TYPE= maps
+=ores.codegen.lookup_entity= to internal model_type =enum=. But:
+
+- =ores.sql.schema.table_create.org= (the SQL DDL archetype,
+  =sql_schema_table_create.mustache=) declares
+  =#+model_types: schema=, not =enum= — so it's filtered out for
+  every lookup_entity model.
+- =ores.cpp.enum.org= (the only archetype declaring
+  =#+model_types: enum=) expects =model_data['enum']=, but
+  =org_loader.py='s =load_org_lookup_entity_model()= returns
+  =\{entity: \{...\}\}= (its own docstring: "route through codegen's
+  'schema' model_type ... JSON root key =entity="), never an =enum=
+  key — so even the one archetype that *does* match the model_type is
+  reading the wrong data key and would silently produce nothing
+  useful.
+
+Confirmed via dry-run that this isn't limited to the new =catalog.org=
+— every pre-existing lookup_entity model in the repo (=ores.dq.artefact_type=,
+=ores.iam.account_type=, =ores.iam.tenant_status=, ...) hits the same
+"nothing to generate" warning for both =--profile sql= and
+=--profile all-cpp=. (=ores.iam.tenant_type_lookup_entity.org= appeared
+to generate C++ under =regenerate --component iam-cpp= in one run —
+worth re-checking once the fix lands, in case it reveals a second,
+narrower bug rather than being a fluke of that invocation.)
+
 * Notes
+
+Attempted the C++ fix in this same task (adding parallel
+={{#entity}}= sections to the 19 domain/generator/repository/service/
+protocol/handler mustache templates, mirroring how the junction
+metatype was added alongside domain_entity). Dispatch worked
+correctly after re-tangling, but the rendered output was broken:
+missing =std::string=-style column types (=type;= instead of
+=std::string type;=), missing =entity_singular_upper= (empty include
+guards), no =is_uuid=/=is_int=/=is_enum= flags. Root cause:
+=core.py='s =is_domain_entity= data-prep block runs a whole column
+type-derivation pipeline (=cpp_type= per column,
+=_format_columns_for_doxygen=, uuid/int/enum flag computation) that
+=is_schema_model='s block never runs, because =lookup_entity='s org
+format/loader were built only to feed
+=sql_schema_table_create.mustache= and never carried C++-facing
+metadata like =cpp_type= per column at all.
+
+Investigating *why* the two pipelines are so different (rather than
+just porting the missing pieces) surfaced the real finding: they
+shouldn't be two pipelines. =ores.refdata.country.org= -- a real
+=domain_entity= -- already has =has_uuid_primary_key: false= with a
+plain text natural-key primary key (=alpha2_code=), the exact shape
+=lookup_entity= exists for. =cpp_domain_type_class.hpp.mustache=
+doesn't even branch on =has_uuid_primary_key= at the struct level --
+domain_entity's pipeline already handles natural-key entities
+end-to-end. =lookup_entity='s only genuinely distinct knobs
+(=has_coding_scheme=/=has_image_id=/=has_artefact_insert_fn=) are a
+small, addable extension to domain_entity's vocabulary, not evidence
+of a different metatype. This traces back to =EE237306='s own Plan
+section flagging exactly this ambiguity ("the established metatype
+table ... says =enumeration=, codegen's doc-type says
+=lookup_entity=; reconcile or document why they differ") and never
+resolving it.
+
+Reverted the template experiment (=git checkout=) rather than commit
+partially-working C++ generation. Filed
+[[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] to do the real
+fix -- migrate lookup_entity into domain_entity and retire the
+duplicate pipeline -- rather than continuing to patch the duplicate
+in place.
 
 * Test Scenarios
 
@@ -69,3 +143,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed SQL generation for =lookup_entity= org models:
+=core.py='s =_ORG_TYPE_TO_MODEL_TYPE= now maps
+=ores.codegen.lookup_entity= to =schema= (was =enum=, an orphaned
+mapping matching no reachable archetype); =resolve_output_path()=
+gained a =model_type == 'schema'= branch reading the loader's
+=entity= key (mirroring the =domain_entity=/=table= branches, via the
+shared =_component_path_vars= helper); =org_loader.py='s
+=load_org_lookup_entity_model()= defaults =subcomponent= to =api= to
+match every real lookup_entity's actual file layout (=projects/<c>/api/=,
+=projects/<c>/core/=) since no existing or new lookup_entity model
+declares =#+subcomponent:= explicitly. Verified via dry-run and real
+generation against =ores.iam.tenant_type_lookup_entity.org= (byte-correct
+output paths matching the real committed file layout) and
+=ores.dq.catalog_lookup_entity.org= (new); no regression to
+=domain_entity=/=table=/=junction= output (=refdata=/=refdata-cpp=
+dry-run byte-identical before/after) and the full =ores.codegen=
+pytest suite (50 tests) stays green.
+
+C++ generation is *not* fixed here -- see Notes for why, and
+[[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] for the real
+fix (migrate lookup_entity into domain_entity rather than patch its
+duplicate C++ pipeline in place).

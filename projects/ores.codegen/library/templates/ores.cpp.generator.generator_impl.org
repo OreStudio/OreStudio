@@ -176,6 +176,7 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_left_or_right}}
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::{{component}}::{{generator_facet_name}} {

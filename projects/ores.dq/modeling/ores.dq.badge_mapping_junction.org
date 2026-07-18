@@ -96,10 +96,15 @@ std::string(faker::word::adjective())
 :name_short:          mappings
 :name_singular_words: badge mapping
 :name_words:          badge mappings
-:order_column:        code_domain_code
+:order_column:        entity_code
 :END:
 
 * C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
 
 ** Domain includes
 

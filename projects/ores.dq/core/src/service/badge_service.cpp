@@ -19,6 +19,7 @@
  */
 #include "ores.dq.core/service/badge_service.hpp"
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/badge_mapping_json_io.hpp"    // IWYU pragma: keep.
 #include "ores.dq.api/domain/badge_severity_json_io.hpp"   // IWYU pragma: keep.
 #include "ores.dq.api/domain/code_domain_json_io.hpp"      // IWYU pragma: keep.
 
@@ -114,7 +115,17 @@ badge_service::get_definition_history(const std::string& code) {
 
 std::vector<messaging::badge_mapping> badge_service::list_mappings() {
     BOOST_LOG_SEV(lg(), debug) << "Listing badge mappings.";
-    return map_repo_.read_all();
+    const auto domain_mappings = map_repo_.read_latest();
+    std::vector<messaging::badge_mapping> result;
+    result.reserve(domain_mappings.size());
+    for (const auto& m : domain_mappings) {
+        result.push_back(messaging::badge_mapping{
+            .code_domain_code = m.code_domain_code,
+            .entity_code = m.entity_code,
+            .badge_code = m.badge_code,
+        });
+    }
+    return result;
 }
 
 }

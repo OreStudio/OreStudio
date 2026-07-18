@@ -20,19 +20,17 @@
 #ifndef ORES_QT_CODE_DOMAIN_CONTROLLER_HPP
 #define ORES_QT_CODE_DOMAIN_CONTROLLER_HPP
 
-#include "ores.dq/domain/code_domain.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
-#include <expected>
-#include <functional>
-#include <vector>
 
 namespace ores::qt {
 
+class BadgeCache;
 class CodeDomainMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -55,16 +53,20 @@ private:
     }
 
 public:
+    // badgeCache is passed through (not codegen'd -- code_domain has no
+    // badge columns of its own) so the hand-written Badge Mappings tab
+    // (see BadgeMappingsTab) can resolve badge colours for the domain's
+    // own mappings.
     CodeDomainController(QMainWindow* mainWindow,
                          QMdiArea* mdiArea,
                          ClientManager* clientManager,
                          const QString& username,
+                         BadgeCache* badgeCache,
                          QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
-
 
 signals:
     void statusMessage(const QString& message);
@@ -72,7 +74,6 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
-    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const dq::domain::code_domain& domain);
@@ -80,29 +81,15 @@ private slots:
     void onShowHistory(const dq::domain::code_domain& domain);
     void onRevertVersion(const dq::domain::code_domain& domain);
     void onOpenVersion(const dq::domain::code_domain& domain, int versionNumber);
-    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
-    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::code_domain& domain);
     void showHistoryWindow(const QString& code);
 
-    /**
-     * @brief Fetches the full typed code domain history (the
-     * existing per-entity dq::messaging::get_code_domain_history_request/
-     * dq::messaging::get_code_domain_history_response, unrelated to the generic
-     * history.v1.get subject) and hands it to @p callback on the UI
-     * thread. Used to resolve HistoryDialog's generic (entity_id,
-     * version) signals back to a typed code domain, since the
-     * generic dialog holds no typed domain data.
-     */
-    void fetchCodeDomainHistory(
-        const QString& entityId,
-        std::function<void(std::expected<std::vector<dq::domain::code_domain>, QString>)> callback);
-
     CodeDomainMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    BadgeCache* badgeCache_;
 };
 
 }

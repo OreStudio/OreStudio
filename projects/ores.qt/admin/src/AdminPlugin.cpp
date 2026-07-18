@@ -20,8 +20,6 @@
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AccountController.hpp"
-#include "ores.qt/BadgeDefinitionController.hpp"
-#include "ores.qt/BadgeSeverityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -145,14 +143,6 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
                                                                          ctx_.username,
                                                                          this);
     connectControllerSignals(systemSettingController_.get());
-
-    badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connectControllerSignals(badgeDefinitionController_.get());
-
-    badgeSeverityController_ = std::make_unique<BadgeSeverityController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connectControllerSignals(badgeSeverityController_.get());
 }
 
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
@@ -176,24 +166,6 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         if (systemSettingController_)
             systemSettingController_->showListWindow();
     });
-
-    config->addSeparator();
-
-    auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
-    connect(actBadgeDefs, &QAction::triggered, this, [this]() {
-        if (badgeDefinitionController_)
-            badgeDefinitionController_->showListWindow();
-    });
-
-    auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
-    connect(actBadgeSevs, &QAction::triggered, this, [this]() {
-        if (badgeSeverityController_)
-            badgeSeverityController_->showListWindow();
-    });
-
-    // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
-    // Domain's detail dialog (see BadgeMappingsTab in ores.qt.data_management),
-    // not a standalone window here.
 
     // ---- System > Administration (appended at end, admin-only) -----------
     smc.system_menu->addSeparator();
@@ -423,8 +395,6 @@ void AdminPlugin::on_reset_system() {
 
 void AdminPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
-    badgeSeverityController_.reset();
-    badgeDefinitionController_.reset();
     systemSettingController_.reset();
     tenantTypeController_.reset();
     tenantController_.reset();

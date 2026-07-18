@@ -133,6 +133,7 @@ add_dependencies(${exe_target_name}
     ores.qt.analytics.lib
     ores.qt.compute.lib
     ores.qt.data_management.lib
+    ores.qt.dq.lib
     ores.qt.marketdata.lib
     ores.qt.mktdata.lib
     ores.qt.refdata.lib

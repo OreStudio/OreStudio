@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -30,19 +31,23 @@ namespace ores::dq::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Read-only projection of badge mapping rows from ores_dq_badge_mappings_tbl.
+ * @brief Represents a badge mapping in the database.
  *
- * Only the three fields needed by BadgeCache are projected; temporal columns
- * are included for filtering on valid_to == MAX_TIMESTAMP.
+ * Junction table with composite primary key (code_domain_code, entity_code, valid_from).
  */
 struct badge_mapping_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_badge_mappings_tbl";
 
-    std::string code_domain_code;
+    sqlgen::PrimaryKey<std::string> code_domain_code;
     std::string tenant_id;
     std::string entity_code;
+    int version = 0;
     std::string badge_code;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

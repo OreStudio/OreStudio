@@ -20,7 +20,7 @@
 #ifndef ORES_QT_BADGE_SEVERITY_MDI_WINDOW_HPP
 #define ORES_QT_BADGE_SEVERITY_MDI_WINDOW_HPP
 
-#include "ores.dq/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -31,7 +31,6 @@
 #include <QToolBar>
 
 namespace ores::qt {
-
 
 /**
  * @brief MDI window for displaying and managing badge severities.
@@ -64,21 +63,12 @@ signals:
     void addNewRequested();
     void severityDeleted(const QString& code);
     void showSeverityHistory(const dq::domain::badge_severity& severity);
-    // Extra signal declarations seam: a future
-    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
-    // to declare any entity-specific signals (e.g. a cross-navigation
-    // request to a related entity's list window) — see
-    // paste_blocks_in_codegen.org. Left empty when no entity implements
-    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-
-protected:
-    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -87,6 +77,8 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
+    void doReload() override;
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh badge severities");
     }

@@ -503,6 +503,10 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
 
+    // Pre-create &Data Quality menu. NOT inserted directly; DqPlugin
+    // returns it from create_menus() so it appears in plugin load_order.
+    auto* dataQualityMenu = new QMenu(tr("Data &Quality"), this);
+
     // Pre-create Organisation Codes submenu (NOT inserted directly;
     // RefdataPlugin appends it to the Reference Data menu).
     auto* organisationCodesMenu = new QMenu(tr("&Organisation Codes"), this);
@@ -524,6 +528,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     smc.telemetry_menu = ui_->menuTelemetry;
     smc.account_menu = accountMenu;
     smc.data_management_menu = dataManagementMenu;
+    smc.data_quality_menu = dataQualityMenu;
     smc.trading_codes_menu = tradingCodesMenu;
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;

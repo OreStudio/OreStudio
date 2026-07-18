@@ -33,8 +33,6 @@ class RoleController;
 class TenantController;
 class TenantTypeController;
 class SystemSettingController;
-class BadgeDefinitionController;
-class BadgeSeverityController;
 class QaValidationRunnerWidget;
 class SettingGatedActionController;
 class DetachableMdiSubWindow;
@@ -42,7 +40,7 @@ class DetachableMdiSubWindow;
 /**
  * @brief Plugin owning all admin-domain entity controllers.
  *
- * Manages accounts, roles, tenants, system settings, badges, and apps.
+ * Manages accounts, roles, tenants, system settings, and apps.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
 class AdminPlugin : public PluginBase {
@@ -92,8 +90,6 @@ private:
     std::unique_ptr<TenantController> tenantController_;
     std::unique_ptr<TenantTypeController> tenantTypeController_;
     std::unique_ptr<SystemSettingController> systemSettingController_;
-    std::unique_ptr<BadgeDefinitionController> badgeDefinitionController_;
-    std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
 
     /**
      * @brief The QA Validation Runner's dock, built in setup_menus()

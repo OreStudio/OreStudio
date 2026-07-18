@@ -20,12 +20,13 @@
 #ifndef ORES_QT_CLIENT_CODE_DOMAIN_MODEL_HPP
 #define ORES_QT_CLIENT_CODE_DOMAIN_MODEL_HPP
 
-#include "ores.dq/domain/code_domain.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -86,7 +87,6 @@ public:
      * @return The code domain, or nullptr if row is invalid.
      */
     const dq::domain::code_domain* getDomain(int row) const;
-
 
     /**
      * @brief Load a specific page of data.

@@ -8,12 +8,10 @@
 #+filetags: :badge-colour-scheme-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/badge-mapping-browser-ui
-#+pr: 1599
-#+blocked_on: [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]]
-#+blocked_since: 2026-07-16
+#+pr: 1622
 #+created: 2026-07-15
-#+updated: 2026-07-16
-#+environment: bright_faraday
+#+updated: 2026-07-17
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 
@@ -27,12 +25,12 @@ A user viewing a Code Domain's detail dialog can see every entity_code -> badge 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
-| Now          | BadgeMappingsTab built and embedded in CodeDomainDetailDialog (see Plan/Review); blocked because badge_definition/badge_severity/code_domain data is only ever seeded under the system tenant, and their admin CRUD list windows filter strictly by caller tenant -- so no tenant can currently see the data this tab depends on. |
-| Waiting on   | [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] |
-| Next         | Resume once tenants can publish/see their own badge catalogue data; re-run manual QA against real tenant-scoped rows. |
-| Last touched | 2026-07-16                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-17                               |
 
 * Acceptance
 
@@ -120,12 +118,70 @@ via its "Verifies task" field.
 |----------+-------+-------|
 | [[id:E48D0363-5192-48B7-A73B-56494E0AE7C0][Verify badge mapping browser]] | FAILED | Targeted the scrapped standalone window; superseded by the scenario below after the tab-embedding redesign. |
 | [[id:1FCD0C68-A7C2-49D8-856B-1D049EB5EE8D][Verify badge mappings tab on Code Domain detail dialog]] | PENDING | |
+| [[id:AE98D13F-BDB0-4DCE-ACF8-FDAA97B0A707][Verify ores.qt.dq plugin: badges and code domains]] | PASSED | All 7 steps pass; also covers the new ores.qt.dq plugin/menu, the Badge Mappings duplicate-rows fix, and a Portfolios badge-colour spot-check. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1622][#1622]] | [dq,qt] Make ores.qt.dq a plugin; fix badge crash and RLS dupes |
 | [[https://github.com/OreStudio/OreStudio/pull/1599][#1599]] | [refdata,qt,admin] Embed badge mappings tab in Code Domain detail dialog |
+
+* Result
+
+Resumed after its blocker (D4DE4138, badge datasets migrated to
+standard codegen + DQ publishing) landed. Manual QA against real
+tenant-scoped data (PR #1599's BadgeMappingsTab) surfaced three
+previously-hidden bugs, all fixed in PR #1622:
+
+- *Crash*: =ores.dq.service= segfaulted on every Badge Definitions/
+  Severities list request. Root cause: =registrar.cpp= still routed
+  those subjects to the pre-migration bespoke =badge_handler=, whose
+  =list_definitions()= had a heap-corruption bug -- dead code left
+  wired after D4DE4138 generated the real handlers but never switched
+  the registrar over. Rewired to the generated handlers; =badge_handler=
+  now only serves =badge_mapping= (no generated handler exists for it
+  yet).
+- *Protocol drift*: =ClientBadgeSeverityModel=/=ClientCodeDomainModel=
+  still included the old bespoke =badge_protocol.hpp=, whose response
+  field names (=badge_severities=/=code_domains=) don't match the
+  generated protocol's (=severities=/=domains=), causing deserialization
+  failures. Switched both to the correct generated protocol headers.
+- *Duplicate rows in the Badge Mappings tab*: =badge_mapping_junction.org=
+  was missing the =:subcomponent: api= flag every correctly-codegen'd
+  junction sets, so =compass codegen entity generate= silently targeted
+  a stale, pre-split output path and the hand-authored repository (with
+  no =tenant_id= filter on its list query) never got replaced --
+  Postgres RLS on this table deliberately allows both the caller's own
+  tenant AND the system tenant's rows (global-registry-with-override
+  pattern), so any tenant with its own published copy saw every mapping
+  twice. Added the missing model flag, genuinely regenerated the
+  repository (retiring the hand-authored one), and along the way fixed
+  a real codegen template bug too: the junction Mustache branch was
+  missing the =faker-cxx= include the domain_entity branch has, so any
+  junction using =faker::= in a custom column-generator block (like
+  =badge_mapping='s) failed to compile.
+
+Along the way, moved =badge_definition=/=badge_severity=/=code_domain=
+Qt (+ =BadgeMappingsTab=) out of =ores.qt.admin=/
+=ores.qt.data_management= into a new =ores.qt.dq= plugin, matching the
+=ores.dq= C++ component boundary -- a new "Data &Quality" menu with a
+"&Badges" submenu, per user direction.
+
+Filed [[id:6794A8E9-863C-4AFC-A983-5E9F418D09AB][a follow-up task]]
+documenting that 6 of the 12 =has_tenant_id= junctions across the
+codebase have the same wrong-path codegen issue =badge_mapping= had,
+3 of which (=dataset_bundle_member=, =account_party=,
+=party_counterparty=) share the exact missing-tenant-filter bug --
+real, unfixed duplicate-rows risk, tracked separately.
+
+Verified: full local build clean (=ores.dq.service.exe=,
+=ores.qt.exe=), =ores.dq.core.tests=/=ores.refdata.core.tests= both
+100% passing, and the manual QA scenario
+([[id:AE98D13F-BDB0-4DCE-ACF8-FDAA97B0A707][Verify ores.qt.dq plugin]])
+7/7 steps PASSED, including a spot-check confirming the original
+Portfolios badge-colour regression that started this whole
+investigation is fixed.
 
 * Review
 
@@ -133,6 +189,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Domain picker QComboBox spanned the entire screen width on Linux; wrong widget shape for "pick a domain, see its mappings" | BadgeMappingBrowserWindow.{hpp,cpp} | Accepted | Redesigned as a bounded QListWidget (list of domains) + QTableWidget (mappings), split view -- matches AccountPartiesWidget's list-driven layout instead of a combo filter. |
 | 2 | Badge cells rendered as plain background-coloured text, not an actual badge pill | BadgeMappingBrowserWindow.cpp | Accepted | Now uses EntityItemDelegate with column_style::badge_centered (the same delegate every other badge column in the app uses), resolving colours via BadgeCache::resolve() at paint time. |
+| 6 (PR #1622, round 1) | Dropped result->success business-failure check in Client{BadgeDefinition,BadgeSeverity,CodeDomain}Model -- backend exceptions silently render as an empty list | ClientBadgeDefinitionModel.cpp, ClientBadgeSeverityModel.cpp, ClientCodeDomainModel.cpp | Accepted | Restored the check in all three, matching the pre-existing pattern. |
+| 7 (PR #1622, round 1) | Duplicated sort key: order_by(code_domain_code, code_domain_code) drops the entity_code secondary sort | badge_mapping_repository.cpp | Accepted | Root cause was the model's :order_column: (code_domain_code, duplicating junction.left.column) -- fixed in ores.dq.badge_mapping_junction.org and regenerated, not hand-patched. |
+| 8 (PR #1622, round 1) | Typo: onSeveritysLoaded should be onSeveritiesLoaded | ClientBadgeSeverityModel.hpp/.cpp | Accepted | Renamed. |
+| 9 (PR #1622, round 1) | Stale badge_protocol.hpp include left on ClientBadgeDefinitionModel.cpp | ClientBadgeDefinitionModel.cpp | Accepted | Switched to the generated badge_definition_protocol.hpp, matching severities/domains. |
 | 3 | Badge Definitions screen needs a related-entity toolbar link to Severities/Mappings; Severity linkage to Definitions not visible; Definitions' own colours should render as colour, not hex text | BadgeDefinitionMdiWindow, BadgeSeverityMdiWindow | Accepted, folded into task 2 | Out of scope for this task (targets BadgeDefinition/BadgeSeverity screens, not badge_mapping); added to task_badge-palette-swatch-and-fallback.org's Acceptance. |
 | 4 | Should not be a standalone window -- should show up as a tab in the notebook, like PartyHierarchyTab does for party's detail dialog | BadgeMappingBrowserWindow (whole approach) | Accepted | Scrapped the standalone window; added BadgeMappingsTab embedded in CodeDomainDetailDialog. See Plan items 7-9. |
 | 5 | Dead code: BadgeCache::list_code_domains() has no remaining callers after the redesign to an embedded per-dialog tab (it was written for the scrapped standalone window's domain picker) | BadgeCache.hpp, BadgeCache.cpp | Accepted | Removed the method (and its now-unused =#include <set>=). PR #1599. |

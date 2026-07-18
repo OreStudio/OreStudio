@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 69D4594A-C70A-4B23-A4B5-741EE2135B73
+:END:
+#+title: Auto-crop QA Validation Runner screenshots to the active window
+#+description: The Screenshot button captures the full desktop; every manual-chapter screenshot then needs a hand-eyeballed Python/Pillow crop to the target dialog's pixel bounds. Have the runner (or a compass helper) capture just the active/target window's geometry instead.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ui:tooling:qa:documentation:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The QA Validation Runner's *Screenshot* button (used throughout the
+manual-chapter screenshot workflow) currently saves a full-desktop
+PNG. The [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][screenshot capture recipe]]'s crop step then requires
+manually reading pixel bounds off the raw image and writing a
+one-off Python/Pillow crop invocation per screenshot — every single
+capture, no reuse across them since each dialog sits at different
+coordinates. Have the runner (or a small compass-side helper it
+shells out to) query the window manager for the target/active
+window's geometry (e.g. via =xdotool getactivewindow
+getwindowgeometry= or =wmctrl -l -G= on Linux) and crop to that
+automatically before saving, eliminating the manual bounds-reading
+step entirely.
+
+* Why
+
+This recipe is the standard path for authoring every future manual
+chapter (dozens of entities still lack one), and the crop step is
+pure boilerplate that differs only in the numbers, not the logic —
+exactly the kind of repeated manual work that should be automated
+once and reused, rather than re-derived by eye each time. It doesn't
+block chapter authoring today (the manual crop works fine), but it
+is friction that compounds across every remaining chapter.
+
+* References
+
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — step 4, the
+  manual crop this would replace.
+- [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
+  — owns the Screenshot button this would extend.
+
+* See also
+
+- [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the wider entity-documentation
+  recipe this crop step is part of.

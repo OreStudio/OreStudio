@@ -37,11 +37,11 @@ record they're editing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Toolbar-button code done: modeled the three signal/toolbar/relay paste blocks in ores.refdata.party.org and ores.refdata.counterparty.org (proper codegen seam, unlike Currency's un-modeled hand-written precedent), regenerated both entities zero-extra-diff, wired RefdataPlugin.cpp. ores.qt.refdata.lib and ores.qt.exe both build clean. |
-| Waiting on   | Screenshot re-capture only: badge colours in the Parties/Counterparties windows depend on [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][the badge colour scheme story]] in flight in bright_faraday. |
-| Next         | Manual smoke-test the three buttons open the right windows once the environment is available; retake screenshots once badges land; close out task and story. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:785B49CA-B219-40FE-9968-5D82A99E25C3][Verify Party/Counterparty auxiliary-lookup toolbar buttons]] | PENDING | |
+| [[id:785B49CA-B219-40FE-9968-5D82A99E25C3][Verify Party/Counterparty auxiliary-lookup toolbar buttons]] | PASSED | |
 
 * PRs
 
@@ -90,3 +90,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Modeled the three lookup-navigation buttons (Party Types, Party
+Statuses, Party Id Schemes) via the existing codegen paste-block seam
+(=67D24D2F=/=18B9ED63=/=66E078FB=/=52E70F3B=) in
+=ores.refdata.party.org= and =ores.refdata.counterparty.org= — the
+same seam Currency's Rounding/Monetary Natures/Market Tiers buttons
+use, except modeled properly this time rather than hand-copied
+outside the model (Currency's own buttons turned out to be orphaned
+from its model, a pre-existing tech debt noted but left alone).
+Regenerated both entities with a clean, minimal diff; wired the
+relay connections in =RefdataPlugin.cpp= following the
+=CurrencyPairController=/=CurrencyPairConventionController=
+precedent. =ores.qt.refdata.lib= and =ores.qt.exe= both build clean.
+
+Manually smoke-tested end to end against BARCLAYS PLC via a QA
+Validation Runner scenario: all six buttons (three on Parties, three
+on Counterparties) open their correct target windows. Badge colour
+scheme story landed on main in the interim, unblocking the
+Parties/Counterparties MDI window screenshot retake — done as part of
+the sibling manual-chapter task.

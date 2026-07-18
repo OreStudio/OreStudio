@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:parties:refdata:user_guide:
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-07-18
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /party/ as a
@@ -30,15 +30,13 @@ organisation's structure, then the interface that governs its
 lifecycle. It begins by establishing what a party is in
 [[*What is a Party?][What is a Party?]], then shows that a party's type and status are
 themselves configurable lookups with their own windows in
-[[*Party types and statuses][Party types and statuses]], before working through the
-[[*The party hierarchy][The party hierarchy]] rule that every party but the tenant's house root
-must supply a parent — the premise the rest of the chapter builds
-on. From there it surveys the
-body of records in [[*The Parties window][The Parties window]] before narrowing to a single
-record in [[*Party Details][Party Details]] and its General, Identifiers, Contact
-Information, Hierarchy, and Provenance tabs, returning to the
-Identifiers tab's scheme combo in [[*Identification schemes][Identification schemes]] to show
-that it, too, is tenant-configurable. It then turns to
+[[*Party types and statuses][Party types and statuses]]. From there it surveys the body of records in
+[[*The Parties window][The Parties window]] before narrowing to a single record in
+[[*Party Details][Party Details]] and its five tabs — General,
+[[*Identifiers][Identifiers]] (where the ten schemes a party can carry turn out to be
+a configurable lookup in their own right), Contact Information,
+[[*Hierarchy][Hierarchy]] (where the house-root rule introduced early in the
+chapter finally gets its screen), and Provenance. It then turns to
 changing a record under audit — [[*Editing a party][Editing]], [[*Deleting a party][Deleting]], and
 [[*Party history][Party history]] — culminating in reverting to an earlier version, the
 point at which the bitemporal audit trail does its work. The
@@ -64,36 +62,10 @@ appear under different names, registration numbers, and codes across
 different jurisdictions, counterparties, and vendor systems, with no
 single authority reconciling them all.
 
-#+begin_tangent
-*GLEIF and the Legal Entity Identifier (LEI)*
-
-The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
-not-for-profit organisation that oversees the global LEI system on
-behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
-20-character alphanumeric code that uniquely identifies a legal entity
-participating in financial markets — a bank, a corporation, a fund, a
-branch. LEIs are mandated by major regulatory frameworks including
-MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
-counterparty identification.
-
-GLEIF publishes the full registry of LEI entities and their corporate
-hierarchies (parent-child relationships) as open data. OreStudio uses
-the GLEIF dataset to seed counterparties and, when a party's root LEI
-is selected during tenant provisioning, to populate the initial party
-hierarchy from real organisational data — see [[*The party hierarchy][The party hierarchy]]
-below.
-
-A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
-identifying a specific financial institution, used in SWIFT messaging
-for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
-that OreStudio also imports, allowing settlement systems to resolve a
-counterparty's BIC from its LEI.
-#+end_tangent
-
 Because no single identifier scheme covers every counterpart a party
 might need to be recognised by, a party can carry more than one — see
 [[*Identifiers][Identifiers]] below for the full set of schemes OreStudio
-recognises.
+recognises, including the LEI and BIC schemes GLEIF publishes.
 
 Every party carries a *full name* (its official registered legal
 name) and a *short code* (a brief mnemonic used elsewhere in the
@@ -127,21 +99,17 @@ and, once selected, on the colour-coded badge), an optional
 falls in the combo's drop-down list — plus the standard Provenance
 tab described in [[*Provenance][Provenance]] below.
 
-#+caption[The Party Types window]: The Party Types window, listing the tenant's configured party types by code, name, description, and display order.
-# Capture: open Reference Data > Party Types and screenshot the list window.
-[SCREENSHOT NEEDED — party_types_main_dialog.png]
+#+caption[The Party Types window]: The Party Types window, listing the tenant's configured party types by code, name, order, version, last modifier, and when the record was last recorded.
+[[proj:assets/images/party_types_main_dialog.png]]
 
 #+caption[Party Type Details]: The Party Type Details dialog, showing its General tab (Code, Name, Description, Display Order) and Provenance tab.
-# Capture: open a party type record and screenshot the General tab of Party Type Details.
-[SCREENSHOT NEEDED — party_type_details_general.png]
+[[proj:assets/images/party_type_details_general.png]]
 
-#+caption[The Party Statuses window]: The Party Statuses window, listing the tenant's configured party statuses by code, name, description, and display order.
-# Capture: open Reference Data > Party Statuses and screenshot the list window.
-[SCREENSHOT NEEDED — party_statuses_main_dialog.png]
+#+caption[The Party Statuses window]: The Party Statuses window, listing the tenant's configured party statuses by code, name, order, version, last modifier, and when the record was last recorded.
+[[proj:assets/images/party_statuses_main_dialog.png]]
 
 #+caption[Party Status Details]: The Party Status Details dialog, showing its General tab (Code, Name, Description, Display Order) and Provenance tab.
-# Capture: open a party status record and screenshot the General tab of Party Status Details.
-[SCREENSHOT NEEDED — party_status_details_general.png]
+[[proj:assets/images/party_status_details_general.png]]
 
 Editing, deleting, and history for party type and party status
 records follow the same pattern described later in this chapter for
@@ -152,47 +120,10 @@ too — see the [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] chap
 a value here is immediately visible wherever that type or status is
 displayed.
 
-** The party hierarchy
-
-Every tenant has, at most, two parties with no parent: the
-[[id:E8393440-D821-4A24-AE27-DD0917F125EB][system party]] created automatically during provisioning
-(administrative only, never part of the business hierarchy), and —
-among the /operational/ parties that actually own trades, books, and
-analytics results — exactly one *house root*, the organisation's own
-top-level legal entity. This is enforced structurally, not just by
-convention: the database carries a unique index that permits at most
-one operational party per tenant with no parent. Once that one slot
-is taken by the house root, every other operational party must supply
-a parent — a second attempt to create a rootless operational party is
-rejected outright.
-
-The practical consequence for the Party Details dialog covered later
-in this chapter is that the Parent Party combo does offer a *No
-Parent* choice, but the database enforces the rest: saving a second
-party with no parent is rejected outright, so in practice *No
-Parent* only succeeds for the tenant's one house root. A business
-entity newly onboarded into ORE Studio almost always needs to attach
-somewhere in the one tree that already exists for its tenant — a
-party can also be created from the shell's =provision party=
-command, which is not bound by any particular UI's field
-requirements.
-
-In practice, most parties never go through this manual Create dialog
-at all: the shell-driven GLEIF (Global Legal Entity Identifier
-Foundation) reference data pipeline resolves an entity's real-world
-corporate-hierarchy relationships and assigns each imported party's
-parent automatically, level by level, from that external data. The
-manual Create dialog described in this chapter exists for the
-smaller number of parties added or corrected by hand outside that
-pipeline.
-
-The [[*Hierarchy][Hierarchy]] tab, described under Party Details below, is where
-this tree becomes visible for a given party — its ancestors up to the
-root and its immediate children.
-
-With the concept and its hierarchy rule established, the rest of this
-chapter turns to the interface OreStudio provides for it — starting
-with the Parties window, which lists every party in the tenant.
+With type and status established as configurable lookups in their own
+right, the rest of this chapter turns to the interface OreStudio
+provides for the party record itself — starting with the Parties
+window, which lists every party in the tenant.
 
 ** The Parties window
 
@@ -242,7 +173,8 @@ The General tab carries the core fields of the party:
   is a genuinely valid choice — it is how the tenant's house root
   itself is represented — but saving a /second/ party with no parent
   is rejected by the database's single-root constraint; see
-  [[*The party hierarchy][The party hierarchy]] above for why.
+  [[*Hierarchy][Hierarchy]] below for the full rule and how it plays out on that
+  tab.
 
   #+caption: [SCREENSHOT OUTDATED — retake needed] The Parent Party combo open, listing a leading No Parent entry followed by candidate parent parties by full name.
   # Capture: open Party Details, click the Parent Party combo, and screenshot it open
@@ -287,6 +219,57 @@ fill.
 | =MPID=                 | FINRA (US)                  | Broker-dealers and ATSs in US equities markets (also known as AII). |
 | =INTERNAL=             | Proprietary                 | A party's own OMS, CRM, or clearing-system client ID. |
 
+#+begin_tangent
+*GLEIF and the Legal Entity Identifier (LEI)*
+
+The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
+not-for-profit organisation that oversees the global LEI system on
+behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
+20-character alphanumeric code that uniquely identifies a legal entity
+participating in financial markets — a bank, a corporation, a fund, a
+branch. LEIs are mandated by major regulatory frameworks including
+MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
+counterparty identification.
+
+GLEIF publishes the full registry of LEI entities and their corporate
+hierarchies (parent-child relationships) as open data. OreStudio uses
+the GLEIF dataset to seed counterparties and, when a party's root LEI
+is selected during tenant provisioning, to populate the initial party
+hierarchy from real organisational data — see [[*Hierarchy][Hierarchy]] below.
+
+A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
+identifying a specific financial institution, used in SWIFT messaging
+for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
+that OreStudio also imports, allowing settlement systems to resolve a
+counterparty's BIC from its LEI.
+#+end_tangent
+
+These ten schemes are seeded on tenant provisioning, but the table
+above is not a fixed list either — the *Identification Scheme* combo
+itself is populated from the Party Id Schemes lookup, its own
+reference-data entity with a list and detail window under the
+/Reference Data/ menu. Each scheme record carries a *Code* (=LEI=,
+=BIC=, and so on — the value stored against each identifier row), a
+*Name*, an optional *Description*, a *Coding Scheme* field (an
+external coding-scheme identifier, used where the value needs to
+resolve against an outside standard such as an FpML scheme URI), a
+*Display Order*, and a *Max Cardinality* field (an optional cap on
+how many identifiers under this scheme a single party may hold, left
+=(unset)= for schemes with no such limit), plus the standard
+Provenance tab.
+
+#+caption[The Party Id Schemes window]: The Party Id Schemes window, listing the tenant's configured identification schemes by code, name, description, coding scheme, order, version, last modifier, and when the record was last recorded.
+[[proj:assets/images/party_id_schemes_main_dialog.png]]
+
+#+caption[Party Id Scheme Details]: The Party Id Scheme Details dialog, showing its General tab (Code, Name, Description, Coding Scheme, Display Order, Max Cardinality) and Provenance tab.
+[[proj:assets/images/party_id_scheme_details_general.png]]
+
+A tenant can add, edit, or retire schemes here rather than being
+limited to the ten in the table above; editing, deleting, and history
+for a scheme record follow the same change-reason, soft-close, and
+revert pattern as the party record itself, described later in this
+chapter.
+
 *** Contact Information
 
 #+caption[Party Details — Contact Information tab]: The Contact Information tab, listing the addresses and contact points held against a party.
@@ -310,8 +293,41 @@ together with the rest of the party record when *Save* is clicked.
 
 The Hierarchy tab is read-only and shows this party's position in
 the tenant's single corporate tree: its chain of ancestor parties up
-to the root, and its immediate children, if any. See [[*The party
-hierarchy][The party hierarchy]] above for the rule this tab visualises.
+to the root, and its immediate children, if any. This is the screen
+that makes the party hierarchy rule introduced earlier in the chapter
+concrete, and it is worth spelling that rule out in full here.
+
+Every tenant has, at most, two parties with no parent: the
+[[id:E8393440-D821-4A24-AE27-DD0917F125EB][system party]] created automatically during provisioning
+(administrative only, never part of the business hierarchy), and —
+among the /operational/ parties that actually own trades, books, and
+analytics results — exactly one *house root*, the organisation's own
+top-level legal entity. This is enforced structurally, not just by
+convention: the database carries a unique index that permits at most
+one operational party per tenant with no parent. Once that one slot
+is taken by the house root, every other operational party must supply
+a parent — a second attempt to create a rootless operational party is
+rejected outright.
+
+The practical consequence for the General tab's Parent Party combo
+(see [[*General][General]] above) is that it does offer a *No Parent* choice, but
+the database enforces the rest: saving a second party with no parent
+is rejected outright, so in practice *No Parent* only succeeds for the
+tenant's one house root. A business entity newly onboarded into ORE
+Studio almost always needs to attach somewhere in the one tree that
+already exists for its tenant — a party can also be created from the
+shell's =provision party= command, which is not bound by any
+particular UI's field requirements.
+
+In practice, most parties never go through the manual Create dialog
+at all: the shell-driven GLEIF (Global Legal Entity Identifier
+Foundation) reference data pipeline resolves an entity's real-world
+corporate-hierarchy relationships and assigns each imported party's
+parent automatically, level by level, from that external data. The
+manual Create dialog exists for the smaller number of parties added
+or corrected by hand outside that pipeline — and this Hierarchy tab
+is where the result of either path, automatic or manual, becomes
+visible for a given party.
 
 *** Provenance
 
@@ -319,32 +335,6 @@ The Provenance tab is read-only and shows the audit metadata for the
 current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
 description of the provenance fields common to all reference data
 entities.
-
-** Identification schemes
-
-The ten schemes listed in the table above are seeded on tenant
-provisioning, but the *Identification Scheme* combo in the
-Identifiers tab is not a fixed list either — it is populated from the
-Party Id Schemes lookup, its own reference-data entity with a list
-and detail window under the /Reference Data/ menu. Each scheme record
-carries a *Code* (=LEI=, =BIC=, and so on — the value stored against
-each identifier row), a *Name*, an optional *Description*, a *Coding
-Scheme* field (an external coding-scheme identifier, used where the
-value needs to resolve against an outside standard such as an FpML
-scheme URI), and a *Display Order*, plus the standard Provenance tab.
-
-#+caption[The Party Id Schemes window]: The Party Id Schemes window, listing the tenant's configured identification schemes by code, name, description, coding scheme, and display order.
-# Capture: open Reference Data > Party Id Schemes and screenshot the list window.
-[SCREENSHOT NEEDED — party_id_schemes_main_dialog.png]
-
-#+caption[Party Id Scheme Details]: The Party Id Scheme Details dialog, showing its General tab (Code, Name, Description, Coding Scheme, Display Order) and Provenance tab.
-# Capture: open a party id scheme record and screenshot the General tab of Party Id Scheme Details.
-[SCREENSHOT NEEDED — party_id_scheme_details_general.png]
-
-A tenant can add, edit, or retire schemes here rather than being
-limited to the ten in the table above; editing, deleting, and history
-for a scheme record follow the same change-reason, soft-close, and
-revert pattern as the party record itself, described next.
 
 ** Editing a party
 
@@ -396,7 +386,7 @@ Provenance tabs, and through the editing, deleting, and history workflows, where
 reverting to an earlier version demonstrated the same bitemporal
 audit trail described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. The shell's
 =provision party= command covers bulk/GLEIF onboarding (see
-[[*The party hierarchy][The party hierarchy]] above), but general-purpose shell/CLI commands
+[[*Hierarchy][Hierarchy]] above), but general-purpose shell/CLI commands
 for adding, editing, deleting, or viewing the history of an
 individual party are not yet implemented — tracked separately rather
 than glossed over here. See the [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] chapter for the

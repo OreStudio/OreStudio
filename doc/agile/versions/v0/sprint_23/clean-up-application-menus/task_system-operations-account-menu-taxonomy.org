@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 9EFB51CC-5D4D-4A20-85B4-8A686854AC56
+:END:
+#+title: Task: System/Operations/Account menu taxonomy
+#+description: Audit System, Account, and Operations menus (plus Data Management, since Operations' target absorbs Data Transfer/Data Catalogue from it), propose a target taxonomy with rationale for sign-off before implementing.
+#+type: task
+#+level: s1
+#+filetags: :clean-up-application-menus:sprint_23:v0:
+#+owner: marco
+#+branch: feature/system-operations-account-menu-taxonomy
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two-phase task, second phase gated on sign-off (same shape as the
+Reference Data menu task):
+
+1. Inventory: list every entry currently under System, Account, and
+   Operations (menu items, submenus, the plugin/dialog each opens),
+   plus Data Management — Operations' target scope per the story's
+   =* Goal= explicitly absorbs Data Transfer/Data Catalogue from it,
+   so Operations can't reach its final shape without touching that
+   menu too.
+2. Taxonomy proposal: group the inventoried entries into a cohesive
+   structure with a rationale per grouping decision, for review
+   before any =QMenu=/plugin rewiring happens.
+
+Implementation (the actual menu rewiring) only starts after sign-off
+on the taxonomy.
+
+Scoping decision (signed off before inventory): Data Management is
+retired as a top-level menu. Its Data Transfer/Data Catalogue
+contents move into Operations; its Classifications and Audit Trail
+submenus, plus System > Configuration's Badge Definitions/Severities,
+move to the Data Quality menu being stood up by the sibling
+[[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq]] story — this task lands the moves, that story
+owns the destination menu's own standing-up.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-18                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

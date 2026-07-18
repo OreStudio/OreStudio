@@ -58,7 +58,7 @@ public:
                  const QString& pairPrefix = QString());
 
     /// Tints the whole cell with a light pastel background -- used to
-    /// flag a computed inverse rate (1/rate, displayed because no direct
+    /// flag a computed reciprocal rate (1/rate, displayed because no direct
     /// quote exists for this cell) as visually distinct from a real
     /// quoted rate, without relying on the text alone.
     void setPastelBackground(bool on);

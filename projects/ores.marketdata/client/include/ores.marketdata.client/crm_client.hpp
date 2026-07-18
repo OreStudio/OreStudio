@@ -56,7 +56,7 @@ public:
      * NATS round trip. crm_name empty selects every enabled CRM.
      */
     [[nodiscard]] rates_result
-    rates(const std::string& party_id, const std::string& crm_name, bool inverted);
+    rates(const std::string& party_id, const std::string& crm_name, bool reciprocal);
 
 private:
     ores::nats::service::client& nats_;

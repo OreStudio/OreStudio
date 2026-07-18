@@ -84,8 +84,8 @@ void MktdataPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    auto* actFxSpotGrid = marketDataMenu_->addAction(ico(Icon::ChartMultiple), tr("&FX Spot"));
-    connect(actFxSpotGrid, &QAction::triggered, this, [this]() {
+    actFxSpotGrid_ = marketDataMenu_->addAction(ico(Icon::ChartMultiple), tr("&FX Spot"));
+    connect(actFxSpotGrid_, &QAction::triggered, this, [this]() {
         if (marketDataController_)
             marketDataController_->showFxSpotGridWindow();
     });
@@ -112,7 +112,9 @@ QList<QMenu*> MktdataPlugin::create_menus() {
 }
 
 QList<QAction*> MktdataPlugin::toolbar_actions() {
-    return {};
+    if (!actFxSpotGrid_)
+        BOOST_LOG_SEV(lg(), warn) << "Toolbar action is uninitialised.";
+    return {actFxSpotGrid_};
 }
 
 // ---------------------------------------------------------------------------

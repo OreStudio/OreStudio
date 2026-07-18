@@ -45,10 +45,10 @@ struct crm_rate_item {
     std::string as_of;
     /// True when this pair has no direct quote and rate is computed as
     /// 1/rate from the reverse pair -- only ever set when the request's
-    /// own `inverted` flag was true.
-    bool inverted = false;
+    /// own `reciprocal` flag was true.
+    bool reciprocal = false;
     /// %-change vs. the last value served for this exact pair (as
-    /// displayed, i.e. post-inversion) within this (tenant, party,
+    /// displayed, i.e. post-reciprocal) within this (tenant, party,
     /// crm_name) scope -- shared across every session polling that same
     /// CRM, not per-connection. Unset for the first observation of a
     /// pair, or when status is "unavailable".
@@ -99,11 +99,11 @@ struct get_crm_rates_request {
     std::string crm_name;
     /// When true, a configured pair with no direct quote but whose
     /// reverse pair *is* configured is backfilled with the reverse's
-    /// computed inverse (1/rate) -- see
-    /// ores.analytics.quant::service::rate_inverter. When the reverse
+    /// computed reciprocal (1/rate) -- see
+    /// ores.analytics.quant::service::rate_reciprocator. When the reverse
     /// pair is itself also directly configured, its own direct rate is
-    /// served instead of a synthesised inverse.
-    bool inverted = false;
+    /// served instead of a synthesised reciprocal.
+    bool reciprocal = false;
 };
 
 struct get_crm_rates_response {

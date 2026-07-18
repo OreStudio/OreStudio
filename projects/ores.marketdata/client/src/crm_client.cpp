@@ -32,13 +32,13 @@ crm_client::crm_client(ores::nats::service::client& nats,
     , token_provider_(std::move(token_provider)) {}
 
 crm_client::rates_result
-crm_client::rates(const std::string& party_id, const std::string& crm_name, bool inverted) {
+crm_client::rates(const std::string& party_id, const std::string& crm_name, bool reciprocal) {
     rates_result result;
     try {
         messaging::get_crm_rates_request req;
         req.party_id = party_id;
         req.crm_name = crm_name;
-        req.inverted = inverted;
+        req.reciprocal = reciprocal;
         const auto req_json = rfl::json::write(req);
 
         std::unordered_map<std::string, std::string> headers;

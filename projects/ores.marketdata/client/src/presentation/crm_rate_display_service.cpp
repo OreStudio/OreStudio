@@ -28,10 +28,10 @@ crm_rate_display_service::crm_rate_display_service(rates_fn_t rates_fn, lookup_f
 crm_rate_display_service::result crm_rate_display_service::rates(const std::string& tenant_id,
                                                                  const std::string& party_id,
                                                                  const std::string& crm_name,
-                                                                 bool inverted) {
+                                                                 bool reciprocal) {
     result out;
 
-    auto fetched = rates_fn_(party_id, crm_name, inverted);
+    auto fetched = rates_fn_(party_id, crm_name, reciprocal);
     if (!fetched.success) {
         out.error = fetched.error;
         return out;
@@ -64,7 +64,7 @@ crm_rate_display_service::result crm_rate_display_service::rates(const std::stri
         r.base_currency_code = item.base_currency_code;
         r.quote_currency_code = item.quote_currency_code;
         r.status = item.status;
-        r.inverted = item.inverted;
+        r.reciprocal = item.reciprocal;
         r.delta_pct = item.delta_pct;
         r.rate = item.rate;
         r.as_of = item.as_of;

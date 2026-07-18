@@ -39,7 +39,7 @@ namespace ores::shell::app::commands {
  * ores.shell's entry point into marketdata.v1.crm.rates -- the same
  * request/response the Qt Cross-Rates Matrix window uses -- formatted
  * via crm_rate_display_service/crm_rate_formatter so the shell doesn't
- * repeat the inversion/delta/precision logic those already solved.
+ * repeat the reciprocal/delta/precision logic those already solved.
  */
 class crm_commands {
 private:
@@ -61,7 +61,7 @@ public:
 
     /**
      * @brief List CRM rates: crm rates [<crm-name>] [--party
-     * <id-or-full-name>] [--inverted] [--matrix].
+     * <id-or-full-name>] [--reciprocal] [--matrix].
      *
      * <crm-name> is optional; omitted, every enabled CRM the party has
      * is returned, each row tagged with the CRM it came from. Runs in
@@ -69,9 +69,9 @@ public:
      * ClientManager::currentPartyId() on the Qt side); --party
      * overrides that for an account that manages more than one party,
      * accepting either a UUID or an exact full name resolved the same
-     * way `provision party <party>` does. --inverted backfills a pair
-     * with no direct quote from its reverse pair's computed inverse,
-     * same as the Qt matrix's own "Show Inverted" toggle. --matrix
+     * way `provision party <party>` does. --reciprocal backfills a pair
+     * with no direct quote from its reverse pair's computed reciprocal,
+     * same as the Qt matrix's own "Show Reciprocal" toggle. --matrix
      * renders an NxN grid (base currencies as rows, quote as columns)
      * instead of the default flat list, mirroring the Qt Cross-Rates
      * Matrix window's own layout -- requires a named CRM, since a grid

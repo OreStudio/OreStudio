@@ -23,10 +23,14 @@
 namespace ores::analytics::quant::domain {
 
 enum class rate_status {
-    /// Every driver on the path is within the staleness policy's max age.
+    /// Every driver on the path is within the staleness policy's stale_after age.
     fresh,
-    /// At least one contributing driver is older than the policy allows.
+    /// At least one contributing driver is older than stale_after but within
+    /// disconnected_after.
     stale,
+    /// At least one contributing driver is older than disconnected_after —
+    /// its feed has effectively stopped, not just lagged.
+    disconnected,
     /// At least one driver on the path has never received a tick.
     unavailable,
 };

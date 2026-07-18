@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 #define ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.client/export.hpp"
@@ -106,6 +107,23 @@ public:
      */
     [[nodiscard]] std::expected<std::vector<domain::market_observation>, std::string>
     list_observations_page(const std::string& series_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief List feed bindings (limit 10000, first page) — enough for a
+     * caller checking whether a given (ore_key, source_name) is already bound.
+     */
+    [[nodiscard]] std::expected<std::vector<domain::feed_binding>, std::string>
+    list_feed_bindings();
+
+    /**
+     * @brief Persist (insert) a feed binding.
+     *
+     * @pre @p binding.id must already be a non-nil UUID (the caller generates
+     * it); tenant/party/audit fields are stamped server-side from the
+     * authenticated session.
+     */
+    [[nodiscard]] std::expected<bool, std::string>
+    save_feed_binding(const domain::feed_binding& binding);
 
 private:
     ores::nats::service::nats_client& nats_;

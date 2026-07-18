@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: D3215450-DE2A-4D5E-8DEE-25A7D78785CE
+:END:
+#+title: Test Scenario: Verify Market Simulator feed-binding auto-creation and running-status badge colours
+#+description: Manual QA pass confirming (1) starting FX feeds via a folder-scoped 'enable all' now auto-creates the marketdata feed_binding for every pair, not just one, and (2) the running-status badge colours (blue=running, yellow=paused) are visually distinct from the vintage-validity badges (green/red).
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog: MarketSimulatorWindow
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | MarketSimulatorWindow                   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =clever_dijkstra= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*. If the DB has been recreated since Barclays was last
+provisioned, re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Stop every feed, then "enable all" from the root/folder
+
+Open the Market Simulator window. If any feeds are already running,
+select each and stop it (or select the root node and use the
+folder-scoped stop) so every pair starts from a clean stopped state.
+Then select the root/collection node covering all of Barclays' FX
+pairs and start it (folder-scoped "enable all").
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm every pair, not just one, is bound
+
+After "enable all" completes, open Market Data > Feed Bindings and
+confirm there is one feed_binding row per FX pair that was started
+(not just a single pair like USD/AUD from before the fix). Cross-check
+against the CRM Cross Rates Matrix: every started pair should show a
+live rate, not a dash, within a few ticks.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm the running-status badge colours are distinct from validation badges
+
+With some feeds running and some stopped/paused, look at the tree's
+per-node badges: the bottom-left running-status badge should be
+*blue* for fully running and *yellow* for paused/stopped -- clearly
+different from the bottom-right vintage-validity badge, which stays
+green (valid) or red (invalid). Confirm the two badge families are no
+longer confusable (previously running=green clashed with
+vintage-valid=green).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

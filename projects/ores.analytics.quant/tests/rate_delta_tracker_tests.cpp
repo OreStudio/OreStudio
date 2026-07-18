@@ -39,7 +39,7 @@ crm_rate_view make_view(std::string base,
                          .rate = rate,
                          .status = status,
                          .as_of = {},
-                         .inverted = false,
+                         .reciprocal = false,
                          .delta_pct = std::nullopt};
 }
 
@@ -134,17 +134,17 @@ TEST_CASE("the very first observation being unavailable leaves nothing to diff a
     CHECK_FALSE(second[0].delta_pct.has_value());
 }
 
-TEST_CASE("an inverted pair is tracked by its own (base, quote) display key",
+TEST_CASE("a reciprocal pair is tracked by its own (base, quote) display key",
           "[rate_delta_tracker]") {
     rate_delta_tracker tracker;
 
     crm_rate_view v1 = make_view("CAD", "EUR", 1.0 / 1.50);
-    v1.inverted = true;
+    v1.reciprocal = true;
     std::vector<crm_rate_view> first = {v1};
     tracker.apply(first);
 
     crm_rate_view v2 = make_view("CAD", "EUR", 1.0 / 1.45);
-    v2.inverted = true;
+    v2.reciprocal = true;
     std::vector<crm_rate_view> second = {v2};
     tracker.apply(second);
 

@@ -42,8 +42,11 @@ namespace {
 
 // A party's rate_engine never considers a rate fresh past this age, purely
 // as the CRM-internal default; consumers query with their own tolerance
-// in mind via the rate_status returned alongside every rate.
-constexpr auto default_staleness_max_age = std::chrono::minutes(15);
+// in mind via the rate_status returned alongside every rate. Past
+// default_disconnected_after, a rate is reported disconnected rather than
+// merely stale -- its feed has effectively stopped, not just lagged.
+constexpr auto default_staleness_stale_after = std::chrono::minutes(15);
+constexpr auto default_staleness_disconnected_after = std::chrono::minutes(60);
 
 } // namespace
 
@@ -126,7 +129,9 @@ void crm_ingest_bridge::refresh() {
             auto topology =
                 quant::service::topology_builder::build(edges, cfg.pivot_currency_code, majors);
             auto engine = std::make_shared<quant::service::rate_engine>(
-                std::move(topology), quant::domain::staleness_policy{default_staleness_max_age});
+                std::move(topology),
+                quant::domain::staleness_policy{default_staleness_stale_after,
+                                                default_staleness_disconnected_after});
 
             auto& named_engines = (*new_engines)[key];
             named_engines.push_back(
@@ -242,31 +247,31 @@ std::vector<named_rate> crm_ingest_bridge::rates(const std::string& tenant_id_st
 }
 
 std::vector<quant::domain::crm_rate_view>
-crm_ingest_bridge::resolve(const named_engine& named_engine, bool inverted) {
+crm_ingest_bridge::resolve(const named_engine& named_engine, bool reciprocal) {
     const auto raw = named_engine.engine->rates(named_engine.configured_pairs);
-    const auto lookup = quant::service::rate_inverter::make_lookup(raw);
+    const auto lookup = quant::service::rate_reciprocator::make_lookup(raw);
 
     std::vector<quant::domain::crm_rate_view> views;
-    views.reserve(raw.size() * (inverted ? 2 : 1));
+    views.reserve(raw.size() * (reciprocal ? 2 : 1));
     for (const auto& r : raw)
         views.push_back(
-            quant::service::rate_inverter::resolve(r.base_code, r.quote_code, lookup, false));
+            quant::service::rate_reciprocator::resolve(r.base_code, r.quote_code, lookup, false));
 
-    if (inverted) {
+    if (reciprocal) {
         for (const auto& [base_code, quote_code] : named_engine.configured_pairs) {
             // Only synthesise the reverse when it isn't itself a
             // configured pair -- a pair configured both ways already has
-            // its own real (non-inverted) view above, which must win.
+            // its own real (non-reciprocal) view above, which must win.
             if (lookup.contains({quote_code, base_code}))
                 continue;
             // Args swapped on purpose: this targets the *reverse* of the
             // configured pair (quote_code as base, base_code as quote),
             // for which lookup has no direct entry by construction (the
             // contains() check above), so resolve() falls through to its
-            // own reverse-of-what-was-asked branch and inverts the
+            // own reverse-of-what-was-asked branch and reciprocates the
             // original (base_code, quote_code) rate found there.
             views.push_back(
-                quant::service::rate_inverter::resolve(quote_code, base_code, lookup, true));
+                quant::service::rate_reciprocator::resolve(quote_code, base_code, lookup, true));
         }
     }
 
@@ -278,7 +283,7 @@ std::vector<quant::domain::crm_rate_view>
 crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
                                   const std::string& party_id_str,
                                   const std::string& crm_name,
-                                  bool inverted) const {
+                                  bool reciprocal) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())
@@ -286,12 +291,12 @@ crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
     const auto named_it = std::ranges::find(it->second, crm_name, &named_engine::name);
     if (named_it == it->second.end())
         return {};
-    return resolve(*named_it, inverted);
+    return resolve(*named_it, reciprocal);
 }
 
 std::vector<named_rate_view> crm_ingest_bridge::resolved_rates(const std::string& tenant_id_str,
                                                                const std::string& party_id_str,
-                                                               bool inverted) const {
+                                                               bool reciprocal) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())
@@ -299,7 +304,7 @@ std::vector<named_rate_view> crm_ingest_bridge::resolved_rates(const std::string
 
     std::vector<named_rate_view> result;
     for (const auto& named_engine : it->second) {
-        auto views = resolve(named_engine, inverted);
+        auto views = resolve(named_engine, reciprocal);
         result.reserve(result.size() + views.size());
         for (auto& v : views)
             result.push_back(named_rate_view{named_engine.name, std::move(v)});

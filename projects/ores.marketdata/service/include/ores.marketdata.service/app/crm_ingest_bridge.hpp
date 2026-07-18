@@ -24,7 +24,7 @@
 #include "ores.analytics.quant/domain/derived_rate.hpp"
 #include "ores.analytics.quant/service/rate_delta_tracker.hpp"
 #include "ores.analytics.quant/service/rate_engine.hpp"
-#include "ores.analytics.quant/service/rate_inverter.hpp"
+#include "ores.analytics.quant/service/rate_reciprocator.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -51,7 +51,7 @@ struct named_rate {
     quant::domain::derived_rate rate;
 };
 
-/// A resolved (post-inversion, post-delta) view tagged with the name of
+/// A resolved (post-reciprocal, post-delta) view tagged with the name of
 /// the CRM that produced it -- returned by the all-CRMs overload of
 /// @c resolved_rates().
 struct named_rate_view {
@@ -145,8 +145,8 @@ public:
                                                 const std::string& party_id_str) const;
 
     /// Every configured pair for one named CRM, resolved: pairs with no
-    /// direct quote are backfilled with the reverse pair's inverse when
-    /// @p inverted is true (and the reverse itself isn't also a
+    /// direct quote are backfilled with the reverse pair's reciprocal when
+    /// @p reciprocal is true (and the reverse itself isn't also a
     /// configured pair, in which case its own direct rate wins), and
     /// each view's delta_pct is filled in vs. the last value this
     /// specific (tenant, party, crm_name) scope served for that pair.
@@ -155,13 +155,13 @@ public:
     resolved_rates(const std::string& tenant_id_str,
                    const std::string& party_id_str,
                    const std::string& crm_name,
-                   bool inverted) const;
+                   bool reciprocal) const;
 
     /// Resolved views (see above) across every enabled CRM for a party,
     /// each tagged with which CRM produced it.
     [[nodiscard]] std::vector<named_rate_view> resolved_rates(const std::string& tenant_id_str,
                                                               const std::string& party_id_str,
-                                                              bool inverted) const;
+                                                              bool reciprocal) const;
 
 private:
     using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)
@@ -198,7 +198,7 @@ private:
     /// Resolves+deltas one named engine's configured pairs -- shared by
     /// both @c resolved_rates overloads.
     [[nodiscard]] static std::vector<quant::domain::crm_rate_view>
-    resolve(const named_engine& engine, bool inverted);
+    resolve(const named_engine& engine, bool reciprocal);
 
     ores::database::context ctx_;
     mutable std::mutex engines_mutex_;

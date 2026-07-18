@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 996E0E3B-5389-4648-B153-7F8487591133
+:END:
+#+title: Test Scenario: Verify CRM 'Show Reciprocal' after the inverted-to-reciprocal rename
+#+description: Manual QA pass confirming the CRM cross-rates matrix's renamed Show Reciprocal toggle (formerly Show Inverted) still computes and displays 1/rate backfill cells correctly, with updated labels/tooltips, after the code-wide inverted-to-reciprocal rename.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog: CrmCrossRatesMatrixMdiWindow
+#+created: 2026-07-18
+#+updated: 2026-07-18
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:A4F67A24-D6B1-42D8-A842-4A094E2C84DA][Rename CRM 'inverted' concept to 'reciprocal' across code, protocol, UI, and docs]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow             |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =clever_dijkstra= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*. If the DB has been recreated since Barclays was last
+provisioned, re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the CRM Cross Rates Matrix
+
+Market Data menu > Cross Rates Matrix (or the MDI window if already
+open). Pick a CRM with at least one pair lacking a direct quote in one
+direction, so the reciprocal-backfill path is exercised (e.g. one of
+the majors/scandies/exotics CRMs used in the shell recipes).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the toggle reads "Show Reciprocal"
+
+The footer button that used to read "Show Inverted" now reads *Show
+Reciprocal*; hover it and confirm the tooltip text also says
+"reciprocal" rather than "inverted".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Toggle "Show Reciprocal" on and check the backfilled cells
+
+With the toggle off, note a cell with no direct quote shows a dash.
+Turn "Show Reciprocal" on and confirm that cell now shows a
+pastel-tinted computed 1/rate value instead of a dash, and that its
+sparkline/history still populates correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Toggle "Show Reciprocal" off and confirm the cell reverts
+
+Turn the toggle back off; the previously-backfilled cell should
+return to showing a dash (no direct quote), confirming the toggle
+still round-trips correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Export CSV with "Show Reciprocal" on and check the reciprocal column
+
+With the toggle on, use the matrix's CSV export. Open the exported
+file and confirm:
+- its filename reflects "reciprocal" rather than "inverted" (matching
+  the renamed filter state);
+- the header row now includes a =reciprocal= column
+  (=base,quote,rate,status,reciprocal,as_of=), and every backfilled
+  row shows =true= there, every directly-quoted row shows =false=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Check the shell's =--reciprocal= flag
+
+From =ores.shell=, run =crm rates <crm-name> --reciprocal= for the
+same CRM used above and confirm the output includes the same
+backfilled pairs seen in the Qt matrix, with rates matching. Compare
+against =crm rates <crm-name>= (no flag) to confirm the flag is what
+toggles the backfill, same as the Qt "Show Reciprocal" button.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm Live/Stale/Disconnected status colouring and tooltips
+
+For a rate that is currently ticking, hover its cell and confirm the
+tooltip reads "Live - <timestamp>" and the pair-code text is neutral
+(no colour tint). Stop the underlying synthetic feed (Market
+Simulator window) for one pair in the CRM, wait past the 15-minute
+stale threshold *or* substitute a shorter wait by checking with a
+pair whose feed has already been stopped for a while, and confirm:
+- between 15 and 60 minutes stale, the pair-code text turns amber
+  and the tooltip reads "Stale - <timestamp>";
+- past 60 minutes stale, the pair-code text turns red with a ⛔
+  glyph and the tooltip reads "Disconnected - <timestamp>".
+Confirm in all cases that only the pair-code text changes colour --
+the rate value itself stays neutral.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  | 2026-07-18T12:39:25Z |
+| Branch        | feature/crm-rename-inverted-to-reciprocal |
+| Commit        | 405a123a3 |
+| Worktree      | clever_dijkstra |
+
+* Notes

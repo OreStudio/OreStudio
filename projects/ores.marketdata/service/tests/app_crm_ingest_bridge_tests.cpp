@@ -271,7 +271,7 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
     CHECK(exotics_count == 1);
 }
 
-TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse isn't configured",
+TEST_CASE("resolved_rates() synthesises a reverse-pair reciprocal when the reverse isn't configured",
           tags) {
     fixture f;
     crm_topology_config_repository config_repo;
@@ -292,19 +292,19 @@ TEST_CASE("resolved_rates() synthesises a reverse-pair inverse when the reverse 
 
     const auto results = bridge.resolved_rates(tenant_id_str, party_id_str, "test", true);
 
-    // Two configured driver pairs (EUR/USD, USD/JPY); inverted=true adds
+    // Two configured driver pairs (EUR/USD, USD/JPY); reciprocal=true adds
     // a synthesised reverse for each, since neither EUR/USD's reverse
     // (USD/EUR) nor USD/JPY's reverse (JPY/USD) is itself a configured
     // pair here: 2 direct + 2 synthesised = 4.
     REQUIRE(results.size() == 4);
-    std::size_t inverted_count = 0;
+    std::size_t reciprocal_count = 0;
     for (const auto& r : results)
-        if (r.inverted)
-            ++inverted_count;
-    CHECK(inverted_count == 2);
+        if (r.reciprocal)
+            ++reciprocal_count;
+    CHECK(reciprocal_count == 2);
 }
 
-TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itself configured",
+TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is itself configured",
           tags) {
     fixture f;
     crm_topology_config_repository config_repo;
@@ -315,7 +315,7 @@ TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itse
     driver_repo.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
     // EUR/USD's reverse, USD/EUR, is also explicitly a configured
     // (derived) pair -- resolved_rates() must serve its own real rate
-    // for USD/EUR, not a synthesised 1/rate inverse of EUR/USD.
+    // for USD/EUR, not a synthesised 1/rate reciprocal of EUR/USD.
     derived_repo.write(f.h.context(), f.make_enabled_derived_pair("USD", "EUR"));
 
     crm_ingest_bridge bridge(f.h.context());
@@ -331,7 +331,7 @@ TEST_CASE("resolved_rates() synthesises no inverse when the reverse pair is itse
     // Both directions are already configured pairs -- no synthesis.
     REQUIRE(results.size() == 2);
     for (const auto& r : results)
-        CHECK_FALSE(r.inverted);
+        CHECK_FALSE(r.reciprocal);
 
     const auto usd_eur = std::ranges::find_if(
         results, [](const auto& r) { return r.base_code == "USD" && r.quote_code == "EUR"; });

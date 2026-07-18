@@ -18,10 +18,7 @@
  *
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
-#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -660,9 +657,9 @@ static QString feedItemText(const synthetic::domain::market_data_generation_conf
 // bottom-left corner of every node's icon (folder or feed).
 static QIcon runningBadge(int running, int total) {
     if (running == 0)
-        return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(140, 140, 140));
+        return IconUtils::createRecoloredIcon(Icon::PauseCircleFilled, QColor(250, 204, 21));
     if (running == total)
-        return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(60, 180, 80));
+        return IconUtils::createRecoloredIcon(Icon::PlayFilled, QColor(37, 99, 235));
     return IconUtils::createRecoloredIcon(Icon::PlayFilled,
                                           QColor(200, 160, 40)); // partially running
 }
@@ -1581,26 +1578,12 @@ void MarketSimulatorWindow::startPairsAsync(
     BOOST_LOG_SEV(lg(), info) << "Starting " << reqs.size() << " feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
-    const std::string username = username_.toStdString();
-    // Capture party_id on the main thread; stamp() uses it when JWT has no party claim.
-    const boost::uuids::uuid partyId = clientManager_->currentPartyId();
     using Results = std::vector<std::pair<std::string, QString>>; // source_name -> error (empty=ok)
-    auto task = [cm, reqs, username, partyId]() -> Results {
+    auto task = [cm, reqs]() -> Results {
         Results results;
-        boost::uuids::random_generator uuid_gen;
-
-        // Load existing bindings once so we can skip creating duplicates.
-        std::set<std::pair<std::string, std::string>> existing_bindings; // (ore_key, source_name)
-        {
-            namespace m = ores::marketdata::messaging;
-            auto br = cm->process_authenticated_request(
-                m::get_feed_bindings_request{.offset = 0, .limit = 10000});
-            if (br && br->success) {
-                for (const auto& b : br->feed_bindings)
-                    existing_bindings.emplace(b.ore_key, b.source_name);
-            }
-        }
-
+        // Starting a feed also auto-creates its marketdata feed_binding
+        // server-side (feed_controller::start) -- Qt only asks for the feed
+        // to start and reports the per-pair result.
         for (const auto& req : reqs) {
             auto resp = cm->process_authenticated_request(req);
             if (!resp) {
@@ -1612,36 +1595,6 @@ void MarketSimulatorWindow::startPairsAsync(
                 continue;
             }
             results.push_back({req.source_name, {}});
-
-            // Only create a feed binding if one doesn't already exist for this
-            // (ore_key, source_name) pair — prevents duplicate ingest loops and
-            // duplicate market_series records.
-            if (existing_bindings.count({req.ore_key, req.source_name})) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Feed binding already exists for " << req.source_name << " — skipping";
-                continue;
-            }
-
-            ores::marketdata::domain::feed_binding b;
-            b.id = uuid_gen();
-            b.ore_key = req.ore_key;
-            b.source_name = req.source_name;
-            b.party_id = partyId;
-            b.enabled = true;
-            b.performed_by = username;
-            b.change_reason_code =
-                std::string(ores::dq::domain::change_reason_constants::codes::new_record);
-            b.change_commentary = "Auto-created by Market Simulator on feed start";
-            auto bind_req =
-                ores::marketdata::messaging::save_feed_binding_request::from(std::move(b));
-            auto bind_resp = cm->process_authenticated_request(bind_req);
-            if (!bind_resp || !bind_resp->success) {
-                const std::string err = bind_resp ? bind_resp->message : bind_resp.error();
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Feed binding save failed for " << req.source_name << ": " << err;
-            } else {
-                existing_bindings.emplace(req.ore_key, req.source_name);
-            }
         }
         return results;
     };

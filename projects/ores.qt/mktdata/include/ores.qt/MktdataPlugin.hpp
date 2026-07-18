@@ -63,6 +63,7 @@ private:
 
     QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<MarketDataController> marketDataController_;
+    QAction* actFxSpotGrid_ = nullptr;
 };
 
 }

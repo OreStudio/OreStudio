@@ -28,22 +28,22 @@
 namespace ores::analytics::quant::domain {
 
 /// A rate resolved for display: the requested (base, quote) pair, with the
-/// inversion and %-change-vs-previous-observation logic already applied.
+/// reciprocal and %-change-vs-previous-observation logic already applied.
 /// Callers (NATS handlers, HTTP, shell, Wt) map this straight onto their
-/// own wire type; nothing downstream re-derives inversion or deltas.
+/// own wire type; nothing downstream re-derives the reciprocal or deltas.
 struct crm_rate_view {
     std::string base_code;
     std::string quote_code;
-    /// Only meaningful when @c status != rate_status::unavailable. For an
-    /// inverted view this is already 1/rate -- callers never re-invert.
+    /// Only meaningful when @c status != rate_status::unavailable. For a
+    /// reciprocal view this is already 1/rate -- callers never re-reciprocate.
     double rate = 0.0;
     rate_status status = rate_status::unavailable;
     std::chrono::system_clock::time_point as_of;
     /// True when no direct quote existed for (base_code, quote_code) and
     /// this value was computed as 1/rate from the reverse pair.
-    bool inverted = false;
+    bool reciprocal = false;
     /// %-change vs. the last value served for this exact (base, quote)
-    /// pair, as displayed (post-inversion). std::nullopt when there is no
+    /// pair, as displayed (post-reciprocal). std::nullopt when there is no
     /// prior observation to compare against, or the current/previous
     /// value isn't a valid rate to diff.
     std::optional<double> delta_pct;

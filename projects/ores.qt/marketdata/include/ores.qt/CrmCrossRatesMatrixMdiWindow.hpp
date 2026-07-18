@@ -102,7 +102,7 @@ private slots:
     void onCellSelected(int row, int column);
     void onRefreshIntervalChanged();
     void onHideEmptyToggled(bool checked);
-    void onShowInvertedToggled(bool checked);
+    void onShowReciprocalToggled(bool checked);
     void exportToCsv();
     void exportToOre();
 
@@ -112,8 +112,8 @@ private:
     void updateOverviewPanel(const std::string& base, const std::string& quote);
 
     /// Descriptive slug for export default filenames -- CRM name, Base
-    /// Currency filter, and which of Show Inverted/Hide Empty are on --
-    /// so two exports taken under different filters (e.g. inverted vs.
+    /// Currency filter, and which of Show Reciprocal/Hide Empty are on --
+    /// so two exports taken under different filters (e.g. reciprocal vs.
     /// not) never look identical in a file listing/downloads folder.
     QString exportFileNameSlug() const;
 
@@ -134,7 +134,7 @@ private:
     QAction* exportCsvAction_;
     QAction* exportOreAction_;
     QPushButton* hideEmptyButton_;
-    QPushButton* showInvertedButton_;
+    QPushButton* showReciprocalButton_;
     QTimer* autoRefreshTimer_;
     QTableWidget* table_;
     QLabel* footerLabel_;
@@ -162,7 +162,7 @@ private:
 
     /// Exactly the cells actually rendered as a real quote/derived rate
     /// in the most recent reload (respecting the current Base
-    /// Currency/Hide Empty/Show Inverted filters) -- diagonal and dash
+    /// Currency/Hide Empty/Show Reciprocal filters) -- diagonal and dash
     /// ("no data") cells are excluded. Export actions (CSV, ORE market
     /// data) work from this: what's on screen, not a fresh unfiltered
     /// fetch.

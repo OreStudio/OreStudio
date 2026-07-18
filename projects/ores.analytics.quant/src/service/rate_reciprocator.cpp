@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/rate_inverter.hpp"
+#include "ores.analytics.quant/service/rate_reciprocator.hpp"
 #include <cmath>
 
 namespace ores::analytics::quant::service {
@@ -26,17 +26,17 @@ using domain::crm_rate_view;
 using domain::derived_rate;
 using domain::rate_status;
 
-rate_inverter::rate_lookup rate_inverter::make_lookup(const std::vector<derived_rate>& rates) {
+rate_reciprocator::rate_lookup rate_reciprocator::make_lookup(const std::vector<derived_rate>& rates) {
     rate_lookup lookup;
     for (const auto& r : rates)
         lookup[{r.base_code, r.quote_code}] = r;
     return lookup;
 }
 
-crm_rate_view rate_inverter::resolve(const std::string& base_code,
+crm_rate_view rate_reciprocator::resolve(const std::string& base_code,
                                      const std::string& quote_code,
                                      const rate_lookup& lookup,
-                                     bool allow_invert) {
+                                     bool allow_reciprocal) {
     if (const auto it = lookup.find({base_code, quote_code}); it != lookup.end()) {
         const auto& r = it->second;
         return crm_rate_view{.base_code = base_code,
@@ -44,11 +44,11 @@ crm_rate_view rate_inverter::resolve(const std::string& base_code,
                              .rate = r.rate,
                              .status = r.status,
                              .as_of = r.as_of,
-                             .inverted = false,
+                             .reciprocal = false,
                              .delta_pct = std::nullopt};
     }
 
-    if (allow_invert) {
+    if (allow_reciprocal) {
         if (const auto it = lookup.find({quote_code, base_code}); it != lookup.end()) {
             const auto& r = it->second;
             const bool can_divide =
@@ -58,7 +58,7 @@ crm_rate_view rate_inverter::resolve(const std::string& base_code,
                                  .rate = can_divide ? 1.0 / r.rate : 0.0,
                                  .status = can_divide ? r.status : rate_status::unavailable,
                                  .as_of = r.as_of,
-                                 .inverted = true,
+                                 .reciprocal = true,
                                  .delta_pct = std::nullopt};
         }
     }
@@ -68,7 +68,7 @@ crm_rate_view rate_inverter::resolve(const std::string& base_code,
                          .rate = 0.0,
                          .status = rate_status::unavailable,
                          .as_of = std::chrono::system_clock::time_point{},
-                         .inverted = false,
+                         .reciprocal = false,
                          .delta_pct = std::nullopt};
 }
 

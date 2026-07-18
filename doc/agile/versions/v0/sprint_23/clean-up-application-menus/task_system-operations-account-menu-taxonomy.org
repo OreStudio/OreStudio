@@ -48,11 +48,11 @@ owns the destination menu's own standing-up.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:48783B41-101D-41DC-90B0-C7F9C6CA80AF][Verify System/Operations/Account menu taxonomy]] | PENDING | |
+| [[id:48783B41-101D-41DC-90B0-C7F9C6CA80AF][Verify System/Operations/Account menu taxonomy]] | PASSED | All 8 steps passed after several review rounds (see Result). |
 
 * PRs
 
@@ -171,3 +171,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented the signed-off taxonomy, refined through several rounds
+of manual QA:
+
+- *File* absorbs System and Account, organised into three submenus:
+  =Connectivity= (Connections, Connect, Disconnect), =Current User=
+  (My Account, My Sessions), and =System= (System Settings, Test
+  Scenario Runner, Reset System).
+- *Operations* absorbs Message Queue, Telemetry, and Administration
+  (renamed =User &Accounts= to avoid colliding with File's personal
+  Account actions), plus a new =Data &Transfer= submenu (Import ORE
+  Data, Data Librarian, Manage Workspaces).
+- *Data Management* is retired entirely. Its Data Catalogue moved to
+  *Data &Quality* (not Operations — every entity is =ores.dq=-backed,
+  confirmed during QA), alongside a renamed =Coding &Schemes=
+  submenu (was "Classifications", renamed to avoid colliding with
+  Reference Data's unrelated Classifications submenu) and Audit
+  Trail.
+- *Trading Codes* (a single-item submenu, Purpose Types) is retired.
+  =purpose_type= turned out to classify Portfolios, not Books,
+  despite the similarly-named =book_purpose_type= — a distinct
+  entity — so it landed in a new *Portfolio Codes* submenu under
+  Reference Data > Codes, not Book Codes.
+- Out-of-scope opportunistic fixes from the same QA passes:
+  flattened/regrouped Synthetic's raw-table entries under a
+  =&Configuration= submenu (was "Advanced (raw tables)").
+- Filed a backlog capture to rename =purpose_type= to
+  =portfolio_purpose_type= at the schema/backend level — the menu
+  split is a UI-only mitigation for the naming confusion, not a fix.
+
+Net: four top-level menus (File, Reference Data, Operations, Data
+Quality) instead of the original seven.

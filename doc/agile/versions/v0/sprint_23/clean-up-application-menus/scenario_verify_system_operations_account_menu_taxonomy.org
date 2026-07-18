@@ -56,24 +56,22 @@ separate *System* or *Account* menu.
 |--------+-------|
 | Status | PASS |
 
-** File contains connection actions, personal actions, and a System submenu
+** File groups Connectivity, Current User, and System submenus
 
-Open *File*. Confirm, in order: Connections..., separator, Connect,
-Disconnect, separator, My Account..., My Sessions..., separator,
-*S&ystem* (submenu), separator, Exit. Open My Account and My
-Sessions and confirm they still work.
+Open *File*. Confirm, in order: *&Connectivity* (submenu), *Current
+&User* (submenu), *S&ystem* (submenu), separator, Exit.
+
+Open File > Connectivity. Confirm it contains, in order:
+Connections..., separator, Connect, Disconnect.
+
+Open File > Current User. Confirm it contains My Account... and My
+Sessions.... Open both and confirm they still work.
 
 Open File > System. Confirm it contains, in order: System Settings,
 separator, Test Scenario Runner, separator, Reset System.... Open
 System Settings and confirm it opens. Open Test Scenario Runner and
 confirm it opens (this is the window you're using to run this very
 scenario).
-
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | PASS |
 
 ** Operations gains Telemetry, Message Queue, User Accounts
 
@@ -169,10 +167,10 @@ correct window opens.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
-| Completed at  | 2026-07-18T12:52:59Z |
-| Branch        | feature/system-operations-account-menu-taxonomy |
-| Commit        | 745ccecde |
-| Worktree      | solid_dirac |
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
 
 * Notes

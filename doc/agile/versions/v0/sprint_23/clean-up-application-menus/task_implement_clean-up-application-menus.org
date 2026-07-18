@@ -48,9 +48,71 @@ on the taxonomy.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Inventory (current state)
+
+Single owner: =RefdataPlugin::setup_menus= /
+=RefdataPlugin.cpp:627-989=. No other plugin contributes to
+=reference_data_menu=.
+
+Flat top-level entries (11, no grouping): Currencies, Countries,
+Currency Pairs, Books, Portfolios, Business Centres, Calendars,
+Currency Groups, Parties, Counterparties, Business Units.
+
+Submenus (8, ~35 sub-entries): Trading Conventions (Day Count
+Fraction Types, Business Day Convention Types, Floating Index
+Types, Payment Frequencies, Leg Types); Conventions/curve-building
+(Zero/Deposit/Swap/OIS/FRA/IBOR Index/Overnight Index/Currency Pair/
+CDS Conventions); Tenors (Tenors, Tenor Conventions / Tenor Anchors,
+Kinds, Units, Resolution Algorithms); Classifications (Asset Class
+Codes, Curve Roles, Instrument Codes); Currency Codes (Monetary
+Natures, Rounding Types, Currency Market Tiers); Book Codes (Book
+Statuses, Regulatory Book Types, Book Purpose Types, Ledger Feed
+Types); Cross Rates Matrix (Topology, Driver Pairs, Enabled Derived
+Pairs); Organisation Codes, shared with =ores.qt.party= (Party
+Types, Contact Types, Party Statuses, Party ID Schemes, Business
+Unit Types).
+
+** Target taxonomy (signed off)
+
+- *Entities* — stay flat, one click, unchanged set, reordered into
+  two visually separated clusters (no submenu nesting, so no extra
+  click for traders/middle office): FX & market cluster (Currencies,
+  Currency Pairs, Currency Groups, Countries, Business Centres,
+  Calendars) — divider — org/trading cluster (Books, Portfolios,
+  Parties, Counterparties, Business Units).
+- *Conventions* — merge today's "Trading Conventions" and
+  "Conventions" submenus into one =Conventions= submenu with two
+  nested groups, *Trading* (Day Count/BDC/Floating Index/Payment
+  Frequency/Leg Types) and *Curve Building* (Zero/Deposit/Swap/OIS/
+  FRA/IBOR/Overnight/Currency Pair/CDS Conventions). Removes the
+  two-near-identical-names confusion.
+- *Tenors* — unchanged, already self-contained.
+- *Codes* (new umbrella submenu) — nest today's four peer submenus
+  (Classifications, Currency Codes, Book Codes, Organisation Codes)
+  as sub-submenus underneath it, since all four are the same kind of
+  thing (auxiliary classification/lookup values) rather than primary
+  entities.
+- *Cross Rates Matrix* — unchanged, standalone submenu (configuration
+  data, not live market data — see existing code comment).
+
+Net: top-level Reference Data drops from ~19 items to ~15 (11
+entities + Conventions + Tenors + Codes + Cross Rates Matrix), and
+the two real sources of confusion (duplicate "Conventions" naming,
+four indistinguishable code submenus) are resolved.
+
+** Implementation steps
+
+1. =RefdataPlugin::setup_menus= — merge Trading Conventions +
+   Conventions into one =Conventions= submenu with two nested
+   sub-submenus.
+2. Add a =Codes= submenu; move Classifications, Currency Codes, Book
+   Codes, Organisation Codes under it as sub-submenus (contents
+   unchanged).
+3. Reorder the 11 flat entity actions into the two clusters with a
+   separator between them.
+4. Leave Tenors and Cross Rates Matrix as-is.
+5. Manual QA pass in the running Qt client against the target
+   taxonomy above.
 
 * Notes
 

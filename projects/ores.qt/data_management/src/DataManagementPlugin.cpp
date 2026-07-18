@@ -21,7 +21,6 @@
 #include "ores.qt/CatalogController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
-#include "ores.qt/CodeDomainController.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/DataDomainController.hpp"
@@ -91,14 +90,6 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
                                                               ctx_.username,
                                                               this);
     connectControllerSignals(codingSchemeAuthorityTypeController_.get());
-
-    codeDomainController_ = std::make_unique<CodeDomainController>(ctx_.main_window,
-                                                                   ctx_.mdi_area,
-                                                                   ctx_.client_manager,
-                                                                   ctx_.username,
-                                                                   ctx_.badge_cache,
-                                                                   this);
-    connectControllerSignals(codeDomainController_.get());
 
     codingSchemeController_ = std::make_unique<CodingSchemeController>(ctx_.main_window,
                                                                        ctx_.mdi_area,
@@ -198,18 +189,13 @@ void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // Classifications submenu (Coding Schemes + Code Domains + Coding
-    // Scheme Authority Types)
+    // Classifications submenu (Coding Schemes + Coding Scheme Authority
+    // Types; Code Domains now live under DqPlugin's Data Quality menu)
     auto* menuClassifications = dt->addMenu(tr("C&lassifications"));
     auto* actCodingSchemes = menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
     connect(actCodingSchemes, &QAction::triggered, this, [this]() {
         if (codingSchemeController_)
             codingSchemeController_->showListWindow();
-    });
-    auto* actCodeDomains = menuClassifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
-    connect(actCodeDomains, &QAction::triggered, this, [this]() {
-        if (codeDomainController_)
-            codeDomainController_->showListWindow();
     });
     auto* actCodingSchemeAuthorityTypes =
         menuClassifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
@@ -362,7 +348,6 @@ void DataManagementPlugin::on_logout() {
     dataDomainController_.reset();
     datasetController_.reset();
     codingSchemeController_.reset();
-    codeDomainController_.reset();
     codingSchemeAuthorityTypeController_.reset();
     changeReasonController_.reset();
     changeReasonCategoryController_.reset();

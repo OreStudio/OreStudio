@@ -68,6 +68,7 @@ struct shared_menus_context {
     QMenu* telemetry_menu = nullptr;
     QMenu* account_menu = nullptr;
     QMenu* data_management_menu = nullptr;
+    QMenu* data_quality_menu = nullptr;
     QMenu* trading_codes_menu = nullptr;
     QMenu* analytics_menu = nullptr;
     QMenu* analytics_codes_menu = nullptr;

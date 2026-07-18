@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/BadgeDefinitionMdiWindow.hpp"
-#include "ores.dq/messaging/badge_definition_protocol.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -51,6 +51,8 @@ BadgeDefinitionMdiWindow::BadgeDefinitionMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
+
+    // Initial load
     reload();
 }
 
@@ -59,7 +61,6 @@ void BadgeDefinitionMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
-    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -122,13 +123,10 @@ void BadgeDefinitionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-
     initializeTableSettings(tableView_,
                             model_,
                             "BadgeDefinitionListWindow",
-                            {
-                                ClientBadgeDefinitionModel::Description,
-                            },
+                            {ClientBadgeDefinitionModel::Description},
                             {900, 400},
                             1);
 }
@@ -175,7 +173,6 @@ void BadgeDefinitionMdiWindow::setupConnections() {
 
 void BadgeDefinitionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading badge definitions";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading badge definitions..."));
     model_->refresh();
 }
@@ -295,16 +292,20 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
         return;
     }
 
-    QPointer<BadgeDefinitionMdiWindow> self = this;
-    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+    struct BatchDeleteResult {
+        bool success;
+        std::string message;
+        std::vector<std::string> codes;
+    };
 
-    auto task = [self, codes]() -> DeleteResult {
-        DeleteResult results;
+    QPointer<BadgeDefinitionMdiWindow> self = this;
+
+    auto task = [self, codes]() -> BatchDeleteResult {
         if (!self)
-            return {};
+            return {false, "Window closed", {}};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making delete request for " << codes.size() << " badge definitions";
+            << "Making batch delete request for " << codes.size() << " badge definitions";
 
         dq::messaging::delete_badge_definition_request request;
         request.codes = codes;
@@ -312,70 +313,39 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            }
-            return results;
+            return {false, response_result.error(), {}};
         }
 
-        for (const auto& code : codes) {
-            results.push_back({code, {response_result->success, response_result->message}});
-        }
-
-        return results;
+        return {response_result->success, response_result->message, codes};
     };
 
-    auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
-        auto results = watcher->result();
+    auto* watcher = new QFutureWatcher<BatchDeleteResult>(self);
+    connect(watcher, &QFutureWatcher<BatchDeleteResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
         watcher->deleteLater();
-
-        int success_count = 0;
-        int failure_count = 0;
-        QString first_error;
-
-        for (const auto& [code, result] : results) {
-            if (result.first) {
-                BOOST_LOG_SEV(lg(), debug) << "Badge Definition deleted: " << code;
-                success_count++;
-                emit self->definitionDeleted(QString::fromStdString(code));
-            } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Badge Definition deletion failed: " << code << " - " << result.second;
-                failure_count++;
-                if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(result.second);
-                }
-            }
-        }
 
         self->model_->refresh();
 
-        if (failure_count == 0) {
-            QString msg =
-                success_count == 1 ?
-                    "Successfully deleted 1 badge definition" :
-                    QString("Successfully deleted %1 badge definitions").arg(success_count);
+        if (result.success) {
+            for (const auto& code : result.codes) {
+                BOOST_LOG_SEV(lg(), debug) << "Badge Definition deleted: " << code;
+                emit self->definitionDeleted(QString::fromStdString(code));
+            }
+            const int count = static_cast<int>(result.codes.size());
+            QString msg = count == 1 ?
+                              "Successfully deleted 1 badge definition" :
+                              QString("Successfully deleted %1 badge definitions").arg(count);
             emit self->statusChanged(msg);
-        } else if (success_count == 0) {
-            QString msg = QString("Failed to delete %1 %2: %3")
-                              .arg(failure_count)
-                              .arg(failure_count == 1 ? "badge definition" : "badge definitions")
-                              .arg(first_error);
-            emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg =
-                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
-            emit self->statusChanged(msg);
-            MessageBoxHelper::warning(self, "Partial Success", msg);
+            BOOST_LOG_SEV(lg(), error) << "Batch delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorOccurred(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
         }
     });
 
-    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    QFuture<BatchDeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
-
 
 }

@@ -20,12 +20,13 @@
 #ifndef ORES_QT_CLIENT_BADGE_DEFINITION_MODEL_HPP
 #define ORES_QT_CLIENT_BADGE_DEFINITION_MODEL_HPP
 
-#include "ores.dq/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -89,7 +90,6 @@ public:
      * @return The badge definition, or nullptr if row is invalid.
      */
     const dq::domain::badge_definition* getDefinition(int row) const;
-
 
     /**
      * @brief Load a specific page of data.

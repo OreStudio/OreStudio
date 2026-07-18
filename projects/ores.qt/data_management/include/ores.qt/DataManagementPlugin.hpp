@@ -31,7 +31,6 @@ class DetachableMdiSubWindow;
 class CatalogController;
 class ChangeReasonController;
 class ChangeReasonCategoryController;
-class CodeDomainController;
 class CodingSchemeController;
 class CodingSchemeAuthorityTypeController;
 class DataDomainController;
@@ -88,7 +87,6 @@ private:
     std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
     std::unique_ptr<ChangeReasonController> changeReasonController_;
     std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
-    std::unique_ptr<CodeDomainController> codeDomainController_;
     std::unique_ptr<CodingSchemeController> codingSchemeController_;
     std::unique_ptr<DatasetController> datasetController_;
 

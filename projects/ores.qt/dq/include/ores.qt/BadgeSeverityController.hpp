@@ -20,16 +20,13 @@
 #ifndef ORES_QT_BADGE_SEVERITY_CONTROLLER_HPP
 #define ORES_QT_BADGE_SEVERITY_CONTROLLER_HPP
 
-#include "ores.dq/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
-#include <expected>
-#include <functional>
-#include <vector>
 
 namespace ores::qt {
 
@@ -65,14 +62,12 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
-
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
-    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const dq::domain::badge_severity& severity);
@@ -80,27 +75,11 @@ private slots:
     void onShowHistory(const dq::domain::badge_severity& severity);
     void onRevertVersion(const dq::domain::badge_severity& severity);
     void onOpenVersion(const dq::domain::badge_severity& severity, int versionNumber);
-    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
-    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::badge_severity& severity);
     void showHistoryWindow(const QString& code);
-
-    /**
-     * @brief Fetches the full typed badge severity history (the
-     * existing per-entity dq::messaging::get_badge_severity_history_request/
-     * dq::messaging::get_badge_severity_history_response, unrelated to the generic
-     * history.v1.get subject) and hands it to @p callback on the UI
-     * thread. Used to resolve HistoryDialog's generic (entity_id,
-     * version) signals back to a typed badge severity, since the
-     * generic dialog holds no typed domain data.
-     */
-    void fetchBadgeSeverityHistory(
-        const QString& entityId,
-        std::function<void(std::expected<std::vector<dq::domain::badge_severity>, QString>)>
-            callback);
 
     BadgeSeverityMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

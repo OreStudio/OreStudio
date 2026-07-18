@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientCodeDomainModel.hpp"
-#include "ores.dq/messaging/code_domain_protocol.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -204,35 +204,21 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch code domains: " << result.error();
                     return {.success = false,
                             .domains = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(result.error()),
-                            .error_details = {}};
-                }
-
-                // A transport-level success (result is set) does not mean the
-                // request itself succeeded -- the server encodes business/
-                // repository failures (e.g. a query error) as a normally-
-                // deserializable response with success=false and a message,
-                // not a transport error. Missing this check silently turns a
-                // real backend failure into "0 rows loaded", indistinguishable
-                // from a genuinely empty result set.
-                if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
-                    return {.success = false,
-                            .domains = {},
-                            .total_available_count = 0,
-                            .error_message = QString::fromStdString(result->message),
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch code domains: " + result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->domains.size() << " code domains";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->domains.size());
+                    << "Fetched " << result->code_domains.size() << " code domains";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->code_domains.size());
                 return {.success = true,
-                        .domains = std::move(result->domains),
+                        .domains = std::move(result->code_domains),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -295,7 +281,6 @@ const dq::domain::code_domain* ClientCodeDomainModel::getDomain(int row) const {
         return nullptr;
     return &domains_[idx];
 }
-
 
 QVariant ClientCodeDomainModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

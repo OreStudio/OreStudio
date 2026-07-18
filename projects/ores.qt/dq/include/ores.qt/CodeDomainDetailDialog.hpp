@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CODE_DOMAIN_DETAIL_DIALOG_HPP
 #define ORES_QT_CODE_DOMAIN_DETAIL_DIALOG_HPP
 
-#include "ores.dq/domain/code_domain.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include <vector>
-
 
 namespace Ui {
 class CodeDomainDetailDialog;
 }
 
 namespace ores::qt {
+
+class BadgeMappingsTab;
 
 /**
  * @brief Detail dialog for viewing and editing code domain records.
@@ -62,16 +62,6 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
-    /**
-     * @brief Force the dialog into the unsaved-changes state.
-     *
-     * Used when values are loaded programmatically and must be savable
-     * immediately even though the user typed nothing — e.g. a revert, where
-     * the act of loading a past version's values is itself the change.
-     */
-    void markDirty();
-
-
 signals:
     void domainSaved(const QString& code);
     void domainDeleted(const QString& code);
@@ -89,7 +79,6 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
-    QString code() const override;
 
 private:
     void setupUi();
@@ -99,7 +88,6 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
-
     Ui::CodeDomainDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
@@ -107,6 +95,10 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+
+    // Not codegen'd: hand-written once in BadgeMappingsTab, wired in here
+    // directly (this dialog is itself hand-maintained, not generated).
+    BadgeMappingsTab* badgeMappingsTab_{nullptr};
 };
 
 }

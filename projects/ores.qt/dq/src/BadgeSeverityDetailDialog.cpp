@@ -18,8 +18,7 @@
  *
  */
 #include "ores.qt/BadgeSeverityDetailDialog.hpp"
-#include "ores.dq/messaging/badge_severity_protocol.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ui_BadgeSeverityDetailDialog.h"
@@ -40,16 +39,6 @@ BadgeSeverityDetailDialog::BadgeSeverityDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
-    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
-    // block is expected to construct a HierarchyModelBuilder-derived model
-    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
-    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
-    // when no entity implements this kind.
-    // Composite child-entity tables seam: an :implements
-    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
-    // + QToolBar per embedded child entity (e.g. identifiers, contact
-    // information), wraps each in a tab, and inserts it into this dialog's
-    // tab widget. Left empty when no entity implements this kind.
 }
 
 BadgeSeverityDetailDialog::~BadgeSeverityDetailDialog() {
@@ -66,10 +55,6 @@ QWidget* BadgeSeverityDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* BadgeSeverityDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
-}
-
-QString BadgeSeverityDetailDialog::code() const {
-    return QString::fromStdString(severity_.code);
 }
 
 void BadgeSeverityDetailDialog::setupUi() {
@@ -126,11 +111,6 @@ void BadgeSeverityDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
-void BadgeSeverityDetailDialog::markDirty() {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
-
 void BadgeSeverityDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
@@ -163,6 +143,7 @@ void BadgeSeverityDetailDialog::updateSeverityFromUi() {
     severity_.name = ui_->nameEdit->text().trimmed().toStdString();
     severity_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     severity_.modified_by = username_;
+    severity_.performed_by = username_;
 }
 
 void BadgeSeverityDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -184,7 +165,7 @@ bool BadgeSeverityDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !code_val.isEmpty() && !name_val.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BadgeSeverityDetailDialog::onSaveClicked() {
@@ -198,15 +179,6 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
-
-
-    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
-                                        ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
-    if (!crSel)
-        return;
-    severity_.change_reason_code = crSel->reason_code;
-    severity_.change_commentary = crSel->commentary;
 
     updateSeverityFromUi();
 
@@ -230,7 +202,7 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            return {false, response_result.error()};
         }
 
         return {response_result->success, response_result->message};
@@ -278,11 +250,6 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
-    if (!crSel)
-        return;
-
     BOOST_LOG_SEV(lg(), info) << "Deleting badge severity: " << severity_.code;
 
     QPointer<BadgeSeverityDetailDialog> self = this;
@@ -292,18 +259,18 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = severity_.code]() -> DeleteResult {
+    auto task = [self, code_str = severity_.code]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         dq::messaging::delete_badge_severity_request request;
-        request.codes = {code};
+        request.codes = {code_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            return {false, response_result.error()};
         }
 
         return {response_result->success, response_result->message};
@@ -330,6 +297,5 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
-
 
 }

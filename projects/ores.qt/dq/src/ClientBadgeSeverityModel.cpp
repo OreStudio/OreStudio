@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
-#include "ores.dq/messaging/badge_severity_protocol.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -44,7 +44,7 @@ ClientBadgeSeverityModel::ClientBadgeSeverityModel(ClientManager* clientManager,
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &ClientBadgeSeverityModel::onSeveritiesLoaded);
+            &ClientBadgeSeverityModel::onSeveritysLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
@@ -205,35 +205,22 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch badge severities: " << result.error();
                     return {.success = false,
                             .severities = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(result.error()),
-                            .error_details = {}};
-                }
-
-                // A transport-level success (result is set) does not mean the
-                // request itself succeeded -- the server encodes business/
-                // repository failures (e.g. a query error) as a normally-
-                // deserializable response with success=false and a message,
-                // not a transport error. Missing this check silently turns a
-                // real backend failure into "0 rows loaded", indistinguishable
-                // from a genuinely empty result set.
-                if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
-                    return {.success = false,
-                            .severities = {},
-                            .total_available_count = 0,
-                            .error_message = QString::fromStdString(result->message),
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch badge severities: " + result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->severities.size() << " badge severities";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->severities.size());
+                    << "Fetched " << result->badge_severities.size() << " badge severities";
+                const std::uint32_t count =
+                    static_cast<std::uint32_t>(result->badge_severities.size());
                 return {.success = true,
-                        .severities = std::move(result->severities),
+                        .severities = std::move(result->badge_severities),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -244,7 +231,7 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
     watcher_->setFuture(future);
 }
 
-void ClientBadgeSeverityModel::onSeveritiesLoaded() {
+void ClientBadgeSeverityModel::onSeveritysLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
@@ -296,7 +283,6 @@ const dq::domain::badge_severity* ClientBadgeSeverityModel::getSeverity(int row)
         return nullptr;
     return &severities_[idx];
 }
-
 
 QVariant ClientBadgeSeverityModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

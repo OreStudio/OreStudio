@@ -20,12 +20,13 @@
 #ifndef ORES_QT_CLIENT_BADGE_SEVERITY_MODEL_HPP
 #define ORES_QT_CLIENT_BADGE_SEVERITY_MODEL_HPP
 
-#include "ores.dq/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -87,7 +88,6 @@ public:
      */
     const dq::domain::badge_severity* getSeverity(int row) const;
 
-
     /**
      * @brief Load a specific page of data.
      */
@@ -113,7 +113,7 @@ public:
     }
 
 private slots:
-    void onSeveritiesLoaded();
+    void onSeveritysLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 

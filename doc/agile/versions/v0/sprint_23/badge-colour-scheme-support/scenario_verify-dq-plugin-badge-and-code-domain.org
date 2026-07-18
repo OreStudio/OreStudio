@@ -107,7 +107,7 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | shows duplicates. RLS problems?; [[file:scenario_verify-dq-plugin-badge-and-code-domain_step6_20260718_042929.png]] |
 
 ** Spot-check Portfolios badge colours
@@ -124,16 +124,16 @@ Log in against the =prime_origin= environment as
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
-| Notes  | looks good;  |
+| Notes  | looks good; |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-18T03:30:23Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-18T07:34:55Z |
 | Branch        | feature/badge-mapping-browser-ui-resume |
-| Commit        | 9cf657b46 |
+| Commit        | dbe245671 |
 | Worktree      | prime_origin |
 
 * Notes

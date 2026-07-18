@@ -32,7 +32,7 @@ class PasteBlock <<PasteBlock>> {
 note right of PasteBlock
   ID is the well-known *kind* UUID,
   declared once by the segment that
-  owns this slot (e.g. SqlPasteBlock
+  owns this slot (e.g. SqlSchemaExtraDropStatements
   on the SQL segment). An entity's
   own implementing block carries a
   separate, per-instance :ID:, not

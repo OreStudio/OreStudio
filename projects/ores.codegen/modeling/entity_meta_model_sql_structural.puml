@@ -30,7 +30,7 @@ class SQL <<segment>> {
   +tablename : string
   +parentIdColumn : string [0..1]
   +hierarchyNameField : string [0..1]
-  +extraDrops : SqlPasteBlock
+  +sqlSchemaDropPasteBlock : SqlSchemaExtraDropStatements
 }
 
 note right of SQL
@@ -41,11 +41,11 @@ note right of SQL
   carries the matching cross-reference.
 end note
 
-class SqlPasteBlock <<PasteBlock>> {
+class SqlSchemaExtraDropStatements <<PasteBlock>> {
   ID
 }
 
 Entity --> SQL
-SQL --> SqlPasteBlock
+SQL --> SqlSchemaExtraDropStatements
 
 @enduml

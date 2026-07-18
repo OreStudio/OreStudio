@@ -35,7 +35,7 @@ repository facet, not some other time.
 Paste blocks are not a segment themselves — this page is a concept
 note, not a hub-and-spokes segment page — so there is no facet of
 its own to map to here. A paste block *exists within* a segment (see
-each segment's own structural diagram, e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =SqlPasteBlock=),
+each segment's own structural diagram, e.g. [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =SqlSchemaExtraDropStatements=),
 and it is that owning segment's facet the content ultimately projects
 into. See "Finding a block kind" below for which segment page (and
 therefore which facet) hosts each concrete block kind.

@@ -57,7 +57,7 @@ Structural view — =Entity= has exactly one =SQL= segment;
 =:hierarchy_name_field:= are present only once =:has_parent_id:= is
 on (drawn optional here even though that condition itself is
 non-structural — see [[*Hierarchy: =has_parent_id=][Hierarchy]]); and the segment's one [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][paste
-block]] kind (extra drop statements, [[*Paste block: extra drop statements][below]]) is drawn as its own
+block]] kind (extra drop statements, [[*Extra drop statements][below]]) is drawn as its own
 class — a block kind's =ID= is the well-known kind UUID, distinct
 from any entity's per-instance implementing block:
 
@@ -133,12 +133,14 @@ on the SQL side — see =Commission: party='s "Bring party under
 codegen" task). The hierarchy function composes independently of
 that column either way.
 
-* Paste block: extra drop statements
+* Paste blocks
+
+See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism this section assumes.
+
+** Extra drop statements
 :PROPERTIES:
 :ID: 5E47F108-1350-4540-B3C2-E83DD5379B2D
 :END:
-
-See [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism this section assumes.
 
 Additional =DROP= statements inserted into the generated
 =<component>_<entity_plural>_drop.sql=, just before =drop table if
@@ -147,7 +149,7 @@ generates database objects (e.g. a validate function) that the
 entity template itself has no way to know about. If no entity
 implements this kind, the marker collapses to nothing.
 
-Template usage (=sql_schema_domain_entity_drop.mustache=):
+Template usage ([[id:3D9951F8-C68B-4EA1-93FE-2229769997E8][sql_schema_domain_entity_drop]]):
 
 #+begin_src text
 drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
@@ -155,11 +157,13 @@ drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
 drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
 #+end_src
 
-Entity attachment (=** SQL > ** Extra drops=), expecting the =body=
-block name:
+To use this paste block on an entity, declare it under =** Paste
+blocks > *** Extra drop statements=, with the body in a block named
+=body=. See the following example:
 
 #+begin_src org
-,** Extra drops
+,** Paste blocks
+,*** Extra drop statements
 
 ,#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_refdata_validate_rounding_type_fn;

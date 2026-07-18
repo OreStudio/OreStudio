@@ -542,6 +542,119 @@ struct revoke_currency_pair_convention_calendar_response {
         [h](ores::nats::message msg) { h->revoke_calendar(std::move(msg)); }));
 #+end_src
 
+** Calendars tab: detail dialog header includes
+
+#+begin_src cpp :name calendars_tab_includes :implements 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
+#include "ores.qt/CalendarAssignmentWidget.hpp"
+#+end_src
+
+** Calendars tab: detail dialog private declarations
+
+#+begin_src cpp :name calendars_tab_declarations :implements F55CB64E-165A-4E15-A50A-5723C0320E97
+    void setupCalendarsTab();
+    CalendarAssignmentWidget* calendarWidget_ = nullptr;
+    QWidget* calendarsTab_ = nullptr;
+#+end_src
+
+** Calendars tab: constructor wiring
+
+#+begin_src cpp :name calendars_tab_ctor :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    setupCalendarsTab();
+#+end_src
+
+** Calendars tab: setupConnections wiring
+
+#+begin_src cpp :name calendars_tab_connections :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::statusMessage,
+            this,
+            &CurrencyPairConventionDetailDialog::statusMessage);
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::errorMessage,
+            this,
+            [this](const QString&, const QString& message) { emit errorMessage(message); });
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::assignmentsChanged,
+            this,
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
+    connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
+        if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
+            return;
+        calendarWidget_->setClientManager(clientManager_);
+        calendarWidget_->setImageCache(imageCache());
+        calendarWidget_->setLeftKey(convention_.pair_code);
+        calendarWidget_->setReadOnly(readOnly_ || convention_.pair_code.empty());
+        calendarWidget_->load();
+    });
+    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
+        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
+            return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+        if (!crSel)
+            return;
+        calendarWidget_->commitChanges(
+            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+                if (!success)
+                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+            });
+    });
+#+end_src
+
+** Calendars tab: implementation
+
+#+begin_src cpp :name calendars_tab_implementation :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732
+void CurrencyPairConventionDetailDialog::setupCalendarsTab() {
+    calendarWidget_ = new CalendarAssignmentWidget(this);
+    calendarWidget_->setCallbacks(
+        [](ClientManager* cm,
+           const std::string& leftKey) -> CalendarAssignmentWidget::LoadResult {
+            refdata::messaging::get_currency_pair_convention_calendars_request request;
+            request.pair_code = leftKey;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            CalendarAssignmentWidget::LoadResult result;
+            result.success = response->success;
+            result.message = QString::fromStdString(response->message);
+            for (const auto& cc : response->calendars)
+                result.calendarCodes.push_back(cc.calendar_code);
+            return result;
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode,
+           const std::string& changeReasonCode,
+           const std::string& changeCommentary) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::assign_currency_pair_convention_calendar_request request;
+            request.pair_code = leftKey;
+            request.calendar_code = calendarCode;
+            request.change_reason_code = changeReasonCode;
+            request.change_commentary = changeCommentary;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success, .message = QString::fromStdString(response->message)};
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::revoke_currency_pair_convention_calendar_request request;
+            request.pair_code = leftKey;
+            request.calendar_code = calendarCode;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success, .message = QString::fromStdString(response->message)};
+        });
+
+    calendarsTab_ = new QWidget();
+    auto* layout = new QVBoxLayout(calendarsTab_);
+    layout->addWidget(calendarWidget_);
+    tabWidget()->addTab(calendarsTab_, tr("Calendars"));
+}
+#+end_src
+
 ** Qt: pair_code stays visually normal while locked
 :PROPERTIES:
 :ID: B8D3E6F1-4A29-4C7E-9B1D-3F5A8C2E7D64

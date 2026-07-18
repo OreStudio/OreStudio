@@ -545,6 +545,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                            this);
     connectControllerSignals(currencyPairConventionController_.get());
 
+    connect(currencyPairConventionController_.get(),
+            &CurrencyPairConventionController::showCalendarsRequested,
+            this,
+            [this]() {
+                if (calendarController_)
+                    calendarController_->showListWindow();
+            });
+
     currencyGroupController_ = std::make_unique<CurrencyGroupController>(ctx_.main_window,
                                                                          ctx_.mdi_area,
                                                                          ctx_.client_manager,

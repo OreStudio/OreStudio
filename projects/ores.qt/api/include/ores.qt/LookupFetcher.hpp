@@ -113,6 +113,16 @@ ORES_QT_API lookup_result fetch_tenant_lookups(ClientManager* cm);
 ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
 
 /**
+ * @brief Fetches QuantLib/ORE calendar codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by the reusable calendar combo picker (setup_calendar_combo)
+ * and any detail dialog that needs a plain calendar combo box.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_calendar_codes(ClientManager* cm);
+
+/**
  * @brief Fetches all country alpha-2 codes from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.

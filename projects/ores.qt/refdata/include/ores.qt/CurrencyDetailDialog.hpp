@@ -21,6 +21,7 @@
 #define ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/CalendarAssignmentWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -29,7 +30,6 @@
 #include <QAction>
 #include <QToolBar>
 #include <vector>
-
 
 namespace Ui {
 class CurrencyDetailDialog;
@@ -140,6 +140,9 @@ private:
     void displayCurrentVersion();
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
+    void setupCalendarsTab();
+    CalendarAssignmentWidget* calendarWidget_ = nullptr;
+    QWidget* calendarsTab_ = nullptr;
 
     Ui::CurrencyDetailDialog* ui_;
     ClientManager* clientManager_;

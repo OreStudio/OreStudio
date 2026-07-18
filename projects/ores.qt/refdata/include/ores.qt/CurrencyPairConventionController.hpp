@@ -75,6 +75,7 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void showCalendarsRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;

@@ -21,6 +21,7 @@
 #define ORES_QT_CURRENCY_PAIR_CONVENTION_DETAIL_DIALOG_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/CalendarAssignmentWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -103,6 +104,9 @@ private:
 
     void populatePairCodeCombo();
 
+    void setupCalendarsTab();
+    CalendarAssignmentWidget* calendarWidget_ = nullptr;
+    QWidget* calendarsTab_ = nullptr;
 
     Ui::CurrencyPairConventionDetailDialog* ui_;
     ClientManager* clientManager_;

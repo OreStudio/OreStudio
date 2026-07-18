@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -132,6 +133,22 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     if (response) {
         for (const auto& ccy : response->currencies) {
             codes.push_back(ccy.iso_code);
+        }
+    }
+    return codes;
+}
+
+std::vector<std::string> fetch_calendar_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_calendars_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& cal : response->calendars) {
+            codes.push_back(cal.code);
         }
     }
     return codes;

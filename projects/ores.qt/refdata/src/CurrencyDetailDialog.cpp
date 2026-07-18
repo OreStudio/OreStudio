@@ -54,6 +54,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    setupCalendarsTab();
     // Composite child-entity tables seam: an :implements
     // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
     // + QToolBar per embedded child entity (e.g. identifiers, contact
@@ -194,6 +195,40 @@ void CurrencyDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CurrencyDetailDialog::onFieldChanged);
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::statusMessage,
+            this,
+            &CurrencyDetailDialog::statusMessage);
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::errorMessage,
+            this,
+            [this](const QString&, const QString& message) { emit errorMessage(message); });
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::assignmentsChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
+        if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
+            return;
+        calendarWidget_->setClientManager(clientManager_);
+        calendarWidget_->setImageCache(imageCache());
+        calendarWidget_->setLeftKey(currency_.iso_code);
+        calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
+        calendarWidget_->load();
+    });
+    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
+        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
+            return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+        if (!crSel)
+            return;
+        calendarWidget_->commitChanges(
+            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+                if (!success)
+                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+            });
+    });
 }
 
 void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -651,5 +686,55 @@ void CurrencyDetailDialog::onDeleteClicked() {
     watcher->setFuture(future);
 }
 
+void CurrencyDetailDialog::setupCalendarsTab() {
+    calendarWidget_ = new CalendarAssignmentWidget(this);
+    calendarWidget_->setCallbacks(
+        [](ClientManager* cm, const std::string& leftKey) -> CalendarAssignmentWidget::LoadResult {
+            refdata::messaging::get_currency_calendars_request request;
+            request.currency_iso_code = leftKey;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            CalendarAssignmentWidget::LoadResult result;
+            result.success = response->success;
+            result.message = QString::fromStdString(response->message);
+            for (const auto& cc : response->calendars)
+                result.calendarCodes.push_back(cc.calendar_code);
+            return result;
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode,
+           const std::string& changeReasonCode,
+           const std::string& changeCommentary) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::assign_currency_calendar_request request;
+            request.currency_iso_code = leftKey;
+            request.calendar_code = calendarCode;
+            request.change_reason_code = changeReasonCode;
+            request.change_commentary = changeCommentary;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success,
+                    .message = QString::fromStdString(response->message)};
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::revoke_currency_calendar_request request;
+            request.currency_iso_code = leftKey;
+            request.calendar_code = calendarCode;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success,
+                    .message = QString::fromStdString(response->message)};
+        });
+
+    calendarsTab_ = new QWidget();
+    auto* layout = new QVBoxLayout(calendarsTab_);
+    layout->addWidget(calendarWidget_);
+    tabWidget()->addTab(calendarsTab_, tr("Calendars"));
+}
 
 }

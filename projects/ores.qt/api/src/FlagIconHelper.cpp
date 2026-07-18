@@ -97,6 +97,12 @@ QIcon country_flag_icon(ImageCache& imageCache, const std::string& alpha2Code) {
     return imageCache.getCountryFlagIcon(alpha2Code);
 }
 
+QIcon calendar_flag_icon(ImageCache& imageCache, const std::string& calendarCode) {
+    if (calendarCode.empty())
+        return {};
+    return imageCache.getCalendarFlagIcon(calendarCode);
+}
+
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
     if (!combo || !cache)
         return;
@@ -117,6 +123,8 @@ void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QS
                 return cache->getBusinessCentreFlagIcon(code);
             case FlagSource::CurrencyPair:
                 return currency_flag_icon_from_pair_code(*cache, code);
+            case FlagSource::Calendar:
+                return cache->getCalendarFlagIcon(code);
         }
         return {};
     };
@@ -192,6 +200,54 @@ void setup_currency_combo(QComboBox* combo,
             // reconnects on ImageCache::allLoaded to re-apply once the
             // full set has downloaded.
             setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency, iconSize);
+        });
+    watcher->setFuture(future);
+}
+
+void setup_calendar_combo(QComboBox* combo,
+                          QObject* owner,
+                          ClientManager* client_manager,
+                          ImageCache* image_cache,
+                          std::function<QString()> fallback_selection,
+                          QSize iconSize) {
+    if (!combo || !owner || !client_manager || !client_manager->isConnected())
+        return;
+
+    const QString watcher_name = combo->objectName() + "CalendarFetchWatcher";
+    if (owner->findChild<QFutureWatcherBase*>(watcher_name))
+        return;
+
+    QPointer<QComboBox> comboPtr = combo;
+    QPointer<QObject> ownerPtr = owner;
+    auto future =
+        QtConcurrent::run([client_manager]() { return fetch_calendar_codes(client_manager); });
+
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(owner);
+    watcher->setObjectName(watcher_name);
+    QObject::connect(
+        watcher,
+        &QFutureWatcher<std::vector<std::string>>::finished,
+        owner,
+        [comboPtr, ownerPtr, watcher, image_cache, fallback_selection, iconSize]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!comboPtr || !ownerPtr)
+                return;
+
+            std::sort(codes.begin(), codes.end());
+            const auto current = comboPtr->currentText();
+            const QSignalBlocker blocker(comboPtr);
+            comboPtr->clear();
+            for (const auto& code : codes)
+                comboPtr->addItem(QString::fromStdString(code));
+
+            const QString to_select = !current.isEmpty() ?
+                                          current :
+                                          (fallback_selection ? fallback_selection() : QString());
+            if (!to_select.isEmpty())
+                comboPtr->setCurrentText(to_select);
+
+            setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Calendar, iconSize);
         });
     watcher->setFuture(future);
 }

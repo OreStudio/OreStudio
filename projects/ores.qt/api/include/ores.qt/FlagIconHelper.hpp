@@ -44,7 +44,7 @@ class ImageCache;
 /**
  * @brief The type of flag icons to apply to a combo box.
  */
-enum class FlagSource { Currency, Country, BusinessCentre, CurrencyPair };
+enum class FlagSource { Currency, Country, BusinessCentre, CurrencyPair, Calendar };
 
 /**
  * @brief Flag icon for one currency, or a composited pair icon for two — the
@@ -111,6 +111,21 @@ ORES_QT_API QIcon business_centre_flag_icon(ImageCache& imageCache,
  * @param alpha2Code Country ISO 3166-1 alpha-2 code.
  */
 ORES_QT_API QIcon country_flag_icon(ImageCache& imageCache, const std::string& alpha2Code);
+
+/**
+ * @brief Flag icon for one calendar, keyed by its QuantLib/ORE token —
+ * the =icon_columns= accessor counterpart to =currency_flag_icon()= for
+ * calendar (e.g. calendar's own =code= column, or any other entity that
+ * references a calendar by code). Delegates to
+ * ImageCache::getCalendarFlagIcon(), which prefers the calendar's own
+ * =image_id= override before falling back to its =country_code='s flag.
+ *
+ * @param imageCache Shared image cache (calendar code -> image_id/country
+ * mapping).
+ * @param calendarCode QuantLib/ORE calendar token; an empty icon is
+ * returned for an empty code.
+ */
+ORES_QT_API QIcon calendar_flag_icon(ImageCache& imageCache, const std::string& calendarCode);
 
 /**
  * @brief Standard single-flag height (device-independent pixels) every list
@@ -292,6 +307,25 @@ inline void set_line_edit_flag_icon(QLineEdit* edit,
  * combo with no entity value to restore (e.g. a filter/picker).
  */
 ORES_QT_API void setup_currency_combo(QComboBox* combo,
+                                      QObject* owner,
+                                      ClientManager* client_manager,
+                                      ImageCache* image_cache,
+                                      std::function<QString()> fallback_selection = {},
+                                      QSize iconSize = single_flag_icon_size());
+
+/**
+ * @brief Populate a combo box with QuantLib/ORE calendar codes and flag
+ * icons.
+ *
+ * The reusable calendar-picker combo every screen that needs to select a
+ * calendar should go through — fetches the current calendar code list
+ * asynchronously, repopulates the combo (preserving the current
+ * selection if still present), then applies flag icons via
+ * apply_flag_icons(FlagSource::Calendar). Re-entrant: a fetch already in
+ * flight for @p combo is not duplicated. See setup_currency_combo()'s
+ * doc comment for the parameter semantics this mirrors.
+ */
+ORES_QT_API void setup_calendar_combo(QComboBox* combo,
                                       QObject* owner,
                                       ClientManager* client_manager,
                                       ImageCache* image_cache,

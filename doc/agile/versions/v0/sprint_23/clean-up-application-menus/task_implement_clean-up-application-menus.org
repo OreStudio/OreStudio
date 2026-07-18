@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E5B96035-A6B9-47C8-92B5-61FD3DFE7ED3][Verify Reference Data menu taxonomy]] | PASSED | All steps passed manually in the Qt client. |
 
 * PRs
 

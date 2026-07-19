@@ -30,9 +30,9 @@ Disable CMake's automatic C++20 module dependency scanning
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] |
-| Now          | Fix applied, verifying locally.        |
+| Now          | Fix verified locally.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open PR.                    |
+| Next         | PR.                                    |
 | Last touched | 2026-07-19                               |
 
 * Acceptance
@@ -62,6 +62,14 @@ Root cause (from Windows CI logs, runs 29669098639 and 29548329266):
 - The project does not use C++20 modules, so the scan pass buys
   nothing. Fix: set =CMAKE_CXX_SCAN_FOR_MODULES OFF= globally in the
   root =CMakeLists.txt=, before subdirectories are added.
+
+* Notes
+
+Verified locally on =linux-clang-debug-make=: configure is clean and
+=ores.dq.core.lib= (the target that failed on Windows) builds
+successfully with the setting off, no behaviour change. Windows-side
+verification will happen via CI on the PR, since no Windows runner is
+available locally.
 
 * Notes
 

@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 7FF8A057-F95D-4654-B709-13D74525892B
+:END:
+#+title: Task: Materialise QuantLib calendar holidays and support calendar adjustments
+#+description: Materialise QuantLib-computed holiday dates into a real, DQ-published, read-only refdata table, clearly attributed as QuantLib-sourced, and model calendar_adjustment as a proper refdata entity so users can layer institution-specific overrides on top of a QuantLib base calendar instead of editing it directly.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+QuantLib's calendars (the ones =refdata.calendars= currently
+catalogues by code/name/country/type) are algorithmic: holidays are
+computed on the fly from hardcoded C++ rules, not stored anywhere as
+dates. Keeping QuantLib as the source of truth for the built-in
+calendars is fine — we don't need to fork or reimplement its holiday
+rules — but right now those rules are completely opaque to a user:
+there is no way to see what dates a calendar actually contains, no
+indication that the data comes from QuantLib, and no story for what a
+user does if the built-in rules aren't enough for them.
+
+This task fixes that:
+
+- *A database copy of what QuantLib thinks the holidays are.* For each
+  =refdata.calendars= row, compute its holiday dates once (via the
+  QuantLib =Calendar::isHoliday()=/=holidayList()= API already linked
+  into =ores.ore=, over a sensible rolling date range) and materialise
+  them into a new refdata table/entity (e.g. =calendar_dates=), keyed
+  by calendar code + date. This is what other screens (e.g. the
+  holiday-aware date picker,
+  [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]]) read from — not a live QuantLib
+  call — so holidays are visible, queryable, and DQ-published like the
+  rest of the calendar data.
+- *Clearly marked as QuantLib-sourced and read-only.* Every row in
+  that table is tagged with its source (QuantLib) and is not editable
+  by users — no add/edit/delete on these dates in the UI. The origin
+  must be obvious wherever these dates are shown, not just implied.
+- *A real answer for "how do I extend this calendar".* Users cannot
+  edit a QuantLib-sourced calendar's dates directly. What they *can*
+  do: layer institution-specific exceptions on top via
+  =ores::refdata::domain::calendar_adjustment=
+  (=projects/ores.refdata/api/include/ores.refdata.api/domain/calendar_adjustment.hpp=
+  — already exists, with ORE XML import/export support in
+  =projects/ores.ore/core/include/ores.ore.core/domain/calendar_adjustment_mapper.hpp=,
+  but not yet modelled as a refdata entity or exposed in the UI) —
+  =additional_holidays=/=additional_business_days= applied on top of a
+  named base calendar. Model =calendar_adjustment= as a proper refdata
+  entity (codegen + Qt CRUD) so a user can create one of these against
+  a QuantLib base calendar, rather than editing the base calendar
+  itself. If an adjustment isn't the right shape for what someone
+  needs (e.g. a genuinely new, unrelated calendar), the answer is to
+  create a brand new =calendar= entity, not to mutate a QuantLib one —
+  make that distinction explicit in the UI/docs so it isn't a dead end
+  for users.
+
+Split out of [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]], which depends on this
+task's output (materialised calendar dates + adjustments) as its real
+data source instead of a live QuantLib call. [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]]
+is blocked on this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-19                               |
+
+* Acceptance
+
+- [ ] QuantLib calendar holiday dates are materialised into a real
+  refdata table/entity (calendar code + date), DQ-published like the
+  other calendar datasets, instead of being computed only on demand.
+- [ ] Materialised dates are clearly attributed as QuantLib-sourced
+  (visible in the UI, not just in a code comment) and are read-only —
+  no user CRUD on these rows.
+- [ ] =calendar_adjustment= (additional holidays / additional business
+  days, optionally layered on a base calendar) is modelled as a
+  proper refdata entity with codegen + Qt CRUD, so users can manage
+  institution-specific calendar overrides without touching the
+  QuantLib-sourced base data.
+- [ ] It's documented/discoverable in the UI that extending a
+  QuantLib calendar means creating a =calendar_adjustment= against it,
+  and that a calendar that doesn't fit any built-in base should be a
+  brand new =calendar= entity, not an edit to a QuantLib one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

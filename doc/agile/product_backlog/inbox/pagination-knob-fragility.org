@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 9FF6FAD3-A3C3-4C31-9220-57CAADFDCCA0
+:END:
+#+title: has_pagination knob is a silent-failure footgun in the Qt client model template
+#+description: The codegen knob gating real offset/limit pagination in a Client entity Model.cpp defaults to off with no compile-time or runtime signal when unset, letting 61 entities silently truncate lists at 100 rows behind fully-functional-looking pagination controls.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-07-19
+#+updated: 2026-07-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=cpp_qt_client_model.cpp.mustache= generates a fetch method whose
+behaviour is a binary fork on the =:has_pagination:= Qt-facet flag:
+set true, it sends real =offset=/=limit= to the server and reports
+the server's true =total_available_count=; unset (the silent
+default), it ignores offset/limit entirely, always fetches the
+server's default page, and reports the fetched page's own size as if
+it were the total — masking the truncation instead of surfacing it.
+Every entity's =MdiWindow= unconditionally shows a full
+=PaginationWidget= (Next/Previous/Load All/page size) regardless of
+this flag, so an entity with the flag off *looks* identical to one
+with it on right up until its row count exceeds 100, at which point
+rows silently become unreachable with no error, warning, or visual
+cue. 61 of the app's ~89 Qt list entities currently have the flag
+unset — see [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][the tracking
+task]] for the full list and the fix (set the flag, regenerate).
+
+The narrower fix (setting the flag everywhere) doesn't address the
+*shape* of the footgun: a knob that silently defaults to the broken
+behaviour, with no build-time or run-time signal distinguishing
+"deliberately unpaginated, all rows always fit" from "someone forgot
+to set the flag." Worth reconsidering the underlying design once the
+narrow fix lands:
+
+- Generate the paginated fetch path unconditionally (drop the
+  =has_pagination= fork) and let every entity always send real
+  offset/limit and report the real total — the branch exists
+  presumably as an optimisation/simplification for small, truly
+  bounded lookup tables, but the two code paths are barely different
+  and the unconditional one is strictly more correct.
+- Or, if a genuinely unpaginated mode is still wanted for small fixed
+  lookup tables, gate the *widget* on the same flag too, so an
+  unpaginated entity's =MdiWindow= doesn't render Next/Previous/Load
+  All controls that don't do anything — the mismatch between "looks
+  paginated" and "is paginated" is what let this go unnoticed across
+  61 entities.
+- Either way, a codegen lint/validation pass that flags entities whose
+  generated model and generated window disagree on pagination support
+  would catch the next occurrence of this drift at generation time
+  rather than in production data.
+
+* Why
+
+Discovered while investigating a real bug during manual QA of
+[[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][the calendar Qt screens
+task]]: the Currencies list showed "Showing all records (100)" with
+68 currencies (including USD) silently unreachable. The immediate fix
+is per-entity ([[id:914B206F-CDB2-4CDC-80BF-0285839E514D][tracked
+here]]); this capture is about the generator-level anti-pattern that
+made the bug possible and easy to reintroduce on the next new entity.
+
+* References
+
+- [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Task: Fix silent 100-row list truncation on entities missing has_pagination]] — the narrow fix.
+- =projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache= — the template with the =has_pagination= fork.
+
+* See also
+
+- [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] — where this was found.

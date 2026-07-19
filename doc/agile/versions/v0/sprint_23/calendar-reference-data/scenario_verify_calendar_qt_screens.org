@@ -1,0 +1,262 @@
+:PROPERTIES:
+:ID: DEF2829B-C331-4CD6-B0CB-FC58AD95CEC8
+:END:
+#+title: Test Scenario: Verify calendar Qt screens
+#+description: Verify calendar list/add/edit/history CRUD, the reusable combo picker, and its use in the Currency and Currency Pair Convention detail dialogs, including eventing.
+#+type: test_scenario
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+target_dialog: CalendarDetailDialog / CalendarHistoryDialog — Menu: Reference Data > Calendars. CurrencyDetailDialog and CurrencyPairConventionDetailDialog's "Calendars" tab (embeds CalendarAssignmentWidget) — Menu: Reference Data > Currencies, and Reference Data > Conventions > Curve Building > Currency Pair Conventions.
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] in [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] |
+| Parent story  | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]   |
+| Target dialog | =CalendarDetailDialog= / =CalendarHistoryDialog= — Menu: *Reference Data > Calendars*. =CurrencyDetailDialog= and =CurrencyPairConventionDetailDialog='s *Calendars* tab (embeds =CalendarAssignmentWidget=) — Menu: *Reference Data > Currencies*, and *Reference Data > Conventions > Curve Building > Currency Pair Conventions* |
+| Clients       | blue, red                               |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** blue
+
+*** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= (from
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+— the exact credentials this scenario's provisioning step used).
+Select the *Barclays Plc* / *BARCLAYS PLC* party. If the database has
+been recreated since provisioning, re-run:
+
+#+begin_src sh
+./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+#+end_src
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Open the Calendars list
+
+Menu: *Reference Data > Calendars*. Confirm the list loads (empty, or
+with any calendars seeded by a prior run of this scenario) and each
+row's country flag icon renders correctly for calendars that have one.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create
+
+Click *Add*. Enter code =TestCal=, name =Test Calendar=, calendar
+type =public_holiday=, country code =US=. Save. Confirm the new row
+appears in the list with the values just entered and the US flag icon.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Read
+
+Double-click the =TestCal= row to reopen its detail dialog. Confirm
+every field round-trips exactly as saved (code, name, calendar type,
+country code).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | - need some kind of hand crafted notebook page to show the holidays for the calendar. |
+
+*** Update
+
+Edit =TestCal='s country code to =GB= and save. Confirm the list
+refreshes with the new country code and its flag without a manual
+reload, and that a change-reason prompt was shown and recorded.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Delete
+
+Select the =TestCal= row and click *Delete*, confirming the prompt.
+Confirm the row disappears from the list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** History
+
+Reopen the =TestCal= row (it should still resolve by code even though
+its current version is deleted — via History, not the main list) and
+open the History dialog. Confirm all three prior operations — create,
+update, delete — are listed in order with the change reasons entered
+above.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Combo picker: assign a calendar to a currency
+
+Re-create =TestCal= (code =TestCal=, country =US=) since the previous
+step deleted it. Open *Reference Data > Currencies*, open the *USD*
+row, switch to its *Calendars* tab. Confirm the tab lazily loads on
+first click (a brief loading indicator, then the currently-assigned
+calendars for USD). Use the combo picker to select =TestCal= and click
+*Add* — confirm it appears in the assigned list immediately (staged,
+not yet saved) with its flag icon, and the dialog's Save button
+becomes enabled. Click *Save*, confirm exactly one change-reason
+prompt appears (not two), and after it completes confirm =TestCal=
+is still listed as assigned to USD after the dialog reloads.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Combo picker: remove a calendar from a currency
+
+With the USD detail dialog still open on the Calendars tab, select
+=TestCal= in the assigned list and click *Remove* — confirm it moves
+out of the assigned list (staged) and the picker combo offers it again
+if reselected before saving. Click *Save*, confirm a single
+change-reason prompt, and after it completes confirm =TestCal= no
+longer appears assigned to USD.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Currency Pair Conventions: Calendars tab and toolbar shortcut
+
+Open *Reference Data > Conventions > Curve Building > Currency Pair
+Conventions*. Confirm the toolbar has a *Calendars* button; click it
+and confirm it opens the same Calendars list window as the Reference
+Data menu entry (reusing the window if already open). Then open the
+=EUR/USD= convention's detail dialog, switch to its *Calendars* tab,
+and repeat the add/remove/save steps above against the convention
+instead of a currency (assign/unassign =TestCal=, confirming a single
+change-reason prompt each time).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Read-only on historical versions
+
+With the =EUR/USD= convention dialog still open on the Calendars tab,
+page to a historical version via the version-nav actions (First/
+Prev). Confirm the Calendars tab's Add/Remove controls become
+disabled while viewing that historical version, and re-enable when
+paging back to the latest version.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** red
+
+*** Connect as a second instance
+
+Log in with the same credentials as the =blue= instance
+(=tenant_admin@barclays_plc= / =Secure-Password-123=) and open the
+Calendars list here too, *before* the =blue= instance performs its
+Create step above.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Confirm the create event arrives
+
+After =blue='s Create step, confirm the =TestCal= row appears in this
+=red= instance's list *without a manual reload* — this is what
+exercises the Postgres LISTEN/NOTIFY-to-NATS relay end to end, not
+just the repository layer ctest already covers.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Confirm the update and delete events arrive
+
+After =blue='s Update step, confirm the country-code change lands
+here automatically. After =blue='s Delete step, confirm the row
+disappears here automatically too.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Confirm a currency-calendar assignment event arrives
+
+Open the *USD* currency detail dialog here in =red= and switch to its
+Calendars tab, *before* =blue= performs its "assign a calendar to a
+currency" step. After =blue= saves that assignment, confirm the newly
+assigned calendar appears in =red='s Calendars tab without manually
+reopening the dialog (if this junction isn't wired for live NATS
+refresh, note that explicitly here rather than marking FAIL — the
+Result should state observed behaviour and whether it is an eventing
+gap already known or new).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-19T21:20:20Z |
+| Branch        | feature/calendar-qt-screens |
+| Commit        | 8747f63ea |
+| Worktree      | merry_newton |
+
+* Notes

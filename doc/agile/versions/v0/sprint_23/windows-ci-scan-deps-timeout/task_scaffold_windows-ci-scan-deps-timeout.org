@@ -8,7 +8,7 @@
 #+filetags: :windows-ci-scan-deps-timeout:sprint_23:v0:
 #+owner: marco
 #+branch: hotfix/windows-ci-scan-deps-timeout
-#+pr:
+#+pr: 1645
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1645][#1645]] | [build] Disable C++ module dependency scanning to fix Windows CI |
 
 * Review
 

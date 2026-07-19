@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 153D67F4-F420-4983-AA3F-0A3246477BEE
+:END:
+#+title: How do I discover the physical-space catalogue?
+#+description: Use compass codegen entity archetypes to list every ores.* address in TS/facet/archetype notation, or an entity's supported set with per-archetype enabled/disabled status.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:compass:entity:archetypes:recipe:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+
+The physical space is the graph of =ores.*= technical-space/facet/archetype
+nodes under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] that
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] generates from — the successor to the retired
+=facet_catalogue.org= profile system. See the [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component catalogue]] for how
+entities are discovered, separate from which addresses they can generate.
+
+* Question
+
+How do I see every valid =ores.*= address, or which archetypes a specific
+entity will generate and why others are excluded?
+
+* Answer
+
+With no arguments, =archetypes= prints the full catalogue grouped by
+technical space (TS) and facet, each archetype shown with its source
+template:
+
+#+begin_src sh :results verbatim
+./compass.sh codegen entity archetypes
+#+end_src
+
+Narrow to one TS or facet with =--address= (always the full =ores.*= form —
+the same value =--address= takes everywhere else in =codegen entity=):
+
+#+begin_src sh :results verbatim
+./compass.sh codegen entity archetypes --address ores.cpp
+./compass.sh codegen entity archetypes --address ores.cpp.qt
+#+end_src
+
+With =--entity=, the same tree is shown annotated with ✅/❌ per TS, facet,
+and archetype — computed from the entity's model type (facet
+=#+model_types=) and its =:ores.*.enabled:= property-drawer overrides
+(most-specific wins, resolved by [[proj:projects/ores.codegen/src/codegen/physical_space.py][=codegen/physical_space.py=]], the B5
+supported-set engine). Each ❌ names the reason: an inadmissible model
+type, an explicit =:ores.*.enabled: false= override (naming the exact key
+that matched), or a facet/archetype =#+default: disabled=.
+
+#+begin_src sh :results verbatim
+./compass.sh codegen entity archetypes --entity market_observation --address ores.cpp.qt
+#+end_src
+
+#+begin_example
+Supported set for: market_observation  (domain_entity, marketdata)
+  ores.* bindings: :ores.cpp.qt.enabled: false
+
+ores.cpp  ❌ [technical space — no admissible facet]
+  ores.cpp.qt  ❌ [facet — excluded by :ores.cpp.qt.enabled: false]
+    ores.cpp.qt.client_model_header    ❌  cpp_qt_client_model.hpp.mustache  (excluded by :ores.cpp.qt.enabled: false)
+    ...
+#+end_example
+
+=--address= and =--entity= combine — the tree is narrowed to that address
+first, then annotated. Every address printed (catalogue or entity mode) is
+a valid =--address= value for =compass codegen entity generate=.
+
+* Script
+
+=archetypes= is implemented as =_cmd_archetypes= in
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]], dispatched from
+=run()= in the same file. It delegates all graph loading and supported-set
+resolution to [[proj:projects/ores.codegen/src/codegen/physical_space.py][=codegen/physical_space.py=]] (=load_graph=,
+=compute_target_set=, =_enabled_overrides=) — no new physical-space logic,
+only presentation.
+
+* Tested by
+
+Manual: run =./compass.sh codegen entity archetypes --entity market_observation
+--address ores.cpp.qt= (an entity with =:ores.cpp.qt.enabled: false= in its
+model) and verify every =ores.cpp.qt.*= archetype shows ❌ with that key
+named as the reason; run with a =domain_entity= entity and =--address
+ores.sql.schema= and verify =sql.schema.junction_create= /
+=sql.schema.table_create= show ❌ (model type not admitted) while
+=sql.schema.domain_entity_create= shows ✅.
+
+* See also
+
+- [[id:923AE3E7-5B55-43F4-967C-0E71AB9F2C46][How do I list codegen entities?]]
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component model and metatype taxonomy.
+- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] — how entities (not addresses) are discovered.

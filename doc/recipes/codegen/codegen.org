@@ -39,6 +39,7 @@ know model paths or component names.
 - [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] — regenerate an entity's full supported set; =--address= to restrict to one facet; =--dry-run= to preview paths.
 - [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]] — generate to temp and show unified diff without writing.
 - [[id:839B1943-34A9-443B-9483-CFC45D6A7644][How do I diff generated files for an entity?]] — git diff of on-disk generated files after generation.
+- [[id:153D67F4-F420-4983-AA3F-0A3246477BEE][How do I discover the physical-space catalogue?]] — list every ores.* address, or an entity's supported set with per-archetype ✅/❌ status and exclusion reasons.
 
 * Running codegen
 

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 30FF9B17-971F-497D-9CF8-5814809FEABC
+:END:
+#+title: Task: Implement Hotfix: Windows CI builds timing out / failing on header dependency scanning
+#+description: Initial task for: Hotfix: Windows CI builds timing out / failing on header dependency scanning
+#+type: task
+#+level: s1
+#+filetags: :windows-ci-scan-deps-timeout:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Disable CMake's automatic C++20 module dependency scanning
+(=CMAKE_CXX_SCAN_FOR_MODULES=) so Ninja stops invoking
+=clang-scan-deps= for every translation unit on the Windows legs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] |
+| Now          | Fix applied, verifying locally.        |
+| Waiting on   | Nothing.                               |
+| Next         | Commit and open PR.                    |
+| Last touched | 2026-07-19                               |
+
+* Acceptance
+
+- =CMAKE_CXX_SCAN_FOR_MODULES= is off for the project.
+- Local build succeeds; no behaviour change on Linux/macOS.
+
+* Plan
+
+Root cause (from Windows CI logs, runs 29669098639 and 29548329266):
+
+- Since CMake 3.28, the Ninja generator auto-enables
+  =CMAKE_CXX_SCAN_FOR_MODULES= for compilers that support P1689
+  dependency scanning (MSVC, Clang) — even for projects that use no
+  C++20 modules at all. This adds a =clang-scan-deps= pre-pass per
+  translation unit, invoked through =cmd.exe /C "..."=.
+- =cmd.exe= has an ~8191-character command-line limit. ORE Studio's
+  compile commands (many Boost =-D= defines plus a long transitive
+  =-I= list) exceed that on some targets, so the scan command is
+  silently truncated and drops trailing =-I= flags — observed:
+  =ores.diff/include= missing from the scan invocation for
+  =ores.dq.core=, producing "file not found:
+  ores.diff/domain/field_value.hpp".
+- The same scanning pre-pass, run for every TU across the whole
+  project on the slower Windows runners, is the most likely
+  explanation for the msvc-release leg hanging past the 6h timeout.
+- The project does not use C++20 modules, so the scan pass buys
+  nothing. Fix: set =CMAKE_CXX_SCAN_FOR_MODULES OFF= globally in the
+  root =CMakeLists.txt=, before subdirectories are added.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

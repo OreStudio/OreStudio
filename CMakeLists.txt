@@ -154,6 +154,14 @@ set(ORES_TEST_ENV_CMD ${CMAKE_COMMAND} -E env ${ORES_TEST_ENV} --)
 #
 message(STATUS "Targeting C++ standard: ${CMAKE_CXX_STANDARD}")
 
+# The project uses no C++20 modules, so the P1689 dependency-scanning
+# pre-pass (clang-scan-deps) buys nothing. On Windows it is invoked via
+# cmd.exe, whose ~8191-char command-line limit truncates our long
+# transitive include/define argument lists, silently dropping trailing
+# -I flags and causing spurious "file not found" errors; it also adds
+# a slow per-TU pre-pass that contributes to Windows CI timeouts.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 #
 # PlantUML
 #

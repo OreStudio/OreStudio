@@ -115,6 +115,7 @@ std::string(faker::person::fullName())
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
 #+end_src
 
@@ -137,6 +138,7 @@ std::string(faker::person::fullName())
 | description | Description |
 | owner       | Owner       |
 | modified_by | Modified By |
+| version     | Version     |
 
 ** Custom repository methods
 

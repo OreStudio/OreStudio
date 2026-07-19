@@ -39,8 +39,11 @@ namespace ores::dq::service {
  * @brief Service for managing data organization entities.
  *
  * This service provides functionality for:
- * - Managing catalogs (CRUD operations)
+ * - Managing data domains
  * - Managing subject areas and their associated domains
+ * - Managing dataset dependencies
+ *
+ * Catalog management moved to the standalone, generated catalog_service.
  */
 class ORES_DQ_CORE_EXPORT data_organization_service {
 private:

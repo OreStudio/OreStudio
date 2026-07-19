@@ -172,11 +172,6 @@ std::string strip_currency_prefix(const std::string& currency_code, const std::s
 }
 }
 
-std::string ir_curve_feed_source_name(const std::string& currency_code, const std::string& index_name) {
-    return "ir_curve." + lowercase(currency_code) + "." +
-          lowercase(strip_currency_prefix(currency_code, index_name));
-}
-
 std::shared_ptr<ir_curve_feed>
 make_ir_curve_feed(ores::nats::service::client& nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
@@ -187,12 +182,14 @@ make_ir_curve_feed(ores::nats::service::client& nats,
     auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
         lowercase(cfg.process_type), cfg.kappa, {cfg.theta}, cfg.sigma, cfg.initial_rate);
 
-    const auto source_name = ir_curve_feed_source_name(cfg.currency_code, cfg.index_name);
+    // source_name is a persisted, editable column (see the field's own doc comment) -- the same
+    // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
+    // than computed here.
     return std::make_shared<ir_curve_feed>(nats,
                                            cfg.tenant_id,
                                            cfg.party_id,
-                                           source_name,
-                                           "synthetic.v1.curve_family." + source_name,
+                                           cfg.source_name,
+                                           "synthetic.v1.curve_family." + cfg.source_name,
                                            "RATES",
                                            "YIELD",
                                            cfg.currency_code + "/" +

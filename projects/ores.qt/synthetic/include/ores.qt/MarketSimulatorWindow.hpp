@@ -149,7 +149,11 @@ private:
     // non-leaf node cascades to every Feed beneath it.
     enum class NodeType { Root, Collection, Group, Feed };
 
-    static std::string synthetic_subject(const std::string& source_name);
+    static std::string synthetic_subject(const std::string& source_name, bool is_curve_family);
+    // source_name no longer carries an asset-class marker (see ir_curve_generation_config's own
+    // source_name doc -- it now follows the exact same "synthetic.<collection>.<pair>" shape FX
+    // uses), so asset class is resolved by membership in irCurves_ instead of string-sniffing.
+    [[nodiscard]] bool isIrCurveSourceName(const std::string& source_name) const;
     void subscribeTickChart(const std::string& source_name);
     void unsubscribeTickChart();
     void refreshTickChart();

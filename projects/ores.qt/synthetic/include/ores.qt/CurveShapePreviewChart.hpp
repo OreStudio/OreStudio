@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+class QBarCategoryAxis;
 class QChart;
 class QChartView;
 class QValueAxis;
@@ -85,7 +86,7 @@ private:
 
     QChart* chart_;
     QChartView* view_;
-    QValueAxis* axisX_;
+    QBarCategoryAxis* axisX_; // real tenor labels (end_tenor_code), not a numeric index
     QValueAxis* axisY_;
     QLabel* statusLabel_;
 

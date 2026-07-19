@@ -451,11 +451,14 @@ void MarketSimulatorWindow::setupRightPanel() {
         auto* tickLayout = new QVBoxLayout(tickChartContainer_);
         tickLayout->setContentsMargins(0, 0, 0, 0);
 
-        // IR curve mode only -- how many recent tick batches (curve snapshots) to overlay. Hidden
-        // for FX's scalar mode, where it has no meaning.
+        // IR curve mode only -- how many recent tick batches (curve snapshots) to overlay, plus a
+        // legend explaining the oldest-faded/newest-bold overlay convention. Hidden for FX's
+        // scalar mode, where neither has any meaning.
         auto* historyRow = new QWidget(tickChartContainer_);
-        auto* historyRowLayout = new QHBoxLayout(historyRow);
-        historyRowLayout->setContentsMargins(0, 0, 0, 4);
+        auto* historyRowOuterLayout = new QVBoxLayout(historyRow);
+        historyRowOuterLayout->setContentsMargins(0, 0, 0, 4);
+        historyRowOuterLayout->setSpacing(2);
+        auto* historyRowLayout = new QHBoxLayout();
         historyRowLayout->addWidget(new QLabel(tr("History:"), historyRow));
         curveHistorySpin_ = new QSpinBox(historyRow);
         curveHistorySpin_->setRange(1, 20);
@@ -463,6 +466,12 @@ void MarketSimulatorWindow::setupRightPanel() {
         curveHistorySpin_->setToolTip(tr("Number of recent curve snapshots to overlay."));
         historyRowLayout->addWidget(curveHistorySpin_);
         historyRowLayout->addStretch(1);
+        historyRowOuterLayout->addLayout(historyRowLayout);
+        auto* curveLegendLabel = new QLabel(
+            tr("Newest curve bold; older snapshots overlaid, fading with age."), historyRow);
+        curveLegendLabel->setStyleSheet("color: gray; font-style: italic;");
+        curveLegendLabel->setWordWrap(true);
+        historyRowOuterLayout->addWidget(curveLegendLabel);
         historyRow->setVisible(false);
         tickLayout->addWidget(historyRow);
         connect(curveHistorySpin_, &QSpinBox::valueChanged, this, [this](int n) {
@@ -804,13 +813,9 @@ std::string ir_index_display_suffix(const synthetic::domain::ir_curve_generation
 
 std::string
 MarketSimulatorWindow::irCurveSourceName(const synthetic::domain::ir_curve_generation_config& ir) {
-    auto lower = [](std::string s) {
-        std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
-            return static_cast<char>(std::tolower(c));
-        });
-        return s;
-    };
-    return "ir_curve." + lower(ir.currency_code) + "." + lower(ir_index_display_suffix(ir));
+    // source_name is a persisted, editable column (mirrors fx_spot_generation_config.source_name)
+    // -- no longer computed here from currency_code/index_name.
+    return ir.source_name;
 }
 
 QStandardItem* MarketSimulatorWindow::buildIrCurveFeedItem(
@@ -2320,7 +2325,8 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
 
 // ---- Tick chart ---------------------------------------------------------
 
-std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_name) {
+std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_name,
+                                                     bool is_curve_family) {
     std::string token;
     for (unsigned char c : source_name) {
         const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
@@ -2328,11 +2334,17 @@ std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_n
     }
     // IR curve feeds publish on their own namespace, synthetic.v1.curve_family.<source> --
     // distinct from the plain-tick namespace synthetic.v1.tick.<source> scalar feeds (FX) use
-    // (see this story's "Two subjects, not two message shapes" analysis). source_name always
-    // carries the "ir_curve." prefix for curve feeds (see ir_curve_feed_source_name()), so that's
-    // enough to route correctly here without threading an asset-class flag through every caller.
-    const bool is_curve_family = source_name.starts_with("ir_curve.");
+    // (see this story's "Two subjects, not two message shapes" analysis). source_name follows
+    // the same "synthetic.<collection>.<pair>" shape for both asset classes now, so the caller
+    // must say which one this is (see isIrCurveSourceName()) rather than this function sniffing it.
     return (is_curve_family ? "synthetic.v1.curve_family." : "synthetic.v1.tick.") + token;
+}
+
+bool MarketSimulatorWindow::isIrCurveSourceName(const std::string& source_name) const {
+    for (const auto& [id, ir] : irCurves_)
+        if (ir.source_name == source_name)
+            return true;
+    return false;
 }
 
 namespace {
@@ -2353,7 +2365,7 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
-    const bool curveMode = source_name.starts_with("ir_curve.");
+    const bool curveMode = isIrCurveSourceName(source_name);
     tickChartCurveMode_ = curveMode;
 
     auto* chart = tickChartView_ ? tickChartView_->chart() : nullptr;
@@ -2448,7 +2460,7 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
         refreshTickChart();
     }
 
-    const std::string subject = synthetic_subject(source_name);
+    const std::string subject = synthetic_subject(source_name, curveMode);
     BOOST_LOG_SEV(lg(), debug) << "Tick chart subscribing to: " << subject
                                << " (curveMode=" << curveMode << ")";
 
@@ -2630,7 +2642,7 @@ void MarketSimulatorWindow::startCacheSubscription(const std::string& source_nam
         return;
     if (cacheSubscriptions_.contains(source_name))
         return;
-    const std::string subject = synthetic_subject(source_name);
+    const std::string subject = synthetic_subject(source_name, isIrCurveSourceName(source_name));
     BOOST_LOG_SEV(lg(), debug) << "Cache subscription starting for: " << source_name;
     try {
         cacheSubscriptions_.emplace(

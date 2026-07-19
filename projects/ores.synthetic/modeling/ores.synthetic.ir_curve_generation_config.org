@@ -225,6 +225,26 @@ Deposit/FRA entries, which have no intermediate schedule.
 std::string("Annual")
 #+end_src
 
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Stable source name carried as provenance of published ticks/observations
+(e.g. "synthetic.realistic.usdsofr") and as the NATS subject suffix
+(=synthetic.v1.curve_family.<source_name>=) -- mirrors
+=fx_spot_generation_config.source_name= exactly: namespaced by
+collection only (so two collections' same currency+index never
+collide), editable, defaulting to a derived value at publish/save time
+rather than parsed back out of currency_code/index_name at every
+consumer (the earlier approach, replaced by this column).
+
+#+begin_src cpp :name generator
+std::string("synthetic.") + std::string(faker::finance::currencyCode())
+#+end_src
+
 ** folder_id
 :PROPERTIES:
 :type:     uuid
@@ -257,6 +277,7 @@ std::nullopt
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
 | "index_name" <> ''                                        |
+| "source_name" <> ''                                       |
 | "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
 | "process_type" <> 'CIR' or "initial_rate" >= 0             |

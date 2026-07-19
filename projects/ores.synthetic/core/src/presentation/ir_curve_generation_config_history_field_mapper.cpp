@@ -42,6 +42,7 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back(
         {.name = "Fixed Leg Payment Frequency Code", .value = v.fixed_leg_payment_frequency_code});
+    fields.push_back({.name = "Source Name", .value = v.source_name});
     fields.push_back(
         {.name = "Folder ID",
          .value = v.folder_id ? boost::uuids::to_string(*v.folder_id) : std::string{}});

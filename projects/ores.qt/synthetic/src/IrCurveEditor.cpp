@@ -91,9 +91,13 @@ IrCurveEditor::IrCurveEditor(ClientManager* cm,
     ir_.id = boost::uuids::random_generator()();
     ir_.config_id = parentFeedId;
     ir_.process_type = "VASICEK";
-    ir_.kappa = 0.05;
+    // Day-scaled defaults (1 tick == 1 calendar day) matching the seeded Barclays curves'
+    // magnitude -- see the Process tab's own slider-range comment for why kappa/sigma default to
+    // ~0.05/~0.01 (annual-scale values, 30-1000x too large) would previously produce numerically
+    // unstable discount factors at longer tenors.
+    ir_.kappa = 0.001;
     ir_.theta = 0.03;
-    ir_.sigma = 0.01;
+    ir_.sigma = 0.0005;
     ir_.initial_rate = 0.03;
     ir_.ticks_per_hour = 3600;
     ir_.enabled = true;
@@ -128,6 +132,7 @@ IrCurveEditor::IrCurveEditor(ClientManager* cm,
     , username_(username)
     , feedName_(feedName)
     , isNew_(false)
+    , userEditedSource_(true) // existing source name is authoritative; don't overwrite
     , ir_(existing) {
 
     setChangeReasonCache(crCache);
@@ -198,6 +203,14 @@ void IrCurveEditor::buildInstrumentTab() {
     auto* tab = new QWidget(this);
     auto* outer = new QVBoxLayout(tab);
 
+    auto* intro = new QLabel(
+        tr("Pick the currency and floating-rate index this curve represents. The source name "
+           "(the NATS subject/observation source ticks publish under) is derived from these."),
+        tab);
+    intro->setWordWrap(true);
+    intro->setStyleSheet("color: gray; font-style: italic;");
+    outer->addWidget(intro);
+
     // Matches every codegen detail dialog's framing (e.g. Portfolio's "Basic Information",
     // Book's field groups) -- a titled QGroupBox around the form, not the form bare on the tab.
     auto* identityBox = new QGroupBox(tr("Curve Identity"), tab);
@@ -236,28 +249,33 @@ void IrCurveEditor::buildInstrumentTab() {
                                1);
     form->addRow(tr("New tick every"), secondsSpin_);
 
-    sourceNameEchoLabel_ = new QLabel(identityBox);
-    sourceNameEchoLabel_->setStyleSheet("color: gray;");
-    form->addRow(tr("Source"), sourceNameEchoLabel_);
+    sourceNameEdit_ = new QLineEdit(identityBox);
+    sourceNameEdit_->setText(QString::fromStdString(ir_.source_name));
+    sourceNameEdit_->setToolTip(
+        tr("The NATS subject suffix and market_observation.source ticks publish under. A default "
+           "is derived from the collection, currency, and index; editable."));
+    form->addRow(tr("Source"), sourceNameEdit_);
 
     outer->addWidget(identityBox);
     outer->addStretch(1);
 
     connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
         populateIndexNameCombo();
-        recomputeSourceNameEcho();
+        recomputeDefaultSourceName();
     });
-    connect(indexNameCombo_,
-            &QComboBox::currentTextChanged,
-            this,
-            &IrCurveEditor::recomputeSourceNameEcho);
+    connect(indexNameCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
+        recomputeDefaultSourceName();
+    });
+    connect(sourceNameEdit_, &QLineEdit::textEdited, this, [this](const QString&) {
+        userEditedSource_ = true;
+    });
 
     tabWidget_->addTab(tab, tr("Instrument"));
 
     populateCurrencyCombo();
     populateIndexNameCombo();
     populatePaymentFrequencyCombo();
-    recomputeSourceNameEcho();
+    recomputeDefaultSourceName();
 }
 
 void IrCurveEditor::buildProcessTab() {
@@ -275,11 +293,18 @@ void IrCurveEditor::buildProcessTab() {
     for (const auto* e : kEngines)
         engineCombo_->addItem(QString::fromUtf8(e));
     engineCombo_->setCurrentText(QString::fromStdString(ir_.process_type));
+    engineCombo_->setToolTip(
+        tr("The short-rate process engine. Vasicek: constant volatility, rate can go negative. "
+           "CIR: volatility scales with √r, rate stays non-negative. Hull-White: like Vasicek "
+           "but supports a piecewise-constant mean level over time (a single constant level here)."));
     headerRow->addWidget(engineCombo_);
     headerRow->addStretch(1);
 
     auto* simpleBtn = new QPushButton(tr("Simple"), tab);
+    simpleBtn->setToolTip(tr("Slider-driven, quick exploration -- values snap to the slider's "
+                             "granularity, not for precise entry."));
     auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
+    advancedBtn->setToolTip(tr("Directly-editable table for typing exact parameter values."));
     const QColor accent = palette().color(QPalette::Highlight);
     const QColor accentText = palette().color(QPalette::HighlightedText);
     const QString segStyle =
@@ -322,6 +347,7 @@ void IrCurveEditor::buildProcessTab() {
     auto* simplePage = new QWidget(modeStack_);
     auto* simpleLayout = new QVBoxLayout(simplePage);
     auto addParamRow = [&](const QString& labelText,
+                           const QString& tip,
                            QSlider*& slider,
                            QDoubleSpinBox*& spin, // hidden value model, not shown -- see below
                            double minV,
@@ -330,6 +356,7 @@ void IrCurveEditor::buildProcessTab() {
                            double step) {
         auto* header = new QHBoxLayout();
         auto* titleLabel = new QLabel(labelText, simplePage);
+        titleLabel->setToolTip(tip);
         header->addWidget(titleLabel);
         header->addStretch(1);
         auto* valueLabel = new QLabel(simplePage);
@@ -339,6 +366,7 @@ void IrCurveEditor::buildProcessTab() {
 
         slider = new QSlider(Qt::Horizontal, simplePage);
         slider->setRange(0, 1000);
+        slider->setToolTip(tip);
         simpleLayout->addWidget(slider);
 
         // Spin box is the value model (read by save/charts/Advanced-table sync) but is never
@@ -372,17 +400,41 @@ void IrCurveEditor::buildProcessTab() {
                 &IrCurveEditor::onProcessFieldChanged);
     };
     addParamRow(tr("Initial rate r0"),
+               tr("The starting short rate the process simulates from -- where the curve begins."),
                initialRateSlider_,
                initialRateSpin_,
                -0.02,
                0.15,
                ir_.initial_rate,
                0.0001);
-    addParamRow(
-        tr("Mean level θ"), thetaSlider_, thetaSpin_, -0.02, 0.15, ir_.theta, 0.0001);
-    addParamRow(tr("Reversion κ"), kappaSlider_, kappaSpin_, 0.0, 0.02, ir_.kappa, 0.00001);
-    addParamRow(
-        tr("Volatility σ"), sigmaSlider_, sigmaSpin_, 0.0, 0.005, ir_.sigma, 0.00001);
+    addParamRow(tr("Mean level θ"),
+               tr("The long-run level the short rate reverts toward. With κ=0 the rate never "
+                  "reverts and just diffuses freely."),
+               thetaSlider_,
+               thetaSpin_,
+               -0.02,
+               0.15,
+               ir_.theta,
+               0.0001);
+    addParamRow(tr("Reversion κ"),
+               tr("Mean-reversion speed, per tick (1 tick = 1 day). Larger κ pulls the rate back "
+                  "toward θ faster. Real seeded curves run κ ≈ 0.0007-0.0015 -- values much larger "
+                  "than that make longer-tenor discount factors numerically unstable."),
+               kappaSlider_,
+               kappaSpin_,
+               0.0,
+               0.02,
+               ir_.kappa,
+               0.00001);
+    addParamRow(tr("Volatility σ"),
+               tr("Per-tick volatility of the short rate. Real seeded curves run σ ≈ "
+                  "0.0004-0.0007."),
+               sigmaSlider_,
+               sigmaSpin_,
+               0.0,
+               0.005,
+               ir_.sigma,
+               0.00001);
     simpleLayout->addStretch(1);
     modeStack_->addWidget(simplePage);
 
@@ -426,8 +478,8 @@ void IrCurveEditor::buildProcessTab() {
     middleRow->addWidget(modeStack_, 1);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
-    shapeBox->setMinimumWidth(300);
-    shapeBox->setMaximumWidth(380);
+    shapeBox->setMinimumWidth(380);
+    shapeBox->setMaximumWidth(560); // tenor category labels need more room than a plain index did
     auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
     shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
     shapeChart_->setMinimumHeight(240);
@@ -506,18 +558,26 @@ void IrCurveEditor::populateCurrencyCombo() {
 
     // Belt-and-braces re-assertion: live-tested and confirmed setup_currency_combo()'s own
     // setCurrentText(fallback) does not reliably stick on this editable+completer combo (observed
-    // showing an unrelated alphabetically-first currency instead of the loaded entity's own) --
-    // root cause not yet isolated (suspect the QCompleter's own model-driven text handling racing
-    // the programmatic set), so force it again on a short delay once both async fetches (currency
-    // and index name, which starts around the same time) have had time to land.
+    // showing an unrelated alphabetically-first currency instead of the loaded entity's own).
+    // Root cause found: for an editable QComboBox, setCurrentText() only sets the line edit's
+    // raw text -- it does *not* search the model or update currentIndex. The flag icon shown is
+    // tied to currentIndex, not to the displayed text, so setCurrentText() alone leaves the old
+    // (index-0) flag showing even once the text itself reads correctly. setCurrentIndex(findText())
+    // updates both. Forced again on a short delay once both async fetches (currency and index
+    // name, which start around the same time) have had time to land.
     if (!ir_.currency_code.empty()) {
         QPointer<IrCurveEditor> self = this;
         QTimer::singleShot(500, this, [self]() {
             if (!self)
                 return;
             const auto want = QString::fromStdString(self->ir_.currency_code);
-            if (self->currencyCombo_->currentText() != want)
-                self->currencyCombo_->setCurrentText(want);
+            if (self->currencyCombo_->currentText() != want) {
+                const int idx = self->currencyCombo_->findText(want);
+                if (idx >= 0)
+                    self->currencyCombo_->setCurrentIndex(idx);
+                else
+                    self->currencyCombo_->setCurrentText(want);
+            }
         });
     }
 }
@@ -591,7 +651,7 @@ void IrCurveEditor::populateIndexNameCombo() {
         if (!wanted.isEmpty())
             self->indexNameCombo_->setCurrentText(wanted);
 
-        self->recomputeSourceNameEcho();
+        self->recomputeDefaultSourceName();
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -698,7 +758,7 @@ void IrCurveEditor::populateInstrumentCodes() {
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void IrCurveEditor::recomputeSourceNameEcho() {
+QString IrCurveEditor::defaultSourceName() const {
     auto lower = [](std::string s) {
         std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
             return static_cast<char>(std::tolower(c));
@@ -707,12 +767,24 @@ void IrCurveEditor::recomputeSourceNameEcho() {
     };
     const auto ccy = currencyCombo_->currentText().toStdString();
     const auto idx = indexNameCombo_->currentText().toStdString();
-    if (ccy.empty() || idx.empty()) {
-        sourceNameEchoLabel_->setText(tr("(select currency and index)"));
+    if (ccy.empty() || idx.empty())
+        return {};
+    // Same shape as FxSpotRateEditor::defaultSourceName(): namespaced by collection only (to
+    // avoid two collections' same currency+index colliding), not by asset class -- mirrors
+    // ir_curve_generation_config.source_name's own doc comment on why.
+    std::string collection = lower(feedName_.toStdString());
+    collection.erase(std::remove(collection.begin(), collection.end(), ' '), collection.end());
+    return QString::fromStdString("synthetic." + collection + "." + lower(ccy) + lower(idx));
+}
+
+void IrCurveEditor::recomputeDefaultSourceName() {
+    if (userEditedSource_)
         return;
+    const auto def = defaultSourceName();
+    if (!def.isEmpty()) {
+        const QSignalBlocker blocker(sourceNameEdit_);
+        sourceNameEdit_->setText(def);
     }
-    sourceNameEchoLabel_->setText(
-        QString::fromStdString("ir_curve." + lower(ccy) + "." + lower(idx)));
 }
 
 void IrCurveEditor::onProcessFieldChanged() {
@@ -913,6 +985,9 @@ void IrCurveEditor::onSaveClicked() {
     ir.sigma = sigmaSpin_->value();
     ir.initial_rate = initialRateSpin_->value();
     ir.fixed_leg_payment_frequency_code = fixedLegFrequencyCombo_->currentText().toStdString();
+    ir.source_name = sourceNameEdit_->text().trimmed().toStdString();
+    if (ir.source_name.empty())
+        ir.source_name = defaultSourceName().toStdString();
     ir.ticks_per_hour =
         std::max(1, static_cast<int>(std::lround(3600.0 / std::max(1, secondsSpin_->value()))));
     ir.enabled = enabledCheck_->isChecked();

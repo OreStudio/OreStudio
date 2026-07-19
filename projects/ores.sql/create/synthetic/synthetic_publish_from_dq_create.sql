@@ -697,7 +697,7 @@ begin
             tenant_id, id, version, party_id, config_id, folder_id,
             currency_code, index_name, process_type,
             kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
-            fixed_leg_payment_frequency_code,
+            fixed_leg_payment_frequency_code, source_name,
             modified_by, performed_by, change_reason_code, change_commentary
         )
         select
@@ -709,6 +709,15 @@ begin
             r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
             coalesce(r.enabled, true),
             r.fixed_leg_payment_frequency_code,
+            -- Same shape as fx_spot_generation_config.source_name: namespaced by collection only
+            -- (so two collections' same currency+index never collide), not by asset class -- the
+            -- "<CCY>-" prefix index_name already carries (see that column's own doc) is stripped
+            -- back off first so the tail reads "usdsofr", not "usdusd-sofr".
+            'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
+                lower(r.currency_code) ||
+                lower(case when r.index_name like r.currency_code || '-%'
+                           then substring(r.index_name from length(r.currency_code) + 2)
+                           else r.index_name end),
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         from (select 1) as _dummy

@@ -107,9 +107,17 @@ SampleShortRatePathsChart::SampleShortRatePathsChart(ClientManager* cm, QWidget*
     connect(pathsSpin_, &QSpinBox::valueChanged, this, [this](int) { scheduleRefresh(); });
     connect(ticksSpin_, &QSpinBox::valueChanged, this, [this](int) { scheduleRefresh(); });
 
+    auto* legendLabel = new QLabel(
+        tr("Each line is one independent simulated draw of the same process -- not a real "
+           "history, a preview of plausible paths."),
+        this);
+    legendLabel->setStyleSheet("color: gray; font-style: italic;");
+    legendLabel->setWordWrap(true);
+
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addLayout(topRow);
+    layout->addWidget(legendLabel);
     layout->addWidget(view_, 1);
 
     debounce_->setSingleShot(true);

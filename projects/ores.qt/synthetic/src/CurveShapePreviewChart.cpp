@@ -20,6 +20,7 @@
 #include "ores.qt/CurveShapePreviewChart.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
+#include <QFont>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -27,6 +28,7 @@
 #include <QTime>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
@@ -44,7 +46,7 @@ CurveShapePreviewChart::CurveShapePreviewChart(ClientManager* cm, QWidget* paren
     , clientManager_(cm)
     , chart_(new QChart())
     , view_(new QChartView(chart_, this))
-    , axisX_(new QValueAxis(this))
+    , axisX_(new QBarCategoryAxis(this))
     , axisY_(new QValueAxis(this))
     , debounce_(new QTimer(this)) {
 
@@ -59,12 +61,14 @@ CurveShapePreviewChart::CurveShapePreviewChart(ClientManager* cm, QWidget* paren
     const QColor gridColor(255, 255, 255, 18);
     chart_->setTitleBrush(textColor);
 
-    axisX_->setTitleText(tr("Entry (short-end to long-end)"));
-    axisX_->setLabelFormat(QStringLiteral("%d"));
+    axisX_->setTitleText(tr("Tenor (short-end to long-end)"));
     axisY_->setTitleText(tr("Rate"));
     axisY_->setLabelFormat(QStringLiteral("%.4f"));
+    QFont axisLabelFont;
+    axisLabelFont.setPointSizeF(7.5); // category labels (tenor codes) are wider than a plain index
     for (auto* axis : {static_cast<QAbstractAxis*>(axisX_), static_cast<QAbstractAxis*>(axisY_)}) {
         axis->setLabelsColor(textColor);
+        axis->setLabelsFont(axisLabelFont);
         axis->setGridLineColor(gridColor);
         axis->setLinePenColor(gridColor);
     }
@@ -198,6 +202,12 @@ void CurveShapePreviewChart::doRefresh() {
 
         self->chart_->removeAllSeries();
 
+        QStringList categories;
+        for (const auto& pt : result.points)
+            categories << QString::fromStdString(pt.end_tenor_code);
+        self->axisX_->clear();
+        self->axisX_->append(categories);
+
         auto* series = new QLineSeries(self);
         series->setPointsVisible(true);
         double yMin = std::numeric_limits<double>::max();
@@ -213,7 +223,6 @@ void CurveShapePreviewChart::doRefresh() {
         series->attachAxis(self->axisY_);
 
         if (!result.points.empty()) {
-            self->axisX_->setRange(0.0, static_cast<double>(result.points.size() - 1));
             if (yMin > yMax) {
                 yMin = 0.0;
                 yMax = 1.0;

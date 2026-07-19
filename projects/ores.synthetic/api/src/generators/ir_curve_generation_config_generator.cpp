@@ -54,6 +54,7 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.enabled = faker::datatype::boolean();
     r.fixed_leg_payment_frequency_code = std::string("Annual");
+    r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.folder_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

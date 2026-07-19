@@ -146,7 +146,11 @@ private:
     void populateTenorCodes();
     void populateInstrumentCodes();
 
-    void recomputeSourceNameEcho();
+    // Mirrors FxSpotRateEditor's defaultSourceName()/recomputeDefaultSourceName(): same
+    // "synthetic.<collection>.<pair>" shape, same "don't overwrite once the user has typed their
+    // own" rule (userEditedSource_).
+    [[nodiscard]] QString defaultSourceName() const;
+    void recomputeDefaultSourceName();
     void refreshCharts();
     void syncTableFromModel();
     void rebuildModelFromTable();
@@ -156,6 +160,7 @@ private:
     QString username_;
     QString feedName_;
     bool isNew_;
+    bool userEditedSource_{false}; // mirrors FxSpotRateEditor's own flag
 
     synthetic::domain::ir_curve_generation_config ir_;
     std::vector<std::string> originalEntryIds_;
@@ -172,7 +177,7 @@ private:
     QComboBox* fixedLegFrequencyCombo_;
     QCheckBox* enabledCheck_;
     QSpinBox* secondsSpin_;
-    QLabel* sourceNameEchoLabel_;
+    QLineEdit* sourceNameEdit_;
 
     // Process tab.
     QComboBox* engineCombo_;

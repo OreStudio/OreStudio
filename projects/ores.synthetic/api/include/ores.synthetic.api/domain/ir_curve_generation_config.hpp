@@ -136,6 +136,17 @@ struct ir_curve_generation_config final {
     std::string fixed_leg_payment_frequency_code = "Annual";
 
     /**
+     * @brief Stable source name carried as provenance of published ticks/observations (e.g.
+     * "synthetic.realistic.usdsofr") and as the NATS subject suffix
+     * (synthetic.v1.curve_family.<source_name>) -- mirrors fx_spot_generation_config.source_name
+     * exactly: namespaced by collection only (so two collections' same currency+index never
+     * collide), editable, defaulting to a derived value at publish/save time rather than parsed
+     * back out of currency_code/index_name at every consumer (the earlier approach, replaced by
+     * this column).
+     */
+    std::string source_name;
+
+    /**
      * @brief The folder this curve lives under (the instrument-type folder, e.g. "IR Curves",
      * nested under an asset-class folder under this curve's owning collection). Real, queryable
      * hierarchy position -- not parsed out of source_name, which stays a display/NATS-subject

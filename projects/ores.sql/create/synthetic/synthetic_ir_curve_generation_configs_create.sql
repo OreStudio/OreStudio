@@ -50,6 +50,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "ticks_per_hour" integer not null,
     "enabled" boolean not null,
     "fixed_leg_payment_frequency_code" text not null,
+    "source_name" text not null,
     "folder_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -67,6 +68,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
     check ("index_name" <> ''),
+    check ("source_name" <> ''),
     check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
     check ("process_type" <> 'CIR' or "initial_rate" >= 0)

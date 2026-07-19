@@ -178,8 +178,7 @@ public:
                           .success = false, .message = "IR curve config not found: " + req->config_id});
                 return;
             }
-            source_name = ir_curve_feed_source_name(configs.front().currency_code,
-                                                    configs.front().index_name);
+            source_name = configs.front().source_name;
         }
 
         const auto stopped = ctrl_->stop(source_name);

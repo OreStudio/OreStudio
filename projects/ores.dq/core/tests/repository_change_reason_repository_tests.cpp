@@ -53,10 +53,10 @@ TEST_CASE("write_single_change_reason", tags) {
 
     generation_context ctx;
     auto cat = generate_synthetic_change_reason_category(ctx);
-    cat.tenant_id = h.tenant_id().to_string();
+    cat.tenant_id = h.tenant_id();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
-    cat_repo.write(cat);
+    ores::dq::repository::change_reason_category_repository cat_repo;
+    cat_repo.write(h.context(), cat);
 
     change_reason_repository repo(h.context());
     auto change_reason = generate_synthetic_change_reason(ctx);
@@ -75,10 +75,10 @@ TEST_CASE("write_multiple_change_reasons", tags) {
 
     generation_context ctx;
     auto cat = generate_synthetic_change_reason_category(ctx);
-    cat.tenant_id = h.tenant_id().to_string();
+    cat.tenant_id = h.tenant_id();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
-    cat_repo.write(cat);
+    ores::dq::repository::change_reason_category_repository cat_repo;
+    cat_repo.write(h.context(), cat);
 
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3, ctx);
@@ -99,10 +99,10 @@ TEST_CASE("read_latest_change_reasons", tags) {
 
     generation_context ctx;
     auto cat = generate_synthetic_change_reason_category(ctx);
-    cat.tenant_id = h.tenant_id().to_string();
+    cat.tenant_id = h.tenant_id();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
-    cat_repo.write(cat);
+    ores::dq::repository::change_reason_category_repository cat_repo;
+    cat_repo.write(h.context(), cat);
 
     change_reason_repository repo(h.context());
     auto written_change_reasons = generate_synthetic_change_reasons(3, ctx);
@@ -129,10 +129,10 @@ TEST_CASE("read_latest_change_reason_by_code", tags) {
 
     generation_context ctx;
     auto cat = generate_synthetic_change_reason_category(ctx);
-    cat.tenant_id = h.tenant_id().to_string();
+    cat.tenant_id = h.tenant_id();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
-    cat_repo.write(cat);
+    ores::dq::repository::change_reason_category_repository cat_repo;
+    cat_repo.write(h.context(), cat);
 
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3, ctx);

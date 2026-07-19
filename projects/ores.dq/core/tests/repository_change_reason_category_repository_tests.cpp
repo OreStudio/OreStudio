@@ -50,13 +50,13 @@ TEST_CASE("write_single_change_reason_category", tags) {
     database_helper h;
 
     generation_context ctx;
-    change_reason_category_repository repo(h.context());
+    change_reason_category_repository repo;
     auto category = generate_synthetic_change_reason_category(ctx);
-    category.tenant_id = h.tenant_id().to_string();
+    category.tenant_id = h.tenant_id();
     category.code = category.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Change reason category: " << category;
-    CHECK_NOTHROW(repo.write(category));
+    CHECK_NOTHROW(repo.write(h.context(), category));
 }
 
 TEST_CASE("write_multiple_change_reason_categories", tags) {
@@ -64,16 +64,16 @@ TEST_CASE("write_multiple_change_reason_categories", tags) {
 
     database_helper h;
 
-    change_reason_category_repository repo(h.context());
+    change_reason_category_repository repo;
     generation_context ctx;
     auto categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : categories) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
 
-    CHECK_NOTHROW(repo.write(categories));
+    CHECK_NOTHROW(repo.write(h.context(), categories));
 }
 
 TEST_CASE("read_latest_change_reason_categories", tags) {
@@ -81,18 +81,18 @@ TEST_CASE("read_latest_change_reason_categories", tags) {
 
     database_helper h;
 
-    change_reason_category_repository repo(h.context());
+    change_reason_category_repository repo;
     generation_context ctx;
     auto written_categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : written_categories) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written categories: " << written_categories;
 
-    repo.write(written_categories);
+    repo.write(h.context(), written_categories);
 
-    auto read_categories = repo.read_latest();
+    auto read_categories = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     CHECK(!read_categories.empty());
@@ -104,21 +104,21 @@ TEST_CASE("read_latest_change_reason_category_by_code", tags) {
 
     database_helper h;
 
-    change_reason_category_repository repo(h.context());
+    change_reason_category_repository repo;
     generation_context ctx;
     auto categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : categories) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = categories.front();
     BOOST_LOG_SEV(lg, debug) << "Write categories: " << categories;
-    repo.write(categories);
+    repo.write(h.context(), categories);
 
     BOOST_LOG_SEV(lg, debug) << "Target category: " << target;
 
-    auto read_categories = repo.read_latest(target.code);
+    auto read_categories = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     REQUIRE(read_categories.size() == 1);

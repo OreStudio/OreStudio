@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryDetailDialog.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -375,6 +375,7 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
     dq::domain::change_reason_category categoryToSave = getCategory();
+    categoryToSave.change_reason_code = crSel->reason_code;
     categoryToSave.change_commentary = crSel->commentary;
 
     QFuture<FutureResult> future = QtConcurrent::run([self, categoryToSave]() -> FutureResult {

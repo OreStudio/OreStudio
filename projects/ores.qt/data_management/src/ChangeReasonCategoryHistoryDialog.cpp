@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryHistoryDialog.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ui_ChangeReasonCategoryHistoryDialog.h"
@@ -60,7 +60,7 @@ void ChangeReasonCategoryHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.versions);
+        versions_ = std::move(response.history);
         historyLoaded();
     });
 }

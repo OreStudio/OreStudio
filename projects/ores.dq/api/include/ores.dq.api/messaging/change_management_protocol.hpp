@@ -21,63 +21,11 @@
 #define ORES_DQ_API_MESSAGING_CHANGE_MANAGEMENT_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::dq::messaging {
-
-// =============================================================================
-// Change Reason Category Protocol
-// =============================================================================
-
-struct get_change_reason_categories_request {
-    using response_type = struct get_change_reason_categories_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reason-categories.list";
-};
-
-struct get_change_reason_categories_response {
-    std::vector<ores::dq::domain::change_reason_category> categories;
-};
-
-struct save_change_reason_category_request {
-    using response_type = struct save_change_reason_category_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reason-categories.save";
-    ores::dq::domain::change_reason_category data;
-
-    static save_change_reason_category_request from(ores::dq::domain::change_reason_category c) {
-        return {.data = std::move(c)};
-    }
-};
-
-struct save_change_reason_category_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_change_reason_category_request {
-    using response_type = struct delete_change_reason_category_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reason-categories.delete";
-    std::vector<std::string> codes;
-};
-
-struct delete_change_reason_category_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_change_reason_category_history_request {
-    using response_type = struct get_change_reason_category_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reason-categories.history";
-    std::string code;
-};
-
-struct get_change_reason_category_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::change_reason_category> versions;
-};
 
 // =============================================================================
 // Change Reason Protocol

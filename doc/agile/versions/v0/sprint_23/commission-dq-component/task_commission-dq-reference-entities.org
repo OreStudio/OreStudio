@@ -28,10 +28,10 @@ Commission the five no-model DQ entities named in the story description onto the
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | catalog fully commissioned end to end (real C++ regeneration, hand-written code retired, build+tests green). Reassessing before the remaining four. |
+| Now          | catalog and change_reason_category fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green against a recreated dev DB). |
 | Waiting on   | Nothing.                               |
-| Next         | Same treatment for change_reason_category, change_reason, data_domain, subject_area. |
-| Last touched | 2026-07-18                               |
+| Next         | Same treatment for change_reason, data_domain, subject_area. |
+| Last touched | 2026-07-19                               |
 
 * Acceptance
 
@@ -199,9 +199,64 @@ five, per user decision to do one end to end before the rest):
   out of this task's acceptance (core/repository/service/handler/protocol,
   not eventing).
 
-Stopping here per the agreed scope ("do one entity fully, end to end,
-then stop and reassess") rather than continuing to the other four in
-the same sitting.
+*change_reason_category commissioned* the same way as catalog, with
+one genuine difference in outcome:
+
+- Regenerated for real across the same seven facets. Its hand-written
+  service/protocol/handler were combined with =change_reason= under
+  =change_management_service=/=_protocol=/=_handler= -- removed
+  category's methods/structs/handlers from all three (change_reason's
+  own code untouched) and wired the generated
+  =change_reason_category_service=/=_protocol=/=_handler=/
+  =_registrar= into =registrar.cpp= via
+  =register_change_reason_category_handlers()=.
+- =change_management_service='s =remove_category()= had a real,
+  hand-written safety check (refusing to delete a category still
+  referenced by existing change reasons) with no equivalent in the
+  generated =change_reason_category_service= -- codegen has no way to
+  know about this cross-entity business rule. Removed along with the
+  rest of category management; noted here as a known behaviour loss,
+  not silently dropped. =is_valid_category_code()= was also removed
+  (dead code -- only ever called from tests, not from any real
+  validation path; the DB-level soft-FK check in =change_reason='s own
+  insert trigger is what actually enforces category existence on
+  save).
+- The NATS subject strings changed shape: the old hand-written
+  protocol used hyphens (=dq.v1.change-reason-categories.list=), the
+  generated one uses underscores (=dq.v1.change_reason_categories.list=,
+  matching the entity/table naming convention). Found one real caller
+  that hardcoded the raw hyphenated strings instead of referencing the
+  protocol's =::nats_subject= constant --
+  =ores.shell='s =change_reason_categories_commands.cpp= -- fixed to
+  use the new subjects and switched its include to the new protocol
+  header.
+- Unlike catalog (whose hand-written SQL table already had every
+  column the generated template expects), change_reason_category's
+  hand-written table genuinely lacked =change_reason_code= -- exactly
+  the gap flagged during PR #1635's review. Regenerated and swapped
+  the SQL for real this time (unlike catalog, where the SQL swap was
+  deferred): diffed structurally correct against the old table, then
+  actually applied it via =compass db recreate= (destructive, dev-only
+  =bright_faraday= environment -- confirmed with the user before
+  running). This is what surfaced a live-DB test failure
+  ("column change_reason_code... does not exist") that catalog's own
+  verification never hit, since catalog's SQL was never touched.
+- Same =version == 0=-vs-=1= generator-test fix as catalog
+  (=generators_tests.cpp=), same stateless-repository-shape updates to
+  two more test files (=repository_change_reason_category_repository_tests.cpp=,
+  plus =repository_change_reason_repository_tests.cpp= and
+  =service_change_management_service_tests.cpp=, both of which
+  construct a prerequisite category row for their own change_reason
+  tests and needed to switch from the old service/repository call to
+  the new stateless repository / standalone
+  =change_reason_category_service=).
+- Verified: same build targets as catalog, plus =ores.shell.exe=, all
+  clean. Full =ores.dq.core.tests= (305 assertions/96 cases, live DB)
+  and =ores.dq.api.tests= (267 assertions/46 cases) green after the DB
+  recreate.
+
+Stopping here again per the same scope agreement -- change_reason,
+data_domain, subject_area remain.
 
 * Test Scenarios
 

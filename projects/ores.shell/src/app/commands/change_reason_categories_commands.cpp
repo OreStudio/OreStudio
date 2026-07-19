@@ -19,7 +19,7 @@
  */
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.dq.api/domain/change_reason_category_table_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
@@ -125,7 +125,7 @@ void change_reason_categories_commands::process_get_categories(std::ostream& out
     auto result = do_request<dq::messaging::get_change_reason_categories_response>(
         out,
         session,
-        "dq.v1.change-reason-categories.list",
+        "dq.v1.change_reason_categories.list",
         rfl::json::write(dq::messaging::get_change_reason_categories_request{}));
     if (!result)
         return;
@@ -158,7 +158,7 @@ void change_reason_categories_commands::process_add_category(std::ostream& out,
                                            .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<dq::messaging::save_change_reason_category_response>(
-        out, session, "dq.v1.change-reason-categories.save", rfl::json::write(req));
+        out, session, "dq.v1.change_reason_categories.save", rfl::json::write(req));
     if (!result)
         return;
 
@@ -187,7 +187,7 @@ void change_reason_categories_commands::process_delete_category(std::ostream& ou
     req.codes = {code};
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_category_response>(
-        out, session, "dq.v1.change-reason-categories.delete", rfl::json::write(req));
+        out, session, "dq.v1.change_reason_categories.delete", rfl::json::write(req));
     if (!result)
         return;
 
@@ -215,7 +215,7 @@ void change_reason_categories_commands::process_get_category_history(std::ostrea
     req.code = std::move(code);
 
     auto result = do_auth_request<dq::messaging::get_change_reason_category_history_response>(
-        out, session, "dq.v1.change-reason-categories.history", rfl::json::write(req));
+        out, session, "dq.v1.change_reason_categories.history", rfl::json::write(req));
     if (!result)
         return;
 
@@ -225,14 +225,14 @@ void change_reason_categories_commands::process_get_category_history(std::ostrea
         return;
     }
 
-    if (result->versions.empty()) {
+    if (result->history.empty()) {
         out << "No history found for this category." << std::endl;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->versions.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.size()
                               << " history records.";
-    out << result->versions << std::endl;
+    out << result->history << std::endl;
 }
 
 }

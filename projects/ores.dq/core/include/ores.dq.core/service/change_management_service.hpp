@@ -22,9 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/change_reason_category_repository.hpp"
 #include "ores.dq.core/repository/change_reason_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <optional>
@@ -34,12 +32,14 @@
 namespace ores::dq::service {
 
 /**
- * @brief Service for managing change reason categories and change reasons.
+ * @brief Service for managing change reasons.
  *
  * This service provides functionality for:
- * - Managing change reason categories (CRUD operations)
  * - Managing change reasons and their associated categories
  * - Validating change reason codes against the catalog
+ *
+ * Change reason category management moved to the standalone, generated
+ * change_reason_category_service.
  */
 class ORES_DQ_CORE_EXPORT change_management_service {
 private:
@@ -60,65 +60,6 @@ public:
      * @param ctx The database context.
      */
     explicit change_management_service(context ctx);
-
-    // ========================================================================
-    // Category Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all change reason categories.
-     */
-    std::vector<domain::change_reason_category> list_categories();
-
-    /**
-     * @brief Lists change reason categories with pagination.
-     */
-    std::vector<domain::change_reason_category> list_categories(std::uint32_t offset,
-                                                                std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active categories.
-     */
-    std::uint32_t get_category_count();
-
-    /**
-     * @brief Finds a category by its code.
-     */
-    std::optional<domain::change_reason_category> find_category(const std::string& code);
-
-    /**
-     * @brief Saves a change reason category (creates or updates).
-     *
-     * @param category The category to save
-     */
-    void save_category(const domain::change_reason_category& category);
-
-    /**
-     * @brief Saves multiple change reason categories (creates or updates).
-     *
-     * @param categories The categories to save
-     */
-    void save_categories(const std::vector<domain::change_reason_category>& categories);
-
-    /**
-     * @brief Removes a change reason category.
-     *
-     * @param code The code of the category to remove
-     */
-    void remove_category(const std::string& code);
-
-    /**
-     * @brief Removes multiple change reason categories.
-     */
-    void remove_categories(const std::vector<std::string>& codes);
-
-    /**
-     * @brief Gets the version history for a category.
-     *
-     * @param code The category code
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::change_reason_category> get_category_history(const std::string& code);
 
     // ========================================================================
     // Reason Management
@@ -195,16 +136,7 @@ public:
      */
     bool is_valid_reason_code(const std::string& code);
 
-    /**
-     * @brief Validates that a category code exists.
-     *
-     * @param code The category code to validate
-     * @return true if the code is valid, false otherwise
-     */
-    bool is_valid_category_code(const std::string& code);
-
 private:
-    repository::change_reason_category_repository category_repo_;
     repository::change_reason_repository reason_repo_;
 };
 

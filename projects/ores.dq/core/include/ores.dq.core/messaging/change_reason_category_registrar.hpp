@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,6 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_DQ_CORE_MESSAGING_CHANGE_REASON_CATEGORY_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_CHANGE_REASON_CATEGORY_REGISTRAR_HPP
 
-drop trigger if exists ores_dq_change_reason_categories_notify_trg on "ores_dq_change_reason_categories_tbl";
-drop function if exists ores_dq_change_reason_categories_notify_fn;
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::dq::messaging {
+
+std::vector<ores::nats::service::subscription> register_change_reason_category_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::dq::messaging
+
+#endif

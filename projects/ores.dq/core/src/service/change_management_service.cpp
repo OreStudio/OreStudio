@@ -18,8 +18,7 @@
  *
  */
 #include "ores.dq.core/service/change_management_service.hpp"
-#include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/domain/change_reason_json_io.hpp"          // IWYU pragma: keep.
+#include "ores.dq.api/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -27,85 +26,8 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 change_management_service::change_management_service(context ctx)
-    : category_repo_(ctx)
-    , reason_repo_(ctx) {
+    : reason_repo_(ctx) {
     BOOST_LOG_SEV(lg(), info) << "Change management service initialized.";
-}
-
-// ============================================================================
-// Category Management
-// ============================================================================
-
-std::vector<domain::change_reason_category> change_management_service::list_categories() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all change reason categories.";
-    return category_repo_.read_latest();
-}
-
-std::vector<domain::change_reason_category>
-change_management_service::list_categories(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing change reason categories with offset: " << offset
-                               << " limit: " << limit;
-    return category_repo_.read_latest(offset, limit);
-}
-
-std::uint32_t change_management_service::get_category_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting category count.";
-    return category_repo_.get_total_count();
-}
-
-std::optional<domain::change_reason_category>
-change_management_service::find_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding category by code: " << code;
-    auto categories = category_repo_.read_latest(code);
-    if (categories.empty()) {
-        return std::nullopt;
-    }
-    return categories.front();
-}
-
-void change_management_service::save_category(const domain::change_reason_category& category) {
-    if (category.code.empty()) {
-        throw std::invalid_argument("Category code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: " << category.code;
-    category_repo_.write(category);
-    BOOST_LOG_SEV(lg(), info) << "Saved change reason category: " << category.code;
-}
-
-void change_management_service::save_categories(
-    const std::vector<domain::change_reason_category>& categories) {
-    for (const auto& c : categories) {
-        if (c.code.empty()) {
-            throw std::invalid_argument("Category code cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size() << " change reason categories.";
-    category_repo_.write(categories);
-}
-
-void change_management_service::remove_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), info) << "Removing change reason category: " << code;
-
-    // Check if any reasons are using this category
-    auto reasons = list_reasons_by_category(code);
-    if (!reasons.empty()) {
-        throw std::runtime_error("Cannot remove category '" + code + "' because " +
-                                 std::to_string(reasons.size()) + " reasons are using it.");
-    }
-
-    category_repo_.remove(code);
-
-    BOOST_LOG_SEV(lg(), info) << "Removed change reason category: " << code;
-}
-
-void change_management_service::remove_categories(const std::vector<std::string>& codes) {
-    category_repo_.remove(codes);
-}
-
-std::vector<domain::change_reason_category>
-change_management_service::get_category_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting category history for: " << code;
-    return category_repo_.read_all(code);
 }
 
 // ============================================================================
@@ -188,10 +110,6 @@ change_management_service::get_reason_history(const std::string& code) {
 
 bool change_management_service::is_valid_reason_code(const std::string& code) {
     return find_reason(code).has_value();
-}
-
-bool change_management_service::is_valid_category_code(const std::string& code) {
-    return find_category(code).has_value();
 }
 
 }

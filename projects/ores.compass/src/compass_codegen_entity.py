@@ -58,8 +58,9 @@ def _discover_all(base_dir: Path, project_root: Path):
 
     Passes apply_exclusions=False: exclude_org_types scopes bulk `codegen
     regenerate --component` regeneration only (see discover_models), and
-    single-entity commands (list/generate/show/diff) must still resolve
-    every model, including excluded types like junctions.
+    single-entity commands (list/generate/show/diff/archetypes --entity)
+    must still resolve every model, including excluded types like
+    junctions.
     """
     from codegen.manifest import all_components, discover_models, get_component  # noqa: PLC0415
     from codegen.core import get_model_type  # noqa: PLC0415
@@ -311,26 +312,14 @@ def _cmd_diff(args, base_dir: Path, project_root: Path) -> int:
     return result.returncode
 
 
-def _enable_reason(address: str, facet: str, ts: str, overrides: dict,
-                    default_enabled: bool) -> tuple[bool, str | None]:
-    """Like physical_space.is_enabled, but also returns which key decided it.
-
-    Returns (enabled, reason_key) — reason_key is the ores.* address whose
-    :enabled: override matched (most-specific first), or None if the result
-    came from the node's own #+default: instead of an explicit override.
-    """
-    for key in (address, facet, ts, "ores"):
-        if key and key in overrides:
-            return overrides[key], key
-    return default_enabled, None
-
-
 def _cmd_archetypes(args, base_dir: Path, project_root: Path) -> int:
-    from codegen.core import get_model_type  # noqa: PLC0415
+    from codegen.core import get_model_type, load_model  # noqa: PLC0415
     from codegen.generate import _read_drawer_properties  # noqa: PLC0415
     from codegen.physical_space import (  # noqa: PLC0415
-        _enabled_overrides, compute_target_set, load_graph,
+        _enabled_overrides, compute_target_set, is_enabled_with_reason,
+        kind_matches, load_graph,
     )
+    _enable_reason = is_enabled_with_reason
 
     graph = load_graph(base_dir / "library" / "templates")
     address = getattr(args, "address", None)
@@ -360,12 +349,21 @@ def _cmd_archetypes(args, base_dir: Path, project_root: Path) -> int:
 
     model_type = None
     overrides: dict = {}
+    component_kind = None
     if entity:
         model_path, _metatype, comp_name, entity_name = _resolve_entity(
             entity, base_dir, project_root)
         properties = _read_drawer_properties(model_path)
         model_type = get_model_type(model_path.name, model_path)
         overrides = _enabled_overrides(properties or {})
+        # Component entities carry a mutually-exclusive kind discriminator
+        # (api/core/flat/service/...) that generate.py's resolve_targets
+        # hard-filters archetypes by; without it here, kind-restricted
+        # archetypes (e.g. ores.cpp.service-app.main, component_kind:
+        # service) would show ✅ for every component regardless of its
+        # actual kind.
+        if model_type == "component":
+            component_kind = load_model(model_path).get("component", {}).get("kind")
 
         print(f"\nSupported set for: {entity_name}  ({model_type}, {comp_name})")
         bindings = sorted(
@@ -421,13 +419,21 @@ def _cmd_archetypes(args, base_dir: Path, project_root: Path) -> int:
                     print(f"    {addr:<34} {template}")
                     continue
 
-                arch_mts = arch.get("model_types") or mts
+                # load_graph already folds the facet's model_types into an
+                # archetype's when the archetype declares none of its own
+                # (physical_space.load_graph), so arch["model_types"] alone
+                # is always the effective set — no separate `or mts` needed.
+                arch_mts = arch.get("model_types")
                 if arch_mts and model_type not in arch_mts:
                     print(f"    {addr:<34} ❌  {template}  "
                           f"(model type '{model_type}' not admitted)")
                     continue
                 if not admissible:
                     print(f"    {addr:<34} ❌  {template}")
+                    continue
+                if not kind_matches(arch.get("kinds", []), component_kind):
+                    print(f"    {addr:<34} ❌  {template}  "
+                          f"(component kind {component_kind!r} not admitted)")
                     continue
 
                 arch_enabled, arch_reason = _enable_reason(

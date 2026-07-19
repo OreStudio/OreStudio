@@ -186,6 +186,19 @@ delegating every resolution decision to =physical_space.py=.
   presentation-only narrowing (which single archetype line to print
   within its facet), not a generation-set decision, so it stays out
   of the shared module B5 owns.
+- Review round 1 caught a real correctness gap the manual verification
+  above didn't exercise: component entities have a mutually-exclusive
+  =component_kind= discriminator (=api=/=core=/=flat=/=service=/...)
+  that several archetypes restrict to via =#+component_kind=, and the
+  =--entity= annotation wasn't applying it. Fixed by loading
+  =model_data= and reading =component_kind= exactly as
+  =generate.py='s =resolve_targets= does, then filtering with
+  =physical_space.kind_matches=. Verified against the =trade= component
+  (kind =flat=, the default): =ores.cpp.service-app.*= (kind
+  =service=-only) now correctly shows ❌ "component kind 'flat' not
+  admitted", while =ores.cmake.component.modeling/root/src/tests=
+  (kind-agnostic) still show ✅ and =ores.cmake.component.api_src=/
+  =core_src= (kind =api=/=core=-only) correctly show ❌.
 
 * PRs
 
@@ -197,7 +210,11 @@ delegating every resolution decision to =physical_space.py=.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --entity mode ignores component_kind/kind_matches, so mutually-exclusive component archetypes can show ✅ when they'd never generate | compass_codegen_entity.py | Accepted | Load model_data + component_kind for component entities, apply physical_space.kind_matches in the archetype loop with a distinct exclusion reason |
+| 2 | _enable_reason duplicates physical_space.is_enabled's most-specific-wins walk | physical_space.py, compass_codegen_entity.py | Accepted | Extracted is_enabled_with_reason() in physical_space.py; is_enabled() now delegates to it; _cmd_archetypes uses it directly instead of a CLI-local reimplementation |
+| 3 | arch_mts = arch.get("model_types") or mts is redundant | compass_codegen_entity.py | Accepted | load_graph already folds facet model_types into archetypes with none declared; simplified to arch.get("model_types") |
+| 4 | _discover_all docstring doesn't mention archetypes --entity | compass_codegen_entity.py | Accepted | Added to the docstring's subcommand list |
+| 5 | No automated test for _cmd_archetypes | (none) | Declined | Consistent with every other compass_codegen_entity.py subcommand (list/generate/show/diff), none of which have dedicated unit tests; verified manually against real entities instead (see Notes) |
 
 * Result
 

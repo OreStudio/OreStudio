@@ -133,6 +133,23 @@ def _enabled_overrides(properties: dict[str, Any]) -> dict[str, bool]:
     return out
 
 
+def is_enabled_with_reason(
+    address: str, facet: str, ts: str, overrides: dict[str, bool],
+    default_enabled: bool = True,
+) -> tuple[bool, str | None]:
+    """Like :func:`is_enabled`, but also names which key decided it.
+
+    Returns ``(enabled, reason_key)`` — ``reason_key`` is the ``ores.*``
+    address whose ``:enabled:`` override matched (most-specific first), or
+    ``None`` if the result came from ``default_enabled`` (the node's own
+    ``#+default:``) rather than an explicit override.
+    """
+    for key in (address, facet, ts, "ores"):
+        if key and key in overrides:
+            return overrides[key], key
+    return default_enabled, None
+
+
 def is_enabled(address: str, facet: str, ts: str,
                overrides: dict[str, bool], default_enabled: bool = True) -> bool:
     """Most-specific-wins resolution of ``ores.*.enabled`` for any node.
@@ -142,10 +159,7 @@ def is_enabled(address: str, facet: str, ts: str,
     returning the first explicit override, else ``default_enabled``. Passing
     ``address == facet`` resolves a facet (the B5 facet-level behaviour).
     """
-    for key in (address, facet, ts, "ores"):
-        if key and key in overrides:
-            return overrides[key]
-    return default_enabled
+    return is_enabled_with_reason(address, facet, ts, overrides, default_enabled)[0]
 
 
 def _is_enabled(facet: str, ts: str, overrides: dict[str, bool]) -> bool:

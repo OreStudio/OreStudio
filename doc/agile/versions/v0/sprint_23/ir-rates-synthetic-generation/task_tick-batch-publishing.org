@@ -519,6 +519,71 @@ Confirmed reusable without duplication (checked, not assumed):
     (DQ-published Barclays USD SOFR/EUR ESTR/GBP SONIA), confirm ticks
     reflect edited parameters.
 
+* Analysis: aligning IrCurveEditor with FxSpotRateEditor (2026-07-19)
+
+Live review of the shipped editor found real, verifiable structural
+gaps against =FxSpotRateEditor= -- not vague "doesn't look right"
+feedback, but confirmed by reading both dialogs' source side by side.
+Per-item decision below: copy FX where there is no IR-specific reason
+to differ (a spurious difference), diverge only where rates genuinely
+warrant it (stated explicitly), never a blind copy either way.
+
+** Confirmed differences and decisions
+
+1. *Simple/Advanced toggle*: FX uses two checkable/auto-exclusive
+   =QPushButton='s, explicitly QSS-styled into a joined accent-colour
+   pill (=min-height: 30px=, bold, filled when checked), placed at the
+   right end of the header row. The shipped editor used two plain
+   =QRadioButton='s with no styling, which is why it read as "no
+   toggle button at all". *Decision: copy FX verbatim* -- no IR reason
+   for this affordance to look different.
+2. *Simple-mode sliders*: FX has no spinbox beside the slider -- a
+   title + gray value-echo label sits above a full-width slider;
+   precise entry is Advanced-only. The shipped editor paired every
+   slider with an adjacent spinbox in Simple mode. *Decision: copy FX*
+   -- drop the paired spinbox, echo the value in a label instead;
+   Advanced's table remains the only precise-entry surface.
+3. *Three-zone tab layout*: FX is header row (engine + frequency +
+   toggle) / middle row (controls left + compact chart right, capped
+   ~380px) / bottom row (prominent full-width chart in its own titled
+   =QGroupBox=). The shipped editor stacked both charts full-width
+   below the controls -- no side-by-side zone at all. *Decision: copy
+   FX's structure, but invert which chart is compact vs prominent* --
+   FX's compact side chart is the supporting stat (return
+   distribution), prominent bottom chart is the hero view (sample
+   paths). For IR the priority is reversed: curve shape is the "what
+   will I actually publish" hero view (curve shape is a genuine
+   IR-only chart FX has no equivalent of), sample paths is the
+   supporting/exploratory view. So: middle row = controls + compact
+   sample-paths; bottom row = prominent full-width curve-shape. Same
+   structural pattern, content assignment flipped for a stated reason.
+4. *Currency combo*: FX's =baseCombo_=/=quoteCombo_= are editable with
+   a =QCompleter= (=PopupCompletion=, =MatchContains=,
+   case-insensitive) over the typed =OreCurrencyComboBox= class. The
+   shipped editor used a plain non-editable =QComboBox=. *Decision:
+   copy FX* -- same ~180-row ISO currency list, same "pick 1 of many
+   quickly" use case, no IR reason to make this worse.
+5. *Index name combo*: *Decision: deliberately not like FX's currency
+   combos* -- post-filter (currency-scoped, two-segment codes only)
+   this list is typically 1-3 items, not ~180; a completer would solve
+   a problem that doesn't exist here. Stays a plain non-editable combo.
+6. *Fixed-leg-frequency / engine combos*: short fixed enumerations (9
+   and 3 rows) -- matches the codegen "standard" (Portfolio's
+   =purposeTypeCombo=/=statusCombo=, also plain non-editable, no
+   completer anywhere in the codebase for combos this short). No
+   change -- already correct.
+7. *Instrument tab framing*: every codegen =.ui= dialog (Portfolio,
+   Book) wraps its =QFormLayout= fields in a titled =QGroupBox= (e.g.
+   "Basic Information"); the shipped editor put the form directly on
+   the tab with no framing. *Decision: add one* ("Curve Identity").
+8. *insertPolicy*: every codegen =.ui= combo explicitly declares
+   =QComboBox::NoInsert=; the shipped editor never sets it (functionally
+   inert since none are editable except the currency combo post-item-4,
+   but cheap to match literally). *Decision: set it explicitly.*
+9. *Curve Template table combos*: already the only precedent in the
+   codebase for inline table-cell combos (FX's component table);
+   already matches it. No change.
+
 * Notes
 
 * Test Scenarios

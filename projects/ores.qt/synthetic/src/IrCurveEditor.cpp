@@ -23,6 +23,7 @@
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/OreCurrencyComboBox.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/SampleShortRatePathsChart.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
@@ -33,6 +34,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include <QButtonGroup>
 #include <QComboBox>
+#include <QCompleter>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
@@ -44,6 +46,7 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSizePolicy>
 #include <QSlider>
 #include <QSplitter>
 #include <QStackedWidget>
@@ -192,24 +195,39 @@ void IrCurveEditor::buildUi() {
 
 void IrCurveEditor::buildInstrumentTab() {
     auto* tab = new QWidget(this);
-    auto* form = new QFormLayout(tab);
+    auto* outer = new QVBoxLayout(tab);
 
-    currencyCombo_ = new QComboBox(tab);
-    currencyCombo_->setEditable(false);
+    // Matches every codegen detail dialog's framing (e.g. Portfolio's "Basic Information",
+    // Book's field groups) -- a titled QGroupBox around the form, not the form bare on the tab.
+    auto* identityBox = new QGroupBox(tr("Curve Identity"), tab);
+    auto* form = new QFormLayout(identityBox);
+
+    // Same ~180-row ISO currency list and "pick 1 of many quickly" use case as FX's own
+    // base/quote combos -- editable + completer, same as FxSpotRateEditor::buildInstrumentTab().
+    currencyCombo_ = new OreCurrencyComboBox(identityBox);
+    currencyCombo_->setEditable(true);
+    currencyCombo_->setInsertPolicy(QComboBox::NoInsert);
+    currencyCombo_->completer()->setCompletionMode(QCompleter::PopupCompletion);
+    currencyCombo_->completer()->setFilterMode(Qt::MatchContains);
+    currencyCombo_->completer()->setCaseSensitivity(Qt::CaseInsensitive);
     form->addRow(tr("Currency"), currencyCombo_);
 
-    indexNameCombo_ = new QComboBox(tab);
+    // Unlike the currency combo, this list is short (post-filter: 1-3 rows per currency, not
+    // ~180) -- a completer would solve a problem that doesn't exist here.
+    indexNameCombo_ = new QComboBox(identityBox);
     indexNameCombo_->setEditable(false);
+    indexNameCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Index name"), indexNameCombo_);
 
-    fixedLegFrequencyCombo_ = new QComboBox(tab);
+    fixedLegFrequencyCombo_ = new QComboBox(identityBox);
+    fixedLegFrequencyCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Fixed leg frequency"), fixedLegFrequencyCombo_);
 
-    enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
+    enabledCheck_ = new QCheckBox(tr("Enabled"), identityBox);
     enabledCheck_->setChecked(ir_.enabled);
     form->addRow(QString(), enabledCheck_);
 
-    secondsSpin_ = new QSpinBox(tab);
+    secondsSpin_ = new QSpinBox(identityBox);
     secondsSpin_->setRange(1, 3600);
     secondsSpin_->setSuffix(tr(" s"));
     secondsSpin_->setValue(ir_.ticks_per_hour > 0 ?
@@ -217,9 +235,12 @@ void IrCurveEditor::buildInstrumentTab() {
                                1);
     form->addRow(tr("New tick every"), secondsSpin_);
 
-    sourceNameEchoLabel_ = new QLabel(tab);
+    sourceNameEchoLabel_ = new QLabel(identityBox);
     sourceNameEchoLabel_->setStyleSheet("color: gray;");
     form->addRow(tr("Source"), sourceNameEchoLabel_);
+
+    outer->addWidget(identityBox);
+    outer->addStretch(1);
 
     connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
         populateIndexNameCombo();
@@ -241,65 +262,95 @@ void IrCurveEditor::buildInstrumentTab() {
 void IrCurveEditor::buildProcessTab() {
     auto* tab = new QWidget(this);
     auto* layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(8);
 
-    auto* engineBox = new QGroupBox(tr("Engine && Parameters"), tab);
-    auto* engineBoxLayout = new QVBoxLayout(engineBox);
-
-    auto* engineRow = new QHBoxLayout();
-    engineRow->addWidget(new QLabel(tr("Engine:"), engineBox));
-    engineCombo_ = new QComboBox(engineBox);
+    // ===== 1. Header row: engine + segmented Simple/Advanced toggle -- copied verbatim from
+    // FxSpotRateEditor::buildBehaviourTab(), no IR-specific reason for this affordance to differ.
+    auto* headerRow = new QHBoxLayout();
+    headerRow->addWidget(new QLabel(tr("Engine:"), tab));
+    engineCombo_ = new QComboBox(tab);
+    engineCombo_->setInsertPolicy(QComboBox::NoInsert);
     for (const auto* e : kEngines)
         engineCombo_->addItem(QString::fromUtf8(e));
     engineCombo_->setCurrentText(QString::fromStdString(ir_.process_type));
-    engineRow->addWidget(engineCombo_);
-    engineRow->addSpacing(16);
+    headerRow->addWidget(engineCombo_);
+    headerRow->addStretch(1);
 
-    // Simple/Advanced toggle, mirroring FxSpotRateEditor's own mode switch: Simple gives quick
-    // slider-driven exploration, Advanced gives precise direct numeric entry. Both edit the same
-    // four scalars.
-    modeGroup_ = new QButtonGroup(engineBox);
-    auto* simpleRadio = new QRadioButton(tr("Simple"), engineBox);
-    auto* advancedRadio = new QRadioButton(tr("Advanced"), engineBox);
-    simpleRadio->setChecked(true);
-    modeGroup_->addButton(simpleRadio, 0);
-    modeGroup_->addButton(advancedRadio, 1);
-    engineRow->addWidget(simpleRadio);
-    engineRow->addWidget(advancedRadio);
-    engineRow->addStretch(1);
-    engineBoxLayout->addLayout(engineRow);
+    auto* simpleBtn = new QPushButton(tr("Simple"), tab);
+    auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
+    const QColor accent = palette().color(QPalette::Highlight);
+    const QColor accentText = palette().color(QPalette::HighlightedText);
+    const QString segStyle =
+        QStringLiteral("QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
+                       "padding: 4px 16px; border: 1px solid %1; }"
+                       "QPushButton:checked { background: %1; color: %2; }")
+            .arg(accent.name(), accentText.name());
+    simpleBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }");
+    advancedBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-left-radius: 0; border-bottom-left-radius: 0; "
+                   "border-left: none; }");
+    for (auto* b : {simpleBtn, advancedBtn}) {
+        b->setCheckable(true);
+        b->setAutoExclusive(true);
+        b->setCursor(Qt::PointingHandCursor);
+    }
+    simpleBtn->setChecked(true);
+    modeGroup_ = new QButtonGroup(tab);
+    modeGroup_->setExclusive(true);
+    modeGroup_->addButton(simpleBtn, 0);
+    modeGroup_->addButton(advancedBtn, 1);
+    auto* segRow = new QHBoxLayout();
+    segRow->setSpacing(0);
+    segRow->addWidget(simpleBtn);
+    segRow->addWidget(advancedBtn);
+    headerRow->addLayout(segRow);
+    layout->addLayout(headerRow);
 
-    modeStack_ = new QStackedWidget(engineBox);
-
-    // Ranges sized to this system's actual day-scaled convention (1 tick == 1 calendar day, see
-    // ir_curve_template_resolver's own doc) -- the seeded Barclays curves run
-    // kappa ~0.0007-0.0015, sigma ~0.0004-0.0007 (e.g. USD-SOFR: kappa=0.00151, sigma=0.00042).
-    // A 0-2 / 0-0.1 range would put every real value imperceptibly near zero, so a slider nudge
-    // would jump by orders of magnitude into the numerically-unstable regime documented in the
+    // ===== 2. Mode stack: Simple (slider-only, value echoed in a label -- precise entry is
+    // Advanced-only, same philosophy as FX) vs Advanced (directly-editable table). Ranges sized
+    // to this system's actual day-scaled convention (1 tick == 1 calendar day, see
+    // ir_curve_template_resolver's own doc) -- the seeded Barclays curves run kappa
+    // ~0.0007-0.0015, sigma ~0.0004-0.0007 (e.g. USD-SOFR: kappa=0.00151, sigma=0.00042). A wider
+    // range would put every real value imperceptibly near zero, so a slider nudge would jump by
+    // orders of magnitude into the numerically-unstable regime documented in the
     // seed-ir-curve-sample-data follow-on task.
+    modeStack_ = new QStackedWidget(tab);
+
     auto* simplePage = new QWidget(modeStack_);
-    auto* simpleForm = new QFormLayout(simplePage);
+    auto* simpleLayout = new QVBoxLayout(simplePage);
     auto addParamRow = [&](const QString& labelText,
                            QSlider*& slider,
-                           QDoubleSpinBox*& spin,
+                           QDoubleSpinBox*& spin, // hidden value model, not shown -- see below
                            double minV,
                            double maxV,
                            double initial,
                            double step) {
-        auto* row = new QWidget(simplePage);
-        auto* rowLayout = new QHBoxLayout(row);
-        rowLayout->setContentsMargins(0, 0, 0, 0);
-        slider = new QSlider(Qt::Horizontal, row);
+        auto* header = new QHBoxLayout();
+        auto* titleLabel = new QLabel(labelText, simplePage);
+        header->addWidget(titleLabel);
+        header->addStretch(1);
+        auto* valueLabel = new QLabel(simplePage);
+        valueLabel->setStyleSheet("color: gray;");
+        header->addWidget(valueLabel);
+        simpleLayout->addLayout(header);
+
+        slider = new QSlider(Qt::Horizontal, simplePage);
         slider->setRange(0, 1000);
-        spin = new QDoubleSpinBox(row);
+        simpleLayout->addWidget(slider);
+
+        // Spin box is the value model (read by save/charts/Advanced-table sync) but is never
+        // added to a layout -- Simple mode is deliberately imprecise, matching FX's own Simple
+        // page (a value label, not a spinbox, next to the slider).
+        spin = new QDoubleSpinBox(simplePage);
         spin->setRange(minV, maxV);
         spin->setDecimals(6);
         spin->setSingleStep(step);
-        spin->setFixedWidth(110);
         spin->setValue(initial);
+        spin->setVisible(false);
         slider->setValue(static_cast<int>(std::lround((initial - minV) / (maxV - minV) * 1000)));
-        rowLayout->addWidget(slider, 1);
-        rowLayout->addWidget(spin);
-        simpleForm->addRow(labelText, row);
+        valueLabel->setText(QString::number(initial, 'g', 6));
 
         connect(slider, &QSlider::valueChanged, this, [spin, minV, maxV](int v) {
             const QSignalBlocker blocker(spin);
@@ -308,10 +359,11 @@ void IrCurveEditor::buildProcessTab() {
         connect(spin,
                 qOverload<double>(&QDoubleSpinBox::valueChanged),
                 this,
-                [slider, minV, maxV](double v) {
+                [slider, valueLabel, minV, maxV](double v) {
                     const QSignalBlocker blocker(slider);
                     slider->setValue(
                         static_cast<int>(std::lround((v - minV) / (maxV - minV) * 1000)));
+                    valueLabel->setText(QString::number(v, 'g', 6));
                 });
         connect(spin,
                 qOverload<double>(&QDoubleSpinBox::valueChanged),
@@ -330,10 +382,12 @@ void IrCurveEditor::buildProcessTab() {
     addParamRow(tr("Reversion κ"), kappaSlider_, kappaSpin_, 0.0, 0.02, ir_.kappa, 0.00001);
     addParamRow(
         tr("Volatility σ"), sigmaSlider_, sigmaSpin_, 0.0, 0.005, ir_.sigma, 0.00001);
+    simpleLayout->addStretch(1);
     modeStack_->addWidget(simplePage);
 
     // Advanced page: same four values, one row of directly-editable, unclamped-precision cells --
-    // for typing exact numbers a slider's granularity can't reach.
+    // for typing exact numbers a slider's granularity can't reach. The only precise-entry
+    // surface, matching FX's Advanced component table's role.
     auto* advancedPage = new QWidget(modeStack_);
     auto* advancedLayout = new QVBoxLayout(advancedPage);
     advancedTable_ = new QTableWidget(1, 4, advancedPage);
@@ -358,26 +412,38 @@ void IrCurveEditor::buildProcessTab() {
             case 3: target = sigmaSpin_; break;
         }
         if (target)
-            target->setValue(v); // propagates to slider + charts via its own valueChanged
+            target->setValue(v); // propagates to slider + label + charts via its own valueChanged
     });
 
-    engineBoxLayout->addWidget(modeStack_);
-    layout->addWidget(engineBox);
+    connect(modeGroup_, &QButtonGroup::idClicked, this, &IrCurveEditor::onModeChanged);
 
-    connect(modeGroup_,
-            &QButtonGroup::idClicked,
-            this,
-            &IrCurveEditor::onModeChanged);
+    // ===== 3. Middle row: mode stack (left, dominant) | compact sample-paths chart (right).
+    // Inverted from FX's own compact-vs-prominent assignment (FX's compact chart is the
+    // supporting stat, prominent is the hero view) -- for IR the curve shape is the hero "what
+    // will I actually publish" view (an IR-only chart, FX has no equivalent), sample paths is
+    // the supporting/exploratory view, so it takes FX's compact slot instead.
+    auto* middleRow = new QHBoxLayout();
+    middleRow->setSpacing(12);
+    middleRow->addWidget(modeStack_, 1);
 
-    // Both charts full-width, stacked -- curve shape (the more informative view for a rates
-    // curve) on top, sample paths below.
-    shapeChart_ = new CurveShapePreviewChart(clientManager_, tab);
-    shapeChart_->setMinimumHeight(260);
-    layout->addWidget(shapeChart_, 1);
+    auto* pathsBox = new QGroupBox(tr("Sample short-rate paths"), tab);
+    pathsBox->setMinimumWidth(300);
+    pathsBox->setMaximumWidth(380);
+    auto* pathsBoxLayout = new QVBoxLayout(pathsBox);
+    pathsChart_ = new SampleShortRatePathsChart(clientManager_, pathsBox);
+    pathsChart_->setMinimumHeight(240);
+    pathsBoxLayout->addWidget(pathsChart_);
+    middleRow->addWidget(pathsBox, 0, Qt::AlignTop);
+    layout->addLayout(middleRow);
 
-    pathsChart_ = new SampleShortRatePathsChart(clientManager_, tab);
-    pathsChart_->setMinimumHeight(260);
-    layout->addWidget(pathsChart_, 1);
+    // ===== 4. Bottom row (full width): prominent curve-shape preview.
+    auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
+    auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
+    shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
+    shapeChart_->setMinimumHeight(340);
+    shapeChart_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    shapeBoxLayout->addWidget(shapeChart_);
+    layout->addWidget(shapeBox, 1);
 
     connect(engineCombo_,
             &QComboBox::currentTextChanged,

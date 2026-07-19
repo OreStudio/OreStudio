@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq.core/messaging/registrar.hpp"
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
@@ -33,6 +34,7 @@
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
+#include "ores.dq.core/messaging/catalog_registrar.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
@@ -126,30 +128,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [cm](ores::nats::message msg) { cm->reason_history(std::move(msg)); }));
 
     // =========================================================================
-    // Data Organization (catalogs, data-domains, methodologies, subject-areas)
+    // Catalog is on the standard generated stack (see catalog_handler/
+    // catalog_registrar); data-domains, methodologies, and subject-areas
+    // stay on the bespoke data_organization_handler for now.
+    // =========================================================================
+
+    {
+        auto catalog_subs = register_catalog_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(catalog_subs.begin()),
+                   std::make_move_iterator(catalog_subs.end()));
+    }
+
+    // =========================================================================
+    // Data Organization (data-domains, methodologies, subject-areas)
     // =========================================================================
 
     auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_catalogs_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_catalogs(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_catalog_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_catalog(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_catalog_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_catalogs(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_catalog_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->catalog_history(std::move(msg));
-        }));
 
     subs.push_back(nats.queue_subscribe(
         get_data_domains_request::nats_subject, queue_group, [do_](ores::nats::message msg) {

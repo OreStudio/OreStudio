@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CatalogMdiWindow.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -205,7 +205,7 @@ void CatalogMdiWindow::onDeleteClicked() {
             return {false, "Window closed"};
 
         dq::messaging::delete_catalog_request request;
-        request.codes.push_back(name);
+        request.names.push_back(name);
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)

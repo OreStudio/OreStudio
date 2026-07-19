@@ -21,12 +21,10 @@
 #define ORES_DQ_CORE_SERVICE_DATA_ORGANIZATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/catalog_repository.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
@@ -63,59 +61,6 @@ public:
      * @param ctx The database context.
      */
     explicit data_organization_service(context ctx);
-
-    // ========================================================================
-    // Catalog Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all catalogs.
-     */
-    std::vector<domain::catalog> list_catalogs();
-
-    /**
-     * @brief Lists catalogs with pagination.
-     */
-    std::vector<domain::catalog> list_catalogs(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active catalogs.
-     */
-    std::uint32_t get_catalog_count();
-
-    /**
-     * @brief Finds a catalog by its name.
-     */
-    std::optional<domain::catalog> find_catalog(const std::string& name);
-
-    /**
-     * @brief Saves a catalog (creates or updates).
-     *
-     * @param catalog The catalog to save
-     */
-    void save_catalog(const domain::catalog& catalog);
-
-    /**
-     * @brief Saves multiple catalogs (creates or updates).
-     *
-     * @param catalogs The catalogs to save
-     */
-    void save_catalogs(const std::vector<domain::catalog>& catalogs);
-
-    /**
-     * @brief Removes a catalog.
-     *
-     * @param name The name of the catalog to remove
-     */
-    void remove_catalog(const std::string& name);
-
-    /**
-     * @brief Gets the version history for a catalog.
-     *
-     * @param name The catalog name
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::catalog> get_catalog_history(const std::string& name);
 
     // ========================================================================
     // Dataset Dependency Management
@@ -239,7 +184,6 @@ public:
                                                                const std::string& domain_name);
 
 private:
-    repository::catalog_repository catalog_repo_;
     repository::dataset_dependency_repository dataset_dependency_repo_;
     repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;

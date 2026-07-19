@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/DatasetDetailDialog.hpp"
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"

@@ -20,7 +20,6 @@
 #ifndef ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
@@ -33,55 +32,6 @@
 
 namespace ores::dq::messaging {
 
-// =============================================================================
-// Catalog Protocol
-// =============================================================================
-
-struct get_catalogs_request {
-    using response_type = struct get_catalogs_response;
-    static constexpr std::string_view nats_subject = "dq.v1.catalogs.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_catalogs_response {
-    std::vector<ores::dq::domain::catalog> catalogs;
-    int total_available_count = 0;
-};
-
-struct save_catalog_request {
-    using response_type = struct save_catalog_response;
-    static constexpr std::string_view nats_subject = "dq.v1.catalogs.save";
-    ores::dq::domain::catalog data;
-};
-
-struct save_catalog_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_catalog_request {
-    using response_type = struct delete_catalog_response;
-    static constexpr std::string_view nats_subject = "dq.v1.catalogs.delete";
-    std::vector<std::string> codes;
-};
-
-struct delete_catalog_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_catalog_history_request {
-    using response_type = struct get_catalog_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.catalogs.history";
-    std::string code;
-};
-
-struct get_catalog_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::catalog> history;
-};
 
 // =============================================================================
 // Data Domain Protocol

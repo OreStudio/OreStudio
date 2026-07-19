@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CatalogHistoryDialog.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ui_CatalogHistoryDialog.h"
@@ -66,7 +66,7 @@ void CatalogHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_catalog_history_request request;
-    request.code = name_.toStdString();
+    request.name = name_.toStdString();
 
     runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
         if (!response.success) {

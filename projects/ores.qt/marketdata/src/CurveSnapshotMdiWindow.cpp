@@ -488,13 +488,13 @@ void CurveSnapshotMdiWindow::loadGrid() {
             const auto value = std::atof(o.value.c_str());
 
             auto* tenorItem = new QTableWidgetItem(QString::fromStdString(o.point_id));
-            tenorItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            tenorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             self->gridTable_->setItem(static_cast<int>(i), 0, tenorItem);
             auto* rateItem = new QTableWidgetItem(QString::number(value, 'f', 6));
-            rateItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            rateItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             self->gridTable_->setItem(static_cast<int>(i), 1, rateItem);
             auto* observedItem = new QTableWidgetItem(format_datetime(o.observation_datetime));
-            observedItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            observedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             self->gridTable_->setItem(static_cast<int>(i), 2, observedItem);
 
             categories << QString::fromStdString(o.point_id);
@@ -646,7 +646,7 @@ void CurveSnapshotMdiWindow::loadHistory() {
                     cellText = "--"; // point hasn't started ticking yet, or no prior to diff
 
                 auto* item = new QTableWidgetItem(cellText);
-                item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+                item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
                 if (deltaBp)
                     item->setForeground(QBrush(*deltaBp >= 0 ? k_up_color : k_down_color));
                 self->historyTable_->setItem(static_cast<int>(r), 1 + b, item);
@@ -695,7 +695,7 @@ void CurveSnapshotMdiWindow::loadHistory() {
 
         for (std::size_t r = 0; r < tenors.size(); ++r) {
             auto* tenorItem = new QTableWidgetItem(QString::fromStdString(tenors[r]));
-            tenorItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            tenorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             self->historyTable_->setItem(static_cast<int>(r), 0, tenorItem);
         }
         self->historyTable_->resizeColumnsToContents();

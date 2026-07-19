@@ -809,6 +809,30 @@ std::string ir_index_display_suffix(const synthetic::domain::ir_curve_generation
         return ir.index_name.substr(prefix.size());
     return ir.index_name;
 }
+
+// composeBadgedIcon() (below) always draws the base icon into a fixed 44x22 canvas via
+// QIcon::pixmap(w, h) -- which returns a pixmap of *exactly* that requested size, stretching
+// non-uniformly if the icon's natural aspect differs. A currency-pair icon (two flags,
+// ~44-wide) already matches that box; a single flag (~22-wide square) gets stretched ~2x
+// horizontally, reading as an oversized flag next to FX's correctly-proportioned pair icons.
+// Fix at the source: pre-pad the single flag, left-aligned, into a pair-icon-shaped (mostly
+// transparent) canvas at every size the flag cache renders, so it already has the right aspect
+// ratio before composeBadgedIcon's forced stretch -- same undistorted size as one flag of an
+// FX pair, not a blown-up square.
+QIcon pad_single_flag_to_pair_shape(const QIcon& singleFlag) {
+    QIcon padded;
+    for (const QSize& baseSize : singleFlag.availableSizes()) {
+        const QPixmap flagPm = singleFlag.pixmap(baseSize);
+        const QSize pairSize = currency_pair_icon_size(baseSize.height());
+        QPixmap out(pairSize);
+        out.fill(Qt::transparent);
+        QPainter painter(&out);
+        painter.drawPixmap(0, 0, flagPm);
+        painter.end();
+        padded.addPixmap(out);
+    }
+    return padded;
+}
 }
 
 std::string
@@ -828,7 +852,7 @@ QStandardItem* MarketSimulatorWindow::buildIrCurveFeedItem(
     item->setData(QString::fromStdString(irId), NodeIdRole);
 
     const QIcon base =
-        imageCache ? currency_flag_icon(*imageCache, ir.currency_code) :
+        imageCache ? pad_single_flag_to_pair_shape(currency_flag_icon(*imageCache, ir.currency_code)) :
                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
     item->setData(QVariant::fromValue(base), BaseIconRole);
     item->setIcon(base);

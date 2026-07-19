@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 25605F80-584E-4B95-9850-68E48C538450
+:END:
+#+title: Story: Hotfix: Windows CI builds timing out / failing on header dependency scanning
+#+description: Windows CI (msvc-release and clang-debug/release) consistently fails or times out at 6h because CMake's automatic C++ module dependency scanning (clang-scan-deps) invokes via cmd.exe, whose ~8191-char command-line limit truncates the very long include/define argument list, silently dropping the ores.diff include path and causing 'file not found' errors or scanner hangs.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:sprint_23:v0:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore Windows CI: builds must complete within the workflow timeout
+instead of failing with spurious "file not found" errors or hanging
+for 6h and getting cancelled.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                  |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Fix merged via PR #1645.               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing — story closed.                |
+| Last touched  | 2026-07-19                               |
+
+* Acceptance
+
+- Windows CI workflow (all three matrix legs: msvc-release,
+  clang-debug, clang-release) completes without the
+  "file not found" clang-scan-deps error and without hitting the 6h
+  timeout.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A681DF4-4206-42D1-BDD2-EE3B258E37EF][Scaffold story: Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | DONE | 2026-07-19 | 2026-07-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:30FF9B17-971F-497D-9CF8-5814809FEABC][Implement Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | DONE | 2026-07-19 | 2026-07-19 | Set CMAKE_CXX_SCAN_FOR_MODULES OFF; merged via PR #1645. |
+
+* Decisions
+
+- Disabled =CMAKE_CXX_SCAN_FOR_MODULES= globally rather than scoping
+  it to Windows-only presets: the project has no C++20 module usage
+  anywhere, so the scan pass is dead weight on every platform, and a
+  single global setting is simpler to maintain than a per-preset
+  override. Revisit if/when the project adopts C++20 modules.
+
+* Out of scope
+
+-

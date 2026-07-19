@@ -37,7 +37,7 @@ Request/reply payloads are JSON serialisations of the structs in
 
 | Subject | Request type | Request fields | Response type | Response fields |
 |---------+--------------+----------------+---------------+-----------------|
-| =...currencies.list= | =get_currencies_request= | =offset= (int, 0), =limit= (int, 100) | =get_currencies_response= | =currencies= ([[id:A165DCB3-690D-4F19-A2A3-EC63D5148F1F][currency]][]), =total_available_count= (int) |
+| =...currencies.list= | =get_currencies_request= | =offset= (int, 0), =limit= (int, 100) | =get_currencies_response= | =currencies= ([[id:035402B2-0136-44A5-BDB0-601F6864A9FA][currency]][]), =total_available_count= (int) |
 | =...currencies.save= | =save_currency_request= | =data= (currency) | =save_currency_response= | =success= (bool), =message= (string) |
 | =...currencies.delete= | =delete_currency_request= | =iso_codes= (string[]) | =delete_currency_response= | =success= (bool), =message= (string) |
 | =...currencies.history= | =get_currency_history_request= | =iso_code= (string) | =get_currency_history_response= | =success= (bool), =message= (string), =history.versions= (currency_version[]) |

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-dual-file-entities
+#+pr: 1646
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ All 11 _table.org files are deleted; their SQL sections live in the correspondin
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -42,17 +42,59 @@ All 11 _table.org files are deleted; their SQL sections live in the correspondin
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigation before touching anything found the task description
+stale, same pattern as B6: of the original 11 =_table.org= files, 3
+(=country=, =party_type=, =purpose_type=) were already fully migrated
+and deleted in earlier commits (=8b8ad0af0=, =d8079a5ef=, and others),
+leaving 8 remaining (the 7 dual-file entities plus =currency=). For
+each of those 8, diffed the =_table.org=' =* Validation function= and
+=* Insert trigger= sections against the corresponding entity file's
+own sections (already present in every entity file) and found them
+byte-identical (cosmetic property-drawer key ordering aside) — the
+content move described by this task's Goal had *also* already
+happened, presumably as part of the B1-B3 work that added these
+sections to entity files for coexistence. The =#+sql_only: true=
+mechanism named in the Acceptance for =purpose_type= was never
+implemented and has zero references anywhere in the codebase — per
+=codegen-model-unification.org=, it was superseded by B5's generic
+=ores.*.enabled:= property-drawer mechanism before this task was ever
+started, and =purpose_type= (already migrated) generates as a normal
+full =domain_entity=, not an SQL-only entity.
+
+1. Confirm via =compass codegen entity generate <name> --address
+   ores.sql.schema --diff= that each of the 8 remaining entities
+   already resolves to its entity file (not the table file) for
+   generation — proven by =_resolve_entity='s preference for primary
+   metatypes over meta-entity ones.
+2. Grep every table file's org-roam =:ID:= across the repo for
+   incoming =id:= links that would dangle after deletion; repoint the
+   two found (one live doc, one historical) at the entity file's own
+   ID rather than leaving them broken.
+3. Delete the 8 =_table.org= files.
+4. Re-run the same zero-diff check post-deletion to confirm deleting
+   the now-redundant table files changed nothing about what gets
+   generated.
 
 * Notes
+
+- Some entities (=currency_market_tier=, =party_id_scheme=,
+  =party_status=, =rounding_type=) show non-empty diffs when
+  regenerating from their entity file — identical before and after
+  this task's changes, so unrelated to the table/entity split. This is
+  the pre-existing "sql profile dual-fires old and new SQL templates"
+  /broader template drift documented in
+  =entity_commissioning_reference.org='s known-issues table; out of
+  scope here and unaffected by this task either way.
+- =book_status=/=contact_type=/=currency= already regenerated
+  byte-identical on =ores.sql.schema= both before and after deletion —
+  direct proof the table files were dead weight, not a generation
+  source.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1646][#1646]] | [codegen] Delete the 8 remaining redundant _table.org files |
 
 * Review
 
@@ -61,3 +103,17 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The content move (Validation function / Insert trigger sections) had
+already happened for all 8 remaining =_table.org= files before this
+task started; the actual remaining work was verifying that and
+retiring the now-redundant files. Deleted all 8
+(=book_status=/=contact_type=/=currency=/=currency_market_tier=/
+=monetary_nature=/=party_id_scheme=/=party_status=/=rounding_type=),
+repointed the 2 =id:= links that would otherwise have dangled, and
+confirmed zero behavioral change: every entity generates identically
+before and after deletion (=compass codegen entity list --type table=
+now returns none). The =#+sql_only= acceptance bullet for
+=purpose_type= was moot — that entity was already migrated in an
+earlier commit and =sql_only= was superseded by B5 before this task
+began. Codegen pytest suite: 55/55.

@@ -151,6 +151,7 @@ Source tag identifying the producer channel that published this observation
 | observations_series_datetime | tenant_id, party_id, series_id, observation_datetime desc                         | false  | false        |                    |
 | observations_tenant_datetime | tenant_id, party_id, observation_datetime desc                                    | false  | false        |                    |
 | observations_source          | tenant_id, party_id, source, observation_datetime desc                            | false  | false        | source is not null |
+| observations_series_point_datetime | tenant_id, series_id, point_id, observation_datetime desc                   | false  | false        |                    |
 
 * C++
 

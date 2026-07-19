@@ -231,13 +231,10 @@ TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t1, 0.0401));
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t2, 0.0402));
 
-    // Curve-evolution view: one snapshot per bucket boundary, oldest to newest.
-    std::vector<std::chrono::system_clock::time_point> boundaries{
-        t0 + std::chrono::seconds(1),
-        t1 + std::chrono::seconds(1),
-        t2 + std::chrono::seconds(1),
-    };
-    auto buckets = obs_repo.read_as_of_buckets(h.context(), s.id, boundaries);
+    // Curve-evolution view: one snapshot every 30 minutes, 3 buckets ending just after t2 --
+    // bucket generation and the per-bucket as-of reduction both happen in the database.
+    auto buckets = obs_repo.read_as_of_buckets(
+        h.context(), s.id, t2 + std::chrono::seconds(1), std::chrono::minutes(30), 3);
     BOOST_LOG_SEV(lg, debug) << "Bucket snapshots: " << buckets;
 
     REQUIRE(buckets.size() == 3);

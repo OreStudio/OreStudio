@@ -87,22 +87,30 @@ public:
               const std::chrono::system_clock::time_point& as_of_datetime);
 
     /**
-     * @brief Reconstructs one as-of snapshot per bucket boundary, for a curve-evolution view.
+     * @brief Reconstructs one as-of snapshot per bucket boundary, for a curve-evolution view --
+     * e.g. "the last 5 snapshots, one every 30 minutes".
      *
-     * Each entry in bucket_boundaries is passed to read_as_of() independently -- this is a
-     * thin convenience wrapper, not a separate query mechanism, so it inherits the same
-     * staggered-timestamp correctness.
+     * Bucket generation and the per-bucket as-of reduction both happen in a single SQL
+     * statement (generate_series() for boundaries, LATERAL DISTINCT ON (point_id) per
+     * boundary) -- one round trip and one query plan, not bucket_count separate as-of
+     * queries. Same staggered-timestamp correctness as read_as_of(): each point within each
+     * bucket is independently resolved to its own latest observation at or before that
+     * bucket's boundary.
      *
      * @param series_id The series to snapshot.
-     * @param bucket_boundaries As-of timestamps to snapshot at, e.g. "now", "now - 1 bucket",
-     * etc. Order is preserved in the result.
-     * @return One vector of market_observation per bucket boundary, same order as the input;
-     * a boundary with no observations at/before it yields an empty vector.
+     * @param latest_boundary The as-of time of the most recent (last) bucket -- typically now.
+     * @param bucket_size The width of one bucket.
+     * @param bucket_count How many buckets to return, oldest to newest, ending at
+     * latest_boundary.
+     * @return One vector of market_observation per bucket, oldest to newest; a bucket with no
+     * observations at/before its boundary yields an empty vector.
      */
     std::vector<std::vector<domain::market_observation>>
     read_as_of_buckets(context ctx,
                        const boost::uuids::uuid& series_id,
-                       const std::vector<std::chrono::system_clock::time_point>& bucket_boundaries);
+                       const std::chrono::system_clock::time_point& latest_boundary,
+                       const std::chrono::seconds& bucket_size,
+                       unsigned int bucket_count);
 
     void remove(context ctx, const boost::uuids::uuid& series_id);
 };

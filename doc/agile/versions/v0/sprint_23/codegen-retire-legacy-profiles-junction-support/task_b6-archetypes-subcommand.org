@@ -8,7 +8,7 @@
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-archetypes-subcommand
-#+pr:
+#+pr: 1643
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -191,7 +191,7 @@ delegating every resolution decision to =physical_space.py=.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1643][#1643]] | [codegen] Add compass codegen entity archetypes subcommand |
 
 * Review
 

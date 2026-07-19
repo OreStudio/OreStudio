@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :windows-ci-scan-deps-timeout:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/windows-ci-scan-deps-timeout
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
 #+updated: 2026-07-19
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ Disable CMake's automatic C++20 module dependency scanning
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] |
-| Now          | Fix verified locally.                  |
+| Now          | Fix merged via PR #1645; awaiting next scheduled Windows CI run to confirm green. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-07-19                               |
 
 * Acceptance
@@ -71,8 +71,6 @@ successfully with the setting off, no behaviour change. Windows-side
 verification will happen via CI on the PR, since no Windows runner is
 available locally.
 
-* Notes
-
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -88,12 +86,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #1645 | [build] Disable C++ module dependency scanning to fix Windows CI |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | LGTM, two review rounds, no correctness issues found | CMakeLists.txt | Accepted | Minor nits (agile doc state drift, duplicate heading) fixed in follow-up commit |
 
 * Result
+
+Set =CMAKE_CXX_SCAN_FOR_MODULES OFF= globally in the root
+=CMakeLists.txt=, disabling CMake's automatic C++20 module
+dependency-scanning pass (=clang-scan-deps=/P1689) for Ninja +
+MSVC/Clang. The project uses no C++20 modules, so the pass was pure
+overhead; on Windows it was invoked through =cmd.exe=, whose
+~8191-char command-line limit silently truncated long transitive
+=-I=/=-D= argument lists, dropping the =ores.diff= include path for
+=ores.dq.core= and causing "file not found" errors, and adding
+per-TU scan overhead that is the most likely cause of the
+msvc-release leg hanging past the 6h CI timeout.
+
+Acceptance met: setting confirmed off, local configure/build on
+=linux-clang-debug-make= clean with no behaviour change (full
+=compass build= completed green in the background). Landed via
+PR #1645, merge-commit to =main=; Windows CI on the next scheduled
+run is the platform-specific confirmation, since no Windows runner
+was available locally.

@@ -23,11 +23,11 @@ for 6h and getting cancelled.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Root cause found; applying fix.        |
+| Now           | Fix merged via PR #1645.               |
 | Waiting on    | Nothing.                               |
-| Next          | Verify fix, open PR.                   |
+| Next          | Nothing — story closed.                |
 | Last touched  | 2026-07-19                               |
 
 * Acceptance
@@ -41,10 +41,16 @@ for 6h and getting cancelled.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8A681DF4-4206-42D1-BDD2-EE3B258E37EF][Scaffold story: Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | STARTED | 2026-07-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:30FF9B17-971F-497D-9CF8-5814809FEABC][Implement Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | BACKLOG | | | Initial task for: Hotfix: Windows CI builds timing out / failing on header dependency scanning |
+| [[id:8A681DF4-4206-42D1-BDD2-EE3B258E37EF][Scaffold story: Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | DONE | 2026-07-19 | 2026-07-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:30FF9B17-971F-497D-9CF8-5814809FEABC][Implement Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | DONE | 2026-07-19 | 2026-07-19 | Set CMAKE_CXX_SCAN_FOR_MODULES OFF; merged via PR #1645. |
 
 * Decisions
+
+- Disabled =CMAKE_CXX_SCAN_FOR_MODULES= globally rather than scoping
+  it to Windows-only presets: the project has no C++20 module usage
+  anywhere, so the scan pass is dead weight on every platform, and a
+  single global setting is simpler to maintain than a per-preset
+  override. Revisit if/when the project adopts C++20 modules.
 
 * Out of scope
 

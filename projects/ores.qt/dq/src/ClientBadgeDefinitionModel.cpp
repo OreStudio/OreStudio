@@ -229,8 +229,7 @@ void ClientBadgeDefinitionModel::fetch_definitions(std::uint32_t offset, std::ui
                 }
 
                 if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Server reported failure: " << result->message;
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
                             .definitions = {},
                             .total_available_count = 0,

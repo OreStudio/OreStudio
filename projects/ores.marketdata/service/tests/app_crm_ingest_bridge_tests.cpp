@@ -271,8 +271,9 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
     CHECK(exotics_count == 1);
 }
 
-TEST_CASE("resolved_rates() synthesises a reverse-pair reciprocal when the reverse isn't configured",
-          tags) {
+TEST_CASE(
+    "resolved_rates() synthesises a reverse-pair reciprocal when the reverse isn't configured",
+    tags) {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;

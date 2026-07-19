@@ -215,8 +215,7 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 }
 
                 if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Server reported failure: " << result->message;
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
                             .domains = {},
                             .total_available_count = 0,

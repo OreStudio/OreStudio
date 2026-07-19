@@ -179,8 +179,7 @@ void DataManagementPlugin::on_login(const plugin_context& ctx) {
 void DataManagementPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
-                               << " classifications="
-                               << (smc.coding_schemes_menu ? "ok" : "null")
+                               << " classifications=" << (smc.coding_schemes_menu ? "ok" : "null")
                                << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
 
     using IC = IconUtils;

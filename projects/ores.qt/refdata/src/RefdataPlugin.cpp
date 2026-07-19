@@ -411,11 +411,10 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         if (partyStatusController_)
             partyStatusController_->showListWindow();
     });
-    connect(
-        partyController_.get(), &PartyController::showPartyIdSchemesRequested, this, [this]() {
-            if (partyIdSchemeController_)
-                partyIdSchemeController_->showListWindow();
-        });
+    connect(partyController_.get(), &PartyController::showPartyIdSchemesRequested, this, [this]() {
+        if (partyIdSchemeController_)
+            partyIdSchemeController_->showListWindow();
+    });
     connect(counterpartyController_.get(),
             &CounterpartyController::showPartyTypesRequested,
             this,
@@ -749,8 +748,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (cdsConventionController_)
                 cdsConventionController_->showListWindow();
         });
-        auto* actCurrencyPairConventions =
-            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("Currency Pair Conve&ntions"));
+        auto* actCurrencyPairConventions = menuCurveBuildingConventions->addAction(
+            ico(Icon::Tag), tr("Currency Pair Conve&ntions"));
         connect(actCurrencyPairConventions, &QAction::triggered, this, [this]() {
             if (currencyPairConventionController_)
                 currencyPairConventionController_->showListWindow();
@@ -779,8 +778,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (oisConventionController_)
                 oisConventionController_->showListWindow();
         });
-        auto* actOvernightIndexConventions =
-            menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("O&vernight Index Conventions"));
+        auto* actOvernightIndexConventions = menuCurveBuildingConventions->addAction(
+            ico(Icon::Tag), tr("O&vernight Index Conventions"));
         connect(actOvernightIndexConventions, &QAction::triggered, this, [this]() {
             if (overnightIndexConventionController_)
                 overnightIndexConventionController_->showListWindow();

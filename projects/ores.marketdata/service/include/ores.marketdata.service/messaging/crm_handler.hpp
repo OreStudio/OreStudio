@@ -191,8 +191,8 @@ public:
             for (const auto& r : results)
                 resp.rates.push_back(to_item(r.crm_name, r.view));
         } else {
-            const auto results =
-                bridge_->resolved_rates(tenant_id_str, req->party_id, req->crm_name, req->reciprocal);
+            const auto results = bridge_->resolved_rates(
+                tenant_id_str, req->party_id, req->crm_name, req->reciprocal);
             resp.rates.reserve(results.size());
             for (const auto& v : results)
                 resp.rates.push_back(to_item(req->crm_name, v));

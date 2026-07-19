@@ -216,8 +216,7 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                 }
 
                 if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Server reported failure: " << result->message;
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
                             .severities = {},
                             .total_available_count = 0,
@@ -227,8 +226,7 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
 
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->severities.size() << " badge severities";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->severities.size());
+                const std::uint32_t count = static_cast<std::uint32_t>(result->severities.size());
                 return {.success = true,
                         .severities = std::move(result->severities),
                         .total_available_count = count,

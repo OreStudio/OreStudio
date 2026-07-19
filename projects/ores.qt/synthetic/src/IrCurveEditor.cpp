@@ -51,6 +51,7 @@
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTableWidget>
+#include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -417,33 +418,31 @@ void IrCurveEditor::buildProcessTab() {
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, &IrCurveEditor::onModeChanged);
 
-    // ===== 3. Middle row: mode stack (left, dominant) | compact sample-paths chart (right).
-    // Inverted from FX's own compact-vs-prominent assignment (FX's compact chart is the
-    // supporting stat, prominent is the hero view) -- for IR the curve shape is the hero "what
-    // will I actually publish" view (an IR-only chart, FX has no equivalent), sample paths is
-    // the supporting/exploratory view, so it takes FX's compact slot instead.
+    // ===== 3. Middle row: mode stack (left, dominant) | compact curve-shape chart (right) --
+    // same zone assignment as FX (compact chart is the supporting view, prominent bottom chart
+    // is the hero view -- sample paths, matching FX's own "sample paths is the hero" choice).
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
     middleRow->addWidget(modeStack_, 1);
 
-    auto* pathsBox = new QGroupBox(tr("Sample short-rate paths"), tab);
-    pathsBox->setMinimumWidth(300);
-    pathsBox->setMaximumWidth(380);
-    auto* pathsBoxLayout = new QVBoxLayout(pathsBox);
-    pathsChart_ = new SampleShortRatePathsChart(clientManager_, pathsBox);
-    pathsChart_->setMinimumHeight(240);
-    pathsBoxLayout->addWidget(pathsChart_);
-    middleRow->addWidget(pathsBox, 0, Qt::AlignTop);
-    layout->addLayout(middleRow);
-
-    // ===== 4. Bottom row (full width): prominent curve-shape preview.
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
+    shapeBox->setMinimumWidth(300);
+    shapeBox->setMaximumWidth(380);
     auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
     shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
-    shapeChart_->setMinimumHeight(340);
-    shapeChart_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    shapeChart_->setMinimumHeight(240);
     shapeBoxLayout->addWidget(shapeChart_);
-    layout->addWidget(shapeBox, 1);
+    middleRow->addWidget(shapeBox, 0, Qt::AlignTop);
+    layout->addLayout(middleRow);
+
+    // ===== 4. Bottom row (full width): prominent sample-paths preview.
+    auto* pathsBox = new QGroupBox(tr("Sample short-rate paths"), tab);
+    auto* pathsBoxLayout = new QVBoxLayout(pathsBox);
+    pathsChart_ = new SampleShortRatePathsChart(clientManager_, pathsBox);
+    pathsChart_->setMinimumHeight(340);
+    pathsChart_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pathsBoxLayout->addWidget(pathsChart_);
+    layout->addWidget(pathsBox, 1);
 
     connect(engineCombo_,
             &QComboBox::currentTextChanged,
@@ -500,8 +499,27 @@ void IrCurveEditor::populateCurrencyCombo() {
     // FX/refdata detail dialogs use (e.g. BookDetailDialog's functional currency), rather than a
     // bespoke fetch+flag routine here.
     setup_currency_combo(currencyCombo_, this, clientManager_, imageCache_, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "populateCurrencyCombo fallback_selection: ir_.currency_code='"
+                                   << ir_.currency_code << "'";
         return QString::fromStdString(ir_.currency_code);
     });
+
+    // Belt-and-braces re-assertion: live-tested and confirmed setup_currency_combo()'s own
+    // setCurrentText(fallback) does not reliably stick on this editable+completer combo (observed
+    // showing an unrelated alphabetically-first currency instead of the loaded entity's own) --
+    // root cause not yet isolated (suspect the QCompleter's own model-driven text handling racing
+    // the programmatic set), so force it again on a short delay once both async fetches (currency
+    // and index name, which starts around the same time) have had time to land.
+    if (!ir_.currency_code.empty()) {
+        QPointer<IrCurveEditor> self = this;
+        QTimer::singleShot(500, this, [self]() {
+            if (!self)
+                return;
+            const auto want = QString::fromStdString(self->ir_.currency_code);
+            if (self->currencyCombo_->currentText() != want)
+                self->currencyCombo_->setCurrentText(want);
+        });
+    }
 }
 
 void IrCurveEditor::populateIndexNameCombo() {
@@ -536,6 +554,7 @@ void IrCurveEditor::populateIndexNameCombo() {
         // QSignalBlocker (to avoid falsely dirtying the form), so currentTextChanged never fires
         // for that first, edit-mode population and this combo must not wait on it.
         auto ccy = self->currencyCombo_->currentText().toStdString();
+        const auto comboCcy = ccy;
         if (ccy.empty())
             ccy = self->ir_.currency_code;
         const auto prefix = ccy + "-";
@@ -554,6 +573,11 @@ void IrCurveEditor::populateIndexNameCombo() {
                 continue;
             self->indexNameCombo_->addItem(QString::fromStdString(suffix));
         }
+        BOOST_LOG_SEV(lg(), debug)
+            << "populateIndexNameCombo: fetched=" << codes.size() << " comboCcy='" << comboCcy
+            << "' entityCcy='" << self->ir_.currency_code << "' usedCcy='" << ccy
+            << "' matched=" << self->indexNameCombo_->count() << " preselect='"
+            << preselect.toStdString() << "'";
 
         // Preselect from the loaded entity on first population (edit mode), or restore whatever
         // the user had picked before a currency change repopulated this combo.

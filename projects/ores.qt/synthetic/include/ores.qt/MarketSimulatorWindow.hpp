@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <QFormLayout>
 #include <QLabel>
+#include <QList>
 #include <QPushButton>
 #include <QSplitter>
 #include <QStackedWidget>
@@ -40,15 +41,18 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
+#include <chrono>
 #include <deque>
 #include <map>
 #include <optional>
 #include <set>
 
 // Forward declarations for chart members (full headers only needed in .cpp).
+class QBarCategoryAxis;
 class QChartView; // used for non-watermark chart views if needed
 class QLineSeries;
 class QScatterSeries;
+class QSpinBox;
 class QTimer;
 class QValueAxis;
 #include <string>
@@ -149,6 +153,12 @@ private:
     void subscribeTickChart(const std::string& source_name);
     void unsubscribeTickChart();
     void refreshTickChart();
+    // IR curve mode's own refresh/append -- see curveBatches_'s own doc for why this is a
+    // separate code path from the scalar refreshTickChart()/appendTickSample() above.
+    void refreshCurveChart();
+    void appendCurveTick(const std::string& point_id,
+                         std::chrono::system_clock::time_point datetime,
+                         double value);
     void startCacheSubscription(const std::string& source_name);
     void stopCacheSubscription(const std::string& source_name);
 
@@ -329,6 +339,21 @@ private:
     QLabel* tickChartPlaceholder_{nullptr};
     QTimer* tickFlashTimer_{nullptr};
     std::deque<double> tickSamples_;
+
+    // IR curve mode: an incoming tick batch (N points sharing one observation_datetime, one per
+    // Curve Template entry) is plotted as a curve shape (X = tenor, short-end to long-end) rather
+    // than a single scalar-over-time line -- the last curveHistorySpin_->value() batches are kept
+    // and overlaid, oldest faded, newest bold, so curve *shape* changes (steepening, parallel
+    // shift, twist) are visible at a glance instead of an undifferentiated saw-tooth of
+    // interleaved tenor values. See MarketSimulatorWindow's own Analysis note on this chart.
+    bool tickChartCurveMode_{false};
+    QBarCategoryAxis* curveTenorAxis_{nullptr};
+    std::vector<std::string> curveTenorLabels_; // ordered short-end to long-end
+    std::deque<std::map<std::string, double>> curveBatches_; // oldest .. newest
+    std::optional<std::chrono::system_clock::time_point> curveBatchDatetime_;
+    QList<QLineSeries*> curveSeriesList_;
+    QSpinBox* curveHistorySpin_{nullptr}; // "N" batches kept, default 5
+
     std::optional<nats::service::subscription> tickSubscription_;
     // Alive flag shared with the NATS callback lambda. Set to false before
     // destroying the subscription so any in-flight callback exits early,

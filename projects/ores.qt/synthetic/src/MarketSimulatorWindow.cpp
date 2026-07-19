@@ -19,6 +19,7 @@
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -56,8 +57,10 @@
 #include <QPixmap>
 #include <QPointF>
 #include <QPointer>
+#include <QSpinBox>
 #include <QStackedLayout>
 #include <QVBoxLayout>
+#include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
@@ -71,7 +74,9 @@
 #include <atomic>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <rfl/json.hpp>
 #include <set>
 
@@ -445,6 +450,29 @@ void MarketSimulatorWindow::setupRightPanel() {
         tickChartContainer_ = new QWidget(summaryPage_);
         auto* tickLayout = new QVBoxLayout(tickChartContainer_);
         tickLayout->setContentsMargins(0, 0, 0, 0);
+
+        // IR curve mode only -- how many recent tick batches (curve snapshots) to overlay. Hidden
+        // for FX's scalar mode, where it has no meaning.
+        auto* historyRow = new QWidget(tickChartContainer_);
+        auto* historyRowLayout = new QHBoxLayout(historyRow);
+        historyRowLayout->setContentsMargins(0, 0, 0, 4);
+        historyRowLayout->addWidget(new QLabel(tr("History:"), historyRow));
+        curveHistorySpin_ = new QSpinBox(historyRow);
+        curveHistorySpin_->setRange(1, 20);
+        curveHistorySpin_->setValue(5);
+        curveHistorySpin_->setToolTip(tr("Number of recent curve snapshots to overlay."));
+        historyRowLayout->addWidget(curveHistorySpin_);
+        historyRowLayout->addStretch(1);
+        historyRow->setVisible(false);
+        tickLayout->addWidget(historyRow);
+        connect(curveHistorySpin_, &QSpinBox::valueChanged, this, [this](int n) {
+            while (static_cast<int>(curveBatches_.size()) > n)
+                curveBatches_.pop_front();
+            refreshCurveChart();
+        });
+        // Toggle this row's visibility from subscribeTickChart() -- store it on the spin box
+        // itself so that call site doesn't need its own member for one QWidget*.
+        curveHistorySpin_->setProperty("historyRow", QVariant::fromValue(static_cast<QObject*>(historyRow)));
 
         tickChartView_ = new WatermarkChartView(chart, tickChartContainer_, {});
         tickChartView_->setRenderHint(QPainter::Antialiasing);
@@ -2298,28 +2326,131 @@ std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_n
         const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
         token += safe ? static_cast<char>(c) : '_';
     }
-    return "synthetic.v1.tick." + token;
+    // IR curve feeds publish on their own namespace, synthetic.v1.curve_family.<source> --
+    // distinct from the plain-tick namespace synthetic.v1.tick.<source> scalar feeds (FX) use
+    // (see this story's "Two subjects, not two message shapes" analysis). source_name always
+    // carries the "ir_curve." prefix for curve feeds (see ir_curve_feed_source_name()), so that's
+    // enough to route correctly here without threading an asset-class flag through every caller.
+    const bool is_curve_family = source_name.starts_with("ir_curve.");
+    return (is_curve_family ? "synthetic.v1.curve_family." : "synthetic.v1.tick.") + token;
+}
+
+namespace {
+// FX ticks carry the scalar as "mid"; IR curve ticks carry it as "value" (and also point_id,
+// subclass etc. this chart doesn't yet use -- see this function's own caller for the
+// undifferentiated-mix caveat: a curve tick batch has one message per Curve Template entry, all
+// plotted on the same line here, not split out by tenor).
+std::optional<double> extract_tick_value(std::string_view payload) {
+    if (auto fx = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(payload))
+        return fx->mid;
+    if (auto ir = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(payload))
+        return ir->value;
+    return std::nullopt;
+}
 }
 
 void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
-    // Pre-populate the chart from the buffered subscription snapshot.
-    tickSamples_.clear();
-    auto cit = cacheSubscriptions_.find(source_name);
-    if (cit != cacheSubscriptions_.end()) {
-        for (const auto& msg : cit->second.snapshot()) {
-            const auto result = rfl::json::read<marketdata::domain::fx_spot_tick>(
-                ores::nats::as_string_view(msg.data));
-            if (result)
-                tickSamples_.push_back(result->mid);
+    const bool curveMode = source_name.starts_with("ir_curve.");
+    tickChartCurveMode_ = curveMode;
+
+    auto* chart = tickChartView_ ? tickChartView_->chart() : nullptr;
+    auto* historyRow = curveHistorySpin_ ?
+                          qobject_cast<QWidget*>(
+                              curveHistorySpin_->property("historyRow").value<QObject*>()) :
+                          nullptr;
+
+    if (curveMode) {
+        // Swap the X axis from the scalar chart's plain QValueAxis (0,1,2... update steps) to a
+        // category axis labelled with this curve's own tenors, short-end to long-end -- built
+        // from the already-loaded irCurveEntries_, filtered to the curve currently shown
+        // (irSummaryId_, set by showIrCurveSummary() before this call).
+        curveTenorLabels_.clear();
+        std::vector<const synthetic::domain::ir_curve_template_entry*> entries;
+        for (const auto& [id, e] : irCurveEntries_)
+            if (boost::uuids::to_string(e.ir_curve_config_id) == irSummaryId_)
+                entries.push_back(&e);
+        std::sort(entries.begin(), entries.end(), [](const auto* a, const auto* b) {
+            return a->sequence_index < b->sequence_index;
+        });
+        for (const auto* e : entries)
+            curveTenorLabels_.push_back(e->end_tenor_code);
+
+        if (chart && tickAxisX_) {
+            chart->removeAxis(tickAxisX_);
+            tickSeries_->detachAxis(tickAxisX_);
+            if (tickPosMarker_)
+                tickPosMarker_->detachAxis(tickAxisX_);
         }
+        if (!curveTenorAxis_) {
+            curveTenorAxis_ = new QBarCategoryAxis(this);
+            const QColor labelColor(0xCB, 0xD5, 0xE1);
+            const QColor grid(255, 255, 255, 18);
+            curveTenorAxis_->setLabelsColor(labelColor);
+            curveTenorAxis_->setGridLineColor(grid);
+            curveTenorAxis_->setLinePenColor(grid);
+        }
+        QStringList categories;
+        for (const auto& t : curveTenorLabels_)
+            categories << QString::fromStdString(t);
+        curveTenorAxis_->clear();
+        curveTenorAxis_->append(categories);
+        if (chart)
+            chart->addAxis(curveTenorAxis_, Qt::AlignBottom);
+
+        if (tickPosMarker_)
+            tickPosMarker_->clear();
+        curveBatches_.clear();
+        curveBatchDatetime_.reset();
+        if (historyRow)
+            historyRow->setVisible(true);
+
+        // Pre-populate from the buffered subscription snapshot, same source as the scalar path.
+        auto cit = cacheSubscriptions_.find(source_name);
+        if (cit != cacheSubscriptions_.end()) {
+            for (const auto& msg : cit->second.snapshot()) {
+                if (auto tick = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(
+                        ores::nats::as_string_view(msg.data)))
+                    appendCurveTick(tick->point_id, tick->datetime, tick->value);
+            }
+        }
+        refreshCurveChart();
+    } else {
+        if (chart && curveTenorAxis_) {
+            chart->removeAxis(curveTenorAxis_);
+            for (auto* s : curveSeriesList_) {
+                s->detachAxis(curveTenorAxis_);
+                chart->removeSeries(s);
+                s->deleteLater();
+            }
+            curveSeriesList_.clear();
+        }
+        if (chart && tickAxisX_) {
+            chart->addAxis(tickAxisX_, Qt::AlignBottom);
+            tickSeries_->attachAxis(tickAxisX_);
+            if (tickPosMarker_)
+                tickPosMarker_->attachAxis(tickAxisX_);
+        }
+        if (historyRow)
+            historyRow->setVisible(false);
+
+        // Pre-populate the chart from the buffered subscription snapshot.
+        tickSamples_.clear();
+        auto cit = cacheSubscriptions_.find(source_name);
+        if (cit != cacheSubscriptions_.end()) {
+            for (const auto& msg : cit->second.snapshot()) {
+                if (auto value = extract_tick_value(ores::nats::as_string_view(msg.data)))
+                    tickSamples_.push_back(*value);
+            }
+        }
+        refreshTickChart();
     }
-    refreshTickChart();
 
     const std::string subject = synthetic_subject(source_name);
-    BOOST_LOG_SEV(lg(), debug) << "Tick chart subscribing to: " << subject;
+    BOOST_LOG_SEV(lg(), debug) << "Tick chart subscribing to: " << subject
+                               << " (curveMode=" << curveMode << ")";
 
     // Create a new alive flag for this subscription. The lambda holds a copy
     // of the shared_ptr; setting it to false makes the callback exit before
@@ -2331,26 +2462,114 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
 
     try {
         tickSubscription_ = clientManager_->nats_client().subscribe(
-            subject, [self, alive](ores::nats::message msg) {
+            subject, [self, alive, curveMode](ores::nats::message msg) {
                 if (!alive->load(std::memory_order_acquire))
                     return;
                 const std::string_view payload = ores::nats::as_string_view(msg.data);
-                auto result = rfl::json::read<marketdata::domain::fx_spot_tick>(payload);
-                if (!result)
-                    return;
-                const double mid = result->mid;
-                QMetaObject::invokeMethod(
-                    self,
-                    [self, mid]() {
-                        if (self)
-                            self->appendTickSample(mid);
-                    },
-                    Qt::QueuedConnection);
+                if (curveMode) {
+                    auto tick = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(payload);
+                    if (!tick)
+                        return;
+                    const auto point_id = tick->point_id;
+                    const auto datetime = tick->datetime;
+                    const auto value = tick->value;
+                    QMetaObject::invokeMethod(
+                        self,
+                        [self, point_id, datetime, value]() {
+                            if (self)
+                                self->appendCurveTick(point_id, datetime, value);
+                        },
+                        Qt::QueuedConnection);
+                } else {
+                    auto value = extract_tick_value(payload);
+                    if (!value)
+                        return;
+                    const double mid = *value;
+                    QMetaObject::invokeMethod(
+                        self,
+                        [self, mid]() {
+                            if (self)
+                                self->appendTickSample(mid);
+                        },
+                        Qt::QueuedConnection);
+                }
             });
         if (tickFlashTimer_)
             tickFlashTimer_->start();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Tick chart subscribe failed: " << e.what();
+    }
+}
+
+void MarketSimulatorWindow::appendCurveTick(const std::string& point_id,
+                                            std::chrono::system_clock::time_point datetime,
+                                            double value) {
+    if (!curveBatchDatetime_ || *curveBatchDatetime_ != datetime) {
+        curveBatchDatetime_ = datetime;
+        curveBatches_.push_back({});
+        const int maxBatches = curveHistorySpin_ ? curveHistorySpin_->value() : 5;
+        while (static_cast<int>(curveBatches_.size()) > maxBatches)
+            curveBatches_.pop_front();
+    }
+    if (!curveBatches_.empty())
+        curveBatches_.back()[point_id] = value;
+    refreshCurveChart();
+}
+
+void MarketSimulatorWindow::refreshCurveChart() {
+    auto* chart = tickChartView_ ? tickChartView_->chart() : nullptr;
+    if (!chart || !curveTenorAxis_ || !tickAxisY_ || curveTenorLabels_.empty())
+        return;
+
+    for (auto* s : curveSeriesList_) {
+        s->detachAxis(curveTenorAxis_);
+        s->detachAxis(tickAxisY_);
+        chart->removeSeries(s);
+        s->deleteLater();
+    }
+    curveSeriesList_.clear();
+
+    if (curveBatches_.empty()) {
+        tickAxisY_->setRange(0, 1);
+        return;
+    }
+
+    double minY = std::numeric_limits<double>::max();
+    double maxY = std::numeric_limits<double>::lowest();
+    const int n = static_cast<int>(curveBatches_.size());
+    for (int i = 0; i < n; ++i) {
+        const auto& batch = curveBatches_[static_cast<std::size_t>(i)];
+        auto* series = new QLineSeries(chart);
+        series->setPointsVisible(true);
+        const bool isLatest = (i == n - 1);
+        // Oldest batches fade out; the latest is bold and highlighted -- same "newest emphasised"
+        // convention the rest of the app's charts use.
+        const int alpha = isLatest ? 255 : std::max(40, 255 * (i + 1) / n - 60);
+        QColor colour = isLatest ? QColor(0x22, 0xC5, 0x5E) : QColor(0x8A, 0x9B, 0xAE);
+        colour.setAlpha(alpha);
+        QPen pen(colour);
+        pen.setWidthF(isLatest ? 2.5 : 1.0);
+        pen.setCosmetic(true);
+        series->setPen(pen);
+
+        for (std::size_t idx = 0; idx < curveTenorLabels_.size(); ++idx) {
+            auto it = batch.find(curveTenorLabels_[idx]);
+            if (it == batch.end())
+                continue;
+            series->append(static_cast<double>(idx), it->second);
+            minY = std::min(minY, it->second);
+            maxY = std::max(maxY, it->second);
+        }
+        chart->addSeries(series);
+        series->attachAxis(curveTenorAxis_);
+        series->attachAxis(tickAxisY_);
+        curveSeriesList_.push_back(series);
+    }
+
+    if (minY <= maxY) {
+        const double range = maxY - minY;
+        const double pad = (range > 0.0) ? range * 0.1 : std::max(maxY * 0.0005, 1e-6);
+        tickAxisY_->setRange(minY - pad, maxY + pad);
     }
 }
 

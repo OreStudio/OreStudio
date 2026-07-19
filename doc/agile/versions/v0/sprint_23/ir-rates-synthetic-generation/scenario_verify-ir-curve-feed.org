@@ -63,7 +63,8 @@ that distinction matters).
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | FAIL |
+| Notes  | - currency is not set to EUR as per curve in tree; - inex is not set; - no source name, no ORE key, no help text. compare with FX; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_074157.png]]; ; - x axis on the chart is confusing, what does 0, 1, ... mean; - rest looks ok.; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_073906.png]]; ; - tenors look good but confirm it is as expected; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_073959.png]]; ; main chart is confusing because its ticking all tenors in one go. whats the best way to display this, as a surface?; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_074323.png]] |
 
 ** Confirm the Curve Template entries
 
@@ -112,9 +113,9 @@ batch and add a new batch on the next tick, with =source= =
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-18T13:38:04Z |
+| Completed at  | 2026-07-19T06:43:29Z |
 | Branch        | feature/tick-batch-publishing |
-| Commit        | 3b26975cf |
+| Commit        | 0389c55b2 |
 | Worktree      | eager_maxwell |
 
 * Notes

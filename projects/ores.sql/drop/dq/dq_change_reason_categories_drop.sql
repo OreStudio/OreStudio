@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop rule if exists ores_dq_change_reason_categories_delete_rule on ores_dq_change_reason_categories_tbl;
-drop trigger if exists ores_dq_change_reason_categories_insert_trg on ores_dq_change_reason_categories_tbl;
+
+drop rule if exists ores_dq_change_reason_categories_delete_rule on "ores_dq_change_reason_categories_tbl";
+drop trigger if exists ores_dq_change_reason_categories_insert_trg on "ores_dq_change_reason_categories_tbl";
 drop function if exists ores_dq_change_reason_categories_insert_fn;
-drop index if exists change_reason_categories_code_uniq_idx;
-drop index if exists change_reason_categories_version_uniq_idx;
-drop table if exists ores_dq_change_reason_categories_tbl;
+drop table if exists "ores_dq_change_reason_categories_tbl";

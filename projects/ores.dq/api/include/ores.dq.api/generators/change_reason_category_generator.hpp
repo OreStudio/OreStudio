@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -35,8 +35,6 @@ generate_synthetic_change_reason_category(utility::generation::generation_contex
 
 /**
  * @brief Generates N synthetic change_reason_categories.
- *
- * @note c++ 23 generators are not supported on all compilers.
  */
 ORES_DQ_API_EXPORT std::vector<domain::change_reason_category>
 generate_synthetic_change_reason_categories(std::size_t n,

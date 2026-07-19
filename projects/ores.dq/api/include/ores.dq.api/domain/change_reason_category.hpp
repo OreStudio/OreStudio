@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,28 +20,19 @@
 #ifndef ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_HPP
 #define ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Groups change reasons into logical categories.
+ * @brief Taxonomy grouping related change reasons.
  *
- * Change reason categories define the namespace for change reasons and
- * determine which reasons apply to which entity types. Categories provide
- * a way to organize change reasons by domain or purpose.
- *
- * Examples of categories:
- * - static_data: For changes to reference data like currencies, countries
- * - trade: For trade-related modifications
- * - market_data: For market data corrections
- * - system: For system-level changes like initial creation
- *
- * @note This type only includes change_commentary (not change_reason_code)
- * because this entity IS a change reason category. Self-referential tracking
- * is handled at the database level.
+ * A change reason category groups related change reasons into a
+ * taxonomy used to classify why a change was made. Examples: "Data
+ * Correction", "Regulatory Update", "Source System Change". Rows are
+ * authored directly (not mirrored from an external source).
  */
 struct change_reason_category final {
     /**
@@ -52,35 +43,41 @@ struct change_reason_category final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique code identifying this category.
+     * @brief Unique code identifying this change reason category.
      *
-     * This is the natural key for the category. Examples: "static_data",
-     * "trade", "market_data", "system".
+     * Examples: "data_correction", "regulatory_update".
      */
     std::string code;
 
     /**
-     * @brief Human-readable description of the category's purpose.
+     * @brief Human-readable description of this change reason category.
      */
     std::string description;
 
     /**
-     * @brief Username of the person who last modified this category.
+     * @brief Username of the person who last modified this change reason category.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
 
     /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
@@ -89,13 +86,13 @@ struct change_reason_category final {
 };
 
 /**
- * @brief Well-known category codes used throughout the system.
+ * @brief Dispatch-key identifier for change_reason_category, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
  */
-namespace change_reason_categories {
-constexpr auto system = "system";
-constexpr auto static_data = "static_data";
-constexpr auto trade = "trade";
-constexpr auto market_data = "market_data";
+[[nodiscard]] constexpr std::string_view entity_type_of(const change_reason_category&) {
+    return "ores.dq.change_reason_category";
 }
 
 }

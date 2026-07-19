@@ -20,6 +20,7 @@
 #include "ores.dq.core/messaging/registrar.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
@@ -35,6 +36,7 @@
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
+#include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
@@ -82,30 +84,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // =========================================================================
-    // Change Management
+    // Change reason category is on the standard generated stack (see
+    // change_reason_category_handler/change_reason_category_registrar);
+    // change reasons stay on the bespoke change_management_handler for now.
+    // =========================================================================
+
+    {
+        auto change_reason_category_subs =
+            register_change_reason_category_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(change_reason_category_subs.begin()),
+                   std::make_move_iterator(change_reason_category_subs.end()));
+    }
+
+    // =========================================================================
+    // Change Management (change reasons)
     // =========================================================================
 
     auto cm = std::make_shared<change_management_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_change_reason_categories_request::nats_subject,
-        queue_group,
-        [cm](ores::nats::message msg) { cm->list_categories(std::move(msg)); }));
-
-    subs.push_back(
-        nats.queue_subscribe(save_change_reason_category_request::nats_subject,
-                             queue_group,
-                             [cm](ores::nats::message msg) { cm->save_category(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_change_reason_category_request::nats_subject,
-        queue_group,
-        [cm](ores::nats::message msg) { cm->delete_categories(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_change_reason_category_history_request::nats_subject,
-        queue_group,
-        [cm](ores::nats::message msg) { cm->category_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
         get_change_reasons_request::nats_subject, queue_group, [cm](ores::nats::message msg) {

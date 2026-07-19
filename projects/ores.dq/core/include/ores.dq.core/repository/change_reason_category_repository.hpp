@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,9 @@
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,12 +34,12 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes change_reason_categories to data storage.
+ * @brief Reads and writes change reason categories to data storage.
  */
 class ORES_DQ_CORE_EXPORT change_reason_category_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.iam.repository.change_reason_category_repository";
+        "ores.dq.repository.change_reason_category_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,63 +50,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit change_reason_category_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes change_reason_categories to database.
+     * @brief Writes change reason categories to database.
      */
     /**@{*/
-    void write(const domain::change_reason_category& category);
-    void write(const std::vector<domain::change_reason_category>& categories);
+    void write(context ctx, const domain::change_reason_category& v);
+    void write(context ctx, const std::vector<domain::change_reason_category>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest change_reason_categories, possibly filtered by code.
+     * @brief Reads latest change reason categories, possibly filtered by code.
      */
     /**@{*/
-    std::vector<domain::change_reason_category> read_latest();
-    std::vector<domain::change_reason_category> read_latest(const std::string& code);
+    std::vector<domain::change_reason_category> read_latest(context ctx);
+    std::vector<domain::change_reason_category> read_latest(context ctx, const std::string& code);
     /**@}*/
 
     /**
-     * @brief Reads latest change_reason_categories with pagination support.
+     * @brief Reads all change reason categories, possibly filtered by code.
+     */
+    std::vector<domain::change_reason_category> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single change reason category as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param code The code to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::change_reason_category>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest change reason categories with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of categories within the specified range
      */
-    std::vector<domain::change_reason_category> read_latest(std::uint32_t offset,
-                                                            std::uint32_t limit);
+    std::vector<domain::change_reason_category>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active change_reason_categories.
-     * @return Total number of categories with valid_to == max_timestamp
+     * @brief Gets the total count of active change reason categories.
+     * @param ctx Repository context with database connection
+     * @return Total number of active change reason categories
      */
-    std::uint32_t get_total_count();
+    std::uint32_t get_total_category_count(context ctx);
 
     /**
-     * @brief Reads all historical versions of a change_reason_category by code.
-     * @param code The category code to look up
-     * @return Vector of all versions, ordered by version descending
+     * @brief Deletes a change reason category by closing its temporal validity.
      */
-    std::vector<domain::change_reason_category> read_all(const std::string& code);
+    void remove(context ctx, const std::string& code);
 
     /**
-     * @brief Deletes a change_reason_category by closing its temporal validity.
+     * @brief Deletes change reason categories by closing their temporal validity.
      */
-    void remove(const std::string& code);
-
-    /**
-     * @brief Deletes change_reason_categories by closing their temporal validity.
-     */
-    void remove(const std::vector<std::string>& codes);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

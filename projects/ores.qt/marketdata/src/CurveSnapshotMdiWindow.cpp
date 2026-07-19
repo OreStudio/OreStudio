@@ -73,6 +73,9 @@ namespace {
 namespace m = ores::marketdata::messaging;
 namespace md = ores::marketdata::domain;
 
+// What the History delta grid's non-base columns show -- selected via historyDisplayModeCombo_.
+enum class HistoryDisplayMode { Rate, DeltaRate, DeltaBp };
+
 // Approximate days for tenor ordering (SPOT/1M/3M/2Y/10Y/...) -- point_id is the raw
 // end_tenor_code (see ir_curve_template_resolver), not a sequence_index, so this is the only
 // ordering signal available client-side without a second fetch of the template entries.
@@ -202,6 +205,7 @@ CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
     , bucketSizeSpin_(nullptr)
     , bucketUnitCombo_(nullptr)
     , bucketCountSpin_(nullptr)
+    , historyDisplayModeCombo_(nullptr)
     , historyTable_(nullptr)
     , historyChart_(nullptr)
     , historyChartView_(nullptr)
@@ -262,13 +266,13 @@ void CurveSnapshotMdiWindow::setupUi() {
     refreshIntervalCombo_->addItem(tr("10s"), 10);
     refreshIntervalCombo_->addItem(tr("30s"), 30);
     refreshIntervalCombo_->addItem(tr("60s"), 60);
-    refreshIntervalCombo_->setCurrentIndex(0); // opt-in, unlike CRM -- this is a diagnostic
-                                               // viewer, not a live trading screen
     footerLayout->addWidget(refreshIntervalCombo_);
     connect(refreshIntervalCombo_,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             &CurveSnapshotMdiWindow::onRefreshIntervalChanged);
+    refreshIntervalCombo_->setCurrentIndex(1); // 5s default, matching CrmCrossRatesMatrixMdiWindow
+    onRefreshIntervalChanged(); // setCurrentIndex above may not fire if it's already index 1
     layout->addLayout(footerLayout);
 }
 
@@ -310,7 +314,7 @@ QWidget* CurveSnapshotMdiWindow::buildGridTab() {
 
     gridTable_ = new QTableWidget(0, 3, page);
     gridTable_->setHorizontalHeaderLabels({tr("Tenor"), tr("Rate"), tr("Observed")});
-    gridTable_->horizontalHeader()->setStretchLastSection(true);
+    gridTable_->horizontalHeader()->setStretchLastSection(false);
     gridTable_->verticalHeader()->setVisible(false);
     gridTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     gridTable_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -367,6 +371,17 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
     bucketCountSpin_->setValue(5);
     controls->addWidget(bucketCountSpin_);
     controls->addWidget(new QLabel(tr("buckets"), page));
+
+    controls->addSpacing(16);
+    controls->addWidget(new QLabel(tr("Show:"), page));
+    historyDisplayModeCombo_ = new QComboBox(page);
+    historyDisplayModeCombo_->addItem(tr("Rate"), static_cast<int>(HistoryDisplayMode::Rate));
+    historyDisplayModeCombo_->addItem(tr("Δ Rate"),
+                                      static_cast<int>(HistoryDisplayMode::DeltaRate));
+    historyDisplayModeCombo_->addItem(tr("Δ (bp)"),
+                                      static_cast<int>(HistoryDisplayMode::DeltaBp));
+    historyDisplayModeCombo_->setCurrentIndex(2); // Δ (bp), matches the existing default view
+    controls->addWidget(historyDisplayModeCombo_);
     controls->addStretch(1);
 
     connect(bucketSizeSpin_,
@@ -379,6 +394,10 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
             &CurveSnapshotMdiWindow::loadHistory);
     connect(bucketCountSpin_,
             QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &CurveSnapshotMdiWindow::loadHistory);
+    connect(historyDisplayModeCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             &CurveSnapshotMdiWindow::loadHistory);
 
@@ -590,14 +609,17 @@ void CurveSnapshotMdiWindow::loadHistory() {
         }
 
         const int bucketCount = static_cast<int>(result.buckets.size());
+        const auto mode = static_cast<HistoryDisplayMode>(
+            self->historyDisplayModeCombo_->currentData().toInt());
+
         self->historyTable_->setColumnCount(1 + bucketCount);
         QStringList headers;
         headers << tr("Tenor");
         for (int b = 0; b < bucketCount; ++b) {
-            const QString label = !result.buckets[b].empty() ?
-                format_datetime(result.buckets[b].front().observation_datetime).right(8) :
-                tr("--");
-            headers << (b == 0 ? label : (label + QStringLiteral(" (bp)")));
+            headers << (!result.buckets[b].empty() ?
+                            format_datetime(result.buckets[b].front().observation_datetime)
+                                .right(8) :
+                            self->tr("--"));
         }
         self->historyTable_->setHorizontalHeaderLabels(headers);
         self->historyTable_->setRowCount(static_cast<int>(tenors.size()));
@@ -631,24 +653,30 @@ void CurveSnapshotMdiWindow::loadHistory() {
             for (std::size_t r = 0; r < tenors.size(); ++r) {
                 const auto& tenor = tenors[r];
                 auto it = byBucket[b].find(tenor);
-                QString cellText = "--";
-                std::optional<double> deltaBp;
+                std::optional<double> delta; // rate units (mode DeltaRate) or bp (mode DeltaBp)
                 if (it != byBucket[b].end() && b > 0) {
                     auto prevIt = byBucket[b - 1].find(tenor);
-                    if (prevIt != byBucket[b - 1].end())
-                        deltaBp = (it->second - prevIt->second) * 10000.0;
+                    if (prevIt != byBucket[b - 1].end()) {
+                        const double raw = it->second - prevIt->second;
+                        delta = mode == HistoryDisplayMode::DeltaBp ? raw * 10000.0 : raw;
+                    }
                 }
-                if (b == 0 && it != byBucket[b].end())
-                    cellText = QString::number(it->second, 'f', 6); // base bucket: actual rate
-                else if (deltaBp)
-                    cellText = bp_arrow_text(*deltaBp);
-                else
-                    cellText = "--"; // point hasn't started ticking yet, or no prior to diff
+
+                QString cellText = "--";
+                // Base bucket always shows the actual rate regardless of mode -- nothing to
+                // diff against yet. Rate mode shows the actual rate in every column.
+                if (it != byBucket[b].end() && (b == 0 || mode == HistoryDisplayMode::Rate))
+                    cellText = QString::number(it->second, 'f', 6);
+                else if (delta)
+                    cellText = mode == HistoryDisplayMode::DeltaBp ?
+                                   bp_arrow_text(*delta) :
+                                   (*delta >= 0 ? QStringLiteral("↑ ") : QStringLiteral("↓ ")) +
+                                       QString::number(std::abs(*delta), 'f', 6);
 
                 auto* item = new QTableWidgetItem(cellText);
                 item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-                if (deltaBp)
-                    item->setForeground(QBrush(*deltaBp >= 0 ? k_up_color : k_down_color));
+                if (delta && !(b == 0 || mode == HistoryDisplayMode::Rate))
+                    item->setForeground(QBrush(*delta >= 0 ? k_up_color : k_down_color));
                 self->historyTable_->setItem(static_cast<int>(r), 1 + b, item);
             }
 

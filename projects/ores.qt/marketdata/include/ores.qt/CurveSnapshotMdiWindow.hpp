@@ -128,6 +128,7 @@ private:
     QSpinBox* bucketSizeSpin_;
     QComboBox* bucketUnitCombo_;
     QSpinBox* bucketCountSpin_;
+    QComboBox* historyDisplayModeCombo_; // Rate / Δ Rate / Δ (bp)
     QTableWidget* historyTable_;
     QChart* historyChart_;
     QChartView* historyChartView_;

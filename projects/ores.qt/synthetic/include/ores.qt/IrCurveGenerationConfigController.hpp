@@ -71,6 +71,8 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void showConfigSnapshot(
+        const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
 
 protected:
     EntityListMdiWindow* listWindow() const override;

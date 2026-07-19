@@ -18,6 +18,7 @@
  */
 #include "ores.qt/SyntheticPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/CurveSnapshotMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FxSpotGenerationConfigController.hpp"
 #include "ores.qt/GmmComponentController.hpp"
@@ -150,6 +151,37 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             &IrCurveGenerationConfigController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
+    connect(irCurveGenerationConfigController_.get(),
+            &IrCurveGenerationConfigController::showConfigSnapshot,
+            this,
+            [this](const synthetic::domain::ir_curve_generation_config& cfg) {
+                auto* snapshotWindow = new CurveSnapshotMdiWindow(
+                    ctx_.client_manager, cfg.currency_code, cfg.index_name);
+                connect(snapshotWindow,
+                        &CurveSnapshotMdiWindow::statusChanged,
+                        this,
+                        &PluginBase::statusMessage);
+                connect(snapshotWindow,
+                        &CurveSnapshotMdiWindow::errorOccurred,
+                        this,
+                        &PluginBase::statusMessage);
+
+                auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+                subWindow->setAttribute(Qt::WA_DeleteOnClose);
+                subWindow->setWidget(snapshotWindow);
+                subWindow->setWindowTitle(QString("Curve Snapshot: %1 / %2")
+                                              .arg(QString::fromStdString(cfg.currency_code))
+                                              .arg(QString::fromStdString(cfg.index_name)));
+                subWindow->setWindowIcon(
+                    IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+
+                ctx_.mdi_area->addSubWindow(subWindow);
+                subWindow->show();
+                emit windowCreated(subWindow);
+                connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+                    emit windowDestroyed(subWindow);
+                });
+            });
 
     yieldCurveProcessTypeController_ =
         std::make_unique<YieldCurveProcessTypeController>(ctx_.main_window,

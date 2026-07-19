@@ -113,6 +113,21 @@ void IrCurveGenerationConfigMdiWindow::setupToolbar() {
             &QAction::triggered,
             this,
             &IrCurveGenerationConfigMdiWindow::viewHistorySelected);
+    {
+        toolbar_->addSeparator();
+        auto* snapshotAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+            tr("Snapshot"));
+        snapshotAction->setToolTip(tr("View curve snapshot"));
+        connect(snapshotAction, &QAction::triggered, this, [this]() {
+            const auto selected = tableView_->selectionModel()->selectedRows();
+            if (selected.isEmpty())
+                return;
+            auto sourceIndex = proxyModel_->mapToSource(selected.first());
+            if (auto* cfg = model_->getConfig(sourceIndex.row()))
+                emit showConfigSnapshot(*cfg);
+        });
+    }
 }
 
 void IrCurveGenerationConfigMdiWindow::setupTable() {

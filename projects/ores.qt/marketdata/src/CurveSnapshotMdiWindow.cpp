@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CurveSnapshotMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
 #include <QComboBox>
@@ -84,6 +85,20 @@ void sort_by_tenor(std::vector<md::market_observation>& obs) {
     });
 }
 
+// For a RATES/YIELD series, qualifier is documented as "currency/index" -- the ORE-key segment
+// structure, a producer contract (see ir_curve_tick::qualifier), not a guess.
+std::string leading_currency_code(const std::string& qualifier) {
+    const auto sep = qualifier.find('/');
+    return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
+}
+
+// Fixed palette so buckets are visually distinguishable even before alpha fading is applied --
+// a single default-black QPen (as QLineSeries starts with) is invisible on the dark chart theme.
+const QColor& history_series_base_color() {
+    static const QColor c(0x4f, 0x9e, 0xf5);
+    return c;
+}
+
 QString format_datetime(std::chrono::system_clock::time_point tp) {
     const auto t = std::chrono::system_clock::to_time_t(tp);
     QDateTime dt = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(t), QTimeZone::UTC);
@@ -123,12 +138,14 @@ void style_axes(QChart* chart, QBarCategoryAxis* axisX, QValueAxis* axisY) {
 }
 
 CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
+                                               ImageCache* imageCache,
                                                std::string seriesType,
                                                std::string metric,
                                                std::string qualifier,
                                                QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
     , seriesType_(std::move(seriesType))
     , metric_(std::move(metric))
     , qualifier_(std::move(qualifier))
@@ -150,7 +167,8 @@ CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
     , historyChartView_(nullptr)
     , historyAxisX_(nullptr)
     , historyAxisY_(nullptr)
-    , historyEmptyLabel_(nullptr) {
+    , historyEmptyLabel_(nullptr)
+    , historyLegend_(nullptr) {
 
     setupUi();
     reload();
@@ -180,13 +198,25 @@ QWidget* CurveSnapshotMdiWindow::buildGridTab() {
     auto* page = new QWidget(this);
     auto* layout = new QVBoxLayout(page);
 
+    auto* headerRow = new QHBoxLayout();
+    if (imageCache_) {
+        const auto ccy = leading_currency_code(qualifier_);
+        if (!ccy.empty()) {
+            auto* flagLabel = new QLabel(page);
+            flagLabel->setPixmap(
+                currency_flag_icon(*imageCache_, ccy).pixmap(single_flag_icon_size()));
+            headerRow->addWidget(flagLabel);
+        }
+    }
     gridHeaderLabel_ = new QLabel(page);
     QFont headerFont = gridHeaderLabel_->font();
     headerFont.setBold(true);
     gridHeaderLabel_->setFont(headerFont);
     gridHeaderLabel_->setText(
         QString::fromStdString(seriesType_ + " / " + metric_ + " / " + qualifier_));
-    layout->addWidget(gridHeaderLabel_);
+    headerRow->addWidget(gridHeaderLabel_);
+    headerRow->addStretch(1);
+    layout->addLayout(headerRow);
 
     auto* row = new QHBoxLayout();
 
@@ -231,13 +261,15 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
     controls->addWidget(new QLabel(tr("Bucket size:"), page));
     bucketSizeSpin_ = new QSpinBox(page);
     bucketSizeSpin_->setRange(1, 999);
-    bucketSizeSpin_->setValue(30);
+    bucketSizeSpin_->setValue(1);
     controls->addWidget(bucketSizeSpin_);
 
     bucketUnitCombo_ = new QComboBox(page);
     bucketUnitCombo_->addItem(tr("minutes"), QVariant::fromValue<qlonglong>(60));
     bucketUnitCombo_->addItem(tr("hours"), QVariant::fromValue<qlonglong>(3600));
     bucketUnitCombo_->addItem(tr("days"), QVariant::fromValue<qlonglong>(86400));
+    bucketUnitCombo_->setCurrentIndex(0); // minutes -- defaults must actually resolve to the
+                                          // first item, not just rely on construction order
     controls->addWidget(bucketUnitCombo_);
 
     controls->addSpacing(16);
@@ -283,7 +315,14 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
     historyChartView_->setRenderHint(QPainter::Antialiasing);
     historyChartView_->setMinimumHeight(220);
     historyChartView_->setMinimumWidth(280);
-    row->addWidget(historyChartView_, 1);
+
+    auto* chartCol = new QVBoxLayout();
+    chartCol->addWidget(historyChartView_, 1);
+    historyLegend_ = new QWidget(page);
+    auto* legendLayout = new QHBoxLayout(historyLegend_);
+    legendLayout->setContentsMargins(0, 0, 0, 0);
+    chartCol->addWidget(historyLegend_);
+    row->addLayout(chartCol, 1);
 
     layout->addLayout(row);
 
@@ -374,6 +413,7 @@ void CurveSnapshotMdiWindow::loadGrid() {
             yMin = std::min(yMin, value);
             yMax = std::max(yMax, value);
         }
+        self->gridTable_->resizeColumnsToContents();
 
         self->gridChart_->removeAllSeries();
         self->gridAxisX_->clear();
@@ -486,11 +526,19 @@ void CurveSnapshotMdiWindow::loadHistory() {
             categories << QString::fromStdString(t);
         self->historyAxisX_->append(categories);
 
+        // Rebuild the legend: one swatch + timestamp per bucket, same fade-with-age mapping as
+        // the chart lines, so the reader can tell which line is which.
+        auto* legendLayout = qobject_cast<QHBoxLayout*>(self->historyLegend_->layout());
+        QLayoutItem* child;
+        while ((child = legendLayout->takeAt(0)) != nullptr) {
+            delete child->widget();
+            delete child;
+        }
+
         double yMin = std::numeric_limits<double>::max();
         double yMax = std::numeric_limits<double>::lowest();
 
         for (int b = 0; b < bucketCount; ++b) {
-            std::optional<double> prevValueForFirstTenor;
             for (std::size_t r = 0; r < tenors.size(); ++r) {
                 const auto& tenor = tenors[r];
                 auto it = byBucket[b].find(tenor);
@@ -509,7 +557,6 @@ void CurveSnapshotMdiWindow::loadHistory() {
                 }
                 self->historyTable_->setItem(
                     static_cast<int>(r), 1 + b, new QTableWidgetItem(cellText));
-                (void)prevValueForFirstTenor;
             }
 
             auto* series = new QLineSeries();
@@ -521,20 +568,36 @@ void CurveSnapshotMdiWindow::loadHistory() {
                 yMin = std::min(yMin, it->second);
                 yMax = std::max(yMax, it->second);
             }
-            // Newest (last) bucket bold/opaque; older buckets fade with age.
+            // Newest (last) bucket bold/opaque; older buckets fade with age. Always start from
+            // an explicit visible colour -- a default-constructed QPen is black, invisible on
+            // the dark chart theme, and QPen::color() being "valid" doesn't mean "visible".
             const bool isNewest = (b == bucketCount - 1);
-            QPen pen = series->pen();
+            const double alpha =
+                isNewest ? 1.0 : std::max(0.15, 0.15 + 0.85 * (double(b + 1) / bucketCount));
+            QColor color = history_series_base_color();
+            color.setAlphaF(alpha);
+            QPen pen(color);
             pen.setWidthF(isNewest ? 2.5 : 1.0);
-            QColor color = pen.color().isValid() ? pen.color() : QColor(0x4f, 0x9e, 0xf5);
-            color.setAlphaF(isNewest ? 1.0 :
-                                       std::max(0.15, 0.15 + 0.85 * (double(b + 1) / bucketCount)));
-            pen.setColor(color);
             series->setPen(pen);
 
             self->historyChart_->addSeries(series);
             series->attachAxis(self->historyAxisX_);
             series->attachAxis(self->historyAxisY_);
+
+            const QString label = !result.buckets[b].empty() ?
+                format_datetime(result.buckets[b].front().observation_datetime).right(8) :
+                self->tr("--");
+            auto* swatch = new QLabel(self->historyLegend_);
+            swatch->setFixedSize(14, 3);
+            swatch->setStyleSheet(QString("background-color: %1;").arg(color.name(QColor::HexArgb)));
+            auto* text = new QLabel(isNewest ? label + self->tr(" (current)") : label,
+                                    self->historyLegend_);
+            text->setStyleSheet(QString("color: %1; font-size: 9pt;").arg(color.name()));
+            legendLayout->addWidget(swatch);
+            legendLayout->addWidget(text);
+            legendLayout->addSpacing(8);
         }
+        legendLayout->addStretch(1);
 
         if (yMin <= yMax) {
             const double pad = (yMax - yMin) * 0.1 + 1e-6;
@@ -544,6 +607,7 @@ void CurveSnapshotMdiWindow::loadHistory() {
         for (std::size_t r = 0; r < tenors.size(); ++r)
             self->historyTable_->setItem(
                 static_cast<int>(r), 0, new QTableWidgetItem(QString::fromStdString(tenors[r])));
+        self->historyTable_->resizeColumnsToContents();
 
         emit self->statusChanged(
             tr("Loaded %1 buckets.").arg(bucketCount));

@@ -132,7 +132,7 @@ void MarketdataPlugin::showRateCurves() {
         return;
     }
 
-    auto* view = new RateCurvesMdiWindow(ctx_.client_manager);
+    auto* view = new RateCurvesMdiWindow(ctx_.client_manager, ctx_.image_cache);
     connect(view, &RateCurvesMdiWindow::statusChanged, this, &PluginBase::statusMessage);
     connect(view, &RateCurvesMdiWindow::errorOccurred, this, &PluginBase::statusMessage);
     connect(view, &RateCurvesMdiWindow::viewSnapshotRequested, this,
@@ -144,6 +144,7 @@ void MarketdataPlugin::showRateCurves() {
     rateCurvesWindow_->setWindowTitle(tr("Interest Rate Curves"));
     rateCurvesWindow_->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    rateCurvesWindow_->resize(view->sizeHint());
 
     ctx_.mdi_area->addSubWindow(rateCurvesWindow_);
     rateCurvesWindow_->show();
@@ -157,7 +158,7 @@ void MarketdataPlugin::showRateCurves() {
 void MarketdataPlugin::showCurveSnapshot(const QString& seriesType, const QString& metric,
                                          const QString& qualifier) {
     auto* snapshotWindow = new CurveSnapshotMdiWindow(
-        ctx_.client_manager, seriesType.toStdString(), metric.toStdString(),
+        ctx_.client_manager, ctx_.image_cache, seriesType.toStdString(), metric.toStdString(),
         qualifier.toStdString());
     connect(snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this,
             &PluginBase::statusMessage);
@@ -169,6 +170,7 @@ void MarketdataPlugin::showCurveSnapshot(const QString& seriesType, const QStrin
     subWindow->setWidget(snapshotWindow);
     subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(qualifier));
     subWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    subWindow->resize(snapshotWindow->sizeHint());
 
     ctx_.mdi_area->addSubWindow(subWindow);
     subWindow->show();

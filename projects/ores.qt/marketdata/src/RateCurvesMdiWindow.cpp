@@ -19,6 +19,7 @@
  */
 #include "ores.qt/RateCurvesMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
@@ -27,8 +28,9 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QPointer>
-#include <QTableWidget>
-#include <QTableWidgetItem>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
+#include <QTableView>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
@@ -40,14 +42,26 @@ using namespace ores::logging;
 namespace {
 namespace m = ores::marketdata::messaging;
 namespace md = ores::marketdata::domain;
+
+// For a RATES/YIELD series, qualifier is documented as "currency/index" -- the ORE-key
+// segment structure, a producer contract (see ir_curve_tick::qualifier), not a guess.
+std::string leading_currency_code(const std::string& qualifier) {
+    const auto sep = qualifier.find('/');
+    return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
 }
 
-RateCurvesMdiWindow::RateCurvesMdiWindow(ClientManager* clientManager, QWidget* parent)
+}
+
+RateCurvesMdiWindow::RateCurvesMdiWindow(ClientManager* clientManager, ImageCache* imageCache,
+                                         QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
-    , table_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
     , emptyLabel_(nullptr) {
     setupUi();
     reload();
@@ -67,17 +81,26 @@ void RateCurvesMdiWindow::setupUi() {
     connect(reloadAction_, &QAction::triggered, this, &RateCurvesMdiWindow::reload);
     layout->addWidget(toolbar_);
 
-    table_ = new QTableWidget(0, 4, this);
-    table_->setHorizontalHeaderLabels(
+    model_ = new QStandardItemModel(0, 4, this);
+    model_->setHorizontalHeaderLabels(
         {tr("Series Type"), tr("Metric"), tr("Qualifier"), tr("Subclass")});
-    table_->horizontalHeader()->setStretchLastSection(true);
-    table_->verticalHeader()->setVisible(false);
-    table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    table_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    table_->setSelectionMode(QAbstractItemView::SingleSelection);
-    table_->setAlternatingRowColors(true);
-    connect(table_, &QTableWidget::cellDoubleClicked, this, &RateCurvesMdiWindow::onRowActivated);
-    layout->addWidget(table_);
+
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tableView_->verticalHeader()->setVisible(false);
+    tableView_->horizontalHeader()->setStretchLastSection(true);
+    tableView_->setIconSize(single_flag_icon_size());
+    connect(tableView_, &QTableView::doubleClicked, this, &RateCurvesMdiWindow::onRowActivated);
+    layout->addWidget(tableView_);
 
     emptyLabel_ = new QLabel(
         tr("No interest-rate series found yet. A series appears here once something has "
@@ -144,22 +167,31 @@ void RateCurvesMdiWindow::reload() {
         }
 
         const bool empty = self->rows_.empty();
-        self->table_->setVisible(!empty);
+        self->tableView_->setVisible(!empty);
         self->emptyLabel_->setVisible(empty);
 
-        self->table_->setRowCount(static_cast<int>(self->rows_.size()));
+        self->model_->removeRows(0, self->model_->rowCount());
+        self->model_->setRowCount(static_cast<int>(self->rows_.size()));
         for (std::size_t i = 0; i < self->rows_.size(); ++i) {
             const auto& r = self->rows_[i];
-            self->table_->setItem(
-                static_cast<int>(i), 0, new QTableWidgetItem(QString::fromStdString(r.series_type)));
-            self->table_->setItem(
-                static_cast<int>(i), 1, new QTableWidgetItem(QString::fromStdString(r.metric)));
-            self->table_->setItem(
-                static_cast<int>(i), 2, new QTableWidgetItem(QString::fromStdString(r.qualifier)));
-            self->table_->setItem(static_cast<int>(i),
-                                  3,
-                                  new QTableWidgetItem(QString::fromStdString(r.series_subclass)));
+            const int row = static_cast<int>(i);
+
+            self->model_->setItem(
+                row, 0, new QStandardItem(QString::fromStdString(r.series_type)));
+            self->model_->setItem(row, 1, new QStandardItem(QString::fromStdString(r.metric)));
+
+            auto* qualifierItem = new QStandardItem(QString::fromStdString(r.qualifier));
+            if (self->imageCache_) {
+                const auto ccy = leading_currency_code(r.qualifier);
+                if (!ccy.empty())
+                    qualifierItem->setIcon(currency_flag_icon(*self->imageCache_, ccy));
+            }
+            self->model_->setItem(row, 2, qualifierItem);
+
+            self->model_->setItem(
+                row, 3, new QStandardItem(QString::fromStdString(r.series_subclass)));
         }
+        self->tableView_->resizeColumnsToContents();
 
         emit self->statusChanged(tr("Loaded %1 rate curve(s).").arg(self->rows_.size()));
     });
@@ -167,7 +199,11 @@ void RateCurvesMdiWindow::reload() {
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void RateCurvesMdiWindow::onRowActivated(int row, int /*column*/) {
+void RateCurvesMdiWindow::onRowActivated(const QModelIndex& index) {
+    if (!index.isValid())
+        return;
+    const auto sourceIndex = proxyModel_->mapToSource(index);
+    const auto row = sourceIndex.row();
     if (row < 0 || static_cast<std::size_t>(row) >= rows_.size())
         return;
     const auto& r = rows_[row];

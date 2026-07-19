@@ -27,18 +27,27 @@
 
 class QToolBar;
 class QAction;
-class QTableWidget;
+class QTableView;
+class QStandardItemModel;
+class QSortFilterProxyModel;
 class QLabel;
+class QModelIndex;
 
 namespace ores::qt {
 
 class ClientManager;
+class ImageCache;
 
 /**
  * @brief Lists the official market_series catalog entries for asset_class::rates -- the
  * entry point for interest-rate curve analysis, independent of how each series is produced
  * (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow). Selecting a row opens
  * a CurveSnapshotMdiWindow for that series.
+ *
+ * The Qualifier column shows a currency flag: for a RATES/YIELD series, market_series.qualifier
+ * is documented (see ir_curve_tick::qualifier) as "currency/index" -- the third+ segment of the
+ * series' ORE key, the same segment structure feed_binding.ore_key uses -- so its first segment
+ * is currency by producer contract, not a guessed convention.
  */
 class RateCurvesMdiWindow final : public QWidget {
     Q_OBJECT
@@ -53,8 +62,11 @@ private:
     }
 
 public:
-    explicit RateCurvesMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
+    RateCurvesMdiWindow(ClientManager* clientManager, ImageCache* imageCache,
+                        QWidget* parent = nullptr);
     ~RateCurvesMdiWindow() override = default;
+
+    QSize sizeHint() const override { return {900, 500}; }
 
 signals:
     void statusChanged(const QString& message);
@@ -65,7 +77,7 @@ signals:
 
 private slots:
     void reload();
-    void onRowActivated(int row, int column);
+    void onRowActivated(const QModelIndex& index);
 
 private:
     void setupUi();
@@ -78,9 +90,12 @@ private:
     };
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QToolBar* toolbar_;
     QAction* reloadAction_;
-    QTableWidget* table_;
+    QTableView* tableView_;
+    QStandardItemModel* model_;
+    QSortFilterProxyModel* proxyModel_;
     QLabel* emptyLabel_;
     std::vector<Row> rows_;
 };

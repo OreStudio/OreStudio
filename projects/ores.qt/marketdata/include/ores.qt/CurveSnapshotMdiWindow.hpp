@@ -39,6 +39,7 @@ class QComboBox;
 namespace ores::qt {
 
 class ClientManager;
+class ImageCache;
 
 /**
  * @brief Curve Snapshot viewer: an as-of snapshot of one market-data curve's raw instrument
@@ -65,6 +66,7 @@ private:
 
 public:
     CurveSnapshotMdiWindow(ClientManager* clientManager,
+                           ImageCache* imageCache,
                            std::string seriesType,
                            std::string metric,
                            std::string qualifier,
@@ -74,6 +76,8 @@ public:
     const std::string& seriesType() const { return seriesType_; }
     const std::string& metric() const { return metric_; }
     const std::string& qualifier() const { return qualifier_; }
+
+    QSize sizeHint() const override { return {1000, 700}; }
 
 signals:
     void statusChanged(const QString& message);
@@ -90,6 +94,7 @@ private:
     void loadHistory();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::string seriesType_;
     std::string metric_;
     std::string qualifier_;    // official market_series qualifier, e.g. "USD/SOFR"
@@ -117,6 +122,7 @@ private:
     QBarCategoryAxis* historyAxisX_;
     QValueAxis* historyAxisY_;
     QLabel* historyEmptyLabel_;
+    QWidget* historyLegend_;
 };
 
 }

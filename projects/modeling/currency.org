@@ -18,18 +18,17 @@ party–currency junction records when a party operates in a specific currency.
 
 * Codegen models
 
-Source models that drive generation for this entity. Multiple models coexist
-because the entity spans both the /table/ facet (SQL schema + IO) and the
-/domain entity/ facet (C++ + Qt).
+Source models that drive generation for this entity.
 
 | Artefact | Type | Archetype |
 |----------+------+-----------|
-| [[proj:projects/ores.refdata/modeling/ores.refdata.currency_table.org][ores.refdata.currency_table.org]] | table model | [[proj:projects/ores.codegen/modeling/org_entity_meta_model.org][org_entity_meta_model.org]] |
+| [[proj:projects/ores.refdata/modeling/ores.refdata.currency.org][ores.refdata.currency.org]] | domain entity model | [[proj:projects/ores.codegen/modeling/org_entity_meta_model.org][org_entity_meta_model.org]] |
 | [[proj:projects/ores.codegen/library/templates/sql_currency_populate.mustache][sql_currency_populate.mustache]] | populate template | — |
 | [[proj:projects/ores.codegen/library/templates/sql_non_iso_currency_populate.mustache][sql_non_iso_currency_populate.mustache]] | populate template | — |
 
-*Missing*: domain entity org model (=ores.refdata.currency.org=) — currency still
-uses the legacy JSON model path. Required before C++ codegen can regenerate it.
+The =currency_table.org= table model this doc previously listed was retired
+(its SQL sections merged into =ores.refdata.currency.org=); the entity now
+generates SQL, C++, and Qt from that single file.
 
 * SQL
 

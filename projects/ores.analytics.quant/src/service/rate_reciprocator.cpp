@@ -26,7 +26,8 @@ using domain::crm_rate_view;
 using domain::derived_rate;
 using domain::rate_status;
 
-rate_reciprocator::rate_lookup rate_reciprocator::make_lookup(const std::vector<derived_rate>& rates) {
+rate_reciprocator::rate_lookup
+rate_reciprocator::make_lookup(const std::vector<derived_rate>& rates) {
     rate_lookup lookup;
     for (const auto& r : rates)
         lookup[{r.base_code, r.quote_code}] = r;
@@ -34,9 +35,9 @@ rate_reciprocator::rate_lookup rate_reciprocator::make_lookup(const std::vector<
 }
 
 crm_rate_view rate_reciprocator::resolve(const std::string& base_code,
-                                     const std::string& quote_code,
-                                     const rate_lookup& lookup,
-                                     bool allow_reciprocal) {
+                                         const std::string& quote_code,
+                                         const rate_lookup& lookup,
+                                         bool allow_reciprocal) {
     if (const auto it = lookup.find({base_code, quote_code}); it != lookup.end()) {
         const auto& r = it->second;
         return crm_rate_view{.base_code = base_code,

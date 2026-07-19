@@ -33,8 +33,8 @@
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
-#include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
+#include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
@@ -466,18 +466,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto badge_definition_subs = register_badge_definition_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                   std::make_move_iterator(badge_definition_subs.begin()),
-                   std::make_move_iterator(badge_definition_subs.end()));
+                    std::make_move_iterator(badge_definition_subs.begin()),
+                    std::make_move_iterator(badge_definition_subs.end()));
 
         auto badge_severity_subs = register_badge_severity_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                   std::make_move_iterator(badge_severity_subs.begin()),
-                   std::make_move_iterator(badge_severity_subs.end()));
+                    std::make_move_iterator(badge_severity_subs.begin()),
+                    std::make_move_iterator(badge_severity_subs.end()));
 
         auto code_domain_subs = register_code_domain_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                   std::make_move_iterator(code_domain_subs.begin()),
-                   std::make_move_iterator(code_domain_subs.end()));
+                    std::make_move_iterator(code_domain_subs.begin()),
+                    std::make_move_iterator(code_domain_subs.end()));
     }
 
     auto badge = std::make_shared<badge_handler>(nats, ctx, verifier);

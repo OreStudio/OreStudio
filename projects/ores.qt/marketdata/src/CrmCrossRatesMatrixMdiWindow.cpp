@@ -140,9 +140,8 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         auto conventionCache = conventionCache_;
         displayService_ =
             std::make_unique<marketdata_client::presentation::crm_rate_display_service>(
-                [crmClient](const std::string& party_id,
-                           const std::string& crm_name,
-                           bool reciprocal) {
+                [crmClient](
+                    const std::string& party_id, const std::string& crm_name, bool reciprocal) {
                     return crmClient->rates(party_id, crm_name, reciprocal);
                 },
                 [conventionCache](const std::string& tenant_id, const std::string& key) {

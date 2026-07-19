@@ -75,8 +75,7 @@ void DqPlugin::on_login(const plugin_context& ctx) {
 void DqPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Quality menu handle."
                                << " data_quality=" << (smc.data_quality_menu ? "ok" : "null")
-                               << " classifications="
-                               << (smc.coding_schemes_menu ? "ok" : "null");
+                               << " classifications=" << (smc.coding_schemes_menu ? "ok" : "null");
     data_quality_menu_ = smc.data_quality_menu;
     auto* dq = data_quality_menu_;
     if (!dq)
@@ -115,11 +114,10 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> DqPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus." << " data_quality_menu="
-                               << (data_quality_menu_ ? "ok" : "null");
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus."
+                               << " data_quality_menu=" << (data_quality_menu_ ? "ok" : "null");
     if (!data_quality_menu_) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Data Quality menu handle is missing — no menu will appear.";
+        BOOST_LOG_SEV(lg(), warn) << "Data Quality menu handle is missing — no menu will appear.";
         return {};
     }
     return {data_quality_menu_};

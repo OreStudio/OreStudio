@@ -155,13 +155,13 @@ public:
                 const std::uint32_t seed = rd();
                 BOOST_LOG_SEV(lg(), ores::logging::info)
                     << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-                auto process =
-                    ores::analytics::quant::service::process_factory::make_process(process_type,
-                                                                                   std::move(means),
-                                                                                   std::move(stdevs),
-                                                                                   std::move(weights),
-                                                                                   initial_price,
-                                                                                   seed);
+                auto process = ores::analytics::quant::service::process_factory::make_process(
+                    process_type,
+                    std::move(means),
+                    std::move(stdevs),
+                    std::move(weights),
+                    initial_price,
+                    seed);
                 auto feed = std::make_shared<fx_spot_feed>(
                     nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
                 running_feed rf;
@@ -334,9 +334,8 @@ private:
         b.change_commentary = "Auto-created by feed_controller on feed start.";
         const auto saved = md_client.save_feed_binding(b);
         if (!saved) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to auto-create feed binding for " << source_name << ": "
-                << saved.error();
+            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Failed to auto-create feed binding for "
+                                                     << source_name << ": " << saved.error();
             return;
         }
         BOOST_LOG_SEV(lg(), ores::logging::info)

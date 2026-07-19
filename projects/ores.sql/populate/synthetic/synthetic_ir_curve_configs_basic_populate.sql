@@ -21,15 +21,24 @@
 /**
  * Synthetic IR Curve Config Seed Population Script — Basic
  *
- * Registers the synthetic.ir_curve_configs.basic dataset: three major
- * currency/index curves (USD/SOFR, EUR/ESTR, GBP/SONIA), each a
- * Vasicek short-rate process with day-scaled parameters (kappa/sigma
- * calibrated per calendar day, matching ir_curve_template_resolver's
- * "1 tick = 1 day" convention -- annual-scale numbers here would
- * produce nonsensical published rates and frozen far-dated points, as
+ * Registers the synthetic.ir_curve_configs.basic dataset: one curve
+ * per top-20-by-turnover currency (same currency/index set as
+ * synthetic.ir_curve_configs.realistic), each a Vasicek short-rate
+ * process with day-scaled parameters (kappa/sigma calibrated per
+ * calendar day, matching ir_curve_template_resolver's "1 tick = 1
+ * day" convention -- annual-scale numbers here would produce
+ * nonsensical published rates and frozen far-dated points, as
  * happened during this dataset's own manual verification) and a
  * simple three-entry Curve Template (Deposit/FRA/Swap) per curve, so
  * every curve_role pricing derivation gets exercised.
+ *
+ * Basic vs realistic, by design: basic keeps one uniform kappa/sigma
+ * across all 20 curves (only theta/initial_rate vary, by currency)
+ * and uses Vasicek -- realistic per-curve-calibrates kappa/sigma and
+ * uses CIR (volatility scaling with the level, non-negative by
+ * construction). Vasicek's simpler, uniform-vol shape is deliberately
+ * the "basic" archetype's point, mirroring the FX basic/realistic
+ * split's own single-component-vs-calibrated-mixture distinction.
  *
  * No vintage grounding yet -- initial_rate/theta are plausible fixed
  * values, not sourced from a real historical curve. Contrast with FX's
@@ -67,7 +76,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic IR Curve Configs: Basic',
-        'USD/SOFR, EUR/ESTR, GBP/SONIA Vasicek short-rate curves, day-scaled parameters, three-entry (Deposit/FRA/Swap) Curve Template each.',
+        'One Vasicek short-rate curve per top-20-by-turnover currency, uniform day-scaled kappa/sigma, three-entry (Deposit/FRA/Swap) Curve Template each.',
         'ORESTUDIO',
         'Basic archetype for the Synthetic data collections bundle',
         current_date,
@@ -127,9 +136,29 @@ begin
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly'
     from (values
-        ('USD', 'USD-SOFR', 0.04),
-        ('EUR', 'EUR-ESTR', 0.03),
-        ('GBP', 'GBP-SONIA', 0.045)
+        -- currency, index code, theta (mean/initial level) -- same 20 currencies and levels
+        -- as synthetic.ir_curve_configs.realistic, but uniform kappa/sigma (v_kappa/v_sigma
+        -- above) rather than per-curve calibration.
+        ('USD', 'USD-SOFR',      0.0400),
+        ('EUR', 'EUR-ESTR',      0.0300),
+        ('JPY', 'JPY-TONAR',     0.0025),
+        ('GBP', 'GBP-SONIA',     0.0450),
+        ('CHF', 'CHF-SARON',     0.0100),
+        ('AUD', 'AUD-AONIA',     0.0430),
+        ('CAD', 'CAD-CORRA',     0.0350),
+        ('CNY', 'CNY-SHIBOR-ON', 0.0180),
+        ('HKD', 'HKD-HONIA',     0.0450),
+        ('SGD', 'SGD-SORA',      0.0300),
+        ('SEK', 'SEK-SWESTR',    0.0250),
+        ('NOK', 'NOK-NOWA',      0.0400),
+        ('NZD', 'NZD-NZIONA',    0.0400),
+        ('KRW', 'KRW-KOFR',      0.0280),
+        ('INR', 'INR-MIBOR',     0.0650),
+        ('MXN', 'MXN-TIIE-ON',   0.1000),
+        ('ZAR', 'ZAR-ZARONIA',   0.0750),
+        ('DKK', 'DKK-DESTR',     0.0280),
+        ('PLN', 'PLN-POLONIA',   0.0550),
+        ('TWD', 'TWD-TAIBOR-ON', 0.0200)
     ) as c(currency_code, index_name, theta);
 
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
@@ -139,7 +168,15 @@ begin
     select
         v_dataset_id, v_tenant_id, c.currency_code, c.index_name,
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
-    from (values ('USD', 'USD-SOFR'), ('EUR', 'EUR-ESTR'), ('GBP', 'GBP-SONIA')) as c(currency_code, index_name)
+    from (values
+        ('USD', 'USD-SOFR'), ('EUR', 'EUR-ESTR'), ('JPY', 'JPY-TONAR'), ('GBP', 'GBP-SONIA'),
+        ('CHF', 'CHF-SARON'), ('AUD', 'AUD-AONIA'), ('CAD', 'CAD-CORRA'),
+        ('CNY', 'CNY-SHIBOR-ON'), ('HKD', 'HKD-HONIA'), ('SGD', 'SGD-SORA'),
+        ('SEK', 'SEK-SWESTR'), ('NOK', 'NOK-NOWA'), ('NZD', 'NZD-NZIONA'),
+        ('KRW', 'KRW-KOFR'), ('INR', 'INR-MIBOR'), ('MXN', 'MXN-TIIE-ON'),
+        ('ZAR', 'ZAR-ZARONIA'), ('DKK', 'DKK-DESTR'), ('PLN', 'PLN-POLONIA'),
+        ('TWD', 'TWD-TAIBOR-ON')
+    ) as c(currency_code, index_name)
     cross join (values
         (0, 'SPOT', '3M', 'DEPO'),
         (1, '3M', '6M', 'FRA'),

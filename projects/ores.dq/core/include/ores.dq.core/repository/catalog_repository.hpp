@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,9 @@
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,8 +49,6 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit catalog_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
@@ -57,46 +58,61 @@ public:
      * @brief Writes catalogs to database.
      */
     /**@{*/
-    void write(const domain::catalog& catalog);
-    void write(const std::vector<domain::catalog>& catalogs);
+    void write(context ctx, const domain::catalog& v);
+    void write(context ctx, const std::vector<domain::catalog>& v);
     /**@}*/
 
     /**
      * @brief Reads latest catalogs, possibly filtered by name.
      */
     /**@{*/
-    std::vector<domain::catalog> read_latest();
-    std::vector<domain::catalog> read_latest(const std::string& name);
+    std::vector<domain::catalog> read_latest(context ctx);
+    std::vector<domain::catalog> read_latest(context ctx, const std::string& name);
     /**@}*/
 
     /**
+     * @brief Reads all catalogs, possibly filtered by name.
+     */
+    std::vector<domain::catalog> read_all(context ctx, const std::string& name);
+
+    /**
+     * @brief Reads a single catalog as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param name The name to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::catalog>
+    read_at_version(context ctx, const std::string& name, std::uint32_t version);
+
+    /**
      * @brief Reads latest catalogs with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of catalogs within the specified range
      */
-    std::vector<domain::catalog> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::catalog>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active catalogs.
-     * @return Total number of catalogs with valid_to == max_timestamp
+     * @param ctx Repository context with database connection
+     * @return Total number of active catalogs
      */
-    std::uint32_t get_total_count();
-
-    /**
-     * @brief Reads all historical versions of a catalog by name.
-     * @param name The catalog name to look up
-     * @return Vector of all versions, ordered by version descending
-     */
-    std::vector<domain::catalog> read_all(const std::string& name);
+    std::uint32_t get_total_catalog_count(context ctx);
 
     /**
      * @brief Deletes a catalog by closing its temporal validity.
      */
-    void remove(const std::string& name);
+    void remove(context ctx, const std::string& name);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes catalogs by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& names);
 };
 
 }

@@ -25,70 +25,9 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
-    : catalog_repo_(ctx)
-    , dataset_dependency_repo_(ctx)
+    : dataset_dependency_repo_(ctx)
     , data_domain_repo_(ctx)
     , subject_area_repo_(ctx) {}
-
-// ============================================================================
-// Catalog Management
-// ============================================================================
-
-std::vector<domain::catalog> data_organization_service::list_catalogs() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all catalogs";
-    return catalog_repo_.read_latest();
-}
-
-std::vector<domain::catalog> data_organization_service::list_catalogs(std::uint32_t offset,
-                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing catalogs with pagination: offset=" << offset
-                               << ", limit=" << limit;
-    return catalog_repo_.read_latest(offset, limit);
-}
-
-std::uint32_t data_organization_service::get_catalog_count() {
-    return catalog_repo_.get_total_count();
-}
-
-std::optional<domain::catalog> data_organization_service::find_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding catalog: " << name;
-    auto catalogs = catalog_repo_.read_latest(name);
-    if (catalogs.empty()) {
-        return std::nullopt;
-    }
-    return catalogs.front();
-}
-
-void data_organization_service::save_catalog(const domain::catalog& catalog) {
-    if (catalog.name.empty()) {
-        throw std::invalid_argument("Catalog name cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving catalog: " << catalog.name;
-    catalog_repo_.write(catalog);
-    BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << catalog.name;
-}
-
-void data_organization_service::save_catalogs(const std::vector<domain::catalog>& catalogs) {
-    for (const auto& c : catalogs) {
-        if (c.name.empty()) {
-            throw std::invalid_argument("Catalog name cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << catalogs.size() << " catalogs";
-    catalog_repo_.write(catalogs);
-}
-
-void data_organization_service::remove_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing catalog: " << name;
-    catalog_repo_.remove(name);
-    BOOST_LOG_SEV(lg(), info) << "Removed catalog: " << name;
-}
-
-std::vector<domain::catalog>
-data_organization_service::get_catalog_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for catalog: " << name;
-    return catalog_repo_.read_all(name);
-}
 
 // ============================================================================
 // Dataset Dependency Management

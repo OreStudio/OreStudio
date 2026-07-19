@@ -50,13 +50,13 @@ TEST_CASE("write_single_catalog", tags) {
     database_helper h;
 
     generation_context ctx;
-    catalog_repository repo(h.context());
+    catalog_repository repo;
     auto catalog = generate_synthetic_catalog(ctx);
-    catalog.tenant_id = h.tenant_id().to_string();
+    catalog.tenant_id = h.tenant_id();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
-    CHECK_NOTHROW(repo.write(catalog));
+    CHECK_NOTHROW(repo.write(h.context(), catalog));
 }
 
 TEST_CASE("write_multiple_catalogs", tags) {
@@ -65,15 +65,15 @@ TEST_CASE("write_multiple_catalogs", tags) {
     database_helper h;
 
     generation_context ctx;
-    catalog_repository repo(h.context());
+    catalog_repository repo;
     auto catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : catalogs) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Catalogs: " << catalogs;
 
-    CHECK_NOTHROW(repo.write(catalogs));
+    CHECK_NOTHROW(repo.write(h.context(), catalogs));
 }
 
 TEST_CASE("read_latest_catalogs", tags) {
@@ -82,17 +82,17 @@ TEST_CASE("read_latest_catalogs", tags) {
     database_helper h;
 
     generation_context ctx;
-    catalog_repository repo(h.context());
+    catalog_repository repo;
     auto written_catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : written_catalogs) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written catalogs: " << written_catalogs;
 
-    repo.write(written_catalogs);
+    repo.write(h.context(), written_catalogs);
 
-    auto read_catalogs = repo.read_latest();
+    auto read_catalogs = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     CHECK(!read_catalogs.empty());
@@ -105,20 +105,20 @@ TEST_CASE("read_latest_catalog_by_name", tags) {
     database_helper h;
 
     generation_context ctx;
-    catalog_repository repo(h.context());
+    catalog_repository repo;
     auto catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : catalogs) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = catalogs.front();
     BOOST_LOG_SEV(lg, debug) << "Write catalogs: " << catalogs;
-    repo.write(catalogs);
+    repo.write(h.context(), catalogs);
 
     BOOST_LOG_SEV(lg, debug) << "Target catalog: " << target;
 
-    auto read_catalogs = repo.read_latest(target.name);
+    auto read_catalogs = repo.read_latest(h.context(), target.name);
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() == 1);
@@ -131,11 +131,11 @@ TEST_CASE("read_all_catalog_versions", tags) {
 
     database_helper h;
 
-    catalog_repository repo(h.context());
+    catalog_repository repo;
 
     generation_context ctx;
     auto cat1 = generate_synthetic_catalog(ctx);
-    cat1.tenant_id = h.tenant_id().to_string();
+    cat1.tenant_id = h.tenant_id();
     cat1.name = cat1.name + "_" + std::string(faker::string::alphanumeric(8));
     const auto test_name = cat1.name;
     BOOST_LOG_SEV(lg, debug) << "Catalog v1: " << cat1;
@@ -145,10 +145,10 @@ TEST_CASE("read_all_catalog_versions", tags) {
     cat2.description = "Updated description for version test";
     BOOST_LOG_SEV(lg, debug) << "Catalog v2: " << cat2;
 
-    repo.write(cat1);
-    repo.write(cat2);
+    repo.write(h.context(), cat1);
+    repo.write(h.context(), cat2);
 
-    auto read_catalogs = repo.read_all(test_name);
+    auto read_catalogs = repo.read_all(h.context(), test_name);
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     CHECK(read_catalogs.size() >= 2);
@@ -159,12 +159,12 @@ TEST_CASE("read_nonexistent_catalog", tags) {
 
     database_helper h;
 
-    catalog_repository repo(h.context());
+    catalog_repository repo;
 
     const std::string nonexistent_name = "nonexistent.catalog.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
 
-    auto read_catalogs = repo.read_latest(nonexistent_name);
+    auto read_catalogs = repo.read_latest(h.context(), nonexistent_name);
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     CHECK(read_catalogs.size() == 0);
@@ -175,18 +175,18 @@ TEST_CASE("write_and_read_catalog_roundtrip", tags) {
 
     database_helper h;
 
-    catalog_repository repo(h.context());
+    catalog_repository repo;
 
     generation_context ctx;
     auto catalog = generate_synthetic_catalog(ctx);
-    catalog.tenant_id = h.tenant_id().to_string();
+    catalog.tenant_id = h.tenant_id();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
 
     const auto catalog_name = catalog.name;
-    repo.write(catalog);
+    repo.write(h.context(), catalog);
 
-    auto read_catalogs = repo.read_latest(catalog_name);
+    auto read_catalogs = repo.read_latest(h.context(), catalog_name);
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
     REQUIRE(read_catalogs.size() == 1);

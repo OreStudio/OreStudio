@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CatalogDetailDialog.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
@@ -137,6 +137,7 @@ void CatalogDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, true, createMode_ ? "system" : "common");
     if (!crSel)
         return;
+    catalog_.change_reason_code = crSel->reason_code;
     catalog_.change_commentary = crSel->commentary;
 
     emit statusMessage(tr("Saving catalog..."));
@@ -220,7 +221,7 @@ void CatalogDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
 
         dq::messaging::delete_catalog_request request;
-        request.codes.push_back(catalogName);
+        request.names.push_back(catalogName);
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,21 +20,23 @@
 #ifndef ORES_DQ_API_DOMAIN_CATALOG_HPP
 #define ORES_DQ_API_DOMAIN_CATALOG_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
-#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Represents a logical grouping of related datasets.
+ * @brief Named collection of related datasets.
  *
- * Catalogs provide a way to organize datasets into logical collections,
- * similar to how a library catalog organizes books. Examples include
- * "ISO Standards", "Cryptocurrency", "FpML Standards".
- *
- * Catalogs are optional for datasets but provide useful organizational
- * structure for managing large numbers of datasets.
+ * A catalog is a named collection of related datasets, providing a
+ * high-level grouping mechanism for datasets that share a common theme,
+ * source, or purpose. Examples: "ISO Standards" (ISO 3166 countries,
+ * ISO 4217 currencies), "Cryptocurrency" (crypto reference data and
+ * icons). Catalogs are optional for datasets but provide useful
+ * organizational structure for managing large numbers of them. Rows are
+ * authored directly (not mirrored from an external source).
  */
 struct catalog final {
     /**
@@ -45,12 +47,11 @@ struct catalog final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique name identifying this catalog.
      *
-     * This is the natural key for the catalog.
      * Examples: "ISO Standards", "Cryptocurrency", "FpML Standards".
      */
     std::string name;
@@ -71,20 +72,37 @@ struct catalog final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for catalog, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const catalog&) {
+    return "ores.dq.catalog";
+}
 
 }
 

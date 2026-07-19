@@ -28,9 +28,9 @@ Commission the five no-model DQ entities named in the story description onto the
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | Unblocked ([[id:464B5EC6-0F5A-4B6F-B77E-02806CBEAE94][464B5EC6]] merged). All five entities migrated from lookup_entity to domain_entity org models, SQL-verified. |
+| Now          | catalog fully commissioned end to end (real C++ regeneration, hand-written code retired, build+tests green). Reassessing before the remaining four. |
 | Waiting on   | Nothing.                               |
-| Next         | Regenerate C++ for real, diff against the hand-written core/repository/service/handler/protocol, swap over, delete hand-written equivalents, build and test green. |
+| Next         | Same treatment for change_reason_category, change_reason, data_domain, subject_area. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -136,6 +136,73 @@ before). C++ generation is now unblocked -- next step is regenerating
 it for real and doing the actual swap-over described in this task's
 Acceptance.
 
+*catalog fully commissioned* (picked as the pilot -- simplest of the
+five, per user decision to do one end to end before the rest):
+
+- Regenerated for real via =compass codegen generate --model
+  ores.dq.catalog.org --address <facet>= across =ores.cpp.domain=,
+  =ores.cpp.generator=, =ores.cpp.repository=, =ores.cpp.service=,
+  =ores.cpp.protocol=, =ores.cpp.nats-handler=,
+  =ores.cpp.nats-sub-registrar=. =catalog_repository=/=_entity=/=_mapper=
+  already existed as tracked, generated-shaped files (predating
+  catalog's demotion to =lookup_entity=-only) and got real diffs, not
+  fresh creation -- the regenerated repository moved from a stateful
+  (constructor-injected =context=) to the now-standard stateless
+  (=context= passed per call) shape, matching every other
+  =domain_entity=.
+- catalog's hand-written service/protocol/handler were combined with
+  =data_domain=/=subject_area=/=dataset_dependency= under
+  =data_organization_service=/=_protocol=/=_handler= -- removed
+  catalog's methods/structs/handlers from all three (leaving the
+  other three entities' code untouched) and wired the new generated
+  =catalog_service=/=catalog_protocol=/=catalog_handler=/
+  =catalog_registrar= into =registrar.cpp= via the standard
+  =register_catalog_handlers()= sub-registrar call, matching the
+  =badge_definition=/=badge_severity=/=code_domain= convention already
+  established there.
+- The new =catalog_protocol.hpp= renamed =delete_catalog_request.codes=
+  -> =.names= and =get_catalog_history_request.code= -> =.name=
+  (matching the real primary-key column, more accurate than the old
+  generic =codes=/=code=) -- updated the 5 Qt caller files that used
+  the old names/included the old combined protocol header
+  (=CatalogDetailDialog=, =CatalogMdiWindow=, =CatalogHistoryDialog=,
+  =ClientCatalogModel=, =DatasetDetailDialog= -- the last one uses both
+  catalog's and data_domain's protocols, needed both includes).
+- Found and fixed a real, pre-existing bug while wiring
+  =CatalogDetailDialog=: =promptChangeReason()= was called but its
+  result's =reason_code= was never assigned to
+  =catalog_.change_reason_code= before saving -- would have made every
+  catalog save fail the insert trigger's change-reason validation once
+  this entity was actually live on the generated stack. Fixed
+  (=catalog_.change_reason_code = crSel->reason_code;=), mirroring the
+  story's own note about similar hand-written change-reason gaps found
+  during the badge migration.
+- Two hand-written test files needed updating for the new stateless
+  repository shape (=repo.write(x)= -> =repo.write(ctx, x)=, etc.,
+  =tenant_id= now typed =utility::uuid::tenant_id= not =std::string=)
+  and one pre-existing test assertion was wrong by the codebase's own
+  established convention (=generators_tests.cpp= expected a freshly
+  generated, not-yet-written catalog's =version == 1=; every other
+  domain_entity generator -- confirmed against =country_generator.cpp=
+  -- sets =version = 0=, incremented to 1 only by the insert trigger on
+  first write; fixed the assertion, not the generator).
+- Verified: =ores.dq.api.lib=, =ores.dq.core.lib=,
+  =ores.qt.data_management.lib=, =ores.qt.exe=, =ores.dq.service.lib=,
+  =ores.http.server.exe= all build clean. Full =ores.dq.api.tests=
+  (267 assertions/46 cases) and =ores.dq.core.tests= (318
+  assertions/104 cases) suites pass, including catalog's own 9 test
+  cases.
+- Eventing (=catalog_changed_event.hpp= exists, tracked, but unwired --
+  matching the story's own "not eventing" note about the badge
+  migration) and NATS event-relay wiring are known, separately-tracked
+  gaps (see the post-generation checklist), not attempted here --
+  out of this task's acceptance (core/repository/service/handler/protocol,
+  not eventing).
+
+Stopping here per the agreed scope ("do one entity fully, end to end,
+then stop and reassess") rather than continuing to the other four in
+the same sitting.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -159,5 +226,9 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | task_fix-lookup-entity-model-type-mapping.org reverted from DONE to a blank BACKLOG stub -- branch not rebased onto main after PR #1634 merged | doc/agile/versions/v0/sprint_23/commission-dq-component/task_fix-lookup-entity-model-type-mapping.org | Accepted | Root cause: an earlier rebase-conflict resolution used --theirs, which in a rebase means "the commit being replayed" (this branch's stale stub), not main's content -- inverted from what was intended. Restored from origin/main verbatim. |
 | 2 | change_reason bullet omits the change_reason_code-column caveat that change_reason_category's bullet states, even though the same template gap applies to both | doc/agile/versions/v0/sprint_23/commission-dq-component/task_commission-dq-reference-entities.org, PR description | Accepted | Added the same caveat to the change_reason bullet and to the PR description's Summary/Test plan. |
+| 3 | catalog_table.cpp dropped the "Version" column present in every sibling generated *_table.cpp | ores.dq.catalog.org, catalog_table.cpp | Accepted | Missing `version \vert Version` row in the org model's Table display section; added and regenerated. |
+| 4 | catalog.hpp drops the explicit #include <chrono> every sibling generated domain header keeps alongside tenant_id.hpp | ores.dq.catalog.org, catalog.hpp | Accepted | Missing from the org model's Domain includes block; added and regenerated. |
+| 5 | Stale doxygen comment in data_organization_service.hpp still lists "Managing catalogs" after catalog moved to its own generated service | data_organization_service.hpp | Accepted | Updated the class-level comment. |
+| 6 | The promptChangeReason()/change_reason_code-not-assigned bug fixed in CatalogDetailDialog also exists in ~9 other Qt dialogs | (out of scope for this PR) | Accepted, filed | Filed [[id:5DF07DAD-4D0A-4851-ADDA-E317824855D4][5DF07DAD]] as a tracked follow-up rather than fixing here. |
 
 * Result

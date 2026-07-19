@@ -17,38 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.api/domain/catalog_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
-#include <sstream>
+#ifndef ORES_DQ_CORE_MESSAGING_CATALOG_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_CATALOG_REGISTRAR_HPP
 
-namespace ores::dq::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace {
-template <typename T>
-std::string opt_str(const std::optional<T>& o) {
-    if (!o)
-        return {};
-    std::ostringstream s;
-    if constexpr (std::is_same_v<T, bool>)
-        s << std::boolalpha;
-    s << *o;
-    return s.str();
-}
-}
+namespace ores::dq::messaging {
 
-std::string convert_to_table(const std::vector<catalog>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+std::vector<ores::nats::service::subscription>
+register_catalog_handlers(ores::nats::service::client& nats,
+                          ores::database::context ctx,
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-    table << fort::header << "Name" << "Description" << "Owner" << "Modified By" << "Version"
-          << fort::endr;
+} // namespace ores::dq::messaging
 
-    for (const auto& c : v) {
-        table << c.name << c.description << opt_str(c.owner) << c.modified_by << c.version
-              << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

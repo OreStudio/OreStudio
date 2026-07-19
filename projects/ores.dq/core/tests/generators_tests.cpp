@@ -53,7 +53,7 @@ TEST_CASE("catalog_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated catalog: " << sut.name;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());

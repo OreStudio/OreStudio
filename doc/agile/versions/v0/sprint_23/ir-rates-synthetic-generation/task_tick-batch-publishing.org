@@ -36,11 +36,11 @@ the GMM improvements story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Reopened 2026-07-16: closed via PR #1597, which shipped only the payment_frequency prerequisite, not the ir_curve_feed producer this task's own Acceptance requires (confirmed: no ir_curve_feed exists anywhere in ores.synthetic/service/src/ — only fx_spot_feed). Scope confirmed as Phase 1 only (synchronous family publish); see * Analysis below for the design decisions reached before resuming. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement ir_curve_feed: one process step -> N tenor ticks via curve_instrument_pricer, published on synthetic.v1.curve_family.<source>. |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -607,3 +607,59 @@ warrant it (stated explicitly), never a blind copy either way.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped well beyond the original Phase-1 Acceptance (=ir_curve_feed=
+tick-batch publishing), which itself was completed and independently
+verified via direct SQL before this session's work began. This
+session took the feature from "backend mechanism works" to "usable
+end-to-end through the real UI":
+
+- =ir_curve_generation_config= gained =folder_id= (real folder-tree
+  placement, matching =fx_spot_generation_config=) and a persisted,
+  editable =source_name= column following FX's exact
+  =synthetic.<collection>.<pair>= convention (replacing a computed
+  =ir_curve.<ccy>.<idx>= string every consumer had to re-derive).
+- =index_name= is now FK-validated against
+  =ores.refdata.floating_index_type= (stored as the full ISDA code to
+  reuse that entity's existing validator) instead of free text.
+- =MarketSimulatorWindow= ("Market Simulator") now shows IR curves in
+  the same real folder tree FX pairs use (no more parallel synthetic
+  group), with correct single-flag icons and idiomatic rates naming
+  ("USD SOFR").
+- A complete =IrCurveEditor= (Instrument / Process / Curve Template /
+  Provenance tabs) was built, aligned item-by-item against
+  =FxSpotRateEditor= (segmented Simple/Advanced toggle, slider shape,
+  currency combo, chart zone layout) -- copying FX where there was no
+  IR-specific reason to differ, diverging deliberately (curve-shape
+  chart as the hero view, not sample-paths) where rates genuinely
+  warranted it. Two new stateless preview NATS endpoints
+  (=synthetic.v1.ir_curve.simulate_paths=,
+  =synthetic.v1.ir_curve.preview_shape=) back its live charts.
+- Market Simulator's own overview tick chart was fixed to route to the
+  correct NATS subject/payload shape for IR curves (it silently never
+  ticked before) and redesigned from an undifferentiated single line
+  into a proper curve-shape overlay (last N batches, oldest faded,
+  configurable via a spin box).
+- The =synthetic.ir_curve_configs.realistic= DQ dataset now seeds one
+  overnight-RFR Vasicek curve per each of the top 20 currencies by FX
+  turnover (was 3), each with its own realistic per-market
+  calibration, backed by 15 new =floating_index_type= reference rows.
+- Fixed several genuine, pre-existing bugs surfaced by being the first
+  real exerciser of these code paths: ccache worktree corruption,
+  JetStream stream-creation-vs-update semantics, a NATS subject
+  wildcard token-count mismatch, and (this session) Barclays never
+  having its own =floating_index_type= rows (missing from the tenant
+  provisioner's copy-from-system-tenant step) and an editable
+  QComboBox's flag icon not following programmatic text changes.
+
+Verified via the =verify-ir-curve-feed= test scenario: all 5 steps now
+PASS through the real UI (previously 2 of 5 failed only because
+Market Simulator had no IR view at all).
+
+Deliberately deferred, each with its own filed follow-on task:
+=seed-ir-curve-sample-data= (vintage sourcing, numerical-stability
+tuning), =normalize-floating-index-refdata= (the
+=floating_index_type=/=overnight_index_convention= duplication), and
+=dual-curve-discounting-projection-model= (IBOR-style term indices
+need a genuine discount/projection split; the currently-seeded
+overnight RFRs are correctly single-curve as-is).

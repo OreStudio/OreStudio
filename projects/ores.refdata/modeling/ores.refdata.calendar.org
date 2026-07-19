@@ -217,6 +217,7 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :item_var:                    calendar
 :key_field:                   code
 :has_uuid_primary_key:        false
+:has_pagination:              true
 :has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_calendars_request
 :get_response_class:          refdata::messaging::get_calendars_response
@@ -244,12 +245,12 @@ drop function if exists ores_refdata_validate_calendar_fn;
 
 *** Detail fields
 
-| field         | label         | widget              | type          | is_key | is_required | placeholder                     | combo_domain_type                 | combo_fetch_include        | combo_fetch_fn        | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label      | combo_setter_pascal | view_group |
-|---------------+---------------+----------------------+---------------+--------+-------------+----------------------------------+------------------------------------+-----------------------------+------------------------+----------------------+-------------------+----------------------+-------------------+-------------------+-----------------------+-------------|
-| code          | Code          | codeEdit             | line_edit     | true   | true        | Enter QuantLib calendar code     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
-| name          | Name          | nameEdit             | line_edit     |        | true        | Enter calendar name              |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
-| calendar_type | Type          | calendarTypeCombo    | dynamic_combo |        |             |                                  | refdata::domain::calendar_type     | ores.qt/LookupFetcher.hpp    | fetch_calendar_types    | calendarTypeWatcher  | code              | description          | display_order     | calendar types    | CalendarTypeCombo     | General     |
-| country_code  | Country       | countryCodeCombo     | dynamic_combo |        |             |                                  | refdata::domain::country           | ores.qt/LookupFetcher.hpp    | fetch_countries         | countryCodeWatcher   | alpha2_code       | name                 | version           | countries         | CountryCodeCombo      | General     |
+| field         | label         | widget              | type          | is_key | is_required | placeholder                     | flag_source | combo_fetch          | combo_allow_blank | combo_domain_type                 | combo_fetch_include        | combo_fetch_fn        | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label      | combo_setter_pascal | view_group |
+|---------------+---------------+----------------------+---------------+--------+-------------+----------------------------------+--------------+------------------------+---------------------+------------------------------------+-----------------------------+------------------------+----------------------+-------------------+----------------------+-------------------+-------------------+-----------------------+-------------|
+| code          | Code          | codeEdit             | line_edit     | true   | true        | Enter QuantLib calendar code     |              |                        |                     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
+| name          | Name          | nameEdit             | line_edit     |        | true        | Enter calendar name              |              |                        |                     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
+| calendar_type | Type          | calendarTypeCombo    | dynamic_combo |        |             |                                  |              |                        |                     | refdata::domain::calendar_type     | ores.qt/LookupFetcher.hpp    | fetch_calendar_types    | calendarTypeWatcher  | code              | description          | display_order     | calendar types    | CalendarTypeCombo     | General     |
+| country_code  | Country       | countryCodeCombo     | flagged_combo |        |             |                                  | country      | fetch_country_codes   | true                |                                     | ores.qt/LookupFetcher.hpp    |                         |                      |                   |                      |                   |                   |                       | General     |
 
 *** Columns (Qt model)
 
@@ -261,6 +262,18 @@ drop function if exists ores_refdata_validate_calendar_fn;
 | CountryCode  | country_code  | Country   | string | 80    |                |          |               |                    |
 | Version      | version       | Version   | int    | 70    |                |          |               |                    |
 | ModifiedBy   | modified_by   | Modified By | string | auto |               |          |               |                    |
+
+*** Icon columns (Qt model)
+
+Country gets its own flag icon in the list, keyed by =country_code=
+via the generic country-code accessor (same mechanism as
+business_centre's =country_alpha2_code=) -- this is independent of
+the row's own =getCalendarFlagIcon= chain (own image_id -> else
+country_code) used for the primary Code column's icon.
+
+| column      | accessor          | field1       | field2 |
+|-------------+--------------------+---------------+--------|
+| CountryCode | country_flag_icon | country_code |        |
 
 ** Custom generator declarations
 

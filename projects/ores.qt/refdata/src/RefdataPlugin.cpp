@@ -452,6 +452,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     calendarController_ = std::make_unique<CalendarController>(ctx_.main_window,
                                                                ctx_.mdi_area,
                                                                ctx_.client_manager,
+                                                               ctx_.image_cache,
                                                                ctx_.change_reason_cache,
                                                                ctx_.username,
                                                                ctx_.badge_cache,

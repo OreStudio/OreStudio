@@ -195,39 +195,6 @@ void CurrencyDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CurrencyDetailDialog::onFieldChanged);
-    connect(calendarWidget_,
-            &CalendarAssignmentWidget::statusMessage,
-            this,
-            &CurrencyDetailDialog::statusMessage);
-    connect(calendarWidget_,
-            &CalendarAssignmentWidget::errorMessage,
-            this,
-            [this](const QString&, const QString& message) { emit errorMessage(message); });
-    connect(calendarWidget_, &CalendarAssignmentWidget::assignmentsChanged, this, [this]() {
-        ui_->saveButton->setEnabled(!readOnly_);
-    });
-    connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
-        if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
-            return;
-        calendarWidget_->setClientManager(clientManager_);
-        calendarWidget_->setImageCache(imageCache());
-        calendarWidget_->setLeftKey(currency_.iso_code);
-        calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
-        calendarWidget_->load();
-    });
-    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
-        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
-            return;
-        const auto crSel =
-            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
-        if (!crSel)
-            return;
-        calendarWidget_->commitChanges(
-            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
-                if (!success)
-                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
-            });
-    });
 }
 
 void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -737,7 +704,58 @@ void CurrencyDetailDialog::setupCalendarsTab() {
     calendarsTab_ = new QWidget();
     auto* layout = new QVBoxLayout(calendarsTab_);
     layout->addWidget(calendarWidget_);
-    tabWidget()->addTab(calendarsTab_, tr("Calendars"));
+    // Provenance is the base template's own tab and should stay last for
+    // consistency across every entity's detail dialog -- insert Calendars
+    // before it rather than appending, which would push Provenance out of
+    // its usual final position.
+    int provenanceTabIndex = -1;
+    for (int i = 0; i < tabWidget()->count(); ++i) {
+        if (tabWidget()->tabText(i) == tr("Provenance")) {
+            provenanceTabIndex = i;
+            break;
+        }
+    }
+    if (provenanceTabIndex >= 0)
+        tabWidget()->insertTab(provenanceTabIndex, calendarsTab_, tr("Calendars"));
+    else
+        tabWidget()->addTab(calendarsTab_, tr("Calendars"));
+
+    // calendarWidget_/calendarsTab_ only exist from this point on -- see
+    // the calendars_tab_connections paste point above for why these
+    // connections live here instead of setupConnections().
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::statusMessage,
+            this,
+            &CurrencyDetailDialog::statusMessage);
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::errorMessage,
+            this,
+            [this](const QString&, const QString& message) { emit errorMessage(message); });
+    connect(calendarWidget_, &CalendarAssignmentWidget::assignmentsChanged, this, [this]() {
+        ui_->saveButton->setEnabled(!readOnly_);
+    });
+    connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
+        if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
+            return;
+        calendarWidget_->setClientManager(clientManager_);
+        calendarWidget_->setImageCache(imageCache());
+        calendarWidget_->setLeftKey(currency_.iso_code);
+        calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
+        calendarWidget_->load();
+    });
+    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
+        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
+            return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+        if (!crSel)
+            return;
+        calendarWidget_->commitChanges(
+            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+                if (!success)
+                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+            });
+    });
 }
 
 }

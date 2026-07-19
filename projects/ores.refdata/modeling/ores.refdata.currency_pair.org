@@ -177,6 +177,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :item_var:               pair
 :key_field:              pair_code
 :has_uuid_primary_key:         false
+:has_pagination:               true
 :has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_pairs_request
 :get_response_class:     refdata::messaging::get_currency_pairs_response

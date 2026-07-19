@@ -118,9 +118,15 @@ const std::vector<std::string>& CalendarAssignmentWidget::pendingRemoves() const
     return pendingRemoves_;
 }
 
-void CalendarAssignmentWidget::load() {
+void CalendarAssignmentWidget::load(bool force) {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load calendars: not connected";
+        return;
+    }
+
+    if (!force && hasLoadedOnce_ && loadedForKey_ == leftKey_) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Skipping reload for '" << leftKey_ << "' -- already loaded, not forced";
         return;
     }
 
@@ -152,6 +158,8 @@ void CalendarAssignmentWidget::load() {
             self->allCalendarCodes_ = std::move(result.allCodes);
             self->pendingAdds_.clear();
             self->pendingRemoves_.clear();
+            self->hasLoadedOnce_ = true;
+            self->loadedForKey_ = self->leftKey_;
             self->refreshView();
             emit self->dataLoaded();
             BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->assignedCodes_.size()
@@ -169,21 +177,33 @@ void CalendarAssignmentWidget::load() {
             if (!self)
                 return {.success = false};
 
-            auto allCodes = fetch_calendar_codes(clientManager);
+            // ClientManager::process_authenticated_request() can rethrow a
+            // connection-level exception (deliberately, for its
+            // connect()-adjacent callers) -- an exception escaping a
+            // QtConcurrent::run task is rethrown on the UI thread with
+            // nothing to catch it, aborting the whole client. Convert it
+            // into an ordinary failure instead.
+            try {
+                auto allCodes = fetch_calendar_codes(clientManager);
 
-            if (has_left_key && loadAssignedFn) {
-                auto assignedResult = loadAssignedFn(clientManager, leftKey);
-                if (!assignedResult.success) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch assigned calendars: " << assignedResult.message.toStdString();
-                    return {.success = false};
+                if (has_left_key && loadAssignedFn) {
+                    auto assignedResult = loadAssignedFn(clientManager, leftKey);
+                    if (!assignedResult.success) {
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Failed to fetch assigned calendars: "
+                            << assignedResult.message.toStdString();
+                        return {.success = false};
+                    }
+                    return {.success = true,
+                            .assignedCodes = std::move(assignedResult.calendarCodes),
+                            .allCodes = std::move(allCodes)};
                 }
-                return {.success = true,
-                        .assignedCodes = std::move(assignedResult.calendarCodes),
-                        .allCodes = std::move(allCodes)};
-            }
 
-            return {.success = true, .assignedCodes = {}, .allCodes = std::move(allCodes)};
+                return {.success = true, .assignedCodes = {}, .allCodes = std::move(allCodes)};
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Exception while loading calendars: " << e.what();
+                return {.success = false};
+            }
         });
 
     watcher->setFuture(future);
@@ -334,7 +354,7 @@ void CalendarAssignmentWidget::commitChanges(
                     // already applied server-side before the failing one must
                     // be dropped from pendingAdds_/pendingRemoves_, else a
                     // retry would resend them.
-                    self->load();
+                    self->load(true);
                 }
                 if (onComplete)
                     onComplete(result.success, result.message);
@@ -343,18 +363,26 @@ void CalendarAssignmentWidget::commitChanges(
     QFuture<CommitResult> future = QtConcurrent::run(
         [clientManager, leftKey, adds, removes, assignFn, revokeFn, changeReasonCode,
          changeCommentary]() -> CommitResult {
-            for (const auto& code : adds) {
-                auto result =
-                    assignFn(clientManager, leftKey, code, changeReasonCode, changeCommentary);
-                if (!result.success)
-                    return {.success = false, .message = result.message};
+            // See the matching comment in load() above: convert any
+            // exception escaping assignFn/revokeFn (which both call
+            // ClientManager::process_authenticated_request()) into an
+            // ordinary failure instead of letting it abort the client.
+            try {
+                for (const auto& code : adds) {
+                    auto result = assignFn(
+                        clientManager, leftKey, code, changeReasonCode, changeCommentary);
+                    if (!result.success)
+                        return {.success = false, .message = result.message};
+                }
+                for (const auto& code : removes) {
+                    auto result = revokeFn(clientManager, leftKey, code);
+                    if (!result.success)
+                        return {.success = false, .message = result.message};
+                }
+                return {.success = true, .message = {}};
+            } catch (const std::exception& e) {
+                return {.success = false, .message = QString::fromUtf8(e.what())};
             }
-            for (const auto& code : removes) {
-                auto result = revokeFn(clientManager, leftKey, code);
-                if (!result.success)
-                    return {.success = false, .message = result.message};
-            }
-            return {.success = true, .message = {}};
         });
 
     watcher->setFuture(future);

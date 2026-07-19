@@ -116,8 +116,15 @@ public:
      * @brief Load assigned calendars (via the loadAssigned callback) and
      * the full calendar code list. If leftKey is empty (create mode),
      * only the full calendar list is loaded.
+     *
+     * A no-op if this widget already has data loaded for the current
+     * leftKey and @p force is false -- a lazily-loaded tab that is
+     * re-activated (e.g. the user switches away and back) must not
+     * silently wipe any staged pendingAdds()/pendingRemoves() by
+     * re-fetching server state out from under them. Pass @p force to
+     * bypass this and always refetch (e.g. after commitChanges()).
      */
-    void load();
+    void load(bool force = false);
 
     void setReadOnly(bool readOnly);
 
@@ -192,6 +199,11 @@ private:
     // Pending local changes (committed by the parent dialog's Save action)
     std::vector<std::string> pendingAdds_;
     std::vector<std::string> pendingRemoves_;
+
+    // Tracks which leftKey_ load() last fetched data for, so a repeat
+    // load() on an already-loaded key is a no-op (see load()'s doc comment).
+    bool hasLoadedOnce_ = false;
+    std::string loadedForKey_;
 };
 
 }

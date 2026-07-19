@@ -37,6 +37,7 @@ class CalendarMdiWindow;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing calendar windows and operations.
@@ -60,6 +61,7 @@ public:
     CalendarController(QMainWindow* mainWindow,
                        QMdiArea* mdiArea,
                        ClientManager* clientManager,
+                       ImageCache* imageCache,
                        ChangeReasonCache* changeReasonCache,
                        const QString& username,
                        BadgeCache* badgeCache,

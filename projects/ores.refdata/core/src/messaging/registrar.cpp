@@ -29,6 +29,7 @@
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
@@ -281,6 +282,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_unit_handlers(nats, ctx, verifier));
     append(register_calendar_handlers(nats, ctx, verifier));
+    append(register_calendar_type_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
@@ -398,7 +400,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
-    // Publish-from-DQ workflow step handlers (24 subjects, one handler).
+    // Publish-from-DQ workflow step handlers (30 subjects, one handler).
     // ----------------------------------------------------------------
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
@@ -419,6 +421,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.currencies.publish-from-dq",
             "refdata.v1.currency-pairs.publish-from-dq",
             "refdata.v1.currency-pair-conventions.publish-from-dq",
+            "refdata.v1.currency-calendars.publish-from-dq",
+            "refdata.v1.currency-pair-convention-calendars.publish-from-dq",
             "refdata.v1.entity-classifications.publish-from-dq",
             "refdata.v1.lei-counterparties.publish-from-dq",
             "refdata.v1.lei-parties.publish-from-dq",

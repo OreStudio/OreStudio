@@ -63,8 +63,8 @@ that distinction matters).
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - currency is not set to EUR as per curve in tree; - inex is not set; - no source name, no ORE key, no help text. compare with FX; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_074157.png]]; ; - x axis on the chart is confusing, what does 0, 1, ... mean; - rest looks ok.; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_073906.png]]; ; - tenors look good but confirm it is as expected; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_073959.png]]; ; main chart is confusing because its ticking all tenors in one go. whats the best way to display this, as a surface?; ; [[file:scenario_verify-ir-curve-feed_step2_20260719_074323.png]] |
+| Status | PASS |
+| Notes  | [[file:scenario_verify-ir-curve-feed_step2_20260719_085926.png]] |
 
 ** Confirm the Curve Template entries
 
@@ -88,8 +88,8 @@ automatically by the ingest loop on the first tick, not manually.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Not visible from the =MarketSimulatorWindow= ("Market Simulator") the tester was looking at -- that window is hardcoded to =fx_spot_generation_config= only (loads "feeds, fx pairs, components, folders" -- no IR equivalent exists). This is the exact manual per-tenant start/monitor control-plane gap already tracked in the =seed-ir-curve-sample-data= follow-on task, not a defect in this task's own code. Server-side, the mechanism is independently confirmed working via direct SQL: a =RATES/YIELD/USD/SOFR= row was auto-created by the ingest loop with =asset_class=rates=, =is_scalar=false=, from a system-tenant auto-started feed (=MarketSeriesMdiWindow=/=MarketObservationMdiWindow=, the generic list windows, do show it -- the gap is specifically the FX-only Market Simulator having no IR view). |
+| Status | PASS |
+| Notes  | [[file:scenario_verify-ir-curve-feed_step4_20260719_090052.png]] |
 
 ** Confirm ticks are landing as market observations
 
@@ -105,17 +105,16 @@ batch and add a new batch on the next tick, with =source= =
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Same root cause as the previous step: the tester was looking for a "Start" control in the Market Simulator (FX-only, no IR view -- see above), not the generic Market Observations list window. Independently confirmed working server-side via direct SQL: 3M/6M/2Y point_ids present with numeric values, shared observation_datetime per batch, source=ir_curve.usd.sofr, new batches landing every ~60s across multiple polls. |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-19T06:43:29Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-19T08:01:18Z |
 | Branch        | feature/tick-batch-publishing |
-| Commit        | 0389c55b2 |
+| Commit        | adc49ccbd |
 | Worktree      | eager_maxwell |
 
 * Notes

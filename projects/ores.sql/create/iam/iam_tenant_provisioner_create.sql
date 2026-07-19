@@ -507,6 +507,22 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % payment frequencies', v_copied_count;
 
+    -- Floating index types (e.g. USD-SOFR, EUR-ESTR, GBP-SONIA, EUR-EURIBOR-6M)
+    insert into ores_refdata_floating_index_types_tbl (
+        code, tenant_id, version, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_floating_index_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % floating index types', v_copied_count;
+
     -- Tenor resolution algorithms (e.g. ANCHOR_OFFSET, IMM_ROLL)
     insert into ores_refdata_tenor_resolution_algorithms_tbl (
         code, tenant_id, version, name, description, display_order,

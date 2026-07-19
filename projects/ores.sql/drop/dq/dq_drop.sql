@@ -33,6 +33,8 @@
 
 -- Artefacts
 \ir ./dq_report_definitions_artefact_drop.sql
+\ir ./dq_synthetic_ir_curve_template_entries_artefact_drop.sql
+\ir ./dq_synthetic_ir_curve_configs_artefact_drop.sql
 \ir ./dq_synthetic_gmm_components_artefact_drop.sql
 \ir ./dq_synthetic_fx_spot_configs_artefact_drop.sql
 \ir ./dq_market_data_observations_artefact_drop.sql

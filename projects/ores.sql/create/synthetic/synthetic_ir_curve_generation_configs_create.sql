@@ -50,6 +50,8 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "ticks_per_hour" integer not null,
     "enabled" boolean not null,
     "fixed_leg_payment_frequency_code" text not null,
+    "source_name" text not null,
+    "folder_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -66,6 +68,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
     check ("index_name" <> ''),
+    check ("source_name" <> ''),
     check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
     check ("process_type" <> 'CIR' or "initial_rate" >= 0)
@@ -108,11 +111,27 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate folder_id (optional soft FK to ores_synthetic_folders_tbl)
+    if NEW.folder_id is not null then
+        if not exists (
+            select 1 from ores_synthetic_folders_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.folder_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid folder_id: %. No active folder found with this id.', NEW.folder_id
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate process_type
     NEW.process_type := ores_synthetic_validate_yield_curve_process_type_fn(NEW.tenant_id, NEW.process_type);
 
     -- Validate fixed_leg_payment_frequency_code
     NEW.fixed_leg_payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.fixed_leg_payment_frequency_code);
+
+    -- Validate index_name
+    NEW.index_name := ores_refdata_validate_floating_index_type_fn(NEW.tenant_id, NEW.index_name);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

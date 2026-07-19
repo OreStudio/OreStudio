@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tick-batch-publishing
-#+pr: 1610
+#+pr: 1624
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -36,11 +36,11 @@ the GMM improvements story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Reopened 2026-07-16: closed via PR #1597, which shipped only the payment_frequency prerequisite, not the ir_curve_feed producer this task's own Acceptance requires (confirmed: no ir_curve_feed exists anywhere in ores.synthetic/service/src/ — only fx_spot_feed). Scope confirmed as Phase 1 only (synchronous family publish); see * Analysis below for the design decisions reached before resuming. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement ir_curve_feed: one process step -> N tenor ticks via curve_instrument_pricer, published on synthetic.v1.curve_family.<source>. |
+| Next         | Nothing. |
 | Last touched | 2026-07-16                               |
 
 * Acceptance
@@ -300,12 +300,303 @@ timestamp" in this task's Phase-1 synchronous-publish case, and keeps
 working unmodified once Phase 2 staggers publish times. No schema
 change. Tracked as its own task: curve-snapshot-builder-viewer.
 
+* Analysis: Market Simulator IR support -- plan (2026-07-18)
+
+Live UI testing found the first Market Simulator integration attempt
+built a *parallel*, IR-specific structure instead of reusing the
+existing FX machinery generically, per explicit correction ("we do
+not want a separate control for IR ... use existing logic in
+simulator"). Three concrete defects identified by reading the code
+(not guessed):
+
+- *Parallel folder tree*: =ir_curve_generation_config= has no
+  =folder_id= column, unlike =fx_spot_generation_config=. Meanwhile
+  =synthetic_publish_from_dq_create.sql= already resolves/creates the
+  real folder chain (Root -> Collection -> "Rates" -> "IR Curves") for
+  IR curves and then has nowhere to store it. =buildTree()= worked
+  around the missing column by inventing a synthetic flat "IR Curves"
+  group directly under root -- a second tree bypassing the real
+  folders already in the DB.
+- *Two flags for one currency*: =buildIrCurveFeedItem()= called the
+  FX pair-flag overload =currency_flag_icon(imageCache, ccy, ccy)=
+  (base+quote composite) with the same code twice, instead of the
+  existing single-flag overload =currency_flag_icon(imageCache,
+  isoCode)= already used elsewhere (=ClientBookModel=,
+  =ClientCrmTopologyConfigModel=) for single-currency entities.
+- *No summary/chart for IR leaves*: =showSummaryForCurrent()='s
+  =NodeType::Feed= case only ever looks up =fxPairs_= and calls
+  =showFxPairSummary()=; it never checks =irCurves_=, so selecting an
+  IR curve leaf shows nothing -- no hero, no tick chart, no start/stop
+  detail panel.
+
+** Plan
+
+1. Add =folder_id= to =ir_curve_generation_config= (org spec +
+   regenerate: SQL table, C++ domain struct, repository, JSON I/O),
+   mirroring =fx_spot_generation_config=.
+2. Update =synthetic_publish_from_dq_create.sql='s IR insert to store
+   the =v_folder_id= it already computes but currently discards.
+3. Rewrite =buildTree()= to fold IR curves into the same generic
+   folder walk as FX (now that =folder_id= exists) instead of the
+   separate flat-group special case -- one tree-building path for both
+   asset classes, extensible to future asset classes without a new
+   parallel branch each time.
+4. Fix the flag icon in =buildIrCurveFeedItem()= to the single-flag
+   overload.
+5. Add IR curve summary/hero support: extend
+   =showSummaryForCurrent()='s Feed case to check =irCurves_= too, add
+   =showIrCurveSummary()= (single-flag hero, reusing the existing tick
+   chart subscription machinery keyed by =irCurveSourceName()=).
+6. Build, restart services/client with =--open-scenario=, re-verify
+   live in Market Simulator.
+
+** Steps 1-6: done
+
+Confirmed live: =folder_id= regenerated across all codegen layers
+(SQL/domain/repository/JSON I/O), =synthetic_publish_from_dq_create.sql=
+now stores the =v_folder_id= it resolves, and after a DB recreate +
+Barclays re-provision the IR curve configs' =folder_id= correctly
+points at the real Root -> Realistic -> Rates -> "IR Curves" folder
+(=ba1e1e67-...=) -- queried directly, not guessed. =buildTree()= now
+folds IR curves into the same folder walk as FX
+(=irCurvesByFolder=/=pairsByFolder= are structurally identical). Flag
+icon fixed to the single-currency overload. Naming uses idiomatic
+rates convention (space-separated, e.g. "USD SOFR"), not FX's
+slash-separated pair notation.
+
+* Analysis: complete rates process editor -- plan (2026-07-18, continued)
+
+Testing steps 1-6 surfaced a further gap: Market Simulator's Edit
+action for an IR curve leaf does nothing (=editEntity()='s Feed case
+only ever looks up =fxPairs_=, silently no-ops for IR curves) --
+there is currently no way to see or change a curve's process
+parameters (kappa/theta/sigma/etc.) or its Curve Template (tenor
+grid) from the Simulator at all. Read =FxSpotRateEditor= (2200+
+lines) to understand the FX shape before designing the rates
+equivalent, rather than guessing an interface.
+
+** Mapping FX concepts to rates
+
+| FX (=FxSpotRateEditor=)                        | Rates equivalent                                        | Note                                                                     |
+|-------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------|
+| =gmm_component= mixture (N components)          | *no equivalent* -- one process (Vasicek/CIR/Hull-White)  | Simple/Advanced mixture-table split doesn't apply; one param set only.  |
+| price-path chart (closed-form GBM/OU, client-side) | short-rate sample-path chart (closed-form Euler-Maruyama, client-side) | Vasicek *is* an OU process -- FX's existing "ou" slider/half-life machinery is directly reusable, not reinvented. |
+| *(nothing)*                                     | curve-shape preview chart (rate vs. tenor)                | Needs =IYieldCurveProcess::discount_factor()= + =curve_instrument_pricer=, which live server-side only (=ores.analytics.quant=/=ores.synthetic.service=) -- a new non-persisting preview NATS request, not a client-side reimplementation. |
+| =gmm_component= table (Advanced tab)            | =ir_curve_template_entry= table (tenor grid)              | Same one-config-many-children shape; entity already has full CRUD codegen (repository/protocol/mapper) -- this is new *editor UI* wiring an existing entity, not new backend modeling. |
+| Provenance tab                                  | Provenance tab                                            | Shared =DetailDialogBase= widget, no change.                            |
+
+Confirmed reusable without duplication (checked, not assumed):
+- =ores.synthetic.api/domain/curve_template_validation.hpp/.cpp=
+  (=validate_curve_template=) is a pure function in the =api= layer
+  (linked into Qt already via domain structs) -- the tenor-overlap
+  check can run client-side in the Curve Template tab exactly as
+  written, no server round-trip needed for that part.
+- =yield_curve_process_type=, =ores.refdata.instrument_code=,
+  =ores.refdata.payment_frequency=, =ores.refdata.tenor= all have
+  full protocol/repository codegen already -- every combo box in the
+  wireframe below is backed by an existing request, none new.
+- =curve_instrument_pricer= (=ores.analytics.quant=) and
+  =IYieldCurveProcess::discount_factor()= are service-layer only --
+  confirmed Qt has no dependency on =ores.analytics.quant= or
+  =ores.synthetic.service=, so the curve-shape chart genuinely needs
+  a new preview request, not a missed existing one.
+
+** Wireframe
+
+#+begin_example
+┌─ IR Curve: USD SOFR ──────────────────────────────────────── [Save] [Cancel] ┐
+│ [Instrument] [Process] [Curve Template] [Provenance]                         │
+├────────────────────────────────────────────────────────────────────────────┤
+│ INSTRUMENT TAB                                                               │
+│  Currency:        [USD        ▼]      Index Name: [SOFR________]            │
+│  Fixed leg freq:   [Annual     ▼]      Enabled:    [x]                      │
+│  New tick every:  [1____] sec   (from ticks_per_hour)                       │
+│  Source:  ir_curve.usd.sofr   (read-only, derived)                          │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┤
+│ PROCESS TAB                                                                  │
+│  Engine: (•) Vasicek  ( ) CIR  ( ) Hull-White                               │
+│                                                                                │
+│  Initial rate r0  [====|=========] 3.25 %                                   │
+│  Mean level  θ    [======|=======] 3.50 %                                   │
+│  Reversion   κ    [===|==========] half-life ≈ 45 days   (log-scale slider) │
+│  Volatility  σ    [==|===========] 0.80 %                                   │
+│                                                                                │
+│  ┌─ Sample short-rate paths (5 draws) ──────┐ ┌─ Curve shape preview ──────┐ │
+│  │      ╱‾╲___                              │ │  rate                      │ │
+│  │  ___╱    ╲___╱‾╲___                      │ │   │      ╱‾‾‾‾             │ │
+│  │ ╱                  ╲___                  │ │   │   ╱‾╱                  │ │
+│  │______________________________  ticks     │ │   │__╱____________ tenor   │ │
+│  └───────────────────────────────────────────┘ └─────────────────────────────┘│
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┤
+│ CURVE TEMPLATE TAB                                                           │
+│  # │ Start Tenor │ End Tenor │ Instrument         │                        │
+│  0 │ SPOT        │ 1M        │ Deposit         ▼  │  [↑][↓][Remove]        │
+│  1 │ SPOT        │ 3M        │ Deposit         ▼  │  [↑][↓][Remove]        │
+│  2 │ 3M          │ 6M        │ ForwardRateAgree ▼ │  [↑][↓][Remove]        │
+│  3 │ SPOT        │ 2Y        │ Swap            ▼  │  [↑][↓][Remove]        │
+│                                                     [+ Add tenor entry]      │
+│  ⚠ warning banner here if tenor windows overlap (validate_curve_template)   │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┤
+│ PROVENANCE TAB — shared DetailDialogBase widget, same as every other entity │
+└────────────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+** Plan
+
+*** Backend: non-persisting curve preview request
+
+1. Design =preview_ir_curve_request=/=response= protocol in
+   =ores.synthetic.api/messaging/ir_curve_preview_protocol.hpp=: request
+   carries process_type/kappa/theta/sigma/initial_rate plus the current
+   (possibly unsaved) Curve Template entry list; response carries, per
+   entry, {sequence_index, start_tenor_code, end_tenor_code, tenor
+   label, rate}.
+2. Implement the handler in =ores.synthetic.service= reusing
+   =build_ir_curve_refdata_context()= + =ir_curve_template_resolver::resolve()=
+   + =curve_instrument_pricer= exactly as =ir_curve_feed= does today --
+   compute only, no DB writes.
+3. Wire the NATS subject + registrar entry (mirrors every other
+   synthetic handler's request-scoped =make_request_context()= pattern).
+4. No SQL/schema change -- pure compute endpoint.
+
+*** Qt: charts
+
+5. Short-rate sample-path chart: new lightweight chart widget doing
+   closed-form Euler-Maruyama simulation (=dr = κ(θ−r)dt + σ dW=, CIR
+   adds =√r=) client-side -- same category of local math
+   =SamplePricePathsChart= already does for FX, reusing that
+   component's shape if generic enough or a sibling class if not.
+6. Curve-shape preview chart: new chart widget, populated by a
+   debounced call to the new preview request on every slider/table
+   change.
+
+*** Qt: IrCurveEditor widget
+
+7. New =IrCurveEditor.hpp/.cpp= extending =DetailDialogBase=, two
+   constructors (new/edit) mirroring =FxSpotRateEditor='s shape.
+8. Instrument tab: currency combo (reuse
+   =populateCurrencyCombo=-style pattern), index name line edit, fixed
+   leg payment frequency combo (=ores.refdata.payment_frequency=),
+   enabled checkbox, ticks-per-hour spin + human-readable echo,
+   read-only derived source-name label.
+9. Process tab: engine combo sourced from
+   =yield_curve_process_type=; κ/θ/σ/r0 sliders + spinboxes reusing
+   FX's "ou" log-scale-κ/half-life pattern, per-engine label/tooltip
+   variants (Vasicek/CIR/Hull-White); wires both new charts.
+10. Curve Template tab: =QTableWidget= of =ir_curve_template_entry=
+    rows -- tenor combos sourced from =ores.refdata.tenor=, instrument
+    combo sourced from =ores.refdata.instrument_code= (filtered by
+    curve role), add/remove/reorder buttons, client-side
+    =validate_curve_template= overlap check with a warning banner.
+11. Provenance tab: reuse the shared widget, no change.
+12. Save: persist config fields via the existing
+    =ir_curve_generation_config_protocol=, diff-sync template entries
+    (insert/update/delete against =originalEntryIds_=) via the
+    existing =ir_curve_template_entry_protocol= -- same pattern
+    =FxSpotRateEditor= uses for =gmm_component= rows.
+
+*** MarketSimulatorWindow wiring
+
+13. Replace the no-op IR branch in =editEntity()= with
+    =openIrCurveEditorForEdit()=, opening the new =IrCurveEditor= in a
+    =DetachableMdiSubWindow=, mirroring =openFxEditorForEdit()=.
+14. Add the equivalent "New IR Curve" creation path, mirroring
+    =onNewFxRateClicked()=/=openFxEditorForNew()=.
+
+*** Verification
+
+15. Build (=ores.qt.synthetic.lib= first, then full build).
+16. No DB recreate needed (no schema change in this phase).
+17. Restart services/client with =--open-scenario=, live-verify:
+    create a new IR curve process end-to-end (Instrument -> Process
+    with live charts -> Curve Template -> Save), edit an existing one
+    (DQ-published Barclays USD SOFR/EUR ESTR/GBP SONIA), confirm ticks
+    reflect edited parameters.
+
+* Analysis: aligning IrCurveEditor with FxSpotRateEditor (2026-07-19)
+
+Live review of the shipped editor found real, verifiable structural
+gaps against =FxSpotRateEditor= -- not vague "doesn't look right"
+feedback, but confirmed by reading both dialogs' source side by side.
+Per-item decision below: copy FX where there is no IR-specific reason
+to differ (a spurious difference), diverge only where rates genuinely
+warrant it (stated explicitly), never a blind copy either way.
+
+** Confirmed differences and decisions
+
+1. *Simple/Advanced toggle*: FX uses two checkable/auto-exclusive
+   =QPushButton='s, explicitly QSS-styled into a joined accent-colour
+   pill (=min-height: 30px=, bold, filled when checked), placed at the
+   right end of the header row. The shipped editor used two plain
+   =QRadioButton='s with no styling, which is why it read as "no
+   toggle button at all". *Decision: copy FX verbatim* -- no IR reason
+   for this affordance to look different.
+2. *Simple-mode sliders*: FX has no spinbox beside the slider -- a
+   title + gray value-echo label sits above a full-width slider;
+   precise entry is Advanced-only. The shipped editor paired every
+   slider with an adjacent spinbox in Simple mode. *Decision: copy FX*
+   -- drop the paired spinbox, echo the value in a label instead;
+   Advanced's table remains the only precise-entry surface.
+3. *Three-zone tab layout*: FX is header row (engine + frequency +
+   toggle) / middle row (controls left + compact chart right, capped
+   ~380px) / bottom row (prominent full-width chart in its own titled
+   =QGroupBox=). The shipped editor stacked both charts full-width
+   below the controls -- no side-by-side zone at all. *Decision: copy
+   FX's structure, but invert which chart is compact vs prominent* --
+   FX's compact side chart is the supporting stat (return
+   distribution), prominent bottom chart is the hero view (sample
+   paths). For IR the priority is reversed: curve shape is the "what
+   will I actually publish" hero view (curve shape is a genuine
+   IR-only chart FX has no equivalent of), sample paths is the
+   supporting/exploratory view. So: middle row = controls + compact
+   sample-paths; bottom row = prominent full-width curve-shape. Same
+   structural pattern, content assignment flipped for a stated reason.
+4. *Currency combo*: FX's =baseCombo_=/=quoteCombo_= are editable with
+   a =QCompleter= (=PopupCompletion=, =MatchContains=,
+   case-insensitive) over the typed =OreCurrencyComboBox= class. The
+   shipped editor used a plain non-editable =QComboBox=. *Decision:
+   copy FX* -- same ~180-row ISO currency list, same "pick 1 of many
+   quickly" use case, no IR reason to make this worse.
+5. *Index name combo*: *Decision: deliberately not like FX's currency
+   combos* -- post-filter (currency-scoped, two-segment codes only)
+   this list is typically 1-3 items, not ~180; a completer would solve
+   a problem that doesn't exist here. Stays a plain non-editable combo.
+6. *Fixed-leg-frequency / engine combos*: short fixed enumerations (9
+   and 3 rows) -- matches the codegen "standard" (Portfolio's
+   =purposeTypeCombo=/=statusCombo=, also plain non-editable, no
+   completer anywhere in the codebase for combos this short). No
+   change -- already correct.
+7. *Instrument tab framing*: every codegen =.ui= dialog (Portfolio,
+   Book) wraps its =QFormLayout= fields in a titled =QGroupBox= (e.g.
+   "Basic Information"); the shipped editor put the form directly on
+   the tab with no framing. *Decision: add one* ("Curve Identity").
+8. *insertPolicy*: every codegen =.ui= combo explicitly declares
+   =QComboBox::NoInsert=; the shipped editor never sets it (functionally
+   inert since none are editable except the currency combo post-item-4,
+   but cheap to match literally). *Decision: set it explicitly.*
+9. *Curve Template table combos*: already the only precedent in the
+   codebase for inline table-cell combos (FX's component table);
+   already matches it. No change.
+
 * Notes
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:24976F4B-7F04-4430-8DA6-361FF8108AD6][Verify ir_curve_feed tick-batch publishing]] | PENDING | Manual verification via Qt client. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1624][#1624]] | [synthetic,marketdata] Implement ir_curve_feed producer and curve family ingest |
 | [[https://github.com/OreStudio/OreStudio/pull/1610][#1610]] | [refdata,synthetic,qt] Add curve_role and yield_curve_process_type entities |
 | [[https://github.com/OreStudio/OreStudio/pull/1597][#1597]] | [refdata,trading,ore] Consolidate payment frequency into ores.refdata |
 
@@ -316,3 +607,59 @@ change. Tracked as its own task: curve-snapshot-builder-viewer.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped well beyond the original Phase-1 Acceptance (=ir_curve_feed=
+tick-batch publishing), which itself was completed and independently
+verified via direct SQL before this session's work began. This
+session took the feature from "backend mechanism works" to "usable
+end-to-end through the real UI":
+
+- =ir_curve_generation_config= gained =folder_id= (real folder-tree
+  placement, matching =fx_spot_generation_config=) and a persisted,
+  editable =source_name= column following FX's exact
+  =synthetic.<collection>.<pair>= convention (replacing a computed
+  =ir_curve.<ccy>.<idx>= string every consumer had to re-derive).
+- =index_name= is now FK-validated against
+  =ores.refdata.floating_index_type= (stored as the full ISDA code to
+  reuse that entity's existing validator) instead of free text.
+- =MarketSimulatorWindow= ("Market Simulator") now shows IR curves in
+  the same real folder tree FX pairs use (no more parallel synthetic
+  group), with correct single-flag icons and idiomatic rates naming
+  ("USD SOFR").
+- A complete =IrCurveEditor= (Instrument / Process / Curve Template /
+  Provenance tabs) was built, aligned item-by-item against
+  =FxSpotRateEditor= (segmented Simple/Advanced toggle, slider shape,
+  currency combo, chart zone layout) -- copying FX where there was no
+  IR-specific reason to differ, diverging deliberately (curve-shape
+  chart as the hero view, not sample-paths) where rates genuinely
+  warranted it. Two new stateless preview NATS endpoints
+  (=synthetic.v1.ir_curve.simulate_paths=,
+  =synthetic.v1.ir_curve.preview_shape=) back its live charts.
+- Market Simulator's own overview tick chart was fixed to route to the
+  correct NATS subject/payload shape for IR curves (it silently never
+  ticked before) and redesigned from an undifferentiated single line
+  into a proper curve-shape overlay (last N batches, oldest faded,
+  configurable via a spin box).
+- The =synthetic.ir_curve_configs.realistic= DQ dataset now seeds one
+  overnight-RFR Vasicek curve per each of the top 20 currencies by FX
+  turnover (was 3), each with its own realistic per-market
+  calibration, backed by 15 new =floating_index_type= reference rows.
+- Fixed several genuine, pre-existing bugs surfaced by being the first
+  real exerciser of these code paths: ccache worktree corruption,
+  JetStream stream-creation-vs-update semantics, a NATS subject
+  wildcard token-count mismatch, and (this session) Barclays never
+  having its own =floating_index_type= rows (missing from the tenant
+  provisioner's copy-from-system-tenant step) and an editable
+  QComboBox's flag icon not following programmatic text changes.
+
+Verified via the =verify-ir-curve-feed= test scenario: all 5 steps now
+PASS through the real UI (previously 2 of 5 failed only because
+Market Simulator had no IR view at all).
+
+Deliberately deferred, each with its own filed follow-on task:
+=seed-ir-curve-sample-data= (vintage sourcing, numerical-stability
+tuning), =normalize-floating-index-refdata= (the
+=floating_index_type=/=overnight_index_convention= duplication), and
+=dual-curve-discounting-projection-model= (IBOR-style term indices
+need a genuine discount/projection split; the currently-seeded
+overnight RFRs are correctly single-curve as-is).

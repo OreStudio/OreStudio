@@ -171,10 +171,12 @@ BEGIN
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'ore.report_definitions', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.fx_spot_configs.basic', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.ir_curve_configs.basic', 30);
 
     -- --- Synthetic Data: Realistic Bundle Members ---
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'ore.report_definitions', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.fx_spot_configs.realistic', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.ir_curve_configs.realistic', 30);
 END $$;
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/curve-snapshot-builder-viewer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
 #+updated: 2026-07-16
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,12 +54,12 @@ ground, not an extension of something already built.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started. Explicit priority: the immediate need is *any* way to visualise the family feed's raw output, quickly -- polish (grid layout, multi-curve view) is not required for a first cut. |
-| Waiting on   | tick-batch-publishing (Phase 1) -- no data to view until ir_curve_feed actually publishes. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-16                               |
+| Now          | UI requirements signed off (wireframe + written plan below); starting implementation: engine as-of query first, then Grid tab, then History tab. |
+| Waiting on   | Nothing -- tick-batch-publishing (Phase 1) merged, ir_curve_feed publishing. |
+| Next         | Engine-side as-of query + test with staggered timestamps.  |
+| Last touched | 2026-07-19                               |
 
 * Acceptance
 
@@ -88,7 +88,109 @@ ground, not an extension of something already built.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** UI requirements (signed off with wireframe)
+
+*** Entry point
+
+New toolbar action *Snapshot* on =IrCurveGenerationConfigMdiWindow=,
+next to History — enabled only when a row is selected, opens the
+viewer for that config's most recent published series. Toolbar action
+only, no context-menu duplicate. Icon: =Icon::Chart= (Fluent
+=ic_fluent_chart_20=, already in the catalogue) — no new asset.
+
+*** Window shape
+
+Its own MDI sub-window (not a modal dialog), so it stays open
+alongside the config list — consistent with every other detail view
+in this story. Manual *Reload* only (=Icon::Reload=/
+=arrow_clockwise_16=, matching every other list/detail window's
+on-demand-reload convention) — no auto-refresh timer.
+
+Two tabs, *both* laid out table-left/chart-right so the eye doesn't
+relearn the window switching between them:
+
+**** Grid tab
+
+- Header row: currency flag + code + full index code (reusing
+  =currency_flag_icon()=), as-of timestamp (always "latest" for v1 —
+  no as-of picker), point count.
+- Left: tenor-indexed table — tenor, instrument code, rate, observed
+  time per row. A point whose =observation_datetime= lags the rest of
+  the set gets an amber "stale" badge and its own (older) observed
+  time, rather than reading as falsely current — this must hold even
+  though nothing in this story staggers timestamps yet (see
+  Acceptance).
+- Right: single-line =CurveShapePreviewChart= of the current
+  snapshot's shape (same component the IR editor's Process tab
+  already uses) — tenor-labelled X-axis.
+- Empty state (no observations at/before as-of): centred icon +
+  message, no error dialog.
+
+**** History tab — curve evolution over time
+
+Real vendor feeds have no "generation cycle" concept (see this
+task's own as-of-query rationale below), so evolution is bucketed by
+a *configurable time window*, not a fixed preset list and not a
+producer-side batch id:
+
+- *Bucket size*: an N + unit pair, both user-set — a number field
+  (default 30) and a unit dropdown (minutes / hours / days).
+- *Show last*: N buckets (default 5), also user-configurable.
+- Left: a delta grid — one column per shown bucket (oldest to
+  newest), each tenor's rate plus its change from the immediately
+  preceding bucket in *basis points*, colour-coded (green/red). This
+  mirrors real curve-movement monitors (Bloomberg/Tradeweb "chg (bp)"
+  columns) — a genuinely useful trader view, not decoration. The
+  oldest shown bucket has no delta (nothing prior in the window). A
+  bp delta is unambiguous (1bp = 0.0001) regardless of how absolute
+  levels end up formatted, so this does not wait on
+  =ir-rate-quoting-conventions=.
+- Right: overlay chart — one =CurveShapePreviewChart= series per
+  shown bucket, newest bold/opaque, older snapshots fading with age.
+  Reuses the overlay/fade mechanism already built for the Market
+  Simulator's overview chart curve-history feature, not a new
+  pattern. A small legend maps line opacity to bucket timestamp.
+
+*** Value formatting (interim, v1)
+
+Real IR market data quotes rates as a percentage with per-index
+decimal precision (G10 ~3-4dp, EM coarser) — the analogue of
+=currency_pair_convention='s =pip_factor=/=tick_size=/=decimal_places=
+for FX, which IR has no equivalent of yet (=overnight_index_convention=
+only holds fixing calendar/day-count/settlement-lag;
+=floating_index_type= is bare id+description). That is a genuine
+reference-data question, not something to answer inline here — split
+out as [[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][IR rate display/quoting conventions]], a separate follow-on task.
+
+For *this* task: plain, explicitly-provisional raw decimal, 4dp (e.g.
+=0.040021=), no "%" — so this viewer isn't blocked on that research
+landing first. Once the follow-on task lands, this viewer switches to
+its shared formatter with no other UI changes. Basis-point deltas in
+the History tab are the one exception (see above) — those are
+unambiguous and can be built now.
+
+** Engine
+
+- As-of query (engine-side, not UI-hardcoded SQL): latest observation
+  per =point_id= for a =series_id=, at or before a given timestamp —
+  =SELECT DISTINCT ON (point_id) ... WHERE series_id = ? AND
+  observation_datetime <= ? ORDER BY point_id, observation_datetime
+  DESC=. Feeds the Grid tab directly (as-of = now).
+- Bucketed variant for the History tab: truncate
+  =observation_datetime= to the bucket boundary (N × unit), then the
+  same latest-per-(point_id, bucket) as-of query per bucket walking
+  back the configured count — a small generalisation of the query
+  above, not a separate mechanism.
+- Both proven correct with staggered per-point timestamps in tests,
+  even though Phase-1 publishing is synchronous today (see
+  Acceptance).
+
 * Notes
+
+Wireframe used to sign off the plan above (interactive HTML mockup,
+not persisted anywhere durable — the requirements it captures are
+transcribed into the =* Plan= section above, which is the durable
+record): [[https://claude.ai/code/artifact/789dfed6-030e-4708-b044-ca6bda1536ab][Curve Snapshot Viewer wireframe]].
 
 * Test Scenarios
 

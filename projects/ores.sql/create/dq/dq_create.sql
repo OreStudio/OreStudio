@@ -80,6 +80,8 @@
 \ir ./dq_calendar_types_artefact_create.sql
 \ir ./dq_payment_frequencies_artefact_create.sql
 \ir ./dq_calendars_artefact_create.sql
+\ir ./dq_currency_calendars_artefact_create.sql
+\ir ./dq_currency_pair_convention_calendars_artefact_create.sql
 \ir ./dq_countries_artefact_create.sql
 \ir ./dq_currencies_artefact_create.sql
 \ir ./dq_currency_pairs_artefact_create.sql

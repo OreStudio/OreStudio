@@ -123,13 +123,15 @@ void style_axes(QChart* chart, QBarCategoryAxis* axisX, QValueAxis* axisY) {
 }
 
 CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
-                                               std::string currencyCode,
-                                               std::string indexName,
+                                               std::string seriesType,
+                                               std::string metric,
+                                               std::string qualifier,
                                                QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
-    , currencyCode_(std::move(currencyCode))
-    , indexName_(std::move(indexName))
+    , seriesType_(std::move(seriesType))
+    , metric_(std::move(metric))
+    , qualifier_(std::move(qualifier))
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
     , tabs_(nullptr)
@@ -149,15 +151,6 @@ CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
     , historyAxisX_(nullptr)
     , historyAxisY_(nullptr)
     , historyEmptyLabel_(nullptr) {
-
-    // The full index code carries a redundant "<CCY>-" prefix (see
-    // ir_curve_generation_config.index_name doc); strip it to build the market_series
-    // qualifier the same way curve_feed_ingest_loop/ir_curve_feed do.
-    std::string suffix = indexName_;
-    const std::string prefix = currencyCode_ + "-";
-    if (suffix.starts_with(prefix))
-        suffix = suffix.substr(prefix.size());
-    qualifier_ = currencyCode_ + "/" + suffix;
 
     setupUi();
     reload();
@@ -192,7 +185,7 @@ QWidget* CurveSnapshotMdiWindow::buildGridTab() {
     headerFont.setBold(true);
     gridHeaderLabel_->setFont(headerFont);
     gridHeaderLabel_->setText(
-        QString::fromStdString(currencyCode_ + " / " + indexName_));
+        QString::fromStdString(seriesType_ + " / " + metric_ + " / " + qualifier_));
     layout->addWidget(gridHeaderLabel_);
 
     auto* row = new QHBoxLayout();
@@ -315,8 +308,8 @@ void CurveSnapshotMdiWindow::loadGrid() {
     emit statusChanged(tr("Loading curve snapshot..."));
 
     m::get_curve_snapshot_request req;
-    req.series_type = "RATES";
-    req.metric = "YIELD";
+    req.series_type = seriesType_;
+    req.metric = metric_;
     req.qualifier = qualifier_;
 
     QPointer<CurveSnapshotMdiWindow> self = this;
@@ -406,8 +399,8 @@ void CurveSnapshotMdiWindow::loadGrid() {
 
 void CurveSnapshotMdiWindow::loadHistory() {
     m::get_curve_snapshot_buckets_request req;
-    req.series_type = "RATES";
-    req.metric = "YIELD";
+    req.series_type = seriesType_;
+    req.metric = metric_;
     req.qualifier = qualifier_;
     const auto unit_seconds = bucketUnitCombo_->currentData().toLongLong();
     req.bucket_seconds = static_cast<std::int64_t>(bucketSizeSpin_->value()) * unit_seconds;

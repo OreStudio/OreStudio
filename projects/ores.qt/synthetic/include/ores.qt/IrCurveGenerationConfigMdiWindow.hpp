@@ -72,8 +72,6 @@ signals:
     // request to a related entity's list window) — see
     // paste_blocks_in_codegen.org. Left empty when no entity implements
     // this kind.
-    void showConfigSnapshot(
-        const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
 
 public slots:
     void addNew();

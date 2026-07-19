@@ -20,8 +20,11 @@
 #include "ores.qt/MarketdataPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/CrmCrossRatesMatrixController.hpp"
+#include "ores.qt/CurveSnapshotMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedBindingController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/RateCurvesMdiWindow.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -115,6 +118,63 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
     connect(actCrmMatrix_, &QAction::triggered, this, [this]() {
         if (crmCrossRatesMatrixController_)
             crmCrossRatesMatrixController_->showMatrix();
+    });
+
+    actRateCurves_ = marketDataMenu_->addAction(ico(Icon::Chart), tr("Interest &Rate Curves"));
+    connect(actRateCurves_, &QAction::triggered, this, &MarketdataPlugin::showRateCurves);
+}
+
+void MarketdataPlugin::showRateCurves() {
+    if (rateCurvesWindow_) {
+        rateCurvesWindow_->show();
+        rateCurvesWindow_->raise();
+        rateCurvesWindow_->activateWindow();
+        return;
+    }
+
+    auto* view = new RateCurvesMdiWindow(ctx_.client_manager);
+    connect(view, &RateCurvesMdiWindow::statusChanged, this, &PluginBase::statusMessage);
+    connect(view, &RateCurvesMdiWindow::errorOccurred, this, &PluginBase::statusMessage);
+    connect(view, &RateCurvesMdiWindow::viewSnapshotRequested, this,
+            &MarketdataPlugin::showCurveSnapshot);
+
+    rateCurvesWindow_ = new DetachableMdiSubWindow(ctx_.main_window);
+    rateCurvesWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    rateCurvesWindow_->setWidget(view);
+    rateCurvesWindow_->setWindowTitle(tr("Interest Rate Curves"));
+    rateCurvesWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+
+    ctx_.mdi_area->addSubWindow(rateCurvesWindow_);
+    rateCurvesWindow_->show();
+    emit windowCreated(rateCurvesWindow_);
+    connect(rateCurvesWindow_, &QObject::destroyed, this, [this]() {
+        emit windowDestroyed(rateCurvesWindow_);
+        rateCurvesWindow_ = nullptr;
+    });
+}
+
+void MarketdataPlugin::showCurveSnapshot(const QString& seriesType, const QString& metric,
+                                         const QString& qualifier) {
+    auto* snapshotWindow = new CurveSnapshotMdiWindow(
+        ctx_.client_manager, seriesType.toStdString(), metric.toStdString(),
+        qualifier.toStdString());
+    connect(snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this,
+            &PluginBase::statusMessage);
+    connect(snapshotWindow, &CurveSnapshotMdiWindow::errorOccurred, this,
+            &PluginBase::statusMessage);
+
+    auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->setWidget(snapshotWindow);
+    subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(qualifier));
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+
+    ctx_.mdi_area->addSubWindow(subWindow);
+    subWindow->show();
+    emit windowCreated(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        emit windowDestroyed(subWindow);
     });
 }
 

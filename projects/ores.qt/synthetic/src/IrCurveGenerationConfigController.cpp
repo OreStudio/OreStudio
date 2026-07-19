@@ -98,10 +98,6 @@ void IrCurveGenerationConfigController::showListWindow() {
             &IrCurveGenerationConfigMdiWindow::showConfigHistory,
             this,
             &IrCurveGenerationConfigController::onShowHistory);
-    connect(listWindow_,
-            &IrCurveGenerationConfigMdiWindow::showConfigSnapshot,
-            this,
-            &IrCurveGenerationConfigController::showConfigSnapshot);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

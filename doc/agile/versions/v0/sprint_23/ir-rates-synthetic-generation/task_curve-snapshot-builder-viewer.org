@@ -90,7 +90,33 @@ plan itself stays — it is the historical record of what we did.)
 
 ** UI requirements (signed off with wireframe)
 
-*** Entry point
+*** Correction (2026-07-19): entry point was wrong, since fixed
+
+The first pass below (superseded, kept for the record) put the entry
+point on =IrCurveGenerationConfigMdiWindow= -- =ores.synthetic='s own
+config screen -- and keyed the viewer off a synthetic
+=ir_curve_generation_config= row's =currency_code=/=index_name=. That
+directly contradicts this task's own Goal text ("not synthetic-specific,
+and not dependent on any producer-side batch/generation identifier")
+and the codebase's market-data architecture principle that consumers
+are source-independent (see [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]): a curve
+sourced from a real vendor feed (e.g. Bloomberg) would have no
+synthetic config row, so the viewer would be unreachable for it.
+
+*Corrected*: entry point moved to a new *Interest Rate Curves* menu
+item under the shared *Market Data* menu (=ores.qt.marketdata=
+plugin), backed by a new =RateCurvesMdiWindow= listing the official
+=market_series= catalog filtered to =asset_class::rates= -- populated
+by whichever producer publishes to it, synthetic or otherwise.
+=CurveSnapshotMdiWindow= itself moved from =ores.qt/synthetic= to
+=ores.qt/marketdata= and its constructor now takes
+=(series_type, metric, qualifier)= -- the official series identity --
+instead of a synthetic config's currency/index fields. The
+synthetic-specific toolbar button/signal-relay wiring (paste-block
+seams on =ir_curve_generation_config.org=, plus the
+=SyntheticPlugin.cpp= hookup) was reverted.
+
+*** Entry point (superseded -- see Correction above)
 
 New toolbar action *Snapshot* on =IrCurveGenerationConfigMdiWindow=,
 next to History — enabled only when a row is selected, opens the

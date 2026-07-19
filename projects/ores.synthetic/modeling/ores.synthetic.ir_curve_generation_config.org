@@ -413,54 +413,6 @@ std::nullopt
 
 ** Custom repository methods
 
-** Qt: Curve Snapshot cross-navigation
-:PROPERTIES:
-:ID: 8F4C2E71-3A9D-4B6E-9C1F-5D7A2B8E4F60
-:END:
-
-Toolbar button opening a Curve Snapshot viewer (own dedicated
-MDI sub-window, not modal -- see task curve-snapshot-builder-viewer)
-for the selected config's currency/index. Handled entirely as a plain
-signal relay through the Controller -- unlike currency_pair's
-Conventions button (which relays to a related *entity's* controller,
-=showListWindow()=), CurveSnapshotMdiWindow is not itself a codegen
-entity, so its window creation is wired at the plugin level
-(=SyntheticPlugin.cpp=), which is where its own includes/lifetime
-naturally belong, mirroring how =RefdataPlugin.cpp= wires
-=showConventionsRequested=.
-
-#+begin_src cpp :name mdi_window_signal :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A
-void showConfigSnapshot(
-    const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
-#+end_src
-
-#+begin_src cpp :name mdi_window_toolbar :implements 18B9ED63-78C2-4259-93AC-CCDFBC88EFBD
-{
-    toolbar_->addSeparator();
-    auto* snapshotAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Snapshot"));
-    snapshotAction->setToolTip(tr("View curve snapshot"));
-    connect(snapshotAction, &QAction::triggered, this, [this]() {
-        const auto selected = tableView_->selectionModel()->selectedRows();
-        if (selected.isEmpty())
-            return;
-        auto sourceIndex = proxyModel_->mapToSource(selected.first());
-        if (auto* cfg = model_->getConfig(sourceIndex.row()))
-            emit showConfigSnapshot(*cfg);
-    });
-}
-#+end_src
-
-#+begin_src cpp :name controller_signal :implements 66E078FB-D6A6-4DF6-814B-65995D948090
-void showConfigSnapshot(
-    const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
-#+end_src
-
-#+begin_src cpp :name controller_relay :implements 52E70F3B-5903-4359-91FB-B533054A18AC
-connect(listWindow_, &IrCurveGenerationConfigMdiWindow::showConfigSnapshot,
-        this, &IrCurveGenerationConfigController::showConfigSnapshot);
-#+end_src
-
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

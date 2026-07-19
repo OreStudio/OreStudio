@@ -41,17 +41,21 @@ namespace ores::qt {
 class ClientManager;
 
 /**
- * @brief Curve Snapshot viewer: an as-of snapshot of one IR curve's raw instrument grid (Grid
- * tab, table + current-shape chart) and its recent evolution (History tab, per-bucket bp-delta
- * table + overlaid fading chart) -- reads market_observation via the curve-snapshot NATS
- * queries, own MDI sub-window (not modal), reload-on-demand only. See task
+ * @brief Curve Snapshot viewer: an as-of snapshot of one market-data curve's raw instrument
+ * grid (Grid tab, table + current-shape chart) and its recent evolution (History tab,
+ * per-bucket bp-delta table + overlaid fading chart).
+ *
+ * Reads market_observation via the curve-snapshot NATS queries, keyed only by the official
+ * market_series identity (series_type/metric/qualifier) -- completely independent of how the
+ * series was produced (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow).
+ * Own MDI sub-window (not modal), reload-on-demand only. See task
  * curve-snapshot-builder-viewer for the signed-off requirements this implements.
  */
 class CurveSnapshotMdiWindow final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.synthetic.curve_snapshot_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.marketdata.curve_snapshot_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -61,13 +65,15 @@ private:
 
 public:
     CurveSnapshotMdiWindow(ClientManager* clientManager,
-                           std::string currencyCode,
-                           std::string indexName,
+                           std::string seriesType,
+                           std::string metric,
+                           std::string qualifier,
                            QWidget* parent = nullptr);
     ~CurveSnapshotMdiWindow() override = default;
 
-    const std::string& currencyCode() const { return currencyCode_; }
-    const std::string& indexName() const { return indexName_; }
+    const std::string& seriesType() const { return seriesType_; }
+    const std::string& metric() const { return metric_; }
+    const std::string& qualifier() const { return qualifier_; }
 
 signals:
     void statusChanged(const QString& message);
@@ -84,9 +90,9 @@ private:
     void loadHistory();
 
     ClientManager* clientManager_;
-    std::string currencyCode_;
-    std::string indexName_;    // full code, e.g. "USD-SOFR"
-    std::string qualifier_;    // series lookup qualifier, e.g. "USD/SOFR"
+    std::string seriesType_;
+    std::string metric_;
+    std::string qualifier_;    // official market_series qualifier, e.g. "USD/SOFR"
 
     QToolBar* toolbar_;
     QAction* reloadAction_;

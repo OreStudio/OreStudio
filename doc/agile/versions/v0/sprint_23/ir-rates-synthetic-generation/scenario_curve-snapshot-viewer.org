@@ -2,7 +2,7 @@
 :ID: E4C15D75-EF70-4D34-8CA9-459DE1DAE9A5
 :END:
 #+title: Test Scenario: Verify Curve Snapshot viewer: Grid + History tabs
-#+description: Manually verify the Curve Snapshot MDI window: Grid tab (as-of table + current-shape chart) and History tab (bucketed evolution, bp-delta table + fading overlay chart), reached from the IR Curve Generation Configs list window's new Snapshot toolbar action.
+#+description: Manually verify the Curve Snapshot MDI window: Grid tab (as-of table + current-shape chart) and History tab (bucketed evolution, bp-delta table + fading overlay chart), reached from the Market Data menu's new Interest Rate Curves screen -- independent of the synthetic generator.
 #+type: test_scenario
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
@@ -35,7 +35,7 @@ This page documents a test scenario verifying [[id:80AC4FAC-86E3-41EC-850A-6C1DF
 |---------------+------------------------------------------|
 | Verifies task | [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer]] |
 | Parent story  | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]   |
-| Target dialog | =CurveSnapshotMdiWindow= — File > Synthetic > IR Curve Generation Configs, select a row, toolbar "Snapshot" button |
+| Target dialog | =CurveSnapshotMdiWindow= — Market Data > Interest Rate Curves, double-click a row |
 | Clients       |                                          |
 | State         | PENDING                               |
 
@@ -57,20 +57,20 @@ notes back as a =*** Result= child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
 select *BARCLAYS PLC*.
 
-** Open IR Curve Generation Configs
+** Open Interest Rate Curves
 
-- Menu: File > Synthetic > IR Curve Generation Configs (or the
-  equivalent toolbar/menu entry).
-- Confirm the list loads with rows for multiple currencies (e.g. USD/
-  USD-SOFR, EUR/EUR-ESTR).
+- Menu: Market Data > Interest Rate Curves.
+- Confirm a window titled "Interest Rate Curves" opens listing rows
+  for multiple currencies (e.g. RATES / YIELD / USD/SOFR, RATES /
+  YIELD / EUR/ESTR) -- this list is the official market_series
+  catalog, not anything synthetic-specific; it would show the same
+  way for a real vendor feed.
 
-** Open the Snapshot window for USD-SOFR
+** Open the Snapshot window for USD/SOFR
 
-- Select the *USD / USD-SOFR* row.
-- Click the new *Snapshot* toolbar button (chart icon, next to
-  History).
-- Confirms pass: a new MDI sub-window titled "Curve Snapshot: USD /
-  USD-SOFR" opens (not a modal dialog -- the config list window
+- Double-click the *USD/SOFR* row.
+- Confirms pass: a new MDI sub-window titled "Curve Snapshot: USD/
+  SOFR" opens (not a modal dialog -- the Interest Rate Curves window
   should still be usable behind it), with *Grid* and *History* tabs.
 
 ** Verify the Grid tab
@@ -100,10 +100,10 @@ select *BARCLAYS PLC*.
 
 ** Verify Snapshot for a second currency
 
-- Close or leave open the USD-SOFR snapshot window; select a
-  different row (e.g. EUR / EUR-ESTR) and click *Snapshot* again.
+- Return to the Interest Rate Curves window (still open behind the
+  snapshot); double-click a different row (e.g. EUR/ESTR).
 - Confirm a second, independent Curve Snapshot window opens for
-  EUR-ESTR, correctly labelled, not reusing/overwriting the USD-SOFR
+  EUR/ESTR, correctly labelled, not reusing/overwriting the USD/SOFR
   window's data.
 
 * Results

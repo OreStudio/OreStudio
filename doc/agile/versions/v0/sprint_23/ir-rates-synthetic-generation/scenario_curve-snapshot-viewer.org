@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: E4C15D75-EF70-4D34-8CA9-459DE1DAE9A5
+:END:
+#+title: Test Scenario: Verify Curve Snapshot viewer: Grid + History tabs
+#+description: Manually verify the Curve Snapshot MDI window: Grid tab (as-of table + current-shape chart) and History tab (bucketed evolution, bp-delta table + fading overlay chart), reached from the IR Curve Generation Configs list window's new Snapshot toolbar action.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer]] in [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer]] |
+| Parent story  | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]   |
+| Target dialog | =CurveSnapshotMdiWindow= — File > Synthetic > IR Curve Generation Configs, select a row, toolbar "Snapshot" button |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC*.
+
+** Open IR Curve Generation Configs
+
+- Menu: File > Synthetic > IR Curve Generation Configs (or the
+  equivalent toolbar/menu entry).
+- Confirm the list loads with rows for multiple currencies (e.g. USD/
+  USD-SOFR, EUR/EUR-ESTR).
+
+** Open the Snapshot window for USD-SOFR
+
+- Select the *USD / USD-SOFR* row.
+- Click the new *Snapshot* toolbar button (chart icon, next to
+  History).
+- Confirms pass: a new MDI sub-window titled "Curve Snapshot: USD /
+  USD-SOFR" opens (not a modal dialog -- the config list window
+  should still be usable behind it), with *Grid* and *History* tabs.
+
+** Verify the Grid tab
+
+- On the *Grid* tab: confirm a table on the left with columns Tenor /
+  Rate / Observed, one row per tenor (e.g. 1M, 3M, 6M, 12M, 2Y, 5Y,
+  10Y), in ascending tenor order.
+- Confirm a line chart on the right showing the same points, tenor
+  labels on the X-axis, roughly matching the table's shape.
+- If the feed has not published yet, confirm the empty-state message
+  is shown instead of a blank table/chart.
+- Click the toolbar *Reload* button; confirm the table/chart refresh
+  without closing the window.
+
+** Verify the History tab
+
+- Switch to the *History* tab.
+- Set *Bucket size* to a small value (e.g. 1 minute) and *Show last*
+  to 5, so buckets are quick to observe.
+- Confirm a delta table on the left: one column per bucket, each
+  tenor's rate plus a =(+/-X.X)= basis-point delta versus the
+  previous bucket (the oldest shown bucket has no delta).
+- Confirm an overlay chart on the right: one line per bucket, the
+  newest bold/opaque and older ones visibly fading.
+- Change the bucket size/count controls; confirm the table and chart
+  both refresh automatically (no separate reload needed for History).
+
+** Verify Snapshot for a second currency
+
+- Close or leave open the USD-SOFR snapshot window; select a
+  different row (e.g. EUR / EUR-ESTR) and click *Snapshot* again.
+- Confirm a second, independent Curve Snapshot window opens for
+  EUR-ESTR, correctly labelled, not reusing/overwriting the USD-SOFR
+  window's data.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

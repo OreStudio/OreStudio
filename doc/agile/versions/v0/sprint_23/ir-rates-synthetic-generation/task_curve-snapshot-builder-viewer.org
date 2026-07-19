@@ -201,7 +201,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E4C15D75-EF70-4D34-8CA9-459DE1DAE9A5][Verify Curve Snapshot viewer: Grid + History tabs]] | PENDING | |
 
 * PRs
 

@@ -120,7 +120,7 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
             crmCrossRatesMatrixController_->showMatrix();
     });
 
-    actRateCurves_ = marketDataMenu_->addAction(ico(Icon::Chart), tr("Interest &Rate Curves"));
+    actRateCurves_ = marketDataMenu_->addAction(ico(Icon::Chart), tr("Interest &Rates"));
     connect(actRateCurves_, &QAction::triggered, this, &MarketdataPlugin::showRateCurves);
 }
 
@@ -141,7 +141,7 @@ void MarketdataPlugin::showRateCurves() {
     rateCurvesWindow_ = new DetachableMdiSubWindow(ctx_.main_window);
     rateCurvesWindow_->setAttribute(Qt::WA_DeleteOnClose);
     rateCurvesWindow_->setWidget(view);
-    rateCurvesWindow_->setWindowTitle(tr("Interest Rate Curves"));
+    rateCurvesWindow_->setWindowTitle(tr("Interest Rates"));
     rateCurvesWindow_->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     rateCurvesWindow_->resize(view->sizeHint());
@@ -185,9 +185,9 @@ QList<QMenu*> MarketdataPlugin::create_menus() {
 }
 
 QList<QAction*> MarketdataPlugin::toolbar_actions() {
-    if (!actCrmMatrix_)
+    if (!actCrmMatrix_ || !actRateCurves_)
         BOOST_LOG_SEV(lg(), warn) << "Toolbar action is uninitialised.";
-    return {actCrmMatrix_};
+    return {actCrmMatrix_, actRateCurves_};
 }
 
 void MarketdataPlugin::on_logout() {

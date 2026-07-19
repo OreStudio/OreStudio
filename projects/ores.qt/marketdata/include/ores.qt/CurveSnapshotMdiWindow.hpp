@@ -21,8 +21,10 @@
 #define ORES_QT_CURVE_SNAPSHOT_MDI_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_observation.hpp"
 #include <QWidget>
 #include <string>
+#include <vector>
 
 class QToolBar;
 class QAction;
@@ -35,6 +37,7 @@ class QBarCategoryAxis;
 class QValueAxis;
 class QSpinBox;
 class QComboBox;
+class QTimer;
 
 namespace ores::qt {
 
@@ -85,6 +88,9 @@ signals:
 
 private slots:
     void reload();
+    void onRefreshIntervalChanged();
+    void exportGridToCsv();
+    void exportGridToOre();
 
 private:
     void setupUi();
@@ -92,16 +98,22 @@ private:
     QWidget* buildHistoryTab();
     void loadGrid();
     void loadHistory();
+    QString exportFileNameSlug() const;
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     std::string seriesType_;
     std::string metric_;
     std::string qualifier_;    // official market_series qualifier, e.g. "USD/SOFR"
+    std::vector<ores::marketdata::domain::market_observation> lastGridObservations_;
 
     QToolBar* toolbar_;
     QAction* reloadAction_;
+    QAction* exportCsvAction_;
+    QAction* exportOreAction_;
     QTabWidget* tabs_;
+    QComboBox* refreshIntervalCombo_;
+    QTimer* autoRefreshTimer_;
 
     // Grid tab
     QLabel* gridHeaderLabel_;

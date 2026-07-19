@@ -111,10 +111,6 @@ void RateCurvesMdiWindow::setupUi() {
     emptyLabel_->setStyleSheet("color: gray; font-style: italic; padding: 24px;");
     emptyLabel_->setVisible(false);
     layout->addWidget(emptyLabel_);
-
-    auto* hint = new QLabel(tr("Double-click a row to open its curve snapshot."), this);
-    hint->setStyleSheet("color: gray; font-style: italic;");
-    layout->addWidget(hint);
 }
 
 void RateCurvesMdiWindow::reload() {

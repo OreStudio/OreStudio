@@ -148,9 +148,9 @@ select *BARCLAYS PLC*.
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-07-19T22:47:27Z |
+| Completed at  | 2026-07-19T23:06:56Z |
 | Branch        | feature/curve-snapshot-builder-viewer |
-| Commit        | 032e8bf99 |
+| Commit        | a0c7862c5 |
 | Worktree      | eager_maxwell |
 
 * Notes

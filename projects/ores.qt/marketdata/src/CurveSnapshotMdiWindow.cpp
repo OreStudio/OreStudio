@@ -21,15 +21,22 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
+#include "ores.ore.core/market/market_data_serializer.hpp"
+#include "ores.ore.core/market/market_datum.hpp"
 #include <QBrush>
 #include <QComboBox>
 #include <QDateTime>
+#include <QDesktopServices>
+#include <QFile>
+#include <QFileDialog>
 #include <QFont>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPointer>
 #include <QSpinBox>
@@ -37,7 +44,9 @@
 #include <QTimeZone>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTimer>
 #include <QToolBar>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QChart>
@@ -49,9 +58,11 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 #include <limits>
 #include <map>
 #include <optional>
+#include <sstream>
 
 namespace ores::qt {
 
@@ -94,22 +105,35 @@ std::string leading_currency_code(const std::string& qualifier) {
     return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
 }
 
-// Fixed, distinct palette so each bucket's line is its own colour (not just one hue fading in
-// and out) -- a default-black QPen (as QLineSeries starts with) is also invisible on the dark
-// chart theme, so this never falls back to that. Cycles if bucketCount exceeds the palette.
-QColor history_series_color(int bucketIndex) {
-    static const std::array<QColor, 8> palette{
-        QColor(0x4f, 0x9e, 0xf5), // blue
-        QColor(0xf5, 0x8f, 0x4f), // orange
-        QColor(0x6f, 0xd6, 0x6a), // green
-        QColor(0xe0, 0x6c, 0xc4), // pink
-        QColor(0xf5, 0xd8, 0x4f), // yellow
-        QColor(0x8a, 0x7a, 0xf0), // purple
-        QColor(0x4f, 0xd6, 0xc9), // teal
-        QColor(0xe0, 0x5a, 0x5a), // red
+// Shades of blue, light (oldest) to dark/saturated (newest) -- same colour family throughout
+// (not a rainbow), but each bucket still gets its own distinguishable shade rather than one
+// hue faded by alpha alone. A default-constructed QPen is black, invisible on the dark chart
+// theme, so this never falls back to that.
+QColor history_series_color(int bucketIndex, int bucketCount) {
+    static const std::array<QColor, 6> shades{
+        QColor(0xbf, 0xdc, 0xfb), // pale blue
+        QColor(0x93, 0xc5, 0xf8), //
+        QColor(0x60, 0xa5, 0xf5), //
+        QColor(0x3b, 0x82, 0xf6), //
+        QColor(0x21, 0x63, 0xd9), //
+        QColor(0x1e, 0x40, 0xaf), // deep navy
     };
-    return palette[bucketIndex % palette.size()];
+    if (bucketCount <= 1)
+        return shades.back();
+    const auto idx = static_cast<std::size_t>(
+        (static_cast<double>(bucketIndex) / (bucketCount - 1)) * (shades.size() - 1) + 0.5);
+    return shades[std::min(idx, shades.size() - 1)];
 }
+
+// Same up/down arrow convention as the FX spot grid (FxSpotGridWindow::applyTick) -- the arrow
+// itself carries the sign, so the magnitude is unsigned.
+QString bp_arrow_text(double deltaBp) {
+    return (deltaBp >= 0 ? QStringLiteral("↑ ") : QStringLiteral("↓ "))
+           + QString::number(std::abs(deltaBp), 'f', 1);
+}
+
+const QColor k_up_color{34, 197, 94};   // green-400, matching FxSpotGridWindow
+const QColor k_down_color{239, 68, 68}; // red-400, matching FxSpotGridWindow
 
 QString format_datetime(std::chrono::system_clock::time_point tp) {
     const auto t = std::chrono::system_clock::to_time_t(tp);
@@ -163,7 +187,11 @@ CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
     , qualifier_(std::move(qualifier))
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
+    , exportCsvAction_(nullptr)
+    , exportOreAction_(nullptr)
     , tabs_(nullptr)
+    , refreshIntervalCombo_(nullptr)
+    , autoRefreshTimer_(nullptr)
     , gridHeaderLabel_(nullptr)
     , gridTable_(nullptr)
     , gridChart_(nullptr)
@@ -182,6 +210,9 @@ CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
     , historyEmptyLabel_(nullptr)
     , historyLegend_(nullptr) {
 
+    autoRefreshTimer_ = new QTimer(this);
+    connect(autoRefreshTimer_, &QTimer::timeout, this, &CurveSnapshotMdiWindow::reload);
+
     setupUi();
     reload();
 }
@@ -198,12 +229,57 @@ void CurveSnapshotMdiWindow::setupUi() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Reload the curve snapshot"));
     connect(reloadAction_, &QAction::triggered, this, &CurveSnapshotMdiWindow::reload);
+
+    toolbar_->addSeparator();
+
+    exportCsvAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportCsv, IconUtils::DefaultIconColor),
+        tr("Export CSV"));
+    exportCsvAction_->setToolTip(tr("Export the current grid snapshot to CSV"));
+    connect(exportCsvAction_, &QAction::triggered, this, &CurveSnapshotMdiWindow::exportGridToCsv);
+
+    exportOreAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportOre, IconUtils::DefaultIconColor),
+        tr("Export ORE"));
+    exportOreAction_->setToolTip(tr("Export the current grid snapshot as an ORE market data file"));
+    connect(exportOreAction_, &QAction::triggered, this, &CurveSnapshotMdiWindow::exportGridToOre);
+
     layout->addWidget(toolbar_);
 
     tabs_ = new QTabWidget(this);
     tabs_->addTab(buildGridTab(), tr("Grid"));
     tabs_->addTab(buildHistoryTab(), tr("History"));
     layout->addWidget(tabs_);
+
+    // Footer, same position/UX language as CrmCrossRatesMatrixMdiWindow's Update Interval.
+    auto* footerLayout = new QHBoxLayout();
+    footerLayout->addStretch(1);
+    footerLayout->addWidget(new QLabel(tr("Update Interval:"), this));
+    refreshIntervalCombo_ = new QComboBox(this);
+    refreshIntervalCombo_->setMinimumWidth(120);
+    refreshIntervalCombo_->addItem(tr("No auto-refresh"), 0);
+    refreshIntervalCombo_->addItem(tr("5s"), 5);
+    refreshIntervalCombo_->addItem(tr("10s"), 10);
+    refreshIntervalCombo_->addItem(tr("30s"), 30);
+    refreshIntervalCombo_->addItem(tr("60s"), 60);
+    refreshIntervalCombo_->setCurrentIndex(0); // opt-in, unlike CRM -- this is a diagnostic
+                                               // viewer, not a live trading screen
+    footerLayout->addWidget(refreshIntervalCombo_);
+    connect(refreshIntervalCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &CurveSnapshotMdiWindow::onRefreshIntervalChanged);
+    layout->addLayout(footerLayout);
+}
+
+void CurveSnapshotMdiWindow::onRefreshIntervalChanged() {
+    const int secs = refreshIntervalCombo_->currentData().toInt();
+    if (secs <= 0) {
+        autoRefreshTimer_->stop();
+        return;
+    }
+    autoRefreshTimer_->setInterval(secs * 1000);
+    autoRefreshTimer_->start();
 }
 
 QWidget* CurveSnapshotMdiWindow::buildGridTab() {
@@ -394,6 +470,7 @@ void CurveSnapshotMdiWindow::loadGrid() {
         }
 
         sort_by_tenor(result.observations);
+        self->lastGridObservations_ = result.observations;
 
         const bool empty = result.observations.empty();
         self->gridTable_->setVisible(!empty);
@@ -410,15 +487,15 @@ void CurveSnapshotMdiWindow::loadGrid() {
             const auto& o = result.observations[i];
             const auto value = std::atof(o.value.c_str());
 
-            self->gridTable_->setItem(
-                static_cast<int>(i), 0, new QTableWidgetItem(QString::fromStdString(o.point_id)));
-            self->gridTable_->setItem(
-                static_cast<int>(i),
-                1,
-                new QTableWidgetItem(QString::number(value, 'f', 6)));
-            self->gridTable_->setItem(static_cast<int>(i),
-                                      2,
-                                      new QTableWidgetItem(format_datetime(o.observation_datetime)));
+            auto* tenorItem = new QTableWidgetItem(QString::fromStdString(o.point_id));
+            tenorItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            self->gridTable_->setItem(static_cast<int>(i), 0, tenorItem);
+            auto* rateItem = new QTableWidgetItem(QString::number(value, 'f', 6));
+            rateItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            self->gridTable_->setItem(static_cast<int>(i), 1, rateItem);
+            auto* observedItem = new QTableWidgetItem(format_datetime(o.observation_datetime));
+            observedItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            self->gridTable_->setItem(static_cast<int>(i), 2, observedItem);
 
             categories << QString::fromStdString(o.point_id);
             series->append(static_cast<double>(i), value);
@@ -561,17 +638,17 @@ void CurveSnapshotMdiWindow::loadHistory() {
                     if (prevIt != byBucket[b - 1].end())
                         deltaBp = (it->second - prevIt->second) * 10000.0;
                 }
-                if (deltaBp)
-                    cellText = QString("%1%2").arg(*deltaBp >= 0 ? "+" : "").arg(*deltaBp, 0, 'f', 1);
-                else if (it == byBucket[b].end())
-                    cellText = "--"; // point hasn't started ticking yet
-                else if (b == 0)
-                    cellText = tr("(base)"); // oldest bucket: nothing prior to delta against
+                if (b == 0 && it != byBucket[b].end())
+                    cellText = QString::number(it->second, 'f', 6); // base bucket: actual rate
+                else if (deltaBp)
+                    cellText = bp_arrow_text(*deltaBp);
+                else
+                    cellText = "--"; // point hasn't started ticking yet, or no prior to diff
 
                 auto* item = new QTableWidgetItem(cellText);
+                item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
                 if (deltaBp)
-                    item->setForeground(QBrush(*deltaBp >= 0 ? QColor(0x3f, 0xb9, 0x50) :
-                                                                QColor(0xd0, 0x40, 0x30)));
+                    item->setForeground(QBrush(*deltaBp >= 0 ? k_up_color : k_down_color));
                 self->historyTable_->setItem(static_cast<int>(r), 1 + b, item);
             }
 
@@ -584,15 +661,10 @@ void CurveSnapshotMdiWindow::loadHistory() {
                 yMin = std::min(yMin, it->second);
                 yMax = std::max(yMax, it->second);
             }
-            // Each bucket gets its own colour (matched to its legend swatch) so lines are
-            // distinguishable without relying on fading alone; newest is still bold, older
-            // ones still fade slightly for a depth cue. Always start from an explicit visible
-            // colour -- a default-constructed QPen is black, invisible on the dark chart theme.
+            // Shades of blue, light (oldest) to dark (newest) -- same colour family, still
+            // distinguishable per bucket without relying on alpha fading alone.
             const bool isNewest = (b == bucketCount - 1);
-            const double alpha =
-                isNewest ? 1.0 : std::max(0.4, 0.4 + 0.6 * (double(b + 1) / bucketCount));
-            QColor color = history_series_color(b);
-            color.setAlphaF(alpha);
+            const QColor color = history_series_color(b, bucketCount);
             QPen pen(color);
             pen.setWidthF(isNewest ? 2.5 : 1.5);
             series->setPen(pen);
@@ -621,9 +693,11 @@ void CurveSnapshotMdiWindow::loadHistory() {
             self->historyAxisY_->setRange(yMin - pad, yMax + pad);
         }
 
-        for (std::size_t r = 0; r < tenors.size(); ++r)
-            self->historyTable_->setItem(
-                static_cast<int>(r), 0, new QTableWidgetItem(QString::fromStdString(tenors[r])));
+        for (std::size_t r = 0; r < tenors.size(); ++r) {
+            auto* tenorItem = new QTableWidgetItem(QString::fromStdString(tenors[r]));
+            tenorItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            self->historyTable_->setItem(static_cast<int>(r), 0, tenorItem);
+        }
         self->historyTable_->resizeColumnsToContents();
 
         emit self->statusChanged(
@@ -631,6 +705,105 @@ void CurveSnapshotMdiWindow::loadHistory() {
     });
 
     watcher->setFuture(QtConcurrent::run(task));
+}
+
+QString CurveSnapshotMdiWindow::exportFileNameSlug() const {
+    QString slug = QString::fromStdString(seriesType_ + "_" + metric_ + "_" + qualifier_);
+    slug.replace('/', '_').replace(' ', '_');
+    return slug;
+}
+
+void CurveSnapshotMdiWindow::exportGridToCsv() {
+    if (lastGridObservations_.empty()) {
+        QMessageBox::information(this, tr("No Data"), tr("There are no points to export."));
+        return;
+    }
+
+    const QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Export to CSV"),
+        QStringLiteral("%1_%2.csv")
+            .arg(exportFileNameSlug(), QDateTime::currentDateTimeUtc().toString(
+                                            QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
+        tr("CSV Files (*.csv);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+
+    try {
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(6);
+        out << "series_type,metric,qualifier,tenor,rate,observed\n";
+        for (const auto& o : lastGridObservations_) {
+            out << seriesType_ << ',' << metric_ << ',' << qualifier_ << ',' << o.point_id << ','
+                << std::atof(o.value.c_str()) << ','
+                << format_datetime(o.observation_datetime).toStdString() << '\n';
+        }
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        const auto csvData = out.str();
+        file.write(csvData.c_str(), static_cast<qint64>(csvData.size()));
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(tr("Successfully exported curve snapshot to %1").arg(fileName));
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, tr("Export Error"), tr("Error during CSV export: %1").arg(e.what()));
+    }
+}
+
+void CurveSnapshotMdiWindow::exportGridToOre() {
+    if (lastGridObservations_.empty()) {
+        QMessageBox::information(this, tr("No Data"), tr("There are no points to export."));
+        return;
+    }
+
+    const QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Export to ORE Market Data"),
+        QStringLiteral("%1_%2.txt")
+            .arg(exportFileNameSlug(), QDateTime::currentDateTimeUtc().toString(
+                                            QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
+        tr("Text Files (*.txt);;All Files (*)"));
+    if (fileName.isEmpty())
+        return;
+
+    std::vector<ores::ore::market::market_datum> data;
+    data.reserve(lastGridObservations_.size());
+    for (const auto& o : lastGridObservations_) {
+        ores::ore::market::market_datum datum;
+        datum.date = std::chrono::year_month_day{
+            std::chrono::floor<std::chrono::days>(o.observation_datetime)};
+        datum.key = seriesType_ + "/" + metric_ + "/" + qualifier_ + "/" + o.point_id;
+        datum.value = o.value;
+        data.push_back(std::move(datum));
+    }
+
+    try {
+        std::ostringstream out;
+        ores::ore::market::serialize_market_data(out, data);
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, tr("File Error"), tr("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        const auto oreData = out.str();
+        file.write(oreData.c_str(), static_cast<qint64>(oreData.size()));
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(tr("Successfully exported curve snapshot to %1").arg(fileName));
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, tr("Export Error"), tr("Error during ORE export: %1").arg(e.what()));
+    }
 }
 
 }

@@ -22,6 +22,7 @@
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
+#include <QBrush>
 #include <QComboBox>
 #include <QDateTime>
 #include <QFont>
@@ -45,6 +46,7 @@
 #include <QtCharts/QValueAxis>
 #include <QtConcurrent>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -92,11 +94,21 @@ std::string leading_currency_code(const std::string& qualifier) {
     return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
 }
 
-// Fixed palette so buckets are visually distinguishable even before alpha fading is applied --
-// a single default-black QPen (as QLineSeries starts with) is invisible on the dark chart theme.
-const QColor& history_series_base_color() {
-    static const QColor c(0x4f, 0x9e, 0xf5);
-    return c;
+// Fixed, distinct palette so each bucket's line is its own colour (not just one hue fading in
+// and out) -- a default-black QPen (as QLineSeries starts with) is also invisible on the dark
+// chart theme, so this never falls back to that. Cycles if bucketCount exceeds the palette.
+QColor history_series_color(int bucketIndex) {
+    static const std::array<QColor, 8> palette{
+        QColor(0x4f, 0x9e, 0xf5), // blue
+        QColor(0xf5, 0x8f, 0x4f), // orange
+        QColor(0x6f, 0xd6, 0x6a), // green
+        QColor(0xe0, 0x6c, 0xc4), // pink
+        QColor(0xf5, 0xd8, 0x4f), // yellow
+        QColor(0x8a, 0x7a, 0xf0), // purple
+        QColor(0x4f, 0xd6, 0xc9), // teal
+        QColor(0xe0, 0x5a, 0x5a), // red
+    };
+    return palette[bucketIndex % palette.size()];
 }
 
 QString format_datetime(std::chrono::system_clock::time_point tp) {
@@ -261,7 +273,7 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
     controls->addWidget(new QLabel(tr("Bucket size:"), page));
     bucketSizeSpin_ = new QSpinBox(page);
     bucketSizeSpin_->setRange(1, 999);
-    bucketSizeSpin_->setValue(1);
+    bucketSizeSpin_->setValue(10);
     controls->addWidget(bucketSizeSpin_);
 
     bucketUnitCombo_ = new QComboBox(page);
@@ -508,7 +520,7 @@ void CurveSnapshotMdiWindow::loadHistory() {
             const QString label = !result.buckets[b].empty() ?
                 format_datetime(result.buckets[b].front().observation_datetime).right(8) :
                 tr("--");
-            headers << (b == 0 ? label : (label + QStringLiteral(" Δbp")));
+            headers << (b == 0 ? label : (label + QStringLiteral(" (bp)")));
         }
         self->historyTable_->setHorizontalHeaderLabels(headers);
         self->historyTable_->setRowCount(static_cast<int>(tenors.size()));
@@ -543,20 +555,24 @@ void CurveSnapshotMdiWindow::loadHistory() {
                 const auto& tenor = tenors[r];
                 auto it = byBucket[b].find(tenor);
                 QString cellText = "--";
-                if (it != byBucket[b].end()) {
-                    cellText = QString::number(it->second, 'f', 6);
-                    if (b > 0) {
-                        auto prevIt = byBucket[b - 1].find(tenor);
-                        if (prevIt != byBucket[b - 1].end()) {
-                            const double deltaBp = (it->second - prevIt->second) * 10000.0;
-                            cellText += QString(" (%1%2)")
-                                            .arg(deltaBp >= 0 ? "+" : "")
-                                            .arg(deltaBp, 0, 'f', 1);
-                        }
-                    }
+                std::optional<double> deltaBp;
+                if (it != byBucket[b].end() && b > 0) {
+                    auto prevIt = byBucket[b - 1].find(tenor);
+                    if (prevIt != byBucket[b - 1].end())
+                        deltaBp = (it->second - prevIt->second) * 10000.0;
                 }
-                self->historyTable_->setItem(
-                    static_cast<int>(r), 1 + b, new QTableWidgetItem(cellText));
+                if (deltaBp)
+                    cellText = QString("%1%2").arg(*deltaBp >= 0 ? "+" : "").arg(*deltaBp, 0, 'f', 1);
+                else if (it == byBucket[b].end())
+                    cellText = "--"; // point hasn't started ticking yet
+                else if (b == 0)
+                    cellText = tr("(base)"); // oldest bucket: nothing prior to delta against
+
+                auto* item = new QTableWidgetItem(cellText);
+                if (deltaBp)
+                    item->setForeground(QBrush(*deltaBp >= 0 ? QColor(0x3f, 0xb9, 0x50) :
+                                                                QColor(0xd0, 0x40, 0x30)));
+                self->historyTable_->setItem(static_cast<int>(r), 1 + b, item);
             }
 
             auto* series = new QLineSeries();
@@ -568,16 +584,17 @@ void CurveSnapshotMdiWindow::loadHistory() {
                 yMin = std::min(yMin, it->second);
                 yMax = std::max(yMax, it->second);
             }
-            // Newest (last) bucket bold/opaque; older buckets fade with age. Always start from
-            // an explicit visible colour -- a default-constructed QPen is black, invisible on
-            // the dark chart theme, and QPen::color() being "valid" doesn't mean "visible".
+            // Each bucket gets its own colour (matched to its legend swatch) so lines are
+            // distinguishable without relying on fading alone; newest is still bold, older
+            // ones still fade slightly for a depth cue. Always start from an explicit visible
+            // colour -- a default-constructed QPen is black, invisible on the dark chart theme.
             const bool isNewest = (b == bucketCount - 1);
             const double alpha =
-                isNewest ? 1.0 : std::max(0.15, 0.15 + 0.85 * (double(b + 1) / bucketCount));
-            QColor color = history_series_base_color();
+                isNewest ? 1.0 : std::max(0.4, 0.4 + 0.6 * (double(b + 1) / bucketCount));
+            QColor color = history_series_color(b);
             color.setAlphaF(alpha);
             QPen pen(color);
-            pen.setWidthF(isNewest ? 2.5 : 1.0);
+            pen.setWidthF(isNewest ? 2.5 : 1.5);
             series->setPen(pen);
 
             self->historyChart_->addSeries(series);

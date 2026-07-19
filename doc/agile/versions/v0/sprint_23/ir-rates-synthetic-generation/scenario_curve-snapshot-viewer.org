@@ -76,8 +76,7 @@ select *BARCLAYS PLC*.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - can we somehow have a currency flag in the interest rate curve list. have a think as to how this could be done. ; - not using a regular table like all our MDI windows. can't sort etc.;  |
+| Status | PASS |
 
 ** Open the Snapshot window for USD/SOFR
 
@@ -108,8 +107,7 @@ select *BARCLAYS PLC*.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - initial window size is very small; ; [[file:scenario_curve-snapshot-viewer_step3_20260719_232015.png]];  |
+| Status | PASS |
 
 ** Verify the History tab
 
@@ -128,7 +126,7 @@ select *BARCLAYS PLC*.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | - need minutes buckets.; - colour is black, unreadable.; - no legend.; - can't see all columns. ; ; ; [[file:scenario_curve-snapshot-viewer_step5_20260719_232252.png]] |
 
 ** Verify Snapshot for a second currency
@@ -143,16 +141,16 @@ select *BARCLAYS PLC*.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-19T22:22:57Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-19T22:47:27Z |
 | Branch        | feature/curve-snapshot-builder-viewer |
-| Commit        | 7c1b9b3a9 |
+| Commit        | 032e8bf99 |
 | Worktree      | eager_maxwell |
 
 * Notes

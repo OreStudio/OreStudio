@@ -77,7 +77,7 @@ public:
     const std::string& metric() const { return metric_; }
     const std::string& qualifier() const { return qualifier_; }
 
-    QSize sizeHint() const override { return {1000, 700}; }
+    QSize sizeHint() const override { return {1500, 750}; }
 
 signals:
     void statusChanged(const QString& message);

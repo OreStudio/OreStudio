@@ -113,8 +113,8 @@ begin
         c.holiday_calendar
     from (values
         -- Americas
-        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'us', 1, 'ACT/360', 5, 'UnitedStates'),
-        ('CAD', 'Canadian Dollar', '124', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'ca', 2, 'ACT/365', 6, 'Canada'),
+        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'us', 1, 'ACT/360', 5, 'UnitedStates.Settlement'),
+        ('CAD', 'Canadian Dollar', '124', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'ca', 2, 'ACT/365', 6, 'Canada.Settlement'),
         ('MXN', 'Mexican Peso', '484', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'mx', 2, 'ACT/360', 100, 'Mexico'),
         ('BRL', 'Brazilian Real', '986', 'R$', '¢', 100, 'Closest', 2, 'R$#,##0.00', 'fiat.emerging', 'br', 2, 'ACT/360', 100, 'Brazil'),
         ('ARS', 'Argentine Peso', '032', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'ar', 2, 'ACT/360', 100, null),
@@ -148,7 +148,7 @@ begin
         ('FKP', 'Falkland Islands Pound', '238', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'fk', 2, 'ACT/365', 100, null),
         -- Europe
         ('EUR', 'Euro', '978', '€', 'c', 100, 'Closest', 2, '€#,##0.00', 'fiat.g10', 'eu', 2, 'ACT/360', 1, 'TARGET'),
-        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.g10', 'gb', 2, 'ACT/365', 2, 'UnitedKingdom'),
+        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.g10', 'gb', 2, 'ACT/365', 2, 'UnitedKingdom.Settlement'),
         ('CHF', 'Swiss Franc', '756', 'CHF', 'c', 100, 'Closest', 2, 'CHF #,##0.00', 'fiat.g10', 'ch', 2, 'ACT/360', 7, 'Switzerland'),
         ('NOK', 'Norwegian Krone', '578', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.g10', 'no', 2, 'ACT/360', 9, 'Norway'),
         ('SEK', 'Swedish Krona', '752', 'kr', 'ö', 100, 'Closest', 2, '#,##0.00 kr', 'fiat.g10', 'se', 2, 'ACT/360', 10, 'Sweden'),
@@ -175,10 +175,10 @@ begin
         ('GIP', 'Gibraltar Pound', '292', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'gi', 2, 'ACT/365', 100, null),
         -- Asia-Pacific
         ('JPY', 'Japanese Yen', '392', '¥', '', 0, 'Closest', 0, '¥#,##0', 'fiat.g10', 'jp', 2, 'ACT/360', 8, 'Japan'),
-        ('CNY', 'Chinese Yuan', '156', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.emerging', 'cn', 2, 'ACT/360', 100, 'China'),
+        ('CNY', 'Chinese Yuan', '156', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.emerging', 'cn', 2, 'ACT/360', 100, 'China.SSE'),
         ('HKD', 'Hong Kong Dollar', '344', 'HK$', '¢', 100, 'Closest', 2, 'HK$#,##0.00', 'fiat.emerging', 'hk', 2, 'ACT/365', 100, 'HongKong'),
         ('TWD', 'New Taiwan Dollar', '901', 'NT$', '¢', 100, 'Closest', 2, 'NT$#,##0.00', 'fiat.emerging', 'tw', 2, 'ACT/360', 100, null),
-        ('KRW', 'South Korean Won', '410', '₩', '', 0, 'Closest', 0, '₩#,##0', 'fiat.emerging', 'kr', 2, 'ACT/360', 100, 'SouthKorea'),
+        ('KRW', 'South Korean Won', '410', '₩', '', 0, 'Closest', 0, '₩#,##0', 'fiat.emerging', 'kr', 2, 'ACT/360', 100, 'SouthKorea.Settlement'),
         ('KPW', 'North Korean Won', '408', '₩', '전', 100, 'Closest', 2, '₩#,##0.00', 'fiat.emerging', 'kp', 2, 'ACT/360', 100, null),
         ('SGD', 'Singapore Dollar', '702', 'S$', '¢', 100, 'Closest', 2, 'S$#,##0.00', 'fiat.emerging', 'sg', 2, 'ACT/365', 100, 'Singapore'),
         ('MYR', 'Malaysian Ringgit', '458', 'RM', 'sen', 100, 'Closest', 2, 'RM#,##0.00', 'fiat.emerging', 'my', 2, 'ACT/365', 100, null),

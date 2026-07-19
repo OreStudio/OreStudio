@@ -91,6 +91,13 @@ begin
         c.official_name,
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
+        -- ZZ sentinel: ISO 3166-1's own reserved user-assigned code, borrowed
+        -- by supranational calendars (e.g. TARGET) that have no single
+        -- owning country. Bundled into this dataset (not a standalone one)
+        -- so every tenant that publishes iso.countries gets it automatically
+        -- -- mirroring refdata_countries_populate.sql's live-table seed,
+        -- which bundles it the same way for the system tenant.
+        ('ZZ', 'ZZZ', '999', 'Supranational / Not Country-Specific', 'Supranational / Not Country-Specific'),
         -- A
         ('AD', 'AND', '020', 'Andorra', 'Principality of Andorra'),
         ('AE', 'ARE', '784', 'United Arab Emirates', 'United Arab Emirates'),

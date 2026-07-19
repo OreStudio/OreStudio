@@ -112,7 +112,7 @@ the two currencies, not stored, to avoid the two copies drifting):
 ** Entity 3 — new =currency_pair_classification= auxiliary type
 
 Same shape as the existing =rounding_type=/=monetary_nature=/
-=market_tier= lookup tables ([[id:8B8550A9-0B92-44E4-A337-A969C90E7FA9][example]]): =code= (PK), =name=,
+=market_tier= lookup tables ([[id:284D8D40-D243-4E75-885F-FDA5591FB22F][example]]): =code= (PK), =name=,
 =description=, =display_order=. Seeded with =major=, =minor=, =exotic=
 per [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] — including the DKK/NOK/SEK correction
 (classified =minor=, independent of their G11 =market_tier=).

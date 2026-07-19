@@ -8,7 +8,7 @@
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-dual-file-entities
-#+pr:
+#+pr: 1646
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -94,7 +94,7 @@ full =domain_entity=, not an SQL-only entity.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1646][#1646]] | [codegen] Delete the 8 remaining redundant _table.org files |
 
 * Review
 

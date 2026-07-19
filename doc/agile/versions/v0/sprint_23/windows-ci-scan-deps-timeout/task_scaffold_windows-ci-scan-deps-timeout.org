@@ -69,3 +69,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded the hotfix story, tasks, and sprint wiring for the Windows
+CI investigation, and carried PR #1645 (the scaffold and the fix
+landed together on the same hotfix branch/PR).

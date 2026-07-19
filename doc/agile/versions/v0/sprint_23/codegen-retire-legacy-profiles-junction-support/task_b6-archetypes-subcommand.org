@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch: feature/codegen-unification-blockers
+#+branch: feature/codegen-archetypes-subcommand
 #+pr:
-#+blocked_on: B5
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,13 +30,14 @@ self-documenting. Users can discover valid =ores.*= addresses for property drawe
 # List the full physical space catalogue in ores.* notation, grouped by TS and facet
 compass codegen entity archetypes
 
-# Narrow to one TS or facet
-compass codegen entity archetypes --address cpp
-compass codegen entity archetypes --address cpp.qt
+# Narrow to one TS or facet (always the full ores.* form, matching --address
+# everywhere else in codegen entity)
+compass codegen entity archetypes --address ores.cpp
+compass codegen entity archetypes --address ores.cpp.qt
 
 # Show the supported set for a specific entity (S_e), with enabled/disabled status per archetype
 compass codegen entity archetypes --entity currency
-compass codegen entity archetypes --entity currency --address cpp
+compass codegen entity archetypes --entity currency --address ores.cpp
 #+end_src
 
 ** Output format: catalogue mode (no --entity)
@@ -105,11 +106,11 @@ cpp  ✅ [technical space — in supported set]
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | B5 (physical_space.py must exist first). |
-| Next         | Begin implementation after B5.        |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -126,11 +127,65 @@ cpp  ✅ [technical space — in supported set]
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+B5 (=codegen/physical_space.py=) was already DONE from the closed
+"Resolve codegen model unification blockers" story, so the "Waiting on
+B5" note was stale — =load_graph=, =compute_target_set=,
+=compute_supported_set=, and =is_enabled= already exist and needed no
+changes. This task is presentation only: a new =_cmd_archetypes= in
+=compass_codegen_entity.py= that walks the loaded graph and prints it,
+delegating every resolution decision to =physical_space.py=.
+
+1. Add =_cmd_archetypes= + an =archetypes= subparser in
+   =compass_codegen_entity.py=, wired into the existing dispatch table.
+2. Catalogue mode (no =--entity=): walk =graph.ts_facets= /
+   =graph.facet_archetypes= directly, filtered by =compute_target_set=
+   when =--address= is given.
+3. Entity mode (=--entity=): resolve the entity via the existing
+   =_resolve_entity=, get its model type and =:ores.*.enabled:=
+   overrides (=_read_drawer_properties= + =_enabled_overrides=, both
+   already in =codegen.generate=/=physical_space=), then annotate the
+   same tree with ✅/❌ per TS/facet/archetype. Added a small
+   =_enable_reason= helper (not in =physical_space.py=) that mirrors
+   =is_enabled='s most-specific-wins walk but also returns *which* key
+   decided it, so exclusion reasons can name the exact
+   =:ores.*.enabled:= override or fall back to "facet/archetype
+   default".
+4. Add a recipe (=how_do_i_discover_the_physical_space_catalogue.org=)
+   and wire it into =doc/recipes/codegen/codegen.org= and the sibling
+   =how_do_i_list_codegen_entities.org='s =* See also=.
 
 * Notes
+
+- The task's own illustrative examples used unprefixed addresses
+  (=--address cpp=, =--address cpp.qt=), but every other =--address=
+  flag in this codebase (=generate=, =show=, =diff=) requires the full
+  =ores.*= form — =compute_target_set=/=graph.facets_under= key off
+  the node's =#+title:= verbatim, which always carries the prefix.
+  Kept =archetypes= consistent with that rather than adding a
+  special-cased unprefixed shorthand; updated the Command forms
+  examples above to match.
+- =--address= only resolves to a technical space or a facet (whatever
+  =graph.facets_under= accepts) — there is no archetype-level
+  =--address= filter, matching every other =codegen entity= subcommand.
+- Verified end-to-end against a real disabled-facet entity
+  (=market_observation=, =:ores.cpp.qt.enabled: false=) — every
+  =ores.cpp.qt.*= archetype correctly shows ❌ with that exact key
+  named as the reason, and the facet-level exclusion cascades to every
+  archetype under it without a separate per-archetype override needed.
+- Verified per-archetype model-type filtering independent of the
+  facet's aggregate =#+model_types=: =ores.sql.schema= admits
+  =domain_entity junction schema table= at the facet level, but a
+  =domain_entity= entity correctly shows =sql.schema.junction_create=/
+  =sql.schema.table_create= as ❌ (not admitted) while
+  =sql.schema.domain_entity_create= shows ✅.
+- Acceptance calls for =--address= to filter to an archetype prefix
+  too, but =physical_space.compute_target_set=/=facets_under= only
+  resolve TS- and facet-level addresses (the graph's own discovery
+  roots). Added archetype-address resolution directly in
+  =_cmd_archetypes= instead of extending =physical_space.py= — it is a
+  presentation-only narrowing (which single archetype line to print
+  within its facet), not a generation-set decision, so it stays out
+  of the shared module B5 owns.
 
 * PRs
 
@@ -145,3 +200,21 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added =compass codegen entity archetypes=: catalogue mode (no
+=--entity=) lists every archetype grouped by TS/facet with its source
+template; =--entity <name>= annotates the same tree with ✅/❌ and
+names the exact =:ores.*.enabled:= key or facet/archetype default that
+caused each exclusion. =--address= narrows to a TS, facet, or
+individual archetype (the last resolved directly in the CLI layer, not
+in =physical_space.py=, since B5's =compute_target_set= only handles
+the graph's own discovery roots). All resolution — graph loading,
+target/supported-set computation, most-specific-wins override
+resolution — is delegated to the existing =codegen/physical_space.py=;
+B6 added zero new physical-space modules, per acceptance. Added a
+recipe (=how_do_i_discover_the_physical_space_catalogue.org=) wired
+into the codegen recipe topic and its sibling entity-list recipe.
+Verified end-to-end against real entities with and without
+=:ores.*.enabled:= overrides, and confirmed printed addresses are
+valid =--address= inputs to =generate=. All six acceptance criteria
+met. Full local build clean; ctest 74/74; codegen pytest 55/55.

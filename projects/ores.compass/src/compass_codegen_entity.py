@@ -311,6 +311,140 @@ def _cmd_diff(args, base_dir: Path, project_root: Path) -> int:
     return result.returncode
 
 
+def _enable_reason(address: str, facet: str, ts: str, overrides: dict,
+                    default_enabled: bool) -> tuple[bool, str | None]:
+    """Like physical_space.is_enabled, but also returns which key decided it.
+
+    Returns (enabled, reason_key) — reason_key is the ores.* address whose
+    :enabled: override matched (most-specific first), or None if the result
+    came from the node's own #+default: instead of an explicit override.
+    """
+    for key in (address, facet, ts, "ores"):
+        if key and key in overrides:
+            return overrides[key], key
+    return default_enabled, None
+
+
+def _cmd_archetypes(args, base_dir: Path, project_root: Path) -> int:
+    from codegen.core import get_model_type  # noqa: PLC0415
+    from codegen.generate import _read_drawer_properties  # noqa: PLC0415
+    from codegen.physical_space import (  # noqa: PLC0415
+        _enabled_overrides, compute_target_set, load_graph,
+    )
+
+    graph = load_graph(base_dir / "library" / "templates")
+    address = getattr(args, "address", None)
+    entity = getattr(args, "entity", None)
+
+    # compute_target_set only resolves TS- and facet-level addresses (the
+    # graph's discovery roots); an archetype-level address narrows further,
+    # to that one archetype within its facet — resolved here rather than in
+    # physical_space.py since it is a presentation-only narrowing, not a
+    # generation-set decision.
+    target_archetype = None
+    try:
+        target_facets = compute_target_set(address, graph)
+    except ValueError:
+        target_archetype = next(
+            (arch["address"] for archs in graph.facet_archetypes.values()
+             for arch in archs if arch["address"] == address),
+            None,
+        )
+        if target_archetype is None:
+            print(f"❌ unknown address: {address!r}", file=sys.stderr)
+            return 1
+        owning_facet = next(
+            f for f, archs in graph.facet_archetypes.items()
+            if any(a["address"] == target_archetype for a in archs))
+        target_facets = frozenset({owning_facet})
+
+    model_type = None
+    overrides: dict = {}
+    if entity:
+        model_path, _metatype, comp_name, entity_name = _resolve_entity(
+            entity, base_dir, project_root)
+        properties = _read_drawer_properties(model_path)
+        model_type = get_model_type(model_path.name, model_path)
+        overrides = _enabled_overrides(properties or {})
+
+        print(f"\nSupported set for: {entity_name}  ({model_type}, {comp_name})")
+        bindings = sorted(
+            f":{k}.enabled: {str(v).lower()}" for k, v in overrides.items())
+        print(f"  ores.* bindings: {', '.join(bindings) if bindings else '(none)'}\n")
+    else:
+        print("\nPhysical space catalogue\n")
+
+    for ts, facets in graph.ts_facets.items():
+        shown_facets = [f for f in facets if f in target_facets]
+        if not shown_facets:
+            continue
+
+        if model_type is None:
+            print(f"{ts}  [technical space]")
+        else:
+            ts_supported = any(
+                (not graph.facet_model_types.get(f) or model_type in graph.facet_model_types[f])
+                and _enable_reason(f, f, ts, overrides, graph.facet_default.get(f, True))[0]
+                for f in shown_facets
+            )
+            icon = "✅" if ts_supported else "❌"
+            suffix = " [technical space — in supported set]" if ts_supported \
+                else " [technical space — no admissible facet]"
+            print(f"{ts}  {icon}{suffix}")
+
+        for facet in shown_facets:
+            mts = graph.facet_model_types.get(facet, [])
+            mts_label = " ".join(mts) if mts else "(any)"
+
+            if model_type is None:
+                print(f"  {facet}  [facet — model types: {mts_label}]")
+            else:
+                admissible = not mts or model_type in mts
+                if not admissible:
+                    print(f"  {facet}  ❌ [facet — excluded, model type "
+                          f"'{model_type}' not admitted (model types: {mts_label})]")
+                else:
+                    enabled, reason_key = _enable_reason(
+                        facet, facet, ts, overrides, graph.facet_default.get(facet, True))
+                    if enabled:
+                        print(f"  {facet}  ✅ [facet — model types: {mts_label}]")
+                    else:
+                        why = f"by :{reason_key}.enabled: false" if reason_key \
+                            else "by facet default (#+default: disabled)"
+                        print(f"  {facet}  ❌ [facet — excluded {why}]")
+
+            for arch in graph.facet_archetypes.get(facet, []):
+                addr, template = arch["address"], arch.get("template", "")
+                if target_archetype and addr != target_archetype:
+                    continue
+                if model_type is None:
+                    print(f"    {addr:<34} {template}")
+                    continue
+
+                arch_mts = arch.get("model_types") or mts
+                if arch_mts and model_type not in arch_mts:
+                    print(f"    {addr:<34} ❌  {template}  "
+                          f"(model type '{model_type}' not admitted)")
+                    continue
+                if not admissible:
+                    print(f"    {addr:<34} ❌  {template}")
+                    continue
+
+                arch_enabled, arch_reason = _enable_reason(
+                    addr, facet, ts, overrides, arch.get("default_enabled", True))
+                # A disabled facet cascades to every archetype under it.
+                if not enabled:
+                    arch_enabled, arch_reason = False, reason_key
+                if arch_enabled:
+                    print(f"    {addr:<34} ✅  {template}")
+                else:
+                    why = f"excluded by :{arch_reason}.enabled: false" if arch_reason \
+                        else "excluded by default (#+default: disabled)"
+                    print(f"    {addr:<34} ❌  {template}  ({why})")
+        print()
+    return 0
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -356,15 +490,27 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     dp.add_argument("--address", metavar="ADDRESS",
                     help="Restrict to a physical-space address.")
 
+    # archetypes
+    ap_ = sub.add_parser(
+        "archetypes",
+        help="List the physical-space catalogue, or an entity's supported set.")
+    ap_.add_argument("--entity", metavar="NAME",
+                     help="Show the supported set for this entity, with "
+                          "per-archetype ✅/❌ status and exclusion reasons.")
+    ap_.add_argument("--address", metavar="ADDRESS",
+                     help="Restrict to a technical space, facet, or archetype "
+                          "(e.g. ores.cpp, ores.cpp.qt, ores.cpp.qt.controller_header).")
+
     args = ap.parse_args(argv)
 
     # argparse sets args.subcmd to the literal string the user typed (alias included),
     # so both "generate" and "gen" must appear as distinct keys.
     dispatch = {
-        "list":     _cmd_list,
-        "generate": _cmd_generate,
-        "gen":      _cmd_generate,
-        "show":     _cmd_show,
-        "diff":     _cmd_diff,
+        "list":       _cmd_list,
+        "generate":   _cmd_generate,
+        "gen":        _cmd_generate,
+        "show":       _cmd_show,
+        "diff":       _cmd_diff,
+        "archetypes": _cmd_archetypes,
     }
     return dispatch[args.subcmd](args, base_dir, project_root)

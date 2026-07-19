@@ -81,4 +81,5 @@ grouped by metatype with a non-zero count.
 
 - [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]
 - [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
+- [[id:153D67F4-F420-4983-AA3F-0A3246477BEE][How do I discover the physical-space catalogue?]] — every ores.* address, or an entity's supported set.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component model and metatype taxonomy.

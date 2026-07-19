@@ -57,6 +57,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <map>
 
 namespace ores::qt {
 
@@ -293,10 +294,25 @@ void IrCurveEditor::buildProcessTab() {
     for (const auto* e : kEngines)
         engineCombo_->addItem(QString::fromUtf8(e));
     engineCombo_->setCurrentText(QString::fromStdString(ir_.process_type));
-    engineCombo_->setToolTip(
-        tr("The short-rate process engine. Vasicek: constant volatility, rate can go negative. "
-           "CIR: volatility scales with √r, rate stays non-negative. Hull-White: like Vasicek "
-           "but supports a piecewise-constant mean level over time (a single constant level here)."));
+    // Tooltip describes only the currently-selected engine, not all three at once -- refreshed on
+    // every selection change instead of one static blurb covering the whole combo.
+    auto updateEngineTooltip = [this](const QString& engine) {
+        static const std::map<QString, QString> descriptions = {
+            {QStringLiteral("VASICEK"),
+             tr("Vasicek: dr = κ(θ−r)dt + σ dW. Constant volatility, mean-reverting; the rate can "
+                "go negative.")},
+            {QStringLiteral("CIR"),
+             tr("Cox-Ingersoll-Ross: dr = κ(θ−r)dt + σ√r dW. Volatility scales with √r, so the "
+                "rate stays non-negative (unlike Vasicek).")},
+            {QStringLiteral("HULL_WHITE"),
+             tr("Hull-White: like Vasicek, but supports a piecewise-constant mean level over "
+                "time (a single constant level θ here, same as Vasicek's).")},
+        };
+        auto it = descriptions.find(engine);
+        engineCombo_->setToolTip(it != descriptions.end() ? it->second : QString());
+    };
+    updateEngineTooltip(engineCombo_->currentText());
+    connect(engineCombo_, &QComboBox::currentTextChanged, this, updateEngineTooltip);
     headerRow->addWidget(engineCombo_);
     headerRow->addStretch(1);
 

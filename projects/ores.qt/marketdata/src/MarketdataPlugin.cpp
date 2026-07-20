@@ -20,8 +20,11 @@
 #include "ores.qt/MarketdataPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/CrmCrossRatesMatrixController.hpp"
+#include "ores.qt/CurveSnapshotMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedBindingController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/RateCurvesMdiWindow.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -116,6 +119,65 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
         if (crmCrossRatesMatrixController_)
             crmCrossRatesMatrixController_->showMatrix();
     });
+
+    actRateCurves_ = marketDataMenu_->addAction(ico(Icon::Chart), tr("Interest &Rates"));
+    connect(actRateCurves_, &QAction::triggered, this, &MarketdataPlugin::showRateCurves);
+}
+
+void MarketdataPlugin::showRateCurves() {
+    if (rateCurvesWindow_) {
+        rateCurvesWindow_->show();
+        rateCurvesWindow_->raise();
+        rateCurvesWindow_->activateWindow();
+        return;
+    }
+
+    auto* view = new RateCurvesMdiWindow(ctx_.client_manager, ctx_.image_cache);
+    connect(view, &RateCurvesMdiWindow::statusChanged, this, &PluginBase::statusMessage);
+    connect(view, &RateCurvesMdiWindow::errorOccurred, this, &PluginBase::statusMessage);
+    connect(view, &RateCurvesMdiWindow::viewSnapshotRequested, this,
+            &MarketdataPlugin::showCurveSnapshot);
+
+    rateCurvesWindow_ = new DetachableMdiSubWindow(ctx_.main_window);
+    rateCurvesWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    rateCurvesWindow_->setWidget(view);
+    rateCurvesWindow_->setWindowTitle(tr("Interest Rates"));
+    rateCurvesWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    rateCurvesWindow_->resize(view->sizeHint());
+
+    ctx_.mdi_area->addSubWindow(rateCurvesWindow_);
+    rateCurvesWindow_->show();
+    emit windowCreated(rateCurvesWindow_);
+    connect(rateCurvesWindow_, &QObject::destroyed, this, [this]() {
+        emit windowDestroyed(rateCurvesWindow_);
+        rateCurvesWindow_ = nullptr;
+    });
+}
+
+void MarketdataPlugin::showCurveSnapshot(const QString& seriesType, const QString& metric,
+                                         const QString& qualifier) {
+    auto* snapshotWindow = new CurveSnapshotMdiWindow(
+        ctx_.client_manager, ctx_.image_cache, seriesType.toStdString(), metric.toStdString(),
+        qualifier.toStdString());
+    connect(snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this,
+            &PluginBase::statusMessage);
+    connect(snapshotWindow, &CurveSnapshotMdiWindow::errorOccurred, this,
+            &PluginBase::statusMessage);
+
+    auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->setWidget(snapshotWindow);
+    subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(qualifier));
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    subWindow->resize(snapshotWindow->sizeHint());
+
+    ctx_.mdi_area->addSubWindow(subWindow);
+    subWindow->show();
+    emit windowCreated(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        emit windowDestroyed(subWindow);
+    });
 }
 
 QList<QMenu*> MarketdataPlugin::create_menus() {
@@ -123,15 +185,23 @@ QList<QMenu*> MarketdataPlugin::create_menus() {
 }
 
 QList<QAction*> MarketdataPlugin::toolbar_actions() {
-    if (!actCrmMatrix_)
+    if (!actCrmMatrix_ || !actRateCurves_)
         BOOST_LOG_SEV(lg(), warn) << "Toolbar action is uninitialised.";
-    return {actCrmMatrix_};
+    return {actCrmMatrix_, actRateCurves_};
 }
 
 void MarketdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     feedBindingController_.reset();
     crmCrossRatesMatrixController_.reset();
+    // rateCurvesWindow_ isn't controller-owned (RateCurvesMdiWindow has no CRUD/list-window
+    // controller of its own), so nothing else closes it on logout -- close it explicitly here,
+    // same as the controller-owned windows above achieve via reset(). Any open
+    // CurveSnapshotMdiWindow instances are untracked (multiple can be open at once, by design,
+    // to compare curves side by side) and are left as-is; their auto-refresh requests simply
+    // fail gracefully post-logout like any other stale authenticated request.
+    if (rateCurvesWindow_)
+        rateCurvesWindow_->close();
     ctx_ = {};
 }
 

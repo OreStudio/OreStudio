@@ -71,6 +71,14 @@ create index if not exists market_observations_observations_source_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, source, observation_datetime desc)
 where source is not null;
 
+-- Supports SELECT DISTINCT ON (point_id) ... WHERE tenant_id = ? AND series_id = ? AND
+-- observation_datetime <= ? ORDER BY point_id, observation_datetime DESC -- the as-of/
+-- as-of-bucket curve snapshot queries. Ordered by point_id first (unlike
+-- observations_series_datetime_idx, which orders by datetime globally) so Postgres can
+-- skip-scan straight to each point's latest row instead of sorting the whole series.
+create index if not exists market_observations_observations_series_point_datetime_idx
+on "ores_marketdata_market_observations_tbl" (tenant_id, series_id, point_id, observation_datetime desc);
+
 create or replace function ores_marketdata_market_observations_insert_fn()
 returns trigger as $$
 begin

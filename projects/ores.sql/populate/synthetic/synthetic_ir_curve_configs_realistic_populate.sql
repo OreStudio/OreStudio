@@ -27,13 +27,18 @@
  * AONIA, CAD/CORRA, CNY/SHIBOR-ON, HKD/HONIA, SGD/SORA, SEK/SWESTR,
  * NOK/NOWA, NZD/NZIONA, KRW/KOFR, INR/MIBOR, MXN/TIIE-ON, ZAR/ZARONIA,
  * DKK/DESTR, PLN/POLONIA, TWD/TAIBOR-ON), with per-currency-calibrated
- * Vasicek parameters (distinct reversion speed/vol/level per curve,
+ * CIR parameters (distinct reversion speed/vol/level per curve,
  * reflecting each market's own typical short-rate level and
  * volatility -- e.g. JPY near-zero and low-vol, EM currencies
  * (MXN/ZAR/INR/PLN) higher level and higher vol than G10) rather than
  * one uniform day-scaled set, and a seven-entry Curve Template per
  * curve (short-end deposits through a 10Y swap) so a bootstrapped
- * curve has real shape to show.
+ * curve has real shape to show. CIR chosen over Vasicek here because
+ * volatility scaling with the level and non-negativity by
+ * construction are a better fit for short rates, without needing a
+ * real reference curve to calibrate against (which Hull-White's own
+ * advantage over Vasicek would require, and which isn't available
+ * for a purely generative dataset).
  *
  * All indices are overnight RFRs, not IBOR-style term rates -- see
  * this story's dual-curve-discounting-projection-model follow-on task
@@ -67,7 +72,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic IR Curve Configs: Realistic',
-        'One overnight-RFR Vasicek short-rate curve per top-20-by-turnover currency, per-curve-calibrated day-scaled parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
+        'One overnight-RFR CIR short-rate curve per top-20-by-turnover currency, per-curve-calibrated day-scaled parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
         'ORESTUDIO',
         'Realistic archetype for the Synthetic data collections bundle',
         current_date,
@@ -122,8 +127,8 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (Realistic): ' || c.currency_code || '/' || c.index_name,
-        'Realistic-archetype synthetic IR curve generator: Vasicek short-rate process, per-curve-calibrated day-scaled parameters.',
-        true, c.currency_code, c.index_name, 'VASICEK',
+        'Realistic-archetype synthetic IR curve generator: CIR short-rate process (volatility scales with the level, non-negative by construction -- a better fit for short rates than Vasicek''s constant-vol Gaussian without needing a real curve to calibrate against, unlike Hull-White), per-curve-calibrated day-scaled parameters.',
+        true, c.currency_code, c.index_name, 'CIR',
         c.annual_kappa / v_days, c.theta, c.annual_sigma / sqrt(v_days), c.theta,
         60, 'Quarterly'
     from (values

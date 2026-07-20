@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
+#include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
@@ -90,6 +91,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                  market_observation_handler h(nats, ctx, verifier);
                                  h.remove(std::move(msg));
+                             }));
+
+    // Curve snapshots (as-of / as-of-buckets, for curve/grid viewers)
+    subs.push_back(nats.queue_subscribe(std::string(get_curve_snapshot_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            curve_snapshot_handler h(nats, ctx, verifier);
+                                            h.get_snapshot(std::move(msg));
+                                        }));
+
+    subs.push_back(
+        nats.queue_subscribe(std::string(get_curve_snapshot_buckets_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 curve_snapshot_handler h(nats, ctx, verifier);
+                                 h.get_snapshot_buckets(std::move(msg));
                              }));
 
     // Market fixings

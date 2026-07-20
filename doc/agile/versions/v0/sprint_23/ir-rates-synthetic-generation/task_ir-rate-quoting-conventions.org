@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 3E2AC28A-181F-480A-8A9D-CD88949378F5
+:END:
+#+title: Task: IR rate display/quoting conventions (basis points, per-index precision)
+#+description: Research real trading-system IR rate quoting conventions (percent vs basis points, per-currency/index decimal precision) and add the equivalent of currency_pair_convention's pip_factor/tick_size/decimal_places for IR indices, plus a shared Qt formatter.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give IR indices the same data-driven display-convention story FX
+already has. =currency_pair_convention= carries =pip_factor=,
+=tick_size= and =decimal_places= per pair because quoting precision
+genuinely varies (JPY crosses at 2dp, EUR/USD at 4dp) — it is not
+hardcoded in the UI. IR has no equivalent: =overnight_index_convention=
+only holds fixing calendar/day-count/settlement-lag, and
+=floating_index_type= is bare id+description.
+
+This task:
+- Researches how real trading systems actually quote IR rates: percent
+  vs basis points, and typical decimal precision by currency/index
+  tier (G10 overnight RFRs vs EM curves), rather than assuming one
+  convention fits all.
+- Adds the equivalent convention field(s) to =floating_index_type= (or
+  a new =ir_index_convention= entity, whichever the research points
+  to) capturing that precision/unit choice per index.
+- Wires a shared Qt formatter so any rate-displaying surface (starting
+  with =curve-snapshot-builder-viewer='s Grid/History tabs) consumes
+  it instead of hardcoding a format.
+
+Raised while designing curve-snapshot-builder-viewer's Grid tab —
+deliberately split out rather than solved inline there, since it is a
+genuine reference-data question, not a UI-only concern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-19                               |
+
+* Acceptance
+
+- Research note (this doc's =* Notes=) covering how real trading
+  systems quote IR rates: percent vs basis points, and typical
+  decimal precision per currency/index tier, citing concrete market
+  practice rather than assumption.
+- A convention field (or new entity) exists giving each IR index its
+  own display precision/unit, analogous to
+  =currency_pair_convention.decimal_places=.
+- A shared Qt formatter consumes it; =curve-snapshot-builder-viewer=
+  (and any future rate-displaying UI) uses the formatter rather than
+  a hardcoded format string.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

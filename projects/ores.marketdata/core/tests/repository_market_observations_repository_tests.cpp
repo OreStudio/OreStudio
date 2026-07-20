@@ -103,6 +103,149 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
         CHECK(r.series_id == s.id);
 }
 
+namespace {
+
+ores::marketdata::domain::market_observation
+make_observation(ores::utility::generation::generation_context& ctx,
+                 const boost::uuids::uuid& series_id,
+                 const std::string& point_id,
+                 std::chrono::system_clock::time_point observation_datetime,
+                 double value) {
+    auto o = generate_synthetic_market_observation(ctx);
+    o.series_id = series_id;
+    o.point_id = point_id;
+    o.observation_datetime = observation_datetime;
+    o.value = std::to_string(value);
+    return o;
+}
+
+}
+
+TEST_CASE("read_as_of_synchronous_publish", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto now = std::chrono::system_clock::now();
+    market_observations_repository obs_repo;
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", now, 0.04));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-3M", now, 0.041));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-2Y", now, 0.038));
+
+    // Phase-1 case: every point shares one observation_datetime.
+    auto snapshot = obs_repo.read_as_of(h.context(), s.id, now + std::chrono::minutes(1));
+    BOOST_LOG_SEV(lg, debug) << "Snapshot: " << snapshot;
+
+    CHECK(snapshot.size() == 3);
+    for (const auto& o : snapshot)
+        CHECK(o.series_id == s.id);
+}
+
+TEST_CASE("read_as_of_staggered_timestamps", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto t1 = t0 + std::chrono::minutes(10);
+    const auto t2 = t0 + std::chrono::minutes(20);
+
+    market_observations_repository obs_repo;
+
+    // SPOT-1M ticks three times; SPOT-3M ticks once early and stays stale; SPOT-2Y
+    // only starts ticking at t1 -- proving the query works when points are staggered,
+    // not synchronised (the general case any curve viewer must handle).
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t1, 0.0401));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t2, 0.0402));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0410));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-2Y", t1, 0.0380));
+
+    // As-of t0 + 1s: only SPOT-1M@t0 and SPOT-3M@t0 have ticked; SPOT-2Y hasn't started.
+    {
+        auto snap = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::seconds(1));
+        BOOST_LOG_SEV(lg, debug) << "As-of t0+1s: " << snap;
+        CHECK(snap.size() == 2);
+        for (const auto& o : snap) {
+            if (o.point_id == "SPOT-1M")
+                CHECK(o.value == "0.040000");
+            else if (o.point_id == "SPOT-3M")
+                CHECK(o.value == "0.041000");
+            else
+                FAIL("Unexpected point_id at as-of t0+1s: " << o.point_id);
+        }
+    }
+
+    // As-of t1 + 1s: SPOT-1M has advanced to its t1 tick, SPOT-3M is still stale at t0,
+    // SPOT-2Y has now started ticking -- exactly the "one row per point_id, latest
+    // observation_datetime <= as_of" semantics, per point independently.
+    {
+        auto snap = obs_repo.read_as_of(h.context(), s.id, t1 + std::chrono::seconds(1));
+        BOOST_LOG_SEV(lg, debug) << "As-of t1+1s: " << snap;
+        CHECK(snap.size() == 3);
+        for (const auto& o : snap) {
+            if (o.point_id == "SPOT-1M")
+                CHECK(o.value == "0.040100");
+            else if (o.point_id == "SPOT-3M")
+                CHECK(o.value == "0.041000");
+            else if (o.point_id == "SPOT-2Y")
+                CHECK(o.value == "0.038000");
+            else
+                FAIL("Unexpected point_id at as-of t1+1s: " << o.point_id);
+        }
+    }
+
+    // Before any observation exists: empty snapshot, not an error.
+    {
+        auto snap = obs_repo.read_as_of(h.context(), s.id, t0 - std::chrono::hours(1));
+        CHECK(snap.empty());
+    }
+}
+
+TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto t1 = t0 + std::chrono::minutes(30);
+    const auto t2 = t0 + std::chrono::minutes(60);
+
+    market_observations_repository obs_repo;
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t1, 0.0401));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t2, 0.0402));
+
+    // Curve-evolution view: one snapshot every 30 minutes, 3 buckets ending just after t2 --
+    // bucket generation and the per-bucket as-of reduction both happen in the database.
+    auto buckets = obs_repo.read_as_of_buckets(
+        h.context(), s.id, t2 + std::chrono::seconds(1), std::chrono::minutes(30), 3);
+    BOOST_LOG_SEV(lg, debug) << "Bucket snapshots: " << buckets;
+
+    REQUIRE(buckets.size() == 3);
+    REQUIRE(buckets[0].size() == 1);
+    REQUIRE(buckets[1].size() == 1);
+    REQUIRE(buckets[2].size() == 1);
+    CHECK(buckets[0].front().value == "0.040000");
+    CHECK(buckets[1].front().value == "0.040100");
+    CHECK(buckets[2].front().value == "0.040200");
+}
+
 TEST_CASE("remove_market_observations", tags) {
     auto lg(make_logger(test_suite));
 

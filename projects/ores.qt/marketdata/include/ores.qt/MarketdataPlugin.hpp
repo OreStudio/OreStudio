@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class FeedBindingController;
 class CrmCrossRatesMatrixController;
+class DetachableMdiSubWindow;
 
 /**
  * @brief Marketdata plugin: market data authority and feed binding management.
@@ -62,11 +63,17 @@ public:
     void on_logout() override;
 
 private:
+    void showRateCurves();
+    void showCurveSnapshot(const QString& seriesType, const QString& metric,
+                           const QString& qualifier);
+
     plugin_context ctx_;
     QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<FeedBindingController> feedBindingController_;
     std::unique_ptr<CrmCrossRatesMatrixController> crmCrossRatesMatrixController_;
     QAction* actCrmMatrix_ = nullptr;
+    QAction* actRateCurves_ = nullptr;
+    DetachableMdiSubWindow* rateCurvesWindow_ = nullptr;
 };
 
 }

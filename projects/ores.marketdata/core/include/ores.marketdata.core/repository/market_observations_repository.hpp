@@ -68,6 +68,50 @@ public:
                 const std::chrono::system_clock::time_point& from_datetime,
                 const std::chrono::system_clock::time_point& to_datetime);
 
+    /**
+     * @brief Reconstructs a curve/grid snapshot for a series as of a given time: the latest
+     * observation per point_id at or before as_of_datetime.
+     *
+     * General-purpose as-of query -- correct whether every point shares one
+     * observation_datetime (today's synchronous publish) or points have staggered
+     * timestamps (the general case any curve viewer must handle). One row per
+     * point_id, no producer-side batch/generation identifier involved.
+     *
+     * @param series_id The series to snapshot.
+     * @param as_of_datetime Only observations at or before this time are considered.
+     * @return One market_observation per point_id, or empty if none exist at/before as_of.
+     */
+    std::vector<domain::market_observation>
+    read_as_of(context ctx,
+              const boost::uuids::uuid& series_id,
+              const std::chrono::system_clock::time_point& as_of_datetime);
+
+    /**
+     * @brief Reconstructs one as-of snapshot per bucket boundary, for a curve-evolution view --
+     * e.g. "the last 5 snapshots, one every 30 minutes".
+     *
+     * Bucket generation and the per-bucket as-of reduction both happen in a single SQL
+     * statement (generate_series() for boundaries, LATERAL DISTINCT ON (point_id) per
+     * boundary) -- one round trip and one query plan, not bucket_count separate as-of
+     * queries. Same staggered-timestamp correctness as read_as_of(): each point within each
+     * bucket is independently resolved to its own latest observation at or before that
+     * bucket's boundary.
+     *
+     * @param series_id The series to snapshot.
+     * @param latest_boundary The as-of time of the most recent (last) bucket -- typically now.
+     * @param bucket_size The width of one bucket.
+     * @param bucket_count How many buckets to return, oldest to newest, ending at
+     * latest_boundary.
+     * @return One vector of market_observation per bucket, oldest to newest; a bucket with no
+     * observations at/before its boundary yields an empty vector.
+     */
+    std::vector<std::vector<domain::market_observation>>
+    read_as_of_buckets(context ctx,
+                       const boost::uuids::uuid& series_id,
+                       const std::chrono::system_clock::time_point& latest_boundary,
+                       const std::chrono::seconds& bucket_size,
+                       unsigned int bucket_count);
+
     void remove(context ctx, const boost::uuids::uuid& series_id);
 };
 

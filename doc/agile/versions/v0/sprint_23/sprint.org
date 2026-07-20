@@ -143,6 +143,28 @@ deferred to next sprint, pending the IR scaling fix above.
 #+attr_html: :width 100%
 [[proj:assets/images/sprint_23_cross_rates_matrix.png]]
 
+** Data Librarian accession card redesign (2026-07-20)
+
+The Data Librarian's dataset detail dialog ("accession card")
+redesigned into a persistent-header, asymmetric two-column layout —
+Provenance & Methodology and Dependencies tabs, shown here across
+three datasets (Currency Pair Convention Calendars, Calendars, and
+FpML Asset Class).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_data_librarian_accession_card.png]]
+
+** Generic history dialog with GitHub-style diff view (2026-07-20)
+
+Every =ores.qt.refdata= entity now shares one =HistoryDialog=: a
+version timeline plus a GitHub-style unified diff between any two
+versions, with field-level highlighting. Shown here on Currency
+history (ANG's DQ import lineage; AOA's =v2=→=v3= "Angolan Kwanza2" →
+"Angolan Kwanza" typo rectification).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_history_dialog_diff_view.png]]
+
 * Captures
 
 Real captures filed during this sprint that have *not* been pulled into a

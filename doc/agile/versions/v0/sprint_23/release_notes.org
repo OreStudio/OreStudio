@@ -62,6 +62,17 @@ FpML Asset Class).
 #+attr_html: :width 100%
 [[proj:assets/images/sprint_23_data_librarian_accession_card.png]]
 
+** Generic history dialog with GitHub-style diff view
+
+Every =ores.qt.refdata= entity now shares one =HistoryDialog=: a
+version timeline plus a GitHub-style unified diff between any two
+versions, with field-level highlighting. Shown here on Currency
+history (ANG's DQ import lineage; AOA's =v2=→=v3= "Angolan Kwanza2" →
+"Angolan Kwanza" typo rectification).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_history_dialog_diff_view.png]]
+
 * ⚠️ Known Limitations
 
 Both new features shown above are mechanically complete but not yet

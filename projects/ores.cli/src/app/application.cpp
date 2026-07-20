@@ -511,17 +511,17 @@ void application::export_countries(const config::export_options& cfg) const {
 void application::export_change_reasons(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reasons.";
 
-    dq::repository::change_reason_repository repo(context_);
+    dq::repository::change_reason_repository repo;
     std::vector<dq::domain::change_reason> items;
 
     if (!cfg.key.empty()) {
         if (cfg.all_versions) {
-            items = repo.read_all(cfg.key);
+            items = repo.read_all(context_, cfg.key);
         } else {
-            items = repo.read_latest(cfg.key);
+            items = repo.read_latest(context_, cfg.key);
         }
     } else {
-        items = repo.read_latest();
+        items = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -546,17 +546,17 @@ void application::export_change_reasons(const config::export_options& cfg) const
 void application::export_change_reason_categories(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reason categories.";
 
-    dq::repository::change_reason_category_repository repo(context_);
+    dq::repository::change_reason_category_repository repo;
     std::vector<dq::domain::change_reason_category> items;
 
     if (!cfg.key.empty()) {
         if (cfg.all_versions) {
-            items = repo.read_all(cfg.key);
+            items = repo.read_all(context_, cfg.key);
         } else {
-            items = repo.read_latest(cfg.key);
+            items = repo.read_latest(context_, cfg.key);
         }
     } else {
-        items = repo.read_latest();
+        items = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -997,16 +997,16 @@ void application::delete_country(const config::delete_options& cfg) const {
 
 void application::delete_change_reason(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason: " << cfg.key;
-    dq::repository::change_reason_repository repo(context_);
-    repo.remove(cfg.key);
+    dq::repository::change_reason_repository repo;
+    repo.remove(context_, cfg.key);
     output_stream_ << "Change reason deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << cfg.key;
 }
 
 void application::delete_change_reason_category(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason category: " << cfg.key;
-    dq::repository::change_reason_category_repository repo(context_);
-    repo.remove(cfg.key);
+    dq::repository::change_reason_category_repository repo;
+    repo.remove(context_, cfg.key);
     output_stream_ << "Change reason category deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << cfg.key;
 }
@@ -1333,8 +1333,8 @@ void application::add_change_reason(const config::add_change_reason_options& cfg
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    dq::repository::change_reason_repository repo(context_);
-    repo.write({record});
+    dq::repository::change_reason_repository repo;
+    repo.write(context_, {record});
 
     output_stream_ << "Successfully added change reason: " << cfg.code << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added change reason: " << cfg.code;
@@ -1354,8 +1354,8 @@ void application::add_change_reason_category(
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    dq::repository::change_reason_category_repository repo(context_);
-    repo.write({record});
+    dq::repository::change_reason_category_repository repo;
+    repo.write(context_, {record});
 
     output_stream_ << "Successfully added change reason category: " << cfg.code << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added change reason category: " << cfg.code;

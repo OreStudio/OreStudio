@@ -68,6 +68,10 @@ BEGIN
         'Lifecycle status codes for party and counterparty records.', 1);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'Calendar Type',
+        'Classification codes for calendar records (public holiday, central bank meeting, financial centre, data release, other).', 60);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_type', 'Party Type',
         'Classification codes for party and counterparty records.', 30);
 
@@ -359,6 +363,22 @@ BEGIN
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'nature_supranational', 'Supranational', 'Currency issued by a multi-national authority.',
         '#14b8a6', '#ffffff', 'info', 'badge bg-info', 44);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type_public_holiday', 'Public Holiday', 'A business-day/holiday calendar for a country, currency, or supranational region.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 60);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type_central_bank_meeting', 'Central Bank Meeting', 'A calendar of a central bank''s scheduled policy-meeting dates.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 61);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type_financial_centre', 'Financial Centre', 'A business-day calendar for a specific financial centre or exchange.',
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 62);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type_data_release', 'Data Release', 'A calendar of scheduled macroeconomic data release dates.',
+        '#eab308', '#ffffff', 'warning', 'badge bg-warning', 63);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type_other', 'Other', 'A calendar not classified under any other calendar type.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 64);
 
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'tier_g10', 'G10', 'Major currency with deep liquidity and tight spreads.',
@@ -771,6 +791,18 @@ BEGIN
         'asset_class', 'bond', 'asset_class_bond');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'cross_asset', 'asset_class_cross_asset');
+
+    -- calendar_type: shown on calendar's Type column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'public_holiday', 'calendar_type_public_holiday');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'central_bank_meeting', 'calendar_type_central_bank_meeting');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'financial_centre', 'calendar_type_financial_centre');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'data_release', 'calendar_type_data_release');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'calendar_type', 'other', 'calendar_type_other');
 
     -- Note: payment_frequency.period_unit is badged with badge_key
     -- 'tenor_unit' (see the Qt model column config), reusing tenor_unit's

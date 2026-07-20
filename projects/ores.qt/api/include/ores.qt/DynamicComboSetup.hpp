@@ -168,7 +168,23 @@ void populateDynamicCombo(
     QFuture<Result> future = QtConcurrent::run([self, client_manager, fetch]() -> Result {
         if (!self)
             return std::vector<Entity>{};
-        return fetch(client_manager);
+        // process_authenticated_request() deliberately rethrows
+        // nats_connect_error so ClientManager::connect() can map it to a
+        // user-visible message -- but that contract only holds for a
+        // caller sitting directly on top of connect(). Every fetch_*
+        // lookup helper reached from here calls it too, and an
+        // exception escaping a QtConcurrent::run task is rethrown by
+        // QFutureWatcher::result() on the UI thread with nothing to
+        // catch it, aborting the whole client. Convert any escaping
+        // exception into the same error channel as an ordinary failed
+        // response instead of letting it cross the thread boundary.
+        try {
+            return fetch(client_manager);
+        } catch (const std::exception& e) {
+            return std::unexpected(QString::fromUtf8(e.what()));
+        } catch (...) {
+            return std::unexpected(QObject::tr("Unknown error while fetching data."));
+        }
     });
 
     auto* watcher = new QFutureWatcher<Result>(owner);

@@ -20,6 +20,7 @@
 #include "ores.qt/CalendarDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -30,6 +31,7 @@
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -114,6 +116,47 @@ void CalendarDetailDialog::setClientManager(ClientManager* clientManager) {
     populateCountryCodeCombo();
 }
 
+void CalendarDetailDialog::populateCountryCodeCombo() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<CalendarDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    QObject::connect(
+        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+
+            auto* combo = self->ui_->countryCodeCombo;
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+            combo->addItem(QString());
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since setCalendar() may run before or
+            // after setClientManager() triggers this fetch.
+            const QString fallback = QString::fromStdString(self->calendar_.country_code);
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
+
+            if (self->imageCache())
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::Country, single_flag_icon_size());
+        });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));
+}
+
 void CalendarDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -169,28 +212,6 @@ void CalendarDetailDialog::populateCalendarTypeCombo() {
         [](const auto&) { return false; },
         QString{});
 }
-void CalendarDetailDialog::populateCountryCodeCombo() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating country_code combo";
-    populateDynamicCombo<refdata::domain::country>(
-        ui_->countryCodeCombo,
-        this,
-        clientManager_,
-        &fetch_countries,
-        "countryCodeWatcher",
-        [](const auto& t) { return QString::fromStdString(t.alpha2_code); },
-        [](const auto& t) { return QString::fromStdString(t.name); },
-        [](const auto& t) { return t.version; },
-        [this]() { return QString::fromStdString(calendar_.country_code); },
-        [this](const QString& error) {
-            emit errorMessage(tr("Failed to load countries: %1").arg(error));
-        },
-        []() {},
-        QObject::tr("Loading…"),
-        QObject::tr("Failed to load"),
-        [](const auto& t) { return QString::fromStdString(t.alpha2_code); },
-        [](const auto&) { return false; },
-        QString{});
-}
 void CalendarDetailDialog::updateUiFromCalendar() {
     ui_->codeEdit->setText(QString::fromStdString(calendar_.code));
     ui_->nameEdit->setText(QString::fromStdString(calendar_.name));
@@ -202,9 +223,8 @@ void CalendarDetailDialog::updateUiFromCalendar() {
     }
     {
         const auto val = QString::fromStdString(calendar_.country_code);
-        const int idx = ui_->countryCodeCombo->findData(val);
-        if (idx >= 0)
-            ui_->countryCodeCombo->setCurrentIndex(idx);
+        const int idx = ui_->countryCodeCombo->findText(val);
+        ui_->countryCodeCombo->setCurrentIndex(idx);
     }
 
     populateProvenance(calendar_.version,

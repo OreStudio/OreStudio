@@ -117,6 +117,17 @@ void CurrencyPairConventionMdiWindow::setupToolbar() {
             &QAction::triggered,
             this,
             &CurrencyPairConventionMdiWindow::viewHistorySelected);
+
+
+    toolbar_->addSeparator();
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor),
+            tr("Calendars"));
+        action->setToolTip(tr("Open Calendars list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showCalendarsRequested(); });
+    }
 }
 
 void CurrencyPairConventionMdiWindow::setupTable() {

@@ -47,6 +47,7 @@ constexpr std::string_view calendar_event_name =
 CalendarController::CalendarController(QMainWindow* mainWindow,
                                        QMdiArea* mdiArea,
                                        ClientManager* clientManager,
+                                       ImageCache* imageCache,
                                        ChangeReasonCache* changeReasonCache,
                                        const QString& username,
                                        BadgeCache* badgeCache,
@@ -56,6 +57,7 @@ CalendarController::CalendarController(QMainWindow* mainWindow,
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CalendarController created";
 }
@@ -70,7 +72,7 @@ void CalendarController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CalendarMdiWindow(clientManager_, username_, badgeCache_);
+    listWindow_ = new CalendarMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(
@@ -167,6 +169,7 @@ void CalendarController::showAddWindow() {
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -215,6 +218,7 @@ void CalendarController::showDetailWindow(const refdata::domain::calendar& calen
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -366,6 +370,7 @@ void CalendarController::onOpenVersion(const refdata::domain::calendar& calendar
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCalendar(calendar);
@@ -505,6 +510,7 @@ void CalendarController::onRevertVersion(const refdata::domain::calendar& calend
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_calendar = calendar;

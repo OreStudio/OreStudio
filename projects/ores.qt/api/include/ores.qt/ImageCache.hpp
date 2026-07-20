@@ -234,6 +234,16 @@ public:
      */
     QIcon getBusinessCentreFlagIcon(const std::string& bc_code);
 
+    /**
+     * @brief Get flag icon for a calendar by its code.
+     *
+     * Uses the calendar's own image_id when set (e.g. a central bank's own
+     * logo, or a currency-union flag for a supranational calendar);
+     * otherwise chains calendar code -> country_code -> country flag icon.
+     * Returns empty icon if neither is available.
+     */
+    QIcon getCalendarFlagIcon(const std::string& calendar_code);
+
 signals:
     /**
      * @brief Emitted when images have been loaded.
@@ -281,6 +291,7 @@ private slots:
     void onCurrencyImageIdsLoaded();
     void onCountryImageIdsLoaded();
     void onBusinessCentreMappingLoaded();
+    void onCalendarMappingLoaded();
     void onImagesLoaded();
     void onImageListLoaded();
     void onSingleImageLoaded();
@@ -326,6 +337,12 @@ private:
     void loadBusinessCentreMapping();
 
     /**
+     * @brief Load calendar -> image_id and calendar -> country alpha-2
+     * mappings, and queue any calendar-owned image_ids for preloading.
+     */
+    void loadCalendarMapping();
+
+    /**
      * @brief Load only images that have changed since last load.
      *
      * Uses the modified_since parameter to fetch only changed images.
@@ -342,6 +359,12 @@ private:
     struct BusinessCentreMappingResult {
         bool success;
         std::unordered_map<std::string, std::string> bc_to_country;
+    };
+
+    struct CalendarMappingResult {
+        bool success;
+        std::unordered_map<std::string, std::string> calendar_to_image_id;
+        std::unordered_map<std::string, std::string> calendar_to_country;
     };
 
     struct ImagesResult {
@@ -422,8 +445,11 @@ private:
     std::unordered_map<std::string, std::string> currency_iso_to_image_id_;
     std::unordered_map<std::string, std::string> country_alpha2_to_image_id_;
     std::unordered_map<std::string, std::string> bc_code_to_country_alpha2_;
+    std::unordered_map<std::string, std::string> calendar_code_to_image_id_;
+    std::unordered_map<std::string, std::string> calendar_code_to_country_alpha2_;
 
     QFutureWatcher<BusinessCentreMappingResult>* bc_mapping_watcher_;
+    QFutureWatcher<CalendarMappingResult>* calendar_mapping_watcher_;
 };
 
 }

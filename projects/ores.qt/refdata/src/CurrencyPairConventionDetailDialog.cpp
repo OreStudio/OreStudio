@@ -51,6 +51,7 @@ CurrencyPairConventionDetailDialog::CurrencyPairConventionDetailDialog(QWidget* 
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    setupCalendarsTab();
     // Composite child-entity tables seam: an :implements
     // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
     // + QToolBar per embedded child entity (e.g. identifiers, contact
@@ -225,6 +226,9 @@ void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     WidgetUtils::set_combo_locked(ui_->pairCodeCombo, true);
+
+    if (calendarWidget_ && calendarsTab_ && tabWidget()->currentWidget() == calendarsTab_)
+        calendarWidget_->setReadOnly(readOnly_ || convention_.pair_code.empty());
 }
 
 void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
@@ -356,6 +360,19 @@ void CurrencyPairConventionDetailDialog::onSaveClicked() {
         }
     }
 
+    if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges()) {
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+        if (!crSel)
+            return;
+        calendarWidget_->commitChanges(
+            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+                if (!success)
+                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+            });
+        return;
+    }
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -393,24 +410,36 @@ void CurrencyPairConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Currency Pair Convention saved successfully";
-            QString code = QString::fromStdString(self->convention_.pair_code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->conventionSaved(code);
-            self->notifySaveSuccess(tr("Currency Pair Convention '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), info) << "Currency Pair Convention saved successfully";
+                QString code = QString::fromStdString(self->convention_.pair_code);
+                self->hasChanges_ = false;
+                self->updateSaveButtonState();
+                emit self->conventionSaved(code);
+                self->notifySaveSuccess(tr("Currency Pair Convention '%1' saved").arg(code));
+                if (self->calendarWidget_ && self->calendarWidget_->hasPendingChanges()) {
+                    self->calendarWidget_->commitChanges(
+                        crReasonCode, crCommentary, [self](bool success, const QString& message) {
+                            if (!success)
+                                MessageBoxHelper::critical(
+                                    self, "Calendar Assignment Failed", message);
+                        });
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                QString errorMsg = QString::fromStdString(result.message);
+                emit self->errorMessage(errorMsg);
+                MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+            }
+        });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -489,5 +518,98 @@ void CurrencyPairConventionDetailDialog::onDeleteClicked() {
     watcher->setFuture(future);
 }
 
+void CurrencyPairConventionDetailDialog::setupCalendarsTab() {
+    calendarWidget_ = new CalendarAssignmentWidget(this);
+    calendarWidget_->setCallbacks(
+        [](ClientManager* cm, const std::string& leftKey) -> CalendarAssignmentWidget::LoadResult {
+            refdata::messaging::get_currency_pair_convention_calendars_request request;
+            request.pair_code = leftKey;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            CalendarAssignmentWidget::LoadResult result;
+            result.success = response->success;
+            result.message = QString::fromStdString(response->message);
+            for (const auto& cc : response->calendars)
+                result.calendarCodes.push_back(cc.calendar_code);
+            return result;
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode,
+           const std::string& changeReasonCode,
+           const std::string& changeCommentary) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::assign_currency_pair_convention_calendar_request request;
+            request.pair_code = leftKey;
+            request.calendar_code = calendarCode;
+            request.change_reason_code = changeReasonCode;
+            request.change_commentary = changeCommentary;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success,
+                    .message = QString::fromStdString(response->message)};
+        },
+        [](ClientManager* cm,
+           const std::string& leftKey,
+           const std::string& calendarCode) -> CalendarAssignmentWidget::MutateResult {
+            refdata::messaging::revoke_currency_pair_convention_calendar_request request;
+            request.pair_code = leftKey;
+            request.calendar_code = calendarCode;
+            auto response = cm->process_authenticated_request(std::move(request));
+            if (!response)
+                return {.success = false, .message = "Failed to communicate with server"};
+            return {.success = response->success,
+                    .message = QString::fromStdString(response->message)};
+        });
+
+    calendarsTab_ = new QWidget();
+    auto* layout = new QVBoxLayout(calendarsTab_);
+    layout->addWidget(calendarWidget_);
+    // Provenance is the base template's own tab and should stay last for
+    // consistency across every entity's detail dialog -- insert Calendars
+    // before it rather than appending, which would push Provenance out of
+    // its usual final position.
+    int provenanceTabIndex = -1;
+    for (int i = 0; i < tabWidget()->count(); ++i) {
+        if (tabWidget()->tabText(i) == tr("Provenance")) {
+            provenanceTabIndex = i;
+            break;
+        }
+    }
+    if (provenanceTabIndex >= 0)
+        tabWidget()->insertTab(provenanceTabIndex, calendarsTab_, tr("Calendars"));
+    else
+        tabWidget()->addTab(calendarsTab_, tr("Calendars"));
+
+    // calendarWidget_/calendarsTab_ only exist from this point on -- see
+    // the calendars_tab_connections paste point above for why these
+    // connections live here instead of setupConnections().
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::statusMessage,
+            this,
+            &CurrencyPairConventionDetailDialog::statusMessage);
+    connect(calendarWidget_,
+            &CalendarAssignmentWidget::errorMessage,
+            this,
+            [this](const QString&, const QString& message) { emit errorMessage(message); });
+    connect(calendarWidget_, &CalendarAssignmentWidget::assignmentsChanged, this, [this]() {
+        ui_->saveButton->setEnabled(!readOnly_);
+    });
+    connect(tabWidget(), &QTabWidget::currentChanged, this, [this](int) {
+        if (!calendarWidget_ || !calendarsTab_ || tabWidget()->currentWidget() != calendarsTab_)
+            return;
+        calendarWidget_->setClientManager(clientManager_);
+        calendarWidget_->setImageCache(imageCache());
+        calendarWidget_->setLeftKey(convention_.pair_code);
+        calendarWidget_->setReadOnly(readOnly_ || convention_.pair_code.empty());
+        calendarWidget_->load();
+    });
+    // Calendar commits are triggered from onSaveClicked itself (see the
+    // calendars_tab_save_guard and on_save_success paste points) so both
+    // the convention's own fields and calendar assignments share a single
+    // change-reason prompt per Save click -- no separate saveButton
+    // connection here.
+}
 
 }

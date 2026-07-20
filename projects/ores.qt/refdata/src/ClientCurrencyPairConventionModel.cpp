@@ -225,6 +225,8 @@ void ClientCurrencyPairConventionModel::fetch_conventions(std::uint32_t offset,
                 }
 
                 refdata::messaging::get_currency_pair_conventions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -254,12 +256,13 @@ void ClientCurrencyPairConventionModel::fetch_conventions(std::uint32_t offset,
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->conventions.size() << " currency pair conventions";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->conventions.size());
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->conventions.size()
+                                           << " currency pair conventions, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .conventions = std::move(result->conventions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

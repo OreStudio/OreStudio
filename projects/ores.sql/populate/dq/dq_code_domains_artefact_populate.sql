@@ -47,6 +47,7 @@ insert into ores_dq_code_domains_artefact_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_status', 0, 'Party Status', 'Lifecycle status codes for party and counterparty records.', 1),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 0, 'Calendar Type', 'Classification codes for calendar records (public holiday, central bank meeting, financial centre, data release, other).', 60),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_type', 0, 'Party Type', 'Classification codes for party and counterparty records.', 30),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_status', 0, 'Book Status', 'Lifecycle status codes for book records.', 2),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'regulatory_book_type', 0, 'Regulatory Book Type', 'Basel III/IV FRTB trading book / banking book classification a book carries.', 19),

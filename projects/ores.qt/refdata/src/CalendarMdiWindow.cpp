@@ -21,7 +21,9 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/calendar_protocol.hpp"
 #include <QFutureWatcher>
@@ -37,11 +39,13 @@ using namespace ores::logging;
 CalendarMdiWindow::CalendarMdiWindow(ClientManager* clientManager,
                                      const QString& username,
                                      BadgeCache* badgeCache,
+                                     ImageCache* imageCache,
                                      QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
     , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -113,6 +117,7 @@ void CalendarMdiWindow::setupToolbar() {
 
 void CalendarMdiWindow::setupTable() {
     model_ = new ClientCalendarModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -124,6 +129,7 @@ void CalendarMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate(
@@ -131,7 +137,7 @@ void CalendarMdiWindow::setupTable() {
             cs::text_left,
             cs::text_left,
             cs::badge_centered,
-            cs::text_left,
+            cs::icon_text_left,
             cs::mono_center,
             cs::text_left,
         },

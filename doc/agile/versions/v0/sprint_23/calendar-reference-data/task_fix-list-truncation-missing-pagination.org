@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 914B206F-CDB2-4CDC-80BF-0285839E514D
+:END:
+#+title: Task: Fix silent 100-row list truncation on entities missing has_pagination
+#+description: 61 Qt entities across every ores.qt component show working-looking pagination controls (Next/Load All/page size) but their Client*Model.cpp never sends offset/limit to the server and reports total_available_count as just the fetched page size -- silently capping every list at the server's default limit (100) with no visible indication rows are missing.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-19
+#+updated: 2026-07-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Set =:has_pagination: true= in the Qt facet of every =domain_entity=
+across the whole app whose =Client<Entity>Model.cpp= is missing it, and
+regenerate. The =cpp_qt_client_model.cpp.mustache= template itself is
+already correct — with the flag on, it sends =request.offset=/
+=request.limit= to the server and reports the server's real
+=total_available_count=; with the flag off (or unset, which defaults
+to off), it silently ignores the offset/limit parameters, always
+fetches the server's default (=limit=100=), and reports
+=total_available_count= as just the size of that one fetched page —
+masking any truncation.
+
+Discovered during manual QA of [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][the calendar Qt screens task]]: the
+Currencies list showed "Showing all records (100)" with no paging
+affordance hinting more existed, while the tenant actually had 168
+currencies — the missing 68 (including USD, alphabetically late) were
+silently unreachable. =calendar=, =currency=, =currency_pair=, and
+=currency_pair_convention= were fixed as part of that task (their
+scenario exercises them directly); this task covers the rest of the
+app with the same gap, discovered via:
+
+#+begin_src sh
+for dir in projects/ores.qt/*/src; do
+  for f in "$dir"/Client*Model.cpp; do
+    [ -f "$f" ] || continue
+    if grep -q "request;" "$f" && ! grep -q "request.offset = offset" "$f"; then
+        echo "$f"
+    fi
+  done
+done
+#+end_src
+
+As of this task's creation, the following 61 still have the gap (every
+one of these entities' MdiWindow already shows a =PaginationWidget=
+with Next/Previous/Load All controls that *look* functional but are
+not, for lists of more than 100 rows), grouped by owning component:
+
+** ores.qt/refdata (28)
+
+ClientBookModel, ClientBusinessDayConventionTypeModel,
+ClientBusinessUnitModel, ClientBusinessUnitTypeModel,
+ClientCdsConventionModel, ClientContactTypeModel,
+ClientCurrencyGroupModel, ClientCurrencyMarketTierModel,
+ClientCurrencyPairClassificationModel, ClientDayCountFractionTypeModel,
+ClientDepositConventionModel, ClientFloatingIndexTypeModel,
+ClientFraConventionModel, ClientIborIndexConventionModel,
+ClientLegTypeModel, ClientMonetaryNatureModel, ClientOisConventionModel,
+ClientOvernightIndexConventionModel, ClientPartyIdSchemeModel,
+ClientPartyStatusModel, ClientPartyTypeModel, ClientPortfolioModel,
+ClientRoundingTypeModel, ClientSwapConventionModel,
+ClientTenorAnchorModel, ClientTenorConventionModel, ClientTenorModel,
+ClientZeroConventionModel
+
+** ores.qt/admin (4)
+
+ClientRoleModel, ClientSystemSettingModel, ClientTenantModel,
+ClientTenantTypeModel
+
+** ores.qt/analytics (4)
+
+ClientPricingEngineTypeModel, ClientPricingModelConfigModel,
+ClientPricingModelProductModel, ClientPricingModelProductParameterModel
+
+** ores.qt/api (1)
+
+ClientDatasetBundleModel
+
+** ores.qt/application (1)
+
+ClientTelemetryLogModel
+
+** ores.qt/compute (4)
+
+ClientConcurrencyPolicyModel, ClientReportDefinitionModel,
+ClientReportInstanceModel, ClientReportTypeModel
+
+** ores.qt/data_management (13)
+
+ClientCatalogModel, ClientChangeReasonCategoryModel,
+ClientChangeReasonModel, ClientCodingSchemeAuthorityTypeModel,
+ClientCodingSchemeModel, ClientDataDomainModel,
+ClientDatasetDependencyModel, ClientDatasetModel, ClientMethodologyModel,
+ClientNatureDimensionModel, ClientOriginDimensionModel,
+ClientSubjectAreaModel, ClientTreatmentDimensionModel
+
+** ores.qt/dq (3)
+
+ClientBadgeDefinitionModel, ClientBadgeSeverityModel,
+ClientCodeDomainModel
+
+** ores.qt/marketdata (1)
+
+ClientFeedBindingModel
+
+** ores.qt/scheduler (1)
+
+ClientJobDefinitionModel
+
+** ores.qt/workspace (1)
+
+ClientWorkspaceModel
+
+Most of these entities likely have well under 100 rows today, which is
+why this has gone unnoticed — but the bug is silent and will bite the
+next entity that grows past 100 rows without any error or warning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-19                               |
+
+* Acceptance
+
+- [ ] Every entity listed in the Goal has =:has_pagination: true= added
+  to its =.org= model's Qt facet flags and has been regenerated via
+  =compass codegen entity generate <entity> --address ores.cpp.qt=.
+- [ ] The detection script in the Goal returns no results afterward.
+- [ ] Full build clean; =ctest= green.
+- [ ] Spot-check at least one regenerated entity's list window manually
+  (Next/Load All actually fetch beyond the first page; the "Showing
+  ..." label reflects the server's real total, not the page size).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

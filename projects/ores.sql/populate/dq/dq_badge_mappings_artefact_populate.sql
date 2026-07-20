@@ -47,6 +47,11 @@ insert into ores_dq_badge_mappings_artefact_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_status', 'Active', 'active', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 'public_holiday', 'calendar_type_public_holiday', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 'central_bank_meeting', 'calendar_type_central_bank_meeting', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 'financial_centre', 'calendar_type_financial_centre', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 'data_release', 'calendar_type_data_release', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'calendar_type', 'other', 'calendar_type_other', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_status', 'Inactive', 'inactive', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_status', 'Suspended', 'frozen', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'party_type', 'Internal', 'account_type_service', 0),

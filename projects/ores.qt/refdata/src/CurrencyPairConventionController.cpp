@@ -97,6 +97,10 @@ void CurrencyPairConventionController::showListWindow() {
             &CurrencyPairConventionMdiWindow::showConventionHistory,
             this,
             &CurrencyPairConventionController::onShowHistory);
+    connect(listWindow_,
+            &CurrencyPairConventionMdiWindow::showCalendarsRequested,
+            this,
+            &CurrencyPairConventionController::showCalendarsRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

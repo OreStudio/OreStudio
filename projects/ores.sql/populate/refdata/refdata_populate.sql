@@ -41,6 +41,22 @@
 \ir ./refdata_crm_topology_bundles_populate.sql
 
 \echo ''
+\echo '--- Calendar Types Seed Data ---'
+\ir ./refdata_calendar_types_seed_populate.sql
+
+\echo ''
+\echo '--- Calendars Seed Data ---'
+\ir ./refdata_calendars_seed_populate.sql
+
+\echo ''
+\echo '--- Currency Calendars Seed Data ---'
+\ir ./refdata_currency_calendars_seed_populate.sql
+
+\echo ''
+\echo '--- Currency Pair Convention Calendars Seed Data ---'
+\ir ./refdata_currency_pair_convention_calendars_seed_populate.sql
+
+\echo ''
 \ir ./refdata_floating_index_types_populate.sql
 
 \echo ''

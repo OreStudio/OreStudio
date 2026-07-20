@@ -21,7 +21,7 @@ variables and their semantics.
 =<<paste:UUID>>= markers in this template are paste-block injection
 points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
 for the full mechanism, and its Qt-specific table for the complete
-list. This template defines seven:
+list. This template defines eight:
 
 - =3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C= — top of the file, after the
   generated =#include= lines. Extra includes any of the other four
@@ -54,7 +54,20 @@ list. This template defines seven:
   dialog — e.g. rejecting a duplicate natural key before it silently
   versions an unrelated existing row (the SQL insert trigger can't
   reject this itself without breaking other upsert-by-key consumers
-  of the same table).
+  of the same table). Can also fully handle and =return;= from an
+  alternate save path that doesn't touch this entity's own fields at
+  all — e.g. a companion widget's own change-reason prompt and commit,
+  skipping the entity save entirely when it's the only thing that
+  changed (see the =on_save_success= seam below for the counterpart
+  when the entity itself *does* need saving too).
+- =F8EC96B9-04BA-46A1-A2D8-4E4B91DCB435= — inside =onSaveClicked()='s
+  async watcher, immediately after the entity save succeeds (inside
+  the =if (result.success)= branch, after =notifySaveSuccess()=). The
+  watcher lambda captures =crReasonCode=/=crCommentary= from the same
+  =crSel= used for the entity's own save, so a paste block here can
+  commit a companion widget's pending changes using that *same*
+  change-reason selection — one prompt shared by both writes — instead
+  of popping a second, independent one.
 
 * Template
 
@@ -1287,7 +1300,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
     connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+            self, [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -1302,6 +1315,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
             self->updateSaveButtonState();
             emit self->{{domain_entity.qt.item_var}}Saved(code);
             self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));
+{{! see * Extension points above }}
+<<paste:F8EC96B9-04BA-46A1-A2D8-4E4B91DCB435>>
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

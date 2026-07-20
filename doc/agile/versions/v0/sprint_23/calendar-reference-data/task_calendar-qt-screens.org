@@ -8,7 +8,7 @@
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch: feature/calendar-qt-screens
-#+pr: 1625
+#+pr: 1638
 #+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
@@ -30,22 +30,21 @@ Currency Pair Conventions' main window that opens Calendars.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 
-- [ ] Calendar list/add/edit/history Qt screens exist, following the
+- [X] Calendar list/add/edit/history Qt screens exist, following the
   standard entity CRUD pattern.
-- [ ] A reusable calendar combo-picker widget exists and shows the
+- [X] A reusable calendar combo-picker widget exists and shows the
   calendar's flag when one is set.
-- [ ] The combo picker is used wherever a calendar is selected (currency
+- [X] The combo picker is used wherever a calendar is selected (currency
   detail, currency_pair_convention detail).
-- [ ] Currency Pair Conventions' main window toolbar has a button into
+- [X] Currency Pair Conventions' main window toolbar has a button into
   Calendars.
 
 * Plan
@@ -60,12 +59,32 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1638][#1638]] | [qt] Add calendar assignment UI: combo picker, flag icons, junction widgets |
 | [[https://github.com/OreStudio/OreStudio/pull/1625][#1625]] | [refdata,codegen] Regenerate all junction repository layers |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Calendar-only Save fires two independent change-reason prompts/saves (all 3 review passes) | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Fixed (3a3d7b392) | assignmentsChanged now only enables Save; onSaveClicked() skips the entity save when only calendar assignments are pending |
+| 2 | Switching to Calendars tab reloads unconditionally, silently discarding staged edits | CalendarAssignmentWidget usage in both dialogs | Deferred | Real gap vs. AccountRolesWidget precedent; needs load-once-per-leftKey tracking, out of scope for this round |
+| 3 | commitChanges() doc comment contradicts stop-at-first-failure behaviour; partial failure leaves already-applied items staged | CalendarAssignmentWidget.hpp/.cpp | Fixed (3a3d7b392) | Always reloads after a commit attempt now; doc comment corrected |
+| 4 | Calendars tab unusable while creating a new entity (leftKey empty until first save) | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Deferred | Needs the same pendingAdds-capture-before-create restructuring AccountDetailDialog uses; follow-up task |
+| 5 | Read-only state not reapplied to Calendars tab when paging historical versions in place | CurrencyDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Fixed (3a3d7b392) | setReadOnly() now reapplies to calendarWidget_ when its tab is active |
+| 6 | Toolbar button hand-authored instead of using codegen's related_entity_shortcuts mechanism | CurrencyPairConventionMdiWindow.cpp/.hpp | Fixed (3a3d7b392) | Moved to the same first-class codegen table Book uses for its own list-window shortcuts |
 
 * Result
+
+Added the reusable =OreCalendarComboBox=/=CalendarAssignmentWidget= pair for
+editing text-keyed calendar-assignment junctions (currency<->calendar,
+currency_pair_convention<->calendar), mirroring =AccountRolesWidget='s
+staged pending-adds/removes pattern, embedded in the Currency and Currency
+Pair Convention detail dialogs' new Calendars tab. Added calendar flag-icon
+support to =ImageCache=/=FlagIconHelper= and a =fetch_calendar_codes= lookup.
+Junction NATS/service support for both junctions was added via
+=currency=/=currency_pair_convention='s own protocol/service/handler/
+registrar through codegen paste points, since junction codegen deliberately
+has no service/protocol layer of its own. Added a "Calendars" toolbar
+button to =CurrencyPairConventionMdiWindow= that opens the Calendars list
+window, wired through a cross-domain controller relay mirroring the
+existing Book->BookStatus pattern.

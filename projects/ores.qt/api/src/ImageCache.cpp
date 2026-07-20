@@ -22,6 +22,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
@@ -51,7 +52,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     , set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this))
     , set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this))
     , all_available_watcher_(new QFutureWatcher<ImagesResult>(this))
-    , bc_mapping_watcher_(new QFutureWatcher<BusinessCentreMappingResult>(this)) {
+    , bc_mapping_watcher_(new QFutureWatcher<BusinessCentreMappingResult>(this))
+    , calendar_mapping_watcher_(new QFutureWatcher<CalendarMappingResult>(this)) {
 
     connect(currency_ids_watcher_,
             &QFutureWatcher<ImageIdsResult>::finished,
@@ -93,6 +95,10 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
             &QFutureWatcher<BusinessCentreMappingResult>::finished,
             this,
             &ImageCache::onBusinessCentreMappingLoaded);
+    connect(calendar_mapping_watcher_,
+            &QFutureWatcher<CalendarMappingResult>::finished,
+            this,
+            &ImageCache::onCalendarMappingLoaded);
 }
 
 void ImageCache::loadAll() {
@@ -159,6 +165,8 @@ void ImageCache::clear() {
     currency_iso_to_image_id_.clear();
     country_alpha2_to_image_id_.clear();
     bc_code_to_country_alpha2_.clear();
+    calendar_code_to_image_id_.clear();
+    calendar_code_to_country_alpha2_.clear();
     // Don't clear available_images_ - it's metadata used for placeholder lookup
     // and will be refreshed by loadImageList() if needed
     last_load_time_.reset();
@@ -393,6 +401,82 @@ void ImageCache::onBusinessCentreMappingLoaded() {
         BOOST_LOG_SEV(lg(), error) << "Failed to load BC->country mapping.";
     }
 
+    // Load calendar -> image_id / country mapping before loading images
+    loadCalendarMapping();
+}
+
+void ImageCache::loadCalendarMapping() {
+    BOOST_LOG_SEV(lg(), debug) << "loadCalendarMapping() called.";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load calendar mapping: not connected.";
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+
+    QFuture<CalendarMappingResult> future = QtConcurrent::run([self]() -> CalendarMappingResult {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching calendars for image_id/country mapping.";
+        if (!self) {
+            return {.success = false, .calendar_to_image_id = {}, .calendar_to_country = {}};
+        }
+
+        refdata::messaging::get_calendars_request request;
+        request.offset = 0;
+        request.limit = 1000;
+        auto response = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch calendars.";
+            return {.success = false, .calendar_to_image_id = {}, .calendar_to_country = {}};
+        }
+
+        std::unordered_map<std::string, std::string> calendar_to_image_id;
+        std::unordered_map<std::string, std::string> calendar_to_country;
+        for (const auto& calendar : response->calendars) {
+            if (calendar.image_id)
+                calendar_to_image_id.emplace(calendar.code,
+                                             boost::uuids::to_string(*calendar.image_id));
+            if (!calendar.country_code.empty())
+                calendar_to_country.emplace(calendar.code, calendar.country_code);
+        }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Built " << calendar_to_image_id.size() << " calendar->image_id and "
+            << calendar_to_country.size() << " calendar->country mappings.";
+
+        return {.success = true,
+                .calendar_to_image_id = std::move(calendar_to_image_id),
+                .calendar_to_country = std::move(calendar_to_country)};
+    });
+
+    calendar_mapping_watcher_->setFuture(future);
+}
+
+void ImageCache::onCalendarMappingLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onCalendarMappingLoaded() callback triggered.";
+
+    decltype(calendar_mapping_watcher_->result()) result;
+    try {
+        result = calendar_mapping_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading calendar mapping: " << e.what();
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
+    if (result.success) {
+        calendar_code_to_country_alpha2_ = std::move(result.calendar_to_country);
+        for (const auto& [code, image_id] : result.calendar_to_image_id) {
+            calendar_code_to_image_id_.emplace(code, image_id);
+            pending_image_ids_.push_back(image_id);
+        }
+        BOOST_LOG_SEV(lg(), debug)
+            << "Stored " << calendar_code_to_image_id_.size() << " calendar->image_id and "
+            << calendar_code_to_country_alpha2_.size() << " calendar->country mappings.";
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load calendar mapping.";
+    }
+
     // Now load all the images
     loadImagesByIds(pending_image_ids_);
 }
@@ -432,6 +516,18 @@ QIcon ImageCache::getBusinessCentreFlagIcon(const std::string& bc_code) {
     if (it != bc_code_to_country_alpha2_.end()) {
         return getCountryFlagIcon(it->second);
     }
+    return {};
+}
+
+QIcon ImageCache::getCalendarFlagIcon(const std::string& calendar_code) {
+    auto own_it = calendar_code_to_image_id_.find(calendar_code);
+    if (own_it != calendar_code_to_image_id_.end() && !own_it->second.empty())
+        return getIcon(own_it->second);
+
+    auto country_it = calendar_code_to_country_alpha2_.find(calendar_code);
+    if (country_it != calendar_code_to_country_alpha2_.end())
+        return getCountryFlagIcon(country_it->second);
+
     return {};
 }
 

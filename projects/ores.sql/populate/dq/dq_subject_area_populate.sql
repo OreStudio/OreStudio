@@ -118,6 +118,12 @@ BEGIN
         'Organisational hierarchy reference data including business units, portfolios, and books.'
     );
 
+    PERFORM ores_dq_subject_areas_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'Reference Data',
+        'Calendars',
+        'Calendar reference data: calendar type classifications and ORE/QuantLib business-day/holiday calendars.'
+    );
+
     -- =============================================================================
     -- Summary
     -- =============================================================================

@@ -20,6 +20,7 @@
 #include "ores.qt/ClientCalendarModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/calendar_protocol.hpp"
 #include <QtConcurrent>
@@ -95,6 +96,11 @@ QVariant ClientCalendarModel::data(const QModelIndex& index, int role) const {
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::CountryCode)
+            return country_flag_icon(*imageCache_, calendar.country_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -194,6 +200,8 @@ void ClientCalendarModel::fetch_calendars(std::uint32_t offset, std::uint32_t li
                 }
 
                 refdata::messaging::get_calendars_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -224,11 +232,12 @@ void ClientCalendarModel::fetch_calendars(std::uint32_t offset, std::uint32_t li
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->calendars.size() << " calendars";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->calendars.size());
+                    << "Fetched " << result->calendars.size()
+                    << " calendars, total available: " << result->total_available_count;
                 return {.success = true,
                         .calendars = std::move(result->calendars),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

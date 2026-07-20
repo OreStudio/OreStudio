@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 7D92A697-CE9D-4760-B817-E630F9081CFB
+:END:
+#+title: Story: Improve compass output monitoring
+#+description: Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. Split from Sprint 23's 'Compass improvements' story once its own acceptance (vcpkg drift warning, devops-update-environment skill) was met.
+#+type: story
+#+level: s2
+#+filetags: :compass-output-monitoring:next:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | None (product backlog)                 |
+| Now           | Not yet started. Split out of Sprint 23's 'Compass improvements' story at its close. |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up when pulled into a sprint.     |
+| Last touched  | 2026-07-20                               |
+
+* Acceptance
+
+- Compass command output lands in a well-known, rotated, per-checkout log directory instead of ad-hoc /tmp files.
+- A services-start concurrency lock caps at most 4 environments running services at once.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:11FDFC40-E10B-4970-A15E-EEA8D8B7CA82][Improve compass output monitoring]] | BACKLOG | | | Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -38,12 +38,12 @@ vol surfaces).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Tenor entity model, runtime resolver, and Foundation-layer seed data shipped; short-rate process and Curve Template config still BACKLOG. See task Notes and the * Analysis section below. |
-| Waiting on    | Nothing — [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] ([[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which added =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=) merged via =4be33f2b4= prior to this branch's rebase. |
-| Next          | Wire the short-rate stochastic process into a Curve Template config, then the tenor-collision validator using the new resolver. |
-| Last touched  | 2026-07-13                               |
+| Now           | Closed DONE 2026-07-20: own Acceptance met (short-rate engine, Curve Template, tenor-collision validation, tick-batch publishing all shipped and validated). Remaining forward-looking tasks (dataset seeding, index cleanup, dual-curve, quoting conventions) split into [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][a product-backlog story]]. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-20                               |
 
 * Acceptance
 
@@ -141,10 +141,6 @@ which now require the process to expose =P(t,T)=, not just a path of
 | [[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI: tenant provisioner copy fix + hand-crafted management screen]] | DONE | | 2026-07-13 | Fix: tenant provisioner did not copy tenor/tenor_anchor/tenor_convention/tenor_convention_resolution from the system tenant into new tenants (RLS would have hidden them). UI: hand-crafted Qt screen joining tenor x tenor_convention x tenor_convention_resolution so a user can inspect the full resolved data in one view, since codegen does not generate UI for junction models. |
 | [[id:2B3FBE54-CD22-4E4F-A282-04A94B1105BB][Document stochastic processes: knowledge hub + per-process pages]] | DONE | 2026-07-16 | 2026-07-16 | A stochastic-processes knowledge hub (GBM, Wiener/Brownian motion, Ito's lemma, OU/Vasicek, CIR, Hull-White) plus one atomic doc per process: layperson description, chart where applicable, paper summary and related-work references. |
 | [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer: as-of query + UI for reviewing a raw instrument grid]] | DONE | 2026-07-19 | 2026-07-20 | A read-side as-of query (latest observation per point_id, as-of a given time, for one series) that reconstructs a curve/grid snapshot from independently-ticking market_observation rows, plus a first UI surface to view it. |
-| [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic IR curve sample data (vintage + DQ datasets)]] | BACKLOG | | | Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern. |
-| [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] | BACKLOG | | | Consolidate the duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) into an index entity + currency_index junction. |
-| [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve (discount + projection) short-rate model]] | BACKLOG | | | Extend the single self-discounting curve to a proper discounting/projection dual-curve model with a basis spread, closer to real market practice. |
-| [[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][IR rate display/quoting conventions (basis points, per-index precision)]] | BACKLOG | | | Research real trading-system IR rate quoting conventions (percent vs basis points, per-currency/index decimal precision) and add the equivalent of currency_pair_convention's pip_factor/tick_size/decimal_places for IR indices, plus a shared Qt formatter. |
 
 * Decisions
 

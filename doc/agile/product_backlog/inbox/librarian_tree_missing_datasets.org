@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 0F591064-950F-42F5-9CB7-0F3EEB4BC9AB
+:END:
+#+title: Data Librarian tree no longer shows datasets
+#+description: The Data Librarian's navigation tree regressed and no longer lists datasets.
+#+type: capture
+#+level: cross
+#+filetags: :qt:data_librarian:bug:regression:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Data Librarian window's navigation tree no longer lists datasets
+— observed during sprint 23 screenshot review of the accession-card
+redesign (=DatasetViewDialog=, [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card
+UI/UX]]). The status bar still reports datasets as loaded (e.g.
+"Loaded 64 datasets"), so this looks like a tree-population/display
+regression rather than a data-loading failure — the datasets exist
+and are queryable (accession cards open and render correctly), but
+the tree used to browse to them is empty or not showing entries.
+
+* Why
+
+The tree is the primary way a user browses to a dataset's accession
+card; without it, datasets are only reachable some other way (if at
+all), which defeats the point of the Librarian window. Given the
+underlying data and detail-dialog rendering both work, this is likely
+a small, isolated regression (tree model population, a stale filter,
+or a signal wiring gap) rather than a deep architectural issue —
+worth triaging early before it's forgotten.
+
+* References
+
+- =DatasetViewDialog= and the Data Librarian window's tree model
+  (=ores.qt/data_management= or wherever the Librarian's tree widget
+  lives).
+
+* See also
+
+- [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]]

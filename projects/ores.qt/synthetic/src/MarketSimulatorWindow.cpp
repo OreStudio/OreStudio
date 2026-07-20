@@ -481,7 +481,8 @@ void MarketSimulatorWindow::setupRightPanel() {
         });
         // Toggle this row's visibility from subscribeTickChart() -- store it on the spin box
         // itself so that call site doesn't need its own member for one QWidget*.
-        curveHistorySpin_->setProperty("historyRow", QVariant::fromValue(static_cast<QObject*>(historyRow)));
+        curveHistorySpin_->setProperty("historyRow",
+                                       QVariant::fromValue(static_cast<QObject*>(historyRow)));
 
         tickChartView_ = new WatermarkChartView(chart, tickChartContainer_, {});
         tickChartView_->setRenderHint(QPainter::Antialiasing);
@@ -538,10 +539,8 @@ void MarketSimulatorWindow::setupConnections() {
     connect(newFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFeedClicked);
     connect(
         newFxRateAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFxRateClicked);
-    connect(newIrCurveAction_,
-            &QAction::triggered,
-            this,
-            &MarketSimulatorWindow::onNewIrCurveClicked);
+    connect(
+        newIrCurveAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewIrCurveClicked);
     connect(editAction_, &QAction::triggered, this, &MarketSimulatorWindow::onEditClicked);
     connect(deleteAction_, &QAction::triggered, this, &MarketSimulatorWindow::onDeleteClicked);
     connect(
@@ -818,18 +817,18 @@ MarketSimulatorWindow::irCurveSourceName(const synthetic::domain::ir_curve_gener
     return ir.source_name;
 }
 
-QStandardItem* MarketSimulatorWindow::buildIrCurveFeedItem(
-    const synthetic::domain::ir_curve_generation_config& ir, ImageCache* imageCache) {
+QStandardItem*
+MarketSimulatorWindow::buildIrCurveFeedItem(const synthetic::domain::ir_curve_generation_config& ir,
+                                            ImageCache* imageCache) {
     const auto irId = boost::uuids::to_string(ir.id);
-    QString text =
-        QString::fromStdString(ir.currency_code + " " + ir_index_display_suffix(ir));
+    QString text = QString::fromStdString(ir.currency_code + " " + ir_index_display_suffix(ir));
     auto* item = new QStandardItem(text);
     item->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
     item->setData(QString::fromStdString(irId), NodeIdRole);
 
     const QIcon base =
         imageCache ? currency_flag_icon(*imageCache, ir.currency_code) :
-                    IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
+                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor);
     item->setData(QVariant::fromValue(base), BaseIconRole);
     item->setIcon(base);
     return item;
@@ -966,9 +965,8 @@ void MarketSimulatorWindow::updateEmptyState() {
 }
 
 void MarketSimulatorWindow::updateStatusCounts() {
-    statusLabel_->setText(tr("%1 collections, %2 feeds")
-                              .arg(feeds_.size())
-                              .arg(fxPairs_.size() + irCurves_.size()));
+    statusLabel_->setText(
+        tr("%1 collections, %2 feeds").arg(feeds_.size()).arg(fxPairs_.size() + irCurves_.size()));
     emit statusChanged(statusLabel_->text());
 }
 
@@ -1525,16 +1523,16 @@ void MarketSimulatorWindow::showIrCurveSummary(
                                            "color: gray;");
     summaryHero_->setVisible(true);
 
-    summaryForm_->addRow(tr("Process"), new QLabel(QString::fromStdString(ir.process_type),
-                                                    summaryPage_));
+    summaryForm_->addRow(tr("Process"),
+                         new QLabel(QString::fromStdString(ir.process_type), summaryPage_));
     summaryForm_->addRow(tr("Kappa"), new QLabel(QString::number(ir.kappa), summaryPage_));
     summaryForm_->addRow(tr("Theta"), new QLabel(QString::number(ir.theta), summaryPage_));
     summaryForm_->addRow(tr("Sigma"), new QLabel(QString::number(ir.sigma), summaryPage_));
     summaryForm_->addRow(tr("Initial rate"),
                          new QLabel(QString::number(ir.initial_rate), summaryPage_));
-    summaryForm_->addRow(tr("Fixed leg frequency"),
-                         new QLabel(QString::fromStdString(ir.fixed_leg_payment_frequency_code),
-                                    summaryPage_));
+    summaryForm_->addRow(
+        tr("Fixed leg frequency"),
+        new QLabel(QString::fromStdString(ir.fixed_leg_payment_frequency_code), summaryPage_));
     {
         const int seconds =
             ir.ticks_per_hour > 0 ?
@@ -2369,10 +2367,10 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
     tickChartCurveMode_ = curveMode;
 
     auto* chart = tickChartView_ ? tickChartView_->chart() : nullptr;
-    auto* historyRow = curveHistorySpin_ ?
-                          qobject_cast<QWidget*>(
-                              curveHistorySpin_->property("historyRow").value<QObject*>()) :
-                          nullptr;
+    auto* historyRow =
+        curveHistorySpin_ ?
+            qobject_cast<QWidget*>(curveHistorySpin_->property("historyRow").value<QObject*>()) :
+            nullptr;
 
     if (curveMode) {
         // Swap the X axis from the scalar chart's plain QValueAxis (0,1,2... update steps) to a

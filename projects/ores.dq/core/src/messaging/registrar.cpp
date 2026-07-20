@@ -36,8 +36,8 @@
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
-#include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
+#include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
@@ -93,8 +93,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto change_reason_category_subs =
             register_change_reason_category_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                   std::make_move_iterator(change_reason_category_subs.begin()),
-                   std::make_move_iterator(change_reason_category_subs.end()));
+                    std::make_move_iterator(change_reason_category_subs.begin()),
+                    std::make_move_iterator(change_reason_category_subs.end()));
     }
 
     // =========================================================================
@@ -132,8 +132,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto catalog_subs = register_catalog_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
-                   std::make_move_iterator(catalog_subs.begin()),
-                   std::make_move_iterator(catalog_subs.end()));
+                    std::make_move_iterator(catalog_subs.begin()),
+                    std::make_move_iterator(catalog_subs.end()));
     }
 
     // =========================================================================

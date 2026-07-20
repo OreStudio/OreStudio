@@ -105,45 +105,43 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     using namespace ores::synthetic::messaging;
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(start_ir_curve_feed_request::nats_subject),
-        queue,
-        [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
-            h.start(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(start_ir_curve_feed_request::nats_subject),
+                             queue,
+                             [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
+                                 ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
+                                 h.start(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(stop_ir_curve_feed_request::nats_subject),
-        queue,
-        [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
-            h.stop(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(stop_ir_curve_feed_request::nats_subject),
+                             queue,
+                             [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
+                                 ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
+                                 h.stop(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(list_ir_curve_feed_configs_request::nats_subject),
-        queue,
-        [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
-            h.list(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(list_ir_curve_feed_configs_request::nats_subject),
+                             queue,
+                             [&nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
+                                 ir_curve_feed_config_handler h(nats, curve_ctrl, ctx, verifier);
+                                 h.list(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(simulate_ir_curve_paths_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) {
-            ir_curve_preview_handler h(nats, ctx, verifier);
-            h.simulate_paths(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(std::string(simulate_ir_curve_paths_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) {
+                                            ir_curve_preview_handler h(nats, ctx, verifier);
+                                            h.simulate_paths(std::move(msg));
+                                        }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(preview_ir_curve_shape_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) {
-            ir_curve_preview_handler h(nats, ctx, verifier);
-            h.preview_shape(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(std::string(preview_ir_curve_shape_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) {
+                                            ir_curve_preview_handler h(nats, ctx, verifier);
+                                            h.preview_shape(std::move(msg));
+                                        }));
 
     return subs;
 }

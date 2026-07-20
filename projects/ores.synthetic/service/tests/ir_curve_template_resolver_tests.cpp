@@ -126,8 +126,8 @@ TEST_CASE("resolve derives a genuine [start, end) window for an FRA (interval) e
 
     REQUIRE(out.size() == 1);
     CHECK(out[0].curve_role == "FRA");
-    CHECK(out[0].ticks_ahead_start == 90); // 2026-01-01 -> 2026-04-01
-    CHECK(out[0].ticks_ahead_end == 181);  // 2026-01-01 -> 2026-07-01
+    CHECK(out[0].ticks_ahead_start == 90);                      // 2026-01-01 -> 2026-04-01
+    CHECK(out[0].ticks_ahead_end == 181);                       // 2026-01-01 -> 2026-07-01
     CHECK(out[0].year_fraction == Catch::Approx(91.0 / 365.0)); // 2026-04-01 -> 2026-07-01
     CHECK(out[0].fixed_leg_schedule.empty());
 }
@@ -155,12 +155,11 @@ TEST_CASE("resolve builds a quarterly fixed-leg schedule for a 2Y Swap entry", t
 
 TEST_CASE("resolve sorts output by sequence_index regardless of input order", tags) {
     const auto ctx = make_context();
-    const auto out = resolve(
-        {make_entry(2, "SPOT", "2Y", "SWAP"),
-         make_entry(0, "SPOT", "3M", "DEPO"),
-         make_entry(1, "3M", "6M", "FRA")},
-        ctx,
-        "Quarterly");
+    const auto out = resolve({make_entry(2, "SPOT", "2Y", "SWAP"),
+                              make_entry(0, "SPOT", "3M", "DEPO"),
+                              make_entry(1, "3M", "6M", "FRA")},
+                             ctx,
+                             "Quarterly");
 
     REQUIRE(out.size() == 3);
     CHECK(out[0].sequence_index == 0);

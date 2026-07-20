@@ -58,14 +58,14 @@ TEST_CASE("write_single_change_reason", tags) {
     ores::dq::repository::change_reason_category_repository cat_repo;
     cat_repo.write(h.context(), cat);
 
-    change_reason_repository repo(h.context());
+    change_reason_repository repo;
     auto change_reason = generate_synthetic_change_reason(ctx);
-    change_reason.tenant_id = h.tenant_id().to_string();
+    change_reason.tenant_id = h.tenant_id();
     change_reason.code = change_reason.code + "_" + std::string(faker::string::alphanumeric(8));
     change_reason.category_code = cat.code;
 
     BOOST_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
-    CHECK_NOTHROW(repo.write(change_reason));
+    CHECK_NOTHROW(repo.write(h.context(), change_reason));
 }
 
 TEST_CASE("write_multiple_change_reasons", tags) {
@@ -80,16 +80,16 @@ TEST_CASE("write_multiple_change_reasons", tags) {
     ores::dq::repository::change_reason_category_repository cat_repo;
     cat_repo.write(h.context(), cat);
 
-    change_reason_repository repo(h.context());
+    change_reason_repository repo;
     auto change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : change_reasons) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
         c.category_code = cat.code;
     }
     BOOST_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
 
-    CHECK_NOTHROW(repo.write(change_reasons));
+    CHECK_NOTHROW(repo.write(h.context(), change_reasons));
 }
 
 TEST_CASE("read_latest_change_reasons", tags) {
@@ -104,18 +104,18 @@ TEST_CASE("read_latest_change_reasons", tags) {
     ores::dq::repository::change_reason_category_repository cat_repo;
     cat_repo.write(h.context(), cat);
 
-    change_reason_repository repo(h.context());
+    change_reason_repository repo;
     auto written_change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : written_change_reasons) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
         c.category_code = cat.code;
     }
     BOOST_LOG_SEV(lg, debug) << "Written change reasons: " << written_change_reasons;
 
-    repo.write(written_change_reasons);
+    repo.write(h.context(), written_change_reasons);
 
-    auto read_change_reasons = repo.read_latest();
+    auto read_change_reasons = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     CHECK(!read_change_reasons.empty());
@@ -134,21 +134,21 @@ TEST_CASE("read_latest_change_reason_by_code", tags) {
     ores::dq::repository::change_reason_category_repository cat_repo;
     cat_repo.write(h.context(), cat);
 
-    change_reason_repository repo(h.context());
+    change_reason_repository repo;
     auto change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : change_reasons) {
-        c.tenant_id = h.tenant_id().to_string();
+        c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
         c.category_code = cat.code;
     }
 
     const auto target = change_reasons.front();
     BOOST_LOG_SEV(lg, debug) << "Write change reasons: " << change_reasons;
-    repo.write(change_reasons);
+    repo.write(h.context(), change_reasons);
 
     BOOST_LOG_SEV(lg, debug) << "Target change reason: " << target;
 
-    auto read_change_reasons = repo.read_latest(target.code);
+    auto read_change_reasons = repo.read_latest(h.context(), target.code);
     BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
     REQUIRE(read_change_reasons.size() == 1);

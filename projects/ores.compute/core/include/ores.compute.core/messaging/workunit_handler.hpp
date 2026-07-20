@@ -29,6 +29,7 @@
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

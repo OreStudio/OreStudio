@@ -17,36 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_MESSAGING_CHANGE_MANAGEMENT_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_CHANGE_MANAGEMENT_PROTOCOL_HPP
+#ifndef ORES_DQ_API_MESSAGING_CHANGE_REASON_PROTOCOL_HPP
+#define ORES_DQ_API_MESSAGING_CHANGE_REASON_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/change_reason.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-// =============================================================================
-// Change Reason Protocol
-// =============================================================================
-
 struct get_change_reasons_request {
     using response_type = struct get_change_reasons_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reasons.list";
+    static constexpr std::string_view nats_subject = "dq.v1.change_reasons.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_change_reasons_response {
     std::vector<ores::dq::domain::change_reason> reasons;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_change_reason_request {
     using response_type = struct save_change_reason_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reasons.save";
+    static constexpr std::string_view nats_subject = "dq.v1.change_reasons.save";
     ores::dq::domain::change_reason data;
 
-    static save_change_reason_request from(ores::dq::domain::change_reason r) {
-        return {.data = std::move(r)};
+    static save_change_reason_request from(ores::dq::domain::change_reason v) {
+        return {.data = std::move(v)};
     }
 };
 
@@ -57,7 +58,7 @@ struct save_change_reason_response {
 
 struct delete_change_reason_request {
     using response_type = struct delete_change_reason_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reasons.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.change_reasons.delete";
     std::vector<std::string> codes;
 };
 
@@ -68,14 +69,14 @@ struct delete_change_reason_response {
 
 struct get_change_reason_history_request {
     using response_type = struct get_change_reason_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.change-reasons.history";
+    static constexpr std::string_view nats_subject = "dq.v1.change_reasons.history";
     std::string code;
 };
 
 struct get_change_reason_history_response {
+    std::vector<ores::dq::domain::change_reason> history;
     bool success = false;
     std::string message;
-    std::vector<ores::dq::domain::change_reason> versions;
 };
 
 }

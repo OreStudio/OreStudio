@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,7 +19,11 @@
  */
 #include "ores.dq.api/generators/change_reason_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::dq::generators {
 
@@ -27,20 +31,27 @@ using ores::utility::generation::generation_keys;
 
 domain::change_reason
 generate_synthetic_change_reason(utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::change_reason r;
-    r.version = 1;
-    auto category = std::string{faker::word::noun()};
-    auto reason = std::string{faker::word::verb()};
-    r.code = category + "." + reason;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::verb()) + "_reason" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.category_code = category;
-    r.applies_to_amend = ctx.random_bool();
-    r.applies_to_delete = ctx.random_bool();
-    r.requires_commentary = ctx.random_bool();
-    r.display_order = ctx.random_int(1, 100);
+    r.category_code = std::string("data_correction");
+    r.applies_to_new = false;
+    r.applies_to_amend = true;
+    r.applies_to_delete = true;
+    r.requires_commentary = false;
+    r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

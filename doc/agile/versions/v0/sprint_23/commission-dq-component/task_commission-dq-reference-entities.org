@@ -28,10 +28,10 @@ Commission the five no-model DQ entities named in the story description onto the
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | catalog and change_reason_category fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green against a recreated dev DB). |
+| Now          | catalog, change_reason_category, and change_reason fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green via compass build test_ against a recreated dev DB). |
 | Waiting on   | Nothing.                               |
-| Next         | Same treatment for change_reason, data_domain, subject_area. |
-| Last touched | 2026-07-19                               |
+| Next         | Same treatment for data_domain, subject_area. |
+| Last touched | 2026-07-20                               |
 
 * Acceptance
 
@@ -255,8 +255,82 @@ one genuine difference in outcome:
   and =ores.dq.api.tests= (267 assertions/46 cases) green after the DB
   recreate.
 
-Stopping here again per the same scope agreement -- change_reason,
-data_domain, subject_area remain.
+*change_reason commissioned* the same way, with two genuine
+differences worth recording:
+
+- Its hand-written service/protocol/handler (=change_management_*=)
+  was ENTIRELY about change_reason at this point -- category
+  management had already moved out in the previous PR. After removing
+  change_reason's own methods/structs/handlers, the triplet
+  (=change_management_service.hpp/.cpp=, =change_management_handler.hpp=,
+  =change_management_protocol.hpp=) plus its dedicated test file
+  (=service_change_management_service_tests.cpp=) were left
+  completely empty of real content, so they were deleted outright
+  rather than left as hollow shells -- unlike catalog/category, which
+  left =data_organization_*=/=change_management_*= standing (still
+  serving other entities). =change_management_service='s
+  =remove_category()=-style cross-entity check doesn't apply here, but
+  a related, real design decision: =list_reasons_by_category()= and
+  =is_valid_reason_code()=/=is_valid_category_code()=-style validation
+  helpers were confirmed to have no real callers outside their own
+  tests before deletion (=grep= across the whole repo), so nothing
+  silently lost this time.
+- Hit a genuine SQL naming collision, not seen with catalog/category:
+  change_reason.org's own generated
+  =ores_dq_validate_change_reason_fn= (the standard "validate my own
+  primary key exists" function every domain_entity gets) collides in
+  NAME with a deliberately hand-tuned function of the same name
+  already used by every OTHER entity's =change_reason_code= column
+  (defined standalone in =dq_change_reason_functions_create.sql=).
+  The hand-written one has real, different, better semantics for this
+  specific case: validates against *system tenant's* change reasons
+  (shared governance data across all tenants, not the calling
+  tenant's own), and returns a =system.new_record= sentinel on
+  null/empty instead of raising -- neither of which the generic
+  generated version does. =create or replace function= can't even
+  apply here (Postgres rejects changing a parameter name), so this
+  wasn't a silent-shadowing risk, it was a hard error at DB-recreate
+  time. Fixed by stripping the generated duplicate function
+  definition from =dq_change_reasons_create.sql= after generation,
+  keeping everything else (table/indexes/insert trigger, whose
+  =ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code)=
+  call resolves to the existing hand-tuned function unchanged, since
+  parameter names don't affect positional calls).
+- Also found and fixed a second, unrelated regression during the full
+  build sweep: the old hand-written =change_reason.hpp= carried a
+  companion =namespace change_reasons \{ ... \}= block of well-known
+  reason-code constants (e.g. =system_new_record=,
+  =static_data_regulatory_change=) alongside the =change_reason=
+  struct itself -- domain_entity's template has no way to express
+  "also emit this extra namespace of constants," so regenerating
+  silently dropped it, breaking 3 unrelated =ores.compute= callers
+  (=work_handler.hpp=, =result_handler.hpp=, =workunit_handler.hpp=)
+  that only surfaced when actually building =ores.http.server.exe=
+  (never previously built in this session). Moved the block into its
+  own permanent, hand-maintained header
+  (=change_reason_codes.hpp=, alongside the generated
+  =change_reason.hpp=, same namespace) so it survives future
+  regenerations, and added the include to the 3 affected files.
+- Same =version == 0=-vs-=1= generator-test fix, and the same
+  =promptChangeReason()=/=change_reason_code=-not-assigned bug fixed
+  in =ChangeReasonDetailDialog= (tracked more broadly as 5DF07DAD).
+- =ores.shell='s =change_reasons_commands.cpp= had the same
+  hardcoded-hyphenated-subject-string bug as
+  =change_reason_categories_commands.cpp= did -- fixed the same way.
+- SQL swapped for real (change_reason's hand-written table also
+  lacked =change_reason_code=, same gap as catalog/category), applied
+  via another =compass db recreate=.
+- Verified via =compass build test_ores.dq.core.tests=/
+  =test_ores.dq.api.tests= (the correct, ctest-backed way to both
+  build and actually run the suites -- not by invoking the test
+  binaries directly): =ores.dq.core.tests= 290 assertions/89 cases,
+  =ores.dq.api.tests= 267 assertions/46 cases, both green. Also
+  verified =ores.qt.exe=, =ores.dq.service.lib=, and
+  =ores.http.server.exe= all build clean (the last one is what
+  surfaced the =change_reason_codes.hpp= regression).
+
+Stopping here again per the same scope agreement -- data_domain and
+subject_area remain.
 
 * Test Scenarios
 

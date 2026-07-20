@@ -20,7 +20,7 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.dq.api/eventing/change_reason_category_changed_event.hpp"
 #include "ores.dq.api/eventing/change_reason_changed_event.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <QtConcurrent>

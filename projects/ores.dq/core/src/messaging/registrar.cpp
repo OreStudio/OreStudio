@@ -19,8 +19,8 @@
  */
 #include "ores.dq.core/messaging/registrar.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
@@ -37,7 +37,7 @@
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
-#include "ores.dq.core/messaging/change_management_handler.hpp"
+#include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
@@ -84,9 +84,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // =========================================================================
-    // Change reason category is on the standard generated stack (see
-    // change_reason_category_handler/change_reason_category_registrar);
-    // change reasons stay on the bespoke change_management_handler for now.
+    // Change reason category and change reason are both on the standard
+    // generated stack (see change_reason_category_handler/_registrar and
+    // change_reason_handler/_registrar).
     // =========================================================================
 
     {
@@ -95,33 +95,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                    std::make_move_iterator(change_reason_category_subs.begin()),
                    std::make_move_iterator(change_reason_category_subs.end()));
+
+        auto change_reason_subs = register_change_reason_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(change_reason_subs.begin()),
+                   std::make_move_iterator(change_reason_subs.end()));
     }
-
-    // =========================================================================
-    // Change Management (change reasons)
-    // =========================================================================
-
-    auto cm = std::make_shared<change_management_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_change_reasons_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
-            cm->list_reasons(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_change_reason_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
-            cm->save_reason(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_change_reason_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
-            cm->delete_reasons(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_change_reason_history_request::nats_subject,
-        queue_group,
-        [cm](ores::nats::message msg) { cm->reason_history(std::move(msg)); }));
 
     // =========================================================================
     // Catalog is on the standard generated stack (see catalog_handler/

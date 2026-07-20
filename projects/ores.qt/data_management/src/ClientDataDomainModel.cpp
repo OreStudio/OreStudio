@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientDataDomainModel.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

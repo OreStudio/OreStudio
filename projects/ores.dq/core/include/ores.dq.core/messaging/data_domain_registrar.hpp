@@ -17,23 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.api/domain/data_domain_table_io.hpp"
-#include "ores.dq.api/domain/data_domain_table.hpp"
-#include <ostream>
+#ifndef ORES_DQ_CORE_MESSAGING_DATA_DOMAIN_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_DATA_DOMAIN_REGISTRAR_HPP
 
-namespace ores::dq::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace {
+namespace ores::dq::messaging {
 
-void print_data_domain_table(std::ostream& s, const std::vector<data_domain>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
+std::vector<ores::nats::service::subscription>
+register_data_domain_handlers(ores::nats::service::client& nats,
+                              ores::database::context ctx,
+                              std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::dq::messaging
 
-std::ostream& operator<<(std::ostream& s, const std::vector<data_domain>& v) {
-    print_data_domain_table(s, v);
-    return s;
-}
-
-}
+#endif

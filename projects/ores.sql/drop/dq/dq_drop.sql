@@ -81,7 +81,7 @@
 
 -- Data domains
 \ir ./dq_data_domains_notify_trigger_drop.sql
-\ir ./dq_data_domain_drop.sql
+\ir ./dq_data_domains_drop.sql
 
 -- Dataset bundles (members before bundles)
 \ir ./dq_dataset_bundle_member_drop.sql

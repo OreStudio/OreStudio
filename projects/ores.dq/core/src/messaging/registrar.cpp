@@ -20,6 +20,7 @@
 #include "ores.dq.core/messaging/registrar.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
@@ -36,6 +37,7 @@
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_registrar.hpp"
+#include "ores.dq.core/messaging/data_domain_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
@@ -103,9 +105,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Catalog is on the standard generated stack (see catalog_handler/
-    // catalog_registrar); data-domains, methodologies, and subject-areas
-    // stay on the bespoke data_organization_handler for now.
+    // Catalog and data_domain are on the standard generated stack (see
+    // catalog_handler/_registrar and data_domain_handler/_registrar);
+    // methodologies and subject-areas stay on the bespoke
+    // data_organization_handler for now.
     // =========================================================================
 
     {
@@ -113,33 +116,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                    std::make_move_iterator(catalog_subs.begin()),
                    std::make_move_iterator(catalog_subs.end()));
+
+        auto data_domain_subs = register_data_domain_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                   std::make_move_iterator(data_domain_subs.begin()),
+                   std::make_move_iterator(data_domain_subs.end()));
     }
 
     // =========================================================================
-    // Data Organization (data-domains, methodologies, subject-areas)
+    // Data Organization (methodologies, subject-areas)
     // =========================================================================
 
     auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_data_domains_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->list_data_domains(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_data_domain_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->save_data_domain(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_data_domain_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->delete_data_domains(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_data_domain_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
-            do_->data_domain_history(std::move(msg));
-        }));
 
     subs.push_back(nats.queue_subscribe(
         get_methodologies_request::nats_subject, queue_group, [do_](ores::nats::message msg) {

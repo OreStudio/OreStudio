@@ -35,7 +35,7 @@
 \ir ./dq_dataset_bundle_member_create.sql
 
 -- Data domains and subject areas
-\ir ./dq_data_domain_create.sql
+\ir ./dq_data_domains_create.sql
 \ir ./dq_data_domains_notify_trigger_create.sql
 \ir ./dq_subject_area_create.sql
 \ir ./dq_subject_areas_notify_trigger_create.sql

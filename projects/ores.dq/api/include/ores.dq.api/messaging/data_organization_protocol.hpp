@@ -20,7 +20,6 @@
 #ifndef ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
@@ -32,56 +31,6 @@
 
 namespace ores::dq::messaging {
 
-
-// =============================================================================
-// Data Domain Protocol
-// =============================================================================
-
-struct get_data_domains_request {
-    using response_type = struct get_data_domains_response;
-    static constexpr std::string_view nats_subject = "dq.v1.data-domains.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_data_domains_response {
-    std::vector<ores::dq::domain::data_domain> domains;
-    int total_available_count = 0;
-};
-
-struct save_data_domain_request {
-    using response_type = struct save_data_domain_response;
-    static constexpr std::string_view nats_subject = "dq.v1.data-domains.save";
-    ores::dq::domain::data_domain data;
-};
-
-struct save_data_domain_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_data_domain_request {
-    using response_type = struct delete_data_domain_response;
-    static constexpr std::string_view nats_subject = "dq.v1.data-domains.delete";
-    std::vector<std::string> names;
-};
-
-struct delete_data_domain_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_data_domain_history_request {
-    using response_type = struct get_data_domain_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.data-domains.history";
-    std::string name;
-};
-
-struct get_data_domain_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::data_domain> history;
-};
 
 // =============================================================================
 // Methodology Protocol

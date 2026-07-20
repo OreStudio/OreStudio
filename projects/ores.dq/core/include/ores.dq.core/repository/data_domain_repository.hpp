@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,9 @@
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,7 +34,7 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes data_domains to data storage.
+ * @brief Reads and writes data domains to data storage.
  */
 class ORES_DQ_CORE_EXPORT data_domain_repository {
 private:
@@ -46,51 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit data_domain_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes data_domains to database.
+     * @brief Writes data domains to database.
      */
     /**@{*/
-    void write(const domain::data_domain& data_domain);
-    void write(const std::vector<domain::data_domain>& data_domains);
+    void write(context ctx, const domain::data_domain& v);
+    void write(context ctx, const std::vector<domain::data_domain>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest data_domains, possibly filtered by name.
+     * @brief Reads latest data domains, possibly filtered by name.
      */
     /**@{*/
-    std::vector<domain::data_domain> read_latest();
-    std::vector<domain::data_domain> read_latest(const std::string& name);
+    std::vector<domain::data_domain> read_latest(context ctx);
+    std::vector<domain::data_domain> read_latest(context ctx, const std::string& name);
     /**@}*/
 
     /**
-     * @brief Reads latest data_domains with pagination support.
+     * @brief Reads all data domains, possibly filtered by name.
      */
-    std::vector<domain::data_domain> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::data_domain> read_all(context ctx, const std::string& name);
 
     /**
-     * @brief Gets the total count of active data_domains.
+     * @brief Reads a single data domain as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param name The name to look up
+     * @param version The version to fetch
      */
-    std::uint32_t get_total_count();
+    std::optional<domain::data_domain>
+    read_at_version(context ctx, const std::string& name, std::uint32_t version);
 
     /**
-     * @brief Reads all historical versions of a data_domain by name.
+     * @brief Reads latest data domains with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
-    std::vector<domain::data_domain> read_all(const std::string& name);
+    std::vector<domain::data_domain>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Deletes a data_domain by closing its temporal validity.
+     * @brief Gets the total count of active data domains.
+     * @param ctx Repository context with database connection
+     * @return Total number of active data domains
      */
-    void remove(const std::string& name);
+    std::uint32_t get_total_domain_count(context ctx);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes a data domain by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& name);
+
+    /**
+     * @brief Deletes data domains by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& names);
 };
 
 }

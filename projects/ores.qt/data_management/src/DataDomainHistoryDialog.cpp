@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/DataDomainHistoryDialog.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ui_DataDomainHistoryDialog.h"

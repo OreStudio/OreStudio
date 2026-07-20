@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- High-level data classification.
--- Examples: reference_data, market_data, trade_data.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Data Domain Table
+ *
+ * High-level data classification. Examples: reference_data, market_data,
+ * trade_data. Rows are authored directly (not mirrored from an external
+ * source).
+ */
 
 create table if not exists "ores_dq_data_domains_tbl" (
     "name" text not null,
@@ -44,6 +50,7 @@ create table if not exists "ores_dq_data_domains_tbl" (
     check ("name" <> '')
 );
 
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists data_domains_version_uniq_idx
 on "ores_dq_data_domains_tbl" (tenant_id, name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -62,8 +69,12 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
     select version into current_version
     from "ores_dq_data_domains_tbl"
     where tenant_id = NEW.tenant_id
@@ -79,36 +90,84 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_dq_data_domains_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and name = NEW.name
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_dq_data_domains_insert_trg
 before insert on "ores_dq_data_domains_tbl"
 for each row execute function ores_dq_data_domains_insert_fn();
 
 create or replace rule ores_dq_data_domains_delete_rule as
-on delete to "ores_dq_data_domains_tbl" do instead
+on delete to "ores_dq_data_domains_tbl" do instead (
     update "ores_dq_data_domains_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and name = OLD.name
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Validation function for data_domain
+-- Validates that a name exists in the data_domains table.
+-- Returns the validated value, or default if null/empty.
+-- Validates against the tenant's own data only.
+-- =============================================================================
+create or replace function ores_dq_validate_data_domain_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text as $$
+begin
+    -- Return default if null or empty
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid data_domain: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    -- Allow pass-through if this tenant has no active data_domains yet.
+    if not exists (
+        select 1 from ores_dq_data_domains_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values.
+    if not exists (
+        select 1 from ores_dq_data_domains_tbl
+        where tenant_id = p_tenant_id
+          and name = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid data_domain: %. Must be one of: %', p_value, (
+            select string_agg(name::text, ', ' order by name)
+            from ores_dq_data_domains_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

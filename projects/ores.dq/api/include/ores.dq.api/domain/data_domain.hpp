@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,23 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_DATA_DOMAIN_HPP
 #define ORES_DQ_API_DOMAIN_DATA_DOMAIN_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Represents a high-level classification of data within the system.
+ * @brief High-level data classification.
  *
- * Data domains define broad categories of data (e.g., "Reference Data",
- * "Market Data", "Trade Data") that help organize and manage datasets.
- * Each data domain can contain multiple subject areas.
- *
- * Examples of data domains:
- * - Reference Data: Static reference data like currencies, countries
- * - Market Data: Real-time and historical market prices
- * - Trade Data: Transaction and trade information
+ * High-level data classification. Examples: reference_data, market_data,
+ * trade_data. Rows are authored directly (not mirrored from an external
+ * source).
  */
 struct data_domain final {
     /**
@@ -47,18 +42,17 @@ struct data_domain final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique name identifying this data domain.
      *
-     * This is the natural key for the data domain.
-     * Examples: "Reference Data", "Market Data", "Trade Data".
+     * Examples: "reference_data", "market_data", "trade_data".
      */
     std::string name;
 
     /**
-     * @brief Human-readable description of the data domain's purpose.
+     * @brief Human-readable description of this data domain.
      */
     std::string description;
 
@@ -68,20 +62,37 @@ struct data_domain final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for data_domain, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const data_domain&) {
+    return "ores.dq.data_domain";
+}
 
 }
 

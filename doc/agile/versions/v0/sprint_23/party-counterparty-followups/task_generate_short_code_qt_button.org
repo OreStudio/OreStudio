@@ -5,7 +5,7 @@
 #+description: Add a generate/suggest button next to the short code field on generated Create dialogs that calls the existing generate_short_code utility from the entity's full name, for entities whose codegen model marks a natural (non-UUID) is_key field.
 #+type: task
 #+level: s1
-#+filetags: :qt:codegen:ux:party:counterparty:commission-party-counterparty-party-status:sprint_23:v0:
+#+filetags: :qt:codegen:ux:party:counterparty:party-counterparty-followups:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B0B140E-5CFB-4F0B-AF51-A303E9ED71D0][Party/counterparty follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -45,7 +45,7 @@ next regen.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
+| Parent story | [[id:8B0B140E-5CFB-4F0B-AF51-A303E9ED71D0][Party/counterparty follow-ups]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

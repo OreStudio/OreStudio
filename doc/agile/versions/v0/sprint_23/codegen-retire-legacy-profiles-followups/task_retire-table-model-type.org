@@ -5,7 +5,7 @@
 #+description: ABANDONED — absorbed into "B7: Remove split-model backward-compatibility once all models migrated" (AE754D5A), which wanted the identical table-type removal. Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix in the facet catalogue. Junction files remain a distinct type and are out of scope. Update the codegen input org-file schema reference to mark ores.codegen.table as removed.
 #+type: task
 #+level: s1
-#+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+filetags: :codegen-retire-legacy-profiles-followups:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ The ores.codegen.table model type is fully deleted from the generator; no dead c
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
-| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Parent story | [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]] |
 | Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                       |

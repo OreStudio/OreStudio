@@ -130,6 +130,16 @@ void CalendarAssignmentWidget::load(bool force) {
         return;
     }
 
+    // A forced reload of the same key (i.e. the post-commitChanges()
+    // refresh) must not blindly wipe pendingAdds_/pendingRemoves_: on a
+    // partial commit failure, commitChanges() has already trimmed out
+    // just the applied items before calling us, and the unattempted
+    // remainder must survive this refresh so it stays staged for a
+    // retry. A load for a genuinely different key (or the very first
+    // load) still clears pending state below, since it no longer
+    // describes the entity now being shown.
+    const bool isRefreshOfSameKey = force && hasLoadedOnce_ && loadedForKey_ == leftKey_;
+
     const bool has_left_key = !leftKey_.empty();
     if (has_left_key) {
         BOOST_LOG_SEV(lg(), debug) << "Loading calendars for: " << leftKey_;
@@ -147,7 +157,8 @@ void CalendarAssignmentWidget::load(bool force) {
     };
 
     auto* watcher = new QFutureWatcher<LoadFutureResult>(this);
-    connect(watcher, &QFutureWatcher<LoadFutureResult>::finished, this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<LoadFutureResult>::finished, this,
+            [self, watcher, isRefreshOfSameKey]() {
         auto result = watcher->result();
         watcher->deleteLater();
         if (!self)
@@ -156,8 +167,10 @@ void CalendarAssignmentWidget::load(bool force) {
         if (result.success) {
             self->assignedCodes_ = std::move(result.assignedCodes);
             self->allCalendarCodes_ = std::move(result.allCodes);
-            self->pendingAdds_.clear();
-            self->pendingRemoves_.clear();
+            if (!isRefreshOfSameKey) {
+                self->pendingAdds_.clear();
+                self->pendingRemoves_.clear();
+            }
             self->hasLoadedOnce_ = true;
             self->loadedForKey_ = self->leftKey_;
             self->refreshView();
@@ -340,6 +353,13 @@ void CalendarAssignmentWidget::commitChanges(
     struct CommitResult {
         bool success;
         QString message;
+        // Codes actually applied server-side before either finishing or
+        // hitting the first failure -- always a prefix of adds/removes
+        // above, since the loop below stops at the first failure. Used to
+        // trim only the applied items out of pendingAdds_/pendingRemoves_,
+        // leaving any unattempted remainder staged for a retry.
+        std::vector<std::string> appliedAdds;
+        std::vector<std::string> appliedRemoves;
     };
 
     auto* watcher = new QFutureWatcher<CommitResult>(this);
@@ -350,10 +370,21 @@ void CalendarAssignmentWidget::commitChanges(
                 auto result = watcher->result();
                 watcher->deleteLater();
                 if (self) {
-                    // Reload regardless of outcome: on partial failure, items
-                    // already applied server-side before the failing one must
-                    // be dropped from pendingAdds_/pendingRemoves_, else a
-                    // retry would resend them.
+                    auto erase_applied = [](std::vector<std::string>& pending,
+                                             const std::vector<std::string>& applied) {
+                        for (const auto& code : applied) {
+                            auto it = std::find(pending.begin(), pending.end(), code);
+                            if (it != pending.end())
+                                pending.erase(it);
+                        }
+                    };
+                    erase_applied(self->pendingAdds_, result.appliedAdds);
+                    erase_applied(self->pendingRemoves_, result.appliedRemoves);
+
+                    // Reload to pick up the server's new state; load()
+                    // recognises this as a same-key forced refresh and will
+                    // not touch the pending lists just trimmed above, so any
+                    // unattempted remainder stays staged for a retry.
                     self->load(true);
                 }
                 if (onComplete)
@@ -367,21 +398,33 @@ void CalendarAssignmentWidget::commitChanges(
             // exception escaping assignFn/revokeFn (which both call
             // ClientManager::process_authenticated_request()) into an
             // ordinary failure instead of letting it abort the client.
+            CommitResult outcome{.success = true, .message = {}, .appliedAdds = {},
+                                  .appliedRemoves = {}};
             try {
                 for (const auto& code : adds) {
                     auto result = assignFn(
                         clientManager, leftKey, code, changeReasonCode, changeCommentary);
-                    if (!result.success)
-                        return {.success = false, .message = result.message};
+                    if (!result.success) {
+                        outcome.success = false;
+                        outcome.message = result.message;
+                        return outcome;
+                    }
+                    outcome.appliedAdds.push_back(code);
                 }
                 for (const auto& code : removes) {
                     auto result = revokeFn(clientManager, leftKey, code);
-                    if (!result.success)
-                        return {.success = false, .message = result.message};
+                    if (!result.success) {
+                        outcome.success = false;
+                        outcome.message = result.message;
+                        return outcome;
+                    }
+                    outcome.appliedRemoves.push_back(code);
                 }
-                return {.success = true, .message = {}};
+                return outcome;
             } catch (const std::exception& e) {
-                return {.success = false, .message = QString::fromUtf8(e.what())};
+                outcome.success = false;
+                outcome.message = QString::fromUtf8(e.what());
+                return outcome;
             }
         });
 

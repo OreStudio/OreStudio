@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -36,149 +36,145 @@ std::string change_reason_repository::sql() {
     return generate_create_table_sql<change_reason_entity>(lg());
 }
 
-change_reason_repository::change_reason_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void change_reason_repository::write(const domain::change_reason& reason) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing change_reason to database: " << reason.code;
-
+void change_reason_repository::write(context ctx, const domain::change_reason& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing change reason: " << v.code;
     execute_write_query(
-        ctx_, change_reason_mapper::map(reason), lg(), "writing change_reason to database");
+        ctx, change_reason_mapper::map(v), lg(), "Writing change reason to database.");
 }
 
-void change_reason_repository::write(const std::vector<domain::change_reason>& reasons) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing change_reasons to database. Count: " << reasons.size();
-
+void change_reason_repository::write(context ctx, const std::vector<domain::change_reason>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing change reasons. Count: " << v.size();
     execute_write_query(
-        ctx_, change_reason_mapper::map(reasons), lg(), "writing change_reasons to database");
+        ctx, change_reason_mapper::map(v), lg(), "Writing change reasons to database.");
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+std::vector<domain::change_reason> change_reason_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("display_order"_c, "code"_c);
+                       order_by("code"_c);
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
         lg(),
-        "Reading latest change_reasons");
+        "Reading latest change reasons");
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_latest(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+std::vector<domain::change_reason> change_reason_repository::read_latest(context ctx,
+                                                                         const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<change_reason_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
         lg(),
-        "Reading latest change_reason by code.");
+        "Reading latest change reason by code.");
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_latest(std::uint32_t offset,
-                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reasons with offset: " << offset
-                               << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+std::vector<domain::change_reason> change_reason_repository::read_all(context ctx,
+                                                                      const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all change reason versions. code: " << code;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("display_order"_c, "code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
         lg(),
-        "Reading latest change_reasons with pagination.");
+        "Reading all change reason versions by code.");
+}
+
+std::optional<domain::change_reason> change_reason_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading change reason at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<change_reason_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<change_reason_entity, domain::change_reason>(
+        ctx,
+        query,
+        [](const auto& entities) { return change_reason_mapper::map(entities); },
+        lg(),
+        "Reading change reason at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void change_reason_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing change reason: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<change_reason_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing change reason from database.");
 }
 
 std::vector<domain::change_reason>
-change_reason_repository::read_latest_by_category(const std::string& category_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reasons by category: " << category_code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
+change_reason_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reasons with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-                       where("tenant_id"_c == tid && "category_code"_c == category_code &&
-                             "valid_to"_c == max.value()) |
-                       order_by("display_order"_c, "code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
         lg(),
-        "Reading latest change_reasons by category.");
+        "Reading latest change reasons with pagination.");
 }
 
-std::uint32_t change_reason_repository::get_total_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change_reason count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::uint32_t change_reason_repository::get_total_reason_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change reason count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<change_reason_entity>(sqlgen::count().as<"count">()) |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active change_reason count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active change reason count: " << count;
     return count;
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_all(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason versions. Code: " << code;
-
-    const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
-
-    return execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx_,
-        query,
-        [](const auto& entities) { return change_reason_mapper::map(entities); },
-        lg(),
-        "Reading all change_reason versions by code.");
-}
-
-void change_reason_repository::remove(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing change_reason from database: " << code;
-
-    // Delete the reason - the database rule will close the temporal record
-    // instead of actually deleting it (sets valid_to = current_timestamp)
-    const auto tid = ctx_.tenant_id().to_string();
+void change_reason_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<change_reason_entity> | where("tenant_id"_c == tid && "code"_c == code);
-
-    execute_delete_query(ctx_, query, lg(), "removing change_reason from database");
+        sqlgen::delete_from<change_reason_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing change reasons.");
 }
 
-void change_reason_repository::remove(const std::vector<std::string>& codes) {
-    const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<change_reason_entity> |
-                       where("tenant_id"_c == tid && "code"_c.in(codes));
-    execute_delete_query(ctx_, query, lg(), "batch removing change_reasons");
-}
 
 }

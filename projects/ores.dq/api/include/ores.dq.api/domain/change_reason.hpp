@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,30 +20,20 @@
 #ifndef ORES_DQ_API_DOMAIN_CHANGE_REASON_HPP
 #define ORES_DQ_API_DOMAIN_CHANGE_REASON_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Defines a specific reason for record changes.
+ * @brief A specific, selectable reason for making a change.
  *
- * Change reasons provide a controlled vocabulary for documenting why records
- * are modified. Each reason belongs to a category (e.g., "static_data",
- * "trade") and can be configured to apply to specific operations (amend,
- * delete) and whether commentary is required when using this reason.
- *
- * Reasons follow a namespaced format: "category.reason_name"
- * Examples:
- * - system.new: Initial record creation
- * - static_data.front_office_error: Correcting front office mistake
- * - static_data.back_office_error: Correcting back office mistake
- * - trade.price_correction: Fixing trade price
- *
- * @note This type only includes change_commentary (not change_reason_code)
- * because this entity IS a change reason. Self-referential tracking
- * is handled at the database level.
+ * A change reason is a specific, selectable reason for making a change
+ * to a record, scoped to a change reason category. Examples: "Typo
+ * Fix" (category: data_correction), "New Regulation" (category:
+ * regulatory_update). Rows are authored directly (not mirrored from an
+ * external source).
  */
 struct change_reason final {
     /**
@@ -54,69 +44,72 @@ struct change_reason final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique code identifying this reason.
+     * @brief Unique code identifying this change reason.
      *
-     * This is the natural key for the reason. Format is "category.reason".
-     * Examples: "system.new", "static_data.front_office_error".
+     * Examples: "typo_fix", "new_regulation".
      */
     std::string code;
 
     /**
-     * @brief Human-readable description of when to use this reason.
+     * @brief Human-readable description of this change reason.
      */
     std::string description;
 
     /**
-     * @brief Category code this reason belongs to.
-     *
-     * References change_reason_categories.code (soft FK).
+     * @brief Code of the change reason category this reason belongs to. References
+     * ores_dq_change_reason_categories_tbl (soft FK).
      */
     std::string category_code;
 
     /**
-     * @brief Whether this reason can be used for new record creation.
+     * @brief Whether this reason may be selected when creating a new record.
      */
     bool applies_to_new = false;
 
     /**
-     * @brief Whether this reason can be used for amend operations.
+     * @brief Whether this reason may be selected when amending an existing record.
      */
-    bool applies_to_amend = true;
+    bool applies_to_amend = false;
 
     /**
-     * @brief Whether this reason can be used for delete operations.
+     * @brief Whether this reason may be selected when deleting a record.
      */
-    bool applies_to_delete = true;
+    bool applies_to_delete = false;
 
     /**
-     * @brief Whether commentary is mandatory when using this reason.
+     * @brief Whether selecting this reason requires free-text commentary.
      */
     bool requires_commentary = false;
 
     /**
-     * @brief Display order for UI presentation.
-     *
-     * Lower numbers appear first in dropdown lists.
+     * @brief Order for UI display purposes.
      */
     int display_order = 0;
 
     /**
-     * @brief Username of the person who last modified this reason.
+     * @brief Username of the person who last modified this change reason.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
 
     /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
@@ -125,24 +118,13 @@ struct change_reason final {
 };
 
 /**
- * @brief Well-known reason codes used throughout the system.
- *
- * These must match the codes seeded in ores_dq_change_reasons_tbl.
+ * @brief Dispatch-key identifier for change_reason, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
  */
-namespace change_reasons {
-// System reasons
-constexpr auto system_initial_load = "system.initial_load";
-constexpr auto system_new_record = "system.new_record";
-constexpr auto system_external_data_import = "system.external_data_import";
-constexpr auto system_import = "system.import";
-constexpr auto system_test = "system.test";
-constexpr auto system_tenant_terminated = "system.tenant_terminated";
-
-// Static data reasons
-constexpr auto static_data_front_office_error = "static_data.front_office_error";
-constexpr auto static_data_back_office_error = "static_data.back_office_error";
-constexpr auto static_data_regulatory_change = "static_data.regulatory_change";
-constexpr auto static_data_corporate_action = "static_data.corporate_action";
+[[nodiscard]] constexpr std::string_view entity_type_of(const change_reason&) {
+    return "ores.dq.change_reason";
 }
 
 }

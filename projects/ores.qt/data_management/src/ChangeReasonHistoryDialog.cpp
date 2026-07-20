@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonHistoryDialog.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ui_ChangeReasonHistoryDialog.h"
@@ -61,7 +61,7 @@ void ChangeReasonHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.versions);
+        versions_ = std::move(response.history);
         historyLoaded();
     });
 }

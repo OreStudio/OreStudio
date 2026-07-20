@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_MAPPER_HPP
 
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/change_reason_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,9 +30,9 @@ namespace ores::dq::repository {
 /**
  * @brief Maps change_reason domain entities to data storage layer and vice-versa.
  */
-class change_reason_mapper {
+class ORES_DQ_CORE_EXPORT change_reason_mapper {
 private:
-    inline static std::string_view logger_name = "ores.iam.repository.change_reason_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.change_reason_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

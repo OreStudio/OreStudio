@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -31,7 +31,7 @@ domain::change_reason change_reason_mapper::map(const change_reason_entity& v) {
 
     domain::change_reason r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description;
     r.category_code = v.category_code;
@@ -42,6 +42,7 @@ domain::change_reason change_reason_mapper::map(const change_reason_entity& v) {
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -54,7 +55,7 @@ change_reason_entity change_reason_mapper::map(const domain::change_reason& v) {
 
     change_reason_entity r;
     r.code = v.code;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description;
     r.category_code = v.category_code;
@@ -65,6 +66,7 @@ change_reason_entity change_reason_mapper::map(const domain::change_reason& v) {
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,9 @@
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,11 +34,11 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes change_reasons to data storage.
+ * @brief Reads and writes change reasons to data storage.
  */
 class ORES_DQ_CORE_EXPORT change_reason_repository {
 private:
-    inline static std::string_view logger_name = "ores.iam.repository.change_reason_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.change_reason_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -46,67 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit change_reason_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes change_reasons to database.
+     * @brief Writes change reasons to database.
      */
     /**@{*/
-    void write(const domain::change_reason& reason);
-    void write(const std::vector<domain::change_reason>& reasons);
+    void write(context ctx, const domain::change_reason& v);
+    void write(context ctx, const std::vector<domain::change_reason>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest change_reasons, possibly filtered by code.
+     * @brief Reads latest change reasons, possibly filtered by code.
      */
     /**@{*/
-    std::vector<domain::change_reason> read_latest();
-    std::vector<domain::change_reason> read_latest(const std::string& code);
+    std::vector<domain::change_reason> read_latest(context ctx);
+    std::vector<domain::change_reason> read_latest(context ctx, const std::string& code);
     /**@}*/
 
     /**
-     * @brief Reads latest change_reasons with pagination support.
+     * @brief Reads all change reasons, possibly filtered by code.
+     */
+    std::vector<domain::change_reason> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single change reason as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param code The code to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::change_reason>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest change reasons with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of reasons within the specified range
      */
-    std::vector<domain::change_reason> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::change_reason>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Reads latest change_reasons by category code.
+     * @brief Gets the total count of active change reasons.
+     * @param ctx Repository context with database connection
+     * @return Total number of active change reasons
      */
-    std::vector<domain::change_reason> read_latest_by_category(const std::string& category_code);
+    std::uint32_t get_total_reason_count(context ctx);
 
     /**
-     * @brief Gets the total count of active change_reasons.
-     * @return Total number of reasons with valid_to == max_timestamp
+     * @brief Deletes a change reason by closing its temporal validity.
      */
-    std::uint32_t get_total_count();
+    void remove(context ctx, const std::string& code);
 
     /**
-     * @brief Reads all historical versions of a change_reason by code.
-     * @param code The change reason code to look up
-     * @return Vector of all versions, ordered by version descending
+     * @brief Deletes change reasons by closing their temporal validity.
      */
-    std::vector<domain::change_reason> read_all(const std::string& code);
-
-    /**
-     * @brief Deletes a change_reason by closing its temporal validity.
-     */
-    void remove(const std::string& code);
-
-    /**
-     * @brief Deletes change_reasons by closing their temporal validity.
-     */
-    void remove(const std::vector<std::string>& codes);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

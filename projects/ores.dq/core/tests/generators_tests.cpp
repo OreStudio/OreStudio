@@ -105,7 +105,7 @@ TEST_CASE("change_reason_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_change_reason(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.category_code.empty());

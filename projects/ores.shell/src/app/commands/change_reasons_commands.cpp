@@ -19,7 +19,7 @@
  */
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
@@ -129,7 +129,7 @@ void change_reasons_commands::process_get_change_reasons(std::ostream& out, nats
     auto result = do_request<dq::messaging::get_change_reasons_response>(
         out,
         session,
-        "dq.v1.change-reasons.list",
+        "dq.v1.change_reasons.list",
         rfl::json::write(dq::messaging::get_change_reasons_request{}));
     if (!result)
         return;
@@ -168,7 +168,7 @@ void change_reasons_commands::process_add_change_reason(std::ostream& out,
                                   .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<dq::messaging::save_change_reason_response>(
-        out, session, "dq.v1.change-reasons.save", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.save", rfl::json::write(req));
     if (!result)
         return;
 
@@ -197,7 +197,7 @@ void change_reasons_commands::process_delete_change_reason(std::ostream& out,
     req.codes = {code};
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_response>(
-        out, session, "dq.v1.change-reasons.delete", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.delete", rfl::json::write(req));
     if (!result)
         return;
 
@@ -225,7 +225,7 @@ void change_reasons_commands::process_get_change_reason_history(std::ostream& ou
     req.code = std::move(code);
 
     auto result = do_auth_request<dq::messaging::get_change_reason_history_response>(
-        out, session, "dq.v1.change-reasons.history", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.history", rfl::json::write(req));
     if (!result)
         return;
 
@@ -235,14 +235,14 @@ void change_reasons_commands::process_get_change_reason_history(std::ostream& ou
         return;
     }
 
-    if (result->versions.empty()) {
+    if (result->history.empty()) {
         out << "No history found for this change reason." << std::endl;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->versions.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.size()
                               << " history records.";
-    out << result->versions << std::endl;
+    out << result->history << std::endl;
 }
 
 }

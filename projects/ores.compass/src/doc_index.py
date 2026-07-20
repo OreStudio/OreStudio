@@ -14,6 +14,7 @@ extracts the minimal metadata needed to find documents:
 It also builds the inbound index (uuid -> list of uuids that link to it).
 """
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -190,10 +191,14 @@ def parse_doc(path: Path) -> Doc | None:
 
 
 def find_org_files(root: Path = REPO_ROOT) -> Iterator[Path]:
-    for path in sorted(root.rglob("*.org")):
-        if any(part in EXCLUDED_DIRS for part in path.relative_to(root).parts):
-            continue
-        yield path
+    """Walk root for *.org files, pruning EXCLUDED_DIRS so the walk never
+    descends into them (build/ and friends can be huge and slow/IO-bound;
+    filtering after Path.rglob had already visited every file inside)."""
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS)
+        for name in sorted(filenames):
+            if name.endswith(".org"):
+                yield Path(dirpath) / name
 
 
 def load_all() -> dict[str, Doc]:

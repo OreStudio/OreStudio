@@ -28,7 +28,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 | =ores.codegen.entity= | =entity_org= | ~83 | C++ domain class + SQL table + Qt UI |
 | =ores.codegen.lookup_entity= | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
 | =ores.codegen.field_group= | =field_group= | ~11 | C++ struct fragment composed into entities |
-| =ores.codegen.table= | =table= | ~11 | SQL DDL only (reference-data tables) |
+| =ores.codegen.table= (retired) | — | 0 | Superseded by =ores.codegen.entity=; every table model was migrated and the type removed from the generator |
 | =ores.codegen.junction= | =junction= | ~8 | SQL join table + C++ struct + repository |
 | =ores.codegen.service_registry= | =service_registry= | ~2 | SQL GRANT scripts + shell var declarations |
 | =ores.codegen.module= | — | few | Index: groups entity docs for a namespace |
@@ -160,36 +160,15 @@ keep each =rfl::Literal= below the MSVC C1202 complexity threshold.
   ** <field_name>          — PROPERTIES: cpp_type
 #+end_example
 
-** ores.codegen.table
+** ores.codegen.table (retired)
 
-SQL-only reference-data table.  No C++ or Qt generation.  The current standard
-for all =*_table.org= models (replacing legacy =*_entity.json=).
-
-*** Frontmatter keywords
-
-| Keyword | Required | Notes |
-|---------+----------+-------|
-| =#+type= | yes | =ores.codegen.table= |
-| =#+component= | yes | Short component name |
-| =#+product= | yes | =ores= |
-| =#+schema= | yes | PostgreSQL schema (=public=) |
-| =#+entity_singular= | yes | snake_case singular |
-| =#+entity_plural= | yes | snake_case plural |
-| =#+has_tenant_id= | yes | =true= / =false= |
-| =#+coding_scheme= | yes | =none= / =required= / =nullable= |
-| =#+image_id= | yes | =true= / =false=; scaffold defaults to =false= — edit manually if needed |
-
-*** Section hierarchy
-
-#+begin_example
-* Primary key              — PROPERTIES: column, type, is_text
-* Columns
-  ** <column_name>         — PROPERTIES: type, nullable, default (opt)
-* Validation function      — PROPERTIES: tenant_scope, default, order_by
-* Insert trigger
-  ** Validations           — | column | validation_function | table
-* See also
-#+end_example
+Was an SQL-only reference-data table with no C++ or Qt generation. Every
+=*_table.org= model was migrated into its =ores.codegen.entity= counterpart
+(the =* Validation function= / =* Insert trigger= sections moved across
+unchanged) and the type's dispatch removed from =get_model_type()=/
+=load_model()= — see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]].
+SQL-only entities (no C++/Qt layer, e.g. =currency=) are expressed as an
+=ores.codegen.entity= with no =** Qt= section rather than a distinct type.
 
 ** ores.codegen.junction
 

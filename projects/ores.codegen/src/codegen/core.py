@@ -16,7 +16,6 @@ _ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.entity":           "domain_entity",
-    "ores.codegen.table":            "table",
     "ores.codegen.junction":         "junction",
     "ores.codegen.component":        "component",
     "ores.codegen.field_group":      "field_group",
@@ -423,26 +422,6 @@ def is_field_group_model(model_filename):
     )
 
 
-def is_table_model(model_filename):
-    """
-    Check if a model file is a unified table model.
-
-    Table models use the unified 'table' root key and are rendered by
-    sql_schema_create.mustache via the 'sql' profile.  They replace the
-    older '_entity.json' / sql_schema_table_create.mustache pipeline.
-
-    Args:
-        model_filename (str): The model filename
-
-    Returns:
-        bool: True if this is a table model
-    """
-    return (
-        model_filename.endswith("_table.json")
-        or model_filename.endswith("_table.org")
-    )
-
-
 def get_model_type(model_filename, model_path=None):
     """
     Determine the model type for a model file.
@@ -476,8 +455,6 @@ def get_model_type(model_filename, model_path=None):
         return 'junction'
     elif is_field_group_model(model_filename):
         return 'field_group'
-    elif is_table_model(model_filename):
-        return 'table'
     elif is_service_registry_model(model_filename):
         return 'service_registry'
     elif is_component_model(model_filename):
@@ -725,22 +702,10 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
 
-    elif model_type == 'table' and 'table' in model_data:
-        table = model_data['table']
-        component = table.get('component', 'unknown')
-        entity_singular = table.get('entity_singular', 'unknown')
-        entity_plural = table.get('entity_plural', entity_singular + 's')
-        entity_pascal = snake_to_pascal(entity_singular)
-
-        result = result.replace('{component}', component)
-        result = result.replace('{entity}', entity_singular)
-        result = result.replace('{entity_plural}', entity_plural)
-        result = result.replace('{EntityPascal}', entity_pascal)
-
     elif model_type == 'schema' and 'entity' in model_data:
         # Lookup-entity models (#+type: ores.codegen.lookup_entity) load into
         # the 'entity' key but route through the 'schema' model_type, sharing
-        # sql_schema_table_create.mustache's output path shape with 'table'.
+        # sql_schema_table_create.mustache's output path shape.
         entity = model_data['entity']
         path_vars = _component_path_vars(entity)
         entity_singular = entity.get('entity_singular', 'unknown')
@@ -864,16 +829,18 @@ def get_domain_entity_template_mappings():
     """
     Define the mapping for domain entity schema templates.
 
+    Only consulted by the legacy target_template=None dispatch path in
+    generate_from_model (unreachable from the live physical-space
+    codegen entity CLI, which always resolves and passes an explicit
+    target_template/target_output). The domain_entity SQL archetype is
+    sql_schema_domain_entity_create.mustache, resolved via the
+    ores.sql.schema.domain_entity_create physical-space node, not
+    through this table.
+
     Returns:
         list: List of tuples (template_name, output_suffix) for domain entity generation
     """
-    return [
-        # End-state: the entity pathway renders SQL through the single unified
-        # bi-temporal table template. The `table` render context is projected
-        # from the domain_entity model (see the domain-entity normalisation in
-        # generate_code), so there is exactly one SQL schema template to maintain.
-        ("sql_schema_create.mustache", "_create.sql"),
-    ]
+    return []
 
 
 def get_junction_template_mappings():
@@ -1048,7 +1015,6 @@ def load_model(model_path):
             load_org_model,
             load_org_field_group_model,
             load_org_junction_model,
-            load_org_table_model,
             load_org_lookup_entity_model,
             load_org_service_registry_model,
             load_org_component_model,
@@ -1063,8 +1029,6 @@ def load_model(model_path):
             return load_org_field_group_model(model_path)
         if org_type == 'junction':
             return load_org_junction_model(model_path)
-        if org_type == 'table':
-            return load_org_table_model(model_path)
         if org_type == 'schema':
             return load_org_lookup_entity_model(model_path)
         if org_type == 'service_registry':
@@ -1081,8 +1045,6 @@ def load_model(model_path):
             return load_org_field_group_model(model_path)
         if path_str.endswith('_junction.org'):
             return load_org_junction_model(model_path)
-        if path_str.endswith('_table.org'):
-            return load_org_table_model(model_path)
         if path_str.endswith('_lookup_entity.org'):
             return load_org_lookup_entity_model(model_path)
         if path_str.endswith('service_registry.org'):
@@ -1413,7 +1375,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_component = model_type == 'component'
     is_service_registry = model_type == 'service_registry'
     is_field_group = model_type == 'field_group'
-    is_table = model_type == 'table'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -1452,13 +1413,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Service registry model '{model_filename}' requires --address ores.shell.service")
-            return
-    elif is_table:
-        # Table models must be used via an address (e.g. --address ores.sql.schema)
-        if target_template:
-            templates_to_process = [target_template]
-        else:
-            print(f"Table model '{model_filename}' requires --address ores.sql.schema")
             return
     elif is_schema_model:
         # Entity schema models use a different template set
@@ -1654,11 +1608,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 item['psql_var'] = psql_var
         data['service_registry'] = service_registry
 
-    # Special processing for unified table models
-    if is_table and isinstance(model, dict) and 'table' in model:
-        normalise_sql_table_context(model['table'])
-        data['table'] = model['table']
-
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:
         entity = model['entity']
@@ -1703,8 +1652,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
         domain_entity = model['domain_entity']
         # Project the unified entity model onto the shared SQL `table` context
-        # and normalise it exactly like a native table model, so the entity
-        # pathway renders through the single sql_schema_create.mustache template.
+        # and normalise it with the same rules a native table model used to
+        # get, so sql_schema_domain_entity_create.mustache's {{table.*}}
+        # fields are populated identically either way.
         from .org_loader import domain_entity_to_table_context  # deferred to avoid circular import
         sql_table = domain_entity_to_table_context(domain_entity)['table']
         normalise_sql_table_context(sql_table)

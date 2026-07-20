@@ -1,31 +1,31 @@
 :PROPERTIES:
-:ID: 8B0B140E-5CFB-4F0B-AF51-A303E9ED71D0
+:ID: 0A3DBED6-96D8-48DE-A392-7AB6045F088E
 :END:
 #+title: Story: Party/counterparty follow-ups
-#+description: Split from the now-DONE 'Commission: party, counterparty, and party_status' story: two independent follow-ups that don't block its acceptance — orchestration/workflow-step usage in counterparty, and a generate_short_code Qt button.
+#+description: Two independent follow-ups spun off Sprint 23's 'Commission: party, counterparty, and party_status' once its own acceptance was met: orchestration/workflow-step usage in counterparty, and a generate_short_code Qt button.
 #+type: story
 #+level: s2
-#+filetags: :sprint_23:v0:
+#+filetags: :party-counterparty-followups:next:
 #+created: 2026-07-20
 #+updated: 2026-07-20
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-Pick up the two follow-ups [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] deliberately left out of its own finish line: confirm counterparty's orchestration/workflow-step needs before further codegen regen, and add a generate_short_code button to Qt Create dialogs for natural-key entities.
+Pick up the two follow-ups [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] (Sprint 23, DONE) deliberately left out of its own finish line: confirm counterparty's orchestration/workflow-step needs before further codegen regen, and add a generate_short_code button to Qt Create dialogs for natural-key entities.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started. Split out of the parent story at its close (health review 1, 2026-07-20) so the tail doesn't keep it open. |
+| Parent sprint | None (product backlog)                 |
+| Now           | Not yet started. Split out of the Sprint 23 story at its close so the tail didn't keep it open. |
 | Waiting on    | Nothing.                               |
-| Next          | Either task is independently startable.|
+| Next          | Either task is independently startable when pulled into a sprint. |
 | Last touched  | 2026-07-20                               |
 
 * Acceptance

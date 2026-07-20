@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: 7B212F3B-1B36-4EE1-8B09-A225D7805E88
+:ID: 23C571DD-40EE-4768-A90D-8D0AF6B7EAB2
 :END:
-#+title: Task: Investigate orchestration/workflow-step command usage in counterparty
-#+description: Party's save handler has a hand-written workflow-step-command branch (bypasses JWT, used by orchestration) with no template/facet coverage. Check whether counterparty has or needs equivalent orchestration support before its save() workflow paths (if any) are lost to codegen regen.
+#+title: Task: Model portfolio_status as a proper lookup entity
+#+description: portfolio.status is a hardcoded static_combo (literal string list), unlike book_status which is a real codegen'd lookup entity (own table, seeded descriptions, dynamic combo, badge colours). Model portfolio_status the same way as book_status: table, seed data, codegen regen, dynamic combo + badge wiring.
 #+type: task
 #+level: s1
-#+filetags: :party-counterparty-followups:sprint_23:v0:
+#+filetags: :portfolio-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-07-13
-#+updated: 2026-07-13
+#+created: 2026-07-18
+#+updated: 2026-07-18
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B0B140E-5CFB-4F0B-AF51-A303E9ED71D0][Party/counterparty follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:65EBDE64-CA2C-4BBC-B142-2FF11B4F0446][Portfolio display follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:8B0B140E-5CFB-4F0B-AF51-A303E9ED71D0][Party/counterparty follow-ups]] |
+| Parent story | [[id:65EBDE64-CA2C-4BBC-B142-2FF11B4F0446][Portfolio display follow-ups]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Last touched | 2026-07-18                               |
 
 * Acceptance
 

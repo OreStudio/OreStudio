@@ -5,7 +5,7 @@
 #+description: Rename the 50 entity-facet .mustache templates to address form (ores_cpp_domain_class_header.mustache) atomically with their :tangle targets, core.py get_schema_template_mappings, and doc-string references; verify byte-identical generation across the graph path and the legacy schema path.
 #+type: task
 #+level: s1
-#+filetags: :codegen:physical-space:cleanup:codegen-retire-legacy-profiles-followups:sprint_23:v0:
+#+filetags: :codegen:physical-space:cleanup:codegen-legacy-profile-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE84F0A4-991D-447F-82A6-983EAC8F352B][Codegen: mustache-to-address rename + junction codegen rollout]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Every entity-facet .mustache file is named for its MASD address (dots->underscor
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]] |
+| Parent story | [[id:BE84F0A4-991D-447F-82A6-983EAC8F352B][Codegen: mustache-to-address rename + junction codegen rollout]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

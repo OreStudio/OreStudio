@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: 8C93650D-ABA0-425C-8CAB-EBCB461C498E
+:END:
+#+title: Task: Health review 1 — sprint 23 analysis
+#+description: System 2 health review 1 of sprint 23.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_23:v0:
+#+owner: marco
+#+branch: fix/compass-bearings-org-scan
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:961C86D1-3C8E-4FA1-8523-9E08F6559388][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a critical System 2 assessment of sprint 23's health at day 9 (2 days past its planned close): goal alignment, sprint load, PR velocity, story/task balance, and focus.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:961C86D1-3C8E-4FA1-8523-9E08F6559388][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-20                               |
+
+* Acceptance
+
+- Full analysis written under =* Result=; summary row added to sprint.org's =* Health Review= table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-07-20 (day 9 of 7 — 2 days past planned close)
+
+Sprint 23's planned end date was 2026-07-18; it is still open on day 9.
+Before scoring anything: a sprint running two days past its own close
+date, that hasn't triggered a close/retrospective, is itself a signal
+worth treating as evidence, not just noise to route around.
+
+*** Goal alignment
+
+Mission: "Continue commissioning ores.refdata entities and codegen
+C++ drift correction." Two distinct threads, scored separately.
+
+| Goal thread                  | Coverage | Stories (DONE/STARTED/BACKLOG)                                                                    | Verdict |
+|-------------------------------+----------+-----------------------------------------------------------------------------------------------------+---------|
+| Commissioning refdata entities| Strong   | business_centre, contact_type, day_count_fraction_type, portfolio, book×3 (DONE); party/counterparty/party_status, calendar, dq-component (STARTED) | GREEN |
+| Codegen C++ drift correction  | Partial  | codegen-unification-blockers (DONE); retire-legacy-profiles/junction (STARTED, 9/14 tasks); dx-improvements, nats-subject-constants, as-of-lookup-resolution (BACKLOG, untouched) | AMBER |
+
+Roughly half the sprint's DONE stories sit outside either thread
+entirely: CRM, synthetic-data-collections, ir-rates-synthetic,
+consolidate_history_dialogs, badge-colour-scheme, account-default-party,
+data-librarian-UI, clean-up-menus, extract-quant-processes, plus 4
+hotfixes. Sprint.org itself is candid about this — most are tagged
+"pulled in from product backlog next" — so this isn't wishful mapping,
+it's a genuinely broad, opportunistic sprint rather than a mission-
+focused one. That is a legitimate choice, but it means "goal alignment"
+undersells how much of the sprint's volume the two named threads
+actually account for.
+
+*** Sprint load
+
+| Metric                  | Value | Target      | Status |
+|--------------------------+-------+-------------+--------|
+| Commits so far           |  1228 | ≤ 300       | RED    |
+| Elapsed days             |     9 | ≤ 7         | RED    |
+| Commits/day average      |   137 | —           | —      |
+| Merged PRs               |   144 | —           | —      |
+
+At 137 commits/day this sprint is over *4x* the commit-load target,
+and has been for its entire span (lowest single day was 32, on day 9
+so far — a plausible wind-down, but every prior day bar one exceeded
+the whole-sprint target on its own). This is not a late-sprint spike;
+the volume has been consistently high since day 1 (84 commits on day
+1 alone). Combined with running 2 days past planned close, "still
+adding scope" and "already over budget" are both true at once.
+
+*** PR velocity
+
+| Metric                          | Value                          | Notes |
+|-----------------------------------+---------------------------------+-------|
+| PRs merged/day                  | ~16                             | Well above the 1/day floor |
+| Avg PR cycle time (create→merge) | 2.7h                            | Fast review turnaround |
+| Open PRs                        | 1 (#1638, calendar Qt screens)  | Open since 2026-07-18T20:31 — ~40h with no merge |
+
+Throughput is healthy and cycle time is fast when PRs do merge — the
+one open PR (#1638) is tied to a task already marked =PASSED= in the
+worktree, so it reads as "about to land" rather than stuck. One long-
+open PR against an otherwise excellent record is an AMBER signal per
+the stated threshold, not a red flag on its own.
+
+*** Story and task balance
+
+| Story (STARTED)                                          | Tasks DONE/total | Age (days, from #+created) | Notes |
+|-------------------------------------------------------------+-------------------+-------------------------------+-------|
+| Consolidate history dialogs onto HistoryDialogBase          | 14+3 abandoned/19 | 45 (carried from sprint 19) | Only 1 task left (retire-per-entity-history-templates), but it *is* the remaining Phase C rollout across ~61 dialogs — not a small tail |
+| Commission: party, counterparty, and party_status            | 12/14             | 7                              | 86% done — see recommendation below |
+| Retire legacy codegen profile system; junction support       | 9/14              | 7                              | sprint.org table wrongly shows this **DONE** — see drift finding |
+| Commission ores.qt.dq — full-stack codegen for DQ            | 6/13              | 4                              | Genuinely mid-flight |
+| Model calendars as proper ORE Studio reference data          | 4/8 (+1 PASSED)   | 16                             | Core entity modelling done; qt-screens task PASSED with PR #1638 open |
+| Improve badge colour scheme support                          | 4/8               | 5                              | Roughly half done |
+| IR Rates synthetic data generation                            | 7/13 (+1 PASSED)  | 17                             | Steady progress |
+| Compass improvements                                         | 1/2               | 8                              | Small, on track |
+
+Overall DONE/(DONE+STARTED+BACKLOG) across all 41 sprint stories =
+22/41 = 0.54 → at the GREEN threshold. Every STARTED story is
+decomposed into tasks (none are black boxes). The outlier is
+=consolidate_history_dialogs=, open 45 days across three sprints —
+that alone should disqualify a pure ratio-based GREEN read.
+
+**** sprint.org drift (found during this review, not yet corrected)
+
+Five stories where sprint.org's =* Stories= summary table disagrees
+with the story's own =State= field. Left as-is per instruction — flagging
+only, not fixing, in this review:
+
+| Story                                                          | sprint.org table says | Actual =story.org= State |
+|-------------------------------------------------------------------+--------------------------+-----------------------------|
+| Retire legacy codegen profile system; junction support (9023BDE0) | DONE                     | STARTED (9/14 tasks)         |
+| Model calendars as proper ORE Studio reference data               | BACKLOG                  | STARTED                      |
+| Commission: party, counterparty, and party_status                 | BACKLOG                  | STARTED                      |
+| Improve badge colour scheme support                               | BACKLOG                  | STARTED                      |
+| Commission ores.qt.dq — full-stack codegen for the DQ component   | BACKLOG                  | STARTED                      |
+
+The first is the more serious of the five: the table claims a story
+with 5 remaining BACKLOG tasks is DONE.
+
+*** Focus signal
+
+| Metric                        | Value | Verdict |
+|---------------------------------+-------+---------|
+| Concurrently STARTED stories   |     8 | RED     |
+| Distinct themes represented    | codegen/commissioning (4), UI/history (2), synthetic data (1), tooling (1) | RED |
+
+Eight stories in flight simultaneously, spanning four largely
+unrelated themes. Two of the eight (calendar, IR rates) have tasks
+already =PASSED= and are close to closing — see the Recommendations
+below — which would bring live focus down to 6, still at the RED
+boundary.
+
+*** Velocity
+
+| Metric                  | Value | Notes |
+|--------------------------+-------+-------|
+| Stories closed this sprint |    22 | Steady flow all sprint, no visible plateau |
+| Stories carried past planned close |  8 STARTED + 11 BACKLOG | Sprint is 2 days over and not closed |
+
+*** Overall verdict
+
+| Dimension              | Verdict |
+|-------------------------+---------|
+| Goal alignment          | AMBER   |
+| Sprint load             | RED     |
+| PR velocity             | AMBER   |
+| Story and task balance  | AMBER   |
+| Focus signal            | RED     |
+
+**Overall: RED.** Two dimensions are independently RED (sprint load at
+over 4x the commit target sustained all sprint, and focus with 8
+concurrently STARTED stories across four unrelated themes), which is
+enough to call the sprint RED on its own; three more are AMBER. The
+single most important concern is that the sprint is both over its
+commit budget *and* two days past its own planned close without a
+close decision having been made — the natural forcing function that
+would otherwise resolve the focus and drift problems hasn't fired.
+The one thing that would most improve health right now is closing the
+sprint: land the two near-done stories (calendar, IR rates), apply
+the close-and-split recommendation below to the two DONE-heavy
+stories, and correct the five sprint.org drift rows as part of that
+close — rather than continuing to add scope on day 9 of a 7-day
+sprint.
+
+*** Recommendations — close-and-split candidates
+
+Per request: stories where the bulk of the tasks are done should be
+closed now, narrowing their acceptance to what shipped, with the
+remaining tasks spun out into a new small "snags"/cleanup story rather
+than keeping the parent open indefinitely. Two clear candidates:
+
+- *Commission: party, counterparty, and party_status* (12/14 tasks
+  DONE, 86%). The 2 remaining tasks —
+  =investigate-counterparty-orchestration= and
+  =generate_short_code_qt_button= — are both independent follow-ups,
+  not blockers of what already shipped (party/counterparty/
+  party_status Qt UI, manual chapters, all verified post-NATS). Close
+  this story now; move the 2 tasks to a new small story.
+- *Retire legacy codegen profile system; add junction support*
+  (9/14 tasks DONE, 64%). The legacy-profile deletion and junction
+  codegen (the story's stated acceptance) are done and validated
+  end-to-end. The 5 remaining tasks — table-pathway backcompat
+  removal, migrating remaining junctions to generated C++, retiring
+  the table model type, and the mustache→address rename — read as a
+  distinct "finish the migration" follow-on, not core to this story's
+  own acceptance (sprint.org's own description already says as much
+  for a sibling batch of tasks). Close this story now; move the 5
+  tasks to a new story.
+
+Two more are borderline, not recommended yet:
+
+- *Model calendars as proper ORE Studio reference data* — core entity
+  modelling (4 tasks) is DONE and the Qt-screens task is =PASSED= with
+  PR #1638 open; once that merges this becomes an 5/8-done candidate
+  for the same split (holiday-picker widget, export mapping, DQ
+  publish as the follow-on story).
+- *Improve badge colour scheme support* (4/8, 50%) — not yet DONE-
+  heavy enough to recommend closing; revisit at the next review.
+
+Not recommended for splitting: *Consolidate history dialogs* — its one
+remaining task is the bulk of the outstanding work (Phase C template
+rollout across ~61 dialogs), not a small tail, so closing early would
+just relabel the same open work rather than shrink it.

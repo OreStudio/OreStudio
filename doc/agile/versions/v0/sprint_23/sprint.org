@@ -76,6 +76,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][Server-side UUID generation for all entities]] | BACKLOG | 2026-07-14 | | Clients must never generate primary-key UUIDs -- move id assignment from the client-side setCreateMode() (shared Qt detail-dialog codegen template) to the server, returned in the save response. Surfaced while fixing the CRM cross-rates matrix task's editable id-field bug. |
 | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] | BACKLOG | 2026-07-13 | | Consolidates and supersedes the three Sprint 22 per-entity commission stories, now that their shared blockers (composite hierarchy Qt widgets, temporal composite versioning) are DONE: re-verify party/counterparty Qt UI post-NATS, manual chapters for all three. Shell/CLI/Wt/HTTP tracked by the existing top-level commissioning captures, not here. |
 | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] | DONE | 2026-07-16 | 2026-07-18 | Codegen/drift and manual-chapter tasks both DONE. Two non-blocking follow-ups spun off (portfolio_status lookup entity, Purpose Type combo label). |
+| [[id:961C86D1-3C8E-4FA1-8523-9E08F6559388][Sprint health review — System 2 analysis]] | DONE | 2026-07-20 | 2026-07-20 | System 2 health review 1: RED overall (sprint load and focus both RED, 2 days past planned close). |
 
 ** Hotfixes
 
@@ -110,7 +111,9 @@ health review (promote to a story, move to =next=, or discard).
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+| # | Date       | Day       | Overall | Task                                                             |
+|---+------------+-----------+---------+-------------------------------------------------------------------|
+| 1 | 2026-07-20 | day 9 | RED     | [[id:8C93650D-ABA0-425C-8CAB-EBCB461C498E][Health review 1 — sprint 23 analysis]] |
 
 * Charts
 

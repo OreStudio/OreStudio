@@ -194,6 +194,14 @@ void MarketdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     feedBindingController_.reset();
     crmCrossRatesMatrixController_.reset();
+    // rateCurvesWindow_ isn't controller-owned (RateCurvesMdiWindow has no CRUD/list-window
+    // controller of its own), so nothing else closes it on logout -- close it explicitly here,
+    // same as the controller-owned windows above achieve via reset(). Any open
+    // CurveSnapshotMdiWindow instances are untracked (multiple can be open at once, by design,
+    // to compare curves side by side) and are left as-is; their auto-refresh requests simply
+    // fail gracefully post-logout like any other stale authenticated request.
+    if (rateCurvesWindow_)
+        rateCurvesWindow_->close();
     ctx_ = {};
 }
 

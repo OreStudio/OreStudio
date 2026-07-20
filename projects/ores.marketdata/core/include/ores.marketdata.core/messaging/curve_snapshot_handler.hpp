@@ -41,6 +41,13 @@ inline auto& curve_snapshot_handler_lg() {
         ores::logging::make_logger("ores.marketdata.messaging.curve_snapshot_handler");
     return instance;
 }
+
+// The Qt client bounds these via QSpinBox ranges, but that's a UI-layer constraint only --
+// any other authenticated NATS caller could otherwise request an oversized generate_series()/
+// LATERAL join and a correspondingly large result allocation. Server-side ceiling, independent
+// of whatever the UI happens to allow.
+constexpr std::uint32_t max_bucket_count = 200;
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -109,6 +116,14 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         get_curve_snapshot_buckets_response resp;
         if (auto req = decode<get_curve_snapshot_buckets_request>(msg)) {
+            if (req->bucket_count == 0 || req->bucket_count > max_bucket_count ||
+                req->bucket_seconds <= 0) {
+                BOOST_LOG_SEV(curve_snapshot_handler_lg(), warn)
+                    << "Rejected " << msg.subject << ": bucket_count=" << req->bucket_count
+                    << " bucket_seconds=" << req->bucket_seconds;
+                error_reply(nats_, msg, ores::service::error_code::bad_request);
+                return;
+            }
             try {
                 repository::market_series_repository series_repo;
                 auto series = series_repo.read_latest_by_type(

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: A4420706-A961-42D4-8E9F-9CA942FE1CC6
+:END:
+#+title: Task: Implement Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported
+#+description: Initial task for: Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-resolver-windows-export:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58956DF9-14B1-443A-A6AB-CD6C665D3EA3][Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the Windows build: export =resolve()=, =build_ir_curve_refdata_context()=, and =price_ir_curve_entry()= from =ores.synthetic.service= so =ores.synthetic.service.tests.exe= links against the shared library on Windows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:58956DF9-14B1-443A-A6AB-CD6C665D3EA3][Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-20                               |
+
+* Acceptance
+
+- The three free functions declared in =ir_curve_template_resolver.hpp= carry =ORES_SYNTHETIC_SERVICE_EXPORT=.
+- =ores.synthetic.service.tests= builds and passes locally (Linux); no regression to the library's existing exports.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Same missing-export-macro bug latent in make_ir_curve_feed() | ir_curve_feed.hpp | Declined (in-scope) | Not currently called cross-boundary, so it doesn't fail Windows CI today; filed as a capture (synthetic_service_export_macro_audit) rather than expanding this hotfix's scope. |
+
+* Result
+
+Root cause: =ir_curve_template_resolver.hpp= (added in =cdef5b57d=, "Add complete IR curve process editor to Market Simulator") declares three free functions
+(=resolve()=, =build_ir_curve_refdata_context()=, =price_ir_curve_entry()=) called across the DLL boundary by
+=ores.synthetic.service.tests.exe=, but never applies =ORES_SYNTHETIC_SERVICE_EXPORT= (the component's own
+=BOOST_SYMBOL_EXPORT=/=IMPORT= macro, defined in =ores.synthetic.service/export.hpp= but not previously used
+anywhere in this component's =src/= headers). On Linux/macOS, default ELF/Mach-O symbol visibility exports
+everything so the gap was invisible; on Windows, =lld-link= only puts explicitly =dllexport='d symbols in the
+DLL's import library, so the test executable failed with "undefined symbol" for =resolve()= (and would have
+for the other two, once that was fixed).
+
+Fix: added the =#include "ores.synthetic.service/export.hpp"= and annotated all three declarations with
+=ORES_SYNTHETIC_SERVICE_EXPORT=. Verified locally: =ores.synthetic.service.tests= builds and all 60
+assertions (17 cases) pass on =linux-clang-debug-make=. Cannot verify the Windows link directly in this
+environment; the fix follows the exact pattern already used correctly by the sibling =ores.synthetic.core=
+component, so confidence is high — the next Windows CI run is the real verification.

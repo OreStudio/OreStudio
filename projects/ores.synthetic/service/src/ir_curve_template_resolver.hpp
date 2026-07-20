@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
+#include "ores.synthetic.service/export.hpp"
 #include <chrono>
 #include <cstddef>
 #include <map>
@@ -104,7 +105,7 @@ struct ir_curve_refdata_context final {
  *   comment calls for), clamping the final step to the entry's own resolved maturity date so an
  *   irregular final stub is folded into the last accrual period rather than silently dropped.
  */
-std::vector<ir_curve_resolved_entry>
+ORES_SYNTHETIC_SERVICE_EXPORT std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
        const ir_curve_refdata_context& ctx,
        const std::string& fixed_leg_payment_frequency_code);
@@ -119,7 +120,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
  * misconfigured environment, not a per-request error) -- callers should treat that as fatal to
  * every curve feed, not just the one being started.
  */
-std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::database::context ctx);
+ORES_SYNTHETIC_SERVICE_EXPORT std::optional<ir_curve_refdata_context>
+build_ir_curve_refdata_context(ores::database::context ctx);
 
 /**
  * @brief Derives one resolved entry's published rate from a short-rate process's
@@ -130,8 +132,9 @@ std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::dat
  * (ir_curve_preview_handler) -- both need "one process state -> one entry's rate", so this is
  * factored out rather than duplicated between them.
  */
-double price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
-                            const ir_curve_resolved_entry& entry);
+ORES_SYNTHETIC_SERVICE_EXPORT double
+price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
+                     const ir_curve_resolved_entry& entry);
 
 }
 

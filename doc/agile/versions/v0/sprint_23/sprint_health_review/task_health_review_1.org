@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_23:v0:
 #+owner: marco
 #+branch: fix/compass-bearings-org-scan
-#+pr:
+#+pr: 1655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-20
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1655][#1655]] | [agile] Sprint 23 health review, close-out, and release notes |
 
 * Review
 

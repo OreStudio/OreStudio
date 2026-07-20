@@ -12,7 +12,7 @@
 
 /July 2026/
 
-Sprint 23 continued commissioning =ores.refdata= entities and correcting codegen C++ drift, and ran well over its planned scope: business_centre, contact_type, day_count_fraction_type, portfolio, and party/counterparty/party_status all reached full commissioning, book's data model was cleaned up and migrated to composite-entity versioning, and the legacy codegen profile system was retired in favour of real junction C++ generation (validated end-to-end against =tenor_convention_resolution=). Two features pulled in from the product backlog shipped their mechanical foundations: the FX cross-rates matrix (driver/derived spanning-tree topology, no-arbitrage triangulation) in =ores.marketdata=, and interest-rate synthetic data generation (short-rate stochastic engine, Curve Template raw-instrument grids, tenor-collision validation). Both are genuinely foundational work rather than finished, demo-ready features — see /Known Limitations/ below for what's still wrong with the numbers and why. Every =ores.qt.refdata= entity was migrated onto the generic =HistoryDialog= widget, and a mid-sprint System 2 health review flagged the sprint as running well past its commit and focus budgets — several stories with substantial work done (IR Rates, Compass improvements, and partial slices of others) were closed with their genuine remaining tails split into fresh product-backlog stories, rather than carried forward as half-finished sprint bookkeeping.
+Sprint 23 continued commissioning =ores.refdata= entities and correcting codegen C++ drift, and ran well over its planned scope: =business_centre=, =contact_type=, =day_count_fraction_type=, =portfolio=, and =party= / =counterparty= / =party_status= all reached full commissioning, book's data model was cleaned up and migrated to composite-entity versioning, and the legacy codegen profile system was retired in favour of real junction C++ generation (validated end-to-end against =tenor_convention_resolution=). Two features pulled in from the product backlog shipped their mechanical foundations: the FX cross-rates matrix (driver/derived spanning-tree topology, no-arbitrage triangulation) in =ores.marketdata=, and interest-rate synthetic data generation (short-rate stochastic engine, Curve Template raw-instrument grids, tenor-collision validation). Both are genuinely foundational work rather than finished, demo-ready features — see /Known Limitations/ below for what's still wrong with the numbers and why. Every =ores.qt.refdata= entity was migrated onto the generic =HistoryDialog= widget, and a mid-sprint System 2 health review flagged the sprint as running well past its commit and focus budgets — several stories with substantial work done (IR Rates, Compass improvements, and partial slices of others) were closed with their genuine remaining tails split into fresh product-backlog stories, rather than carried forward as half-finished sprint bookkeeping.
 
 -----
 
@@ -50,6 +50,17 @@ updating on a 5s interval, each with an FX Pair Overview sparkline.
 
 #+attr_html: :width 100%
 [[proj:assets/images/sprint_23_cross_rates_matrix.png]]
+
+** Data Librarian accession card redesign
+
+The Data Librarian's dataset detail dialog ("accession card")
+redesigned into a persistent-header, asymmetric two-column layout —
+Provenance & Methodology and Dependencies tabs, shown here across
+three datasets (Currency Pair Convention Calendars, Calendars, and
+FpML Asset Class).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_data_librarian_accession_card.png]]
 
 * ⚠️ Known Limitations
 
@@ -102,58 +113,64 @@ as an instantaneous spot cross.
 
 ** Financial Features
 
-- *Generic entity-mirror cache primitive + codegen facet (party as first consumer)*: Any entity that a consuming service needs to mirror in-process gets a thread-safe cache with almost no hand-written code, kept fresh via NATS eventing, with the subject binding checked at compile time (no hardcoded subject-name string that can drift from the publisher).
 - *Market data cleanup: retire dead duplicate tables and preserve hand-written overrides*: Retire the dead pre-codegen marketdata tables (=ores_marketdata_series_tbl=, =ores_marketdata_observations_tbl=, =ores_marketdata_fixings_tbl=) so the schema, RLS policies, ER diagram, and schema-validator ignore list only describe tables that are actually in use — and stop the codegen-managed =market_observation= repository/service from silently losing its hand-written =series_id= filter and pagination logic every time =compass codegen regenerate= runs.
-- *Migrate ores.qt.refdata onto the generic HistoryDialog*: Every =ores.qt.refdata= entity's history view is the single generic =HistoryDialog= widget (built in Consolidate history dialogs onto HistoryDialogBase's task 7D8659AB, currently wired for currency only) constructed with =(entity_type, entity_id)=, with no remaining hand-rolled per-entity =*HistoryDialog= class anywhere in =ores.qt.refdata=.
 - *IR Rates synthetic data generation*: Extend synthetic market data generation from FX spot to interest-rate curves: a short-rate stochastic engine (Hull-White/CIR/Vasicek) drives a configurable "Curve Template" (short-end deposits, mid-curve FRAs/futures, long-end swaps) per currency+index, publishing tick batches of raw instrument observations. See /Known Limitations/ above for a missing tick/day scaling factor that produces unrealistic published rates.
 - *Synthetic data collections: Basic and Realistic*: Synthetic data librarian support: FX foundation gave every party a single synthetic FX collection (the =ore_analytics= dataset bundle).
 - *Model calendars as proper ORE Studio reference data*: Today, every place in ORE Studio that needs a holiday calendar (=fx_convention.advance_calendar=, and the =currency.holiday_calendar= / =currency_pair= calendar fields proposed by Currency pair support in reference data) stores it as unvalidated free text — a name ORE/QuantLib resolves internally at pricing time (e.g.
-- *Cross-rates matrix (CRM)*: Implement the FX cross-rates matrix in =ores.marketdata= so derived rates are computed from drivers and the matrix is always arbitrage-free — the consistency engine the architecture relies on.
+- *Cross-rates matrix (CRM)*: Implement the FX cross-rates matrix in =ores.marketdata= so derived rates are computed from drivers and the matrix is always arbitrage-free — the consistency engine the architecture relies on. See /Known Limitations/ above: the matrix has no interest-rate awareness yet.
+- *Stochastic tick arrival times for synthetic feeds*: Today the synthetic FX spot feed emits a tick on a FIXED clock — a constant interval derived from =ticks_per_hour= (=fx_spot_feed::start=, =projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=), sleeping the full period before every publish including the first.
+
+** Codegen & Entity Commissioning
+
 - *Commission: day_count_fraction_type*: Discovered while modelling fx_convention: =day_count_fraction_type= lives in =ores.trading= (=ores.trading.day_count_fraction_type=, since removed — see ores.refdata.day_count_fraction_type), with exactly one consumer (=trading_swap_legs=), while every =*_convention= entity that would also need it (=ibor_index_convention=, =zero_convention=, =fx_convention=, etc.) lives in =ores.refdata=.
-- *Extract stochastic process math from ores.synthetic into ores.analytics.quant*: ores.synthetic was originally built by mixing two concerns: the "pure" quant/maths content around stochastic processes and engines, and the synthetic-data-generation machinery that drives them.
 - *Commission: business_centre*: Commission =business_centre= properly through codegen: author/update its codegen entity model to match the entity's current hand-written structure, enable the correct variability knobs, regenerate every applicable profile, and reconcile the diffs -- this is what fixes the SQL security-definer/ bootstrap-guard gaps and the wrong-plugin Qt CRUD location (=ores.qt/party= instead of =ores.qt/refdata=) found during appraisal, as regeneration output rather than hand edits.
 - *Commission: contact_type*: =ores.refdata.contact_type.org= (the codegen model) predates several conventions the current templates assume — confirmed by =compass codegen entity generate <id> --address ores.cpp.qt --diff= showing every Qt output file as entirely new relative to what's committed, and by the committed =ContactTypeController.cpp= passing an empty event name where current-template output passes =eventing::domain::event_traits<...changed_event>::name=.
 - *Commission: party, counterparty, and party_status*: Finish commissioning =party=, =counterparty=, and =party_status= across all access layers, superseding the three abandoned per-entity stories from Sprint 22 (Commission: party, Commission: counterparty, Commission: party_status) now that their shared blockers — composite child-entity/hierarchy Qt widgets and temporal composite entity versioning — are both DONE.
 - *Commission: portfolio*: Commission =portfolio= across the full stack: regenerate api/core/sql (and shell/cli/qt/wt/http where the codegen entity already supports them) from the current codegen templates against =ores.refdata.portfolio.org=, updating the model as needed; reconcile any codegen drift the same way book was remediated in Book codegen drift remediation (=compass codegen entity show= all-✅, no silently-dropped SQL validations); and add the entity chapter to the user manual, following the pattern of the book and counterparty chapters.
-- *Improve badge colour scheme support*: Analysis (task 2, done) found the badge system the story assumed didn't exist already does: a database-driven =badge_severity=/=code_domain=/=badge_definition=/=badge_mapping= catalogue in =ores.dq=, a client-side =BadgeCache=, and codegen support (=badge_key= column annotation) that generates the delegate wiring automatically.
+- *Commission ores.qt.dq — full-stack codegen for the DQ component*: Every DQ entity ends up with a real =.org= codegen model and standard generated core/service/handler/protocol/repository/Qt files -- zero hand-written entity-specific code anywhere in the DQ stack (server or Qt).
 
 ** Service Architecture
 
+- *Generic entity-mirror cache primitive + codegen facet (party as first consumer)*: Any entity that a consuming service needs to mirror in-process gets a thread-safe cache with almost no hand-written code, kept fresh via NATS eventing, with the subject binding checked at compile time (no hardcoded subject-name string that can drift from the publisher).
+- *Extract stochastic process math from ores.synthetic into ores.analytics.quant*: ores.synthetic was originally built by mixing two concerns: the "pure" quant/maths content around stochastic processes and engines, and the synthetic-data-generation machinery that drives them.
 - *Retire legacy codegen profile system; add junction support to physical-space codegen*: Two parallel codegen systems currently coexist, and one of them is dead code that nobody notices is dead because it silently no-ops instead of erroring.
 - *As-of lookup resolution codegen facet*: Give any bitemporal reference/lookup entity a codegen-generated way to answer "what did code X mean as of timepoint t" — a point-in-time query (=valid_from <= t and valid_to >= t=), distinct from and unrelated to composite parent-child version bumping.
 - *Resolve codegen model unification blockers*: The codegen model unification analysis identifies six concrete blockers that prevent merging the dual =domain_entity= + =table= org files into a single entity file per entity.
 - *Codegen developer experience improvements*: Fix three interrelated friction points in the =codegen.sh regenerate= workflow that were observed repeatedly during sprint 21 currency auxiliary work.
 - *Codegen: generate NATS subject constants per component*: Every NATS subject in the codebase today is a raw string literal, independently typed in at least three places: the protocol struct's =nats_subject= constant, the server-side registrar's =queue_subscribe= call, and (for publish-from-dq subjects specifically) DQ metadata SQL that registers a =target_subject= for an artefact type.
-- *Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency*: Restore a green build for =ores.iam.core=, broken by PR #1557 ("Migrate party to the generated nats-event-cache"): its generated =party_cache.hpp= includes a header from =ores.eventing.core= that the component's =CMakeLists.txt= never declared a dependency on.
-- *Commission ores.qt.dq — full-stack codegen for the DQ component*: Every DQ entity ends up with a real =.org= codegen model and standard generated core/service/handler/protocol/repository/Qt files -- zero hand-written entity-specific code anywhere in the DQ stack (server or Qt).
-
-** Qt UI
-
-- *Improve Data Librarian accession card UI/UX*: Redesign the Data Librarian's dataset detail dialog (=DatasetViewDialog=, the "accession card") away from its current single-column, alternating-row property-sheet table toward a persistent-header, asymmetric two-column layout, per OreStudio Data Librarian UI/UX Review.
-- *Clean up application menus*: Redesign the application's menu structure from first principles so each top-level menu has a coherent, single purpose instead of today's organic grab-bags: - =System= — app chrome only (Testing/QA runner, Reset System).
-
-** Other
-
-- *Open sprint 23*: Sprint 23 is open and usable: scaffolded, wired into the version manifest and agile index, project version bumped, and vcpkg updated — the standing checklist a sprint-open task must clear before other work can be picked up against it.
+- *Codegen legacy-profile retirement follow-ups*: Finish part of the codegen tech-debt tail that =Retire legacy codegen profile system; add junction support to physical-space codegen= deliberately left BACKLOG once its own acceptance was met: retire the split-model backward-compatibility scaffolding.
 - *DQ/Refdata service boundary cleanup*: =ores.dq= bundle publication currently writes directly to =ores_refdata_*= tables, crossing the service boundary.
 - *IAM/Refdata service boundary cleanup*: =ores.iam.core= crosses the service boundary in two known places, reading/writing =ores_refdata_parties_tbl= directly instead of going through =ores.refdata=.
-- *Sprint 22 leftover cleanup*: Close out four standalone leftover tasks parked at sprint 22 close — each a genuinely single-task remainder from an otherwise-DONE story, not worth re-opening or carrying its whole parent.
 - *Refdata entity NATS event registrar audit*: Every refdata entity with a =*_changed_event= type (=ores.refdata.api/eventing/=) should have a working NATS event registrar (=ores.refdata.service/messaging/*_event_registrar.cpp=) wired into =event_registrar.cpp=, so downstream consumers (audit trail, cache invalidation, other services) reliably learn when the entity changes.
+- *Audit refdata entities for composite (temporal-versioned) child relationships*: Implement temporal composite entity versioning landed the mechanism (SQL touch-function so child writes bump the parent's version in the same transaction, the as-of window-join read-side composition query, and the codegen flags =:bump_parent_version:=/ =:list_by_as_of:=) using party and counterparty as the *reference case only* — =party_identifier=/=party_contact_information= and their counterparty equivalents.
+- *Server-side UUID generation for all entities*: Clients must never generate primary-key UUIDs.
 - *Book data model cleanup*: Fix the data-modeling errors found by reviewing book.org against the Book domain knowledge cluster, and address the remaining domain-fit gaps it surfaced (classification flags, hierarchy semantics, legal entity/branch, rates centre, currency naming, allowed lists, manual enrichment).
 - *Move book to refdata*: No cross-component leakage: Book, BookStatus, and RegulatoryBookType have their C++ backend correctly in =ores.refdata= already; get their Qt CRUD code and plugin wiring fully out of =ores.qt/trading=/ =TradingPlugin= and into =ores.qt/refdata=/=RefdataPlugin= too, before any further codegen-template drift work touches them again — avoids regenerating and manually re-testing an entity twice (once in the wrong plugin, once after relocation).
 - *Book codegen drift remediation*: Get book, book_status, and regulatory_book_type onto a clean, fully-regenerated, end-to-end-tested codegen baseline, then migrate book to composite-entity versioning and re-verify — so the new-work tasks parked in Book data model cleanup (book_purpose_type, ledger_feed_type, is_sweepable, Wash risk-book link, child-entity toolbar buttons) build on solid ground rather than compounding existing drift.
+
+** Qt UI
+
+- *Migrate ores.qt.refdata onto the generic HistoryDialog*: Every =ores.qt.refdata= entity's history view is the single generic =HistoryDialog= widget (built in Consolidate history dialogs onto HistoryDialogBase's task 7D8659AB, currently wired for currency only) constructed with =(entity_type, entity_id)=, with no remaining hand-rolled per-entity =*HistoryDialog= class anywhere in =ores.qt.refdata=.
 - *Consolidate history dialogs onto HistoryDialogBase*: Every entity history dialog derives from =HistoryDialogBase= and shares one implementation of the common machinery, so that fixes and UX changes land once instead of 67 times, and the per-dialog code shrinks to what is genuinely entity-specific (field comparisons and labels).
-- *Stochastic tick arrival times for synthetic feeds*: Today the synthetic FX spot feed emits a tick on a FIXED clock — a constant interval derived from =ticks_per_hour= (=fx_spot_feed::start=, =projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=), sleeping the full period before every publish including the first.
+- *Improve badge colour scheme support*: Analysis (task 2, done) found the badge system the story assumed didn't exist already does: a database-driven =badge_severity= / =code_domain= / =badge_definition= / =badge_mapping= catalogue in =ores.dq=, a client-side =BadgeCache=, and codegen support (=badge_key= column annotation) that generates the delegate wiring automatically.
+- *Improve Data Librarian accession card UI/UX*: Redesign the Data Librarian's dataset detail dialog (=DatasetViewDialog=, the "accession card") away from its current single-column, alternating-row property-sheet table toward a persistent-header, asymmetric two-column layout, per OreStudio Data Librarian UI/UX Review.
+- *Clean up application menus*: Redesign the application's menu structure from first principles so each top-level menu has a coherent, single purpose instead of today's organic grab-bags: - =System= — app chrome only (Testing/QA runner, Reset System).
 - *Add a default party per account with a quick-login checkbox*: Add a =default_party_id= to the account entity, and a "Log in to default party" checkbox on the login dialog.
-- *Audit refdata entities for composite (temporal-versioned) child relationships*: Implement temporal composite entity versioning landed the mechanism (SQL touch-function so child writes bump the parent's version in the same transaction, the as-of window-join read-side composition query, and the codegen flags =:bump_parent_version:=/ =:list_by_as_of:=) using party and counterparty as the *reference case only* — =party_identifier=/=party_contact_information= and their counterparty equivalents.
-- *Sprint 23 planning session*: Give sprint 23 a real starting backlog: work through the product backlog and past-sprint carry-overs, promoting well-specified captures into sprint 23 stories and pulling in stories that were misfiled (wrong bucket/sprint folder) or mislabeled (marked ABANDONED in a sprint table with no corresponding decision recorded), verifying each one's premise against the live codebase rather than trusting its own text.
-- *Compass improvements*: A home for small, cross-cutting compass enhancements that don't warrant their own dedicated story — surfaced drift warnings, convenience tooling — so this kind of work stays tracked without inflating the backlog with one-off stories.
-- *Server-side UUID generation for all entities*: Clients must never generate primary-key UUIDs.
-- *Sprint health review — System 2 analysis*: Produce a structured System 2 health review of sprint 23 covering goal alignment, sprint load, PR velocity, focus signal, and story/task balance.
-- *Codegen legacy-profile retirement follow-ups*: Finish part of the codegen tech-debt tail that Retire legacy codegen profile system; add junction support to physical-space codegen deliberately left BACKLOG once its own acceptance was met: retire the split-model backward-compatibility scaffolding.
+
+** Hotfixes
+
+- *Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency*: Restore a green build for =ores.iam.core=, broken by PR #1557 ("Migrate party to the generated nats-event-cache"): its generated =party_cache.hpp= includes a header from =ores.eventing.core= that the component's =CMakeLists.txt= never declared a dependency on.
 - *Hotfix: Windows Clang CI compiler-launcher wrapper*: Restore the Windows Clang CI builds (=windows-clang-debug-ninja= and =windows-clang-release-ninja=), which currently fail to configure with =ninja: fatal: CreateProcess: %1 is not a valid Win32 application.= Root cause: =CMakePresets.json='s hidden =clang= preset sets =CMAKE_C_COMPILER_LAUNCHER=/=CMAKE_CXX_COMPILER_LAUNCHER= to =build/scripts/compiler_cache_wrapper.sh= via its =environment= block.
 - *Hotfix: ores.dq.core fails to build, missing ores.diff link*: Restore the build on =main=: =ores.dq.core= fails with =fatal error: 'ores.diff/domain/field_value.hpp' file not found= because its CMakeLists never declares a dependency on =ores.diff.lib=, even though its public headers include =ores.diff= types.
 - *Hotfix: Windows CI builds timing out / failing on header dependency scanning*: Restore Windows CI: builds must complete within the workflow timeout instead of failing with spurious "file not found" errors or hanging for 6h and getting cancelled.
+
+** Agile & Process
+
+- *Open sprint 23*: Sprint 23 is open and usable: scaffolded, wired into the version manifest and agile index, project version bumped, and vcpkg updated — the standing checklist a sprint-open task must clear before other work can be picked up against it.
+- *Sprint 23 planning session*: Give sprint 23 a real starting backlog: work through the product backlog and past-sprint carry-overs, promoting well-specified captures into sprint 23 stories and pulling in stories that were misfiled (wrong bucket/sprint folder) or mislabeled (marked ABANDONED in a sprint table with no corresponding decision recorded), verifying each one's premise against the live codebase rather than trusting its own text.
+- *Sprint 22 leftover cleanup*: Close out four standalone leftover tasks parked at sprint 22 close — each a genuinely single-task remainder from an otherwise-DONE story, not worth re-opening or carrying its whole parent.
+- *Sprint health review — System 2 analysis*: Produce a structured System 2 health review of sprint 23 covering goal alignment, sprint load, PR velocity, focus signal, and story/task balance.
+- *Compass improvements*: A home for small, cross-cutting compass enhancements that don't warrant their own dedicated story — surfaced drift warnings, convenience tooling — so this kind of work stays tracked without inflating the backlog with one-off stories.
 
 * ⚠️ Known Issues & Postponed
 
@@ -207,7 +224,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 - *Total effort*: not tracked
 - *PRs merged*: 152 (since v0.0.22, 2026-07-10 to 2026-07-20)
-- *Sprint duration*: 2026-06-05 → 2026-07-20
+- *Sprint duration*: 2026-07-11 → 2026-07-20 (planned close 2026-07-18; ran 2 days over — see the health review)
 
 -----
 

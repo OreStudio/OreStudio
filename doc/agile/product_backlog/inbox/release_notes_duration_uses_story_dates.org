@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: D3DC7A82-64B1-45CA-BC3B-40B703F23FFD
+:END:
+#+title: Release notes Sprint duration uses carried-over story dates
+#+description: generate_release_notes.py computes Sprint duration as min/max of every story's Start/End, including carried-over stories from earlier sprints, producing a nonsensical date range.
+#+type: capture
+#+level: cross
+#+filetags: :compass:release_notes:tooling:bug:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=build/scripts/generate_release_notes.py= (=build_context()=, around
+line 226-232) computes the release notes' "Sprint duration" line as
+=min()=/=max()= over every story's =Start=/=End= dates in the sprint's
+Stories table. Stories carried forward from an earlier sprint keep
+their original =Start= date (that's the correct, honest record for
+the story itself), so a carried-over story pulls the computed sprint
+start arbitrarily far back — e.g. sprint 23's release notes reported
+"Sprint duration: 2026-06-05 → 2026-07-20" because =Consolidate
+history dialogs onto HistoryDialogBase= was carried from sprint 19
+(created 2026-06-05), even though sprint 23 itself started
+2026-07-11. Fix: read the sprint's own =#+start_date=/=#+end_date= (or
+the Status table's =Start=/=End (expected)= fields) from =sprint.org=
+instead of deriving it from story-level dates.
+
+* Why
+
+The release notes are the external-facing summary of a sprint; a
+wildly wrong duration (6 weeks instead of ~9 days here) undermines
+trust in the rest of the document and has to be caught and manually
+corrected on every sprint close until fixed at the source.
+
+* References
+
+- =build/scripts/generate_release_notes.py= — =build_context()=,
+  =sprint_start = min(all_dates) if all_dates else "?"= (~line 232).
+
+* See also
+
+-

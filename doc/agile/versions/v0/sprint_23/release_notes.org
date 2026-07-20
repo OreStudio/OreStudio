@@ -12,13 +12,91 @@
 
 /July 2026/
 
-Sprint 23 continued commissioning =ores.refdata= entities and correcting codegen C++ drift, and ran well over its planned scope: business_centre, contact_type, day_count_fraction_type, portfolio, and party/counterparty/party_status all reached full commissioning, book's data model was cleaned up and migrated to composite-entity versioning, and the legacy codegen profile system was retired in favour of real junction C++ generation (validated end-to-end against =tenor_convention_resolution=). Two features pulled in from the product backlog shipped in full: the FX cross-rates matrix (driver/derived spanning-tree topology, no-arbitrage triangulation) in =ores.marketdata=, and interest-rate synthetic data generation (short-rate stochastic engine, Curve Template raw-instrument grids, tenor-collision validation). Every =ores.qt.refdata= entity was migrated onto the generic =HistoryDialog= widget, and a mid-sprint System 2 health review flagged the sprint as running well past its commit and focus budgets — several stories with substantial work done (IR Rates, Compass improvements, and partial slices of others) were closed with their genuine remaining tails split into fresh product-backlog stories, rather than carried forward as half-finished sprint bookkeeping.
+Sprint 23 continued commissioning =ores.refdata= entities and correcting codegen C++ drift, and ran well over its planned scope: business_centre, contact_type, day_count_fraction_type, portfolio, and party/counterparty/party_status all reached full commissioning, book's data model was cleaned up and migrated to composite-entity versioning, and the legacy codegen profile system was retired in favour of real junction C++ generation (validated end-to-end against =tenor_convention_resolution=). Two features pulled in from the product backlog shipped their mechanical foundations: the FX cross-rates matrix (driver/derived spanning-tree topology, no-arbitrage triangulation) in =ores.marketdata=, and interest-rate synthetic data generation (short-rate stochastic engine, Curve Template raw-instrument grids, tenor-collision validation). Both are genuinely foundational work rather than finished, demo-ready features — see /Known Limitations/ below for what's still wrong with the numbers and why. Every =ores.qt.refdata= entity was migrated onto the generic =HistoryDialog= widget, and a mid-sprint System 2 health review flagged the sprint as running well past its commit and focus budgets — several stories with substantial work done (IR Rates, Compass improvements, and partial slices of others) were closed with their genuine remaining tails split into fresh product-backlog stories, rather than carried forward as half-finished sprint bookkeeping.
 
 -----
 
 * ✅ Highlights
 
 - All planned stories delivered.
+
+** IR synthetic data generator
+
+The Market Simulator's IR side end-to-end: a CIR short-rate process
+configured live (curve-shape preview, sample short-rate paths),
+feeding a running curve collection alongside the existing FX
+collections. The mechanics — configuration, ticking, publishing,
+curve-shape preview — all work; see /Known Limitations/ below for why
+the published rate levels themselves are not yet trustworthy.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_ir_synthetic_data_generator.png]]
+
+** Interest rates and calendars
+
+The new =calendar= reference-data entity (financial-centre and
+public-holiday calendars) alongside the Interest Rates series browser
+and live Curve Snapshot windows (grid + bucketed history + curve-shape
+chart).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_interest_rates_calendars.png]]
+
+** Cross-rates matrix
+
+Live Cross-Rates Matrix windows (majors, scandies, exotics) plus the
+Market Series browser — derived rates computed from drivers and
+updating on a 5s interval, each with an FX Pair Overview sparkline.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_cross_rates_matrix.png]]
+
+* ⚠️ Known Limitations
+
+Both new features shown above are mechanically complete but not yet
+numerically trustworthy — this sprint built the pipeline (configure,
+generate, tick, publish, ingest, persist, display), not calibration
+or cross-domain consistency. Both are scoped for the next sprint's
+analysis, not carried forward as silent gaps.
+
+** IR synthetic rates: ticks are being treated as full trading days
+
+The short-rate process update step assumes each tick represents one
+full calendar day's worth of elapsed time (the day-scaled
+=kappa= and =sigma= defaults are calibrated on that assumption), but ticks
+actually fire every real-world =update_frequency= interval (e.g. 60
+seconds in the screenshot above) — so a day's worth of mean-reversion
+and volatility is injected into the curve roughly 1,000-1,400 times
+faster than intended. In practice this produces rate swings on the
+order of thousands of basis points within a few real-time minutes,
+and was also observed independently in the seeded
+=synthetic.ir_curve_configs.basic= dataset, where even day-scaled
+parameters (=kappa=0.5/365=) still produced unrealistic (~150-250)
+published rates over longer tick counts (a 2Y entry needs 730 daily
+ticks) — consistent with the same missing scaling factor, not a
+separate bug. The tick-batch pipeline itself (generation, batching,
+publish, ingest, persistence) is proven correct via that dataset;
+what's missing is a proper per-tick time-fraction (=dt=) that ties
+real elapsed time to the process's annually-calibrated parameters,
+rather than a fixed "1 tick = 1 day" assumption. Next sprint: derive
+and apply the correct =dt= scaling (likely
+=dt = update_frequency_seconds / seconds_per_year=, applied
+consistently through the CIR/Vasicek/Hull-White discretisation), and
+re-verify against both a live feed and the seeded datasets.
+
+** Cross-rates matrix has no interest-rate awareness
+
+The CRM's driver/derived spanning-tree topology and no-arbitrage
+triangulation operate purely on FX spot ratios — it has no concept of
+interest-rate curves at all. Real FX conventions need one: forward
+points and covered-interest-rate-parity relationships are driven by
+the interest-rate differential between two currencies, and even spot
+itself is not "today" — it is =today + spot lag= (typically T+2),
+a currency-pair-specific convention the matrix currently has no way
+to represent or apply. Next sprint: scope how the CRM should consume
+IR curve data (once the scaling issue above is resolved) to compute
+genuine forward/spot-lag-aware rates, rather than treating every rate
+as an instantaneous spot cross.
 
 * 🛠️ Key Improvements
 
@@ -27,7 +105,7 @@ Sprint 23 continued commissioning =ores.refdata= entities and correcting codegen
 - *Generic entity-mirror cache primitive + codegen facet (party as first consumer)*: Any entity that a consuming service needs to mirror in-process gets a thread-safe cache with almost no hand-written code, kept fresh via NATS eventing, with the subject binding checked at compile time (no hardcoded subject-name string that can drift from the publisher).
 - *Market data cleanup: retire dead duplicate tables and preserve hand-written overrides*: Retire the dead pre-codegen marketdata tables (=ores_marketdata_series_tbl=, =ores_marketdata_observations_tbl=, =ores_marketdata_fixings_tbl=) so the schema, RLS policies, ER diagram, and schema-validator ignore list only describe tables that are actually in use — and stop the codegen-managed =market_observation= repository/service from silently losing its hand-written =series_id= filter and pagination logic every time =compass codegen regenerate= runs.
 - *Migrate ores.qt.refdata onto the generic HistoryDialog*: Every =ores.qt.refdata= entity's history view is the single generic =HistoryDialog= widget (built in Consolidate history dialogs onto HistoryDialogBase's task 7D8659AB, currently wired for currency only) constructed with =(entity_type, entity_id)=, with no remaining hand-rolled per-entity =*HistoryDialog= class anywhere in =ores.qt.refdata=.
-- *IR Rates synthetic data generation*: Extend synthetic market data generation from FX spot to interest-rate curves: a short-rate stochastic engine (Hull-White/CIR/Vasicek) drives a configurable "Curve Template" (short-end deposits, mid-curve FRAs/futures, long-end swaps) per currency+index, publishing tick batches of raw instrument observations.
+- *IR Rates synthetic data generation*: Extend synthetic market data generation from FX spot to interest-rate curves: a short-rate stochastic engine (Hull-White/CIR/Vasicek) drives a configurable "Curve Template" (short-end deposits, mid-curve FRAs/futures, long-end swaps) per currency+index, publishing tick batches of raw instrument observations. See /Known Limitations/ above for a missing tick/day scaling factor that produces unrealistic published rates.
 - *Synthetic data collections: Basic and Realistic*: Synthetic data librarian support: FX foundation gave every party a single synthetic FX collection (the =ore_analytics= dataset bundle).
 - *Model calendars as proper ORE Studio reference data*: Today, every place in ORE Studio that needs a holiday calendar (=fx_convention.advance_calendar=, and the =currency.holiday_calendar= / =currency_pair= calendar fields proposed by Currency pair support in reference data) stores it as unvalidated free text — a name ORE/QuantLib resolves internally at pricing time (e.g.
 - *Cross-rates matrix (CRM)*: Implement the FX cross-rates matrix in =ores.marketdata= so derived rates are computed from drivers and the matrix is always arbitrage-free — the consistency engine the architecture relies on.

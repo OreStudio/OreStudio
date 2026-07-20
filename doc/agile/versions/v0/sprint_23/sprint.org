@@ -98,6 +98,51 @@ Milestones worth capturing as they happen, so the release notes at
 sprint close have the evidence to hand. Add a dated =** subheading=
 per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
 
+** IR synthetic data generator (2026-07-20)
+
+The Market Simulator's IR side end-to-end: a CIR short-rate process
+configured live (Simple/Advanced engine controls, curve-shape preview,
+sample short-rate paths), feeding a running CAD CORRA collection
+alongside the existing FX collections. Known limitation: ticks are
+being treated as full trading days by the process update step, so a
+day's worth of mean-reversion/volatility lands every real-time
+=update_frequency= interval (60s here) instead of once per day —
+producing rate swings of thousands of basis points within minutes.
+Consistent with the day-scaled =kappa= and =sigma= defaults still
+producing unrealistic (~150-250) rates in the seeded
+=synthetic.ir_curve_configs.basic= dataset over longer tick counts —
+same missing =dt= scaling factor, not a separate bug. See
+[[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][the story's Now field]] and
+the release notes' Known Limitations section for detail. Analysis and
+fix deferred to next sprint.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_ir_synthetic_data_generator.png]]
+
+** Interest rates and calendars (2026-07-20)
+
+The new =calendar= reference-data entity (US/UK financial-centre and
+public-holiday calendars) alongside the Interest Rates series browser
+and live Curve Snapshot windows (grid + bucketed history + curve-shape
+chart) for USD/SOFR and EUR/ESTR.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_interest_rates_calendars.png]]
+
+** Cross-rates matrix (2026-07-20)
+
+Three live Cross-Rates Matrix windows (majors, scandies, exotics)
+plus the Market Series browser — derived rates computed from drivers
+and updating on a 5s interval, each with an FX Pair Overview
+sparkline. Known limitation: the CRM has no interest-rate awareness —
+it triangulates pure FX spot ratios, with no way to represent
+forward points, covered-interest-rate-parity, or spot-date lag
+(=today + spot lag=, typically T+2), all of which are IR-driven. Scope
+deferred to next sprint, pending the IR scaling fix above.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_cross_rates_matrix.png]]
+
 * Captures
 
 Real captures filed during this sprint that have *not* been pulled into a
@@ -157,3 +202,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 * Retrospective
 
 (Filled at sprint close.)
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

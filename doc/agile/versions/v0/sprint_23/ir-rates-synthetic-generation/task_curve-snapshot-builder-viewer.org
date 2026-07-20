@@ -54,11 +54,11 @@ ground, not an extension of something already built.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | UI requirements signed off (wireframe + written plan below); starting implementation: engine as-of query first, then Grid tab, then History tab. |
+| Now          | Nothing. |
 | Waiting on   | Nothing -- tick-batch-publishing (Phase 1) merged, ir_curve_feed publishing. |
-| Next         | Engine-side as-of query + test with staggered timestamps.  |
+| Next         | Nothing. |
 | Last touched | 2026-07-19                               |
 
 * Acceptance
@@ -242,3 +242,88 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped, relocated to the correct, source-independent home partway
+through: initial implementation put the entry point on
+=ores.synthetic='s own =IrCurveGenerationConfigMdiWindow=, which
+contradicted this task's own Goal text ("not synthetic-specific")
+and the codebase's market-data architecture principle that consumers
+are source-independent -- corrected once flagged (see the task doc's
+own =* Plan= "Correction" note).
+
+** Engine
+
+- =market_observations_repository::read_as_of()= -- =DISTINCT ON
+  (point_id)= as-of query, correct for both synchronous (Phase-1) and
+  staggered per-point timestamps; proven with a staggered-timestamp
+  test (including a point that hasn't started ticking yet, and one
+  gone stale).
+- =read_as_of_buckets()= -- bucketed curve-evolution variant. Bucket
+  generation and the per-bucket as-of reduction both happen in a
+  single SQL statement (=generate_series= + =LATERAL=), not a C++
+  loop over the single-snapshot query -- one round trip, one query
+  plan.
+- New =observations_series_point_datetime_idx= (key-first, not
+  time-first) so both queries skip-scan straight to each point's
+  latest row.
+- Captured the generalised as-of/as-of-bucket pattern as its own idea
+  (=as-of-and-as-of-bucket-query-patterns= capture) for other
+  timeseries-shaped repositories to reuse.
+
+** Messaging
+
+=get_curve_snapshot_request=/=get_curve_snapshot_buckets_request=,
+hand-written (not codegen) protocol + handler, series_id resolved
+server-side from (series_type, metric, qualifier) -- callers never
+need an internal series id.
+
+** UI
+
+- =RateCurvesMdiWindow= -- new *Interest Rates* entry on the shared
+  Market Data menu (+ toolbar icon), listing the official
+  =market_series= catalog filtered to =asset_class::rates=. Sortable
+  table, currency flag on the Qualifier column (qualifier's leading
+  segment is currency by producer contract for RATES/YIELD series,
+  not a guess -- see =ir_curve_tick::qualifier='s own doc comment).
+- =CurveSnapshotMdiWindow= -- Grid tab (as-of table + current-shape
+  chart) and History tab (bucketed evolution: bp-delta/Δ-rate/rate
+  display-mode combo, colour-coded arrows matching
+  =FxSpotGridWindow='s up/down convention, shades-of-blue overlay
+  chart with a legend, CSV/ORE export, CRM-style auto-refresh
+  footer).
+- Both windows take only the official market_series identity
+  (series_type/metric/qualifier) -- no dependency on any synthetic
+  config.
+
+** Verified
+
+- Engine: 18/18 assertions across the new as-of/bucket tests, plus
+  the full =ores.marketdata.core.tests= suite.
+- Full build (=ores.qt.exe= and all touched libs) clean throughout
+  every round of fixes.
+- Manual QA: [[id:E4C15D75-EF70-4D34-8CA9-459DE1DAE9A5][Verify Curve Snapshot viewer: Grid + History tabs]] scenario
+  run via the QA Validation Runner, feeding several rounds of real
+  fixes (sortable list, flag sizing, chart colours/legend, window
+  sizing, alignment).
+- =compass build rat= (full regression suite): 73/74 test binaries
+  clean; =ores.refdata.core.tests= crashed mid-run on
+  =party_rls_isolation_tests.cpp='s =party_a_sees_only_own_assignments=
+  -- a pre-existing test with no relationship to this task's changes,
+  under a host running several other worktrees' builds/tests
+  concurrently (confirmed heavy disk I/O contention throughout this
+  session's build/test runs). Not re-run to a clean tally before
+  raising the PR, per explicit instruction; flagged here rather than
+  hidden.
+
+** Follow-ons filed (not this task's scope)
+
+- =ir-rate-quoting-conventions= -- percent vs basis points, per-index
+  decimal precision (currently a plainly-provisional raw-decimal
+  interim format).
+- =as-of-and-as-of-bucket-query-patterns= capture -- generalising the
+  as-of/as-of-bucket pattern beyond =market_observations_repository=.
+- The =ir_curve_feed=/=cir_process= day-scaled-kappa-vs-actual-tick-
+  interval mismatch surfaced while reviewing History tab deltas
+  (large bp swings) -- confirmed as the same numerical-stability
+  problem =seed-ir-curve-sample-data= already tracks, not new;
+  deliberately left unfixed per explicit instruction.

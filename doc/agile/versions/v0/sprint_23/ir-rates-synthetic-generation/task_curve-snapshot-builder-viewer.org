@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/curve-snapshot-builder-viewer
-#+pr:
+#+pr: 1650
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-16
@@ -233,7 +233,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1650][#1650]] | [marketdata,qt,synthetic] Curve snapshot viewer: as-of query + Interest Rates screen |
 
 * Review
 

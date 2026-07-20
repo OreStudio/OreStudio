@@ -114,7 +114,11 @@ producing unrealistic (~150-250) rates in the seeded
 same missing =dt= scaling factor, not a separate bug. See
 [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][the story's Now field]] and
 the release notes' Known Limitations section for detail. Analysis and
-fix deferred to next sprint.
+fix deferred to next sprint. Also note: every seeded curve is
+single-curve (self-discounting) only, not a discounting/projection
+dual-curve model — correct for the seeded overnight RFR indices, not
+yet for IBOR-style term indices; tracked in the IR Rates follow-on
+backlog story.
 
 #+attr_html: :width 100%
 [[proj:assets/images/sprint_23_ir_synthetic_data_generator.png]]

@@ -86,6 +86,13 @@ jobs:
       cancel-in-progress: false
     runs-on: windows-latest
     environment: CI
+    # Default GitHub Actions job timeout (360m) has been observed cutting
+    # windows-msvc-release-ninja off at ~89% built with a cold sccache (run
+    # 29757071366: 5h55m spent still compiling, cancelled mid-build, not a
+    # real failure). sccache is deliberately not persisted across runs here
+    # (see the Ccache step's comment), so a cold-cache Release build needs
+    # real headroom beyond 6h.
+    timeout-minutes: 480
     strategy:
       fail-fast: false
       matrix:

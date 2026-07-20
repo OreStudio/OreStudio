@@ -63,4 +63,4 @@ production before they are commissioned.
 - [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] — Analysis section documents the rationale in full
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — canonical rules
 - [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — checklist criteria that ensure future commission stories pick this up
-- [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]] — the fixed template
+- =sql_schema_create.mustache= — the fixed template (retired since; see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]])

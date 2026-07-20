@@ -173,7 +173,7 @@ files, and no =#+type= value of its own.
 | =Junction=        | =ores.codegen.junction=        | *(not yet authored to this depth — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][schema reference]] for the shallow treatment)* | same                                                |
 | =LookupEntity=    | =ores.codegen.lookup_entity=   | *(not yet authored)*                                             | same                                                |
 | =FieldGroup=      | =ores.codegen.field_group=     | *(not yet authored)*                                             | same                                                |
-| =Table=           | =ores.codegen.table=           | *(not yet authored)*                                             | same                                                |
+| =Table= (retired) | =ores.codegen.table=           | Superseded by =ores.codegen.entity=; type removed from the generator | —                                          |
 | =ServiceRegistry= | =ores.codegen.service_registry= | *(not yet authored)*                                            | same                                                |
 | =Module=          | =ores.codegen.module=          | *(not yet authored)*                                             | same                                                |
 

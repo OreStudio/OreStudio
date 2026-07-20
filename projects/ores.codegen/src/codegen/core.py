@@ -322,6 +322,11 @@ def is_domain_entity_model(model_filename):
         bool: True if this is a domain entity model
     """
     basename = os.path.basename(model_filename)
+    # _table.org has no model_type of its own anymore (that type was
+    # retired), but keeping it excluded here means a stray file with
+    # that suffix still falls through to 'unknown' rather than being
+    # silently misclassified as domain_entity by the generic
+    # ores.*.org pattern below.
     _other_org_kinds = (
         "_field_group.org", "_junction.org", "_table.org",
         "_lookup_entity.org", "service_registry.org",
@@ -438,7 +443,7 @@ def get_model_type(model_filename, model_path=None):
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema',
-             'table', 'component', 'field_group', 'service_registry', or 'unknown')
+             'component', 'field_group', 'service_registry', or 'unknown')
 
     Raises:
         ValueError: if the file contains a #+type: header with an unrecognised value.

@@ -50,7 +50,6 @@ TYPE_TO_TEMPLATE = {
     "runbook": "doc_runbook.org.mustache",
     "entity_org": "doc_entity_org.org.mustache",
     "field_group": "doc_field_group.org.mustache",
-    "table": "doc_table.org.mustache",
     "junction": "doc_junction.org.mustache",
     "lookup_entity": "doc_lookup_entity.org.mustache",
     "service_registry": "doc_service_registry.org.mustache",
@@ -132,7 +131,6 @@ DEFAULT_INITIAL_STATE = {
     "runbook": "",
     "entity_org": "",
     "field_group": "",
-    "table": "",
     "junction": "",
     "lookup_entity": "",
     "service_registry": "",
@@ -159,7 +157,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "entity_org", "field_group", "table", "junction", "lookup_entity",
+    "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype",
 }
@@ -349,18 +347,18 @@ def parse_args(argv=None):
                              "Lands in #+facet_group:, which the facet "
                              "inventory regenerator dispatches on.")
     parser.add_argument("--component", default="",
-                        help="For --type entity_org/field_group/table/junction/"
+                        help="For --type entity_org/field_group/junction/"
                              "lookup_entity: short component name "
                              "(refdata, trading, ...). Drives the output path "
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
     parser.add_argument("--entity-plural", dest="entity_plural", default="",
-                        help="For --type entity_org/table/lookup_entity/junction: "
+                        help="For --type entity_org/lookup_entity/junction: "
                              "snake_case plural noun (defaults to slug + 's' when "
                              "omitted).")
     parser.add_argument("--has-tenant-id", dest="has_tenant_id", default="true",
                         choices=["true", "false"],
-                        help="For --type table/lookup_entity/junction: Default: true.")
+                        help="For --type lookup_entity/junction: Default: true.")
     parser.add_argument("--entity-has-coding-scheme", dest="entity_has_coding_scheme",
                         default="false", choices=["true", "false"],
                         help="For --type lookup_entity: whether rows carry a "
@@ -392,9 +390,6 @@ def parse_args(argv=None):
                              help=f"For --type entity_org: override the "
                                   f"'{_knob}' knob set by --shape (or its "
                                   f"default of false if no --shape is given).")
-    parser.add_argument("--coding-scheme", dest="coding_scheme", default="none",
-                        choices=["none", "required", "nullable"],
-                        help="For --type table: Default: none.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. slovaris). Drives the output path "
@@ -453,9 +448,9 @@ def main(argv=None):
                               prompt_label="Type",
                               choices=list(TYPE_TO_TEMPLATE))
 
-    # entity_org, field_group, table, junction, lookup_entity derive their
+    # entity_org, field_group, junction, lookup_entity derive their
     # parent dir from the component.
-    _COMPONENT_TYPES = ("entity_org", "field_group", "table", "junction", "lookup_entity")
+    _COMPONENT_TYPES = ("entity_org", "field_group", "junction", "lookup_entity")
     if args.type in _COMPONENT_TYPES:
         args.component = fill_required(
             "component", args.component,
@@ -612,15 +607,13 @@ def main(argv=None):
         component_brief = ""
 
     # entity_plural defaults to slug + 's' when not supplied for types that use it.
-    _PLURAL_TYPES = ("entity_org", "table", "lookup_entity", "junction")
+    _PLURAL_TYPES = ("entity_org", "lookup_entity", "junction")
     if args.type in _PLURAL_TYPES:
         entity_plural = args.entity_plural or (args.slug + "s")
         has_tenant_id = args.has_tenant_id if args.type != "entity_org" else ""
-        coding_scheme = args.coding_scheme if args.type == "table" else ""
     else:
         entity_plural = ""
         has_tenant_id = ""
-        coding_scheme = ""
 
     # entity_org knobs: --shape preset, then per-knob --entity-<knob>
     # overrides, then a false default for anything neither set.
@@ -727,7 +720,6 @@ def main(argv=None):
         "entity_title": entity_title,
         "name_title": name_title,
         "has_tenant_id": has_tenant_id,
-        "coding_scheme": coding_scheme,
         "lookup_has_coding_scheme": args.entity_has_coding_scheme,
         "lookup_has_image_id": args.entity_has_image_id,
         "lookup_has_artefact_insert_fn": args.entity_has_artefact_insert_fn,
@@ -756,7 +748,6 @@ def main(argv=None):
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
     # - entity_org:    <parent-dir>/ores.<component>.<slug>.org
     # - field_group:   <parent-dir>/ores.<component>.<slug>_field_group.org
-    # - table:         <parent-dir>/ores.<component>.<slug>_table.org
     # - junction:      <parent-dir>/ores.<component>.<slug>_junction.org
     # - lookup_entity: <parent-dir>/ores.<component>.<slug>_lookup_entity.org
     # - service_registry: <parent-dir>/service_registry.org
@@ -780,10 +771,6 @@ def main(argv=None):
         # Suffix matters: the codegen loader dispatches on *_field_group.org.
         out_dir = parent_dir
         out_file = out_dir / f"ores.{args.component}.{args.slug}_field_group.org"
-    elif args.type == "table":
-        # Suffix matters: the codegen loader dispatches on *_table.org.
-        out_dir = parent_dir
-        out_file = out_dir / f"ores.{args.component}.{args.slug}_table.org"
     elif args.type == "junction":
         # Suffix matters: the codegen loader dispatches on *_junction.org.
         out_dir = parent_dir

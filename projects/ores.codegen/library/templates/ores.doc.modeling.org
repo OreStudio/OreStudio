@@ -48,7 +48,6 @@ branches on.
 | [[id:990E0A18-1FC2-4FD8-8013-5A04306BA386][ores.doc.modeling.lookup_entity]] | Codegen batch-loaded reference table (=*_lookup_entity.org= suffix drives loader dispatch): minimal frontmatter, Primary key, Columns, optional Artefact indexes. |
 | [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] | Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses. |
 | [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services with psql vars, IAM roles, and DML grant prefixes. One top-level section per service. |
-| [[id:D97584D2-724B-4CA1-B8EE-D73158B2920A][ores.doc.modeling.table]] | Codegen SQL-only table model (=*_table.org= suffix drives loader dispatch): frontmatter plus Primary key / Columns / Validation function / Insert trigger skeleton. |
 | [[id:DB094CBB-5E9A-4EEB-9B3B-B48654734590][ores.doc.modeling.dataset]] | Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets. |
 
 * See also

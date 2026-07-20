@@ -124,7 +124,15 @@ zero =_table.org=/=_table.json= files remain anywhere in the repo
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | doc_generate.py still scaffolds new, unloadable table models (real functional gap) | doc_generate.py | Accepted | Removed "table" from TYPE_TO_TEMPLATE/_COMPONENT_TYPES/_PLURAL_TYPES/DEFAULT_INITIAL_STATE/PARENTLESS_TYPES and all --type table-specific CLI flags/handling; verified argparse now rejects --type table |
+| 2 | ores.doc.modeling.table.org archetype backs the dead scaffold, has a dangling id: link | library/templates/ores.doc.modeling.table.org, doc_table.org.mustache | Accepted | Deleted both files and their routing-table row in ores.doc.modeling.org |
+| 3 | ores.sql.schema.org has a dangling link to the deleted archetype and stale model_types/prose | library/templates/ores.sql.schema.org | Accepted | Removed the dangling row/link, dropped "table" from #+model_types:, updated prose |
+| 4 | migrate_table_to_org.py is now fully orphaned | src/codegen/migrate_table_to_org.py | Accepted | Deleted -- no callers, no remaining _table.json input |
+| 5 | Stale docstring in core.py listing 'table' as a return value | src/codegen/core.py | Accepted | Fixed docstring; also documented why the _table.org exclusion in is_domain_entity_model stays (protective, not dead) |
+| 6 | architecture.org's Table schema mappings section describes a deleted pathway as current standard | docs/architecture.org | Accepted | Updated model-type table, retired the Table schema mappings subsection, fixed the Extending section's instructions |
+| 7 | codegen_meta_model.org's Table row has no (retired) annotation | modeling/codegen_meta_model.org | Accepted | Annotated retired, matching codegen_input_org_schema.org's convention |
+| 8 | diff_cmd.py's stub error message doubly stale (pre-existing, not introduced by this PR) | src/codegen/diff_cmd.py | Declined | Reviewer explicitly flagged for awareness only, not requesting a fix; pre-existing dead-code stub unrelated to this PR's scope |
+| 9 | CI site check failed: dangling id: link 9C11F389 (the deleted archetype) in 2 historical agile docs | doc/agile/product_backlog/discarded/add-security-definer-to-validate-fns.org, doc/agile/versions/v0/sprint_21/commission_country/story.org | Accepted | De-linked (kept the descriptive text, dropped the [[id:...]] markup since no valid redirect target exists) -- caught by CI, not a reviewer comment, but the same root cause as #2/#3; verified locally with a full site build before pushing |
 
 * Result
 

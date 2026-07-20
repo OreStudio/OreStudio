@@ -8,7 +8,7 @@
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
-#+pr:
+#+pr: 1654
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
@@ -384,7 +384,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1654][#1654]] | [dq] Commission data_domain onto standard codegen stack |
 
 * Review
 

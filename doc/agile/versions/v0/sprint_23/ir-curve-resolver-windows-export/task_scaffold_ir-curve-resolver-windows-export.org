@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-resolver-windows-export:sprint_23:v0:
 #+owner: marco
 #+branch: hotfix/ir-curve-resolver-windows-export
-#+pr:
+#+pr: 1656
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-20
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1656][#1656]] | [hotfix] Export ir_curve_template_resolver free functions for Windows |
 
 * Review
 

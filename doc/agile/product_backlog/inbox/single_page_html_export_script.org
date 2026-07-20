@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 700B3D5A-29D7-44A3-9FC4-A0827B429587
+:END:
+#+title: Add an emacs script to export a single page to HTML
+#+description: A compass build --direct target that publishes one org file to HTML using the site's org-publish-project settings, without rebuilding the entire site.
+#+type: capture
+#+level: cross
+#+filetags: :compass:site:tooling:dx:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build --direct site= only ever runs the full
+=org-publish-project= defined in
+=projects/ores.lisp/src/ores-build-site.el= (=site:pages=
+=+= =site:images= =+= =site:style= =+= =site:pdf=, ~4368 org-roam
+nodes) — there is no single-file target in either
+=compass.py='s =EMACS_BUILD_SCRIPTS=/=BUILD_TARGET_ALIASES= or the
+elisp itself, confirmed while trying to speed up an iterative
+release-notes review (each full rebuild took 3-5+ minutes, killed and
+re-run several times during one review session). Add a new script
+(e.g. =ores-build-page.el=) that takes a file path (via
+=command-line-args-left=, following the pattern the other
+=ores-build-*.el= scripts use for their own args) and calls
+=(org-publish-file FILE (assoc "site:pages" org-publish-project-alist)
+t)= — reusing the exact same publishing function, preamble, and
+options as the full site build, just scoped to one file. Wire it into
+=compass.py= as a new =--direct= target, e.g. =compass build --direct
+page <path>= or =compass site show-html <path>=, alongside the
+existing =deploy_site= entry.
+
+* Why
+
+Reviewing a single doc (release notes, a story, a recipe) after every
+edit currently means waiting out a full site rebuild whose cost is
+almost entirely the other ~4000+ unrelated pages and the org-roam
+graph JSON regeneration. A single-file export would make the
+edit/preview loop during any doc-review session (release notes,
+manual chapters, knowledge docs) fast enough to actually iterate
+against, rather than batching several edits before rebuilding.
+
+* References
+
+- =projects/ores.lisp/src/ores-build-site.el= — the =org-publish-project-alist=
+  (=site:pages= entry) and =ores/site-preamble= to reuse.
+- =projects/ores.compass/src/compass.py= — =EMACS_BUILD_SCRIPTS=/=BUILD_TARGET_ALIASES=
+  (~line 5510-5533), where the new target would be wired in.
+
+* See also
+
+-

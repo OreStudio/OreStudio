@@ -115,10 +115,10 @@ advances it.
 
 *** Sprint load
 
-Targets: ≤ 300 commits, ≤ 7 days.
+Targets: ≤ 1000 commits, ≤ 7 days.
 - Commits so far, elapsed days, commits/day average.
 - Projected total at close (commits/day × remaining days).
-- Verdict: ≤ 300 = GREEN; 301–400 = AMBER; over 400 = RED.
+- Verdict: ≤ 1000 = GREEN; 1000–1300 = AMBER; over 1300 = RED.
   A sprint that is slightly over target is amber, not automatically
   red — these are soft thresholds.
 
@@ -128,13 +128,15 @@ and has stalled?
 
 *** PR velocity
 
+Target: 100–120 PRs merged for a 7-day sprint.
 - PRs merged per day since sprint start.
+- Total PRs merged so far this sprint, against the 100–120 target.
 - PRs currently open (from fleet).
 - Any PR open longer than one day without review activity (WIP
   accumulation signal).
-- Verdict: ≥ 1 PR/day and no long-open WIP = GREEN; slower merge
-  rate or 1 long-open PR = AMBER; stalled PRs or no merges in 2+
-  days = RED.
+- Verdict: ≥ 1 PR/day, total within 100–120, and no long-open WIP =
+  GREEN; slower merge rate, total up to ~150, or 1 long-open PR =
+  AMBER; stalled PRs, total over ~150, or no merges in 2+ days = RED.
 
 Challenge: are PRs being merged quickly or piling up? Is WIP
 spreading across too many branches?
@@ -151,6 +153,46 @@ spreading across too many branches?
 
 Challenge: a STARTED story with no tasks is a black box — progress
 cannot be tracked. Is that acceptable for its size?
+
+**** Sprawling stories: split, don't carry
+
+Watch for a specific shape distinct from plain undecomposed work: a
+STARTED story that has accumulated a large number of tasks (roughly
+10+, often from scope creep or a donor story merged in mid-sprint)
+where most tasks are DONE but the story itself is not finished at
+sprint end. Carrying the whole story forward as "still STARTED" into
+the next sprint is bookkeeping debt — the DONE work is real and
+should be recorded as delivered, not left implicitly incomplete
+pending the last few tasks.
+
+Recommended handling, applied per story (not as a blanket rule for
+every STARTED story — see the test below):
+
+- If the DONE tasks already satisfy the story's own Acceptance
+  criteria and the remaining tasks are forward-looking extensions
+  *not* required by that acceptance: close the story DONE now,
+  narrowing its Acceptance/description to what actually shipped, and
+  split the remaining tasks into a *new*, more focused story (product
+  backlog if genuinely not yet started; a next-sprint story if one is
+  already in flight) covering only that remainder.
+- If the remaining tasks instead *are* the story's own unmet
+  Acceptance criteria (the core deliverable hasn't shipped, only
+  supporting/infrastructure tasks have) — do NOT close it. Closing
+  would misrepresent the story as finished. Leave it STARTED and
+  carry it forward honestly instead.
+- A partial variant applies when only some remaining tasks are
+  genuine extras: split just those out, leaving the story STARTED
+  with a smaller, acceptance-focused task list.
+
+The test to apply before splitting: read the story's own =* Acceptance=
+section and check each remaining BACKLOG task against it. "Done tasks
+happen to be most of the list" is not sufficient on its own — the
+finished tasks must actually satisfy what the story promised.
+
+Use =compass task move <task> --story <new-story-slug-or-uuid>= to
+relocate tasks without losing their UUID or history; the closed
+story's =Now= field should reference the new story so the split is
+traceable both ways.
 
 *** Focus signal
 

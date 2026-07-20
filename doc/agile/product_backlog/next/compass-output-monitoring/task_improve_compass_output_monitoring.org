@@ -5,7 +5,7 @@
 #+description: Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once.
 #+type: task
 #+level: s1
-#+filetags: :compass:tooling:observability:sprint_23:compass_improvements:v0:
+#+filetags: :compass:tooling:observability:next:compass-output-monitoring:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][Improve compass output monitoring]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -82,7 +82,7 @@ meaningful output.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] |
+| Parent story | [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][Improve compass output monitoring]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Design the rotation/log-family scheme, then implement in compass.py alongside the existing build lock. |

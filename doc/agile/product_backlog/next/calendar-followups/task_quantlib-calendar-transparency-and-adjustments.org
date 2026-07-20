@@ -5,7 +5,7 @@
 #+description: Materialise QuantLib-computed holiday dates into a real, DQ-published, read-only refdata table, clearly attributed as QuantLib-sourced, and model calendar_adjustment as a proper refdata entity so users can layer institution-specific overrides on top of a QuantLib base calendar instead of editing it directly.
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:sprint_23:v0:
+#+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -113,7 +113,7 @@ the start, not bolted on later.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

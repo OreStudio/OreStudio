@@ -43,7 +43,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] | DONE | 2026-07-11 | 2026-07-11 | Scaffold sprint 23, wire version manifest, move postponed stories. |
-| [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] | DONE | 2026-07-13 | 2026-07-15 | Deleted the dead facet_catalogue.org/--profile codegen path; junction C++ generation (domain/generator/repository) now works, validated end-to-end against tenor_convention_resolution (hand-authored code retired). Remaining backlog (doc sweep + 8 tasks merged in from a closed sibling story) left BACKLOG, not required by this story's own acceptance. |
+| [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] | DONE | 2026-07-13 | 2026-07-15 | Deleted the dead facet_catalogue.org/--profile codegen path; junction C++ generation (domain/generator/repository) now works, validated end-to-end against tenor_convention_resolution (hand-authored code retired). At health review 1 (2026-07-20) the 4 remaining BACKLOG tasks (not required by this story's own acceptance) were split into [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]]. |
 | [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
 | [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Replace ores.iam.core's direct refdata table access with NATS calls. |
 | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] | DONE | 2026-07-12 | 2026-07-14 | Build a reusable, thread-safe entity-mirror cache: an immer-based partitioned_cache<PartitionKey,Key,Value> primitive plus a nats-event-cache codegen facet that generates the subscribe/reload wiring for any entity, declared where the entity is defined. Migrate ores.iam.core's party_cache to be its first real consumer, fixing the original subject-mismatch bug as a byproduct. |
@@ -58,24 +58,26 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | 2026-07-02 | | Carried from sprint 22: drop legacy marketdata tables (superseded, zero C++ references); remove stale validation_ignore.txt entries; protect market_observation's hand-written overrides from codegen regeneration. |
 | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] | STARTED | 2026-06-05 | | Carried from sprint 19 (4/7 tasks done); codegen org-model migration gate cleared — Phase C template rollout across ~61 dialogs is next. |
 | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]] | DONE | 2026-07-14 | 2026-07-18 | Rolled out the generic HistoryDialog widget to every ores.qt.refdata entity; narrowed from all of ores.qt (other components now their own backlog captures). Last two entities (floating_index_type, leg_type) also moved their backend from ores.trading to ores.refdata to fix a component-ownership mismatch. Contributes to unblocking the sibling story's "Retire HistoryDialogBase" task once every component has migrated. |
-| [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | 2026-07-03 | | Carried from sprint 22 (mislabeled ABANDONED there, no such decision recorded): short-rate stochastic process, Curve Template raw instrument generation, tenor-collision validation, tick-batch publishing. |
+| [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | DONE | 2026-07-03 | 2026-07-20 | Carried from sprint 22 (mislabeled ABANDONED there, no such decision recorded): short-rate stochastic process, Curve Template raw instrument generation, tenor-collision validation, tick-batch publishing all DONE. Remaining forward-looking work split into [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][a product-backlog story]]. |
 | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | DONE | 2026-07-03 | 2026-07-17 | Carried from sprint 22 (6/8 tasks done, mislabeled ABANDONED there): feed namespacing by collection and Market Simulator tree grouping remain. |
 | [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] | BACKLOG | 2026-07-11 | | Merged from two duplicate captures: named, shared arrival-profile configs (liquid/illiquid rates) driving Poisson/MMPP tick timing, decoupled from the GMM price process. |
 | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] | DONE | 2026-07-11 | 2026-07-12 | Account gains a default_party_id; login dialog gets a quick-login checkbox that bypasses PartyPickerDialog; provisioning scripts set the default. |
 | [[id:D58CD39D-BFBA-45DF-A05B-01EDD7115C45][Audit refdata entities for composite (temporal-versioned) child relationships]] | BACKLOG | 2026-07-11 | | Generalise temporal composite entity versioning (proven on party/counterparty) across refdata: inventory which entities have genuine composite children and apply the mechanism where warranted. |
-| [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] | BACKLOG | 2026-07-11 | | Pulled in from product backlog next: first-class calendar entity with FK-referenceable relationships, replacing free-text holiday_calendar/advance_calendar fields; Qt screens; ORE XML export mapping. |
+| [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] | STARTED | 2026-07-11 | | Pulled in from product backlog next: first-class calendar entity with FK-referenceable relationships, replacing free-text holiday_calendar/advance_calendar fields; Qt screens; ORE XML export mapping. Core entity modelling and Qt CRUD screens DONE (PR #1638 merged); XML export boundary and DQ publish remain. Three extras split into [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][a product-backlog story]]. |
 | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] | DONE | 2026-07-11 | 2026-07-18 | Pulled in from product backlog next: driver/derived spanning-tree topology, no-arbitrage triangulation, risk recentering, management UI in ores.marketdata. |
 | [[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject constants per component]] | BACKLOG | 2026-07-13 | | Generate a per-component API header of named NATS subject constants (requests, events, publish-from-dq) so codegen-generated registrar/handler/client code never uses raw string literals -- a missing subscription or typo becomes a compile error, not a silent runtime failure. Discovered via a real bug in the CRM story. |
 | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | DONE | 2026-07-12 | 2026-07-12 | Pulled in from product backlog next (misfiled under sprint 22): move day_count_fraction_type from ores.trading to ores.refdata alongside the other *_convention entities, commission it fully, repoint trading_swap_legs' one soft-FK. |
 | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] | DONE | 2026-07-11 | 2026-07-11 | 16 stories seeded into sprint 23; deep backlog refinement audited all 559 items (71 discarded/relocated, 1 merged); bucket rescoring moved 310 items and emptied inbox. |
 | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Moved GMM/OU stochastic processes, process factory, and parameter validation out of ores.synthetic into ores.analytics.quant, with 54 new Catch2 tests and updated component documentation. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | DONE | 2026-07-12 | 2026-07-15 | Pulled in from product backlog next: update codegen model, enable variability knobs, regenerate, reconcile diffs, verify Qt post-NATS, add manual chapter, capture shell/CLI/Wt/HTTP backlog. |
-| [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] | STARTED | 2026-07-12 | | Catch-all for small compass enhancements: bearings/vcpkg drift check, environment-update tooling. |
+| [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] | DONE | 2026-07-12 | 2026-07-20 | Catch-all for small compass enhancements: bearings/vcpkg drift check, environment-update tooling. Output-monitoring task split into [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][a product-backlog story]]. |
 | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] | DONE | 2026-07-12 | 2026-07-13 | Promoted from deferred backlog. Redesign the dataset detail dialog into a persistent-header, two-column layout with merged Provenance/Methodology tab, per a Gemini UI review. |
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | DONE | 2026-07-13 | 2026-07-13 | Rebuilt contact_type's codegen model from the current meta-model and regenerated every layer, verified the Qt UI end-to-end post-NATS (11/11 scenario steps), and filed backlog captures for shell/CLI/Wt/HTTP support; manual chapter deferred to a backlog capture since contact_type is an aux type that documents as a subsection of the not-yet-written Contact chapter. |
 | [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][Server-side UUID generation for all entities]] | BACKLOG | 2026-07-14 | | Clients must never generate primary-key UUIDs -- move id assignment from the client-side setCreateMode() (shared Qt detail-dialog codegen template) to the server, returned in the save response. Surfaced while fixing the CRM cross-rates matrix task's editable id-field bug. |
-| [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] | BACKLOG | 2026-07-13 | | Consolidates and supersedes the three Sprint 22 per-entity commission stories, now that their shared blockers (composite hierarchy Qt widgets, temporal composite versioning) are DONE: re-verify party/counterparty Qt UI post-NATS, manual chapters for all three. Shell/CLI/Wt/HTTP tracked by the existing top-level commissioning captures, not here. |
-| [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] | DONE | 2026-07-16 | 2026-07-18 | Codegen/drift and manual-chapter tasks both DONE. Two non-blocking follow-ups spun off (portfolio_status lookup entity, Purpose Type combo label). |
+| [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] | DONE | 2026-07-13 | 2026-07-20 | Consolidates and supersedes the three Sprint 22 per-entity commission stories, now that their shared blockers (composite hierarchy Qt widgets, temporal composite versioning) are DONE: party/counterparty regenerated zero-diff, Qt UI verified end-to-end post-NATS, manual chapters for all three written. At health review 1 (2026-07-20) the 2 remaining independent tasks were split into [[id:0A3DBED6-96D8-48DE-A392-7AB6045F088E][Party/counterparty follow-ups]] in the product backlog. |
+| [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] | DONE | 2026-07-16 | 2026-07-18 | Codegen/drift and manual-chapter tasks both DONE. Two non-blocking follow-ups split into [[id:65EBDE64-CA2C-4BBC-B142-2FF11B4F0446][Portfolio display follow-ups]] in the product backlog. |
+| [[id:961C86D1-3C8E-4FA1-8523-9E08F6559388][Sprint health review — System 2 analysis]] | DONE | 2026-07-20 | 2026-07-20 | System 2 health review 1: RED overall (sprint load and focus both RED, 2 days past planned close). |
+| [[id:9345CBD1-2D27-4B7E-9D1F-7A25C6266F69][Codegen legacy-profile retirement follow-ups]] | DONE | 2026-07-20 | 2026-07-20 | Split from the now-DONE "Retire legacy codegen profile system" story: split-model backcompat removal (B7, PR #1652) DONE in jolly_knuth, absorbing the duplicate table-model-type task as ABANDONED. Mustache-to-address renames and the junction-codegen rollout split further into [[id:BE84F0A4-991D-447F-82A6-983EAC8F352B][Codegen: mustache-to-address rename + junction codegen rollout]] in the product backlog. |
 
 ** Hotfixes
 
@@ -84,8 +86,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------------|
 | [[id:C4755E35-7E5D-4276-8AAE-53FA8557FAEF][Hotfix: Windows Clang CI compiler-launcher wrapper]] | DONE | 2026-07-11 | 2026-07-11 | windows-clang-debug-ninja and windows-clang-release-ninja fail to configure because the clang preset's environment launcher (a .sh wrapper) leaks into CMake's project()-time compiler detection on Windows. |
 | [[id:14F24665-6CB0-4DAB-895E-1D5D1360E507][Hotfix: ores.iam.core build fails, missing ores.eventing.core include dependency]] | DONE | 2026-07-14 | 2026-07-14 | party_cache.hpp includes ores.eventing.core/service/cache/partitioned_cache.hpp but ores.iam.core's CMakeLists.txt doesn't depend on ores.eventing.core, so the include path is missing and the build fails. |
-| [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] | BACKLOG | | | Analyze how badge colours are currently determined across the codebase (hardcoded in Qt model/table code vs data-driven) and design a path to store badge colour schemes properly -- for table-enum-type-backed entities potentially alongside the enum's own row data, and for other cases (e.g. booleans) as a system-level property/setting. |
-| [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] | BACKLOG | | | ores.dq has grown a mix of hand-written and partially-generated entities (badge_severity/badge_definition/code_domain were regenerated onto the standard core/repository stack but still route through a hand-written combined handler/service/protocol, and their Qt layer -- plus data_domain/subject_area/catalog/change_reason/change_reason_category -- is entirely hand-written with no .org model at all). Commission this properly: author codegen models for every DQ entity that doesn't have one, retire all hand-written core/service/handler/protocol code in favour of generated equivalents, and stand up a proper ores.qt.dq Qt library (CMakeLists + DqPlugin) so every DQ entity's Qt controller/dialog/window is generated, not hand-written. |
+| [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] | STARTED | | | Analyze how badge colours are currently determined across the codebase (hardcoded in Qt model/table code vs data-driven) and design a path to store badge colour schemes properly -- for table-enum-type-backed entities potentially alongside the enum's own row data, and for other cases (e.g. booleans) as a system-level property/setting. (State corrected from stale BACKLOG at health review 1.) |
+| [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] | STARTED | | | ores.dq has grown a mix of hand-written and partially-generated entities (badge_severity/badge_definition/code_domain were regenerated onto the standard core/repository stack but still route through a hand-written combined handler/service/protocol, and their Qt layer -- plus data_domain/subject_area/catalog/change_reason/change_reason_category -- is entirely hand-written with no .org model at all). Commission this properly: author codegen models for every DQ entity that doesn't have one, retire all hand-written core/service/handler/protocol code in favour of generated equivalents, and stand up a proper ores.qt.dq Qt library (CMakeLists + DqPlugin) so every DQ entity's Qt controller/dialog/window is generated, not hand-written. (State corrected from stale BACKLOG at health review 1.) |
 | [[id:CB0C8F21-18C3-4550-B12B-0A1FF9EFE25C][Clean up application menus]] | DONE | 2026-07-16 | 2026-07-18 | The application's menu structure has grown organically and is now inconsistent: Reference Data menu is a grab-bag, System menu mixes app-chrome with operational concerns (Telemetry, Message Queue, Administration), Data Management menu is misleadingly named for what's actually transfer/import actions, and there's no coherent home for DQ metadata entities (change reasons, code domains, badges, etc.). Redesign the menu structure from first principles: System = app chrome only (Testing, Reset); Operations = Jobs, Workflows, Data Transfer, Data Catalogue, Telemetry, Message Queue, Administration; Reference Data = cleaned up; Data Quality = new menu for DQ metadata entities. |
 | [[id:C85B0A71-6649-4A37-89F2-913C69A7976A][Hotfix: ores.dq.core fails to build, missing ores.diff link]] | DONE | 2026-07-17 | 2026-07-17 | ores.dq.core includes ores.diff headers but its CMakeLists never links or includes ores.diff.lib, breaking the build. |
 | [[id:25605F80-584E-4B95-9850-68E48C538450][Hotfix: Windows CI builds timing out / failing on header dependency scanning]] | DONE | 2026-07-19 | 2026-07-19 | Windows CI (msvc-release and clang-debug/release) consistently fails or times out at 6h because CMake's automatic C++ module dependency scanning (clang-scan-deps) invokes via cmd.exe, whose ~8191-char command-line limit truncates the very long include/define argument list, silently dropping the ores.diff include path and causing 'file not found' errors or scanner hangs. Fixed by setting CMAKE_CXX_SCAN_FOR_MODULES OFF (PR #1645). |
@@ -95,6 +97,77 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 Milestones worth capturing as they happen, so the release notes at
 sprint close have the evidence to hand. Add a dated =** subheading=
 per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+
+** IR synthetic data generator (2026-07-20)
+
+The Market Simulator's IR side end-to-end: a CIR short-rate process
+configured live (Simple/Advanced engine controls, curve-shape preview,
+sample short-rate paths), feeding a running CAD CORRA collection
+alongside the existing FX collections. Known limitation: ticks are
+being treated as full trading days by the process update step, so a
+day's worth of mean-reversion/volatility lands every real-time
+=update_frequency= interval (60s here) instead of once per day —
+producing rate swings of thousands of basis points within minutes.
+Consistent with the day-scaled =kappa= and =sigma= defaults still
+producing unrealistic (~150-250) rates in the seeded
+=synthetic.ir_curve_configs.basic= dataset over longer tick counts —
+same missing =dt= scaling factor, not a separate bug. See
+[[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][the story's Now field]] and
+the release notes' Known Limitations section for detail. Analysis and
+fix deferred to next sprint. Also note: every seeded curve is
+single-curve (self-discounting) only, not a discounting/projection
+dual-curve model — correct for the seeded overnight RFR indices, not
+yet for IBOR-style term indices; tracked in the IR Rates follow-on
+backlog story.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_ir_synthetic_data_generator.png]]
+
+** Interest rates and calendars (2026-07-20)
+
+The new =calendar= reference-data entity (US/UK financial-centre and
+public-holiday calendars) alongside the Interest Rates series browser
+and live Curve Snapshot windows (grid + bucketed history + curve-shape
+chart) for USD/SOFR and EUR/ESTR.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_interest_rates_calendars.png]]
+
+** Cross-rates matrix (2026-07-20)
+
+Three live Cross-Rates Matrix windows (majors, scandies, exotics)
+plus the Market Series browser — derived rates computed from drivers
+and updating on a 5s interval, each with an FX Pair Overview
+sparkline. Known limitation: the CRM has no interest-rate awareness —
+it triangulates pure FX spot ratios, with no way to represent
+forward points, covered-interest-rate-parity, or spot-date lag
+(=today + spot lag=, typically T+2), all of which are IR-driven. Scope
+deferred to next sprint, pending the IR scaling fix above.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_cross_rates_matrix.png]]
+
+** Data Librarian accession card redesign (2026-07-20)
+
+The Data Librarian's dataset detail dialog ("accession card")
+redesigned into a persistent-header, asymmetric two-column layout —
+Provenance & Methodology and Dependencies tabs, shown here across
+three datasets (Currency Pair Convention Calendars, Calendars, and
+FpML Asset Class).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_data_librarian_accession_card.png]]
+
+** Generic history dialog with GitHub-style diff view (2026-07-20)
+
+Every =ores.qt.refdata= entity now shares one =HistoryDialog=: a
+version timeline plus a GitHub-style unified diff between any two
+versions, with field-level highlighting. Shown here on Currency
+history (ANG's DQ import lineage; AOA's =v2=→=v3= "Angolan Kwanza2" →
+"Angolan Kwanza" typo rectification).
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_23_history_dialog_diff_view.png]]
 
 * Captures
 
@@ -110,7 +183,9 @@ health review (promote to a story, move to =next=, or discard).
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+| # | Date       | Day       | Overall | Task                                                             |
+|---+------------+-----------+---------+-------------------------------------------------------------------|
+| 1 | 2026-07-20 | day 9 | RED     | [[id:8C93650D-ABA0-425C-8CAB-EBCB461C498E][Health review 1 — sprint 23 analysis]] |
 
 * Charts
 
@@ -153,3 +228,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 * Retrospective
 
 (Filled at sprint close.)
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

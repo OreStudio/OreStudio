@@ -24,12 +24,12 @@ inflating the backlog with one-off stories.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | First task (vcpkg drift check + devops-update-environment skill) is DONE. |
+| Now           | Closed DONE 2026-07-20: own Acceptance met (vcpkg drift check + devops-update-environment skill). Output-monitoring task split into [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][a product-backlog story]]; a future sprint's catch-all story takes over from here. |
 | Waiting on    | Nothing.                               |
-| Next          | Left open as the ongoing catch-all for further small compass enhancements this sprint; add tasks as they come up. |
-| Last touched  | 2026-07-12                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-20                               |
 
 * Acceptance
 
@@ -43,7 +43,6 @@ inflating the backlog with one-off stories.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:745B765F-BEB2-4CBA-8BA8-852FBDDBA399][Add vcpkg drift check to bearings and a devops-update-environment skill]] | DONE | 2026-07-12 | 2026-07-12 | Add a vcpkg-vs-main drift warning to compass bearings, and create a new devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills). |
-| [[id:11FDFC40-E10B-4970-A15E-EEA8D8B7CA82][Improve compass output monitoring]] | BACKLOG | | | Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. |
 
 * Decisions
 

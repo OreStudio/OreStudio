@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 9345CBD1-2D27-4B7E-9D1F-7A25C6266F69
+:END:
+#+title: Story: Codegen legacy-profile retirement follow-ups
+#+description: Split from the now-DONE 'Retire legacy codegen profile system' story: retired the split-model backward-compatibility scaffolding (B7), absorbing the duplicate table-model-type task. Mustache renames and junction rollout split further into a product-backlog story.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Finish part of the codegen tech-debt tail that [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] deliberately left BACKLOG once its own acceptance was met: retire the split-model backward-compatibility scaffolding.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Closed DONE 2026-07-20: B7 (split-model backcompat removal) DONE in jolly_knuth (PR #1652), absorbing the duplicate table-model-type task as ABANDONED. B9 and the junction-codegen rollout split into [[id:BE84F0A4-991D-447F-82A6-983EAC8F352B][Codegen: mustache-to-address rename + junction codegen rollout]] in the product backlog. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-20                               |
+
+* Acceptance
+
+- Split-model (table + entity template) backward-compatibility scaffolding removed once every model is migrated to domain_entity.
+- The table model type branch removed from the generator once no _table.org files remain.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AE754D5A-7C07-490A-A1B4-56CD7E7A3A14][B7: Remove split-model backward-compatibility once all models migrated]] | DONE | 2026-07-19 | 2026-07-20 | Retire the dual-pathway scaffolding (table + entity templates, inert defensive defaults) added by B1-B3 for coexistence, once every model is migrated to the unified domain_entity format and verified byte-identical. |
+| [[id:505820E3-FCB4-4192-AA0F-BDBDC1177088][Retire the table model type: remove the table branch from the generator and profile matrix]] | ABANDONED | | 2026-07-20 | Absorbed into B7, which had substantially overlapping scope and was done first. Moved in from the now-closed Decommission ores.codegen.table model type story — was originally out of scope here (Step 7), pulled in at sprint 22 close for the same reason. |
+
+* Decisions
+
+* Out of scope
+
+-

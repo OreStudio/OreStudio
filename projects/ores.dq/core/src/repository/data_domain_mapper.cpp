@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -31,11 +31,12 @@ domain::data_domain data_domain_mapper::map(const data_domain_entity& v) {
 
     domain::data_domain r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.name = v.name.value();
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -48,11 +49,12 @@ data_domain_entity data_domain_mapper::map(const domain::data_domain& v) {
 
     data_domain_entity r;
     r.name = v.name;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

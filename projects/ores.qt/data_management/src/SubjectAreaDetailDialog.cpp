@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SubjectAreaDetailDialog.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"

@@ -50,13 +50,13 @@ TEST_CASE("write_single_data_domain", tags) {
     database_helper h;
 
     generation_context ctx;
-    data_domain_repository repo(h.context());
+    data_domain_repository repo;
     auto data_domain = generate_synthetic_data_domain(ctx);
-    data_domain.tenant_id = h.tenant_id().to_string();
+    data_domain.tenant_id = h.tenant_id();
     data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
-    CHECK_NOTHROW(repo.write(data_domain));
+    CHECK_NOTHROW(repo.write(h.context(), data_domain));
 }
 
 TEST_CASE("write_multiple_data_domains", tags) {
@@ -64,16 +64,16 @@ TEST_CASE("write_multiple_data_domains", tags) {
 
     database_helper h;
 
-    data_domain_repository repo(h.context());
+    data_domain_repository repo;
     generation_context ctx;
     auto data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : data_domains) {
-        d.tenant_id = h.tenant_id().to_string();
+        d.tenant_id = h.tenant_id();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
 
-    CHECK_NOTHROW(repo.write(data_domains));
+    CHECK_NOTHROW(repo.write(h.context(), data_domains));
 }
 
 TEST_CASE("read_latest_data_domains", tags) {
@@ -81,18 +81,18 @@ TEST_CASE("read_latest_data_domains", tags) {
 
     database_helper h;
 
-    data_domain_repository repo(h.context());
+    data_domain_repository repo;
     generation_context ctx;
     auto written_data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : written_data_domains) {
-        d.tenant_id = h.tenant_id().to_string();
+        d.tenant_id = h.tenant_id();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written data domains: " << written_data_domains;
 
-    repo.write(written_data_domains);
+    repo.write(h.context(), written_data_domains);
 
-    auto read_data_domains = repo.read_latest();
+    auto read_data_domains = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     CHECK(!read_data_domains.empty());
@@ -104,21 +104,21 @@ TEST_CASE("read_latest_data_domain_by_name", tags) {
 
     database_helper h;
 
-    data_domain_repository repo(h.context());
+    data_domain_repository repo;
     generation_context ctx;
     auto data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : data_domains) {
-        d.tenant_id = h.tenant_id().to_string();
+        d.tenant_id = h.tenant_id();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = data_domains.front();
     BOOST_LOG_SEV(lg, debug) << "Write data domains: " << data_domains;
-    repo.write(data_domains);
+    repo.write(h.context(), data_domains);
 
     BOOST_LOG_SEV(lg, debug) << "Target data domain: " << target;
 
-    auto read_data_domains = repo.read_latest(target.name);
+    auto read_data_domains = repo.read_latest(h.context(), target.name);
     BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     REQUIRE(read_data_domains.size() == 1);
@@ -131,12 +131,12 @@ TEST_CASE("read_nonexistent_data_domain", tags) {
 
     database_helper h;
 
-    data_domain_repository repo(h.context());
+    data_domain_repository repo;
 
     const std::string nonexistent_name = "nonexistent.data_domain.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
 
-    auto read_data_domains = repo.read_latest(nonexistent_name);
+    auto read_data_domains = repo.read_latest(h.context(), nonexistent_name);
     BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
     CHECK(read_data_domains.size() == 0);

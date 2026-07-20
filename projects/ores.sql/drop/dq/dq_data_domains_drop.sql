@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,7 +18,7 @@
  *
  */
 
-drop trigger if exists ores_dq_data_domains_insert_trg on "ores_dq_data_domains_tbl";
 drop rule if exists ores_dq_data_domains_delete_rule on "ores_dq_data_domains_tbl";
-drop function if exists ores_dq_data_domains_insert_fn();
+drop trigger if exists ores_dq_data_domains_insert_trg on "ores_dq_data_domains_tbl";
+drop function if exists ores_dq_data_domains_insert_fn;
 drop table if exists "ores_dq_data_domains_tbl";

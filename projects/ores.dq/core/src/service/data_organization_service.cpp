@@ -26,7 +26,6 @@ using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
     : dataset_dependency_repo_(ctx)
-    , data_domain_repo_(ctx)
     , subject_area_repo_(ctx) {}
 
 // ============================================================================
@@ -42,57 +41,6 @@ std::vector<domain::dataset_dependency>
 data_organization_service::list_dataset_dependencies_by_dataset(const std::string& dataset_code) {
     BOOST_LOG_SEV(lg(), debug) << "Listing dependencies for dataset: " << dataset_code;
     return dataset_dependency_repo_.read_latest_by_dataset(dataset_code);
-}
-
-// ============================================================================
-// Data Domain Management
-// ============================================================================
-
-std::vector<domain::data_domain> data_organization_service::list_data_domains() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all data domains";
-    return data_domain_repo_.read_latest();
-}
-
-std::optional<domain::data_domain>
-data_organization_service::find_data_domain(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding data domain: " << name;
-    auto domains = data_domain_repo_.read_latest(name);
-    if (domains.empty()) {
-        return std::nullopt;
-    }
-    return domains.front();
-}
-
-void data_organization_service::save_data_domain(const domain::data_domain& data_domain) {
-    if (data_domain.name.empty()) {
-        throw std::invalid_argument("Data domain name cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving data domain: " << data_domain.name;
-    data_domain_repo_.write(data_domain);
-    BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << data_domain.name;
-}
-
-void data_organization_service::save_data_domains(
-    const std::vector<domain::data_domain>& data_domains) {
-    for (const auto& d : data_domains) {
-        if (d.name.empty()) {
-            throw std::invalid_argument("Data domain name cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << data_domains.size() << " data domains";
-    data_domain_repo_.write(data_domains);
-}
-
-void data_organization_service::remove_data_domain(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing data domain: " << name;
-    data_domain_repo_.remove(name);
-    BOOST_LOG_SEV(lg(), info) << "Removed data domain: " << name;
-}
-
-std::vector<domain::data_domain>
-data_organization_service::get_data_domain_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for data domain: " << name;
-    return data_domain_repo_.read_all(name);
 }
 
 // ============================================================================

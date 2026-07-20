@@ -8,7 +8,7 @@
 #+filetags: :commission-dq-component:sprint_23:v0:
 #+owner: marco
 #+branch: feature/commission-dq-reference-entities
-#+pr:
+#+pr: 1654
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
@@ -28,9 +28,9 @@ Commission the five no-model DQ entities named in the story description onto the
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
-| Now          | catalog, change_reason_category, and change_reason fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green via compass build test_ against a recreated dev DB). |
+| Now          | catalog, change_reason_category, change_reason, and data_domain fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green via compass build test_ against a recreated dev DB). |
 | Waiting on   | Nothing.                               |
-| Next         | Same treatment for data_domain, subject_area. |
+| Next         | Same treatment for subject_area.       |
 | Last touched | 2026-07-20                               |
 
 * Acceptance
@@ -332,6 +332,43 @@ differences worth recording:
 Stopping here again per the same scope agreement -- data_domain and
 subject_area remain.
 
+** data_domain
+
+- Regenerated the full stack (domain, generator, entity/mapper,
+  stateless repository, service, protocol, NATS handler/registrar).
+- Decomposed =data_domain= out of the combined hand-written
+  =data_organization_service=/=_protocol=/=_handler= (which also
+  covers methodology/subject_area/nature_dimension/origin_dimension/
+  treatment_dimension, so kept as a shell for those); registrar now
+  bundles =register_data_domain_handlers= alongside
+  =register_catalog_handlers=.
+- Qt callers (=DataDomainDetailDialog=, =DataDomainMdiWindow=,
+  =ClientDataDomainModel=, =DataDomainHistoryDialog=) swapped to the
+  new =data_domain_protocol.hpp=; =SubjectAreaDetailDialog=,
+  =DatasetDetailDialog=, =CodingSchemeDetailDialog= needed both old
+  and new protocol includes since they also touch other
+  still-bespoke entities. No field renames needed -- old/new protocol
+  field names matched.
+- Test files converted to stateless repository shape, including
+  =repository_subject_area_repository_tests.cpp='s own prerequisite
+  =data_domain_repository= usage. Same =version == 0=-vs-=1=
+  generator-test fix as the other entities.
+- SQL swapped for real: hand-written files were singular-named
+  (=dq_data_domain_create.sql=/=_drop.sql=) while codegen generates
+  plural (=dq_data_domains_create.sql=/=_drop.sql=, per
+  =entity_plural=) -- renamed via git and updated both master
+  =\ir= include lists (=dq_create.sql=, =dq_drop.sql=). No naming
+  collision this time (unlike change_reason's
+  =ores_dq_validate_change_reason_fn=). Applied via
+  =compass db recreate=.
+- Verified via =compass build test_ores.dq.core.tests=/
+  =test_ores.dq.api.tests= against the recreated schema:
+  =ores.dq.core.tests= 290 assertions/89 cases, =ores.dq.api.tests=
+  267 assertions/46 cases, both green.
+
+Stopping here again per the same scope agreement -- subject_area
+remains.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -347,7 +384,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1654][#1654]] | [dq] Commission data_domain onto standard codegen stack |
 
 * Review
 

@@ -53,10 +53,10 @@ TEST_CASE("write_single_subject_area", tags) {
 
     generation_context ctx;
     auto dd = generate_synthetic_data_domain(ctx);
-    dd.tenant_id = h.tenant_id().to_string();
+    dd.tenant_id = h.tenant_id();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::data_domain_repository dd_repo(h.context());
-    dd_repo.write(dd);
+    ores::dq::repository::data_domain_repository dd_repo;
+    dd_repo.write(h.context(), dd);
 
     subject_area_repository repo(h.context());
     auto subject_area = generate_synthetic_subject_area(ctx);
@@ -75,10 +75,10 @@ TEST_CASE("write_multiple_subject_areas", tags) {
 
     generation_context ctx;
     auto dd = generate_synthetic_data_domain(ctx);
-    dd.tenant_id = h.tenant_id().to_string();
+    dd.tenant_id = h.tenant_id();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::data_domain_repository dd_repo(h.context());
-    dd_repo.write(dd);
+    ores::dq::repository::data_domain_repository dd_repo;
+    dd_repo.write(h.context(), dd);
 
     subject_area_repository repo(h.context());
     auto subject_areas = generate_synthetic_subject_areas(3, ctx);
@@ -99,10 +99,10 @@ TEST_CASE("read_latest_subject_areas", tags) {
 
     generation_context ctx;
     auto dd = generate_synthetic_data_domain(ctx);
-    dd.tenant_id = h.tenant_id().to_string();
+    dd.tenant_id = h.tenant_id();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::data_domain_repository dd_repo(h.context());
-    dd_repo.write(dd);
+    ores::dq::repository::data_domain_repository dd_repo;
+    dd_repo.write(h.context(), dd);
 
     subject_area_repository repo(h.context());
     auto written_subject_areas = generate_synthetic_subject_areas(3, ctx);
@@ -129,10 +129,10 @@ TEST_CASE("read_latest_subject_areas_by_domain", tags) {
 
     generation_context ctx;
     auto dd = generate_synthetic_data_domain(ctx);
-    dd.tenant_id = h.tenant_id().to_string();
+    dd.tenant_id = h.tenant_id();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
-    ores::dq::repository::data_domain_repository dd_repo(h.context());
-    dd_repo.write(dd);
+    ores::dq::repository::data_domain_repository dd_repo;
+    dd_repo.write(h.context(), dd);
 
     subject_area_repository repo(h.context());
     auto subject_area = generate_synthetic_subject_area(dd.name, ctx);

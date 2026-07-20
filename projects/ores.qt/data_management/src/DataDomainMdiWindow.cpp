@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/DataDomainMdiWindow.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"

@@ -193,7 +193,7 @@ TEST_CASE("data_domain_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_data_domain(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());

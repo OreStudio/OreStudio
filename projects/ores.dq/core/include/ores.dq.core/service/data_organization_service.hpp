@@ -21,11 +21,9 @@
 #define ORES_DQ_CORE_SERVICE_DATA_ORGANIZATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/data_domain_repository.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -39,11 +37,11 @@ namespace ores::dq::service {
  * @brief Service for managing data organization entities.
  *
  * This service provides functionality for:
- * - Managing data domains
  * - Managing subject areas and their associated domains
  * - Managing dataset dependencies
  *
- * Catalog management moved to the standalone, generated catalog_service.
+ * Catalog and data domain management moved to the standalone, generated
+ * catalog_service/data_domain_service.
  */
 class ORES_DQ_CORE_EXPORT data_organization_service {
 private:
@@ -80,49 +78,6 @@ public:
      */
     std::vector<domain::dataset_dependency>
     list_dataset_dependencies_by_dataset(const std::string& dataset_code);
-
-    // ========================================================================
-    // Data Domain Management
-    // ========================================================================
-
-    /**
-     * @brief Lists all data domains.
-     */
-    std::vector<domain::data_domain> list_data_domains();
-
-    /**
-     * @brief Finds a data domain by its name.
-     */
-    std::optional<domain::data_domain> find_data_domain(const std::string& name);
-
-    /**
-     * @brief Saves a data domain (creates or updates).
-     *
-     * @param data_domain The data domain to save
-     */
-    void save_data_domain(const domain::data_domain& data_domain);
-
-    /**
-     * @brief Saves multiple data domains (creates or updates).
-     *
-     * @param data_domains The data domains to save
-     */
-    void save_data_domains(const std::vector<domain::data_domain>& data_domains);
-
-    /**
-     * @brief Removes a data domain.
-     *
-     * @param name The name of the data domain to remove
-     */
-    void remove_data_domain(const std::string& name);
-
-    /**
-     * @brief Gets the version history for a data domain.
-     *
-     * @param name The data domain name
-     * @return Vector of all versions, newest first
-     */
-    std::vector<domain::data_domain> get_data_domain_history(const std::string& name);
 
     // ========================================================================
     // Subject Area Management
@@ -188,7 +143,6 @@ public:
 
 private:
     repository::dataset_dependency_repository dataset_dependency_repo_;
-    repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;
 };
 

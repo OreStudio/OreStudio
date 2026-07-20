@@ -519,8 +519,18 @@ void CurrencyDetailDialog::onSaveClicked() {
         return;
     }
 
-    if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+    if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges()) {
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+        if (!crSel)
+            return;
+        calendarWidget_->commitChanges(
+            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+                if (!success)
+                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+            });
         return;
+    }
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -561,25 +571,37 @@ void CurrencyDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
-            QString code = QString::fromStdString(self->currency_.iso_code);
-            self->hasChanges_ = false;
-            self->resetFlagChanged();
-            self->updateSaveButtonState();
-            emit self->currencySaved(code);
-            self->notifySaveSuccess(tr("Currency '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
+                QString code = QString::fromStdString(self->currency_.iso_code);
+                self->hasChanges_ = false;
+                self->resetFlagChanged();
+                self->updateSaveButtonState();
+                emit self->currencySaved(code);
+                self->notifySaveSuccess(tr("Currency '%1' saved").arg(code));
+                if (self->calendarWidget_ && self->calendarWidget_->hasPendingChanges()) {
+                    self->calendarWidget_->commitChanges(
+                        crReasonCode, crCommentary, [self](bool success, const QString& message) {
+                            if (!success)
+                                MessageBoxHelper::critical(
+                                    self, "Calendar Assignment Failed", message);
+                        });
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                QString errorMsg = QString::fromStdString(result.message);
+                emit self->errorMessage(errorMsg);
+                MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+            }
+        });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -743,19 +765,11 @@ void CurrencyDetailDialog::setupCalendarsTab() {
         calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
         calendarWidget_->load();
     });
-    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
-        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
-            return;
-        const auto crSel =
-            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
-        if (!crSel)
-            return;
-        calendarWidget_->commitChanges(
-            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
-                if (!success)
-                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
-            });
-    });
+    // Calendar commits are triggered from onSaveClicked itself (see the
+    // calendars_tab_save_guard and on_save_success paste points) so both
+    // the currency's own fields and calendar assignments share a single
+    // change-reason prompt per Save click -- no separate saveButton
+    // connection here.
 }
 
 }

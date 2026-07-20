@@ -473,20 +473,55 @@ calendarWidget_-dependent connections live in the
 #+begin_src cpp :name calendars_tab_connections :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
 #+end_src
 
-** Calendars tab: skip the currency save when only calendars changed
+** Calendars tab: a single change-reason prompt for both writes
 
-Calendar assignments are committed by their own change-reason prompt
-(see the =calendars_tab_connections= block above) via
-=CalendarAssignmentWidget::commitChanges=. Without this guard, staging
-a calendar add/remove alone would still enable the Save button (see
-=calendars_tab_connections=) and =onSaveClicked= would unconditionally
-re-save the currency's own fields too, popping a second, unrelated
-change-reason dialog and bumping the currency's version for no real
-change.
+Calendar assignments and the currency's own fields must not pop two
+independent change-reason dialogs for one Save click. Two cases:
+
+- Only calendar assignments changed (=!hasChanges_=): commit them here,
+  with their own prompt, and return -- skip the rest of =onSaveClicked=
+  entirely so the currency's own fields aren't re-saved for no real
+  change.
+- Both changed, or only the currency's own fields changed: fall
+  through to the normal save flow below, which prompts once and saves
+  the currency; the calendar commit (using that *same* prompt result)
+  happens afterwards in the =on_save_success= paste point once the
+  currency save has actually succeeded -- see that block below for why
+  it isn't done here instead.
 
 #+begin_src cpp :name calendars_tab_save_guard :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
-if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges())
+if (!hasChanges_ && calendarWidget_ && calendarWidget_->hasPendingChanges()) {
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+    if (!crSel)
+        return;
+    calendarWidget_->commitChanges(
+        crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
+            if (!success)
+                MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
+        });
     return;
+}
+#+end_src
+
+** Calendars tab: commit calendar changes after a successful currency save
+
+Runs inside =onSaveClicked='s async watcher, after the currency save
+has succeeded and reused its change-reason prompt (=crReasonCode=/
+=crCommentary=, captured into the watcher lambda) -- not a second,
+independent prompt. Only reached when the currency itself had changes
+to save; the calendar-only case is handled entirely by the
+=calendars_tab_save_guard= block above, which returns before this
+point is ever reached.
+
+#+begin_src cpp :name on_save_success :implements F8EC96B9-04BA-46A1-A2D8-4E4B91DCB435
+            if (self->calendarWidget_ && self->calendarWidget_->hasPendingChanges()) {
+                self->calendarWidget_->commitChanges(
+                    crReasonCode, crCommentary, [self](bool success, const QString& message) {
+                        if (!success)
+                            MessageBoxHelper::critical(self, "Calendar Assignment Failed", message);
+                    });
+            }
 #+end_src
 
 ** Calendars tab: keep read-only state in sync while browsing history
@@ -591,19 +626,11 @@ void CurrencyDetailDialog::setupCalendarsTab() {
         calendarWidget_->setReadOnly(readOnly_ || currency_.iso_code.empty());
         calendarWidget_->load();
     });
-    connect(ui_->saveButton, &QPushButton::clicked, this, [this]() {
-        if (!calendarWidget_ || !calendarWidget_->hasPendingChanges())
-            return;
-        const auto crSel =
-            promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
-        if (!crSel)
-            return;
-        calendarWidget_->commitChanges(
-            crSel->reason_code, crSel->commentary, [this](bool success, const QString& message) {
-                if (!success)
-                    MessageBoxHelper::critical(this, "Calendar Assignment Failed", message);
-            });
-    });
+    // Calendar commits are triggered from onSaveClicked itself (see the
+    // calendars_tab_save_guard and on_save_success paste points) so both
+    // the currency's own fields and calendar assignments share a single
+    // change-reason prompt per Save click -- no separate saveButton
+    // connection here.
 }
 #+end_src
 

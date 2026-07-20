@@ -1222,7 +1222,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
     connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+            self, [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -1237,6 +1237,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
             self->updateSaveButtonState();
             emit self->{{domain_entity.qt.item_var}}Saved(code);
             self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));
+{{! see * Extension points above }}
+<<paste:F8EC96B9-04BA-46A1-A2D8-4E4B91DCB435>>
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

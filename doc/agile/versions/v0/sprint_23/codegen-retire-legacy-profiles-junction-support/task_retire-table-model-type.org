@@ -2,7 +2,7 @@
 :ID: 505820E3-FCB4-4192-AA0F-BDBDC1177088
 :END:
 #+title: Task: Retire the table model type: remove the table branch from the generator and profile matrix
-#+description: Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix in the facet catalogue. Junction files remain a distinct type and are out of scope. Update the codegen input org-file schema reference to mark ores.codegen.table as removed.
+#+description: ABANDONED — absorbed into "B7: Remove split-model backward-compatibility once all models migrated" (AE754D5A), which wanted the identical table-type removal. Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix in the facet catalogue. Junction files remain a distinct type and are out of scope. Update the codegen input org-file schema reference to mark ores.codegen.table as removed.
 #+type: task
 #+level: s1
 #+filetags: :codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
@@ -26,12 +26,12 @@ The ores.codegen.table model type is fully deleted from the generator; no dead c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | Nothing.                       |
+| Last touched | 2026-07-20                               |
 
 * Acceptance
 
@@ -62,3 +62,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned — this task's entire scope (remove the =table= model type
+from =get_model_type()=/=load_model()=, update the codegen input
+org-file schema reference) was independently discovered and done in
+one pass under "B7: Remove split-model backward-compatibility once all
+models migrated" ([[id:AE754D5A-7C07-490A-A1B4-56CD7E7A3A14][AE754D5A]]), which had substantially overlapping
+acceptance criteria. See that task's Result for what shipped. The
+"profile matrix in the facet catalogue" reference here is itself
+stale — =facet_catalogue.org= was already deleted outright by an
+earlier task in this story (B10).

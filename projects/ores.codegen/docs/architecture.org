@@ -101,10 +101,12 @@ In =src/codegen/core.py= (model classification and rendering) and
 =src/codegen/physical_space.py= (graph traversal):
 
 - =get_model_type(filename, path=None)= — classify a model file's type
-  (=domain_entity=, =junction=, =table=, =schema=, =field_group=, ...).
+  (=domain_entity=, =junction=, =schema=, =field_group=, ...).
   Org models are classified via their =#+type:= frontmatter first;
-  filename-suffix predicates (=is_table_model=, =is_junction_model=, ...)
-  are the fallback for legacy JSON models with no frontmatter.
+  filename-suffix predicates (=is_junction_model=, ...) are the
+  fallback for legacy JSON models with no frontmatter. The =table=
+  type (and its =is_table_model= predicate) was retired once every
+  entity migrated to =domain_entity= — see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]].
 - =load_graph(templates_dir)= (in =physical_space.py=) — parse the
   [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] org nodes into a =Graph= of technical
   spaces, facets, and archetypes.
@@ -154,14 +156,14 @@ associated with one or more templates through the
 
 | Filename suffix       | Model type      | Root JSON key   | Primary template                             |
 |-----------------------+-----------------+-----------------+----------------------------------------------|
-| =*_table.json=        | =table=         | =table=         | =sql_schema_create.mustache= (address: ores.sql.schema) |
 | =*_entity.json=       | =schema=        | =entity=        | =sql_schema_table_create.mustache= (legacy)  |
 | =*_domain_entity.json=| =domain_entity= | =domain_entity= | C++ templates + =sql_schema_domain_entity_create.mustache= |
 | =*_junction.json=     | =junction=      | (varies)        | =sql_schema_junction_create.mustache=        |
 
-The =_table.json= format is the current standard for SQL-only entity
-tables (refdata and similar).  It replaces the legacy =_entity.json= →
-=sql_schema_table_create.mustache= path.
+The =*_table.json=/=*_table.org= =table= model type (root key =table=,
+=sql_schema_create.mustache=) is retired — every SQL-only entity table
+migrated to =domain_entity= and the type's dispatch was removed from
+the generator entirely.
 
 ** Model-template mapping
 
@@ -169,41 +171,17 @@ The active mapping is declared in [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ore
 in Python.  Each facet entry lists which templates apply to which model
 types and the output path pattern.
 
-*** Table schema mappings (=*_table.json= files)
+*** Table schema mappings (retired)
 
-These files drive unified SQL generation via =sql_schema_create.mustache=.
-Run with =codegen.sh regenerate --component <name> --address ores.sql.schema=.
-
-| Template                          | Output file pattern                                                    |
-|-----------------------------------+------------------------------------------------------------------------|
-| =sql_schema_create.mustache=      | =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= |
-
-The =*_table.json= model root key is =table= with the following fields:
-
-| Field                          | Type            | Description                                               |
-|--------------------------------+-----------------+-----------------------------------------------------------|
-| =schema=, =product=, =component= | string        | Namespace identifiers                                     |
-| =entity_singular=, =entity_plural= | string      | Used in table name and output filename                    |
-| =description=                  | string          | Appears in the SQL header comment                         |
-| =has_tenant_id=                | boolean         | Whether the table has a =tenant_id= column                |
-| =primary_key.column=           | string          | Primary key column name                                   |
-| =primary_key.type=             | string          | SQL type (e.g. =text=, =uuid=)                            |
-| =primary_key.is_text=          | boolean         | Controls empty-string check constraint and default quoting |
-| =columns[]=                    | list            | Non-PK columns (name, type, nullable, default)            |
-| =coding_scheme=                | =none= / =required= / =nullable= | Whether to add a =coding_scheme_code= FK column |
-| =image_id=                     | boolean         | Whether to add an =image_id= UUID FK column               |
-| =validation_fn.tenant_scope=   | =system= / =both= / =tenant= | Which tenants the validation function queries  |
-| =validation_fn.default=        | string / absent | Return value when input is null or empty                  |
-| =validation_fn.order_by=       | string / absent | Column for =ORDER BY= in error messages (defaults to PK)  |
-| =insert_trigger.validations[]= | list            | Per-column validation function calls in the insert trigger |
-| =check_constraints[]=          | list            | Additional SQL check constraints (expression strings)     |
-| =indexes[]=                    | list            | Extra indexes beyond the standard ones                    |
-
-The generator preprocesses boolean flags (=has_coding_scheme=,
-=has_any_coding_scheme=, =scope_system=, =scope_both=, =scope_tenant=,
-etc.) and pre-renders =sql_check_constraints= as a single string before
-passing data to Mustache, to avoid pystache whitespace issues with
-adjacent section tags.
+The =*_table.json=/=*_table.org= =table= model type and its
+=sql_schema_create.mustache= template are retired; every SQL-only
+entity table now expresses the same shape (primary key, columns,
+validation function, insert trigger, coding scheme, image id) as a
+=domain_entity= model with no C++/Qt sections, rendered via
+=sql_schema_domain_entity_create.mustache=. The generator still shares
+the field-normalisation logic (=normalise_sql_table_context()= /
+=domain_entity_to_table_context()= in =core.py=/=org_loader.py=) — only
+the separate =table= model type and its dedicated template are gone.
 
 *** Domain entity schema mappings (=*_domain_entity.json= files)
 
@@ -319,10 +297,10 @@ The =sql_catalog_populate.mustache= template generates SQL that:
 
 ** Extending
 
-To add a new =_table.json= model for an existing component:
-
-1. Create the =*_table.json= file in the component's =models/= directory.
-2. Run =codegen.sh regenerate --component <name> --address ores.sql.schema= to generate the SQL.
+To add a new SQL-only entity table (the =table= model type's retired
+role) for an existing component, scaffold a =domain_entity= model
+(=compass add entity_org --component <name> ...=) with no =** Qt=
+section instead — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
 
 To add a new facet or template:
 

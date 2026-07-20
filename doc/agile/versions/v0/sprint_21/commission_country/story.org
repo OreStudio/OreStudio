@@ -108,7 +108,8 @@ Apply =security definer set search_path = public, pg_temp= to:
 - All validate functions (defence in depth; enables future direct-call use)
 
 Fixed in [[id:722D1013-6867-48E5-BB7D-4C94817AD46C][refdata_countries_create.sql]] (the commissioning reference) and in the
-=sql_schema_create= literate template [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]].  Documented
+=sql_schema_create= literate template =sql_schema_create.mustache=
+(retired since; see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]]).  Documented
 as a mandatory rule in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]]
 (§ Insert trigger patterns → Validation functions).
 
@@ -182,7 +183,7 @@ end if;
 #+end_src
 
 Fixed in =refdata_countries_create.sql= (the commissioning reference) and in
-the [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]] template (all three scope variants:
+the =sql_schema_create.mustache= template (retired since) (all three scope variants:
 =scope_system=, =scope_both=, =scope_tenant=).  Documented in
 [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] (§ Insert trigger patterns
 → Validation functions).

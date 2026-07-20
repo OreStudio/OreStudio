@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:cleanup:tech-debt:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-table-pathway-backcompat
+#+pr: 1652
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Once every entity model has been migrated to the unified domain_entity format an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -39,22 +39,121 @@ Once every entity model has been migrated to the unified domain_entity format an
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This task substantially overlaps another still-BACKLOG task in this
+same story, "Retire the table model type: remove the table branch from
+the generator and profile matrix" (505820E3) — both want the same
+=table= dispatch removed from =get_model_type()=/=load_model()=. Did
+one pass satisfying both; closed 505820E3 as ABANDONED (absorbed here)
+rather than duplicating the work.
+
+Investigation found the "inert defensive defaults" half of this task's
+Goal does not hold: =core.py='s =coding_scheme.get('none')`-style
+default (actually =de.get("coding_scheme", "none")= in
+=domain_entity_to_table_context=) is *not* dead scaffolding — most
+=domain_entity= models never declare =#+coding_scheme:= at all (it's
+an SQL-only concern many entities don't need), so making it
+unconditional would break generation for dozens of entities across
+every component. Left this default exactly as-is; scoped the task down
+to the safely-provable part: the =table= model type itself, since
+zero =_table.org=/=_table.json= files remain anywhere in the repo
+(confirmed by the prior task in this story).
+
+1. Remove =table= from =_ORG_TYPE_TO_MODEL_TYPE=, delete
+   =is_table_model()=, and remove its =get_model_type()=/=load_model()=
+   dispatch branches (both the =#+type:= and filename-suffix fallback
+   paths) in =core.py=.
+2. Delete =load_org_table_model()= from =org_loader.py= (self-contained,
+   no other callers); keep the shared =_parse_org_table_rows()= helper
+   (used by junction/lookup_entity/domain_entity parsing too).
+3. Remove the dead =model_type == 'table'= branches in
+   =resolve_output_path()= and =generate_from_model()= — both provably
+   unreachable once =get_model_type()= can no longer return ='table'=.
+4. Delete the now-orphaned =ores.sql.schema.create.org= archetype (and
+   its tangled =sql_schema_create.mustache=) — its
+   =#+model_types: table= restriction meant it was already unreachable
+   for every remaining model type.
+5. Remove =ores.codegen.table= from =manifest.py='s
+   =_CODEGEN_ORG_TYPES= (org-model discovery) for consistency.
+6. Mark =ores.codegen.table= retired in the codegen input org-file
+   schema reference, matching the existing =(retired)= convention used
+   for =facet_catalogue=.
+7. Verify: codegen pytest suite; a rigorous stash-based A/B diff of a
+   full SQL regeneration across all six SQL-producing components
+   (confirmed byte-identical file sets before/after, see Notes); a
+   dry-run C++ regeneration sweep across all 17 components.
 
 * Notes
+
+- Acceptance criterion "full SQL regeneration produces zero git diff
+  across all components" is unsatisfiable as literally stated — a
+  clean bulk regen (unmodified code, from a stashed baseline) already
+  touches 82 files against what's on disk, all pre-existing template
+  drift (the same "sql profile dual-fires old and new SQL templates"
+  issue tracked in =entity_commissioning_reference.org=, unrelated to
+  this task). Verified what actually matters instead: an A/B
+  comparison (full regen with my changes stashed vs applied, same
+  clean starting point both times) produces the *exact same* 82-file
+  set with *identical* content either way — my changes are proven
+  behaviourally inert on generation output. Confirmed the drift itself
+  predates this task by single-entity =--diff= on an unmodified tree.
+- Full dry-run C++ sweep across all 17 =-cpp=/SQL components surfaced
+  one pre-existing, unrelated error (=ores.database.database_info.org=
+  missing =subcomponent=) — confirmed present regardless of this
+  task's changes, out of scope.
+- =get_domain_entity_template_mappings()= and the whole
+  =target_template=None= dispatch ladder in =generate_from_model= it
+  feeds (the =is_domain_entity=/=is_junction=/... branches after the
+  live =if target_template:= short-circuit) are dead code for the
+  live physical-space path — every real caller
+  (=_generate_single=/=compass codegen entity=) always resolves and
+  passes an explicit =target_template=/=target_output=. Only touched
+  the one entry that named the file being deleted
+  (=sql_schema_create.mustache=, replaced with an explanatory comment
+  and an empty list — behaviourally identical since the lookup already
+  fell through to its own default for the real, live template name).
+  Did not attempt to clean up the rest of that dead ladder — out of
+  scope for a =table=-type-only removal task.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1652][#1652]] | [codegen] Retire the table model type entirely from the generator |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | doc_generate.py still scaffolds new, unloadable table models (real functional gap) | doc_generate.py | Accepted | Removed "table" from TYPE_TO_TEMPLATE/_COMPONENT_TYPES/_PLURAL_TYPES/DEFAULT_INITIAL_STATE/PARENTLESS_TYPES and all --type table-specific CLI flags/handling; verified argparse now rejects --type table |
+| 2 | ores.doc.modeling.table.org archetype backs the dead scaffold, has a dangling id: link | library/templates/ores.doc.modeling.table.org, doc_table.org.mustache | Accepted | Deleted both files and their routing-table row in ores.doc.modeling.org |
+| 3 | ores.sql.schema.org has a dangling link to the deleted archetype and stale model_types/prose | library/templates/ores.sql.schema.org | Accepted | Removed the dangling row/link, dropped "table" from #+model_types:, updated prose |
+| 4 | migrate_table_to_org.py is now fully orphaned | src/codegen/migrate_table_to_org.py | Accepted | Deleted -- no callers, no remaining _table.json input |
+| 5 | Stale docstring in core.py listing 'table' as a return value | src/codegen/core.py | Accepted | Fixed docstring; also documented why the _table.org exclusion in is_domain_entity_model stays (protective, not dead) |
+| 6 | architecture.org's Table schema mappings section describes a deleted pathway as current standard | docs/architecture.org | Accepted | Updated model-type table, retired the Table schema mappings subsection, fixed the Extending section's instructions |
+| 7 | codegen_meta_model.org's Table row has no (retired) annotation | modeling/codegen_meta_model.org | Accepted | Annotated retired, matching codegen_input_org_schema.org's convention |
+| 8 | diff_cmd.py's stub error message doubly stale (pre-existing, not introduced by this PR) | src/codegen/diff_cmd.py | Declined | Reviewer explicitly flagged for awareness only, not requesting a fix; pre-existing dead-code stub unrelated to this PR's scope |
+| 9 | CI site check failed: dangling id: link 9C11F389 (the deleted archetype) in 2 historical agile docs | doc/agile/product_backlog/discarded/add-security-definer-to-validate-fns.org, doc/agile/versions/v0/sprint_21/commission_country/story.org | Accepted | De-linked (kept the descriptive text, dropped the id-link markup since no valid redirect target exists) -- caught by CI, not a reviewer comment, but the same root cause as #2/#3; verified locally with a full site build before pushing |
 
 * Result
+
+Removed the =table= model type entirely from the generator: dispatch
+in =get_model_type()=/=load_model()=, =is_table_model()=,
+=load_org_table_model()=, the dead =resolve_output_path()=/
+=generate_from_model()= branches, =manifest.py='s org-type discovery
+set, and the orphaned =sql_schema_create.mustache= archetype + org
+source. Absorbed and closed the duplicate task (505820E3) that wanted
+the same removal. Updated the codegen input org-file schema reference
+to mark =ores.codegen.table= retired. Left the "inert defensive
+defaults" half of the original Goal alone — investigation showed the
+=coding_scheme= default is still load-bearing for most domain_entity
+models, not dead scaffolding as assumed.
+
+Rigorously verified behavioural neutrality via a stash-based A/B: a
+full SQL regeneration across all six SQL-producing components produces
+the *exact same* 82-file, byte-identical diff whether or not this
+task's changes are applied (that diff itself is 100% pre-existing
+template drift, confirmed via single-entity =--diff= on an unmodified
+tree, unrelated to this task). A dry-run C++ sweep across all 17
+components surfaced one pre-existing, unrelated validation error, also
+confirmed present regardless of this task's changes. Codegen pytest
+suite: 55/55.

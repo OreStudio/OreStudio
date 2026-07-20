@@ -137,7 +137,6 @@ Model type is derived from the filename suffix (JSON route) or the
 |------------------+--------------------------+--------------------------------+--------------------|
 | =domain_entity=  | =*_domain_entity.json=   | =ores.codegen.entity=          | Bi-temporal C++ entity with full SQL + C++ stack |
 | =schema=         | =*_entity.json=          | =ores.codegen.entity=          | SQL-only schema entity (legacy JSON route) |
-| =table=          | =*_table.json=           | =ores.codegen.table=           | SQL refdata table (current standard) |
 | =junction=       | =*_junction.json=        | =ores.codegen.junction=        | SQL junction (many-to-many) table |
 | =component=      | —                        | =ores.codegen.component=       | Component scaffold (CMakeLists, stubs, export macros) |
 | =field_group=    | —                        | =ores.codegen.field_group=     | Nested value struct (no DB mapping) |

@@ -69,6 +69,45 @@ task's output (materialised calendar dates + adjustments) as its real
 data source instead of a live QuantLib call. [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]]
 is blocked on this task.
 
+** Calendars are templates, not fixed date lists — model it that way
+
+QuantLib's own design isn't "a calendar is a list of dates" — it's a
+*template*: a named rule set (e.g. =UnitedStates.Settlement=) that gets
+*instantiated* over a date range to produce concrete holiday dates on
+demand. The =calendar_adjustment= mechanism above is one way to build
+on top of a template (a delta layered on a base), but the data model
+needs to capture the template/instantiation idea itself, generally,
+not just as an adjustment mechanism:
+
+- *Templates.* =refdata.calendars= rows become templates. QuantLib's
+  ~60 built-in ones are templates sourced from and owned by QuantLib —
+  read-only, clearly marked as such (this task's existing scope
+  above). Users can also author their *own* templates, using the same
+  underlying machinery/shape as the QuantLib ones (a named rule set,
+  optionally with a base to inherit from, e.g. via
+  =calendar_adjustment=-style overrides) — these are NOT read-only;
+  users can create, edit, and manage them like any other refdata
+  entity.
+- *Instantiation.* Both kinds of template get instantiated into actual
+  holiday dates over a date range — this is exactly the materialised
+  =calendar_dates= table above, generalised to cover user templates
+  too, not just QuantLib ones. The instantiation mechanics are the
+  same regardless of source; only the *purpose* differs:
+  - QuantLib template instantiation is for *visualisation* — so the UI
+    (calendar detail screens, the holiday-aware date picker) can show
+    a human what dates a QuantLib calendar actually contains.
+  - User template instantiation produces the *actual holidays ORE
+    Studio supplies to ORE* for that calendar when running analytics —
+    this is live data feeding the engine, not just a UI convenience.
+
+Net effect: the =calendar_dates= materialisation (first bullet under
+Goal, above) needs to be designed against calendar templates in
+general — QuantLib-sourced and user-authored alike — with the
+read-only/editable distinction tracked per-template (not hardcoded to
+"QuantLib = read-only, everything else = editable" as a special case),
+and with the ORE-facing data path for user templates kept in mind from
+the start, not bolted on later.
+
 * Status
 
 | Field        | Value                                  |
@@ -97,6 +136,16 @@ is blocked on this task.
   QuantLib calendar means creating a =calendar_adjustment= against it,
   and that a calendar that doesn't fit any built-in base should be a
   brand new =calendar= entity, not an edit to a QuantLib one.
+- [ ] The calendar entity is modelled as a template (QuantLib-sourced
+  or user-authored), with the read-only/editable distinction tracked
+  per-template rather than assumed from source.
+- [ ] Users can author their own calendar templates using the same
+  mechanism as QuantLib templates (optionally based on one, via
+  =calendar_adjustment=-style overrides), fully editable.
+- [ ] Instantiating a template into concrete holiday dates works
+  identically for QuantLib and user templates; QuantLib instantiation
+  feeds visualisation (UI), user-template instantiation feeds the
+  actual holidays supplied to ORE.
 
 * Plan
 

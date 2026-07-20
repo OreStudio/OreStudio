@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 58956DF9-14B1-443A-A6AB-CD6C665D3EA3
+:END:
+#+title: Story: Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported
+#+description: lld-link: undefined symbol for ores::synthetic::service::resolve() (and sibling free functions in ir_curve_template_resolver.hpp) when linking ores.synthetic.service.tests.exe on windows-clang-debug-ninja -- the functions are missing the ORES_SYNTHETIC_SERVICE_EXPORT macro, so they never make it into the DLL's export table on Windows, though the default ELF/Mach-O visibility on Linux/macOS hides the gap.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-20
+#+updated: 2026-07-20
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows build, broken because =ir_curve_template_resolver.hpp='s free functions are missing the =ORES_SYNTHETIC_SERVICE_EXPORT= macro.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Fix applied and verified locally (Linux, 60/60 assertions); Windows CI is the real verification. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-20                               |
+
+* Acceptance
+
+- =resolve()=, =build_ir_curve_refdata_context()=, and =price_ir_curve_entry()= are exported via =ORES_SYNTHETIC_SERVICE_EXPORT=.
+- =ores.synthetic.service.tests= links and passes locally.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0706334F-E339-4197-B736-AC2871CFD756][Scaffold story: Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported]] | DONE | 2026-07-20 | 2026-07-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A4420706-A961-42D4-8E9F-9CA942FE1CC6][Implement Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported]] | DONE | | 2026-07-20 | Initial task for: Hotfix: Windows link fails, ir_curve_template_resolver free functions not exported |
+
+* Decisions
+
+* Out of scope
+
+-

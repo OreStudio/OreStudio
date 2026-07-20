@@ -81,7 +81,7 @@ jobs:
         run: ./projects/ores.compass/compass.sh env install-packages
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.3.4
+        uses: lukka/get-cmake@v4.4.0
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11

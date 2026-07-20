@@ -8,7 +8,7 @@
 #+filetags: :codegen:cleanup:tech-debt:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
 #+owner: marco
 #+branch: feature/remove-table-pathway-backcompat
-#+pr:
+#+pr: 1652
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -118,7 +118,7 @@ zero =_table.org=/=_table.json= files remain anywhere in the repo
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1652][#1652]] | [codegen] Retire the table model type entirely from the generator |
 
 * Review
 

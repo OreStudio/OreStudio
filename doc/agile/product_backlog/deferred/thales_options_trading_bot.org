@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 7FE507CC-2629-4045-9272-878D19DCB802
+:END:
+#+title: Reference: Thales options trading bot
+#+description: cm-jones/thales — a C++23 options trading bot using Black-Scholes and Interactive Brokers, a reference for future algo-trading work.
+#+type: capture
+#+level: cross
+#+filetags: :options:algo-trading:reference:cpp:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+[[https://github.com/cm-jones/thales][cm-jones/thales]] (C++23, ★10) is an open-source options trading bot:
+Black-Scholes pricing, Interactive Brokers integration, PostgreSQL
+storage, aimed at HFT-style options trading strategies. Filed as a
+reference for future algo-trading work — distinct from pure pricing
+libraries, this one covers the trading/execution layer (broker
+integration, strategy loop) around an options pricing core.
+
+* Why
+
+Deferred rather than actioned now: algo trading / automated strategy
+execution is not on ORE Studio's near-term roadmap, but the
+broker-integration and strategy-execution architecture is worth
+revisiting if/when that capability is considered.
+
+* References
+
+- https://github.com/cm-jones/thales
+
+* See also
+
+- [[id:06B22E68-085B-4A63-8C1F-4A0C3AC99D33][Survey open-source options pricing projects]] — sibling survey of
+  options-pricing libraries and tools (inbox).

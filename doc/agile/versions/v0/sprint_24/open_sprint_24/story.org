@@ -23,11 +23,11 @@ update the =vcpkg= submodule to latest.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Sprint scaffolded; version bump and vcpkg update in progress. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Bump version, update vcpkg, raise PR.  |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-21                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ update the =vcpkg= submodule to latest.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:837A40A5-C4FD-45F2-A6B1-389CC1CE9A66][Task: Open sprint 24]] | STARTED | 2026-07-21 | | Scaffold sprint, wire manifest, bump version, update vcpkg. |
+| [[id:837A40A5-C4FD-45F2-A6B1-389CC1CE9A66][Task: Open sprint 24]] | DONE | 2026-07-21 | 2026-07-21 | Scaffold sprint, wire manifest, bump version, update vcpkg. |
 
 * Decisions
 

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 08547F5A-B07C-4429-9EA5-022ACDC882C9
+:END:
+#+title: Task: Annotate audited entities with badge_key and regenerate
+#+description: Consume the coverage audit's list: add badge_key to the identified FK/boolean columns, author any missing badge_definition/badge_mapping rows the audit flagged as needed, and regenerate. Depends on the coverage audit task's output.
+#+type: task
+#+level: s1
+#+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
+#+owner: marco
+#+branch: feature/annotate-audited-entities-with-badges
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every column the audit flagged as a badge candidate either renders as a badge, or has an explicit, documented reason it doesn't (e.g. too many distinct values for a badge to be useful).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- Every 'ready-to-annotate' entry from the audit gets badge_key added to its model and is regenerated.
+- Every 'needs new badge_definition data' entry gets its badge_definition/badge_mapping rows authored, following the established colour-semantic convention (grey=disabled/no, green=good, red=bad, yellow=warning).
+- Any audit entry deliberately skipped has a one-line reason recorded in this task's Result.
+- Zero diff on entities not touched by this task; build clean; existing badge-related tests still pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

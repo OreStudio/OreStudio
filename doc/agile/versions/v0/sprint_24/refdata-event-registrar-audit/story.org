@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: DCC5853D-1B41-4EB0-8A85-07E2A8FABC07
+:END:
+#+title: Story: Refdata entity NATS event registrar audit
+#+description: Audit all refdata entities with a changed_event type and wire NATS event registrars for the ones still missing (26 of 34), closing the eventing gap systematically.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every refdata entity with a =*_changed_event= type
+(=ores.refdata.api/eventing/=) should have a working NATS event
+registrar (=ores.refdata.service/messaging/*_event_registrar.cpp=)
+wired into =event_registrar.cpp=, so downstream consumers (audit
+trail, cache invalidation, other services) reliably learn when the
+entity changes. Investigation at planning time found only 8 of 34
+entities wired: =book=, =business_day_convention_type=, =country=,
+=currency=, =currency_pair=, =currency_pair_convention=,
+=party_type=, =purpose_type=. Since then, =day_count_fraction_type=
+(new entity, wired at commissioning) and =contact_type= (wired as
+part of a full model regeneration — see [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]])
+have also been wired, leaving 24 of the original 26. The remaining 24
+have a defined event type but no registrar — audit and close the gap
+for all of them. The
+registrar work itself is simple and mechanical per entity (mirrors
+the existing =currency_event_registrar.cpp= pattern); the value here
+is systematic completeness, not novel design.
+
+*Caveat (found in PR #1503 review):* 10 of the 26 entities below —
+=business_unit=, =counterparty=, =counterparty_contact_information=,
+=counterparty_identifier=, =currency_market_tier=,
+=monetary_nature=, =party=, =party_contact_information=,
+=party_identifier=, =portfolio= — have *stale* =changed_event.hpp=
+output per [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated
+event-mapping registrar]]: the id field is the old plain =ids=
+instead of the current template's ={{entity_singular_short}}_ids=.
+Regenerating those 10 entities' =nats-eventing= output to add a
+registrar is therefore a *breaking change* to any existing consumer
+of the old field name — check every consumer (Qt controllers,
+handlers, anything referencing =.ids= on that entity's
+changed_event) *before* regenerating, not after. This applies to all
+10 of those entities in the "Party family" and "Currency/FX family"
+task groups below, plus =business_unit= and =portfolio= in "Books/
+portfolios/misc".
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Every entity in [[*Entities missing a registrar][Entities missing a registrar]] below has a
+  =*_event_registrar.{hpp,cpp}= following the existing
+  =currency_event_registrar= pattern, registered in
+  =event_registrar.cpp=.
+- Each new registrar is exercised by at least one test confirming
+  the NATS message is published when the entity changes.
+- No entity with a =*_changed_event= type is left unwired by story
+  close (bar any explicitly deferred and recorded under * Decisions).
+
+* Entities missing a registrar
+
+Has a =*_changed_event= type but no =*_event_registrar.cpp= (24, was
+26 — =contact_type= wired 2026-07-13):
+=business_centre=, =business_unit=, =cds_convention=,
+=counterparty=, =counterparty_contact_information=,
+=counterparty_identifier=, =currency_group=, =currency_market_tier=,
+=currency_pair_classification=, =deposit_convention=,
+=fra_convention=, =ibor_index_convention=, =monetary_nature=,
+=ois_convention=, =overnight_index_convention=, =party=,
+=party_contact_information=, =party_identifier=, =party_id_scheme=,
+=party_status=, =portfolio=, =regulatory_book_type=,
+=rounding_type=, =swap_convention=, =zero_convention=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+Planned tasks (not yet scaffolded as task docs) — one task per small
+batch of entities, grouped by domain family:
+
+1. Party family: =party=, =party_status=, =party_identifier=,
+   =party_id_scheme=, =party_contact_information=, =counterparty=,
+   =counterparty_identifier=, =counterparty_contact_information=.
+   *Except =party_status= and =party_id_scheme=, every entity here
+   has stale =changed_event.hpp= output (see Goal's caveat) — check
+   all consumers of the old =ids= field before regenerating.*
+2. Currency/FX family: =currency_group=, =currency_market_tier=,
+   =currency_pair_classification=, =monetary_nature=,
+   =rounding_type=. *=currency_market_tier= and =monetary_nature= have
+   stale =changed_event.hpp= output (see Goal's caveat) — check
+   consumers before regenerating.*
+3. Convention family: =cds_convention=, =deposit_convention=,
+   =fra_convention=, =ibor_index_convention=, =ois_convention=,
+   =overnight_index_convention=, =swap_convention=, =zero_convention=.
+4. Books/portfolios/misc: =business_centre=, =business_unit=,
+   =portfolio=, =regulatory_book_type= (=contact_type= already wired,
+   2026-07-13). *=business_unit= and =portfolio= have stale
+   =changed_event.hpp= output (see Goal's caveat) — check consumers
+   before regenerating.*
+5. Add a test per new registrar confirming NATS publication on
+   change (may fold into each batch's task above rather than a
+   separate task, depending on effort).
+
+* Decisions
+
+* Out of scope
+
+- Adding =*_changed_event= types to entities that don't have one yet
+  — this story only wires registrars for events that already exist.
+
+* References
+
+- [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated event-mapping
+  registrar]] — the 10-entity stale-=changed_event.hpp= caveat in the
+  Goal above; check this capture before regenerating any of its 10
+  named entities.

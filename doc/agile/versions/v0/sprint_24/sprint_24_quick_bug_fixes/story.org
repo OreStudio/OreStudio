@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: CA396E06-FC1C-4461-A9C4-18DB1B1BA080
+:END:
+#+title: Story: Sprint 24 quick bug fixes: currency CRUD, party re-provisioning
+#+description: Three small, unrelated bugs pulled in from the inbox: currency add dialog's Save button never enables, currencies list pagination doesn't work, and party re-provisioning throws a raw Postgres duplicate-key error instead of handling it cleanly.
+#+type: story
+#+level: s2
+#+filetags: :bug:qt:refdata:currency:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bundle three small, unrelated bugs pulled in from the inbox — each
+blocking or degrading basic functionality:
+
+1. The Qt client's Currency add dialog never enables Save even after
+   all required fields are filled in, blocking currency creation
+   entirely.
+2. The currencies list window's pagination controls don't work,
+   unlike other entity list windows — large currency lists are
+   unusable/incomplete.
+3. Re-provisioning a party throws a raw Postgres duplicate-key error
+   instead of skipping/upserting cleanly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Each task is independently startable.  |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- Filling in all required fields in the Currency add dialog enables
+  Save; a new currency can be created from the Qt client.
+- The currencies list window pages correctly for a list with more
+  entries than one page.
+- Re-running party provisioning with --reports all against an
+  already-provisioned party succeeds (skip/upsert) instead of
+  throwing a raw duplicate-key error.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] | BACKLOG | | | Save button remains disabled even after filling in all required fields when adding a new currency, blocking creation. |
+| [[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]] | BACKLOG | | | The currencies list window's pagination controls don't appear to be enabled/working, unlike other entity list windows. |
+| [[id:B9410C52-E635-4A7E-B4B4-7A4DFEAE552A][Party re-provisioning fails on duplicate report definitions]] | BACKLOG | | | provision party --reports all in ores.shell/Qt wizard throws a raw Postgres duplicate-key error instead of skipping/upserting cleanly when re-run against an already-provisioned party. |
+
+* Decisions
+
+* Out of scope
+
+-

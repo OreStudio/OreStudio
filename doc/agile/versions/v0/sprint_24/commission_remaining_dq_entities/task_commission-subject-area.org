@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 4E9D57E6-A4CB-4243-8335-D39D63650A3A
+:END:
+#+title: Task: Commission subject_area onto standard codegen
+#+description: Finish the fifth entity split out of 819B050A: author subject_area's codegen .org model with its compound natural key (name, domain_name) properly expressed, regenerate core/repository/service/handler/protocol, retire hand-written equivalents. Blocked on compound natural-key support in lookup_entity/table SQL templates (52FE40FA).
+#+type: task
+#+level: s1
+#+filetags: :commission_remaining_dq_entities:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 52FE40FA-C696-4C77-8A3F-65FB00196EAD
+#+blocked_since: 2026-07-21
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Carried forward from Sprint 23's [[id:819B050A-A877-4B9A-BB24-942B95DA1206][Task: Commission catalog/change_reason/change_reason_category/data_domain onto standard codegen]],
+which fully commissioned four of the five entities in its original
+scope and deliberately stopped short of subject_area because its
+compound natural key (=name=, =domain_name=) doesn't fit
+=lookup_entity='s (now =domain_entity='s) single-column primary key
+shape. Commission subject_area onto the standard codegen stack once
+compound natural-key support lands (52FE40FA, in [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen
+infrastructure follow-ups from DQ commissioning]]): author its =.org=
+model with the compound key properly expressed, regenerate core/
+repository/service/handler/protocol, retire the hand-written
+equivalent, swap the SQL table over for real.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | 52FE40FA (compound natural-key support in lookup_entity/table SQL templates). |
+| Next         | Pick up once 52FE40FA lands.            |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+- subject_area has a codegen .org model under projects/ores.dq/modeling/ with its compound natural key (name, domain_name) properly expressed as the primary key, not descoped to a plain Column.
+- Generated core/repository/service/handler/protocol code replaces the hand-written equivalent; SQL table swapped over for real.
+- Build and tests green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

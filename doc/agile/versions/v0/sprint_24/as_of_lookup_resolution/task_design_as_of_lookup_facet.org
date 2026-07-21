@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 002A916C-2D83-4408-8B74-05CEA44CCB06
+:END:
+#+title: Task: Design the as-of lookup codegen facet
+#+description: Design a new codegen facet (candidate flag: :has_as_of_lookup: true) generating a repository-level read_at_timepoint(ctx, as_of[, key]) method and a service-level wrapper, matching the existing hand-written shape on currency_repository/country_repository/business_centre_repository but generated consistently. Decide: NATS protocol surface (new request/response, or reuse an existing one with an optional as_of param), where the flag lives in the .org model (entity-level, since this is about the entity's own bitemporal window, not a parent/child FK relationship), and how/whether to reconcile the 3 existing hand-written methods with the generated one.
+#+type: task
+#+level: s1
+#+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

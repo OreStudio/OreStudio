@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 0BB7EC81-B2A1-4160-AA8D-A21E011F562D
+:END:
+#+title: Story: IR curve bootstrapping + official curve republish
+#+description: Bootstrap the raw instrument grid (deposit/FRA/swap quotes) into an actual desk-consumable zero/discount curve, and republish it as an official curve stream downstream consumers read from -- distinct from viewing raw ticks.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:rates:curves:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Real desks don't consume raw instrument quotes (deposit/FRA/swap)
+directly — they bootstrap them into an actual zero/discount curve
+(interpolation, day-count conventions, multi-curve OIS-discounting
+framework, per Ametrano & Bianchetti 2013) and *that* bootstrapped
+curve is what pricers/risk actually read from. Two pieces of work,
+previously untracked as concrete stories:
+
+1. A curve-bootstrapping engine over the raw instrument grid the IR
+   curve family feed publishes (see [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data
+   generation]]) — interpolation, day-count conventions, multi-curve
+   framework.
+2. An "official curve" republish/remap step, analogous to
+   =ores.marketdata='s existing remap of a raw producer tick onto the
+   *official* tenant-scoped stream (see [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]) —
+   so downstream consumers read a real usable curve, not raw ticks.
+
+Filed while designing the IR Rates synthetic data generation story's
+tick-batch-publishing/curve-snapshot-builder-viewer tasks. Both of
+those are deliberately scoped to the *raw* instrument grid only (step
+1 of a 3-step pipeline: raw ticks -> bootstrap -> republish) —
+=curve-snapshot-builder-viewer= is explicitly a viewer over raw ticks,
+not the bootstrapped curve a desk would price off of. Promoted from
+an inbox capture into a real Sprint 24 story now that Sprint 24's
+mission includes improving IR generation.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks: bootstrapping engine first, then official-curve republish. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A curve-bootstrapping engine exists over the raw instrument grid
+  published by the IR curve family feed: interpolation, day-count
+  conventions, multi-curve (OIS-discounting) framework.
+- An "official curve" republish/remap step exists, analogous to
+  ores.marketdata's existing raw-producer-tick remap onto the
+  official tenant-scoped stream, so downstream consumers read a real
+  usable curve rather than raw ticks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Modelling the raw instrument grid itself and its publishing
+  pipeline — already delivered by [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]
+  (Sprint 23, DONE).
+
+* References
+
+- [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible interest rate curve bootstrapping]] —
+  Ballabio's replication of Ametrano & Bianchetti (2013), the
+  reference case study for what a real bootstrap needs.
+- =projects/ores.analytics.quant/include/ores.analytics.quant/service/curve_instrument_pricer.hpp=
+  — the pricer functions already deriving par rates from one
+  short-rate draw's discount factors; a bootstrapper would consume
+  the published ticks, not this pricer directly.
+- [[https://obrienjoey.github.io/post/ore_sofr_bootstrap/][Bootstrapping a SOFR curve in ORE]] — worked example bootstrapping a
+  USD SOFR OIS discounting/forecasting curve from overnight deposits
+  and 1M-30Y OIS quotes, directly against the underlying ORE/QuantLib
+  engine (ore.xml/todaysmarket.xml/curveconfig.xml/conventions.xml,
+  the Python API for curve extraction and zero-rate output, and
+  calibration reports verifying zero-PV repricing of the calibrated
+  swaps) rather than a wrapper library — a concrete reference for
+  piece 1's conventions and multi-curve framework, and for how ORE's
+  own config/quote-string plumbing would map onto this bootstrapper.
+
+* See also
+
+- [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] — the story whose raw-tick
+  output this would bootstrap.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the producer/authority/consumer
+  remap pattern this would extend to bootstrapped curves.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — pillar instruments, bootstrapping,
+  curve template concepts.
+- [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] — how a bootstrapped curve family would
+  eventually be reviewed once it exists.

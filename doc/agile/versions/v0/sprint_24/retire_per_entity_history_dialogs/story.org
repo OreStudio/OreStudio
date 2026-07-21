@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: A2D386CD-BA30-4212-A6E1-83EAFF4E8565
+:END:
+#+title: Story: Retire per-entity history dialogs: Phase C rollout
+#+description: Delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and their templates, across the ~61 dialogs still on the old architecture, now that the generic HistoryDialog widget and server-side diff pipeline are shipped.
+#+type: story
+#+level: s2
+#+filetags: :qt:history:refactor:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from Sprint 23's [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]
+at close: that story shipped the entire new history architecture —
+=ores.diff= with intra-value diff spans, one generic
+=history.v1.get= NATS subject dispatched server-side to codegen'd
+per-entity field mappers, a single non-templated =HistoryDialog=
+widget shared by every entity (replacing the =HistoryDialogBase=/
+per-entity-subclass design entirely), a generic unified-diff shell
+renderer, and the Gemini-review UI redesign. =ores.qt.refdata= has
+already fully migrated onto it.
+
+What's left is the actual cleanup: once every remaining =ores.qt=
+component (admin, analytics, compute, marketdata, synthetic,
+trading, workspace) has migrated its entities onto the generic
+=HistoryDialog= — each tracked separately as a "Commission
+ores.qt.<component> into codegen" backlog capture — delete
+=HistoryDialogBase=, every remaining per-entity =*HistoryDialog=
+class, and their templates.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started; blocked on other components' migrations. |
+| Waiting on    | The "Commission ores.qt.<component> into codegen" backlog captures landing for every non-refdata ores.qt component. |
+| Next          | Revisit once those land.               |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- Zero remaining per-entity =*HistoryDialog= classes anywhere in
+  =ores.qt=.
+- =HistoryDialogBase= and its templates
+  (=cpp_qt_history_dialog.{hpp,cpp}.mustache=,
+  =qt_history_dialog_ui.mustache=) deleted.
+- Zero-diff regeneration guardrails confirm no facet still emits a
+  per-entity dialog class.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] | BLOCKED | | | Once every entity across every ores.qt component has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and their templates; confirm via zero-diff regeneration guardrails. |
+
+* Decisions
+
+* Out of scope
+
+- The per-component migrations themselves (each is its own backlog
+  capture, e.g. "Commission ores.qt.admin into codegen") — this
+  story is only the final cleanup step once they're all done.

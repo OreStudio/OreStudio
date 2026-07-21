@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 837A40A5-C4FD-45F2-A6B1-389CC1CE9A66
+:END:
+#+title: Task: Open sprint 24
+#+description: Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_24:sprint_24:v0:
+#+owner: marco
+#+branch: agile/open-sprint-24
+#+pr: 1659
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold Sprint 24: create the sprint doc, set its mission, wire it into
+the version manifest and agile index, bump the project version, and
+update the =vcpkg= submodule to latest.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1659][#1659]] | [agile] Open Sprint 24 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Sprint 23 Status block not flipped to closed (State/Now/Next/Release Notes) | sprint_23/sprint.org | Accepted | Fixed in 1a9fb70e4: State DONE, End date, Now/Next/Release Notes updated matching sprint_22's closed pattern. |
+| 2 | Two Sprint 23 BACKLOG stories stranded, not carried into Sprint 24 nor moved to backlog | sprint_23/sprint.org, sprint_24/sprint.org | Accepted | Fixed in 1a9fb70e4: moved codegen_nats_subject_constants and server_side_uuid_generation story dirs into sprint_24, updated parent-sprint links/filetags, added rows to Sprint 24's Product table. |
+
+* Result
+
+Sprint 24 scaffolded and Sprint 23 closed out: sprint folder/mission
+created, version manifest and agile index wired to Sprint 24, project
+version bumped to 0.0.24 (CMakeLists, vcpkg.json, CI workflows,
+badges), vcpkg submodule updated to latest. Carried forward 9 (plus 2
+more caught in review) postponed Sprint 23 BACKLOG stories, close-and-
+split 4 Sprint 23 stories into follow-on Sprint 24 stories, folded new
+inbox captures into Sprint 24/backlog, and added a hotfix story for
+CMake 4.4 CI warnings. Sprint 23's Status block flipped to DONE.
+Acceptance met; PR #1659 reviewed (4 automated passes, no blocking
+issues; 2 non-blocking doc-consistency gaps fixed in the review round)
+and merged.

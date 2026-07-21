@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :qt:badges:ui:design:refdata:sprint_23:v0:
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-07-21
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,57 +24,37 @@ wiring automatically. Booleans already badge correctly via the same
 =(code_domain, entity_code)= mapping =is_sweepable= uses — no new
 storage design is needed.
 
-The story's remaining scope is four concrete problems, not a
-redesign:
+Delivered: the =badge_mapping= browser UI (the highest-leverage
+single piece of work, since it makes badge source self-use, coverage
+gaps, and colour-semantic misuse all reviewable instead of
+grep-only), and migrating =badge_definition=/=badge_severity=/
+=code_domain= onto standard codegen and DQ publishing.
 
-1. An entity that *is* a badge source doesn't badge itself on its own
-   list — only consumers do.
-2. No audit of where else badges should apply but don't (candidates:
-   any FK/soft-FK to an already-badged entity, and any boolean
-   column).
-3. No visual palette review — =badge_definition=/=badge_severity=
-   already have admin UI, but colours render as hex text, not
-   swatches, so misuse of the grey=disabled/green=good/red=bad/
-   yellow=warning convention can't be eyeballed.
-4. =badge_mapping= (the actual linkage data) has no UI at all —
-   invisible, so 1-3 are grep-only today. Fixing this is the
-   highest-leverage single piece of work, since it makes the other
-   three reviewable.
-
-Also folds in: the unmapped-value fallback colour is currently a
-Qt-only hardcoded constant, not a real =badge_definition= row — fixed
-alongside the palette-swatch work so any future client (Wt, out of
-scope to build here, but checked for architectural soundness) inherits
-the same fallback automatically instead of re-hardcoding it.
+*Closed at Sprint 23's end, narrowed to what shipped.* The remaining
+scope split into two Sprint 24 stories by kind of work: concrete UI
+fixes vs. an open-ended coverage audit — see [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme:
+visual polish and self-badging fixes]] and [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge
+adoption across domain entities]].
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Mapping-browser task (98AC38DD) DONE -- fixed a real ores.dq.service crash, protocol drift, and a duplicate-rows bug (missing tenant filter on badge_mapping, root-caused to a missing junction codegen flag), PR #1622. Portfolios badge colours confirmed correct; unblocked [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]]'s manual-chapter task. |
+| Now           | Closed: badge_mapping browser UI and standard-codegen/DQ-publishing migration shipped. Remaining scope split into two Sprint 24 stories (visual polish/self-badging fixes; coverage audit/rollout). |
 | Waiting on    | Nothing.                               |
-| Next          | Move to the palette-swatch/self-badging/coverage-audit tasks. |
-| Last touched  | 2026-07-17                               |
+| Next          | See the two Sprint 24 follow-on stories. |
+| Last touched  | 2026-07-21                               |
 
 * Acceptance
 
 - A =badge_mapping= browser exists (System > Configuration), grouped/
   filterable by =code_domain=, with a colour swatch per mapped badge.
-- =badge_definition=/=badge_severity= admin UI renders colours as
-  swatches (not hex text), with a colour picker in the detail dialog.
-- The unmapped-value fallback is a real, reserved =badge_definition=
-  row, resolved through =BadgeCache= like any other badge, visually
-  distinct from a legitimate grey/inactive badge.
-- At least one badge-source entity (e.g. =book_status=) badges itself
-  on its own list, via an explicit codegen model annotation (not DB
-  introspection).
-- A written coverage audit exists (FK-to-badged-entity and boolean
-  columns across all =domain_entity= models), split into
-  ready-to-annotate vs needs-new-badge-definition-data.
-- Every audit candidate is either annotated and regenerated, or has a
-  one-line documented reason it was skipped.
+- =badge_definition=/=badge_severity=/=code_domain= run on the
+  standard generated core/service/handler stack and publish through
+  the standard DQ bundle mechanism, replacing the prior hand-written
+  equivalents.
 - No regression to any currently-working badge rendering (existing
   entities' generated files stay zero-diff except where this story
   deliberately changes them).
@@ -86,13 +66,17 @@ the same fallback automatically instead of re-hardcoding it.
 | [[id:20EA48C7-C375-446E-A006-9D51D5BCD117][Scaffold story: Improve badge colour scheme support]] | DONE | 2026-07-15 | 2026-07-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:D8A976B3-993F-48A9-87DC-1D3D7461223F][Analyze current badge colour determination and design improved storage]] | DONE | 2026-07-15 | 2026-07-15 | Initial task for: Improve badge colour scheme support |
 | [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] | DONE | 2026-07-15 | 2026-07-18 | badge_mapping (the actual code_domain->entity_code->badge_definition linkage) has no UI at all today -- populated via seed scripts only. Add a read-only browser, grouped/filterable by code_domain, showing entity_code -> badge_definition with a colour swatch. This is the highest-leverage single piece of work: it makes badge source self-use, coverage gaps, and colour-semantic misuse all reviewable instead of grep-only. Core implementation merged (PR #1599); resumed to re-verify against real tenant-scoped data now that the blocker task is DONE. |
-| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | BACKLOG | | | Badge Definitions/Severities admin UI shows colours as plain hex text, so semantic misuse (grey/green/red/yellow used for something other than their reserved meaning) can't be eyeballed. Add a colour-swatch delegate (and ideally a colour-picker in the detail dialog) to the badge_definition list/detail views. Separately, replace the hardcoded Qt-only fallback constant (color_constants::badge_fallback) with a real, reserved badge_definition row so any future client inherits the same fallback automatically instead of re-hardcoding it, and so the fallback is visually distinct from a legitimate grey/inactive badge. |
-| [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | An entity that IS a code_domain (e.g. book_status, whose code column other entities' badge_key columns reference) doesn't badge itself on its own list -- only consumers do. Add a codegen mechanism (explicit model annotation, not DB introspection) so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
-| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit badge adoption coverage across domain_entity models]] | BACKLOG | | | Only 10 of 108 domain_entity models use badge_key today. Audit candidates: any column that is a foreign key (soft or real) to an entity already used as a badge source elsewhere (we know both ends), and any boolean column (is_sweepable is the established pattern). Produce a list of candidate columns/entities not yet badged, cross-referenced against existing code_domain/badge_definition rows (already-covered vs needs-new-badge-definition), to drive follow-up annotation work -- this task is the audit/list, not annotating all of them. |
-| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Annotate audited entities with badge_key and regenerate]] | BACKLOG | | | Consume the coverage audit's list: add badge_key to the identified FK/boolean columns, author any missing badge_definition/badge_mapping rows the audit flagged as needed, and regenerate. Depends on the coverage audit task's output. |
 | [[id:D4DE4138-0B86-49AD-8322-69758925F1EE][Migrate badge_definition/badge_severity/code_domain to standard codegen + DQ publishing]] | DONE | 2026-07-16 | 2026-07-16 | badge_definition/badge_severity/code_domain are modeled as ores.codegen.entity but their core/service/handler layer is hand-written (bespoke combined badge_handler.hpp/badge_service.cpp, no tenant filtering on list reads) and code_domain's Qt layer is also hand-written. Move onto standard generated stack, then wire into the standard DQ publish-from-dq bundle mechanism so each tenant gets its own published copy of badge catalogue data. Unblocks the badge_mapping browser UI task. |
 
 * Decisions
+
+- *Closed at Sprint 23's end with acceptance narrowed to what
+  shipped*, rather than left open indefinitely. The remaining
+  BACKLOG tasks split into two Sprint 24 stories by kind of work,
+  not lumped into one: concrete, scoped UI fixes (palette swatch,
+  self-badging) vs. an open-ended coverage audit across 108
+  domain_entity models — the latter is a distinct initiative, not a
+  small tail.
 
 - *Do not move badge colour onto each "table enum type"'s own row*
   (the story's original hypothesis). The current normalised

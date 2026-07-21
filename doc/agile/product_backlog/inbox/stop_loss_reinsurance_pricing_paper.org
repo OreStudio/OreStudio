@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 3D9C11A1-F021-412F-A316-A300EDFB56D0
+:END:
+#+title: Reference paper: analytical stop-loss reinsurance pricing
+#+description: LinkedIn share of a paper on analytical pricing of time-dependent stop-loss reinsurance and exposure curves under time-changed Brownian motion.
+#+type: capture
+#+level: cross
+#+filetags: :modelling:reference:actuarial:research:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Alper Hekimoglu, Bilgi Yılmaz, and Ömür Uğur, "Analytical pricing of
+time dependent stop-loss reinsurance and exposure curves under
+time-changed Brownian motion drift", published in the Japan Journal
+of Industrial and Applied Mathematics. The paper combines actuarial
+loss modelling with mathematical-finance techniques: building on
+Madan-Carr-Chang (1998) "The Variance Gamma Process and Option
+Pricing", it derives tractable results for the loss distribution and
+associated stop-loss quantities for VG and NIG processes combined
+with an OU stochastic drift, aiming to keep analytical tractability
+while introducing richer, more realistic loss dynamics.
+
+* Why
+
+Filed as a reference for future modelling work on synthetic curve
+generation / stochastic process libraries in ORE Studio — VG and NIG
+processes with time-changed Brownian motion and OU drift are
+candidate techniques worth evaluating if richer exposure/loss curve
+generation is ever needed.
+
+* References
+
+- Springer Nature SharedIt link: https://rdcu.be/fuA7t
+- Journal link: https://lnkd.in/d4PTts69
+- Madan, Carr, Chang (1998), "The Variance Gamma Process and Option
+  Pricing"
+
+* See also
+
+-

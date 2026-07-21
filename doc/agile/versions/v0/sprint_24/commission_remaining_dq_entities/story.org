@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 03A978BF-78E4-43D1-B66B-81E8FFA1D7AE
+:END:
+#+title: Story: Commission remaining DQ entities
+#+description: Finish commissioning ores.qt.dq's DQ entities onto standard codegen: subject_area (blocked on compound natural-key SQL support), the ores.qt.data_management history-dialog migration, the change_reason_code-not-assigned bug in ~9 dialogs, and the Data Librarian tree regression caused by last sprint's DQ work.
+#+type: story
+#+level: s2
+#+filetags: :codegen:dq:qt:refdata:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from Sprint 23's [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]]
+at close: that story shipped catalog/change_reason/
+change_reason_category/data_domain fully commissioned onto standard
+codegen, plus the lookup_entity→domain_entity architecture
+unification that unblocked them. This story finishes the remaining
+DQ-entity-specific scope:
+
+1. Commission subject_area (the fifth entity, deliberately deferred
+   because its compound natural key doesn't fit the current
+   templates).
+2. Migrate ores.qt.data_management's 14 DQ-owned entities' history
+   dialogs onto the generic HistoryDialog, standing up ores.qt.dq as
+   a real plugin.
+3. Fix the change_reason_code-not-assigned bug still present in ~8
+   Qt detail dialogs (already fixed in the 4 entities migrated so
+   far).
+4. Fix the Data Librarian navigation tree regression (no longer
+   shows datasets), which surfaced during last sprint's DQ
+   commissioning work.
+
+General codegen-infrastructure gaps surfaced along the way but not
+specific to DQ (entity lint, NATS facet consolidation, the remaining
+10 non-DQ lookup_entity migrations, and the compound natural-key SQL
+support this story's subject_area task depends on) are tracked
+separately in [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | subject_area task blocked on 52FE40FA landing (see sibling infra story). |
+| Next          | Pick up the history-dialog migration or the Librarian regression first — both are unblocked. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- subject_area commissioned onto standard codegen, same as the other
+  four DQ entities from the parent story.
+- All 14 ores.qt.data_management DQ-owned entities' history dialogs
+  migrated onto the generic HistoryDialog; ores.qt.dq stood up as a
+  real, built Qt library/plugin.
+- The change_reason_code-not-assigned bug fixed in every remaining
+  affected dialog.
+- Data Librarian's navigation tree shows datasets again.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4E9D57E6-A4CB-4243-8335-D39D63650A3A][Commission subject_area onto standard codegen]] | BLOCKED | | | Finish the fifth entity split out of 819B050A: author subject_area's codegen .org model with its compound natural key (name, domain_name) properly expressed, regenerate core/repository/service/handler/protocol, retire hand-written equivalents. Blocked on compound natural-key support in lookup_entity/table SQL templates (52FE40FA). |
+| [[id:7E714F07-FDAC-4041-9815-04B6219A93BA][Migrate ores.qt.data_management's history dialogs to the generic HistoryDialog]] | BACKLOG | | | 14 DQ-owned entities live in ores.qt.data_management with hand-written backend glue and legacy per-entity HistoryDialog classes. Author codegen models for the 12 that have none, then migrate all 14 onto the generic HistoryDialog. |
+| [[id:5DF07DAD-4D0A-4851-ADDA-E317824855D4][Fix change_reason_code never assigned before save in ~9 Qt detail dialogs]] | BACKLOG | | | ~8 remaining dialogs (CodingSchemeAuthorityTypeDetailDialog, CodingSchemeDetailDialog, DataDomainDetailDialog, MethodologyDetailDialog, NatureDimensionDetailDialog, OriginDimensionDetailDialog, SubjectAreaDetailDialog, TreatmentDimensionDetailDialog) still have the promptChangeReason()/change_reason_code-not-assigned bug already fixed in catalog/change_reason/change_reason_category. |
+| [[id:F66E39CF-9136-4FD2-8150-17432D331F33][Fix Data Librarian tree: no longer shows datasets]] | BACKLOG | | | The Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ commissioning work; investigate and fix. |
+
+* Decisions
+
+* Out of scope
+
+- The general codegen-infrastructure gaps (entity lint, NATS facet
+  consolidation, remaining non-DQ lookup_entity migrations) — see
+  [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]].

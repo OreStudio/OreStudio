@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 4089A9E7-0B60-4E04-A996-AF614D9C1382
+:END:
+#+title: Task: Normalize floating-rate index reference data
+#+description: Consolidate the duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) into an index entity + currency_index junction.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-18
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the two existing flat "CCY-INDEX" floating-rate index
+catalogs -- =ores.refdata.floating_index_type.code= and
+=ores.refdata.overnight_index_convention.id= (both encode currency
+and index atomically, e.g. "USD-SOFR", and both carry overlapping
+convention fields) -- with a properly normalized model: a standalone
+=index= entity (ESTR/SOFR/SONIA/EURIBOR etc, carrying the fixing
+calendar/day count/settlement lag/description conventions currently
+duplicated across the two existing tables) plus a =currency_index=
+junction table that asserts which currencies use which index as real
+data, not as a naming convention baked into a string code.
+
+Raised while building the IR curve editor's index-name combo in
+Market Simulator ([[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve
+instruments]]): that task's =ir_curve_generation_config.index_name=
+currently stores the full =floating_index_type.code= as a deliberate
+stopgap (reusing the entity's existing single-argument FK validator
+rather than inventing a composite one) -- this task is where that
+stopgap gets replaced with a real FK to the normalized model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-18                               |
+
+* Acceptance
+
+- A decision is made and documented on whether =floating_index_type=
+  or =overnight_index_convention= survives as (or is replaced by) the
+  new =index= entity -- not both continuing to exist as parallel
+  catalogs.
+- A new =currency_index= junction table (or equivalent) exists,
+  asserting the currency(ies) each index applies to as data.
+- A decision is made on how term-rate indices with tenor variants
+  (e.g. EURIBOR-3M/6M/12M) fit the junction shape, or whether they
+  need their own modeling -- not silently dropped or ignored.
+- Every existing consumer of the two old catalogs is migrated to the
+  new model, including =ir_curve_generation_config.index_name=
+  (currently storing the full =floating_index_type.code= as a
+  stopgap -- see this task's Goal).
+- Schema validated clean after the migration (=validate_schemas.sh=).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

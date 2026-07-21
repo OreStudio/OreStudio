@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD
+:END:
+#+title: Task: Badge palette swatch rendering + data-driven fallback badge
+#+description: Badge Definitions/Severities admin UI shows colours as plain hex text, so semantic misuse (grey/green/red/yellow used for something other than their reserved meaning) can't be eyeballed. Add a colour-swatch delegate (and ideally a colour-picker in the detail dialog) to the badge_definition list/detail views. Separately, replace the hardcoded Qt-only fallback constant (color_constants::badge_fallback) with a real, reserved badge_definition row so any future client inherits the same fallback automatically instead of re-hardcoding it, and so the fallback is visually distinct from a legitimate grey/inactive badge.
+#+type: task
+#+level: s1
+#+filetags: :badge_colour_scheme_snags:sprint_24:v0:
+#+owner: marco
+#+branch: feature/badge-palette-swatch-and-fallback
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-15                               |
+
+* Acceptance
+
+- BadgeDefinitionMdiWindow's background_colour/text_colour columns render as colour swatches (background_colour at minimum; render the actual badge itself using its own colours where practical, not just a raw swatch, so the list doubles as the palette review the story exists for).
+- BadgeDefinitionDetailDialog's colour fields use a QColorDialog-backed picker instead of a raw text field.
+- BadgeSeverityMdiWindow's own colour/severity linkage to badge_definition is visible in the UI -- today it's not obvious how a badge_severity relates to the badge_definitions that reference it (severity_code is a soft FK with no visible reverse link).
+- BadgeDefinitionMdiWindow gains a toolbar button (matching the "Related entity shortcuts" codegen facet already used elsewhere, e.g. Book's toolbar) linking to Badge Severities and Badge Mappings, so a reviewer can navigate the whole badge catalogue from one screen instead of three separate, disconnected menu entries.
+- A reserved badge_definition row (e.g. code=__unmapped__ or an is_fallback flag) replaces color_constants::badge_fallback; BadgeCache/delegates resolve it the same way as any other badge instead of hardcoding it.
+- The fallback's visual treatment (e.g. dashed/hatched border, or distinct from any real grey badge in use) is visibly different from a legitimate inactive/disabled badge.
+- Manual QA: temporarily remove a badge_mapping row, confirm the affected badge renders as the new fallback style, not a colour indistinguishable from 'inactive'.
+
+Discovered during task 1's manual QA (feedback captured verbatim in
+that task's scenario Notes): plain background-colour-as-cell-fill
+(no pill shape) works but reads worse than a real badge; task 1 fixed
+this for its own two columns via =EntityItemDelegate=/=badge_centered=
+-- this task's swatch work should use the same delegate/column-style
+mechanism for consistency, not reinvent a second rendering approach.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

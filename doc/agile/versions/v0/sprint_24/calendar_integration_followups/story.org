@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 25DE932F-0857-4F23-97DC-75118A849EFC
+:END:
+#+title: Story: Finish integrating calendar reference data: XML export and DQ publish
+#+description: Finish the two remaining acceptance items from the calendar reference data story: build ORE's comma-joined calendar string only at the XML export boundary, and DQ-publish the currency_country and currency_calendar junctions.
+#+type: story
+#+level: s2
+#+filetags: :refdata:calendar:market_data:dq:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from Sprint 23's [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]
+at close: that story shipped the calendar domain model, the FK
+relationships from currency/currency_pair_convention, the Qt CRUD
+screens, and the currency_country junction (5/7 of its own
+acceptance). Two integration items remain, both about making the new
+calendar model actually reachable by the rest of the system rather
+than just existing in the database:
+
+1. =ores.ore='s conventions_mapper (or successor) should build ORE's
+   comma-joined calendar-name string from the FK relationship(s)
+   only at the XML export boundary — the domain model itself never
+   stores the joined string.
+2. =currency_country= and =currency_calendar= (and
+   =currency_pair_convention_calendar=) need wiring into the DQ
+   bundle publication pipeline — =calendar=/=calendar_type= already
+   have this from the entity task.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Either task can start independently.   |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- =ores.ore='s conventions_mapper builds ORE's comma-joined
+  calendar-name string only at the XML export boundary, from the FK
+  relationship(s); the domain model itself never stores the joined
+  string.
+- =currency_country=, =currency_calendar=, and
+  =currency_pair_convention_calendar= are published through the DQ
+  bundle pipeline (artefact tables + publish-from-dq functions +
+  NATS handlers).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML. |
+| [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline. |
+
+* Decisions
+
+* Out of scope
+
+- Everything already shipped by the parent story (entity model, FK
+  relationships, Qt screens, currency_country junction) — see
+  [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
+- The three extras (holiday-aware date picker, list-pagination fix,
+  QuantLib materialization) — already split off separately into
+  [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups]] in the product backlog.

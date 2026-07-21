@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF
+:END:
+#+title: Story: IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions
+#+description: Follow-on work from Sprint 23's 'IR Rates synthetic data generation' story once its own acceptance (short-rate engine, Curve Template, tenor-collision validation, tick-batch publishing) was met: seed a realistic vintage dataset, normalize duplicate floating-index catalogs, extend to a dual discount/projection curve, and add proper IR quoting-convention display.
+#+type: story
+#+level: s2
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+created: 2026-07-20
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Extend [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] (Sprint 23, DONE) with realistic dataset seeding, floating-index catalogue cleanup, a proper dual-curve model, and correct IR quoting conventions — none of which its own acceptance (short-rate engine, Curve Template, tenor-collision validation, tick-batch publishing) required.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started. Pulled into Sprint 24 (mission includes improving IR generation). |
+| Waiting on    | Nothing.                               |
+| Next          | Any of the four tasks is independently startable.  |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A realistic vintage IR rate dataset is seeded, with vintage-aware seeding and basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern.
+- The duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) are consolidated into an index entity + currency_index junction.
+- The single self-discounting curve is extended to a proper discounting/projection dual-curve model with a basis spread.
+- IR rate display/quoting conventions (basis points, per-index precision) mirror currency_pair_convention's pip_factor/tick_size/decimal_places pattern, with a shared Qt formatter.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic IR curve sample data (vintage + DQ datasets)]] | BACKLOG | | | Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern. |
+| [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] | BACKLOG | | | Consolidate the duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) into an index entity + currency_index junction. |
+| [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve (discount + projection) short-rate model]] | BACKLOG | | | Extend the single self-discounting curve to a proper discounting/projection dual-curve model with a basis spread, closer to real market practice. |
+| [[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][IR rate display/quoting conventions (basis points, per-index precision)]] | BACKLOG | | | Research real trading-system IR rate quoting conventions (percent vs basis points, per-currency/index decimal precision) and add the equivalent of currency_pair_convention's pip_factor/tick_size/decimal_places for IR indices, plus a shared Qt formatter. |
+
+* Decisions
+
+* Out of scope
+
+-

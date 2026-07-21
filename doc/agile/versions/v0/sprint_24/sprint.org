@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: D269862E-2035-4857-A0D0-A6E93B0E24C9
+:END:
+#+title: Sprint 24
+#+description: Sprint 24 — continue commissioning work across components, and improve IR generation.
+#+type: sprint
+#+level: s3
+#+filetags: :v0:
+#+created: 2026-07-21
+#+start_date: 2026-07-21
+#+end_date: 2026-07-28
+#+updated: 2026-07-21
+#+todo: STARTED | DONE
+
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 24*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
+
+* Mission
+
+Continue commissioning work across components, and improve IR generation.
+
+* Status
+
+| Field          | Value                                  |
+|----------------+----------------------------------------|
+| State          | STARTED                              |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
+| Previous       | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Start          | 2026-07-21                               |
+| End (expected) | 2026-07-28                           |
+| Now            | Sprint in flight.                      |
+| Waiting on     | Nothing.                               |
+| Next           | Pick the first story.                  |
+| Release Notes  | Added at end of sprint.                |
+| Last touched   | 2026-07-21                               |
+
+* Stories
+
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Product
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------|
+| [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] | DONE | 2026-07-21 | 2026-07-21 | Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule. |
+| [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] | BACKLOG | | | Comprehensive synthetic holding-group entity — parties, business units, portfolios, books, and locale-appropriate staff — to replace Barclays Plc as the fully populated test entity. |
+| [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
+| [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: replace ores.iam.core's direct refdata table access with NATS calls. |
+| [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: close out four standalone leftover tasks parked at sprint 22 close. |
+| [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity NATS event registrar audit]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: wire NATS event registrars for the 26 refdata entities still missing one. |
+| [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] | BACKLOG | 2026-07-12 | | Carried from sprint 23: generalise the hand-written, unwired read_at_timepoint into a proper codegen facet; pilot on book_status/regulatory_book_type. |
+| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | 2026-06-25 | | Carried from sprint 23 (originally sprint 22): downgrade address/type mismatch to skip in --component mode; add --entity filter; add entity group/tag system; literate template commentary. |
+| [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | 2026-07-02 | | Carried from sprint 23 (originally sprint 22): drop legacy marketdata tables; remove stale validation_ignore.txt entries; protect market_observation's hand-written overrides from codegen regeneration. |
+| [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: named, shared arrival-profile configs (liquid/illiquid rates) driving Poisson/MMPP tick timing, decoupled from the GMM price process. |
+| [[id:D58CD39D-BFBA-45DF-A05B-01EDD7115C45][Audit refdata entities for composite (temporal-versioned) child relationships]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: generalise temporal composite entity versioning (proven on party/counterparty) across refdata. |
+| [[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject constants per component]] | BACKLOG | 2026-07-13 | | Carried from sprint 23: generate a per-component API header of named NATS subject constants (requests, events, publish-from-dq) so codegen-generated registrar/handler/client code never uses raw string literals -- a missing subscription or typo becomes a compile error, not a silent runtime failure. Discovered via a real bug in the CRM story. |
+| [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][Server-side UUID generation for all entities]] | BACKLOG | 2026-07-14 | | Carried from sprint 23: clients must never generate primary-key UUIDs -- move id assignment from the client-side setCreateMode() (shared Qt detail-dialog codegen template) to the server, returned in the save response. Surfaced while fixing the CRM cross-rates matrix task's editable id-field bug. |
+| [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] | BACKLOG | | | Split from Sprint 23's badge colour scheme story at close: palette swatch rendering + data-driven fallback badge, and self-badging for badge-source entities. |
+| [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] | BACKLOG | | | Split from Sprint 23's badge colour scheme story at close: audit and annotate badge_key adoption across all domain_entity models (only 10/108 use it today). |
+| [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: subject_area, data_management history-dialog migration, change_reason_code bug, Data Librarian tree regression. |
+| [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: entity lint, NATS facet consolidation, compound natural-key SQL support, remaining lookup_entity migrations. |
+| [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] | BACKLOG | | | Split from Sprint 23's calendar reference data story at close: ORE XML export boundary mapping and DQ-publish for currency_country/currency_calendar. |
+| [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] | BACKLOG | | | Split from Sprint 23's history-dialog consolidation story at close: delete HistoryDialogBase and remaining per-entity dialogs once every ores.qt component has migrated onto the generic HistoryDialog. |
+| [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] | BACKLOG | | | Pulled in from product backlog: seed a realistic vintage dataset, normalize duplicate floating-index catalogs, extend to a dual discount/projection curve, add proper IR quoting-convention display. |
+| [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] | BACKLOG | | | Promoted from an inbox capture: bootstrap the raw instrument grid into a desk-consumable zero/discount curve, and republish it as an official curve stream. |
+| [[id:9819FCE0-C26E-4854-9B88-FBDBA1DCD178][Commission ores.qt.admin into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.admin's entities; unblocks Phase C history-dialog retirement. |
+| [[id:8EF15E8F-EFB0-4AAF-828E-9CD530BE3702][Commission ores.qt.analytics into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.analytics's entities; unblocks Phase C history-dialog retirement. |
+| [[id:624B54D3-C875-4FF3-9FBE-DAA9CBD71DE1][Commission ores.qt.compute into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.compute's entities; unblocks Phase C history-dialog retirement. |
+| [[id:A82E846A-FF9E-49E8-ADA6-CA182E8F44B6][Commission ores.qt.marketdata into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.marketdata's entities; unblocks Phase C history-dialog retirement. |
+| [[id:F6F4916C-554B-47C0-8134-20D90DDD425E][Commission ores.qt.synthetic into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.synthetic's entities; unblocks Phase C history-dialog retirement. |
+| [[id:6DE63EF5-6A48-4339-950F-AB23DD677657][Commission ores.qt.trading into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.trading's entities; unblocks Phase C history-dialog retirement. |
+| [[id:C02D4D5F-F743-4390-A753-E10C47F5D0B4][Commission ores.qt.workspace into codegen]] | BACKLOG | | | Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.workspace's entities; unblocks Phase C history-dialog retirement. |
+| [[id:F15A8480-C61A-4FC3-87FD-C880A1407F11][Generalize as-of and as-of-bucket queries across repositories]] | BACKLOG | | | Promoted from an inbox capture: document and generalise the as-of/as-of-bucket query shapes proven on market_observations_repository. |
+| [[id:F4BD60AB-ED53-4BA3-9BB0-7B354EC6AC2E][Add a server-side rate-history endpoint for chart panels]] | BACKLOG | | | Promoted from an inbox capture: shared server-side history endpoint for chart-style UI panels, starting with the CRM cross-rates matrix sparkline. |
+| [[id:1FF24B82-B7CF-4849-95BC-2DA1D4BFEADA][Audit ores.synthetic.service headers for missing export macro]] | BACKLOG | | | Promoted from an inbox capture: same latent Windows-export bug as PR #1656, audit for other unexported cross-boundary symbols. |
+| [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] | BACKLOG | | | Promoted from inbox captures: currency add Save-disabled bug, currencies list pagination broken, party re-provisioning duplicate-key error. |
+
+** Hotfixes
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] | BACKLOG | | | Linux CI started emitting a batch of new CMake Warning (uninitialized) messages on 2026-07-20, all from the project() call at CMakeLists.txt:51 under CMake 4.4.0. |
+
+* Achievements
+
+Milestones worth capturing as they happen, so the release notes at
+sprint close have the evidence to hand. Add a dated =** subheading=
+per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+
+* Captures
+
+Real captures filed during this sprint that have *not* been pulled into a
+story as tasks — listed here purely for visibility into what the sprint
+surfaced. Each is an inbox capture (=compass capture=); triage them at the
+health review (promote to a story, move to =next=, or discard).
+
+#+ATTR_HTML: :class hug-leading
+| Capture | Tags | Description |
+|---------+------+-------------|
+|         |      |             |
+
+* Health Review
+
+(Run =sprint-reviewer= to generate this section.)
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][compass sprint charts]]. See [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]
+for what each chart measures, its purpose, and how to read it.
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_24/prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_24/line_churn.png]]
+
+** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks. Generated only when PR data is available.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_24/pr_cycle.png]]
+
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_24/stories_done.png]]
+
+* Retrospective
+
+(Filled at sprint close.)

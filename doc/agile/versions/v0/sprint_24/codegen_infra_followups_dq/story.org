@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 8C3626F4-ED75-4D48-94BE-FB7A932B1EE8
+:END:
+#+title: Story: Codegen infrastructure follow-ups from DQ commissioning
+#+description: General codegen infrastructure gaps surfaced while commissioning DQ entities but not specific to DQ: entity-model lint, consolidating the five ores.cpp.nats-* facets, compound natural-key support in lookup_entity/table SQL templates, and migrating the remaining 10 lookup_entity models to domain_entity.
+#+type: story
+#+level: s2
+#+filetags: :codegen:infrastructure:tooling:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from Sprint 23's [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]]
+at close: while commissioning DQ entities, four genuine codegen
+infrastructure gaps surfaced that aren't specific to DQ and shouldn't
+be lumped in with finishing DQ's own remaining entities (see
+[[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] for that DQ-specific follow-on):
+
+1. No static lint for entity =.org= models flagging missing
+   variability knobs for their stereotype.
+2. The NATS command/event pipeline is modelled as five independent
+   =ores.cpp.nats-*= facets that should be one facet with five
+   archetypes.
+3. =lookup_entity=/table SQL templates only support a single-column
+   primary key, blocking any compound-natural-key entity
+   (subject_area is the immediate blocker, but this is a general
+   template gap).
+4. 10 more =lookup_entity= models outside DQ (=iam=: tenant_type/
+   tenant_status/account_type; =trading=: party_role_type/
+   trade_id_type/trade_type/lifecycle_event; =analytics=:
+   pricing_engine_type; =dq=: artefact_type/report_definition/
+   synthetic_fx_spot_config/lei_entity/lei_relationship) still need
+   migrating to =domain_entity=, so =ores.codegen.lookup_entity= can
+   finally be retired.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the compound natural-key support first — it unblocks the sibling DQ story's subject_area task. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A compass codegen entity lint command exists, flagging missing
+  variability knobs per model stereotype.
+- The five ores.cpp.nats-* facets are consolidated into one facet
+  with five archetypes.
+- lookup_entity/table SQL templates support a compound natural-key
+  primary key; subject_area unblocked as a result.
+- All 10 remaining non-DQ lookup_entity models migrated to
+  domain_entity; ores.codegen.lookup_entity's #+type:, loader, and
+  dedicated dispatch retired.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][Support compound natural keys in lookup_entity/table SQL templates]] | BACKLOG | | | Extend org_loader.py's primary_key parsing and sql_schema_table_create.mustache to support a compound natural key (more than one column), so entities like subject_area can be modeled accurately. |
+| [[id:7B59588B-5BC5-4206-935C-1AFEF7C25E96][Add compass codegen entity lint — flag missing variability knobs on a model]] | BACKLOG | | | A static sanity-check command that parses an entity .org model, classifies its stereotype, and warns about knobs it expects for that stereotype but doesn't find. |
+| [[id:DA3C5B05-1214-44D5-A5A9-E92344EA0680][Consolidate the five ores.cpp.nats-* facets into one facet with five archetypes]] | BACKLOG | | | A single ores.cpp.nats facet with five archetypes underneath would model the NATS command/event pipeline more accurately than five independent facets. |
+| [[id:AEFAE247-7FBC-4F0D-9146-4E4561DF2DFD][Migrate the remaining 10 lookup_entity models to domain_entity; retire ores.codegen.lookup_entity]] | BACKLOG | | | Migrate each of the 10 remaining lookup_entity models the same way 464B5EC6 migrated DQ's 5, then retire ores.codegen.lookup_entity's #+type:, loader, and dispatch. |
+
+* Decisions
+
+* Out of scope
+
+- DQ-entity-specific remaining work (subject_area commissioning
+  itself, history-dialog migration, change_reason_code bug, Librarian
+  tree regression) — see [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]].

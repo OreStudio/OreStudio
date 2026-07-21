@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 15D464C7-3C99-4512-8A65-621EE3839DAA
+:END:
+#+title: Task: Split every codegen template org into commented literate blocks
+#+description: For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make every codegen template genuinely *literate*: a reader should be able to
+open the template's org source and understand what each part of the generated
+artefact does and why, without reverse-engineering the mustache.
+
+Today most template orgs under =projects/ores.codegen/library/templates/= hold
+their entire source in a *single* =#+begin_src mustache :tangle <name>.mustache=
+block with little or no surrounding prose. =org-babel-tangle= concatenates all
+same-target blocks in document order (proven: =doc_archetype_org.org=,
+=doc_facet_org.org=, and =ores.cpp.qt.controller_impl.org= already do this),
+so a template can be broken into several =:tangle=-to-the-same-file blocks
+interleaved with explanatory prose — without changing the tangled output.
+
+For each template org:
+- Split the monolithic mustache block at natural seams (per generated
+  function / section / variability region) into multiple blocks that all
+  =:tangle= to the same =.mustache=.
+- Precede each block with detailed, human-level prose: what this section
+  generates, why it exists, the meaning of the variability switches it uses,
+  and any non-obvious contract with the runtime / base classes / DB triggers
+  (the =onRevertVersion= "reset version to 0" section in
+  =ores.cpp.qt.controller_impl.org= is the reference exemplar).
+- Keep the generated C++/SQL comment-free where the prose now carries the
+  explanation — the code is instantiated per entity, so commentary belongs in
+  the template, not multiplied across every generated file.
+
+Reference exemplar: the =** Reverting to a historical version= section added to
+=ores.cpp.qt.controller_impl.org= in the country flag/revert work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- Every template org under =projects/ores.codegen/library/templates/= whose
+  body is a single mustache block is split into multiple same-target blocks
+  with prose between them (templates that are already trivial/short may be
+  left as one block with a clear leading paragraph — note which and why).
+- Each block is preceded by prose explaining what it generates and why,
+  including the variability switches it consumes.
+- Re-tangling (=compass build --direct tangle_codegen_templates=) produces
+  *no diff* in the =.mustache= artefacts versus before the split (output is
+  byte-identical; only the org sources gain structure + prose).
+- =template-drift= CI stays green.
+- A full entity regen (e.g. =compass codegen entity generate country --address ores=)
+  shows no diff attributable to this task.
+- Generated artefacts gain no new inline comments (commentary lives in the org).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The currency-pair pair_code work ([[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency changes]])
+added 6 new paste-block seams to =ores.cpp.qt.detail_dialog_impl.org=/
+=ores.cpp.qt.detail_dialog_header.org= (extra includes, declarations,
+connections, create-mode override, read-only override, extra methods)
+and 1 to =ores.cpp.qt.mdi_window_header.org= (extra signal
+declarations) — each currently documented only as a single
+=* Extension points= prose summary near the top of the file, with a
+one-line non-emitted =\{\{! see * Extension points above \}\}=
+=mustache= comment at each marker (comment-free generated output, but
+not yet split into the same-target-block-per-seam pattern this task
+calls for). Good concrete starting point when this task is picked up:
+retrofit those 7 seams as the first same-target-block splits, following
+the =\*\* Reverting to a historical version= exemplar in
+=ores.cpp.qt.controller_impl.org=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

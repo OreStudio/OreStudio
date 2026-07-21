@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: CB042B99-9B2F-46E9-9CF5-73B47185BCD1
+:END:
+#+title: Task: Retire HistoryDialogBase, per-entity dialogs, and their templates
+#+description: Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class.
+#+type: task
+#+level: s1
+#+filetags: :retire_per_entity_history_dialogs:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Once every entity across every ores.qt component has migrated onto
+the generic =HistoryDialog=, delete =HistoryDialogBase=, every
+remaining per-entity =*HistoryDialog= class, and
+=cpp_qt_history_dialog.{hpp,cpp}.mustache=/=qt_history_dialog_ui.mustache=;
+confirm via zero-diff regeneration guardrails that no facet still
+emits a per-entity dialog class.
+
+=ores.qt.refdata= has fully migrated ([[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the
+generic HistoryDialog]], DONE). The other =ores.qt= components
+(admin, analytics, compute, marketdata, synthetic, trading,
+workspace) have not — each is tracked as its own product-backlog
+capture ("Commission ores.qt.<component> into codegen", inbox) which
+includes migrating that component's history dialogs. This task is
+genuinely blocked until those land; it is the final cleanup step
+after every component has migrated, not something to start on its
+own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Every ores.qt component migrating onto the generic HistoryDialog (only ores.qt.refdata done so far). |
+| Next         | Revisit once the remaining "Commission ores.qt.<component> into codegen" captures land. |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+- Zero remaining per-entity =*HistoryDialog= classes anywhere in
+  =ores.qt=.
+- =HistoryDialogBase= and its templates deleted.
+- Zero-diff regeneration guardrails confirm no facet still emits a
+  per-entity dialog class.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The real current blocker is story
+[[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] (created
+2026-07-14): only currency has migrated onto the generic
+=HistoryDialog= so far (task 7D8659AB); every other entity across
+=admin=, =analytics=, =compute=, =marketdata=, =party=, =refdata=,
+=synthetic=, =trading= and =workspace= still uses its hand-rolled
+per-entity =*HistoryDialog=. This task cannot start until that
+story's per-component tasks are all DONE.
+
+Flagged during PR #1553 review (task 7D8659AB, currency's first
+migration onto the generic =HistoryDialog=): currency's own org model
+(=projects/ores.refdata/modeling/ores.refdata.currency.org=) still
+fully declares the per-entity history facet (=history_request_class=,
+=history_response_class=, etc.), and the codegen templates
+(=cpp_qt_history_dialog.hpp.mustache=,
+=cpp_qt_controller.cpp.mustache=) still generate a per-entity
+=CurrencyHistoryDialog=-shaped class and
+=VersionNavigationHelper.hpp= include for any entity whose model has
+=has_version_navigation= set — both deleted by PR #1553 by hand, not
+via codegen. If codegen is ever re-run for currency before this task
+retires the template, it would regenerate the just-deleted files
+(a build break, or a duplicate dialog alongside the new generic one).
+When migrating each entity as part of this task's rollout, turn off
+that entity's history-dialog facet config in its own model as part of
+the same change that deletes its hand-rolled =*HistoryDialog=, so
+regeneration can't resurrect what was just removed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

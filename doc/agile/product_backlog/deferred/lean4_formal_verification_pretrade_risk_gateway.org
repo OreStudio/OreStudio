@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: A9559231-24AF-49CD-84A7-83A3FA4F0271
+:END:
+#+title: Reference: Lean 4 formally-verified pre-trade risk gateway
+#+description: Paper on a Lean 4 reference architecture separating policy proposal from modeled authority at a pre-trade risk boundary, with machine-checked proofs of position/commitment caps for a sequential single-account/instrument trading machine.
+#+type: capture
+#+level: cross
+#+filetags: :algo-trading:formal-verification:risk:reference:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Paper abstract: "Machine-generated policies can be produced faster
+than humans can review them, while testing observes only sampled
+behavior. We present a Lean 4 reference architecture that separates
+proposal from modeled authority at a pre-trade risk boundary. A
+candidate becomes active only after contract-relative qualification
+and promotion bind acceptance to its exact bytes. The gateway derives
+a request from root-owned parameters, trusted snapshots, and live
+reservations; evaluates the decoded promoted artifact; admits only
+requests in the root-owned finite evidence domain; and reserves risk
+before modeled dispatch. For a sequential, buy-only, one-account,
+one-instrument, two-slot machine from exact zero genesis, we prove
+that every valid finite trace preserves position and limit-price-basis
+acquisition-commitment caps, with commitment also bounded by cash
+headroom. For each archived dispatch, the theorem furnishes
+artifact-causality, root-agreement, and exact-origin witnesses; a
+separate theorem rejects off-domain requests fail-closed. These
+model-internal results assume named signature, snapshot, kernel,
+toolchain, operating-system, and hardware trust boundaries. They
+establish neither concurrency nor linearizability, Lean-Rust
+refinement, concrete cryptographic security, external-fact truth,
+liveness, nor economic or regulatory correctness. Rust supplies
+regression evidence through pinned tests and Lean-emitted fixtures.
+The reproduction gate checks pinned-source replay, a frozen axiom
+inventory, generated theorem signatures and claim tables, and
+normalized-PDF agreement across two same-environment builds;
+ledger-prose fidelity remains human-reviewed."
+
+In plain terms: a machine-checked (Lean 4 theorem-proven) risk gate
+sitting between an automated policy/strategy proposer and actual
+trade dispatch. Policies only go live once qualified and "promoted"
+byte-for-byte; the gateway then only ever evaluates that exact
+promoted artifact against root-owned parameters/snapshots/live
+reservations, proving (for a constrained sequential single-account/
+instrument model) that position and commitment caps — including
+cash headroom — can never be breached, and that off-domain requests
+are rejected fail-closed. Explicitly scoped: no concurrency/
+linearizability claims, no Lean-to-Rust refinement proof, no
+cryptographic-security or liveness claims, no economic/regulatory
+correctness claims — it's a narrow, honestly-scoped formal safety
+net around one specific risk boundary, not a general trading-system
+correctness proof.
+
+* Why
+
+Filed alongside [[id:7FE507CC-2629-4045-9272-878D19DCB802][Reference: Thales options trading bot]] as prior art on
+the algo-trading/automated-execution side of the backlog — that
+capture covers an actual bot's architecture (broker integration,
+strategy loop), while this one covers a formally-verified risk-gate
+pattern that could sit in front of any automated dispatch path. Both
+deferred: automated strategy execution isn't on ORE Studio's
+near-term roadmap, but if/when it is considered, this is a concrete
+reference for how to bound acquisition risk with a machine-checked
+proof rather than just tests/review.
+
+* References
+
+- Paper abstract as captured above (source URL not supplied by the
+  user — request it if this capture is picked up and the full paper
+  is needed).
+
+* See also
+
+- [[id:7FE507CC-2629-4045-9272-878D19DCB802][Reference: Thales options trading bot]] — sibling algo-trading
+  reference capture.

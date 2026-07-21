@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: C3374605-AA28-4DBD-A5FB-88C656C7F685
+:END:
+#+title: Task: Currencies list window paging does not seem to work
+#+description: The currencies list window's pagination controls don't appear to be enabled/working, unlike other entity list windows.
+#+type: task
+#+level: s1
+#+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The currencies list window (=CurrencyMdiWindow=) wires a
+=PaginationWidget= the same way other entity list windows do
+(=projects/ores.qt/refdata/src/CurrencyMdiWindow.cpp=, ~line 83,
+~line 272-307), but paging doesn't appear enabled/working for
+currencies specifically. Repro against a currency list with more
+entries than one page to confirm scope (client-side wiring vs.
+server-side offset/limit handling) and find the root cause.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+- Root cause identified (client-side wiring vs. server-side
+  offset/limit).
+- Currencies list pages correctly for a list with more entries than
+  one page.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

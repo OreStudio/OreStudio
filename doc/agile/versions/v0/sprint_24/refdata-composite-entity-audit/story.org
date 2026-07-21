@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: D58CD39D-BFBA-45DF-A05B-01EDD7115C45
+:END:
+#+title: Story: Audit refdata entities for composite (temporal-versioned) child relationships
+#+description: Inventory ores.refdata entities beyond party/counterparty that have child/component rows (identifiers, contacts, junction/restriction tables) and determine which need the temporal composite entity versioning mechanism (touch-function, as-of query, Qt composite history).
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+[[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] landed the
+mechanism (SQL touch-function so child writes bump the parent's
+version in the same transaction, the as-of window-join read-side
+composition query, and the codegen flags =:bump_parent_version:=/
+=:list_by_as_of:=) using party and counterparty as the *reference
+case only* — =party_identifier=/=party_contact_information= and their
+counterparty equivalents. Nobody has yet asked the question this
+story exists to answer: which *other* refdata entities have the same
+shape (a parent whose "current state" genuinely includes child rows,
+such that a version of the parent should compose with the matching
+window of its children) and therefore need the same mechanism
+applied?
+
+This is explicitly *not* about self-referencing hierarchy
+(=parent_<entity>_id=, the =has_parent_id= facet already proven for
+party/counterparty and tracked separately in [[id:3402B369-FFC1-4B46-9EA0-528973D88618][Generalize
+self-referential hierarchy validation into a codegen facet]]) — that
+is a different pattern (an entity referencing its own type) from
+composite versioning (an entity's *children of a different type*
+contributing to its temporal state). Don't conflate the two audits.
+
+Preliminary grep against =projects/ores.sql/create/refdata/= during
+scoping turned up candidates worth checking against the "does this
+child genuinely change what a version of the parent means" test:
+
+- =party_currency=, =party_country=, =party_counterparty= — party-scoped
+  restriction/junction tables; plausible composite children.
+- =business_unit=, =portfolio=, =book= each carry a =party_id= column,
+  but that reads as an *ownership FK* (this entity belongs to a
+  party), not a *child contributing to the party's own version* —
+  needs confirming either way, not assuming.
+- Any entity with its own sub-entities the way party has
+  =party_identifier=/=party_contact_information= (i.e. one entity
+  with several one-to-many child tables of its own) is worth checking
+  even if not found by this grep — the grep only searched for
+  specific FK column names, not the general shape.
+
+This preliminary list is a *starting point for the audit task*, not a
+conclusion — confirming or ruling out each candidate (and finding any
+the grep missed) is exactly what the first task below does.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- A document (either a new knowledge doc or a section added to the
+  composite-versioning architecture doc) lists every =ores.refdata=
+  entity with a genuine composite-child relationship (parent version
+  should compose with a window of child rows), distinguishing it
+  clearly from plain ownership FKs and from self-referencing
+  hierarchy (different pattern, tracked separately).
+- Each entity on that list is scored: does it need
+  =:bump_parent_version:=/=:list_by_as_of:= applied now, or is it
+  correctly deferred (e.g. no versioning/history requirement for that
+  child relationship at all)?
+- At least the confirmed candidates from the preliminary grep
+  (=party_currency=, =party_country=, =party_counterparty=,
+  =business_unit=, =portfolio=, =book=) are explicitly resolved one way
+  or the other — not left unexamined.
+- For each entity confirmed to need the mechanism, either it is
+  applied directly (small, well-understood cases) or a follow-on task
+  is filed with enough detail to implement without re-doing this
+  analysis.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:572EFE37-F066-4B89-802B-AAC4411FD9BF][Link parent history to the specific child change that caused it]] | BACKLOG | | | Add a generic SQL function that, given two adjacent parent versions, returns the exact composite-child row (id + version) whose write caused the bump -- using only existing bitemporal valid_from/valid_to windows, no schema change -- then wire the generic Qt HistoryDialog to offer a drill-down into that child's own history at the right version. |
+
+Planned tasks (not yet scaffolded as task docs):
+
+1. Audit all =ores.refdata= entities against the composite-child
+   criterion (parent version should compose with a window of child
+   rows); produce the scored inventory described in Acceptance,
+   starting from the preliminary candidate list in Goal.
+2. For each entity confirmed to need composite versioning, apply the
+   =:bump_parent_version:=/=:list_by_as_of:= codegen flags (or file a
+   follow-on task per entity if the change is non-trivial enough to
+   warrant its own scoping).
+3. Update the composite-versioning architecture doc with the
+   generalised inventory, so future entities are checked against it
+   as they're modelled rather than needing a fresh audit.
+
+* Decisions
+
+* Out of scope
+
+- Self-referencing hierarchy (=parent_<entity>_id=) — a different
+  pattern, tracked by [[id:3402B369-FFC1-4B46-9EA0-528973D88618][Generalize self-referential hierarchy validation
+  into a codegen facet]]. Do not conflate the two audits.
+- Adding hierarchy to book — [[id:2AB4A475-B883-4FE6-BC27-3D6742F9E2C8][explicitly decided against]]; book's
+  hierarchy is expressed via the portfolio tree, not a
+  =parent_book_id=.
+- Re-doing the party/counterparty mechanism itself — this story only
+  extends its *application*, not its design.
+
+* References
+
+- [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] — the mechanism
+  this story generalises the application of.
+- =projects/ores.sql/create/refdata/= — where the preliminary
+  candidate grep was run.

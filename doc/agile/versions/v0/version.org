@@ -22,10 +22,10 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 23 open.                                                   |
+| Now              | Sprint 24 open.                                                   |
 | Waiting on       | Nothing.                                                          |
 | Next             | Pick the first story.                                            |
-| Last touched     | 2026-07-11                                                        |
+| Last touched     | 2026-07-21                                                        |
 
 * Sprints
 
@@ -57,4 +57,5 @@ the current sprint; the rest are closed.
 | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] | 2026-06-06 | 2026-06-12 | Commission refdata entities; codegen tidy-up; verify Windows/macOS CI.          |
 | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] | 2026-06-12 | 2026-07-02 | Commission ores.refdata entity library; codegen C++ drift correction.           |
 | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] | 2026-07-02 | 2026-07-10 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
-| [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] | 2026-07-11 |            | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
+| [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] | 2026-07-11 | 2026-07-21 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
+| [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] | 2026-07-21 |            | Continue commissioning work across components; improve IR generation.          |

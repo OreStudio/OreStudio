@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 819B050A-A877-4B9A-BB24-942B95DA1206
 :END:
-#+title: Task: Commission catalog/change_reason/change_reason_category/data_domain/subject_area onto standard codegen
-#+description: Author codegen .org models for the five simple code-list-shaped DQ entities named in the parent story (catalog, change_reason, change_reason_category, data_domain, subject_area) and regenerate their core/repository/service/handler/protocol layers, retiring the hand-written equivalents.
+#+title: Task: Commission catalog/change_reason/change_reason_category/data_domain onto standard codegen
+#+description: Author codegen .org models for four simple code-list-shaped DQ entities (catalog, change_reason, change_reason_category, data_domain) and regenerate their core/repository/service/handler/protocol layers, retiring the hand-written equivalents. subject_area split out to a Sprint 24 follow-on (blocked on compound natural key support).
 #+type: task
 #+level: s1
 #+filetags: :commission-dq-component:sprint_23:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
-#+updated: 2026-07-18
+#+updated: 2026-07-21
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,22 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Commission the five no-model DQ entities named in the story description onto the standard codegen stack: catalog, change_reason, change_reason_category, data_domain, subject_area.
+Commission four of the five no-model DQ entities named in the parent
+story's original scope onto the standard codegen stack: catalog,
+change_reason, change_reason_category, data_domain. subject_area
+split out to a new Sprint 24 task/story (blocked on compound
+natural-key support in the lookup_entity/table SQL templates,
+52FE40FA) — see [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
 | Now          | catalog, change_reason_category, change_reason, and data_domain fully commissioned end to end (real C++ + SQL regeneration, hand-written code retired, build+tests green via compass build test_ against a recreated dev DB). |
 | Waiting on   | Nothing.                               |
-| Next         | Same treatment for subject_area.       |
-| Last touched | 2026-07-20                               |
+| Next         | subject_area carried forward to a Sprint 24 follow-on task. |
+| Last touched | 2026-07-21                               |
 
 * Acceptance
 
-- Each of the five entities has a codegen .org model under projects/ores.dq/modeling/; generated core/repository/service/handler/protocol code replaces any hand-written equivalent; build and tests green.
+- Each of the four entities has a codegen .org model under projects/ores.dq/modeling/; generated core/repository/service/handler/protocol code replaces any hand-written equivalent; build and tests green.
 
 * Plan
 

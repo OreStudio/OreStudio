@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 5DF07DAD-4D0A-4851-ADDA-E317824855D4
+:END:
+#+title: Task: Fix change_reason_code never assigned before save in ~9 Qt detail dialogs
+#+description: Found while commissioning catalog (819B050A/PR #1644 review): CatalogDetailDialog called promptChangeReason() but never assigned the result's reason_code to the entity before saving, which would fail the insert trigger's change-reason validation. Fixed there, and ChangeReasonCategoryDetailDialog/ChangeReasonDetailDialog were fixed too once those entities went live on the generated stack (819B050A commissioning). ~8 more dialogs still have the same bug: CodingSchemeAuthorityTypeDetailDialog, CodingSchemeDetailDialog, DataDomainDetailDialog, MethodologyDetailDialog, NatureDimensionDetailDialog, OriginDimensionDetailDialog, SubjectAreaDetailDialog, TreatmentDimensionDetailDialog -- each calls promptChangeReason() but never assigns crSel->reason_code to the entity (only DatasetBundleDetailDialog and the now-fixed dialogs do it correctly). Each will fail change-reason validation once/if its entity's save path is actually exercised against a real generated backend requiring change_reason_code. Audit and fix all remaining ones, verifying the same one-line pattern used in CatalogDetailDialog (entity_.change_reason_code = crSel->reason_code;).
+#+type: task
+#+level: s1
+#+filetags: :commission_remaining_dq_entities:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-19
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

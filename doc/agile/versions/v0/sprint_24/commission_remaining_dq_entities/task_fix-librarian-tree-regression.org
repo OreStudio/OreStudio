@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: F66E39CF-9136-4FD2-8150-17432D331F33
+:END:
+#+title: Task: Fix Data Librarian tree: no longer shows datasets
+#+description: The Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ commissioning work; investigate and fix.
+#+type: task
+#+level: s1
+#+filetags: :commission_remaining_dq_entities:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Data Librarian's navigation tree used to list datasets and
+regressed to no longer showing them at some point during last
+sprint's DQ codegen commissioning work. Investigate the root cause —
+likely candidates: a NATS subject rename, a protocol field rename,
+or a dropped registrar wiring step from one of the entities migrated
+onto standard codegen (catalog, change_reason, change_reason_category,
+data_domain, badge_definition/severity/code_domain) — and fix it.
+
+* References
+
+- Originating capture: "Data Librarian tree no longer shows datasets"
+  (deleted from inbox once folded into this task).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+- Root cause identified and documented.
+- Data Librarian's navigation tree lists datasets again, verified
+  manually against a recreated dev database.
+- No regression to other Data Librarian tree functionality.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

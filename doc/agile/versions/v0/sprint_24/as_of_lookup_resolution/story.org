@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 753E984D-94CB-4C99-BE63-D68B77D6BF76
+:END:
+#+title: Story: As-of lookup resolution codegen facet
+#+description: Resolving what a referenced lookup value (e.g. book_status='x') meant at a historical point in time is a distinct problem from composite parent-child versioning: it needs an as-of point-in-time query against the referenced entity's own bitemporal window (valid_from <= t AND valid_to >= t), not a current-only lookup. A hand-written, unwired precedent already exists on currency_repository/country_repository/business_centre_repository (read_at_timepoint) but is not codegen-generated and has no service/NATS/UI callers -- dead code. Generalise it into a codegen facet (e.g. :has_as_of_lookup: true) generating repository + service (+ protocol where warranted), and apply it broadly since this is a common need across refdata entities, not just book-related ones.
+#+type: story
+#+level: s2
+#+filetags: :book_data_model_cleanup:sprint_24:v0:codegen:
+#+created: 2026-07-12
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give any bitemporal reference/lookup entity a codegen-generated way to
+answer "what did code X mean as of timepoint t" — a point-in-time
+query (=valid_from <= t and valid_to >= t=), distinct from and
+unrelated to composite parent-child version bumping. Discovered while
+working through book/book_status: opening a historical book version
+correctly shows the raw status code it had then (stored inline on the
+book row), but resolving that code's Name/Description/badge colour
+today uses a current-only lookup, so a since-deleted or since-renamed
+code silently fails to resolve for a perfectly valid historical view.
+
+A hand-written, never-wired precedent already exists
+(=read_at_timepoint= on =currency_repository=/=country_repository=/
+=business_centre_repository=) — dead code, not codegen-generated, no
+service/NATS/UI caller anywhere. This story generalises it into a
+proper facet and applies it broadly, since resolving a historical FK
+value correctly is a common need, not a book-specific one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Design the facet, pilot on book_status/regulatory_book_type. |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- A new codegen facet (e.g. =:has_as_of_lookup: true=) generates a
+  repository-level =read_at_timepoint(ctx, as_of[, key])= method
+  matching the existing hand-written shape, plus a service-level
+  wrapper -- consistently, not hand-added per entity.
+- The facet is actually wired to a caller (NATS request/response
+  and/or a Qt read path) for at least the pilot entities -- no more
+  dead code like the current currency/country/business_centre
+  precedent.
+- Piloted on =book_status= and =regulatory_book_type= (the entities
+  that surfaced the gap) and verified: viewing a historical book
+  version resolves its status/type badge correctly even after that
+  code has since been deleted or renamed.
+- Existing =currency_repository=/=country_repository=/
+  =business_centre_repository= hand-written =read_at_timepoint=
+  methods are either replaced by the generated facet or explicitly
+  reconciled with it (not left as a second, inconsistent
+  implementation).
+- Rollout to the remaining refdata lookup entities is scoped as a
+  follow-on, not required for this story's completion.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]] | BACKLOG | | | Design a new codegen facet (candidate flag: :has_as_of_lookup: true) generating a repository-level read_at_timepoint(ctx, as_of[, key]) method and a service-level wrapper, matching the existing hand-written shape on currency_repository/country_repository/business_centre_repository but generated consistently. Decide: NATS protocol surface (new request/response, or reuse an existing one with an optional as_of param), where the flag lives in the .org model (entity-level, since this is about the entity's own bitemporal window, not a parent/child FK relationship), and how/whether to reconcile the 3 existing hand-written methods with the generated one. |
+| [[id:5DAF8FB2-D665-446F-A458-7612418DC348][Implement and pilot the as-of lookup facet on book_status/regulatory_book_type]] | BACKLOG | | | Add the designed facet to the codegen templates (SQL/repository/service/protocol as scoped). Apply :has_as_of_lookup: true to book_status.org and regulatory_book_type.org (the entities that surfaced this gap), regenerate, and wire it to an actual caller -- at minimum the Book history dialog resolving a historical version's status/type badge correctly, proving the facet isn't dead code like its hand-written predecessor. |
+| [[id:A61D91CC-61A9-4140-8F26-AA76621FBB80][Reconcile existing hand-written read_at_timepoint methods]] | BACKLOG | | | currency_repository/country_repository/business_centre_repository already have a hand-written, unwired read_at_timepoint. Once the codegen facet lands, either replace these with the generated version or explicitly document why they diverge -- don't leave two parallel implementations of the same concept. |
+| [[id:A3A2844A-BE49-4D1C-B5ED-49CA1A07DD1C][Roll out as-of lookup facet to remaining refdata entities]] | BACKLOG | | | Once proven on book_status/regulatory_book_type, apply :has_as_of_lookup: true broadly across refdata lookup/reference entities referenced by FK elsewhere. Deferred follow-on, not required for this story's own completion. |
+
+* Decisions
+
+* Out of scope
+
+-

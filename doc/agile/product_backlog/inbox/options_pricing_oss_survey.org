@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 06B22E68-085B-4A63-8C1F-4A0C3AC99D33
+:END:
+#+title: Survey open-source options pricing projects
+#+description: Catalogue of open-source options-pricing projects to evaluate when building ORE Studio's options pricing screens — models, calculators, and visualisation tools.
+#+type: capture
+#+level: cross
+#+filetags: :options:pricing:research:reference:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When ORE Studio gets to options pricing screens, evaluate existing
+open-source projects in this space for reusable techniques, models,
+or UI patterns rather than designing from scratch. Projects found so
+far, classified by what they actually provide (pricing
+models/libraries vs. calculators/visualisation tools):
+
+** Pricing libraries / models
+
+- [[https://github.com/domokane/FinancePy][domokane/FinancePy]] (Python, ★3064) — broad derivatives-pricing and
+  risk-management library covering fixed-income, equity, FX, and
+  credit derivatives; the most mature/active of the set.
+- [[https://github.com/dbrojas/optlib][dbrojas/optlib]] (Python, ★1620) — options pricing library, includes a
+  TD Ameritrade API client for live data.
+- [[https://github.com/attack68/rateslib][attack68/rateslib]] (Python, ★351) — fixed-income library for bonds,
+  bond futures, IRS/XCS/FX swaps; full curve construction with
+  automatic differentiation and risk sensitivities (delta,
+  cross-gamma). Rates-focused rather than options, but relevant for
+  curve-construction technique.
+- [[https://github.com/federicomariamassari/willowtree][federicomariamassari/willowtree]] (Python, ★379) — willow tree
+  lattice implementation for derivatives pricing; a specific
+  numerical-method reference.
+- [[https://github.com/AnthonyBradford/optionmatrix][AnthonyBradford/optionmatrix]] (C++, ★248) — financial derivatives
+  calculator with 171+ pricing models (Black-Scholes, Heston, finite
+  difference, Monte Carlo, Garman-Kohlhagen); C++ codebase, closest
+  language match to ORE Studio.
+- [[https://github.com/xurendong/derivx][xurendong/derivx]] (Python, ★21) — core library for exotic/structured
+  derivatives (autocallables, barriers, digitals, vanilla).
+- [[https://github.com/andleb/derivatives][andleb/derivatives]] (C++, ★18) — derivatives pricing in modern C++;
+  small but a C++ design reference.
+
+** Calculators / visualisation / research tools
+
+- [[https://github.com/letianzj/QuantResearch][letianzj/QuantResearch]] (Jupyter, ★2978) — broad quant research
+  repo: strategies, backtests, some derivatives-pricing notebooks.
+  Research reference rather than a reusable library.
+- [[https://github.com/YuMan-Tam/deep-hedging][YuMan-Tam/deep-hedging]] (Jupyter, ★164) — deep-hedging demo using
+  machine learning for derivative pricing; ML-approach reference.
+- [[https://github.com/yzoz/python-option-calculator][yzoz/python-option-calculator]] (Python, ★136) — vanilla European
+  option pricing and visualisation using Black-Scholes in pure
+  Python; simple, readable reference implementation.
+- [[https://github.com/ViktorIvan8787/options-pricing-toolkit][ViktorIvan8787/options-pricing-toolkit]] (Python/C++, ★1) — options
+  pricing engine: Monte Carlo, Black-Scholes, Greeks, IV calibration,
+  live vol surface/skew analysis on Apple options; small/early
+  project but demonstrates a live vol-surface UI angle.
+- [[https://github.com/james-ralph8555/optionsVisualizer][james-ralph8555/optionsVisualizer]] (Python, ★19) — visualises how
+  Black-Scholes outputs (price, Greeks) change with respect to other
+  variables, 2D/3D; a UI/visualisation-pattern reference for a
+  pricing screen.
+
+* Why
+
+ORE Studio's options pricing screens are future work; surveying prior
+art now — while it's cheap to do so — avoids re-deriving standard
+pricing techniques (Black-Scholes, Heston, willow tree, Monte Carlo)
+and surfaces UI/visualisation patterns (vol surface, Greeks
+sensitivity plots) worth borrowing from when that work starts.
+
+* References
+
+- See per-project links above.
+
+* See also
+
+-

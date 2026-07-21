@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 6AC16489-70F6-4F95-A5FA-0D561FF151A3
+:END:
+#+title: Story: Audit and roll out badge adoption across domain entities
+#+description: Audit which of ORE Studio's 108 domain_entity models are FK/boolean candidates for badge_key adoption but don't have it, then annotate and regenerate the identified entities.
+#+type: story
+#+level: s2
+#+filetags: :qt:badges:codegen:refdata:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] (Sprint 23) at
+close. That story's own analysis found only 10 of 108
+=domain_entity= models use =badge_key= today, despite the badge
+system (catalogue, client cache, codegen wiring) being fully built
+and working. This is open-ended discovery-and-rollout work across
+the whole entity catalogue — not a small tail alongside a shipped
+feature, so it gets its own story rather than being lumped in with
+the concrete UI fixes split into [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish
+and self-badging fixes]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Run the coverage audit first — it produces the list the annotation task consumes. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A written coverage audit exists (FK-to-badged-entity and boolean
+  columns across all =domain_entity= models), split into
+  ready-to-annotate vs needs-new-badge-definition-data.
+- Every audit candidate is either annotated with =badge_key= and
+  regenerated, or has a one-line documented reason it was skipped.
+- No regression to any currently-working badge rendering (existing
+  entities' generated files stay zero-diff except where this story
+  deliberately changes them).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit badge adoption coverage across domain_entity models]] | BACKLOG | | | Audit FK/boolean columns not yet badge_key-annotated across all domain_entity models; produce a ready-to-annotate vs needs-new-badge-definition list. |
+| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Annotate audited entities with badge_key and regenerate]] | BACKLOG | | | Consume the coverage audit's list: add badge_key to the identified columns, author any missing badge_definition/badge_mapping rows, and regenerate. |
+
+* Decisions
+
+* Out of scope
+
+- The concrete palette-swatch/fallback-badge and self-badging fixes
+  — see [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]].

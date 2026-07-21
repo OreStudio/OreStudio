@@ -80,7 +80,7 @@ each time.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | BACKLOG | | | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
 
 * Decisions
 

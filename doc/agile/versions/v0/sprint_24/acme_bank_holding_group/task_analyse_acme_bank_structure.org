@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 69E9CD42-EED4-403F-9331-AE369B8581B6
+:END:
+#+title: Task: Analyse Acme Bank corporate structure and current populatability
+#+description: In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow.
+#+type: task
+#+level: s1
+#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before building anything, do an in-depth analysis to ground the
+Acme Bank corporate structure and figure out what's realistically
+populatable with the entities ORE Studio supports today:
+
+- Research Barclays' actual corporate structure (holding company,
+  legal entity subsidiaries, divisions such as Barclays UK, Barclays
+  International/Investment Bank, business centres/locations) as the
+  reference shape for Acme Bank.
+- Map that structure onto ORE Studio's current entity model (party
+  hierarchy, business units, portfolios, books, accounts/staff,
+  roles/permissions) and identify what can be populated now versus
+  what needs new entity support first.
+- Produce a proposed Acme Bank structure: the party tree, which
+  divisions trade derivatives (and therefore need the full
+  business-unit/portfolio/book chain), the business centres/locales
+  involved, and the staff roles to generate per desk.
+- Set up the output as a dataset through the Data Librarian workflow,
+  so the analysis is captured and trackable as first-class reference
+  data rather than a one-off document.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-21                               |
+
+* Acceptance
+
+- A documented reference corporate structure for Barclays (or the
+  parts of it relevant here) is captured and cited.
+- A proposed Acme Bank party hierarchy exists, mapped 1:1 against
+  current ORE Studio entities, calling out which divisions trade
+  derivatives (needing the full business-unit/portfolio/book chain)
+  and which stop at a shallower level.
+- Gaps between the proposed structure and current entity support are
+  explicitly listed — i.e. what can be populated today vs. what
+  blocks on future entity/feature work.
+- Staff roles and business-centre locales needed per desk are
+  identified (feeding the later name-generation and RBAC work).
+- The analysis is set up as a dataset through the Data Librarian
+  workflow, not left as a loose document.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

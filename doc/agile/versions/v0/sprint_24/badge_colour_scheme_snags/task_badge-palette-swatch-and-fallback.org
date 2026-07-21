@@ -5,18 +5,18 @@
 #+description: Badge Definitions/Severities admin UI shows colours as plain hex text, so semantic misuse (grey/green/red/yellow used for something other than their reserved meaning) can't be eyeballed. Add a colour-swatch delegate (and ideally a colour-picker in the detail dialog) to the badge_definition list/detail views. Separately, replace the hardcoded Qt-only fallback constant (color_constants::badge_fallback) with a real, reserved badge_definition row so any future client inherits the same fallback automatically instead of re-hardcoding it, and so the fallback is visually distinct from a legitimate grey/inactive badge.
 #+type: task
 #+level: s1
-#+filetags: :badge-colour-scheme-support:sprint_23:v0:
+#+filetags: :badge_colour_scheme_snags:sprint_24:v0:
 #+owner: marco
 #+branch: feature/badge-palette-swatch-and-fallback
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
+| Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

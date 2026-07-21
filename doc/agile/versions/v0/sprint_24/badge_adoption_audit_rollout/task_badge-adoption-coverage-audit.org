@@ -5,18 +5,18 @@
 #+description: Only 10 of 108 domain_entity models use badge_key today. Audit candidates: any column that is a foreign key (soft or real) to an entity already used as a badge source elsewhere (we know both ends), and any boolean column (is_sweepable is the established pattern). Produce a list of candidate columns/entities not yet badged, cross-referenced against existing code_domain/badge_definition rows (already-covered vs needs-new-badge-definition), to drive follow-up annotation work -- this task is the audit/list, not annotating all of them.
 #+type: task
 #+level: s1
-#+filetags: :badge-colour-scheme-support:sprint_23:v0:
+#+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
 #+owner: marco
 #+branch: feature/badge-adoption-coverage-audit
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A written list of every domain_entity column that is a plausible badge candidate
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] |
+| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

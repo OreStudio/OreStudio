@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6
+:END:
+#+title: Story: Badge colour scheme: visual polish and self-badging fixes
+#+description: Concrete follow-on fixes from the badge colour scheme story: palette swatch rendering with a data-driven fallback badge, and self-badging for badge-source entities like book_status.
+#+type: story
+#+level: s2
+#+filetags: :qt:badges:ui:refdata:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]] (Sprint 23) at
+close: that story shipped its core deliverable — the =badge_mapping=
+browser UI and the migration of =badge_definition=/=badge_severity=/
+=code_domain= onto standard codegen + DQ publishing — but left two
+concrete, scoped defects unfixed:
+
+1. The Badge Definitions/Severities admin UI shows colours as plain
+   hex text instead of swatches, so semantic misuse of the
+   grey/green/red/yellow convention can't be eyeballed, and the
+   unmapped-value fallback colour is still a hardcoded Qt-only
+   constant instead of a real =badge_definition= row.
+2. An entity that *is* a badge source (e.g. =book_status=) doesn't
+   badge itself on its own list — only consumers of it do.
+
+Both are small, well-understood fixes, not open-ended discovery —
+distinct from the coverage-audit-and-rollout work split into
+[[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the palette-swatch task first (it's the more visible fix). |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- =badge_definition=/=badge_severity= admin UI renders colours as
+  swatches (not hex text), with a colour picker in the detail
+  dialog.
+- The unmapped-value fallback is a real, reserved =badge_definition=
+  row, resolved through =BadgeCache= like any other badge, visually
+  distinct from a legitimate grey/inactive badge.
+- At least one badge-source entity (e.g. =book_status=) badges
+  itself on its own list, via an explicit codegen model annotation
+  (not DB introspection).
+- No regression to any currently-working badge rendering.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | BACKLOG | | | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
+| [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
+
+* Decisions
+
+* Out of scope
+
+- The badge adoption coverage audit and rollout across
+  =domain_entity= models — see [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption
+  across domain entities]].
+- Wt-side badge rendering — carried over as out of scope from the
+  parent story (explicit user instruction).

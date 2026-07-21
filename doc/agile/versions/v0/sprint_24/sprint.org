@@ -59,6 +59,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: entity lint, NATS facet consolidation, compound natural-key SQL support, remaining lookup_entity migrations. |
 | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] | BACKLOG | | | Split from Sprint 23's calendar reference data story at close: ORE XML export boundary mapping and DQ-publish for currency_country/currency_calendar. |
 | [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] | BACKLOG | | | Split from Sprint 23's history-dialog consolidation story at close: delete HistoryDialogBase and remaining per-entity dialogs once every ores.qt component has migrated onto the generic HistoryDialog. |
+| [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] | BACKLOG | | | Pulled in from product backlog: seed a realistic vintage dataset, normalize duplicate floating-index catalogs, extend to a dual discount/projection curve, add proper IR quoting-convention display. |
+| [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] | BACKLOG | | | Promoted from an inbox capture: bootstrap the raw instrument grid into a desk-consumable zero/discount curve, and republish it as an official curve stream. |
 
 ** Hotfixes
 

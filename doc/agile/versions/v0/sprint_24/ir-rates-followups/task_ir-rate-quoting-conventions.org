@@ -5,14 +5,14 @@
 #+description: Research real trading-system IR rate quoting conventions (percent vs basis points, per-currency/index decimal precision) and add the equivalent of currency_pair_convention's pip_factor/tick_size/decimal_places for IR indices, plus a shared Qt formatter.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-followups:next:product_backlog:
+#+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
-#+updated: 2026-07-19
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

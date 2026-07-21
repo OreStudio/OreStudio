@@ -5,14 +5,14 @@
 #+description: Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, and give IR curve configs a manual per-tenant start control-plane (mirroring FX's market_feed_config_handler). The basic+realistic synthetic.ir_curve_configs DQ datasets and day-scaled defaults were delivered directly in the tick-batch-publishing task.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-followups:next:product_backlog:
+#+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
-#+updated: 2026-07-18
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

@@ -5,13 +5,13 @@
 #+description: Codegen currently produces NATS subject strings only as literals scattered across request/protocol structs, handler registrar files, and client call sites -- e.g. this session found a real bug where a new publish-from-dq subject was registered in SQL/DQ metadata but the handler's registrar.cpp never subscribed to it, because there is no compiler-checked single source of truth. Generate, per component, an API header of named constants for every NATS subject the component owns (requests, events, publish-from-dq subjects, ...), and have codegen-generated registrar/handler/client code reference those constants instead of raw string literals, so a missing subscription or a typo becomes a compile error instead of a silent runtime hang/failure.
 #+type: story
 #+level: s2
-#+filetags: :codegen:nats:sprint_23:v0:tech_debt:codegen_nats_subject_constants:
+#+filetags: :codegen:nats:sprint_24:v0:tech_debt:codegen_nats_subject_constants:
 #+created: 2026-07-13
-#+updated: 2026-07-13
+#+updated: 2026-07-21
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -49,11 +49,11 @@ have to independently rediscover.
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-13                               |
+| Last touched  | 2026-07-21                               |
 
 * Acceptance
 

@@ -5,13 +5,13 @@
 #+description: Clients must never generate primary-key UUIDs for entities they create. Every UUID-primary-keyed entity's Add flow currently generates the id client-side (boost::uuids::random_generator() in setCreateMode, part of the shared Qt detail-dialog codegen template); the server should assign the id on save instead, with the client showing a nil-UUID placeholder until the response comes back.
 #+type: story
 #+level: s2
-#+filetags: :server_side_uuid_generation:sprint_23:
+#+filetags: :server_side_uuid_generation:sprint_24:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-07-21
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -42,11 +42,11 @@ Scoped to *primary-key* UUIDs only -- other client-generated UUIDs
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-14                               |
+| Last touched  | 2026-07-21                               |
 
 * Acceptance
 

@@ -22,16 +22,16 @@ Continue commissioning ores.refdata entities and codegen C++ drift correction.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                  |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Start          | 2026-07-11                               |
-| End (expected) | 2026-07-18                           |
-| Now            | Sprint in flight.                      |
+| End            | 2026-07-21                           |
+| Now            | Nothing.                                |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
-| Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-07-11                               |
+| Next           | Open sprint 24.                        |
+| Release Notes  | [[file:release_notes.org][release_notes.org]] |
+| Last touched   | 2026-07-21                               |
 
 * Stories
 
@@ -56,7 +56,6 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] | DONE | 2026-07-11 | 2026-07-12 | Account gains a default_party_id; login dialog gets a quick-login checkbox that bypasses PartyPickerDialog; provisioning scripts set the default. |
 | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] | DONE | 2026-07-11 | 2026-07-21 | First-class calendar entity with FK-referenceable relationships, replacing free-text holiday_calendar/advance_calendar fields, plus Qt screens (PR #1638 merged). Closed with acceptance narrowed to what shipped; XML export boundary and DQ publish split into [[id:25DE932F-0857-4F23-97DC-75118A849EFC][a Sprint 24 story]]. Three extras previously split into [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][a product-backlog story]]. |
 | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] | DONE | 2026-07-11 | 2026-07-18 | Pulled in from product backlog next: driver/derived spanning-tree topology, no-arbitrage triangulation, risk recentering, management UI in ores.marketdata. |
-| [[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject constants per component]] | BACKLOG | 2026-07-13 | | Generate a per-component API header of named NATS subject constants (requests, events, publish-from-dq) so codegen-generated registrar/handler/client code never uses raw string literals -- a missing subscription or typo becomes a compile error, not a silent runtime failure. Discovered via a real bug in the CRM story. |
 | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | DONE | 2026-07-12 | 2026-07-12 | Pulled in from product backlog next (misfiled under sprint 22): move day_count_fraction_type from ores.trading to ores.refdata alongside the other *_convention entities, commission it fully, repoint trading_swap_legs' one soft-FK. |
 | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] | DONE | 2026-07-11 | 2026-07-11 | 16 stories seeded into sprint 23; deep backlog refinement audited all 559 items (71 discarded/relocated, 1 merged); bucket rescoring moved 310 items and emptied inbox. |
 | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Moved GMM/OU stochastic processes, process factory, and parameter validation out of ores.synthetic into ores.analytics.quant, with 54 new Catch2 tests and updated component documentation. |
@@ -64,7 +63,6 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] | DONE | 2026-07-12 | 2026-07-20 | Catch-all for small compass enhancements: bearings/vcpkg drift check, environment-update tooling. Output-monitoring task split into [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][a product-backlog story]]. |
 | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] | DONE | 2026-07-12 | 2026-07-13 | Promoted from deferred backlog. Redesign the dataset detail dialog into a persistent-header, two-column layout with merged Provenance/Methodology tab, per a Gemini UI review. |
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | DONE | 2026-07-13 | 2026-07-13 | Rebuilt contact_type's codegen model from the current meta-model and regenerated every layer, verified the Qt UI end-to-end post-NATS (11/11 scenario steps), and filed backlog captures for shell/CLI/Wt/HTTP support; manual chapter deferred to a backlog capture since contact_type is an aux type that documents as a subsection of the not-yet-written Contact chapter. |
-| [[id:093CDC6B-688C-4183-A500-96C55C4F9ACC][Server-side UUID generation for all entities]] | BACKLOG | 2026-07-14 | | Clients must never generate primary-key UUIDs -- move id assignment from the client-side setCreateMode() (shared Qt detail-dialog codegen template) to the server, returned in the save response. Surfaced while fixing the CRM cross-rates matrix task's editable id-field bug. |
 | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] | DONE | 2026-07-13 | 2026-07-20 | Consolidates and supersedes the three Sprint 22 per-entity commission stories, now that their shared blockers (composite hierarchy Qt widgets, temporal composite versioning) are DONE: party/counterparty regenerated zero-diff, Qt UI verified end-to-end post-NATS, manual chapters for all three written. At health review 1 (2026-07-20) the 2 remaining independent tasks were split into [[id:0A3DBED6-96D8-48DE-A392-7AB6045F088E][Party/counterparty follow-ups]] in the product backlog. |
 | [[id:72E90BAE-657B-4AA8-8F18-CB5AB6B5F57C][Commission: portfolio]] | DONE | 2026-07-16 | 2026-07-18 | Codegen/drift and manual-chapter tasks both DONE. Two non-blocking follow-ups split into [[id:65EBDE64-CA2C-4BBC-B142-2FF11B4F0446][Portfolio display follow-ups]] in the product backlog. |
 | [[id:961C86D1-3C8E-4FA1-8523-9E08F6559388][Sprint health review — System 2 analysis]] | DONE | 2026-07-20 | 2026-07-20 | System 2 health review 1: RED overall (sprint load and focus both RED, 2 days past planned close). |

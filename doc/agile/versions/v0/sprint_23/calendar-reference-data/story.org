@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :refdata:calendar:market_data:sprint_23:v0:
 #+created: 2026-07-04
-#+updated: 2026-07-11
+#+updated: 2026-07-21
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -32,46 +32,43 @@ breaking a pricing run instead of failing at data entry.
 This story gives ORE Studio its own clean =calendar= domain model —
 enumerating valid calendar codes, screens to manage them, and a proper
 FK-referenceable relationship from currency (and anything else that
-needs one) to its calendar(s) — with the mapping to ORE's own
-comma-joined string convention happening only at the XML export
-boundary in =ores.ore='s mappers. Split off from the currency pair story
+needs one) to its calendar(s). Split off from the currency pair story
 so calendar modelling can be scoped and built independently, with
 currency pair consuming it once it exists rather than embedding a
 placeholder text field.
+
+*Closed at Sprint 23's end, narrowed to what shipped*: the entity
+model, FK relationships, Qt CRUD screens, and the currency_country
+junction. The two remaining acceptance items (XML export boundary,
+DQ publish) split into a Sprint 24 story — see [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating
+calendar reference data: XML export and DQ publish]].
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Core entity modelling, FK relationships, and Qt CRUD screens DONE (5/5). Two acceptance items remain: the XML export boundary and DQ publish. Three extras not required by acceptance (date picker widget, list-pagination fix, QuantLib materialization) split into [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][a product-backlog story]] on 2026-07-20. |
+| Now           | Closed: core entity modelling, FK relationships, and Qt CRUD screens shipped (5/5 of this story's own narrowed acceptance). Remaining XML export boundary and DQ publish split into a Sprint 24 story. |
 | Waiting on    | Nothing.                               |
-| Next          | ORE's conventions_mapper XML export boundary, then DQ publish.|
-| Last touched  | 2026-07-04                               |
+| Next          | See the Sprint 24 follow-on story.     |
+| Last touched  | 2026-07-21                               |
 
 * Acceptance
 
-- [ ] A =calendar= entity exists in =ores.refdata= (or wherever it best
-  fits), enumerating valid ORE/QuantLib calendar codes with a proper
-  primary key, not free text.
-- [ ] Currencies reference their calendar(s) via a real FK relationship
+- [X] A =calendar= entity exists in =ores.refdata=, enumerating valid
+  ORE/QuantLib calendar codes with a proper primary key, not free
+  text.
+- [X] Currencies reference their calendar(s) via a real FK relationship
   (soft or hard), supporting a currency needing more than one calendar
   (e.g. a country calendar and a financial-centre calendar).
-- [ ] Qt screens exist to list/add/edit calendars, following the usual
+- [X] Qt screens exist to list/add/edit calendars, following the usual
   entity CRUD pattern.
-- [ ] =ores.ore='s conventions_mapper (or successor) builds ORE's
-  comma-joined calendar-name string only at the XML export boundary,
-  from the FK relationship(s) — the domain model itself never stores
-  the joined string.
-- [ ] =fx_convention.advance_calendar= (or its =currency_pair=
+- [X] =fx_convention.advance_calendar= (or its =currency_pair=
   successor) is migrated onto the new model.
-- [ ] A =currency_country= junction exists, since calendars are
+- [X] A =currency_country= junction exists, since calendars are
   associated with countries (a currency can span several), not with
   currencies directly.
-- [ ] The new tables (=calendar=, =calendar_type=, =currency_country=,
-  =currency_calendar=, =currency_pair_convention_calendar=) are
-  published through the DQ bundle pipeline.
 
 * Tasks
 
@@ -81,11 +78,16 @@ placeholder text field.
 | [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] | DONE | 2026-07-15 | 2026-07-15 | Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table. |
 | [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | DONE | 2026-07-16 | 2026-07-17 | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
 | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | DONE | 2026-07-18 | 2026-07-18 | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
-| [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string. |
 | [[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][Model a currency-country junction]] | DONE | 2026-07-14 | 2026-07-14 | Model a many-to-many currency_country junction linking currency to the existing country entity, since a currency can span multiple countries (e.g. EUR -> DE, FR, IT, ...) and calendar.country_code needs a country to FK against. |
-| [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire currency_country and currency_calendar into the DQ bundle publication pipeline (artefact tables + publish-from-dq functions + NATS handlers); calendar/calendar_type already have this from task 1. |
 
 * Decisions
+
+- *Closed at Sprint 23's end with acceptance narrowed to what
+  shipped*. The two remaining acceptance items (XML export boundary,
+  DQ publish) split into one Sprint 24 story rather than left open
+  indefinitely — both are about making the shipped model reachable
+  by the rest of the system, not separate initiatives, so they stay
+  together rather than being split further.
 
 - =calendar.country_code= is a non-nullable FK to the existing
   =country= entity, using ISO 3166-1's reserved =ZZ= user-assigned

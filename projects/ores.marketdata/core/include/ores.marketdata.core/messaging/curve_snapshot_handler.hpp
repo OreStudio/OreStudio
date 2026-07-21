@@ -86,8 +86,8 @@ public:
                     req_ctx, req->series_type, req->metric, req->qualifier);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
-                    resp.observations =
-                        obs_repo.read_as_of(req_ctx, series.front().id, std::chrono::system_clock::now());
+                    resp.observations = obs_repo.read_as_of(
+                        req_ctx, series.front().id, std::chrono::system_clock::now());
                 }
                 // No series yet (feed hasn't published) is not an error -- empty snapshot.
                 resp.success = true;
@@ -130,12 +130,12 @@ public:
                     req_ctx, req->series_type, req->metric, req->qualifier);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
-                    resp.buckets = obs_repo.read_as_of_buckets(
-                        req_ctx,
-                        series.front().id,
-                        std::chrono::system_clock::now(),
-                        std::chrono::seconds(req->bucket_seconds),
-                        req->bucket_count);
+                    resp.buckets =
+                        obs_repo.read_as_of_buckets(req_ctx,
+                                                    series.front().id,
+                                                    std::chrono::system_clock::now(),
+                                                    std::chrono::seconds(req->bucket_seconds),
+                                                    req->bucket_count);
                 } else {
                     resp.buckets.resize(req->bucket_count);
                 }

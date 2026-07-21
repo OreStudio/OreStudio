@@ -76,22 +76,22 @@ private:
 public:
     /** @brief Construct an editor for a new IR curve process under @p parentFeedId. */
     IrCurveEditor(ClientManager* cm,
-                 ImageCache* imageCache,
-                 ChangeReasonCache* crCache,
-                 const QString& username,
-                 const boost::uuids::uuid& parentFeedId,
-                 const QString& feedName,
-                 QWidget* parent = nullptr);
+                  ImageCache* imageCache,
+                  ChangeReasonCache* crCache,
+                  const QString& username,
+                  const boost::uuids::uuid& parentFeedId,
+                  const QString& feedName,
+                  QWidget* parent = nullptr);
 
     /** @brief Construct an editor editing an existing IR curve process. */
     IrCurveEditor(ClientManager* cm,
-                 ImageCache* imageCache,
-                 ChangeReasonCache* crCache,
-                 const QString& username,
-                 const synthetic::domain::ir_curve_generation_config& existing,
-                 const QString& feedName,
-                 const std::vector<synthetic::domain::ir_curve_template_entry>& entries,
-                 QWidget* parent = nullptr);
+                  ImageCache* imageCache,
+                  ChangeReasonCache* crCache,
+                  const QString& username,
+                  const synthetic::domain::ir_curve_generation_config& existing,
+                  const QString& feedName,
+                  const std::vector<synthetic::domain::ir_curve_template_entry>& entries,
+                  QWidget* parent = nullptr);
 
     ~IrCurveEditor() override = default;
 

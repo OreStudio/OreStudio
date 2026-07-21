@@ -143,11 +143,8 @@ void SampleShortRatePathsChart::setBusy(bool busy) {
     statusLabel_->setVisible(true);
 }
 
-void SampleShortRatePathsChart::setParameters(const std::string& processType,
-                                              double kappa,
-                                              double theta,
-                                              double sigma,
-                                              double initialRate) {
+void SampleShortRatePathsChart::setParameters(
+    const std::string& processType, double kappa, double theta, double sigma, double initialRate) {
     processType_ = processType;
     kappa_ = kappa;
     theta_ = theta;

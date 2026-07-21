@@ -44,10 +44,10 @@ register_calendar_type_handlers(ores::nats::service::client& nats,
         delete_calendar_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->remove(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_calendar_type_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_type_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->history(std::move(msg));
+        }));
     return subs;
 }
 

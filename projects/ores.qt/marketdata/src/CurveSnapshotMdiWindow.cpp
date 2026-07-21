@@ -18,13 +18,13 @@
  *
  */
 #include "ores.qt/CurveSnapshotMdiWindow.hpp"
+#include "ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
+#include "ores.ore.core/market/market_data_serializer.hpp"
+#include "ores.ore.core/market/market_datum.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
-#include "ores.ore.core/market/market_data_serializer.hpp"
-#include "ores.ore.core/market/market_datum.hpp"
 #include <QBrush>
 #include <QComboBox>
 #include <QDateTime>
@@ -41,9 +41,9 @@
 #include <QPointer>
 #include <QSpinBox>
 #include <QTabWidget>
-#include <QTimeZone>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTimeZone>
 #include <QTimer>
 #include <QToolBar>
 #include <QUrl>
@@ -87,11 +87,16 @@ double approx_tenor_days(const std::string& tenor) {
     if (end == tenor.c_str())
         return std::numeric_limits<double>::max(); // unrecognised: sort last
     switch (*end) {
-    case 'D': return n;
-    case 'W': return n * 7.0;
-    case 'M': return n * 30.0;
-    case 'Y': return n * 365.0;
-    default: return std::numeric_limits<double>::max();
+        case 'D':
+            return n;
+        case 'W':
+            return n * 7.0;
+        case 'M':
+            return n * 30.0;
+        case 'Y':
+            return n * 365.0;
+        default:
+            return std::numeric_limits<double>::max();
     }
 }
 
@@ -131,8 +136,8 @@ QColor history_series_color(int bucketIndex, int bucketCount) {
 // Same up/down arrow convention as the FX spot grid (FxSpotGridWindow::applyTick) -- the arrow
 // itself carries the sign, so the magnitude is unsigned.
 QString bp_arrow_text(double deltaBp) {
-    return (deltaBp >= 0 ? QStringLiteral("↑ ") : QStringLiteral("↓ "))
-           + QString::number(std::abs(deltaBp), 'f', 1);
+    return (deltaBp >= 0 ? QStringLiteral("↑ ") : QStringLiteral("↓ ")) +
+           QString::number(std::abs(deltaBp), 'f', 1);
 }
 
 const QColor k_up_color{34, 197, 94};   // green-400, matching FxSpotGridWindow
@@ -378,8 +383,7 @@ QWidget* CurveSnapshotMdiWindow::buildHistoryTab() {
     historyDisplayModeCombo_->addItem(tr("Rate"), static_cast<int>(HistoryDisplayMode::Rate));
     historyDisplayModeCombo_->addItem(tr("Δ Rate"),
                                       static_cast<int>(HistoryDisplayMode::DeltaRate));
-    historyDisplayModeCombo_->addItem(tr("Δ (bp)"),
-                                      static_cast<int>(HistoryDisplayMode::DeltaBp));
+    historyDisplayModeCombo_->addItem(tr("Δ (bp)"), static_cast<int>(HistoryDisplayMode::DeltaBp));
     historyDisplayModeCombo_->setCurrentIndex(2); // Δ (bp), matches the existing default view
     controls->addWidget(historyDisplayModeCombo_);
     controls->addStretch(1);
@@ -538,8 +542,7 @@ void CurveSnapshotMdiWindow::loadGrid() {
             self->gridAxisY_->setRange(yMin - pad, yMax + pad);
         }
 
-        emit self->statusChanged(
-            tr("Loaded %1 points.").arg(result.observations.size()));
+        emit self->statusChanged(tr("Loaded %1 points.").arg(result.observations.size()));
     });
 
     watcher->setFuture(QtConcurrent::run(task));
@@ -609,17 +612,17 @@ void CurveSnapshotMdiWindow::loadHistory() {
         }
 
         const int bucketCount = static_cast<int>(result.buckets.size());
-        const auto mode = static_cast<HistoryDisplayMode>(
-            self->historyDisplayModeCombo_->currentData().toInt());
+        const auto mode =
+            static_cast<HistoryDisplayMode>(self->historyDisplayModeCombo_->currentData().toInt());
 
         self->historyTable_->setColumnCount(1 + bucketCount);
         QStringList headers;
         headers << tr("Tenor");
         for (int b = 0; b < bucketCount; ++b) {
-            headers << (!result.buckets[b].empty() ?
-                            format_datetime(result.buckets[b].front().observation_datetime)
-                                .right(8) :
-                            self->tr("--"));
+            headers
+                << (!result.buckets[b].empty() ?
+                        format_datetime(result.buckets[b].front().observation_datetime).right(8) :
+                        self->tr("--"));
         }
         self->historyTable_->setHorizontalHeaderLabels(headers);
         self->historyTable_->setRowCount(static_cast<int>(tenors.size()));
@@ -701,14 +704,16 @@ void CurveSnapshotMdiWindow::loadHistory() {
             series->attachAxis(self->historyAxisX_);
             series->attachAxis(self->historyAxisY_);
 
-            const QString label = !result.buckets[b].empty() ?
-                format_datetime(result.buckets[b].front().observation_datetime).right(8) :
-                self->tr("--");
+            const QString label =
+                !result.buckets[b].empty() ?
+                    format_datetime(result.buckets[b].front().observation_datetime).right(8) :
+                    self->tr("--");
             auto* swatch = new QLabel(self->historyLegend_);
             swatch->setFixedSize(14, 3);
-            swatch->setStyleSheet(QString("background-color: %1;").arg(color.name(QColor::HexArgb)));
-            auto* text = new QLabel(isNewest ? label + self->tr(" (current)") : label,
-                                    self->historyLegend_);
+            swatch->setStyleSheet(
+                QString("background-color: %1;").arg(color.name(QColor::HexArgb)));
+            auto* text =
+                new QLabel(isNewest ? label + self->tr(" (current)") : label, self->historyLegend_);
             text->setStyleSheet(QString("color: %1; font-size: 9pt;").arg(color.name()));
             legendLayout->addWidget(swatch);
             legendLayout->addWidget(text);
@@ -728,8 +733,7 @@ void CurveSnapshotMdiWindow::loadHistory() {
         }
         self->historyTable_->resizeColumnsToContents();
 
-        emit self->statusChanged(
-            tr("Loaded %1 buckets.").arg(bucketCount));
+        emit self->statusChanged(tr("Loaded %1 buckets.").arg(bucketCount));
     });
 
     watcher->setFuture(QtConcurrent::run(task));
@@ -751,8 +755,8 @@ void CurveSnapshotMdiWindow::exportGridToCsv() {
         this,
         tr("Export to CSV"),
         QStringLiteral("%1_%2.csv")
-            .arg(exportFileNameSlug(), QDateTime::currentDateTimeUtc().toString(
-                                            QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
+            .arg(exportFileNameSlug(),
+                 QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
         tr("CSV Files (*.csv);;All Files (*)"));
     if (fileName.isEmpty())
         return;
@@ -795,8 +799,8 @@ void CurveSnapshotMdiWindow::exportGridToOre() {
         this,
         tr("Export to ORE Market Data"),
         QStringLiteral("%1_%2.txt")
-            .arg(exportFileNameSlug(), QDateTime::currentDateTimeUtc().toString(
-                                            QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
+            .arg(exportFileNameSlug(),
+                 QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd'T'HHmmss'Z'"))),
         tr("Text Files (*.txt);;All Files (*)"));
     if (fileName.isEmpty())
         return;

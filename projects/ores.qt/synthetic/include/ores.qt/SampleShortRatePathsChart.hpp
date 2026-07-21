@@ -46,8 +46,7 @@ class SampleShortRatePathsChart final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.synthetic.sample_short_rate_paths_chart";
+    inline static std::string_view logger_name = "ores.qt.synthetic.sample_short_rate_paths_chart";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

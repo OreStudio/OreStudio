@@ -133,15 +133,15 @@ public:
 
             resp.success = true;
             resp.message = result == curve_feed_controller::start_result::started ?
-                              "Feed started: " + source_name :
-                              "Feed already running: " + source_name;
+                               "Feed started: " + source_name :
+                               "Feed already running: " + source_name;
             BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.message;
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = std::string("Failed to start IR curve feed: ") + e.what();
-            BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), error) << msg.subject << " — "
-                                                                    << resp.message;
+            BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), error)
+                << msg.subject << " — " << resp.message;
         }
         reply(nats_, msg, resp);
     }
@@ -161,9 +161,10 @@ public:
         if (!req) {
             BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), warn)
                 << msg.subject << " — empty or malformed stop body; rejecting";
-            reply(nats_,
-                  msg,
-                  stop_ir_curve_feed_response{.success = false, .message = "Malformed stop request"});
+            reply(
+                nats_,
+                msg,
+                stop_ir_curve_feed_response{.success = false, .message = "Malformed stop request"});
             return;
         }
 
@@ -174,8 +175,9 @@ public:
             if (configs.empty()) {
                 reply(nats_,
                       msg,
-                      stop_ir_curve_feed_response{
-                          .success = false, .message = "IR curve config not found: " + req->config_id});
+                      stop_ir_curve_feed_response{.success = false,
+                                                  .message = "IR curve config not found: " +
+                                                             req->config_id});
                 return;
             }
             source_name = configs.front().source_name;

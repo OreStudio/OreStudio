@@ -57,7 +57,7 @@ struct ir_curve_schedule_step final {
  */
 struct ir_curve_resolved_entry final {
     int sequence_index = 0;
-    std::string point_id; // end_tenor_code
+    std::string point_id;   // end_tenor_code
     std::string curve_role; // DEPOSIT, FRA, or SWAP
     std::size_t ticks_ahead_start = 0;
     std::size_t ticks_ahead_end = 0;
@@ -107,8 +107,8 @@ struct ir_curve_refdata_context final {
  */
 ORES_SYNTHETIC_SERVICE_EXPORT std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-       const ir_curve_refdata_context& ctx,
-       const std::string& fixed_leg_payment_frequency_code);
+        const ir_curve_refdata_context& ctx,
+        const std::string& fixed_leg_payment_frequency_code);
 
 /**
  * @brief Builds the refdata inputs resolve() needs by reading the tenor/instrument_code/

@@ -25,8 +25,8 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <atomic>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -55,16 +55,16 @@ namespace ores::synthetic::service {
 class ir_curve_feed final {
 public:
     ir_curve_feed(ores::nats::service::client& nats,
-                 ores::utility::uuid::tenant_id tenant_id,
-                 boost::uuids::uuid party_id,
-                 std::string source_name,
-                 std::string nats_subject,
-                 std::string series_type,
-                 std::string metric,
-                 std::string qualifier,
-                 std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
-                 double ticks_per_hour,
-                 std::vector<ir_curve_resolved_entry> entries);
+                  ores::utility::uuid::tenant_id tenant_id,
+                  boost::uuids::uuid party_id,
+                  std::string source_name,
+                  std::string nats_subject,
+                  std::string series_type,
+                  std::string metric,
+                  std::string qualifier,
+                  std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
+                  double ticks_per_hour,
+                  std::vector<ir_curve_resolved_entry> entries);
 
     void start();
     void stop();

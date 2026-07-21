@@ -83,8 +83,8 @@ public:
      */
     std::vector<domain::market_observation>
     read_as_of(context ctx,
-              const boost::uuids::uuid& series_id,
-              const std::chrono::system_clock::time_point& as_of_datetime);
+               const boost::uuids::uuid& series_id,
+               const std::chrono::system_clock::time_point& as_of_datetime);
 
     /**
      * @brief Reconstructs one as-of snapshot per bucket boundary, for a curve-evolution view --

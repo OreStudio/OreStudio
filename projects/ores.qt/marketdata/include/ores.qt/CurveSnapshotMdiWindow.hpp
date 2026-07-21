@@ -76,11 +76,19 @@ public:
                            QWidget* parent = nullptr);
     ~CurveSnapshotMdiWindow() override = default;
 
-    const std::string& seriesType() const { return seriesType_; }
-    const std::string& metric() const { return metric_; }
-    const std::string& qualifier() const { return qualifier_; }
+    const std::string& seriesType() const {
+        return seriesType_;
+    }
+    const std::string& metric() const {
+        return metric_;
+    }
+    const std::string& qualifier() const {
+        return qualifier_;
+    }
 
-    QSize sizeHint() const override { return {1500, 750}; }
+    QSize sizeHint() const override {
+        return {1500, 750};
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -104,7 +112,7 @@ private:
     ImageCache* imageCache_;
     std::string seriesType_;
     std::string metric_;
-    std::string qualifier_;    // official market_series qualifier, e.g. "USD/SOFR"
+    std::string qualifier_; // official market_series qualifier, e.g. "USD/SOFR"
     std::vector<ores::marketdata::domain::market_observation> lastGridObservations_;
 
     QToolBar* toolbar_;

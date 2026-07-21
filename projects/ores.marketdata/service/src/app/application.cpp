@@ -110,8 +110,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
-    auto curve_ingest =
-        std::make_shared<curve_feed_ingest_loop>(nats, make_context(cfg.database));
+    auto curve_ingest = std::make_shared<curve_feed_ingest_loop>(nats, make_context(cfg.database));
 
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;

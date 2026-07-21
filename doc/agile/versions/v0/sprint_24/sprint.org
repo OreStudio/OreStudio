@@ -58,6 +58,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: subject_area, data_management history-dialog migration, change_reason_code bug, Data Librarian tree regression. |
 | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: entity lint, NATS facet consolidation, compound natural-key SQL support, remaining lookup_entity migrations. |
 | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] | BACKLOG | | | Split from Sprint 23's calendar reference data story at close: ORE XML export boundary mapping and DQ-publish for currency_country/currency_calendar. |
+| [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] | BACKLOG | | | Split from Sprint 23's history-dialog consolidation story at close: delete HistoryDialogBase and remaining per-entity dialogs once every ores.qt component has migrated onto the generic HistoryDialog. |
 
 ** Hotfixes
 

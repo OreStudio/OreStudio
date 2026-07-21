@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_23:v0:
 #+created: 2026-06-05
-#+updated: 2026-07-11
+#+updated: 2026-07-21
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -121,28 +121,37 @@ clear, but the redesigned mapper/dispatch/HistoryDialog above must
 land before the ~61-dialog rollout proceeds, since it changes what
 that rollout produces.
 
+*Closed at Sprint 23's end, narrowed to what shipped*: the entire
+new server-side diff architecture and the single generic
+=HistoryDialog= widget. The remaining Phase C cleanup task (deleting
+=HistoryDialogBase= and the last per-entity dialogs, blocked on
+every other =ores.qt= component migrating first) split into a
+Sprint 24 story — see [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C
+rollout]].
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Gate cleared (org-model migration DONE 2026-06-11); Phase C ready to start. |
+| Now           | Closed: server-side diff architecture, generic HistoryDialog widget, shell renderer, and UI redesign all shipped. Final cleanup (retiring old per-entity dialogs) split into a Sprint 24 story, blocked on other components' migrations. |
 | Waiting on    | Nothing.                               |
-| Next          | Phase C: template rollout across the ~61 remaining generated dialogs. |
-| Last touched  | 2026-07-11                               |
+| Next          | See the Sprint 24 follow-on story.      |
+| Last touched  | 2026-07-21                               |
 
 * Acceptance
 
-- Every entity history dialog derives from =HistoryDialogBase=; the
-  per-dialog code is limited to what is genuinely entity-specific.
-- Field-level diffs are computed server-side; no frontend holds
+- [X] Field-level diffs are computed server-side; no frontend holds
   comparison logic.
-- ores.diff exists with exhaustive engine tests; mappers and handlers
-  are tested at their own layers.
-- The shell can render history as a unified diff.
-- No codegen change is forced while the org-model migration is in
-  flight; the template rollout is explicitly gated.
+- [X] ores.diff exists with exhaustive engine tests; mappers and
+  handlers are tested at their own layers.
+- [X] The shell can render history as a unified diff.
+- [X] A single generic HistoryDialog widget replaces the
+  HistoryDialogBase/per-entity-subclass design; ores.qt.refdata
+  fully migrated onto it.
+- [X] No codegen change was forced while the org-model migration was
+  in flight; the template rollout was explicitly gated.
 
 * Tasks
 
@@ -163,13 +172,18 @@ that rollout produces.
 | [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]] | DONE | 2026-07-11 | 2026-07-12 | New ores.cpp.presentation facet: render_{entity}_fields() per entity, generated for the same 27 clean ores.refdata entities as entity_type_of(). |
 | [[id:15CFB0BE-C411-4B12-B733-974F6F5A44A5][Generic history.v1.get NATS subject and server-side dispatch registry]] | DONE | 2026-07-12 | 2026-07-13 | Add the generic history.v1.get NATS subject and request/response types (entity_type, entity_id -> version/fields/changes), a server-side dispatch registry keyed by entity_type_of() reapplying the entity-composed-registrars meta-pattern, and register each entity's history field mapper as a provider. Remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
 | [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] | DONE | 2026-07-13 | 2026-07-13 | Build the single, non-templated HistoryDialog widget (version list, async load, toolbar, diff_span colour-highlighted changes tab per the GitHub-style capture) taking (entity_type, entity_id); add the codegen'd per-entity Open/Revert action registry; wire callers to construct HistoryDialog instead of a typed dialog subclass; wire the composite-entity 'Details' affordance for child-driven versions to open another HistoryDialog instance. |
-| [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] | BACKLOG | | | Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class. |
 | [[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]] | DONE | 2026-07-13 | 2026-07-13 | Replace the disabled currencies history-diff command with one generic, entity-parameterised unified-diff renderer consuming the generic history.v1.get response (context lines from fields, +/- pairs with span-based highlighting from changes); re-enable it for every entity; update the shell recipes. |
 | [[id:1EAE3E54-1943-46DA-AB9A-FFC9D26287E6][Refactor history dialog UI per Gemini review]] | DONE | 2026-07-14 | 2026-07-14 | Redesign HistoryDialogBase per doc/analysis/gemini_review_history_dialog.org: master-detail split with a live side-by-side diff panel (semantic colour highlighting, inline word diffing), multi-version compare mode, and a compressed timeline with version pill badges, replacing the current flat Old Value/New Value table and dead right-hand space. |
 | [[id:2A05DA93-EE2A-4755-ABF1-6F97CBE9A4E7][Fix entity history versioning across delete+recreate cycles]] | DONE | 2026-07-13 | 2026-07-13 | Fixed read_all's non-deterministic ordering (valid_from tiebreak, currency/country + codegen template); deeper generation-scoping fix deferred, see task Notes. |
 
 * Decisions
 
+- *Closed at Sprint 23's end with acceptance narrowed to what
+  shipped*, rather than left open indefinitely. The single remaining
+  task (retire the last per-entity dialogs) genuinely is the bulk of
+  what's left workwise, but it can't proceed until every other
+  ores.qt component migrates first, so it moved to its own Sprint 24
+  story rather than keeping this one open with no other active work.
 - A dedicated =ores.diff= component (not a corner of ores.utility):
   the types cross every domain service and every frontend; a leaf
   component keeps the dependency arrows clean and matches the

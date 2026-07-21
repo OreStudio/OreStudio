@@ -5,37 +5,56 @@
 #+description: Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class.
 #+type: task
 #+level: s1
-#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+filetags: :retire_per_entity_history_dialogs:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: 7D8659AB-220E-4077-BD17-3C4DCA1937D8, E4DDC1B9-8609-4C11-9172-F2EE79242E66
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Once every entity across every ores.qt component has migrated onto
+the generic =HistoryDialog=, delete =HistoryDialogBase=, every
+remaining per-entity =*HistoryDialog= class, and
+=cpp_qt_history_dialog.{hpp,cpp}.mustache=/=qt_history_dialog_ui.mustache=;
+confirm via zero-diff regeneration guardrails that no facet still
+emits a per-entity dialog class.
+
+=ores.qt.refdata= has fully migrated ([[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the
+generic HistoryDialog]], DONE). The other =ores.qt= components
+(admin, analytics, compute, marketdata, synthetic, trading,
+workspace) have not — each is tracked as its own product-backlog
+capture ("Commission ores.qt.<component> into codegen", inbox) which
+includes migrating that component's history dialogs. This task is
+genuinely blocked until those land; it is the final cleanup step
+after every component has migrated, not something to start on its
+own.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| State        | BLOCKED                              |
+| Parent story | [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Waiting on   | Every ores.qt component migrating onto the generic HistoryDialog (only ores.qt.refdata done so far). |
+| Next         | Revisit once the remaining "Commission ores.qt.<component> into codegen" captures land. |
+| Last touched | 2026-07-21                               |
 
 * Acceptance
 
--
+- Zero remaining per-entity =*HistoryDialog= classes anywhere in
+  =ores.qt=.
+- =HistoryDialogBase= and its templates deleted.
+- Zero-diff regeneration guardrails confirm no facet still emits a
+  per-entity dialog class.
 
 * Plan
 

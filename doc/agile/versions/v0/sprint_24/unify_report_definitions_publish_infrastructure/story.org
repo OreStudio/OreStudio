@@ -108,6 +108,7 @@ code change, in either provisioner.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F41337CB-B763-4222-8AC1-41DF08353AB7][Replace hand-written bundle-publish phases with a data-driven bundle list]] | STARTED | 2026-07-22 | | Replace the fixed, hand-written phase-per-bundle sequence in both PartyExecutePage (Qt) and provision_commands::process_party (ores.shell CLI) with iteration over a data-driven list of party-scoped bundle codes to publish via dq.v1.bundles.publish, retiring the bespoke report-definition-templates RPC path. |
+| [[id:F66E39CF-9136-4FD2-8150-17432D331F33][Fix Data Librarian tree: no longer shows datasets]] | BACKLOG | | | Moved from Commission remaining DQ entities: the Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ codegen commissioning work; investigate and fix. |
 
 * Decisions
 

@@ -17,31 +17,30 @@ How do I configure ORE Studio with CMake?
 
 * Answer
 
-From the project root, pick a preset and configure with it:
+Configure via =compass build=, never raw =cmake --preset= — it takes
+the host-wide build lock (see *Build locking* in [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the
+system?]]) before touching the shared build directory, which a bare
+=cmake --preset= bypasses entirely:
 
 #+begin_src sh :results verbatim
-cmake --preset linux-clang-debug-ninja
+./compass.sh build
 #+end_src
 
-For a release build:
-
-#+begin_src sh :results verbatim
-cmake --preset linux-clang-release-ninja
-#+end_src
-
-Configure once per preset; the preset's build directory is created at
+=compass build= resolves the preset from =ORES_PRESET= in =.env= (or
+=--preset <name>= to override) and configures the build directory
+automatically on first use — there is no separate configure step to
+run by hand. The preset's build directory is created at
 =build/output/<preset>/=. To list available presets see
 [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]].
 
 ** Re-configuring with options
 
-To enable test logging or any other option, pass =-D<NAME>=<VALUE>= to
-the same command. The build directory is reused; CMake re-configures
-in place:
-
-#+begin_src sh :results verbatim
-cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
-#+end_src
+=compass build= has no pass-through for raw =-D<NAME>=<VALUE>= CMake
+options — its configure step is a fixed =cmake --preset <preset>=
+with no flag injection. Test logging (the one case that recipe
+authors reach for =-D= for) is controlled a different way, via
+=.env= variables forwarded by =CMakeLists.txt=, not a CMake cache
+option — see [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]].
 
 * Script
 

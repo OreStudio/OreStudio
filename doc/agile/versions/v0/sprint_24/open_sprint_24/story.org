@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 7201D9AB-FF9D-4B15-8DF2-849B40FB4321
+:END:
+#+title: Story: Open sprint 24
+#+description: Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Open Sprint 24: scaffold the sprint doc, set its mission, wire it into
+the version manifest and agile index, bump the project version, and
+update the =vcpkg= submodule to latest.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Sprint scaffolded; version bump and vcpkg update in progress. |
+| Waiting on    | Nothing.                               |
+| Next          | Bump version, update vcpkg, raise PR.  |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- Sprint 24 doc scaffolded with mission filled in.
+- Version manifest and agile index updated to point at Sprint 24.
+- Project version bumped.
+- =vcpkg= submodule updated to latest.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:837A40A5-C4FD-45F2-A6B1-389CC1CE9A66][Task: Open sprint 24]] | STARTED | 2026-07-21 | | Scaffold sprint, wire manifest, bump version, update vcpkg. |
+
+* Decisions
+
+* Out of scope
+
+-

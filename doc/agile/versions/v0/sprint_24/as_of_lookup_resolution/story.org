@@ -5,13 +5,13 @@
 #+description: Resolving what a referenced lookup value (e.g. book_status='x') meant at a historical point in time is a distinct problem from composite parent-child versioning: it needs an as-of point-in-time query against the referenced entity's own bitemporal window (valid_from <= t AND valid_to >= t), not a current-only lookup. A hand-written, unwired precedent already exists on currency_repository/country_repository/business_centre_repository (read_at_timepoint) but is not codegen-generated and has no service/NATS/UI callers -- dead code. Generalise it into a codegen facet (e.g. :has_as_of_lookup: true) generating repository + service (+ protocol where warranted), and apply it broadly since this is a common need across refdata entities, not just book-related ones.
 #+type: story
 #+level: s2
-#+filetags: :book_data_model_cleanup:sprint_23:v0:codegen:
+#+filetags: :book_data_model_cleanup:sprint_24:v0:codegen:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-21
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -37,7 +37,7 @@ value correctly is a common need, not a book-specific one.
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Design the facet, pilot on book_status/regulatory_book_type. |

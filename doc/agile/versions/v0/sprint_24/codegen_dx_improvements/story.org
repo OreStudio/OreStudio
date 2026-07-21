@@ -5,12 +5,12 @@
 #+description: Address workflow friction in codegen: address/type incompatibility errors in --component mode; no entity-scoped filter; no way to target a logical group (e.g. currency) within a component.
 #+type: story
 #+level: s2
-#+filetags: :codegen:tooling:sprint_23:v0:
+#+filetags: :codegen:tooling:sprint_24:v0:
 #+created: 2026-06-25
-#+updated: 2026-07-11
+#+updated: 2026-07-21
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 Carried from [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] as a not-yet-started BACKLOG story.
 
@@ -54,7 +54,7 @@ produces exactly what was requested — no more, no less — with a clean exit c
 | Field         | Value                                                       |
 |---------------+-------------------------------------------------------------|
 | State         | BACKLOG                                                     |
-| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]                                                   |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]                                                   |
 | Now           | Not yet started.                                            |
 | Waiting on    | Nothing; no blockers.                                       |
 | Next          | Break into tasks; prioritise error downgrade first (cheapest). |

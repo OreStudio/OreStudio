@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 002A916C-2D83-4408-8B74-05CEA44CCB06
+:ID: A3A2844A-BE49-4D1C-B5ED-49CA1A07DD1C
 :END:
-#+title: Task: Design the as-of lookup codegen facet
-#+description: Design a new codegen facet (candidate flag: :has_as_of_lookup: true) generating a repository-level read_at_timepoint(ctx, as_of[, key]) method and a service-level wrapper, matching the existing hand-written shape on currency_repository/country_repository/business_centre_repository but generated consistently. Decide: NATS protocol surface (new request/response, or reuse an existing one with an optional as_of param), where the flag lives in the .org model (entity-level, since this is about the entity's own bitemporal window, not a parent/child FK relationship), and how/whether to reconcile the 3 existing hand-written methods with the generated one.
+#+title: Task: Roll out as-of lookup facet to remaining refdata entities
+#+description: Once proven on book_status/regulatory_book_type, apply :has_as_of_lookup: true broadly across refdata lookup/reference entities referenced by FK elsewhere. Deferred follow-on, not required for this story's own completion.
 #+type: task
 #+level: s1
-#+filetags: :codegen:sprint_23:v0:as_of_lookup_resolution:
+#+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

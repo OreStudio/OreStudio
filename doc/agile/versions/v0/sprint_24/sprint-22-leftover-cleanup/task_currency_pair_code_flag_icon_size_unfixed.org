@@ -5,14 +5,14 @@
 #+description: The QLineEdit-hosted pair-code flag (set_line_edit_flag_icon in FlagIconHelper.hpp) stays small no matter what QSize is passed, unlike QComboBox/QTableView icons which correctly scale. Attempted fix (reaching into the internal QToolButton and forcing setFixedSize/updateGeometry) made no visible difference and was reverted -- needs proper investigation, parked for now.
 #+type: task
 #+level: s1
-#+filetags: :sprint_23:v0:
+#+filetags: :sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
-#+updated: 2026-07-09
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

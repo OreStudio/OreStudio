@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: A3A2844A-BE49-4D1C-B5ED-49CA1A07DD1C
+:ID: 5DAF8FB2-D665-446F-A458-7612418DC348
 :END:
-#+title: Task: Roll out as-of lookup facet to remaining refdata entities
-#+description: Once proven on book_status/regulatory_book_type, apply :has_as_of_lookup: true broadly across refdata lookup/reference entities referenced by FK elsewhere. Deferred follow-on, not required for this story's own completion.
+#+title: Task: Implement and pilot the as-of lookup facet on book_status/regulatory_book_type
+#+description: Add the designed facet to the codegen templates (SQL/repository/service/protocol as scoped). Apply :has_as_of_lookup: true to book_status.org and regulatory_book_type.org (the entities that surfaced this gap), regenerate, and wire it to an actual caller -- at minimum the Book history dialog resolving a historical version's status/type badge correctly, proving the facet isn't dead code like its hand-written predecessor.
 #+type: task
 #+level: s1
-#+filetags: :codegen:sprint_23:v0:as_of_lookup_resolution:
+#+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

@@ -5,14 +5,14 @@
 #+description: Extend is_dynamic_combo with an optional per-item flag decorator (reusing FlagIconHelper::apply_flag_icons) so currency_pair's base/quote currency pickers -- and future currency/country/business-centre soft-FK combos -- are generated, not hand-written.
 #+type: task
 #+level: s1
-#+filetags: :sprint_23:v0:
+#+filetags: :sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
-#+updated: 2026-07-06
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

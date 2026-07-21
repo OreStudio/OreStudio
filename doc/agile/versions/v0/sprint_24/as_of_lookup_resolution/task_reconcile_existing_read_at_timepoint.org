@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 5DAF8FB2-D665-446F-A458-7612418DC348
+:ID: A61D91CC-61A9-4140-8F26-AA76621FBB80
 :END:
-#+title: Task: Implement and pilot the as-of lookup facet on book_status/regulatory_book_type
-#+description: Add the designed facet to the codegen templates (SQL/repository/service/protocol as scoped). Apply :has_as_of_lookup: true to book_status.org and regulatory_book_type.org (the entities that surfaced this gap), regenerate, and wire it to an actual caller -- at minimum the Book history dialog resolving a historical version's status/type badge correctly, proving the facet isn't dead code like its hand-written predecessor.
+#+title: Task: Reconcile existing hand-written read_at_timepoint methods
+#+description: currency_repository/country_repository/business_centre_repository already have a hand-written, unwired read_at_timepoint. Once the codegen facet lands, either replace these with the generated version or explicitly document why they diverge -- don't leave two parallel implementations of the same concept.
 #+type: task
 #+level: s1
-#+filetags: :codegen:sprint_23:v0:as_of_lookup_resolution:
+#+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

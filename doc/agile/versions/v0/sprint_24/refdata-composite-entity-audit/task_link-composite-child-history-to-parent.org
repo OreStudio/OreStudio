@@ -5,14 +5,14 @@
 #+description: Add a generic SQL function that, given two adjacent parent versions, returns the exact composite-child row (id + version) whose write caused the bump -- using only existing bitemporal valid_from/valid_to windows, no schema change -- then wire the generic Qt HistoryDialog to offer a drill-down into that child's own history at the right version.
 #+type: task
 #+level: s1
-#+filetags: :composite_entity:versioning:sql:qt:party:counterparty:refdata-composite-entity-audit:sprint_23:v0:
+#+filetags: :composite_entity:versioning:sql:qt:party:counterparty:refdata-composite-entity-audit:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

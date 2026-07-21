@@ -30,8 +30,8 @@ data_domain, badge_definition/severity/code_domain) — and fix it.
 
 * References
 
-- Originating capture: [[id:0F591064-950F-42F5-9CB7-0F3EEB4BC9AB][Data Librarian tree no longer shows datasets]]
-  (inbox).
+- Originating capture: "Data Librarian tree no longer shows datasets"
+  (deleted from inbox once folded into this task).
 
 * Status
 

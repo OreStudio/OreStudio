@@ -55,6 +55,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D58CD39D-BFBA-45DF-A05B-01EDD7115C45][Audit refdata entities for composite (temporal-versioned) child relationships]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: generalise temporal composite entity versioning (proven on party/counterparty) across refdata. |
 | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] | BACKLOG | | | Split from Sprint 23's badge colour scheme story at close: palette swatch rendering + data-driven fallback badge, and self-badging for badge-source entities. |
 | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] | BACKLOG | | | Split from Sprint 23's badge colour scheme story at close: audit and annotate badge_key adoption across all domain_entity models (only 10/108 use it today). |
+| [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: subject_area, data_management history-dialog migration, change_reason_code bug, Data Librarian tree regression. |
+| [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] | BACKLOG | | | Split from Sprint 23's DQ codegen commissioning story at close: entity lint, NATS facet consolidation, compound natural-key SQL support, remaining lookup_entity migrations. |
 
 ** Hotfixes
 

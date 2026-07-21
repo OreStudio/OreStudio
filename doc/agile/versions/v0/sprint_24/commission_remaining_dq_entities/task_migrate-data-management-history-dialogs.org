@@ -5,18 +5,18 @@
 #+description: 14 DQ-owned entities (catalog, change_reason, change_reason_category, code_domain, coding_scheme, coding_scheme_authority_type, data_domain, dataset, dataset_bundle, methodology, nature_dimension, origin_dimension, subject_area, treatment_dimension) live in ores.qt.data_management with hand-written backend glue and legacy per-entity *HistoryDialog classes. Author codegen models for the 12 that have none, then migrate all 14 onto the generic HistoryDialog via full-stack codegen -- as part of this story standing up ores.qt.dq as the proper plugin.
 #+type: task
 #+level: s1
-#+filetags: :codegen:dq:qt:history:sprint_23:commission-dq-component:v0:
+#+filetags: :codegen:dq:qt:history:sprint_24:commission_remaining_dq_entities:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -54,7 +54,7 @@ change-reason-cache wrinkle doesn't change that).
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Author codegen models for the 12 model-less entities; migrate all 14 via full-stack codegen once ores.qt.dq exists as a proper plugin. |

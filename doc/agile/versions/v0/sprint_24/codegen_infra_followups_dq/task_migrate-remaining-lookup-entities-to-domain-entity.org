@@ -5,18 +5,18 @@
 #+description: 464B5EC6 migrated DQ's 5 lookup_entity models to domain_entity (has_uuid_primary_key implied by the primary key column's own type; coding_scheme/image_id already existed as domain_entity fields; compound natural keys still need 52FE40FA regardless of metatype). 10 more lookup_entity models remain outside dq (iam: tenant_type/tenant_status/account_type; trading: party_role_type/trade_id_type/trade_type/lifecycle_event; analytics: pricing_engine_type; dq: artefact_type/report_definition/synthetic_fx_spot_config/lei_entity/lei_relationship -- recount exact list at start). Migrate each the same way (pilot-verify SQL+C++ generation against the real table/pre-existing files before each, watch for the tracked-file rm trap 464B5EC6 hit), then retire ores.codegen.lookup_entity's #+type:, org_loader.py's load_org_lookup_entity_model, and core.py's dedicated dispatch (the schema-branch additions from DDBD522D become dead code once no lookup_entity model remains).
 #+type: task
 #+level: s1
-#+filetags: :commission-dq-component:sprint_23:v0:
+#+filetags: :codegen_infra_followups_dq:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
-#+updated: 2026-07-18
+#+updated: 2026-07-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:FFA8F092-AC73-464B-B3F7-47409895E9E9][Commission ores.qt.dq — full-stack codegen for the DQ component]] |
+| Parent story | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

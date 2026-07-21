@@ -8,7 +8,7 @@
 #+filetags: :refdata:test-data:parties:onboarding:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -44,7 +44,7 @@ each time.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -80,7 +80,7 @@ each time.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | BACKLOG | | | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
+| [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | STARTED | 2026-07-22 | | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
 
 * Decisions
 

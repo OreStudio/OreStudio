@@ -35,3 +35,6 @@ revisiting if/when that capability is considered.
 
 - [[id:06B22E68-085B-4A63-8C1F-4A0C3AC99D33][Survey open-source options pricing projects]] — sibling survey of
   options-pricing libraries and tools (inbox).
+- [[id:A9559231-24AF-49CD-84A7-83A3FA4F0271][Reference: Lean 4 formally-verified pre-trade risk gateway]] —
+  sibling algo-trading reference capture, on a formally-verified
+  risk-gate pattern that could sit in front of automated dispatch.

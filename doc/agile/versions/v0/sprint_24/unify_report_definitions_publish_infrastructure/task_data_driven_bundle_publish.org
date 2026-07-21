@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: F41337CB-B763-4222-8AC1-41DF08353AB7
+:END:
+#+title: Task: Replace hand-written bundle-publish phases with a data-driven bundle list
+#+description: Replace the fixed, hand-written phase-per-bundle sequence in both PartyExecutePage (Qt) and provision_commands::process_party (ores.shell CLI) with iteration over a data-driven list of party-scoped bundle codes to publish via dq.v1.bundles.publish, retiring the bespoke report-definition-templates RPC path.
+#+type: task
+#+level: s1
+#+filetags: :unify_report_definitions_publish_infrastructure:sprint_24:v0:
+#+owner: marco
+#+branch: feature/data-driven-bundle-publish
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new party-scoped bundle requires only a data change (adding a bundle code), never new phase code, in either provisioner.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- PartyExecutePage::startReportInstall and provision_commands::process_party's reports phase both call dq.v1.bundles.publish with bundle_code=ore_analytics, replacing the list-templates-then-save-per-record path.
+- organisation and marketdata.reference_vintage_2016_02_05 bundle publishes are folded into the same data-driven iteration in both provisioners.
+- Adding synthetic.fx_spot_configs to a provisioning run requires no further code changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

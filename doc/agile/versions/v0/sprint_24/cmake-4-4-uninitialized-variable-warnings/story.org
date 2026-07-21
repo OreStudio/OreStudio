@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 474B7173-EB04-485A-BEB5-87FC0B34CE32
+:END:
+#+title: Story: Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI
+#+description: GitHub Actions Linux CI builds emit a batch of new CMake Warning (uninitialized) messages under CMake 4.4.0 (CMAKE_SYSTEM_CUSTOM_CODE, CXX, _CMAKE_TOOLCHAIN_PREFIX, CMAKE_CXX_COMPILER_HINTS, CMAKE_CXX_COMPILER_ARG1), all originating from the project(OreStudio ...) call at CMakeLists.txt:51. Investigate root cause and fix or suppress appropriately.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:cmake:ci:build:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+GitHub Actions Linux CI builds started emitting a batch of new
+=CMake Warning (uninitialized)= messages starting 2026-07-20, under
+CMake 4.4.0:
+
+#+begin_example
+CMake Warning (uninitialized) at .../CMakeDetermineSystem.cmake:231 (configure_file):
+  uninitialized variable 'CMAKE_SYSTEM_CUSTOM_CODE'
+CMake Warning (uninitialized) at .../CMakeDetermineCXXCompiler.cmake:41 (if):
+  uninitialized variable 'CXX'
+CMake Warning (uninitialized) at .../CMakeDetermineCXXCompiler.cmake:60 (set):
+  uninitialized variable '_CMAKE_TOOLCHAIN_PREFIX'
+CMake Warning (uninitialized) at .../CMakeDetermineCompiler.cmake:39 (set):
+  uninitialized variable 'CMAKE_CXX_COMPILER_HINTS'
+CMake Warning (uninitialized) at .../CMakeDetermineCompilerId.cmake:27 (string):
+  uninitialized variable 'CMAKE_CXX_COMPILER_ARG1'
+#+end_example
+
+All five originate from the =project(OreStudio ...)= call at
+=CMakeLists.txt:51=, tripped inside CMake 4.4.0's own bundled
+=CMakeDetermineSystem.cmake=/=CMakeDetermineCXXCompiler.cmake=/
+=CMakeDetermineCompiler.cmake=/=CMakeDetermineCompilerId.cmake=
+modules on the GitHub Actions Linux runner. Likely candidates: a
+GitHub Actions runner image bump that picked up CMake 4.4.0 fresh
+(new/renamed internal variables these modules now read before
+anything sets them), or a change on our side to how the Linux
+workflow invokes =cmake=/sets up the toolchain that stopped
+initializing something these modules expect. Investigate the root
+cause and fix or suppress appropriately — determine whether this is
+purely cosmetic (CI noise) or symptomatic of something not being
+configured that should be.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Diff the Linux CI workflow / runner image around 2026-07-20 to find what changed. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- Root cause identified: what changed around 2026-07-20 that
+  introduced these warnings (runner image / CMake version bump vs.
+  a workflow-side regression).
+- Confirmed whether the warnings are purely cosmetic or indicate a
+  real missing/misconfigured toolchain variable.
+- Linux CI builds no longer emit these warnings (fixed at the
+  source) or, if they're confirmed both upstream and harmless,
+  explicitly and narrowly suppressed with a comment explaining why.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

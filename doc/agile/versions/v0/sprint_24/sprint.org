@@ -78,7 +78,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] | BACKLOG | | | Linux CI started emitting a batch of new CMake Warning (uninitialized) messages on 2026-07-20, all from the project() call at CMakeLists.txt:51 under CMake 4.4.0. |
 
 * Achievements
 

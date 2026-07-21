@@ -44,12 +44,12 @@
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
-#include <algorithm>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -131,8 +131,8 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
 // ir_curve_feed_config_handler's NATS control-plane -- mirroring feed_controller/
 // market_feed_config_handler's split for FX.
 void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
-                                      ores::synthetic::service::curve_feed_controller& ctrl,
-                                      const ores::database::context& ctx) {
+                                       ores::synthetic::service::curve_feed_controller& ctrl,
+                                       const ores::database::context& ctx) {
     namespace synth_repo = ores::synthetic::repository;
     using ores::synthetic::service::build_ir_curve_refdata_context;
     using ores::synthetic::service::make_ir_curve_feed;
@@ -176,7 +176,8 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
                 << cfg.index_name << ": " << e.what();
         }
     }
-    BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled IR curve feed(s).";
+    BOOST_LOG_SEV(auto_start_lg(), info)
+        << "Auto-started " << started << " enabled IR curve feed(s).";
 }
 }
 

@@ -81,8 +81,7 @@ public:
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(calendar_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(calendar_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -111,13 +110,11 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(calendar_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_calendar_type_response{.success = false, .message = e.what()});
+                reply(
+                    nats_, msg, save_calendar_type_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(calendar_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(calendar_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
@@ -147,8 +144,7 @@ public:
                       get_calendar_type_history_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(calendar_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(calendar_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
@@ -179,8 +175,7 @@ public:
                       delete_calendar_type_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(calendar_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(calendar_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }

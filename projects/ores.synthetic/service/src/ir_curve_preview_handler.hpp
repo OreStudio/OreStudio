@@ -178,8 +178,7 @@ public:
                 entries.push_back(std::move(e));
             }
 
-            const auto resolved =
-                resolve(entries, *refctx, req->fixed_leg_payment_frequency_code);
+            const auto resolved = resolve(entries, *refctx, req->fixed_leg_payment_frequency_code);
 
             std::map<int, std::string> start_tenor_by_sequence;
             for (const auto& row : req->entries)

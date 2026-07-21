@@ -157,31 +157,33 @@ void CalendarAssignmentWidget::load(bool force) {
     };
 
     auto* watcher = new QFutureWatcher<LoadFutureResult>(this);
-    connect(watcher, &QFutureWatcher<LoadFutureResult>::finished, this,
+    connect(watcher,
+            &QFutureWatcher<LoadFutureResult>::finished,
+            this,
             [self, watcher, isRefreshOfSameKey]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self)
-            return;
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
 
-        if (result.success) {
-            self->assignedCodes_ = std::move(result.assignedCodes);
-            self->allCalendarCodes_ = std::move(result.allCodes);
-            if (!isRefreshOfSameKey) {
-                self->pendingAdds_.clear();
-                self->pendingRemoves_.clear();
-            }
-            self->hasLoadedOnce_ = true;
-            self->loadedForKey_ = self->leftKey_;
-            self->refreshView();
-            emit self->dataLoaded();
-            BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->assignedCodes_.size()
-                                       << " assigned, " << self->allCalendarCodes_.size()
-                                       << " total calendars";
-        } else {
-            emit self->errorMessage("Load Failed", "Failed to load calendars");
-        }
-    });
+                if (result.success) {
+                    self->assignedCodes_ = std::move(result.assignedCodes);
+                    self->allCalendarCodes_ = std::move(result.allCodes);
+                    if (!isRefreshOfSameKey) {
+                        self->pendingAdds_.clear();
+                        self->pendingRemoves_.clear();
+                    }
+                    self->hasLoadedOnce_ = true;
+                    self->loadedForKey_ = self->leftKey_;
+                    self->refreshView();
+                    emit self->dataLoaded();
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Loaded " << self->assignedCodes_.size() << " assigned, "
+                        << self->allCalendarCodes_.size() << " total calendars";
+                } else {
+                    emit self->errorMessage("Load Failed", "Failed to load calendars");
+                }
+            });
 
     auto* clientManager = clientManager_;
     auto loadAssignedFn = loadAssignedFn_;
@@ -202,9 +204,8 @@ void CalendarAssignmentWidget::load(bool force) {
                 if (has_left_key && loadAssignedFn) {
                     auto assignedResult = loadAssignedFn(clientManager, leftKey);
                     if (!assignedResult.success) {
-                        BOOST_LOG_SEV(lg(), error)
-                            << "Failed to fetch assigned calendars: "
-                            << assignedResult.message.toStdString();
+                        BOOST_LOG_SEV(lg(), error) << "Failed to fetch assigned calendars: "
+                                                   << assignedResult.message.toStdString();
                         return {.success = false};
                     }
                     return {.success = true,
@@ -363,70 +364,72 @@ void CalendarAssignmentWidget::commitChanges(
     };
 
     auto* watcher = new QFutureWatcher<CommitResult>(this);
-    connect(watcher,
-            &QFutureWatcher<CommitResult>::finished,
-            this,
-            [self, watcher, onComplete]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-                if (self) {
-                    auto erase_applied = [](std::vector<std::string>& pending,
-                                             const std::vector<std::string>& applied) {
-                        for (const auto& code : applied) {
-                            auto it = std::find(pending.begin(), pending.end(), code);
-                            if (it != pending.end())
-                                pending.erase(it);
-                        }
-                    };
-                    erase_applied(self->pendingAdds_, result.appliedAdds);
-                    erase_applied(self->pendingRemoves_, result.appliedRemoves);
+    connect(watcher, &QFutureWatcher<CommitResult>::finished, this, [self, watcher, onComplete]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self) {
+            auto erase_applied = [](std::vector<std::string>& pending,
+                                    const std::vector<std::string>& applied) {
+                for (const auto& code : applied) {
+                    auto it = std::find(pending.begin(), pending.end(), code);
+                    if (it != pending.end())
+                        pending.erase(it);
+                }
+            };
+            erase_applied(self->pendingAdds_, result.appliedAdds);
+            erase_applied(self->pendingRemoves_, result.appliedRemoves);
 
-                    // Reload to pick up the server's new state; load()
-                    // recognises this as a same-key forced refresh and will
-                    // not touch the pending lists just trimmed above, so any
-                    // unattempted remainder stays staged for a retry.
-                    self->load(true);
-                }
-                if (onComplete)
-                    onComplete(result.success, result.message);
-            });
+            // Reload to pick up the server's new state; load()
+            // recognises this as a same-key forced refresh and will
+            // not touch the pending lists just trimmed above, so any
+            // unattempted remainder stays staged for a retry.
+            self->load(true);
+        }
+        if (onComplete)
+            onComplete(result.success, result.message);
+    });
 
-    QFuture<CommitResult> future = QtConcurrent::run(
-        [clientManager, leftKey, adds, removes, assignFn, revokeFn, changeReasonCode,
-         changeCommentary]() -> CommitResult {
-            // See the matching comment in load() above: convert any
-            // exception escaping assignFn/revokeFn (which both call
-            // ClientManager::process_authenticated_request()) into an
-            // ordinary failure instead of letting it abort the client.
-            CommitResult outcome{.success = true, .message = {}, .appliedAdds = {},
-                                  .appliedRemoves = {}};
-            try {
-                for (const auto& code : adds) {
-                    auto result = assignFn(
-                        clientManager, leftKey, code, changeReasonCode, changeCommentary);
-                    if (!result.success) {
-                        outcome.success = false;
-                        outcome.message = result.message;
-                        return outcome;
-                    }
-                    outcome.appliedAdds.push_back(code);
+    QFuture<CommitResult> future = QtConcurrent::run([clientManager,
+                                                      leftKey,
+                                                      adds,
+                                                      removes,
+                                                      assignFn,
+                                                      revokeFn,
+                                                      changeReasonCode,
+                                                      changeCommentary]() -> CommitResult {
+        // See the matching comment in load() above: convert any
+        // exception escaping assignFn/revokeFn (which both call
+        // ClientManager::process_authenticated_request()) into an
+        // ordinary failure instead of letting it abort the client.
+        CommitResult outcome{
+            .success = true, .message = {}, .appliedAdds = {}, .appliedRemoves = {}};
+        try {
+            for (const auto& code : adds) {
+                auto result =
+                    assignFn(clientManager, leftKey, code, changeReasonCode, changeCommentary);
+                if (!result.success) {
+                    outcome.success = false;
+                    outcome.message = result.message;
+                    return outcome;
                 }
-                for (const auto& code : removes) {
-                    auto result = revokeFn(clientManager, leftKey, code);
-                    if (!result.success) {
-                        outcome.success = false;
-                        outcome.message = result.message;
-                        return outcome;
-                    }
-                    outcome.appliedRemoves.push_back(code);
-                }
-                return outcome;
-            } catch (const std::exception& e) {
-                outcome.success = false;
-                outcome.message = QString::fromUtf8(e.what());
-                return outcome;
+                outcome.appliedAdds.push_back(code);
             }
-        });
+            for (const auto& code : removes) {
+                auto result = revokeFn(clientManager, leftKey, code);
+                if (!result.success) {
+                    outcome.success = false;
+                    outcome.message = result.message;
+                    return outcome;
+                }
+                outcome.appliedRemoves.push_back(code);
+            }
+            return outcome;
+        } catch (const std::exception& e) {
+            outcome.success = false;
+            outcome.message = QString::fromUtf8(e.what());
+            return outcome;
+        }
+    });
 
     watcher->setFuture(future);
 }

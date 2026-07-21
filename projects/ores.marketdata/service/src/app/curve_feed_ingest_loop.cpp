@@ -52,67 +52,64 @@ void curve_feed_ingest_loop::start() {
 
     boost::uuids::random_generator uuid_gen;
 
-    sub_ = nats_.subscribe(
-        wildcard_subject, [this, uuid_gen](ores::nats::message msg) mutable {
-            auto tick =
-                rfl::json::read<domain::ir_curve_tick>(ores::nats::as_string_view(msg.data));
-            if (!tick) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to decode ir_curve_tick: " << tick.error().what();
-                return;
+    sub_ = nats_.subscribe(wildcard_subject, [this, uuid_gen](ores::nats::message msg) mutable {
+        auto tick = rfl::json::read<domain::ir_curve_tick>(ores::nats::as_string_view(msg.data));
+        if (!tick) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to decode ir_curve_tick: " << tick.error().what();
+            return;
+        }
+
+        try {
+            auto tenant_ctx = ctx_.with_tenant(tick->tenant_id, "ores.marketdata.service");
+
+            repository::market_series_repository series_repo;
+            auto existing =
+                series_repo.read_latest_by_type(tenant_ctx,
+                                                tick->series_type,
+                                                tick->metric,
+                                                tick->qualifier,
+                                                boost::uuids::to_string(tick->party_id));
+            if (existing.empty()) {
+                BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << tick->series_type
+                                          << "/" << tick->metric << "/" << tick->qualifier;
+                domain::market_series series;
+                series.id = uuid_gen();
+                series.tenant_id = tenant_ctx.tenant_id();
+                series.party_id = tick->party_id;
+                series.series_type = tick->series_type;
+                series.metric = tick->metric;
+                series.qualifier = tick->qualifier;
+                series.asset_class = domain::asset_class::rates;
+                series.series_subclass = tick->subclass;
+                series.is_scalar = false;
+                series.modified_by = ctx_.service_account();
+                series.performed_by = ctx_.service_account();
+                series.change_reason_code = "system.initial_load";
+                series.change_commentary = tick->series_type + "/" + tick->metric + "/" +
+                                           tick->qualifier + " synthetic curve feed auto-created";
+                series_repo.write(tenant_ctx, series);
+                existing.push_back(std::move(series));
             }
 
-            try {
-                auto tenant_ctx = ctx_.with_tenant(tick->tenant_id, "ores.marketdata.service");
+            domain::market_observation obs;
+            obs.id = uuid_gen();
+            obs.tenant_id = tenant_ctx.tenant_id();
+            obs.party_id = tick->party_id;
+            obs.series_id = existing.front().id;
+            obs.observation_datetime = tick->datetime;
+            obs.value = std::to_string(tick->value);
+            obs.source = tick->source_name;
+            obs.point_id = tick->point_id;
 
-                repository::market_series_repository series_repo;
-                auto existing = series_repo.read_latest_by_type(tenant_ctx,
-                                                                 tick->series_type,
-                                                                 tick->metric,
-                                                                 tick->qualifier,
-                                                                 boost::uuids::to_string(tick->party_id));
-                if (existing.empty()) {
-                    BOOST_LOG_SEV(lg(), info)
-                        << "Auto-creating market series for " << tick->series_type << "/"
-                        << tick->metric << "/" << tick->qualifier;
-                    domain::market_series series;
-                    series.id = uuid_gen();
-                    series.tenant_id = tenant_ctx.tenant_id();
-                    series.party_id = tick->party_id;
-                    series.series_type = tick->series_type;
-                    series.metric = tick->metric;
-                    series.qualifier = tick->qualifier;
-                    series.asset_class = domain::asset_class::rates;
-                    series.series_subclass = tick->subclass;
-                    series.is_scalar = false;
-                    series.modified_by = ctx_.service_account();
-                    series.performed_by = ctx_.service_account();
-                    series.change_reason_code = "system.initial_load";
-                    series.change_commentary =
-                        tick->series_type + "/" + tick->metric + "/" + tick->qualifier +
-                        " synthetic curve feed auto-created";
-                    series_repo.write(tenant_ctx, series);
-                    existing.push_back(std::move(series));
-                }
-
-                domain::market_observation obs;
-                obs.id = uuid_gen();
-                obs.tenant_id = tenant_ctx.tenant_id();
-                obs.party_id = tick->party_id;
-                obs.series_id = existing.front().id;
-                obs.observation_datetime = tick->datetime;
-                obs.value = std::to_string(tick->value);
-                obs.source = tick->source_name;
-                obs.point_id = tick->point_id;
-
-                repository::market_observations_repository obs_repo;
-                obs_repo.write(tenant_ctx, obs);
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to persist IR curve observation for "
-                                          << tick->series_type << "/" << tick->metric << "/"
-                                          << tick->qualifier << " point=" << tick->point_id << ": "
-                                          << e.what();
-            }
-        });
+            repository::market_observations_repository obs_repo;
+            obs_repo.write(tenant_ctx, obs);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to persist IR curve observation for " << tick->series_type << "/"
+                << tick->metric << "/" << tick->qualifier << " point=" << tick->point_id << ": "
+                << e.what();
+        }
+    });
 }
 
 } // namespace ores::marketdata::service::app

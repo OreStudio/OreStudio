@@ -22,7 +22,7 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp"                     // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp"                      // IWYU pragma: keep.
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -140,9 +140,9 @@ void ir_curve_feed::start() {
                     << source_name_ << "' batch=" << n << " points=" << entries_.size();
             }
         } catch (const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC CURVE PUBLISH FAILED: subject='"
-                                       << nats_subject_ << "' source='" << source_name_
-                                       << "': " << ex.what();
+            BOOST_LOG_SEV(lg(), error)
+                << "SYNTHETIC CURVE PUBLISH FAILED: subject='" << nats_subject_ << "' source='"
+                << source_name_ << "': " << ex.what();
         }
     }
 }
@@ -185,19 +185,18 @@ make_ir_curve_feed(ores::nats::service::client& nats,
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(nats,
-                                           cfg.tenant_id,
-                                           cfg.party_id,
-                                           cfg.source_name,
-                                           "synthetic.v1.curve_family." + cfg.source_name,
-                                           "RATES",
-                                           "YIELD",
-                                           cfg.currency_code + "/" +
-                                               strip_currency_prefix(cfg.currency_code,
-                                                                     cfg.index_name),
-                                           std::move(process),
-                                           static_cast<double>(cfg.ticks_per_hour),
-                                           std::move(resolved));
+    return std::make_shared<ir_curve_feed>(
+        nats,
+        cfg.tenant_id,
+        cfg.party_id,
+        cfg.source_name,
+        "synthetic.v1.curve_family." + cfg.source_name,
+        "RATES",
+        "YIELD",
+        cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name),
+        std::move(process),
+        static_cast<double>(cfg.ticks_per_hour),
+        std::move(resolved));
 }
 
 }

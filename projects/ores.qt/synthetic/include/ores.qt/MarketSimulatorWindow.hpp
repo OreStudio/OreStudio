@@ -258,7 +258,7 @@ private:
     // real folder hierarchy exactly like FX pairs (see buildTree()'s irCurvesByFolder).
     static QStandardItem*
     buildIrCurveFeedItem(const synthetic::domain::ir_curve_generation_config& ir,
-                        ImageCache* imageCache);
+                         ImageCache* imageCache);
     // "ir_curve.<ccy>.<idx>", lowercased -- must match
     // ores::synthetic::service::ir_curve_feed_source_name() server-side exactly, since neither
     // running-status lookups nor stop-by-source_name have any other way to address a feed.
@@ -352,7 +352,7 @@ private:
     // interleaved tenor values. See MarketSimulatorWindow's own Analysis note on this chart.
     bool tickChartCurveMode_{false};
     QBarCategoryAxis* curveTenorAxis_{nullptr};
-    std::vector<std::string> curveTenorLabels_; // ordered short-end to long-end
+    std::vector<std::string> curveTenorLabels_;              // ordered short-end to long-end
     std::deque<std::map<std::string, double>> curveBatches_; // oldest .. newest
     std::optional<std::chrono::system_clock::time_point> curveBatchDatetime_;
     QList<QLineSeries*> curveSeriesList_;

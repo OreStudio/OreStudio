@@ -96,8 +96,8 @@ public:
                                                 const std::string& calendarCode,
                                                 const std::string& changeReasonCode,
                                                 const std::string& changeCommentary)>;
-    using RevokeFn = std::function<
-        MutateResult(ClientManager*, const std::string& leftKey, const std::string& calendarCode)>;
+    using RevokeFn = std::function<MutateResult(
+        ClientManager*, const std::string& leftKey, const std::string& calendarCode)>;
 
     explicit CalendarAssignmentWidget(QWidget* parent = nullptr);
     ~CalendarAssignmentWidget() override = default;

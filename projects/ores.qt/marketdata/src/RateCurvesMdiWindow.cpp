@@ -18,12 +18,12 @@
  *
  */
 #include "ores.qt/RateCurvesMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QLabel>
@@ -52,7 +52,8 @@ std::string leading_currency_code(const std::string& qualifier) {
 
 }
 
-RateCurvesMdiWindow::RateCurvesMdiWindow(ClientManager* clientManager, ImageCache* imageCache,
+RateCurvesMdiWindow::RateCurvesMdiWindow(ClientManager* clientManager,
+                                         ImageCache* imageCache,
                                          QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
@@ -154,12 +155,14 @@ void RateCurvesMdiWindow::reload() {
         for (const auto& s : result.series) {
             if (s.asset_class != md::asset_class::rates || s.is_scalar)
                 continue;
-            self->rows_.push_back({s.series_type, s.metric, s.qualifier,
+            self->rows_.push_back({s.series_type,
+                                   s.metric,
+                                   s.qualifier,
                                    s.series_subclass == md::series_subclass::yield ? "yield" :
                                    s.series_subclass == md::series_subclass::basis ? "basis" :
-                                   s.series_subclass == md::series_subclass::fra ?   "fra" :
-                                   s.series_subclass == md::series_subclass::xccy ?  "xccy" :
-                                                                                      "other"});
+                                   s.series_subclass == md::series_subclass::fra   ? "fra" :
+                                   s.series_subclass == md::series_subclass::xccy  ? "xccy" :
+                                                                                     "other"});
         }
 
         const bool empty = self->rows_.empty();
@@ -172,8 +175,7 @@ void RateCurvesMdiWindow::reload() {
             const auto& r = self->rows_[i];
             const int row = static_cast<int>(i);
 
-            self->model_->setItem(
-                row, 0, new QStandardItem(QString::fromStdString(r.series_type)));
+            self->model_->setItem(row, 0, new QStandardItem(QString::fromStdString(r.series_type)));
             self->model_->setItem(row, 1, new QStandardItem(QString::fromStdString(r.metric)));
 
             auto* qualifierItem = new QStandardItem(QString::fromStdString(r.qualifier));

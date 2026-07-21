@@ -156,8 +156,9 @@ market_observations_repository::read_as_of_buckets(
     const std::chrono::seconds& bucket_size,
     unsigned int bucket_count) {
     using ores::platform::time::datetime;
-    BOOST_LOG_SEV(lg(), debug) << "Reading " << bucket_count << " as-of bucket snapshots for series: "
-                               << series_id << " every " << bucket_size.count()
+    BOOST_LOG_SEV(lg(), debug) << "Reading " << bucket_count
+                               << " as-of bucket snapshots for series: " << series_id << " every "
+                               << bucket_size.count()
                                << "s ending at: " << datetime::to_iso8601_utc(latest_boundary);
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);

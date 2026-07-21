@@ -62,11 +62,14 @@ private:
     }
 
 public:
-    RateCurvesMdiWindow(ClientManager* clientManager, ImageCache* imageCache,
+    RateCurvesMdiWindow(ClientManager* clientManager,
+                        ImageCache* imageCache,
                         QWidget* parent = nullptr);
     ~RateCurvesMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {900, 500}; }
+    QSize sizeHint() const override {
+        return {900, 500};
+    }
 
 signals:
     void statusChanged(const QString& message);

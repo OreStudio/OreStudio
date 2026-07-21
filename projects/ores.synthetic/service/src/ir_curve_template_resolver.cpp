@@ -53,7 +53,7 @@ const tenor& find_tenor(const ir_curve_refdata_context& ctx, const std::string& 
 }
 
 const tenor_convention_resolution& find_resolution(const ir_curve_refdata_context& ctx,
-                                                    const std::string& tenor_code) {
+                                                   const std::string& tenor_code) {
     auto it = ctx.resolutions_by_tenor.find(tenor_code);
     if (it == ctx.resolutions_by_tenor.end())
         throw std::invalid_argument("ir_curve_template_resolver: tenor '" + tenor_code +
@@ -101,9 +101,11 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
     int multiple = 1;
     for (;;) {
         step_tenor.multiplier = multiple * (*freq.period_multiplier);
-        auto date = resolve_end_date(step_tenor, ctx.convention, step_resolution, ctx.horizon, ctx.spot);
+        auto date =
+            resolve_end_date(step_tenor, ctx.convention, step_resolution, ctx.horizon, ctx.spot);
         if (date >= maturity) {
-            steps.push_back({days_between(ctx.horizon, maturity), year_fraction(previous, maturity)});
+            steps.push_back(
+                {days_between(ctx.horizon, maturity), year_fraction(previous, maturity)});
             break;
         }
         steps.push_back({days_between(ctx.horizon, date), year_fraction(previous, date)});
@@ -117,8 +119,8 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
 
 std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-       const ir_curve_refdata_context& ctx,
-       const std::string& fixed_leg_payment_frequency_code) {
+        const ir_curve_refdata_context& ctx,
+        const std::string& fixed_leg_payment_frequency_code) {
     std::vector<ir_curve_resolved_entry> out;
     out.reserve(entries.size());
 
@@ -157,7 +159,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
     return out;
 }
 
-std::optional<ir_curve_refdata_context> build_ir_curve_refdata_context(ores::database::context ctx) {
+std::optional<ir_curve_refdata_context>
+build_ir_curve_refdata_context(ores::database::context ctx) {
     namespace refdata_repo = ores::refdata::repository;
 
     refdata_repo::instrument_code_repository instrument_code_repo;

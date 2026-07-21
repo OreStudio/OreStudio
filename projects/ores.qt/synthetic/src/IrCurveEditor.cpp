@@ -245,9 +245,10 @@ void IrCurveEditor::buildInstrumentTab() {
     secondsSpin_ = new QSpinBox(identityBox);
     secondsSpin_->setRange(1, 3600);
     secondsSpin_->setSuffix(tr(" s"));
-    secondsSpin_->setValue(ir_.ticks_per_hour > 0 ?
-                               std::max(1, static_cast<int>(std::lround(3600.0 / ir_.ticks_per_hour))) :
-                               1);
+    secondsSpin_->setValue(
+        ir_.ticks_per_hour > 0 ?
+            std::max(1, static_cast<int>(std::lround(3600.0 / ir_.ticks_per_hour))) :
+            1);
     form->addRow(tr("New tick every"), secondsSpin_);
 
     sourceNameEdit_ = new QLineEdit(identityBox);
@@ -416,41 +417,42 @@ void IrCurveEditor::buildProcessTab() {
                 &IrCurveEditor::onProcessFieldChanged);
     };
     addParamRow(tr("Initial rate r0"),
-               tr("The starting short rate the process simulates from -- where the curve begins."),
-               initialRateSlider_,
-               initialRateSpin_,
-               -0.02,
-               0.15,
-               ir_.initial_rate,
-               0.0001);
+                tr("The starting short rate the process simulates from -- where the curve begins."),
+                initialRateSlider_,
+                initialRateSpin_,
+                -0.02,
+                0.15,
+                ir_.initial_rate,
+                0.0001);
     addParamRow(tr("Mean level θ"),
-               tr("The long-run level the short rate reverts toward. With κ=0 the rate never "
-                  "reverts and just diffuses freely."),
-               thetaSlider_,
-               thetaSpin_,
-               -0.02,
-               0.15,
-               ir_.theta,
-               0.0001);
-    addParamRow(tr("Reversion κ"),
-               tr("Mean-reversion speed, per tick (1 tick = 1 day). Larger κ pulls the rate back "
-                  "toward θ faster. Real seeded curves run κ ≈ 0.0007-0.0015 -- values much larger "
-                  "than that make longer-tenor discount factors numerically unstable."),
-               kappaSlider_,
-               kappaSpin_,
-               0.0,
-               0.02,
-               ir_.kappa,
-               0.00001);
+                tr("The long-run level the short rate reverts toward. With κ=0 the rate never "
+                   "reverts and just diffuses freely."),
+                thetaSlider_,
+                thetaSpin_,
+                -0.02,
+                0.15,
+                ir_.theta,
+                0.0001);
+    addParamRow(
+        tr("Reversion κ"),
+        tr("Mean-reversion speed, per tick (1 tick = 1 day). Larger κ pulls the rate back "
+           "toward θ faster. Real seeded curves run κ ≈ 0.0007-0.0015 -- values much larger "
+           "than that make longer-tenor discount factors numerically unstable."),
+        kappaSlider_,
+        kappaSpin_,
+        0.0,
+        0.02,
+        ir_.kappa,
+        0.00001);
     addParamRow(tr("Volatility σ"),
-               tr("Per-tick volatility of the short rate. Real seeded curves run σ ≈ "
-                  "0.0004-0.0007."),
-               sigmaSlider_,
-               sigmaSpin_,
-               0.0,
-               0.005,
-               ir_.sigma,
-               0.00001);
+                tr("Per-tick volatility of the short rate. Real seeded curves run σ ≈ "
+                   "0.0004-0.0007."),
+                sigmaSlider_,
+                sigmaSpin_,
+                0.0,
+                0.005,
+                ir_.sigma,
+                0.00001);
     simpleLayout->addStretch(1);
     modeStack_->addWidget(simplePage);
 
@@ -460,8 +462,7 @@ void IrCurveEditor::buildProcessTab() {
     auto* advancedPage = new QWidget(modeStack_);
     auto* advancedLayout = new QVBoxLayout(advancedPage);
     advancedTable_ = new QTableWidget(1, 4, advancedPage);
-    advancedTable_->setHorizontalHeaderLabels(
-        {tr("r0"), tr("θ"), tr("κ"), tr("σ")});
+    advancedTable_->setHorizontalHeaderLabels({tr("r0"), tr("θ"), tr("κ"), tr("σ")});
     advancedTable_->verticalHeader()->setVisible(false);
     advancedTable_->verticalHeader()->setDefaultSectionSize(38);
     advancedTable_->horizontalHeader()->setStretchLastSection(true);
@@ -475,10 +476,18 @@ void IrCurveEditor::buildProcessTab() {
             return;
         QDoubleSpinBox* target = nullptr;
         switch (item->column()) {
-            case 0: target = initialRateSpin_; break;
-            case 1: target = thetaSpin_; break;
-            case 2: target = kappaSpin_; break;
-            case 3: target = sigmaSpin_; break;
+            case 0:
+                target = initialRateSpin_;
+                break;
+            case 1:
+                target = thetaSpin_;
+                break;
+            case 2:
+                target = kappaSpin_;
+                break;
+            case 3:
+                target = sigmaSpin_;
+                break;
         }
         if (target)
             target->setValue(v); // propagates to slider + label + charts via its own valueChanged
@@ -512,10 +521,8 @@ void IrCurveEditor::buildProcessTab() {
     pathsBoxLayout->addWidget(pathsChart_);
     layout->addWidget(pathsBox, 1);
 
-    connect(engineCombo_,
-            &QComboBox::currentTextChanged,
-            this,
-            &IrCurveEditor::onProcessFieldChanged);
+    connect(
+        engineCombo_, &QComboBox::currentTextChanged, this, &IrCurveEditor::onProcessFieldChanged);
 
     tabWidget_->addTab(tab, tr("Process"));
 }
@@ -567,8 +574,9 @@ void IrCurveEditor::populateCurrencyCombo() {
     // FX/refdata detail dialogs use (e.g. BookDetailDialog's functional currency), rather than a
     // bespoke fetch+flag routine here.
     setup_currency_combo(currencyCombo_, this, clientManager_, imageCache_, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "populateCurrencyCombo fallback_selection: ir_.currency_code='"
-                                   << ir_.currency_code << "'";
+        BOOST_LOG_SEV(lg(), debug)
+            << "populateCurrencyCombo fallback_selection: ir_.currency_code='" << ir_.currency_code
+            << "'";
         return QString::fromStdString(ir_.currency_code);
     });
 
@@ -702,8 +710,7 @@ void IrCurveEditor::populatePaymentFrequencyCombo() {
         self->fixedLegFrequencyCombo_->clear();
         for (const auto& code : codes)
             self->fixedLegFrequencyCombo_->addItem(QString::fromStdString(code));
-        const auto preselect =
-            QString::fromStdString(self->ir_.fixed_leg_payment_frequency_code);
+        const auto preselect = QString::fromStdString(self->ir_.fixed_leg_payment_frequency_code);
         if (!preselect.isEmpty())
             self->fixedLegFrequencyCombo_->setCurrentText(preselect);
     });
@@ -863,8 +870,7 @@ namespace {
 // Frameless, transparent-background combo -- same styling FxSpotRateEditor's component table
 // applies to its own cell combos, so table-embedded combos look consistent across editors.
 void styleTableCombo(QComboBox* combo) {
-    combo->setStyleSheet(
-        QStringLiteral("QComboBox { border: none; background: transparent; }"));
+    combo->setStyleSheet(QStringLiteral("QComboBox { border: none; background: transparent; }"));
 }
 }
 
@@ -898,12 +904,9 @@ void IrCurveEditor::syncTableFromModel() {
         styleTableCombo(instrCombo);
         templateTable_->setCellWidget(row, ColInstrument, instrCombo);
 
-        connect(startCombo,
-                &QComboBox::currentTextChanged,
-                this,
-                &IrCurveEditor::onTemplateChanged);
         connect(
-            endCombo, &QComboBox::currentTextChanged, this, &IrCurveEditor::onTemplateChanged);
+            startCombo, &QComboBox::currentTextChanged, this, &IrCurveEditor::onTemplateChanged);
+        connect(endCombo, &QComboBox::currentTextChanged, this, &IrCurveEditor::onTemplateChanged);
         connect(
             instrCombo, &QComboBox::currentTextChanged, this, &IrCurveEditor::onTemplateChanged);
     }
@@ -913,11 +916,10 @@ void IrCurveEditor::syncTableFromModel() {
 
 void IrCurveEditor::rebuildModelFromTable() {
     for (int row = 0; row < templateTable_->rowCount() && row < static_cast<int>(entries_.size());
-        ++row) {
+         ++row) {
         auto* startCombo = qobject_cast<QComboBox*>(templateTable_->cellWidget(row, ColStart));
         auto* endCombo = qobject_cast<QComboBox*>(templateTable_->cellWidget(row, ColEnd));
-        auto* instrCombo =
-            qobject_cast<QComboBox*>(templateTable_->cellWidget(row, ColInstrument));
+        auto* instrCombo = qobject_cast<QComboBox*>(templateTable_->cellWidget(row, ColInstrument));
         if (startCombo)
             entries_[row].start_tenor_code = startCombo->currentText().toStdString();
         if (endCombo)

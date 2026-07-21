@@ -135,7 +135,9 @@ void MarketdataPlugin::showRateCurves() {
     auto* view = new RateCurvesMdiWindow(ctx_.client_manager, ctx_.image_cache);
     connect(view, &RateCurvesMdiWindow::statusChanged, this, &PluginBase::statusMessage);
     connect(view, &RateCurvesMdiWindow::errorOccurred, this, &PluginBase::statusMessage);
-    connect(view, &RateCurvesMdiWindow::viewSnapshotRequested, this,
+    connect(view,
+            &RateCurvesMdiWindow::viewSnapshotRequested,
+            this,
             &MarketdataPlugin::showCurveSnapshot);
 
     rateCurvesWindow_ = new DetachableMdiSubWindow(ctx_.main_window);
@@ -155,21 +157,25 @@ void MarketdataPlugin::showRateCurves() {
     });
 }
 
-void MarketdataPlugin::showCurveSnapshot(const QString& seriesType, const QString& metric,
+void MarketdataPlugin::showCurveSnapshot(const QString& seriesType,
+                                         const QString& metric,
                                          const QString& qualifier) {
-    auto* snapshotWindow = new CurveSnapshotMdiWindow(
-        ctx_.client_manager, ctx_.image_cache, seriesType.toStdString(), metric.toStdString(),
-        qualifier.toStdString());
-    connect(snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this,
-            &PluginBase::statusMessage);
-    connect(snapshotWindow, &CurveSnapshotMdiWindow::errorOccurred, this,
-            &PluginBase::statusMessage);
+    auto* snapshotWindow = new CurveSnapshotMdiWindow(ctx_.client_manager,
+                                                      ctx_.image_cache,
+                                                      seriesType.toStdString(),
+                                                      metric.toStdString(),
+                                                      qualifier.toStdString());
+    connect(
+        snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this, &PluginBase::statusMessage);
+    connect(
+        snapshotWindow, &CurveSnapshotMdiWindow::errorOccurred, this, &PluginBase::statusMessage);
 
     auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->setWidget(snapshotWindow);
     subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(qualifier));
-    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     subWindow->resize(snapshotWindow->sizeHint());
 
     ctx_.mdi_area->addSubWindow(subWindow);

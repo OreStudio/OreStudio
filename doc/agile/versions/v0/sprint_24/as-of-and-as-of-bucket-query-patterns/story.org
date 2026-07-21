@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: F15A8480-C61A-4FC3-87FD-C880A1407F11
+:END:
+#+title: Story: Generalize as-of and as-of-bucket queries across repositories
+#+description: As market_observations_repository::read_as_of()/read_as_of_buckets() now show for IR curve snapshots: latest-value-at-time-T (as-of) and N-snapshots-over-time (as-of buckets) are general patterns any bitemporal/timeseries repository needs, not just curve data. Capture the pattern and scope generalizing it.
+#+type: story
+#+level: s2
+#+filetags: :architecture:database:timeseries:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two distinct, general-purpose query shapes were built bespoke for
+=market_observations_repository= (curve-snapshot-builder-viewer
+task) and should be recognised and generalised as reusable patterns
+rather than staying one-off:
+
+1. *As-of*: for a set of independently-updating rows sharing a key
+   family (e.g. one row per =point_id= within a =series_id=), return
+   the latest row per key at or before a given time —
+   =SELECT DISTINCT ON (key) ... WHERE ... <= as_of ORDER BY key,
+   time DESC=. Needs a supporting index ordered *key-first*, not
+   time-first.
+2. *As-of buckets*: N as-of snapshots at regular time intervals
+   ending at a given boundary, computed as *one* SQL statement
+   (=generate_series()= for the boundaries, a =LATERAL= subquery
+   doing the per-bucket as-of reduction), not N round trips of the
+   as-of query.
+
+Distinct from the *bitemporal* "as-of" already documented in Time
+and Timestamps / temporal_composite_entity_versioning
+(=valid_from <= t < valid_to= — correction history for one entity
+instance). This pattern is about *multiple independently-ticking
+rows sharing a key family*, reconstructing a snapshot across a set.
+=compute_telemetry_repository::latest_node_samples()= already used
+the identical shape for per-host latest telemetry before this story
+existed — the shape recurs, but nobody has named or captured it as
+reusable until now.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Decide shared-helper vs. documented-reference-implementation approach first. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- The as-of and as-of-bucket query shapes are documented as reusable
+  patterns (reference implementation:
+  market_observations_repository::read_as_of()/read_as_of_buckets()).
+- Either a shared ores.database helper exists generating the
+  parameterised SQL for both shapes, or a documented decision exists
+  to defer the helper until a second concrete caller needs it,
+  keeping the reference implementation as the copy-from source in
+  the meantime.
+- The "buckets are one DB query, not a C++ loop over N as-of calls"
+  principle is captured as a hard rule somewhere discoverable (a
+  knowledge doc or repository-layer convention doc), not left to be
+  rediscovered per repository.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Building the shared helper immediately if only one real caller
+  exists — avoid premature abstraction from a single caller (see
+  Acceptance).
+
+* References
+
+- =projects/ores.marketdata/core/src/repository/market_observations_repository.cpp=
+  — =read_as_of()=/=read_as_of_buckets()=, the reference
+  implementation this story is distilled from.
+- =projects/ores.marketdata/modeling/ores.marketdata.market_observation.org=
+  — the =observations_series_point_datetime_idx= index entry.
+- =projects/ores.compute/core/src/repository/compute_telemetry_repository.cpp=
+  — =latest_node_samples()=, an earlier, independent instance of the
+  same shape.
+
+* See also
+
+- [[id:80AC4FAC-86E3-41EC-850A-6C1DFA78534B][Curve snapshot builder/viewer]] — the task this was raised from.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]] — the bitemporal (transaction-time) "as-of",
+  a different but related concept.

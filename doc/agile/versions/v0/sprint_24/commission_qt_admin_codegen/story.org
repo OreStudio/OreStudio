@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 9819FCE0-C26E-4854-9B88-FBDBA1DCD178
+:END:
+#+title: Story: Commission ores.qt.admin into codegen
+#+description: Inventory the entities in ores.qt.admin, check the state of their models and codegen, and generate full stack for all entities in this component, including migrating their history dialogs to the generic HistoryDialog.
+#+type: story
+#+level: s2
+#+filetags: :qt:admin:codegen:commissioning:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Take an inventory of every entity exposed by ores.qt.admin: which have
+a codegen model, which are still hand-rolled, and which have a
+hand-rolled *HistoryDialog. For entities with no model yet, author
+one. Then run full-stack codegen for every entity in the component
+and reconcile any drift, so each entity's history view lands on the
+generic HistoryDialog widget rather than a per-entity hand-rolled
+dialog.
+
+The "Migrate ores.qt.admin's history dialogs to the generic
+HistoryDialog" task originally lived under [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto
+the generic HistoryDialog]], but that story was narrowed to
+ores.qt.refdata only. This story tracks ores.qt.admin's commissioning
+as its own piece of work, and directly unblocks [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity
+history dialogs: Phase C rollout]], which needs every ores.qt
+component migrated before it can proceed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Inventory the component's entities first. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- Every entity in ores.qt.admin has a codegen .org model.
+- Full-stack codegen has been run and reconciled for every entity in
+  the component.
+- Every entity's history view uses the generic HistoryDialog widget,
+  not a hand-rolled per-entity dialog.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

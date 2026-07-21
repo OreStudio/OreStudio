@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: F4BD60AB-ED53-4BA3-9BB0-7B354EC6AC2E
+:END:
+#+title: Story: Add a server-side rate-history endpoint for chart panels
+#+description: Multiple UIs (CRM cross-rates matrix, likely others) need a short rate-history sparkline/chart per pair or series; there is no server-side history endpoint today, only live/latest reads.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ui:api:charts:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a real server-side history endpoint (component/schema TBD —
+likely =ores.marketdata= or =ores.telemetry=, wherever tick/rate
+persistence already lives) that returns a bounded time series of
+past values for a given series key (e.g. a CRM pair + crm_name, or a
+feed binding's symbol) over a requested window/resolution. Chart-style
+UI panels (starting with the CRM cross-rates matrix's "FX Pair
+Overview" sparkline) currently have no way to show a trend — the CRM
+matrix panel's sparkline today is built entirely client-side from
+this one session's own manual/auto reloads, which means it's empty
+on first open and forgotten on window close.
+
+The CRM cross-rates matrix's reference mockup (a chart panel per
+selected pair) is a shape we'll want to repeat across other
+trading-related UIs, not a one-off. Building each chart's data
+source ad hoc (client-side rolling buffer, per panel) doesn't scale
+and gives a worse experience than a proper endpoint would.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Decide which component owns the endpoint (ores.marketdata vs ores.telemetry). |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A server-side history endpoint exists, returning a bounded time
+  series of past values for a given series key over a requested
+  window/resolution.
+- The CRM cross-rates matrix's sparkline widget consumes the
+  endpoint instead of its client-side-only rolling buffer, so
+  history is available on first open, not just accumulated during
+  the current session.
+- The endpoint is reusable by other chart-style UI panels, not
+  bespoke to the CRM matrix.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* References
+
+- =projects/ores.qt/marketdata/src/CrmCrossRatesMatrixMdiWindow.cpp=
+  (=CrmRateSparklineWidget=, the current client-side-only rolling
+  buffer this story replaces).
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the producer/authority/consumer remap
+  pattern relevant to where this endpoint should live.

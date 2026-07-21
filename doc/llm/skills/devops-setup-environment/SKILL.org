@@ -69,14 +69,22 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-7. /Provision the Barclays tenant via the shell/ — run the full
+7. /Build the project/ — required before services can start or the
+   shell can provision anything; use =compass build=, never raw
+   =cmake= invocations:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build
+   #+end_src
+
+8. /Provision the Barclays tenant via the shell/ — run the full
    Barclays/GLEIF provisioning script from the generated library:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
    #+end_src
 
-8. /Verify/ — bearings clean. Do not start services as part of this
+9. /Verify/ — bearings clean. Do not start services as part of this
    skill; only run =compass services start= if the user explicitly
    asks for it:
 

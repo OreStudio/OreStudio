@@ -33,12 +33,12 @@ How do I set up a development environment on Ubuntu, Debian, or WSL?
    ./projects/ores.compass/compass.sh db recreate
    #+end_src
 
-3. /Configure and build/ (see [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] and
+3. /Build/ — =compass build= configures automatically on first run
+   (see [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] and
    [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-make
-   ./compass.sh build --preset linux-clang-debug-make
+   ./compass.sh build
    #+end_src
 
 * Script

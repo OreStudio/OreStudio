@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: CB7351E9-8E7E-4BA4-9399-4EB22F6192D4
+:END:
+#+title: Story: Commission Acme Bank: a realistic holding-group test entity
+#+description: Build a comprehensive synthetic legal-entity group, Acme Bank, modelled on Barclays' corporate structure, with business units, portfolios, books, and locale-appropriate staff across derivative-trading divisions, to replace Barclays Plc as the system's realistic test/demo entity.
+#+type: story
+#+level: s2
+#+filetags: :refdata:test-data:parties:onboarding:sprint_24:v0:
+#+created: 2026-07-21
+#+updated: 2026-07-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Barclays Plc has been our stand-in test/demo legal entity because it
+has a "realistic" corporate shape, but it is not fit for purpose: it
+has no employees, so we cannot exercise features that depend on
+staff/role identity — e.g. verifying that logging in as Middle
+Office, or as a Trader, resolves the correct permissions and data
+visibility.
+
+Introduce *Acme Bank* — a synthetic holding-group legal entity,
+structured after Barclays' real corporate shape (holding company →
+Retail Banking, Investment Bank, and other divisions, across
+multiple global business centres) — and populate it fully across
+every entity ORE Studio already supports: parties, business units,
+portfolios, books, and staff accounts. Not every business
+unit/portfolio/book combination needs to exist, but every division
+that trades derivatives must have a complete chain down to book
+level. Staff accounts should exist for the roles needed to exercise
+RBAC (trader, middle office, etc.), with names generated to match
+the locale of their business centre (e.g. Korean names for the Seoul
+desk) and a profile picture per staff member.
+
+Acme Bank becomes the system's reference "fully populated" entity —
+extended over time as new entities and features are added, so it
+stays comprehensive rather than needing to be rebuilt from scratch
+each time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks — starting with the corporate structure design (party hierarchy, business centres) modelled on Barclays. |
+| Last touched  | 2026-07-21                               |
+
+* Acceptance
+
+- A holding-group party hierarchy exists for Acme Bank, modelled on
+  Barclays' real corporate structure: a top-level holding company
+  with subsidiaries for at least Retail Banking and Investment
+  Banking, spread across multiple business centres/locations.
+- Every subsidiary/division that trades derivatives has a full chain
+  of business units, portfolios, and books underneath it — divisions
+  that don't trade derivatives may stop at the party/business-unit
+  level.
+- Staff accounts exist for the roles needed to exercise RBAC (at
+  minimum: trader, middle office), attached to the business
+  units/desks they belong to, with correct role/permission
+  assignments.
+- Staff names are generated to match the locale of their business
+  centre (e.g. Korean names for a Seoul desk, not generic Western
+  names everywhere).
+- Every generated staff account has an associated profile picture.
+- The generation is repeatable/scriptable (generator, not a one-off
+  manual data entry exercise) so the entity can be regenerated and
+  extended as new entities/features land.
+- Data is seeded through the same provisioning path used for other
+  tenants (see how Barclays Plc is currently provisioned), not via
+  hand-written SQL.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Retiring or removing Barclays Plc — Acme Bank supplements it as the
+  richer/fully-populated entity; Barclays Plc may still be useful for
+  simpler/lighter-weight test scenarios.
+- Modelling every possible business unit/portfolio/book combination
+  across non-derivative-trading divisions — only derivative-trading
+  divisions need the full chain (see Acceptance).
+- Actual trade/position data — this story is about the corporate,
+  organisational, and staff structure; trade population is a
+  follow-on concern.

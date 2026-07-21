@@ -43,6 +43,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] | STARTED | 2026-07-21 | | Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule. |
+| [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] | BACKLOG | | | Comprehensive synthetic holding-group entity — parties, business units, portfolios, books, and locale-appropriate staff — to replace Barclays Plc as the fully populated test entity. |
 
 ** Hotfixes
 

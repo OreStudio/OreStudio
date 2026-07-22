@@ -94,15 +94,15 @@ public:
 
     /**
      * @brief The party provisioner flow: provision party <party>
-     * [--dataset-size small|large] [--reports all|none|<name,...>]
-     * [--timeout <s>].
+     * [--dataset-size small|large] [--timeout <s>].
      *
      * <party> is a UUID or exact full name (always explicit; no
-     * session party state). Publishes the counterparty dataset and
-     * the organisation bundle for the party, creates the selected
-     * report definitions (default: all templates, as the wizard
-     * pre-checks them) and activates the party. Activation failure is
-     * a hard failure — deliberate divergence from the wizard.
+     * session party state). Publishes the counterparty dataset, then
+     * every party-scoped bundle in party_provisioning_bundle_plan()
+     * (risk_management, synthetic_realistic, the curated FX
+     * driver-rate bundle) in full, and activates the party. Activation
+     * failure is a hard failure — deliberate divergence from the
+     * wizard.
      */
     static void process_party(std::ostream& out,
                               ores::nats::service::nats_client& session,

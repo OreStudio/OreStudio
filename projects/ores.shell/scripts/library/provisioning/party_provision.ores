@@ -6,5 +6,5 @@
 #
 connect $ORES_NATS_URL
 login tenant_admin@barclays Secure-Password-123
-provision party "BARCLAYS PLC" --dataset-size small --reports all
+provision party "BARCLAYS PLC" --dataset-size small
 logout

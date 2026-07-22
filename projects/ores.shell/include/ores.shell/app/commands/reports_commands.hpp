@@ -59,7 +59,7 @@ public:
 
     /**
      * @brief List report definition templates:
-     * reports templates [--bundle <code>] (default ore_analytics).
+     * reports templates [--bundle <code>] (default risk_management).
      */
     static void process_templates(std::ostream& out,
                                   ores::nats::service::nats_client& session,

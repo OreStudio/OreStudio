@@ -325,22 +325,25 @@ has its reference data and party hierarchy in place.
 
 Where the Tenant Provisioner establishes the party /hierarchy/, the
 *Party Setup* wizard configures the operational structure /within/ a
-party: it imports counterparties and creates a standard set of
-risk-report definitions. It runs for a party that needs initial setup,
-and can be skipped with *Cancel* (counterparties and reports can be
-configured later from the application menus).
+party: it imports counterparties, then publishes every party-scoped
+data bundle the party needs — risk management (business units,
+portfolios, books, and a standard set of risk-report definitions),
+synthetic market data configuration, and curated FX driver rates. It
+runs for a party that needs initial setup, and can be skipped with
+*Cancel* (counterparties and bundles can be configured later from the
+application menus).
 
 *** Welcome
 
-#+caption[The Party Setup welcome page]: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The Party Setup welcome page, listing its steps: counterparty import and execute.
 [[proj:assets/images/party_provisioner_setup.png]]
 
 By this point the house hierarchy — the party nodes representing your
 organisation's legal entities — already exists. This wizard populates
 one specific party within that hierarchy: it attaches the external
-counterparties that this party trades with, creates the internal
-organisational structure (business units, portfolios, and books), and
-defines the risk reports that will run on its data. Click *Next*.
+counterparties that this party trades with, then publishes its
+operational structure, risk reports, and market data configuration in
+one step. Click *Next*.
 
 *** Counterparty import
 
@@ -371,24 +374,12 @@ import a more complete global population. You can add individual
 counterparties later from the Counterparties window regardless of
 which size you choose. Click *Next*.
 
-*** Report definitions
-
-#+caption[Selecting standard risk-report definitions to create]: Selecting standard risk-report definitions to create — NPV, sensitivities, exposure, CVA, and more. All are scheduled on weekdays.
-[[proj:assets/images/party_provisioner_report_definitions.png]]
-
-Optionally create a set of standard risk-report definitions — model
-calibration, yield curves, FX spot rates, volatility surfaces, credit
-curves, NPV, cashflows, Delta and Gamma, Vega, bucketed DV01, exposure,
-CVA, DVA, and others. Use *Select All* / *Deselect All*, or tick
-individual reports; they can be edited later from the Reporting menu.
-Click *Next*.
-
 *** Execute
 
-#+caption[The Party Setup execute step]: The execute step showing three datasets completed: testdata.business_units, testdata.portfolios, and testdata.books. The log below shows the four phases completed in sequence.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The execute step showing the risk_management bundle's datasets completed: testdata.business_units, testdata.portfolios, testdata.books, and ore.report_definitions. The log below shows the five phases completed in sequence.
 [[proj:assets/images/party_provisioner_setup_party.png]]
 
-OreStudio runs the party setup in four phases, shown in the log panel:
+OreStudio runs the party setup in five phases, shown in the log panel:
 
 1. *Phase 1: importing counterparties* — loads the selected GLEIF
    counterparty dataset into the party's counterparty table. The
@@ -396,26 +387,33 @@ OreStudio runs the party setup in four phases, shown in the log panel:
    =gleif.lei_counterparties.small=), with the same Status /
    Started At / Completed At columns as the Tenant Provisioner
    publishing step.
-2. *Phase 2: publishing organisation structure* — creates the internal
-   organisational entities within the party: business units
+2. *Phase 2: publishing risk management* — publishes the
+   =risk_management= bundle in full: business units
    (=testdata.business_units=), portfolios (=testdata.portfolios=),
-   and books (=testdata.books=). Books are the lowest-level containers
-   that own individual trades and positions.
-3. *Phase 3: creating report definitions* — creates the scheduled
-   risk-report configurations selected in the previous step.
-4. *Phase 4: activating party* — marks the party as operational so
+   books (=testdata.books=) — the lowest-level containers that own
+   individual trades and positions — and the standard set of
+   risk-report definitions (=ore.report_definitions=), since reports
+   reference the book/portfolio tree.
+3. *Phase 3: publishing synthetic market data configuration* —
+   publishes the =synthetic_realistic= bundle in full: FX spot and
+   IR curve generation configs, and any further asset class added to
+   the bundle in future.
+4. *Phase 4: publishing FX driver rates* — publishes the curated
+   =marketdata.reference_vintage_2016_02_05= bundle so the party has
+   real market series/observations to browse.
+5. *Phase 5: activating party* — marks the party as operational so
    users can log in to it and begin booking trades.
 
 When the log ends with "Party activated successfully", click *Commit*.
 
 *** Setup complete
 
-#+caption[The Party Setup summary]: The Party Setup summary, confirming the counterparties, structure, and reports that were created.
+#+caption: [SCREENSHOT OUTDATED — retake needed] The Party Setup summary, confirming the party is active and ready for use.
 [[proj:assets/images/party_provisioner_setup_complete.png]]
 
-The final page confirms what was set up. The party is now fully
-operational: it has counterparties, an organisational structure, and
-scheduled risk reports.
+The final page confirms the party is now fully operational: it has
+counterparties, an organisational structure, scheduled risk reports,
+and market data configuration.
 
 ** Choosing a party at login
 

@@ -32,7 +32,7 @@ struct get_report_definition_templates_request {
     using response_type = struct get_report_definition_templates_response;
     static constexpr std::string_view nats_subject =
         "reporting.v1.report-definition-templates.list";
-    std::string bundle_code = "ore_analytics";
+    std::string bundle_code = "risk_management";
 };
 
 struct get_report_definition_templates_response {

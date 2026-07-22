@@ -156,31 +156,30 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.supervisory_body', 121);
 
     -- =============================================================================
-    -- Organisation Bundle Members
+    -- Risk Management Bundle Members
     -- =============================================================================
 
 
-    -- --- Organisation Bundle Members ---
+    -- --- Risk Management Bundle Members ---
+    -- Reports reference the book/portfolio tree, so both live together: a
+    -- new party-scoped dataset in this bundle never requires a client code
+    -- change, only a new row here.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'organisation', 'testdata.business_units', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'organisation', 'testdata.portfolios', 20);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'organisation', 'testdata.books', 30);
-
-    -- --- ORE Analytics Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_analytics', 'ore.report_definitions', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_analytics', 'synthetic.fx_spot_configs', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.business_units', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.portfolios', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
 
     -- --- Synthetic Data: Basic Bundle Members ---
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'ore.report_definitions', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.fx_spot_configs.basic', 20);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.ir_curve_configs.basic', 30);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.fx_spot_configs.basic', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.ir_curve_configs.basic', 20);
 
     -- --- Synthetic Data: Realistic Bundle Members ---
+    -- Market-data generation config only, across all asset classes: a new
+    -- asset class never requires a client code change, only a new row here.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'ore.report_definitions', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.fx_spot_configs.realistic', 20);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.ir_curve_configs.realistic', 30);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.fx_spot_configs.realistic', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.ir_curve_configs.realistic', 20);
 END $$;
 

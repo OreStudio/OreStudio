@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
-#+updated: 2026-07-21
+#+updated: 2026-07-22
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ party. Make re-provisioning idempotent for report definitions.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-21                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
@@ -76,3 +76,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded by [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one
+hand-written phase per bundle]]: report definitions now route through
+=dq.v1.bundles.publish= / =ores_reporting_publish_report_definitions_from_dq_fn=,
+which already skips inserting when the party has report definitions —
+the duplicate-key error this task described can no longer occur, since
+the per-record =save_report_definition_request= path it came from was
+retired.

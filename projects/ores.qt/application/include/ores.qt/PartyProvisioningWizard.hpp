@@ -20,13 +20,12 @@
 #ifndef ORES_QT_PARTY_PROVISIONING_WIZARD_HPP
 #define ORES_QT_PARTY_PROVISIONING_WIZARD_HPP
 
-#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WorkflowStepsWidget.hpp"
 #include <QComboBox>
 #include <QLabel>
-#include <QListWidget>
 #include <QProgressBar>
 #include <QTextEdit>
 #include <QWizard>
@@ -46,13 +45,13 @@ namespace ores::qt {
  * Collect phase (zero backend writes):
  * 1. Welcome             - explains the setup process
  * 2. Counterparty Setup  - select dataset size for GLEIF counterparty import
- * 3. Report Setup        - optionally select initial report definitions to create
  *
  * Execute phase (single page, all backend work):
- * 4. Execute             - publishes counterparties, publishes organisation bundle,
- *                          creates selected reports, marks party active
+ * 3. Execute             - publishes counterparties, then every party-scoped
+ *                          bundle in party_provisioning_bundle_plan(), marks
+ *                          party active
  *
- * 5. Summary             - shows results; no further backend calls
+ * 4. Summary             - shows results; no further backend calls
  *
  * This wizard appears automatically on first login when the selected party's
  * status is 'Inactive'. It sets the party status to 'Active' on completion.
@@ -73,20 +72,8 @@ public:
     enum PageId {
         Page_Welcome,
         Page_CounterpartySetup,
-        Page_ReportSetup,
         Page_Execute,
         Page_Summary
-    };
-
-    /**
-     * @brief Specification for an initial report definition to create during provisioning.
-     */
-    struct ReportSpec {
-        std::string name;
-        std::string description;
-        std::string schedule_expression;
-        std::string report_type;
-        std::string concurrency_policy;
     };
 
     explicit PartyProvisioningWizard(ClientManager* clientManager, QWidget* parent = nullptr);
@@ -111,20 +98,6 @@ public:
         leiDatasetSize_ = size;
     }
 
-    bool organisationPublished() const {
-        return organisationPublished_;
-    }
-    void setOrganisationPublished(bool v) {
-        organisationPublished_ = v;
-    }
-
-    std::vector<ReportSpec> selectedReports() const {
-        return selectedReports_;
-    }
-    void setSelectedReports(std::vector<ReportSpec> r) {
-        selectedReports_ = std::move(r);
-    }
-
 signals:
     void provisioningCompleted();
 
@@ -134,14 +107,11 @@ private:
     ClientManager* clientManager_;
     QString selectedBundleCode_ = "base";
     QString leiDatasetSize_ = "small";
-    bool organisationPublished_ = false;
-    std::vector<ReportSpec> selectedReports_;
 };
 
 // Forward declarations
 class PartyWelcomePage;
 class PartyCounterpartySetupPage;
-class PartyReportSetupPage;
 class PartyExecutePage;
 class PartyApplyAndSummaryPage;
 
@@ -179,51 +149,15 @@ private:
 };
 
 /**
- * @brief Page for selecting which initial report definitions to create.
- *
- * Loads available templates from the reporting service on entry via the
- * reporting.v1.report-definition-templates.list NATS endpoint.
- */
-class PartyReportSetupPage final : public QWizardPage {
-    Q_OBJECT
-
-private:
-    inline static std::string_view logger_name = "ores.qt.party_report_setup_page";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    explicit PartyReportSetupPage(PartyProvisioningWizard* wizard);
-    void initializePage() override;
-    bool validatePage() override;
-
-private:
-    void setupUI();
-    void loadTemplates();
-    void
-    populateList(const std::vector<ores::dq::messaging::dq_report_definition_template>& templates);
-
-    PartyProvisioningWizard* wizard_;
-    QLabel* loadingLabel_;
-    QLabel* errorLabel_;
-    QListWidget* reportList_;
-};
-
-/**
  * @brief Executes all backend work in sequence and shows live progress.
  *
  * Phase 1: Publish counterparties from the GLEIF dataset (opted-in dataset only,
  *          using the opted_in_datasets filter to target gleif.lei_counterparties.{size}).
  *          Workflow progress shown via WorkflowStepsWidget.
- * Phase 2: Publish organisation bundle (business units, portfolios, trading books)
- *          with party_id param scoped to the current party.
- *          Workflow progress shown via WorkflowStepsWidget.
- * Phase 3: Create selected report definitions (sequential, non-workflow).
- * Phase 4: Mark party status as Active.
+ * Phases 2-N: Publish every party-scoped bundle in
+ *          ores::dq::messaging::party_provisioning_bundle_plan(), each in
+ *          full, in order. Workflow progress shown via WorkflowStepsWidget.
+ * Phase N+1: Mark party status as Active.
  *
  * The Next button is only enabled after all phases complete.
  */
@@ -246,16 +180,11 @@ public:
 
 private slots:
     void onCounterpartyWorkflowComplete(bool success);
-    void onOrgWorkflowComplete(bool success);
-    void onFxSpotConfigsWorkflowComplete(bool success);
-    void onFxDriverRatesWorkflowComplete(bool success);
+    void onPartyBundleWorkflowComplete(bool success);
 
 private:
     void startCounterpartyPublish();
-    void startOrgPublish();
-    void startReportInstall();
-    void startFxSpotConfigsPublish();
-    void startFxDriverRatesPublish();
+    void startNextPartyBundle();
     void startActivate();
     void markFailed(const QString& errorMsg);
     void appendLog(const QString& msg);
@@ -269,6 +198,8 @@ private:
     bool allComplete_ = false;
     bool allSuccess_ = false;
     std::string publishedBy_;
+    std::vector<ores::dq::messaging::party_bundle_publish_step> bundleQueue_;
+    std::size_t bundleIndex_ = 0;
 };
 
 /**

@@ -26,11 +26,11 @@ A new party-scoped bundle requires only a data change (adding a bundle code), ne
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -132,3 +132,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped and verified end-to-end. Party provisioning (Qt wizard and
+=ores.shell=) now iterates a single shared, data-driven list of three
+party-scoped bundle codes (=risk_management=, =synthetic_realistic=,
+=marketdata.reference_vintage_2016_02_05=), each published in full via
+=dq.v1.bundles.publish= — no dataset-level filtering, no per-bundle
+hand-written phase. The =organisation=/=ore_analytics= bundle split was
+retired in favour of a single =risk_management= bundle (business
+units, portfolios, books, and report definitions, since reports
+reference the book/portfolio tree). Report definitions are now created
+through the same idempotent publish-from-dq path as everything else,
+retiring the per-record RPC loop and the =--reports= flag/Qt Report
+Setup page entirely.
+
+Verified against a freshly recreated database with all 23 services
+running: a full =barclays_system_provision.ores= run (system → tenant
+→ party) completed cleanly end to end; confirmed in Postgres that the
+=risk_management= bundle publish alone created 13 business units, 20
+portfolios, 22 books, and 28 report definitions in a single call — the
+exact defect this story set out to fix. =reports templates= (the
+standalone shell command, unrelated to the provisioning path) verified
+working against its new default bundle. All touched targets
+(=ores.qt.lib=, =ores.shell.lib=, =ores.dq.api.lib=,
+=ores.reporting.api.lib=, =ores.reporting.core.lib=) and a full
+=compass build= (no target) build clean with no warnings.
+
+Acceptance met in full. Also superseded and closed task B9410C52
+("Party re-provisioning fails on duplicate report definitions") in a
+different story, as a side effect of the fix.

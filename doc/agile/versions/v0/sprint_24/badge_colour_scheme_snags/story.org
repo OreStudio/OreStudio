@@ -8,7 +8,7 @@
 #+filetags: :qt:badges:ui:refdata:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -37,7 +37,7 @@ distinct from the coverage-audit-and-rollout work split into
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -61,7 +61,7 @@ distinct from the coverage-audit-and-rollout work split into
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | BACKLOG | | | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
+| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | STARTED | 2026-07-22 | | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
 | [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
 
 * Decisions

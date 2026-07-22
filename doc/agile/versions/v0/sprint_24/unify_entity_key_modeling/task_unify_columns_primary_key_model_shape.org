@@ -75,11 +75,11 @@ task's blast radius to one file.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -216,3 +216,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped exactly as planned. ~org_document_to_model~ and
+~load_org_lookup_entity_model~ now share one =* Columns= parser
+(~_split_columns_section~) that buckets fields by their
+=:primary_key:=/=:natural_key:= flag, in declaration order; the
+derived =primary_key= dict (~_primary_key_dict~) keeps its back-compat
+single-column scalars plus a new =primary_key.columns= ordered list.
+=validate_model= now requires at least one primary-key-flagged field
+instead of a =Primary key= section. No dual-syntax fallback — the old
+sections are unrecognised. ~domain_entity_to_table_context~ needed no
+changes, confirmed by a golden-shape test. 6 new unit tests added
+(=test_org_loader_keys.py=), all passing alongside the existing 55.
+
+Also fixed, out of band but necessary to verify any of this: both
+~ores.codegen/venv~ and ~ores.compass/venv~ were stale from a host
+Python 3.13→3.14 upgrade (see =* Notes=) — recreated via each
+project's own bootstrap script.
+
+No =.org= model migrated (task 3's job); every existing model now
+fails ~load_org_model~'s validation until then, which is expected.

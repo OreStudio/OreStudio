@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: DE8A3312-90B2-486C-B3EB-0B19C089CD93
+:END:
+#+title: Task: Survey ORE, Bloomberg, and Reuters market data notations
+#+description: Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data.
+#+type: task
+#+level: s1
+#+filetags: :market-data-notation-design:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce one consolidated survey document (extend
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][the existing market data identifiers doc]] rather than fork a new one) of
+how each notation actually addresses interest-rate market data,
+distinguishing the *index/fixing* identity from the *curve* identity from
+the *raw quote* identity in each scheme:
+
+- *ORE*: already confirmed this session via
+  [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][the ORE market data catalogue]] and =external/ore/examples/= -- index
+  name (=USD-LIBOR-3M=), curve/market key (=Yield/<CCY>/<CURVE_ID>=, e.g.
+  =Yield/USD/USD3M=, from =todaysmarket.xml=/=curveconfig.xml=), quote key
+  (=TYPE/SUBTYPE/dim1/dim2/...=, e.g. =MM/RATE/USD/2D/3M=,
+  =IR_SWAP/RATE/USD/2D/3M/2Y=). Cite, don't re-derive.
+- *Bloomberg*: the existing doc already has FX/rates/equity/credit/
+  commodity ticker tables (=SOFRRATE Index=, =EUR006M Index=,
+  =USSA5 Curncy=). Extend with the yellow-key taxonomy (Index/Curncy/
+  Corp/Govt/Comdty) and how a curve (as opposed to a single fixing) is
+  addressed on Bloomberg (e.g. curve members via =DES=/=YCRV= vs a single
+  ticker).
+- *Reuters/Refinitiv (RIC)*: the existing doc already has FX/rates/
+  equity/credit/commodity RIC tables. Extend with how a full curve (not
+  just one tenor point) is addressed (chain RICs / curve RICs) since
+  that's the gap most relevant to the IR curve-config problem.
+
+The output should let a reader answer, for any given real-world rate
+(e.g. "6M EUR EURIBOR" or "USD SOFR OIS 5Y par swap rate"), what its
+identifier looks like in all three schemes side by side.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][The market data identifiers doc]] gains a side-by-side comparison table
+  (or section) covering index/fixing, curve, and quote-level addressing
+  for ORE, Bloomberg, and RIC, for at least: 3M and 6M USD LIBOR, USD
+  SOFR, EUR EURIBOR 6M, EUR ESTR, one par swap rate, and one FX spot pair
+  (for continuity with the existing FX rows).
+- The ORE section is sourced from =external/ore/examples/= file paths
+  cited inline (e.g. =Input/todaysmarket.xml=, =Input/curveconfig.xml=),
+  not invented.
+- Explicitly states, per scheme, whether a *curve* (a family of tenor
+  points) has its own identifier distinct from any single tenor's fixing
+  identifier -- this is the crux fact the design task depends on.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

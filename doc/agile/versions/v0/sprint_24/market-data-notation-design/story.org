@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 9606C647-5255-4C94-B5A2-C6D7B8BB3C95
+:END:
+#+title: Story: Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters
+#+description: Our IR curve config/feed identifiers (currency_code+index_name qualifier) do not model ORE's real addressing scheme (index name vs Yield/CCY/CURVE_ID curve key vs TYPE/SUBTYPE/dim quote key), have no curve-role/family structure, and have no ore_key-equivalent field (unlike FX). Survey ORE, Bloomberg, and Reuters notations and design a canonical ORE Studio URN that projects into each.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:design:ore:identifiers:sprint_24:v0:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ORE Studio currently addresses market data ad hoc and inconsistently across
+components:
+
+- =fx_spot_generation_config= has an explicit =ore_key= field
+  (=FX/RATE/EUR/USD=), derived deterministically from the currency pair.
+- =ir_curve_generation_config= has no equivalent field at all. The only
+  identifier is the =(currency_code, index_name)= pair, and
+  =curve_feed_controller= enforces at-most-one-running-feed-per-qualifier
+  using that pair as an opaque string key -- a pragmatic runtime stopgap
+  (see [[id:0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB][Source vintage historical IR rate dataset]]), not a real identifier
+  scheme.
+- Neither matches how ORE itself addresses market data, which -- per
+  [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][the ORE market data catalogue]] and =external/ore/examples/= -- actually
+  uses *three distinct, non-interchangeable* key types depending on
+  context: (1) an index name (=USD-LIBOR-3M=, matches our
+  =floating_index_type.code=), (2) a curve/market key
+  (=Yield/USD/USD3M=, format =Yield/<CCY>/<CURVE_ID>=, defined in
+  =todaysmarket.xml=/=curveconfig.xml=), and (3) a raw quote key
+  (=MM/RATE/USD/2D/3M=, =IR_SWAP/RATE/USD/2D/3M/2Y=, format
+  =TYPE/SUBTYPE/dim1/dim2/...=). The literal string "LIBOR" never appears
+  in any of the three -- the index identity is carried by the =CURVE_ID=
+  or by convention lookups, not by the key itself.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][The existing market data identifiers doc]] already documents ORE Studio's
+  own =<series_type>/<metric>/<qualifier>[/<point_id>]= canonical key (used
+  for =market_series=/NATS routing) plus RIC and Bloomberg ticker
+  reference-only fields -- but this scheme predates, and was not
+  reconciled against, the three-key ORE addressing model above, nor does
+  =ir_curve_generation_config= participate in it at all.
+
+This story's goal is to resolve that inconsistency with a single,
+deliberately-designed identifier scheme: research how ORE, Bloomberg, and
+Reuters/Refinitiv actually address interest-rate (and, where it clarifies
+the general shape, FX) market data, catalogue precisely where ORE
+Studio's current identifiers fail to project onto ORE's own conventions,
+and design a canonical ORE-Studio-native notation -- referred to
+provisionally as a "market data URN" -- with explicit structured fields
+(currency, index/benchmark, tenor, curve role: discount vs projection,
+instrument type) from which every supported external notation (ORE index
+name, ORE curve key, ORE quote key, and optionally Bloomberg/RIC) can be
+deterministically derived. The output of this story is the *design* --
+the state-of-the-art survey, the gap analysis, and the proposed notation
+and projection rules -- not a rewrite of =curve_feed_controller= or the
+generation-config schemas; implementing the design is deferred to
+follow-on tasks/stories once the notation itself has been reviewed and
+agreed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-22                               |
+
+* Acceptance
+
+- A state-of-the-art survey exists covering how ORE, Bloomberg, and
+  Reuters/Refinitiv each address interest-rate market data (index
+  fixings, curve/market keys, and raw quotes), building on and
+  reconciling the existing [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][market data identifiers]] and
+  [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] docs rather than duplicating them.
+- The survey documents ORE's three-key model precisely (index name,
+  =Yield/<CCY>/<CURVE_ID>= curve key, =TYPE/SUBTYPE/dim...= quote key)
+  with worked examples for at least USD-LIBOR-3M, USD-SOFR, and one swap
+  and one FX instrument, sourced from =external/ore/examples/=.
+- A gap analysis enumerates, concretely, every place ORE Studio's current
+  identifiers (=fx_spot_generation_config.ore_key=,
+  =ir_curve_generation_config='s =(currency_code, index_name)= pair,
+  =curve_feed_controller='s qualifier, the =market_series=
+  =series_type/metric/qualifier= key) fail to project onto ORE's real
+  addressing scheme, including the specific problem that triggered this
+  story: a tenor-specific index (e.g. 3M vs 6M LIBOR for the same
+  currency) has no distinguishing key today beyond =index_name= string
+  content, and there is no explicit discount-vs-projection curve-role
+  field anywhere in the schema.
+- A canonical ORE Studio notation is proposed: field list, textual
+  grammar, worked examples for the same instruments as the survey, and
+  explicit, deterministic projection rules into each of ORE's three key
+  types (and Bloomberg/RIC where the mapping is unambiguous).
+- The proposal explicitly states its relationship to the existing
+  =<series_type>/<metric>/<qualifier>[/<point_id>]= =market_series= key
+  and to =fx_spot_generation_config.ore_key= -- superset, replacement, or
+  coexistence -- with a stated rationale.
+- The story explicitly scopes out schema changes, =curve_feed_controller=
+  rework, and any code implementing the new notation -- those are
+  follow-on work once the design is reviewed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] | BACKLOG | | | Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data. |
+| [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] | BACKLOG | | | Enumerate every place ore_key/index_name/qualifier/market_series keys fail to project onto ORE's index name / curve key / quote key model, including the tenor-index and curve-role gaps. |
+| [[id:4ACFF837-A9A4-4F17-9246-8E58993E469B][Design a canonical ORE Studio market data URN]] | BACKLOG | | | Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC. |
+
+* Decisions
+
+- This story produces a *design*, not an implementation: no schema
+  migrations, no =curve_feed_controller= changes, no rewrite of the
+  existing =market_series= key or =ir_curve_generation_config=. The
+  current qualifier-based collision check added in
+  [[id:0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB][Source vintage historical IR rate dataset]] stays as-is; it is
+  functionally correct for its narrow purpose (preventing two auto-
+  started feeds from binding the same tenant/currency/index) even though
+  it does not model curve-family relationships or ORE's real key shape.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][The ORE market data catalogue]] and =external/ore/examples/= are the
+  primary sources for ORE's own notation -- already researched this
+  session; the LIBOR-key finding (index name never appears standalone in
+  the ORE curve/quote key formats, only via =CURVE_ID= convention lookup)
+  is documented there and should be cited, not re-derived.
+
+* Out of scope
+
+- Any implementation of the proposed URN in code or schema (tracked as
+  future follow-on work once the design is agreed).
+- Real-data vendor feed integration for Bloomberg/Reuters (the existing
+  =ric=/=bbg_ticker= reference-only fields on =market_series= already
+  anticipate this; this story does not change that plan).
+- Rework of =curve_feed_controller='s qualifier-based collision logic.

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131
+:END:
+#+title: Task: Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme
+#+description: Enumerate every place ore_key/index_name/qualifier/market_series keys fail to project onto ORE's index name / curve key / quote key model, including the tenor-index and curve-role gaps.
+#+type: task
+#+level: s1
+#+filetags: :market-data-notation-design:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Using the survey task's output as the reference, enumerate concretely
+where every identifier currently in ORE Studio fails to project onto
+ORE's real addressing scheme:
+
+- =ir_curve_generation_config=: the =(currency_code, index_name)= pair
+  has no equivalent of FX's =ore_key=. Two configs can share
+  =currency_code= but differ only by tenor embedded inside the free-text
+  =index_name= (=USD-LIBOR-3M= vs a hypothetical =USD-LIBOR-6M=) -- there
+  is no structured tenor field, and nothing distinguishes a
+  discount-role curve from a projection-role curve for the same index.
+- =curve_feed_controller='s =qualifier= (built from
+  =currency_code+index_name=): this is exactly the collision key needed
+  for the narrow "don't double-bind the same tenant/currency/index"
+  check it does today, but it has no concept of curve family (e.g. the
+  set of tenor curves that together make up one currency's multi-curve
+  framework) or of curve role, so it cannot express "these two curves
+  legitimately coexist because one discounts and one projects."
+  Reference the concrete question that surfaced this gap: does a real 3M
+  LIBOR curve key collide with the discount curve for the same currency,
+  and if not, what makes them distinct?
+- =market_series= =series_type/metric/qualifier[/point_id]=
+  ([[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][existing doc]]): assess whether this scheme, designed before
+  =ir_curve_generation_config= existed, already has room for
+  tenor/curve-role, or needs the same fields as the new URN.
+- =fx_spot_generation_config.ore_key=: the one place ORE Studio already
+  does this correctly -- record it as the pattern to generalise, not a
+  gap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A gap table exists (one row per identifier scheme in scope) with
+  columns: current field(s), what ORE's real scheme requires that's
+  missing, and a concrete example showing the failure (e.g. two
+  same-currency, different-tenor LIBOR configs are indistinguishable by
+  any structured field today).
+- The discount-vs-projection curve-role gap is stated explicitly, tied to
+  the still-BACKLOG [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]] task, since
+  the URN's curve-role field and that task's data model should agree.
+- The analysis is descriptive only -- it does not propose fixes (that's
+  the design task) or make any code/schema change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

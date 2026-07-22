@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 4ACFF837-A9A4-4F17-9246-8E58993E469B
+:END:
+#+title: Task: Design a canonical ORE Studio market data URN
+#+description: Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC.
+#+type: task
+#+level: s1
+#+filetags: :market-data-notation-design:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Using the survey and gap-analysis tasks' output, propose a canonical
+ORE-Studio-native market data identifier -- a structured "URN" -- with
+explicit fields covering everything the gap analysis found missing:
+currency, index/benchmark family (LIBOR, EURIBOR, SOFR, ESTR, SONIA,
+TONA, ...), tenor, curve role (discount vs projection, and "single
+self-discounting curve" as the degenerate case our current synthetic
+data uses), and instrument type (fixing, curve, quote). Define a textual
+grammar for it, then define deterministic, worked projection rules from
+the URN into: ORE's index name, ORE's =Yield/<CCY>/<CURVE_ID>= curve key,
+ORE's =TYPE/SUBTYPE/dim...= quote key, and (best-effort, since these are
+vendor-licensed and not fully systematic per the survey) Bloomberg
+ticker and RIC.
+
+Explicitly resolve how this URN relates to the two identifier schemes
+already in the codebase: [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][the existing =market_series= canonical key]]
+(=series_type/metric/qualifier[/point_id]=) and
+=fx_spot_generation_config.ore_key=. State whether the URN supersedes,
+generalises, or wraps them, with a rationale -- do not leave three
+competing schemes in the codebase's mental model afterward, even though
+no code migration happens in this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A field list and grammar exist for the URN, with every field justified
+  by a specific gap from the gap-analysis task (no speculative fields).
+- Worked examples exist for the same instrument set as the survey (3M/6M
+  USD LIBOR, USD SOFR, EUR EURIBOR 6M, EUR ESTR, one par swap, one FX
+  spot), each showing the URN and its projection into ORE's three key
+  types.
+- The tenor-index and curve-role gaps from the gap analysis are
+  demonstrably resolved by the design: two same-currency different-tenor
+  indices, and a discount vs projection curve for the same index, each
+  get distinct URNs.
+- The relationship to =market_series='s existing key and to
+  =fx_spot_generation_config.ore_key= is stated explicitly (superset,
+  replacement, or coexistence) with rationale.
+- No schema, code, or =curve_feed_controller= change is made as part of
+  this task -- the deliverable is the design doc itself, reviewed and
+  ready to hand off as a follow-on implementation story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

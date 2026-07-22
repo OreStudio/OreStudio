@@ -61,10 +61,22 @@ re-provision first: =compass shell -f
 projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 (publishes real FX driver-rate observations needed for this test).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open an FX Spot chart window
 
 Menu: *Market Data > FX Spot* (or the equivalent currency-pair chart
 window). Pick a currency pair that has data, e.g. EUR/USD.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm the chart renders observation data
 
@@ -72,6 +84,13 @@ Confirms PASS if the chart plots a non-empty price series for the
 selected pair with no error dialog or empty-state message. Confirms
 FAIL if the chart is blank, shows an error, or the app logs a failed
 =marketdata.v1.market_observations.list_by_series_id= request.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | its hard to make sense of the chart. we need to change the chart to only plot last 5 mins by default; ; [[file:scenario_market-observation-list-by-series-id_step3_20260722_223937.png]] |
 
 ** Confirm no console/log errors on load
 
@@ -93,14 +112,21 @@ message).
 # Single-client scenarios (the common case) keep steps as direct
 # children of * Steps, as above.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-22T21:39:49Z |
+| Branch        | feature/drop-legacy-marketdata-tables |
+| Commit        | bdd49c165 |
+| Worktree      | prime_origin |
 
 * Notes

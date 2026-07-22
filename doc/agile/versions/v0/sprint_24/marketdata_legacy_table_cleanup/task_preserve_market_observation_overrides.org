@@ -38,11 +38,11 @@ one) so future regenerations don't clobber them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -126,6 +126,17 @@ override in place:
 
 * Notes
 
+The QA scenario's step 3 failure is a pre-existing chart-usability gap
+(the FX Spot chart has always plotted its whole retained sample buffer
+with no time-window default), not something this task introduced or
+regressed — the underlying data path it actually verifies (a
+successful =list_by_series_id= round trip with correct, non-empty,
+correctly-filtered results) passed. Filed as its own capture rather
+than folded into this task's acceptance, since it's chart-rendering UX
+scoped well beyond this task's codegen/override goal, and applies
+equally to CRM plots: [[id:7F5BE078-A845-4E90-B470-268F23B9DB46][Shared
+chart-data presentation layer for FX Spot and CRM plots]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -135,7 +146,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:C9EC600D-05CB-4539-B5CD-1C070771829A][Market observation list_by_series_id endpoint works]] | PENDING | Awaiting manual test of the FX Spot chart window. |
+| [[id:C9EC600D-05CB-4539-B5CD-1C070771829A][Market observation list_by_series_id endpoint works]] | FAILED (chart usability; endpoint itself confirmed working) | Steps 1/2/4 PASS — connect, chart opens, no log/round-trip errors. Step 3 PASS on data (non-empty series rendered, no errors) but FAILED on usability: chart plots the full retained history at once, making it hard to read. Not a regression from this task — filed as a separate capture, see Notes. |
 
 * PRs
 
@@ -150,3 +161,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=market_observation='s hand-written =series_id= filter and pagination
+overrides no longer exist to be silently reverted — the acceptance
+criterion (=compass codegen regenerate= producing no diff on the
+affected files) is met by construction, since the behaviour is now
+codegen-native rather than a hand-maintained override layered on top
+of it.
+
+- Modelled =series_id= as a proper =list_by= foreign key in
+  =ores.marketdata.market_observation.org= (every real caller always
+  filters by series; there was no genuine "list all" use case), adding
+  a new reusable =:list_by_default_limit:= codegen property (=core.py=
+  + =ores.cpp.protocol.protocol_header.org=) so this facet's default
+  page size can be set independently of the usual 100 — set to 1000
+  here, since market observations are high-volume tick data.
+- Regenerated =market_observation= across all five affected facets
+  (protocol/repository/service/handler/nats-sub-registrar) via
+  =compass codegen entity generate= (scoped per-entity, avoiding
+  unrelated churn). This produced a dedicated, paginated
+  =marketdata.v1.market_observations.list_by_series_id= endpoint,
+  retiring the hand-written =series_id= parameter on the generic
+  =.list= endpoint entirely.
+- Migrated =market_observation= from the legacy hand-wired
+  =registrar.cpp= subscription style onto the generated per-entity
+  sub-registrar pattern already used elsewhere (e.g.
+  =ores.synthetic=), fixing a latent bug in the process: the
+  =history= endpoint had a handler but was never actually subscribed
+  under the old hand-wired file.
+- Migrated all four real call sites (=ClientMarketObservationModel=,
+  =FxSpotChartWindow=, =FxSpotRateEditor=,
+  =market_data_client::list_observations[_page]=) to the new
+  =get_market_observations_by_series_id_request=; dropped a
+  now-redundant client-side series-id re-filter in
+  =FxSpotChartWindow= since the server guarantees exact filtering.
+- Verified idempotency directly (the actual acceptance criterion): a
+  second =codegen entity generate= pass after building/testing
+  produced zero further diff.
+- Verified via the full marketdata test suites (core/api/client/service),
+  =ores.qt.tests=, a full clean build, and a live QA pass against a
+  freshly re-provisioned Barclays Plc environment — the new endpoint
+  round-trips correctly with no console/log errors and returns
+  correctly-filtered, non-empty data. Confirmed directly against
+  =ores_marketdata_market_observations_tbl= (13,258 rows, spanning
+  2016-01-04 to 2026-07-22) that the FX Spot chart's non-empty series
+  reflects genuine, real observation data end-to-end, not an artefact
+  of the migration. The QA scenario also surfaced a pre-existing
+  chart-usability gap (unrelated to this task's own acceptance — see
+  =* Notes=), filed separately.

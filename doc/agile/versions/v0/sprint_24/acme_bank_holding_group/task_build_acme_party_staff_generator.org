@@ -20,7 +20,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend =ores.synthetic='s =organisation_generator_service= (not a
+from-scratch script) to produce Acme Bank's party hierarchy, LEIs,
+contacts, and staff accounts against the hand-authored company
+structure from the analysis task, plus its business
+units/portfolios/books — the latter now unblocked by [[https://github.com/OreStudio/OreStudio/pull/1662][PR #1662]]
+(prime_origin's data-driven bundle-publish refactor, merged
+2026-07-22): populate Acme's org/portfolio/book structure through the
+new =risk_management= bundle rather than a bespoke path. See
+[[proj:projects/ores.seeder/datasets/acme_bank_structure_analysis/dataset_overview.org][acme_bank_structure_analysis]] for the full proposed shape (branches,
+desks, headcounts, LEI scheme) and the =ores.synthetic= gaps
+(fixed-shape vs. random tree, no staff layer, no HK locale, LEI not
+checksum-valid) this task closes.
 
 * Status
 

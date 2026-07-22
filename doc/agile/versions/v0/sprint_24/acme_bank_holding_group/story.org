@@ -48,7 +48,7 @@ each time.
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Analysis task DONE; three follow-up tasks queued, all BACKLOG. |
 | Waiting on    | Nothing.                               |
-| Next          | Follow-up tasks: account-picture schema, DQ artefact type for generated org/staff data, and extending ores.synthetic for the party/LEI/contact/staff generator. Business-unit/portfolio/book population waits on prime_origin's dataset-publish refactor. |
+| Next          | Follow-up tasks: DQ artefact type for generated org/staff data, and extending ores.synthetic for the party/LEI/contact/staff generator. prime_origin's data-driven bundle-publish refactor (PR #1662) merged 2026-07-22 — business-unit/portfolio/book population is no longer blocked; the generator task can fold Acme's org/portfolio/book structure into the new risk_management bundle instead of waiting. |
 | Last touched  | 2026-07-22                               |
 
 * Acceptance
@@ -95,9 +95,13 @@ each time.
   fake-but-checksum-valid LEIs (GLEIF's reserved =9695= pre-LOU test
   prefix), but its counterparties are the real GLEIF-imported set —
   the same one Barclays trades against.
-- *Business-unit/portfolio/book population is deferred* until
-  prime_origin's unified DQ dataset-publish refactor lands, to avoid
-  building bespoke seeding that would be thrown away.
+- *Business-unit/portfolio/book population was deferred* until
+  prime_origin's unified DQ dataset-publish refactor landed, to avoid
+  building bespoke seeding that would be thrown away — [[https://github.com/OreStudio/OreStudio/pull/1662][PR #1662]] merged
+  2026-07-22 (=risk_management= bundle: business units, portfolios,
+  books, and report definitions published together). No longer
+  blocked: the generator task should populate Acme's organisational/
+  portfolio/book structure through that bundle, not a bespoke path.
 - *Three branches* (London, New York, Hong Kong) — enough for
   follow-the-sun trading without needing "the biggest bank."
 - *Account pictures*: generalise the existing =ores_assets_images_tbl=

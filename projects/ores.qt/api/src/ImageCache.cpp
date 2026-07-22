@@ -140,16 +140,16 @@ void ImageCache::reload() {
 
     // First time load - clear caches and do full load
     BOOST_LOG_SEV(lg(), info) << "No last load time, performing full reload.";
-    const auto svg_count = image_svg_cache_.size();
+    const auto data_count = image_data_cache_.size();
     const auto icon_count = image_icons_.size();
-    image_svg_cache_.clear();
+    image_data_cache_.clear();
     image_mime_cache_.clear();
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
     available_images_.clear();
 
-    BOOST_LOG_SEV(lg(), debug) << "Caches cleared (was: svg=" << svg_count
+    BOOST_LOG_SEV(lg(), debug) << "Caches cleared (was: data=" << data_count
                                << " icons=" << icon_count << "), starting loadAll().";
 
     // Reload everything
@@ -159,7 +159,7 @@ void ImageCache::reload() {
 void ImageCache::clear() {
     BOOST_LOG_SEV(lg(), info) << "clear() called - resetting all caches and load state.";
 
-    image_svg_cache_.clear();
+    image_data_cache_.clear();
     image_mime_cache_.clear();
     image_icons_.clear();
     pending_image_ids_.clear();
@@ -496,13 +496,13 @@ QPixmap ImageCache::getCurrencyFlagPixmap(const std::string& iso_code, int heigh
     if (it == currency_iso_to_image_id_.end() || it->second.empty())
         return {};
 
-    auto svg_it = image_svg_cache_.find(it->second);
-    if (svg_it == image_svg_cache_.end()) {
+    auto data_it = image_data_cache_.find(it->second);
+    if (data_it == image_data_cache_.end()) {
         // Not cached yet; trigger an async load and fall back to the icon ladder.
         loadImagesByIds({it->second});
         return getIcon(it->second).pixmap(height, height);
     }
-    return IconUtils::svgDataToPixmap(svg_it->second, height);
+    return IconUtils::svgDataToPixmap(data_it->second, height);
 }
 
 QIcon ImageCache::getCountryFlagIcon(const std::string& alpha2_code) {
@@ -541,14 +541,14 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
     std::unordered_set<std::string> seen;
 
     for (const auto& id : image_ids) {
-        if (seen.find(id) == seen.end() && image_svg_cache_.find(id) == image_svg_cache_.end()) {
+        if (seen.find(id) == seen.end() && image_data_cache_.find(id) == image_data_cache_.end()) {
             ids_to_fetch.push_back(id);
             seen.insert(id);
         }
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << ids_to_fetch.size()
-                               << " images (already cached: " << image_svg_cache_.size() << ").";
+                               << " images (already cached: " << image_data_cache_.size() << ").";
 
     if (ids_to_fetch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "All images already cached, no changes.";
@@ -673,7 +673,7 @@ void ImageCache::onImagesLoaded() {
         // Cache image data and render icons
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
-            image_svg_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
+            image_data_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
             image_mime_cache_[image_id_str] = img.mime_type;
 
             QIcon icon = dataToIcon(img.data, img.mime_type);
@@ -741,13 +741,13 @@ void ImageCache::loadImageById(const std::string& image_id) {
     }
 
     // Check if already cached
-    auto svg_it = image_svg_cache_.find(image_id);
-    if (svg_it != image_svg_cache_.end()) {
+    auto data_it = image_data_cache_.find(image_id);
+    if (data_it != image_data_cache_.end()) {
         const auto mime_it = image_mime_cache_.find(image_id);
         const std::string mime_type =
             mime_it != image_mime_cache_.end() ? mime_it->second : "image/svg+xml";
         QIcon icon = dataToIcon(
-            std::vector<std::uint8_t>(svg_it->second.begin(), svg_it->second.end()), mime_type);
+            std::vector<std::uint8_t>(data_it->second.begin(), data_it->second.end()), mime_type);
         if (!icon.isNull()) {
             image_icons_[image_id] = icon;
             emit imageLoaded(QString::fromStdString(image_id));
@@ -801,7 +801,7 @@ void ImageCache::onSingleImageLoaded() {
 
     if (result.success) {
         // Cache image data and render icon
-        image_svg_cache_[result.image_id] =
+        image_data_cache_[result.image_id] =
             std::string(result.image.data.begin(), result.image.data.end());
         image_mime_cache_[result.image_id] = result.image.mime_type;
         QIcon icon = dataToIcon(result.image.data, result.image.mime_type);
@@ -814,10 +814,6 @@ void ImageCache::onSingleImageLoaded() {
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load image: " << result.image_id;
     }
-}
-
-QIcon ImageCache::svgToIcon(const std::string& svg_data) {
-    return IconUtils::svgDataToIcon(svg_data);
 }
 
 QIcon ImageCache::dataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type) {
@@ -947,7 +943,7 @@ void ImageCache::loadAllAvailableImages() {
     // Collect image IDs that we need to fetch (not already cached)
     std::vector<std::string> image_ids_to_fetch;
     for (const auto& img : available_images_) {
-        if (image_svg_cache_.find(img.image_id) == image_svg_cache_.end() &&
+        if (image_data_cache_.find(img.image_id) == image_data_cache_.end() &&
             pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
             image_ids_to_fetch.push_back(img.image_id);
             pending_image_requests_.insert(img.image_id);
@@ -989,7 +985,7 @@ void ImageCache::onAllAvailableImagesLoaded() {
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
             pending_image_requests_.erase(image_id_str);
-            image_svg_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
+            image_data_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
             image_mime_cache_[image_id_str] = img.mime_type;
             QIcon icon = dataToIcon(img.data, img.mime_type);
             if (!icon.isNull()) {

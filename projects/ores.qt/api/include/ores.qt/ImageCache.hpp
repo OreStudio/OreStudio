@@ -45,7 +45,7 @@ namespace ores::qt {
  * entity that references them.
  *
  * Simplified design:
- * - Single mapping: image_id -> SVG data and rendered QIcon
+ * - Single mapping: image_id to raw image data (SVG, JPEG, ...) and rendered QIcon
  * - Entities (currencies, countries) have their own image_id field
  * - Call getIcon(image_id) to get the icon for any image
  * - On-demand loading: if image not cached, loads from server
@@ -304,14 +304,6 @@ private slots:
 
 private:
     /**
-     * @brief Convert SVG string data to QIcon.
-     *
-     * @param svg_data The SVG content as a string
-     * @return QIcon rendered from the SVG, or empty icon on failure
-     */
-    static QIcon svgToIcon(const std::string& svg_data);
-
-    /**
      * @brief Convert format-agnostic image data to QIcon.
      *
      * @param data Raw image bytes (as returned by ores.assets.domain::image)
@@ -420,7 +412,7 @@ private:
     ClientManager* clientManager_;
 
     // image_id -> cached raw image bytes (SVG markup, JPEG, ...)
-    std::unordered_map<std::string, std::string> image_svg_cache_;
+    std::unordered_map<std::string, std::string> image_data_cache_;
 
     // image_id -> cached MIME type (e.g. "image/svg+xml", "image/jpeg")
     std::unordered_map<std::string, std::string> image_mime_cache_;

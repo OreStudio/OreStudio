@@ -33,6 +33,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.refdata.core.lib
+        ores.assets.core.lib
         ores.telemetry.core.lib
         ores.service.lib
         ores.utility.lib

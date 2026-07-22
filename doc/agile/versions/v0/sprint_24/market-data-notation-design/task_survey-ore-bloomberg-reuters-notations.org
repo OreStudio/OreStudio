@@ -8,7 +8,7 @@
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1671][#1671]] | [agile] Add story: design ORE Studio market data notation |
 
 * Review
 

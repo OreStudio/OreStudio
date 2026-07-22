@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 15306DB3-3EFE-496A-8381-ACE8F9DA07ED
+:END:
+#+title: Task: Scaffold story: Hotfix: remaining CMake 4.4 uninitialized-variable warnings
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :cmake-44-remaining-uninitialized-warnings:sprint_24:v0:
+#+owner: marco
+#+branch: hotfix/cmake-44-remaining-uninitialized-warnings
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36ABA3D4-FEC5-4D65-9FBC-A3819C46284A][Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the hotfix story and tasks for the remaining CMake 4.4.0
+uninitialized-variable warnings.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:36ABA3D4-FEC5-4D65-9FBC-A3819C46284A][Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- Story and tasks scaffolded, sprint wired.
+
+* Plan
+
+Scaffolded via =compass story new --kind hotfix=; the docs were
+committed together with the implementation task's fix (same PR)
+rather than as a separate scaffold PR, since the scaffold commit had
+not yet landed when implementation started.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story and two tasks (scaffold, implement) created under Sprint 24
+and wired into =sprint.org=.

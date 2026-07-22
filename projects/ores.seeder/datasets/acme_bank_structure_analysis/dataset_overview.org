@@ -1,0 +1,337 @@
+:PROPERTIES:
+:ID: 6D3CC962-4F8C-4CF1-9505-B055ADD166C1
+:END:
+#+title: acme_bank_structure_analysis
+#+description: Analysis of Barclays' corporate structure mapped onto ORE Studio's party/account entity model, proposing an Acme Bank holding-group structure — parties, LEIs, contacts, and staff accounts with locale-matched names and pictures — and identifying gaps in current entity support.
+#+type: dataset_overview
+#+dataset_name: acme_bank_structure_analysis
+#+dataset_version: 1.0
+#+dataset_type: crafted
+#+source_methodology: Hand-authored analysis grounded in Barclays' published group structure (annual report/GLEIF LEI hierarchy) and ORE Studio's ores.refdata/ores.iam entity models; no data generated yet, this dataset captures the design.
+#+filetags: :acme_bank_holding_group:refdata:analysis:sprint_24:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+* Summary
+
+This dataset is a design document, not yet a populated data set: it
+grounds the proposed Acme Bank holding-group structure in Barclays'
+real corporate shape, maps that shape onto ORE Studio's current
+=party=/=account= entity model, and records the gaps that block
+populating it today. It is the analysis output of [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][task: Analyse Acme
+Bank corporate structure and current populatability]] in the
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]] story. The proposed structure below is the
+blueprint for the actual seeding work in later tasks of that story.
+
+* Scoping decisions made during this analysis
+
+- *Acme owns everything.* The business units, portfolios, books, and
+  report definitions currently in the system as example/test fixtures
+  are ownerless — they don't hang off a real party. Rather than
+  leaving them dangling, they should be re-parented under Acme Bank so
+  there is a single coherent "fully populated" entity, not orphaned
+  example data plus a separate party tree. This affects the *scope*
+  of what Acme owns but not this task, which stays analysis-only.
+- *Business unit/portfolio/book population is deferred.* =prime_origin=
+  is mid-refactor of the DQ bundle-publish pipeline into a unified,
+  data-driven "risk management dataset" mechanism (see [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle
+  Publication Pipeline]]). Building bespoke business-unit/portfolio/book
+  seeding now would be thrown away once that lands. This task instead
+  focuses on what doesn't depend on that refactor: party hierarchy,
+  LEIs, contacts, and staff accounts.
+- *Realistic but not exhaustive.* Three offices — London, New York,
+  Hong Kong — cover the follow-the-sun trading day for a global
+  investment bank without ballooning headcount. A trading floor (Rates,
+  Credit, FX desks) plus Middle Office and Market Risk support
+  functions per region is enough to exercise RBAC across front/middle
+  office without needing "the biggest company."
+- *Staff accounts need two new capabilities*: locale-matched names
+  (the office's country drives the name generator's locale) and a
+  profile picture per account, loosely matched to the generated name's
+  apparent gender/ethnicity via the =external/facestudio/faces=
+  dataset. Both are gaps in the current schema (see below).
+- *A hardcoded company structure, generated with a script.* The
+  org chart itself (offices, desks, headcounts, role mix) is
+  hand-authored — it needs a human's judgement about what's a
+  "sensible" bank shape. The *data* for each of those slots (names,
+  LEIs, emails, addresses, pictures) is what a Python generator (Faker
+  or equivalent) fills in, keyed by locale, so re-running it is
+  repeatable/idempotent rather than a one-off manual exercise.
+
+* Design principle: integrate, don't invent a world
+
+Unlike [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] (a fully self-contained fictional universe), Acme
+Bank is *not* meant to be an isolated world. It must fit into the
+system's existing real-world reference data — specifically the GLEIF
+LEI/counterparty universe already imported for tenants like Barclays
+Plc — so that "provision GLEIF counterparties, then provision Acme"
+just works, and Acme's trades can reference real-world institutions
+(=DEUTDEFF=, =BARCUKGB=, etc.) as counterparties.
+
+This means Acme's own legal entities need identifiers that are
+*fake but well-formed*, not entities lifted wholesale from GLEIF (that
+would be Barclays' job) and not an entirely disconnected naming
+scheme either. Concretely:
+
+- Acme's parties carry synthetic LEIs built on GLEIF's reserved
+  pre-LOU test prefix =9695=, which GLEIF explicitly sets aside for
+  non-production/test LEIs and will never assign to a real entity.
+  Each is a real, checksum-valid (ISO 17442 / mod-97) 20-character
+  code, stored the same way [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]] stores real
+  GLEIF LEIs — via =refdata_party_identifiers_tbl= with
+  =coding_scheme_code = 'LEI'= — so nothing in the schema or UI needs
+  to special-case a "fake" LEI.
+- Acme's counterparties are the *real* GLEIF-imported counterparty
+  set (the same one Barclays trades against), not synthetic
+  counterparties — Acme is the one net-new entity, everything it
+  interacts with is real.
+
+* Relationship to the existing ores.synthetic generator
+
+=ores.synthetic='s =organisation_generator_service= already generates,
+deterministically from a seed, a party hierarchy, GB/US-locale
+contacts (addresses, postcodes, phone formats), party/counterparty LEI
+and BIC identifiers, and typed business units
+(=DIVISION=/=BUSINESS_AREA=/=DESK=/=COST_CENTRE=), plus portfolios and
+books — wired into shell provisioning today via =provision tenant
+--source synthetic --seed 42= against a tenant named =acme=/"Acme
+Corp" ([[proj:doc/recipes/shell/provisioning/acme_system_provision.org][How do I provision the system with Acme (synthetic)?]]). This
+overlaps with a meaningful slice of what's proposed here, so it's
+worth being explicit about why Acme Bank doesn't just reuse it:
+
+- *Shape*: the existing generator builds a randomised tree from a
+  seed; Acme Bank needs a specific, hand-authored org chart (fixed
+  branches, fixed desks, fixed headcounts) that reads as a coherent,
+  recognisable bank rather than an arbitrary structure.
+- *Staff*: the existing generator stops at business units — it has no
+  concept of accounts/staff sitting on a desk, which is the core new
+  thing this story needs.
+- *Locale*: GB/US contact generation exists; Hong Kong does not, and
+  none of it covers *person* names (only company/address data).
+- *LEIs*: the existing generator's LEI is =ctx.alphanumeric(20)= — a
+  plain random 20-character string, not ISO 17442 mod-97 checksum-valid
+  and not on GLEIF's =9695= test-prefix range. Acme Bank's identifiers
+  need to be well-formed enough to look like real LEIs, which the
+  current generator does not attempt.
+
+Given that, the follow-up "build the generator" task should be scoped
+as *extending* =ores.synthetic= (reusing its contact/LEI-storage
+plumbing where it fits, fixing the LEI checksum gap, adding a
+staff/account layer and HK locale) rather than a from-scratch
+Python/Faker script, unless the fixed-shape requirement turns out to
+fight the generator's random-tree design too much — that's a call for
+the generator task itself to make once it's scoped in code, not this
+analysis.
+
+*Naming collision*: the existing synthetic-provisioning recipe already
+claims the tenant code =acme= / name "Acme Corp" for its generic,
+randomised smoke-test tenant. Acme Bank is a different, deliberately
+curated entity and should not collide with it — the follow-up task
+should provision it under a distinct tenant code (e.g. =acmebank= /
+"Acme Bank Group plc"), leaving the existing =acme= synthetic tenant
+untouched for its current purpose.
+
+* Reference structure: Barclays Group
+
+Barclays plc is a UK-headquartered universal bank organised (per its
+public group structure and annual report) around two principal
+divisions under a single group holding company:
+
+- *Barclays UK (BUK)* — UK retail/consumer/business banking. Not a
+  derivatives-trading division; excluded from the desk-level modelling
+  below.
+- *Barclays International (BI)* — split into:
+  - *Corporate & Investment Bank (CIB)* — the derivatives-trading
+    engine: Markets (FX, Rates, Credit, Equities), Banking, and
+    Fixed Income/Global Markets. This is the division Acme Bank's
+    trading-floor structure is modelled on.
+  - *Consumer, Cards & Payments (CCP)*
+- Legal entities of note: *Barclays Bank PLC* (the main international
+  operating entity, home of most trading booking) and *Barclays Bank
+  UK PLC* (ring-fenced retail entity, post-2018 structural reform).
+- Major trading hubs / business centres: London (=GBLO=), New York
+  (=USNY=), Hong Kong (=HKHK=), and other secondary centres (Frankfurt,
+  Singapore, Tokyo) not modelled here.
+
+For Acme Bank we take *CIB Markets* as the reference shape: a global
+markets division split into asset-class business areas (Rates, Credit,
+FX), with desks across three follow-the-sun centres, plus the Middle
+Office/Market Risk support functions those desks depend on — the
+pattern documented in [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure: Party, Book, Portfolio, Business
+Unit, Business Centre]].
+
+* Proposed Acme Bank party hierarchy
+
+#+begin_example
+Acme Bank Group plc                LEI 9695ACMEBANKGRP00119   (party, root, system)
+  └─ Acme Bank International plc   LEI 9695ACMEBANKINTL0140   (party, operational — CIB analogue)
+       ├─ Acme Bank London Branch     LEI 9695ACMEBANKLON00163  (party — booking entity, GBLO)
+       ├─ Acme Bank New York Branch   LEI 9695ACMEBANKNYC00131  (party — booking entity, USNY)
+       └─ Acme Bank Hong Kong Branch  LEI TBD                    (party — booking entity, HKHK)
+#+end_example
+
+All LEIs use GLEIF's reserved =9695= pre-LOU test prefix and are
+checksum-valid (ISO 17442 / mod-97) — see the design-principle section
+above; the Hong Kong LEI is generated the same way when the branch is
+built. Mapped onto =ores_refdata_parties_tbl=: a =system=-type root
+party for the group, with =operational= children for the
+international arm and its regional booking branches, each carrying
+its LEI in =refdata_party_identifiers_tbl= the same way GLEIF-sourced
+parties do — the same pattern used for Barclays Plc/GLEIF today, just
+with a shallower, hand-curated tree instead of importing the full
+GLEIF LEI hierarchy.
+
+Each branch also needs *well-populated contact information* —
+registered address, main switchboard number, compliance/legal contact
+— stored via the existing party contact-information support, using
+each region's real-world address conventions (postcode format, phone
+country code) rather than placeholder text.
+
+* Proposed trading floor and support functions
+
+Per branch (London, New York, Hong Kong), the trading floor and its
+supporting functions:
+
+#+begin_example
+Party: Acme Bank <Branch> plc
+  └─ [DIVISION] Global Markets
+       ├─ [BUSINESS_AREA] Rates
+       │    └─ [DESK] IR Swaps <Branch>
+       ├─ [BUSINESS_AREA] Credit
+       │    └─ [DESK] Credit Trading <Branch>
+       ├─ [BUSINESS_AREA] FX
+       │    └─ [DESK] FX Rates <Branch>
+       └─ [BUSINESS_AREA] Support Functions
+            ├─ [COST_CENTRE] Middle Office <Branch>
+            └─ [COST_CENTRE] Market Risk <Branch>
+#+end_example
+
+Nine =DESK=/=COST_CENTRE=-type business units total (three trading
+desks + two support functions, per branch × three branches), each
+carrying the branch's =business_centre_code= (=GBLO=/=USNY=/=HKHK=).
+Business unit/portfolio/book *rows* are deferred per the scoping
+decision above — this is the target shape the eventual seeding task
+builds against.
+
+* Proposed staff roster
+
+Per branch, a modestly-sized trading floor plus support desks — not
+the "biggest bank," but enough headcount to exercise RBAC across
+front, middle, and risk:
+
+| Function              | Roles (per branch)                          | Headcount |
+|------------------------+----------------------------------------------+-----------|
+| IR Swaps desk          | 1 Desk Head, 2 Traders                       |         3 |
+| Credit Trading desk    | 1 Desk Head, 2 Traders                       |         3 |
+| FX Rates desk          | 1 Desk Head, 2 Traders                       |         3 |
+| Middle Office          | 1 Manager, 2 Analysts                        |         3 |
+| Market Risk            | 1 Manager, 2 Analysts                        |         3 |
+|------------------------+----------------------------------------------+-----------|
+| *Total per branch*     |                                              |      *15* |
+
+Plus, at the International-arm level (not branch-scoped): one Global
+Markets division head and one head per business area (Rates, Credit,
+FX) — 4 more accounts. *Grand total: 3 × 15 + 4 = 49 staff accounts.*
+
+Each account's name is generated using the *branch's locale* — British
+names for London, American names for New York, and Hong
+Kong/Cantonese-appropriate names for Hong Kong — not a single Western
+default across all three. Each account's profile picture is drawn
+from [[proj:external/facestudio/manifest.json][FaceStudio Face Dataset]] (=external/facestudio/faces=, 377
+images already committed), matched loosely to the generated name's
+apparent gender and the branch's predominant ethnicity bucket (e.g.
+=east_asian= for Hong Kong, =european=/=african=/=south_asian=/etc.
+mix for London and New York, reflecting real-world diversity rather
+than a monoculture per office).
+
+* Mapping against current entity support
+
+| Proposed element                            | ORE Studio entity                          | Populatable today? |
+|----------------------------------------------+----------------------------------------------+---------------------|
+| Group/International/Branch parties           | =party= (=system=/=operational=)            | Yes                 |
+| Fake-but-valid LEIs per party                 | =party_identifier= (=coding_scheme_code='LEI'=) | Yes — same table real GLEIF LEIs use |
+| Well-populated party contact information      | party contact-information support            | Yes                 |
+| Real GLEIF counterparties to trade against    | =counterparty= (imported via existing GLEIF provisioning) | Yes — reuse Barclays' import path |
+| Business centres (GBLO, USNY, HKHK)           | =business_centre=                            | Partial — only 1 seeded today; the other two need adding |
+| Division/Business Area/Desk/Cost-Centre types | =business_unit_type=                        | Yes (5 standard types seeded) |
+| Business units, portfolios, books             | =business_unit=/=portfolio=/=book=          | Deferred — waiting on =prime_origin='s unified dataset mechanism |
+| Staff login accounts                          | =account=                                    | Yes (accounts already exist) |
+| Desk-scoped RBAC roles                        | RBAC roles (tenant/party-scoped today)       | Partial — no desk-level granularity |
+| Locale-matched staff names                    | *none* — =ores.synthetic= has GB/US contact locales but no person-name/HK locale | *No — needs generator extension* |
+| Account profile pictures                      | *none* — accounts have no image field, and =ores_assets_images_tbl= stores SVG only (JPEGs don't fit) | *No — needs schema work* |
+| Tracking the generated party/account data as a first-class DQ dataset | =ores_dq_datasets_tbl= / =ores_dq_artefact_types_tbl= | Partial — no artefact type yet for "generated organisation" or "generated accounts" data |
+
+* Gaps
+
+- *No locale-aware name generation.* Producing realistic staff names
+  per business centre (British names for London, Hong
+  Kong/Cantonese-appropriate names for Hong Kong, etc.) needs a
+  Python-side generator (Faker locales, or an equivalent), not a DB
+  entity — this is a build-time data-generation gap, not a schema gap.
+- *No account profile-picture support.* =ores_iam_accounts_tbl= has no
+  image reference, and the only existing image table
+  (=ores_assets_images_tbl=) stores SVG =svg_data=, not binary/JPEG —
+  it was built for country flags, not photos. Decision: generalise
+  =ores_assets_images_tbl= to a binary-agnostic asset blob (rather than
+  add a parallel face-images table), plus an =image_id= FK on accounts.
+  This touches every existing SVG consumer (flags, etc.) to migrate
+  onto the generalised column — schema design work, not just data.
+- *Only 1 business centre seeded.* =GBLO=/=USNY=/=HKHK= are standard
+  FpML codes but the =business_centre= table only has one row
+  populated in this environment today; London/New York/Hong Kong need
+  seeding (small, low-risk — reuses the existing entity, no schema
+  change).
+- *No DQ artefact type for "generated organisation/staff data."* Every
+  existing dataset in =ores_dq_datasets_tbl= backs a concrete
+  reference-data table (countries, currencies, business units, …); an
+  Acme-generated party tree and staff roster need their own artefact
+  type(s) registered so they're trackable in the Data Librarian the
+  same way, rather than being invisible generated data.
+- *RBAC roles don't reach desk granularity.* Roles are tenant/party
+  scoped (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]]); there's no "desk trader" or "desk
+  head" role tied to a specific =business_unit=. Not a blocker for
+  this task's scope (accounts can still exist and log in), but worth
+  tracking for the RBAC exercise the parent story cares about.
+
+None of these gaps block *starting* implementation — party/LEI/contact
+population and business-centre seeding are pure data work with no
+schema change. Account pictures and the DQ artefact type are schema
+work and should be scoped as their own follow-up task(s) before the
+staff-generation script can be considered complete end-to-end.
+
+* Generation approach
+
+A generator driven by a hand-authored, hardcoded company-structure
+definition (the branches/desks/headcounts table above), rather than a
+purely synthetic/randomised org chart — see the previous section for
+why this likely means *extending* =ores.synthetic= rather than a
+from-scratch Python/Faker script, pending that task's own scoping:
+
+- The *shape* (which branches, which desks, how many people per desk)
+  is fixed data — a human decided it's "sensible" — layered on top of
+  whichever generator ends up producing it.
+- For each slot in that shape, the generator *generates* the filler
+  data: name (locale-matched to the branch, including Hong Kong —
+  net-new locale work regardless of which generator is extended),
+  email, a plausible employee-style username, a checksum-valid LEI on
+  the =9695= test prefix, and a =faces/= image path chosen by matching
+  the branch's ethnicity mix and the generated name's apparent gender.
+- Output should follow the same shape as other =ores.seeder= dataset
+  folders (manifest/model/populate-style JSON) so it plugs into the
+  standard seeder pipeline once the account-picture and DQ
+  artefact-type gaps are closed — not a bespoke one-off script whose
+  output has to be hand-wired in.
+
+This generator work, and the schema work it depends on, are follow-up
+tasks under the parent story, not part of this analysis task.
+
+* See also
+
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] — the parent story.
+- [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure: Party, Book, Portfolio, Business Unit, Business Centre]] — the entity model this analysis maps onto.
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — current RBAC model, referenced in the gaps above.
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the provisioning pattern to replicate for Acme Bank.
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — the =prime_origin= refactor that business-unit/portfolio/book seeding is deferred behind.
+- [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] — contrast case: a self-contained fictional world, deliberately *not* the pattern Acme follows.
+- [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] — the backlog capture behind =external/facestudio=.
+- [[id:8C53F763-1DB4-4287-AB72-7471E1A7DE29][Add a sample set of gravatars for profiles]] — existing backlog capture covering the account-picture gap identified here; should probably be superseded/merged into the follow-up task.

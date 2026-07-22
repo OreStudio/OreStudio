@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :refdata:test-data:parties:onboarding:sprint_24:v0:
 #+created: 2026-07-21
-#+updated: 2026-07-21
-#+environment:
+#+updated: 2026-07-22
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -44,12 +44,12 @@ each time.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Analysis task DONE; three follow-up tasks queued, all BACKLOG. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks — starting with the corporate structure design (party hierarchy, business centres) modelled on Barclays. |
-| Last touched  | 2026-07-21                               |
+| Next          | Follow-up tasks: account-picture schema, DQ artefact type for generated org/staff data, and extending ores.synthetic for the party/LEI/contact/staff generator. Business-unit/portfolio/book population waits on prime_origin's dataset-publish refactor. |
+| Last touched  | 2026-07-22                               |
 
 * Acceptance
 
@@ -80,9 +80,29 @@ each time.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | BACKLOG | | | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
+| [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | DONE | 2026-07-22 | 2026-07-22 | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
+| [[id:4FAF7D46-7EC6-4814-94EE-F47832020D6E][Generalise account images: SVG-only asset table to binary-agnostic, add account image_id FK]] | BACKLOG | | | Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces). |
+| [[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated organisation/staff data]] | BACKLOG | | | Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact. |
+| [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Build Acme Bank party/LEI/contact/staff generator]] | BACKLOG | | | Extend ores.synthetic's organisation_generator_service (rather than write a from-scratch Python/Faker script) to accept a hardcoded Acme company structure, fix its LEI generation to be checksum-valid on GLEIF's 9695 test prefix, add a Hong Kong locale, and add a staff/account layer with locale-matched names and FaceStudio pictures; provisioned under a distinct tenant code to avoid colliding with the existing acme/"Acme Corp" synthetic tenant. |
 
 * Decisions
+
+- *Acme owns everything.* Existing orphaned business-unit/portfolio/
+  book/report example fixtures get re-parented under Acme rather than
+  staying dangling test data with no real owning party.
+- *Integrate, don't invent a world.* Unlike =slovaris=, Acme is not a
+  self-contained fictional universe: its own legal entities carry
+  fake-but-checksum-valid LEIs (GLEIF's reserved =9695= pre-LOU test
+  prefix), but its counterparties are the real GLEIF-imported set —
+  the same one Barclays trades against.
+- *Business-unit/portfolio/book population is deferred* until
+  prime_origin's unified DQ dataset-publish refactor lands, to avoid
+  building bespoke seeding that would be thrown away.
+- *Three branches* (London, New York, Hong Kong) — enough for
+  follow-the-sun trading without needing "the biggest bank."
+- *Account pictures*: generalise the existing =ores_assets_images_tbl=
+  (currently SVG-only) to a binary-agnostic asset table, rather than
+  add a parallel face-images table.
 
 * Out of scope
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :unify_report_definitions_publish_infrastructure:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-librarian-tree-regression
+#+pr: 1668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,12 +37,12 @@ data_domain, badge_definition/severity/code_domain) — and fix it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
-| Now          | Not yet started.                       |
+| State        | DONE                              |
+| Parent story | [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
@@ -53,11 +53,77 @@ data_domain, badge_definition/severity/code_domain) — and fix it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Root cause, found by live investigation against Barclays Plc (not the
+system tenant), then confirmed at the SQL level:
+
+1. Reproduced live: the tree showed only =All Datasets= and an empty
+   =Domains= folder; =Catalogs=/=Bundles=/=Dimensions= were missing
+   entirely. Compared against a reference screenshot of the intended
+   layout (business_units/portfolios/currencies-style domain tree,
+   plus a =Catalogs= top-level branch).
+2. Client logs showed =Domains=/=Catalogs= fetch requests succeeding
+   with 0 rows (no error), while =Bundles=/=Dimensions=/=Subject
+   Areas= fetches on the SAME session succeeded with real data.
+3. DB inspection: =data_domain=/=catalog= rows exist only under the
+   system tenant (never copied to Barclays), exactly like
+   =subject_area= and the dimension tables that DO work. Postgres RLS
+   policies for all of these tables are identical: SELECT allows own
+   tenant OR system tenant (per =dq_rls_policies_create.sql='s
+   documented "DQ governance data ... shared data pattern").
+4. Found the actual bug: =data_domain_repository.cpp=/
+   =catalog_repository.cpp= (and, latently, =change_reason=/
+   =change_reason_category=/=badge_severity=/=badge_definition=) added
+   an explicit =where("tenant_id"_c == tid ...)= filter on every read
+   query -- strictly narrower than the RLS policy, silently dropping
+   the system-tenant fallback rows. =subject_area=/=dataset_bundle=/
+   the dimension repositories have no such filter and rely on RLS
+   alone, which is why they worked.
+5. Fixed properly in codegen, not as a one-off patch (per discussion
+   with Marco): added a new =tenant_read_scope: shared= domain_entity
+   model property (=** Repository= section), precomputed as
+   =read_tenant_filtered= in =core.py=, and updated
+   =cpp_domain_type_repository.cpp.mustache= (edited via its literate
+   =.org= source, re-tangled) so READ queries omit the tenant filter
+   for entities that opt in, while WRITE/DELETE queries keep it
+   unconditionally. Applied the new property to all 8 affected DQ
+   governance entities' =.org= models; regenerated via
+   =compass codegen regenerate --component dq --address
+   ores.cpp.repository=.
+6. Two entities (=subject_area=, =dataset_bundle=) turned out to be
+   far more architecturally stale than expected -- regenerating them
+   changed public interfaces (removed a =ctx_=-member constructor in
+   favour of per-call =ctx=), a much bigger blast radius than this fix
+   warranted. Reverted their regeneration; kept the =.org= model flag
+   (documents already-correct intended behaviour) but left their
+   modernisation for a separate task.
+7. Kept the other 6 entities' regenerated repositories
+   (=catalog=, =data_domain=, =change_reason=,
+   =change_reason_category=, =badge_severity=, =badge_definition=) --
+   clean, minimal diffs (query bodies only, no signature changes).
+   Reverted an unrelated =artefact_type= rewrite that got swept in by
+   regenerating the whole component.
+8. Independent second bug in the Qt client:
+   =DataLibrarianWindow::buildNavigationTree()= had
+   =if (dataDomainModel_->rowCount() == 0 && catalogModel_->rowCount()
+   == 0) return;= -- since both were empty (bug #4), the entire tree
+   build aborted, hiding =Bundles=/=Dimensions= too even though their
+   data had loaded fine. Removed the guard; each section already
+   rebuilds independently and safely from its own model.
+9. Verified with a temporary raw-SQL diagnostic query (added, tested,
+   then removed) executed via the exact same connection/tenant context
+   as the real query, to rule out an RLS/connection-pooling
+   explanation before concluding it was the =where= clause itself.
+10. Verified end-to-end via a QA Validation Runner scenario against
+    Barclays Plc on a freshly recreated database and rebuilt services:
+    Domains, Catalogs, Bundles, and Dimensions all populate correctly;
+    scenario recorded PASSED.
 
 * Notes
+
+- Filed follow-up: modernise =subject_area=/=dataset_bundle=
+  repositories to the current codegen template (legacy =ctx_=-member
+  interface) in a dedicated task, since it changes public interfaces
+  and needs its own review.
 
 * Test Scenarios
 
@@ -68,18 +134,49 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:29FE58D1-CCC8-4767-A50D-A67153886946][Data Librarian tree shows Domains and Catalogs branches]] | PASSED | Domains, Catalogs, Bundles, and Dimensions all verified against Barclays Plc. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1668][#1668]] | [dq,codegen,qt] Fix Data Librarian tree: DQ governance reads must trust RLS alone |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No automated regression test for the cross-tenant/system-tenant-fallback read path | repository tests | Accepted (deferred) | Filed backlog capture add_cross_tenant_regression_tests_dq_shared_entities.org; needs database_helper support for a second tenant context, out of scope for this fix. |
+| 2 | tenant_read_shared computed in core.py but never referenced by any template | core.py | Accepted | Inlined into read_tenant_filtered's single expression; confirmed regenerating the 6 target entities produces byte-identical output. |
+| 3 | No validation of tenant_read_scope values (e.g. a typo silently falls back to tenant-filtered reads) | core.py | Declined | Fails closed (stricter, safer default) on any unrecognised value, not open; not a correctness risk. |
+| 4 | Single-row lookups (read_latest(ctx,name), read_at_version) on shared entities have no deterministic tie-break if a tenant's natural key collides with a system-tenant row of the same key | repository template | Accepted (deferred) | Filed backlog capture fix_shared_entity_name_collision_ambiguity.org; not a security issue (RLS still enforces the boundary), fixing properly needs a template-level query redesign beyond this fix's scope. |
 
 * Result
+
+Root cause found and fixed properly in codegen. The Data Librarian
+tree's =Domains=/=Catalogs= branches were empty for any tenant other
+than =system= because =data_domain_repository=/=catalog_repository=
+(and, latently, =change_reason=/=change_reason_category=/
+=badge_severity=/=badge_definition=) added an app-level
+=tenant_id = ctx.tenant_id()= filter to every read query -- narrower
+than the Postgres RLS policy's documented "own tenant OR system
+tenant" shared-reference-data pattern, silently hiding the
+system-tenant-seeded rows every tenant is meant to see (exactly like
+=subject_area=/=dataset_bundle=/the dimension tables, which have no
+such filter and worked correctly).
+
+Added a new =tenant_read_scope: shared= codegen model property
+(precomputed as =read_tenant_filtered= in =core.py=) and updated
+=cpp_domain_type_repository.cpp.mustache= (via its literate =.org=
+source) so read queries omit the tenant filter for entities that opt
+in, relying on RLS alone; write/delete queries are unaffected.
+Regenerated 6 of the 8 affected entities cleanly; deferred
+=subject_area=/=dataset_bundle= to a separate modernisation task since
+regenerating them changes their public interface. Also fixed an
+independent Qt bug: =buildNavigationTree()='s early-return guard hid
+Bundles/Dimensions whenever Domains+Catalogs were both empty.
+
+Verified end-to-end via a QA Validation Runner scenario against a
+freshly recreated database and rebuilt services: Domains, Catalogs,
+Bundles, and Dimensions all populate correctly for Barclays Plc.
+Scenario recorded PASSED. Acceptance met in full.

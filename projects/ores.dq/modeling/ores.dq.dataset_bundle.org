@@ -100,6 +100,7 @@ std::string(faker::lorem::sentence())
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: bundle
 :entity_plural_short:   bundles
 :entity_singular_words: dataset bundle

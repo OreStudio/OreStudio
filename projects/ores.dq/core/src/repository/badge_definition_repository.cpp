@@ -51,10 +51,8 @@ void badge_definition_repository::write(context ctx,
 
 std::vector<domain::badge_definition> badge_definition_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
         ctx,
@@ -68,10 +66,8 @@ std::vector<domain::badge_definition>
 badge_definition_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge definition. code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<badge_definition_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
         ctx,
@@ -84,9 +80,8 @@ badge_definition_repository::read_latest(context ctx, const std::string& code) {
 std::vector<domain::badge_definition>
 badge_definition_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all badge definition versions. code: " << code;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
+                       where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
@@ -101,10 +96,8 @@ std::optional<domain::badge_definition> badge_definition_repository::read_at_ver
     context ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading badge definition at version. code: " << code
                                << " version: " << version;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-                       sqlgen::limit(1);
+                       where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
 
     const auto entities = execute_read_query<badge_definition_entity, domain::badge_definition>(
         ctx,
@@ -134,10 +127,9 @@ badge_definition_repository::read_latest(context ctx, std::uint32_t offset, std:
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge definitions with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
         ctx,
@@ -155,10 +147,8 @@ std::uint32_t badge_definition_repository::get_total_definition_count(context ct
         long long count;
     };
 
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<badge_definition_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());

@@ -185,6 +185,7 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: reason
 :entity_plural_short:   reasons
 :entity_singular_words: change reason

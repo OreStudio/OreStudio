@@ -90,6 +90,7 @@ std::string(faker::lorem::sentence())
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: category
 :entity_plural_short:   categories
 :entity_singular_words: change reason category

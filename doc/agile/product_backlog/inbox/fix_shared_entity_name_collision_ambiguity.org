@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3AD561EE-6A37-4D0D-A326-8266EEC9AD6B
+:END:
+#+title: Single-row lookups on tenant_read_scope: shared entities (e.…
+#+description: Single-row lookups on tenant_read_scope: shared entities (e.g. catalog_repository::read_latest(ctx, name), read_at_version) no longer filter by tenant_id, so if a tenant ever creates a row whose natural key (e.g. catalog name) collides with a system-tenant seed row of the same key, the lookup can return either row non-deterministically (callers like catalog_service::get_catalog(name) take .front()). Not a security issue (RLS still enforces the own-OR-system boundary) since both rows are legitimately visible, but worth either a deterministic own-tenant-preferred tie-break in the codegen template's single-row read queries, or an app-level constraint preventing a tenant's natural key from shadowing a system-tenant seed row. Flagged by PR #1668 review.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

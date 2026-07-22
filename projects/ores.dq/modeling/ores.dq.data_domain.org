@@ -89,6 +89,7 @@ std::string(faker::lorem::sentence())
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: domain
 :entity_plural_short:   domains
 :entity_singular_words: data domain

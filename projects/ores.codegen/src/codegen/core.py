@@ -1979,6 +1979,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Tenant read-scope: 'shared' entities (system-tenant-seeded reference
+        # data every tenant may read, e.g. DQ governance taxonomy already
+        # covered by the matching *_read_policy in dq_rls_policies_create.sql,
+        # which allows own-tenant OR system-tenant rows) rely on RLS alone for
+        # SELECT queries -- adding a narrower app-level tenant_id filter on
+        # top would defeat the policy's system-tenant fallback (exactly the
+        # bug this flag fixes). Mutations (insert/update/delete) always stay
+        # tenant-scoped regardless of this flag.
+        domain_entity['read_tenant_filtered'] = (
+            domain_entity.get('has_tenant_id', False)
+            and domain_entity.get('tenant_read_scope', 'tenant') != 'shared')
         # Set defaults for messaging handler knobs if not provided by entity model.
         # Entities override via ** Repository section; these cover the common cases.
         pk = domain_entity.get('primary_key', {})

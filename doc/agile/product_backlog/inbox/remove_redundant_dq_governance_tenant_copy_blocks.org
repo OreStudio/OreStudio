@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: ECE86F09-506F-4A85-96C8-CFAF4C587719
+:END:
+#+title: Now that change_reason/change_reason_category/badge_severity…
+#+description: Now that change_reason/change_reason_category/badge_severity/badge_definition repositories correctly rely on RLS alone for reads (tenant_read_scope: shared, fixed alongside the Data Librarian tree regression), their tenant-provisioning copy-block entries in iam_tenant_provisioner_create.sql (which duplicate system-tenant seed rows into every new tenant) are redundant -- harmless, but worth removing for consistency with catalog/data_domain/subject_area/dataset_bundle, which are never copied and rely on RLS fallback alone.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

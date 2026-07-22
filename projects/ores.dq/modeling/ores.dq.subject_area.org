@@ -122,6 +122,7 @@ std::string(faker::lorem::sentence())
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: area
 :entity_plural_short:   areas
 :entity_singular_words: subject area

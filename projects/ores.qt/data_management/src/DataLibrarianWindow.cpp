@@ -858,11 +858,13 @@ void DataLibrarianWindow::onBundleMembersLoaded() {
 }
 
 void DataLibrarianWindow::buildNavigationTree() {
-    // Only build when some data is loaded
-    if (dataDomainModel_->rowCount() == 0 && catalogModel_->rowCount() == 0) {
-        return;
-    }
-
+    // Every "Loaded" handler calls this; each section below rebuilds only
+    // from its own model and independently of the others, so there is no
+    // guard here on any single model's row count -- a previous guard on
+    // domains+catalogs alone silently hid the Bundles/Dimensions branches
+    // too whenever both of those specific models were empty (e.g. no
+    // system-tenant-shared rows visible to the caller's tenant), even
+    // though those other sections had data ready to show.
     auto* rootItem = navigationModel_->invisibleRootItem();
 
     // Find or create parent items

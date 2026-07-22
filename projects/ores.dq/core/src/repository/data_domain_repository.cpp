@@ -48,10 +48,8 @@ void data_domain_repository::write(context ctx, const std::vector<domain::data_d
 
 std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<data_domain_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -65,10 +63,8 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
                                                                      const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<data_domain_entity>> |
-        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<data_domain_entity>> |
+                       where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -81,9 +77,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
 std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
                                                                   const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. name: " << name;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<data_domain_entity>> |
-                       where("tenant_id"_c == tid && "name"_c == name) |
+    const auto query = sqlgen::read<std::vector<data_domain_entity>> | where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
@@ -99,10 +93,8 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(conte
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. name: " << name
                                << " version: " << version;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<data_domain_entity>> |
-                       where("tenant_id"_c == tid && "name"_c == name && "version"_c == version) |
-                       sqlgen::limit(1);
+                       where("name"_c == name && "version"_c == version) | sqlgen::limit(1);
 
     const auto entities = execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -132,10 +124,9 @@ data_domain_repository::read_latest(context ctx, std::uint32_t offset, std::uint
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domains with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<data_domain_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("name"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -153,10 +144,8 @@ std::uint32_t data_domain_repository::get_total_domain_count(context ctx) {
         long long count;
     };
 
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<data_domain_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());

@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:A1AD1629-9EF3-4895-AF7A-F441086A5450][Verify day-scaled kappa/sigma calibration fix for IR curve feeds]] | PENDING | Client started (colour blue) with the scenario preloaded; handed to user to execute. |
 
 * PRs
 

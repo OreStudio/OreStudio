@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:29886E46-8502-441A-BD48-34F247AF8232][Verify vintage auto_start and binding-collision validation]] | PENDING | |
 
 * PRs
 

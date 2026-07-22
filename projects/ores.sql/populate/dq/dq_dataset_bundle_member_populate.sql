@@ -181,9 +181,5 @@ BEGIN
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.fx_spot_configs.realistic', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.ir_curve_configs.realistic', 20);
-
-    -- --- Synthetic Data: Legacy (IBOR-era) Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_legacy', 'synthetic.ir_curve_configs.legacy', 10);
 END $$;
 

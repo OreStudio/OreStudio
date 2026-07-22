@@ -41,11 +41,8 @@
 \echo '--- IR Curve Config Seed Data: Basic ---'
 \ir ./synthetic_ir_curve_configs_basic_populate.sql
 
-\echo '--- IR Curve Config Seed Data: Realistic ---'
+\echo '--- IR Curve Config Seed Data: Realistic (+ legacy IBOR-era curves) ---'
 \ir ./synthetic_ir_curve_configs_realistic_populate.sql
-
-\echo '--- IR Curve Config Seed Data: Legacy (IBOR-era) ---'
-\ir ./synthetic_ir_curve_configs_legacy_populate.sql
 
 \echo ''
 \echo '=== Synthetic Component Population Complete ==='

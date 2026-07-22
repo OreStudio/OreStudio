@@ -492,21 +492,22 @@ void IrCurveEditor::buildProcessTab() {
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, &IrCurveEditor::onModeChanged);
 
-    // ===== 3. Middle row: mode stack (left, dominant) | compact curve-shape chart (right) --
-    // same zone assignment as FX (compact chart is the supporting view, prominent bottom chart
-    // is the hero view -- sample paths, matching FX's own "sample paths is the hero" choice).
+    // ===== 3. Middle row: mode stack (left, compact -- engine params need only enough room for
+    // four sliders) | curve-shape chart (right, dominant -- a full LIBOR-style Curve Template can
+    // carry 10-12 tenor points now, e.g. legacy USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid,
+    // and needs real horizontal room for its tenor-axis labels not to overlap).
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
-    middleRow->addWidget(modeStack_, 1);
+    modeStack_->setMaximumWidth(340);
+    middleRow->addWidget(modeStack_, 0);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
-    shapeBox->setMinimumWidth(380);
-    shapeBox->setMaximumWidth(560); // tenor category labels need more room than a plain index did
+    shapeBox->setMinimumWidth(480);
     auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
     shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
     shapeChart_->setMinimumHeight(240);
     shapeBoxLayout->addWidget(shapeChart_);
-    middleRow->addWidget(shapeBox, 0, Qt::AlignTop);
+    middleRow->addWidget(shapeBox, 1, Qt::AlignTop);
     layout->addLayout(middleRow);
 
     // ===== 4. Bottom row (full width): prominent sample-paths preview.

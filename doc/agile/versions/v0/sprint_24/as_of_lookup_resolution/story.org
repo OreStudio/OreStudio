@@ -25,11 +25,14 @@ book row), but resolving that code's Name/Description/badge colour
 today uses a current-only lookup, so a since-deleted or since-renamed
 code silently fails to resolve for a perfectly valid historical view.
 
-A hand-written, never-wired precedent already exists
-(=read_at_timepoint= on =currency_repository=/=country_repository=/
-=business_centre_repository=) — dead code, not codegen-generated, no
-service/NATS/UI caller anywhere. This story generalises it into a
-proper facet and applies it broadly, since resolving a historical FK
+A hand-written precedent already exists (=read_at_timepoint= on
+=currency_repository=/=country_repository= — not
+=business_centre_repository=, despite an earlier version of this
+story claiming otherwise): not codegen-generated, and with no
+service/NATS/UI caller, though =ores.cli export --as-of= does call
+it directly on the repository. This story generalises it into a
+proper facet (correcting a boundary bug found along the way — see
+Decisions) and applies it broadly, since resolving a historical FK
 value correctly is a common need, not a book-specific one.
 
 * Status
@@ -38,10 +41,10 @@ value correctly is a common need, not a book-specific one.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Design done; implement/pilot next.     |
 | Waiting on    | Nothing.                               |
-| Next          | Design the facet, pilot on book_status/regulatory_book_type. |
-| Last touched  | 2026-07-12                               |
+| Next          | Implement and pilot on book_status/regulatory_book_type. |
+| Last touched  | 2026-07-23                               |
 
 * Acceptance
 
@@ -69,12 +72,37 @@ value correctly is a common need, not a book-specific one.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]] | STARTED | 2026-07-23 | | Design a new codegen facet (candidate flag: :has_as_of_lookup: true) generating a repository-level read_at_timepoint(ctx, as_of[, key]) method and a service-level wrapper, matching the existing hand-written shape on currency_repository/country_repository/business_centre_repository but generated consistently. Decide: NATS protocol surface (new request/response, or reuse an existing one with an optional as_of param), where the flag lives in the .org model (entity-level, since this is about the entity's own bitemporal window, not a parent/child FK relationship), and how/whether to reconcile the 3 existing hand-written methods with the generated one. |
+| [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]] | DONE | 2026-07-23 | 2026-07-23 | Design a new codegen facet (candidate flag: :has_as_of_lookup: true) generating a repository-level read_at_timepoint(ctx, as_of[, key]) method and a service-level wrapper, matching the existing hand-written shape on currency_repository/country_repository/business_centre_repository but generated consistently. Decide: NATS protocol surface (new request/response, or reuse an existing one with an optional as_of param), where the flag lives in the .org model (entity-level, since this is about the entity's own bitemporal window, not a parent/child FK relationship), and how/whether to reconcile the 3 existing hand-written methods with the generated one. |
 | [[id:5DAF8FB2-D665-446F-A458-7612418DC348][Implement and pilot the as-of lookup facet on book_status/regulatory_book_type]] | BACKLOG | | | Add the designed facet to the codegen templates (SQL/repository/service/protocol as scoped). Apply :has_as_of_lookup: true to book_status.org and regulatory_book_type.org (the entities that surfaced this gap), regenerate, and wire it to an actual caller -- at minimum the Book history dialog resolving a historical version's status/type badge correctly, proving the facet isn't dead code like its hand-written predecessor. |
 | [[id:A61D91CC-61A9-4140-8F26-AA76621FBB80][Reconcile existing hand-written read_at_timepoint methods]] | BACKLOG | | | currency_repository/country_repository/business_centre_repository already have a hand-written, unwired read_at_timepoint. Once the codegen facet lands, either replace these with the generated version or explicitly document why they diverge -- don't leave two parallel implementations of the same concept. |
 | [[id:A3A2844A-BE49-4D1C-B5ED-49CA1A07DD1C][Roll out as-of lookup facet to remaining refdata entities]] | BACKLOG | | | Once proven on book_status/regulatory_book_type, apply :has_as_of_lookup: true broadly across refdata lookup/reference entities referenced by FK elsewhere. Deferred follow-on, not required for this story's own completion. |
 
 * Decisions
+
+- Corrected this story's own premise: =read_at_timepoint= is not
+  fully dead code — =ores.cli export currencies/countries --as-of=
+  already calls it directly on the repository.
+  =business_centre_repository= never had the method at all (only
+  =currency=/=country= do); the real gap is service/NATS/UI wiring
+  and test coverage, not "no caller anywhere".
+- The hand-written precedent has a boundary bug: =valid_to >= t=
+  should be =valid_to > t=, per the schema's own
+  =tstzrange(valid_from, valid_to)= exclusion constraint (PostgreSQL
+  default =[valid_from, valid_to)=, exclusive upper) and the
+  documented convention in [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]]. The generated facet
+  corrects this rather than reproducing it.
+- Facet is entity-level (=:has_as_of_lookup: true=, not per-column
+  like the existing =list_by_as_of=, which is a different
+  range-overlap shape for composite parent-child versioning and
+  stays untouched by this story).
+- NATS surface: extend the existing =get_..._request=/=response=
+  with an optional =as_of= field rather than minting a new
+  request/response pair — backward compatible, no protocol sprawl.
+- Pilot caller (Book history dialog) resolves a historical book
+  version's status/type badge as-of *that book version's own
+  =valid_from=*, not "now".
+- Full design rationale in [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]]'s =*
+  Plan=.
 
 * Out of scope
 

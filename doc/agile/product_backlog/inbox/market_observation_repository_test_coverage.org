@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 74EA1446-87F9-4895-B4C9-15D2CCD1B710
+:END:
+#+title: Add repository-level unit tests for hand-written market_observation_repository
+#+description: market_observation_repository (the hand-written entity's repository, distinct from the codegen market_observations entity) has no repository-level test file at all, including its list_by_series_id/read_latest paths.
+#+type: capture
+#+level: cross
+#+filetags: :ores.marketdata:testing:tech-debt:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+There is no =repository_market_observation_repository_tests.cpp= (or
+equivalent) in =projects/ores.marketdata/core/tests/= — the sibling
+codegen entity =market_observations= (plural) has one, but the
+hand-written =market_observation= (singular) repository, including its
+=read_latest_by_series_id=/=get_total_market_observation_count_by_series_id=
+=list_by= methods and the plain =read_latest=/=save=/=remove= surface,
+has zero direct repository-level test coverage. Add a test file
+covering at minimum: series_id filtering correctness,
+=observation_datetime desc= ordering (a real ordering regression was
+caught only by manual PR review, not a test — see References), and
+pagination (offset/limit).
+
+* Why
+
+A repository-level test asserting result ordering/content on the
+=list_by_series_id= path would have caught a real ordering regression
+(list_by defaulting to primary-key/UUID order instead of
+=observation_datetime desc=) directly, rather than relying on manual
+PR review to notice it. This gap pre-dates that PR — the
+=market_observation_repository= file itself has never had tests — but
+it's now the only path every real caller uses, making the gap higher
+value to close.
+
+* References
+
+- [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]]
+  — PR #1673 review round where this gap was flagged and the ordering
+  regression it would have caught was found.
+- =projects/ores.marketdata/core/src/repository/market_observation_repository.cpp=
+
+* See also
+
+-

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/survey-ore-bloomberg-reuters-notations
 #+pr: 1671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -51,7 +51,7 @@ identifier looks like in all three schemes side by side.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

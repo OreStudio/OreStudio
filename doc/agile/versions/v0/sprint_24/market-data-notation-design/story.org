@@ -8,7 +8,7 @@
 #+filetags: :marketdata:design:ore:identifiers:sprint_24:v0:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -65,7 +65,7 @@ agreed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -109,7 +109,7 @@ agreed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] | BACKLOG | | | Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data. |
+| [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] | STARTED | 2026-07-23 | | Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data. |
 | [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] | BACKLOG | | | Enumerate every place ore_key/index_name/qualifier/market_series keys fail to project onto ORE's index name / curve key / quote key model, including the tenor-index and curve-role gaps. |
 | [[id:4ACFF837-A9A4-4F17-9246-8E58993E469B][Design a canonical ORE Studio market data URN]] | BACKLOG | | | Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC. |
 

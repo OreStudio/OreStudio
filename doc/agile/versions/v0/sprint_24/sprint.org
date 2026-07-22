@@ -76,7 +76,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:F15A8480-C61A-4FC3-87FD-C880A1407F11][Generalize as-of and as-of-bucket queries across repositories]] | BACKLOG | | | Promoted from an inbox capture: document and generalise the as-of/as-of-bucket query shapes proven on market_observations_repository. |
 | [[id:F4BD60AB-ED53-4BA3-9BB0-7B354EC6AC2E][Add a server-side rate-history endpoint for chart panels]] | BACKLOG | | | Promoted from an inbox capture: shared server-side history endpoint for chart-style UI panels, starting with the CRM cross-rates matrix sparkline. |
 | [[id:1FF24B82-B7CF-4849-95BC-2DA1D4BFEADA][Audit ores.synthetic.service headers for missing export macro]] | BACKLOG | | | Promoted from an inbox capture: same latent Windows-export bug as PR #1656, audit for other unexported cross-boundary symbols. |
-| [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] | BACKLOG | | | Promoted from inbox captures: currency add Save-disabled bug, currencies list pagination broken, party re-provisioning duplicate-key error. |
+| [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] | DONE | 2026-07-22 | 2026-07-22 | Promoted from inbox captures: currency add Save-disabled bug, currencies list pagination broken, party re-provisioning duplicate-key error. |
 
 ** Hotfixes
 

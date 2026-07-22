@@ -2187,6 +2187,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if qt_col.get('is_string') and cpp_type.startswith('std::optional<'):
                         qt_col['is_optional_string'] = True
                         qt_col['is_string'] = False
+                    if qt_col.get('is_int') and cpp_type.startswith('std::optional<'):
+                        qt_col['is_optional_int'] = True
+                        qt_col['is_int'] = False
                     # Auto-assign column index for badge resolver calls
                     qt_col.setdefault('column_index', idx)
                     # Default column_style when not specified
@@ -2195,7 +2198,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                             qt_col['column_style'] = 'cs::badge_centered'
                         elif qt_col.get('enum_name') in icon_column_names:
                             qt_col['column_style'] = 'cs::icon_text_left'
-                        elif qt_col.get('is_int'):
+                        elif qt_col.get('is_int') or qt_col.get('is_optional_int'):
                             qt_col['column_style'] = 'cs::mono_center'
                         else:
                             qt_col['column_style'] = 'cs::text_left'

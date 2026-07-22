@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: FC800706-1673-4E48-84C2-22569E836DF5
 :END:
-#+title: Task: Seed realistic IR curve sample data (vintage + manual-start control-plane)
-#+description: Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, and give IR curve configs a manual per-tenant start control-plane (mirroring FX's market_feed_config_handler). The basic+realistic synthetic.ir_curve_configs DQ datasets and day-scaled defaults were delivered directly in the tick-batch-publishing task.
+#+title: Task: Vintage-aware seeding for ir_curve_feed
+#+description: Add vintage-aware seeding to ir_curve_feed/make_ir_curve_feed (mirroring feed_controller::start()'s vintage_source/vintage_date), so initial_rate comes from a real imported observation rather than an arbitrary config value. Consumes the dataset sourced by the sibling task; the manual per-tenant start control-plane and the basic+realistic DQ datasets/day-scaled defaults were delivered by prior tasks.
 #+type: task
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
@@ -25,82 +25,40 @@ demo" quality FX spot feeds already have. Today an
 =ir_curve_generation_config= must be hand-entered with arbitrary
 =kappa=/=theta=/=sigma=/=initial_rate= values — nothing stops (and
 nothing guides away from) unrealistic numbers, since there's no
-reference. Manual verification of the tick-batch-publishing task
-surfaced this concretely: an ad hoc test config using annual-scale
-Vasicek parameters (=kappa=0.5=, =sigma=0.01=) under the resolver's "1
-tick = 1 calendar day" convention produced ~150% published rates and a
-FRA point that never moved (its discount factors decay to
-r_t-independence within days at that reversion speed) — mechanically
-correct, but not demoable.
+reference. =ir_curve_feed=/=make_ir_curve_feed= has no
+=vintage_source=/=vintage_date= plumbing at all today — =initial_rate=
+always comes straight from the hand-entered config, unlike FX's
+=feed_controller::start()=, which resolves it from a real imported
+observation when a vintage is requested. This task adds the equivalent
+path for IR curves, consuming the dataset sourced by
+[[id:0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB][the sibling sourcing task]].
 
 Mirrors =synthetic_fx_spot_configs_basic_populate.sql= /
 =synthetic_fx_spot_configs_realistic_populate.sql=, which both seed
 =initial_price= from a real vintage (2016-02-05 Fed H.10), differing
 only in per-pair-calibrated vs exaggerated-uniform volatility.
 
-** Already delivered (tick-batch-publishing task, not this one)
+** Already delivered by prior tasks (not this one)
 
-While verifying =ir_curve_feed= manually, this task's DQ-dataset and
-day-scaling scope turned out to be needed immediately (there was
-nothing else to test against), so it was built directly rather than
-deferred:
-- =synthetic.ir_curve_configs.basic= and
-  =.realistic= DQ datasets, each with catalog/dataset registration, a
-  Curve Template entries artefact table, and an
-  =ores_synthetic_publish_ir_curve_configs_from_dq_fn= SQL function
-  mirroring the FX one (container/folder resolution, replace-all
-  sync), wired into the =synthetic_realistic=/=synthetic_basic=
-  bundles and the Barclays provisioning flow.
-- Day-scaled default =kappa=/=sigma= for the "1 tick = 1 calendar day"
-  convention (per-currency-calibrated in =.realistic=, uniform in
-  =.basic=).
+- =synthetic.ir_curve_configs.basic=/=.realistic= DQ datasets, day-
+  scaled default =kappa=/=sigma= — tick-batch-publishing task
+  ([[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][615FD100]]).
+- The manual per-tenant start/stop/list control-plane
+  (=ir_curve_feed_config_handler=, request-scoped context via JWT) and
+  its Qt toolbar entry point on
+  =IrCurveGenerationConfigMdiWindow= — delivered directly ahead of
+  this task's own start, see commit =19c74d4d9=. A dedicated "IR
+  Simulator" window (mirroring the FX Market Simulator) remains
+  future work, not required by this task's acceptance.
 
-Manual verification of the published =synthetic.ir_curve_configs.basic=
-dataset itself (not just the earlier ad hoc test) still produced
-unrealistic (~150-250) published rates despite day-scaled
-=kappa=0.5/365=. Suspected cause: at that small a =kappa=, the Vasicek
-discount-factor recursion's variance term (proportional to
-=sigma^2/kappa^2=) is numerically unstable over the tick counts a 2Y
-entry needs (730 daily ticks) -- a genuine calibration/numerical-
-stability problem, not a mechanical one (the tick-batch pipeline
-itself -- generation, batching, publish, ingest, persistence -- is
-proven correct via this same dataset). Needs a properly-conditioned
-=kappa=/=sigma= relationship, not just "divide the annual number by
-365", before this task's own day-scaling claim is actually true.
+** Split out of this task
 
-Manual verification also surfaced a second gap this task now owns:
-=ir_curve_feed= only ever auto-starts at service startup, for
-system-tenant configs read via the service's own unscoped context --
-=market_data_generation_config_repository= has no cross-tenant read
-method at all (confirmed: FX's =auto_start_enabled_feeds= has the
-identical limitation, so Barclays' provisioned FX configs don't
-auto-start either -- this is existing, expected Phase 1 behaviour, not
-new). FX works around it with a manual per-tenant *Start* button
-(=market_feed_config_handler=, driven from Qt's Market Simulator
-window, scoped to the caller's own JWT/tenant); IR curves have no
-equivalent, so a config published to a real tenant (e.g. Barclays) can
-never actually tick without restarting the whole service under that
-tenant's context -- not a viable path for a real UI workflow.
-
-** Sourcing historical IR data
-
-No vintage IR/yield dataset exists anywhere in this codebase today
-(only =marketdata_fx_driver_rates_populate.sql= for FX) — this is new
-data sourcing, not a lookup of something already half-done. Candidate
-public sources for a small set of currency/tenor points on one
-reference date, to evaluate for licensing/reuse terms and data shape
-before picking one:
-- *FRED (St. Louis Fed)* — SOFR and historical USD OIS/Treasury
-  series, freely redistributable, CSV/API access.
-- *ECB Data Portal* — €STR and historical euro-area yield curve
-  points.
-- *Bank of England Statistical Interactive Database* — SONIA history.
-- *ICE Benchmark Administration* — historical IBOR-successor fixings,
-  licensing needs checking before use.
-
-Only a handful of (currency, tenor, date) points are needed to seed
-one vintage row per Curve Template entry — not a full historical
-curve archive.
+- [[id:0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB][Source vintage historical
+  IR rate dataset + populate script]] — the external data sourcing
+  this task consumes.
+- [[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][Fix Vasicek day-scaled
+  kappa/sigma numerical instability]] — a pre-existing calibration bug
+  surfaced during manual verification, independent of vintage seeding.
 
 * Status
 
@@ -115,20 +73,17 @@ curve archive.
 
 * Acceptance
 
-- A small set of real historical (currency, tenor, date) IR points is
-  sourced and added as a new vintage populate script (mirroring
-  =marketdata_fx_driver_rates_populate.sql=), covering enough
-  currencies/tenors to seed the =DEPO=/=FRA=/=IRS= entries a basic
-  Curve Template needs.
-- =ir_curve_feed=/auto-start gains a vintage-aware seeding path
-  (mirroring =feed_controller::start()='s =vintage_source=/
+- =ir_curve_feed=/=make_ir_curve_feed= gains a vintage-aware seeding
+  path (mirroring =feed_controller::start()='s =vintage_source=/
   =vintage_date=), so =initial_rate= comes from a real imported
   observation rather than an arbitrary config value.
-- IR curve configs gain a manual per-tenant start/stop/list control
-  plane (mirroring =market_feed_config_handler=), with a UI entry
-  point in Qt (mirroring the Market Simulator's Start button), so a
-  config published to a real tenant (not just system) can actually be
-  started without restarting the whole service.
+- Both the auto-start path and the on-demand
+  =ir_curve_feed_config_handler::start()= path use this vintage
+  resolution identically, so they can never drift (same pattern
+  =make_ir_curve_feed= already uses to keep both paths in sync).
+- Missing vintage data is rejected with an actionable error, mirroring
+  =feed_controller='s =vintage_data_missing= result — not a silent
+  fallback to an arbitrary default.
 
 * Plan
 

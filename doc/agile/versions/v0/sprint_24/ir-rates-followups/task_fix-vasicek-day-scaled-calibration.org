@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 0A64C0F5-2720-41EA-9AEC-8327FA841B5F
+:END:
+#+title: Task: Fix Vasicek day-scaled kappa/sigma numerical instability
+#+description: Root-cause and fix the Vasicek discount-factor recursion's numerical instability under day-scaled kappa/sigma (1 tick = 1 calendar day convention): the published synthetic.ir_curve_configs.basic dataset still produces unrealistic (~150-250) rates on multi-year entries despite day-scaled kappa=0.5/365, suspected variance-term (sigma^2/kappa^2) instability over large tick counts.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the "day-scaled default kappa/sigma" claim from the
+tick-batch-publishing task actually true. Manual verification of the
+published =synthetic.ir_curve_configs.basic= dataset produced
+unrealistic (~150-250) published rates despite day-scaled
+=kappa=0.5/365=. Suspected cause: at that small a =kappa=, the Vasicek
+discount-factor recursion's variance term (proportional to
+=sigma^2/kappa^2=) is numerically unstable over the tick counts a 2Y
+entry needs (730 daily ticks) — a genuine calibration/numerical-
+stability problem, not a mechanical one (the tick-batch pipeline itself
+— generation, batching, publish, ingest, persistence — is proven
+correct via this same dataset).
+
+Split out of [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic
+IR curve sample data]] because this is a quant/numerics bug in the
+existing Vasicek recursion, independent of sourcing new vintage data or
+wiring it into the feed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- Root cause of the day-scaled kappa/sigma instability is identified
+  and documented.
+- A properly-conditioned kappa/sigma relationship (not just "divide
+  the annual number by 365") is implemented for the "1 tick = 1
+  calendar day" convention.
+- The published =synthetic.ir_curve_configs.basic= dataset produces
+  realistic rates end-to-end (verified via the same manual
+  verification path that surfaced the bug) for at least a 2Y entry.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
 #+owner: marco
 #+branch: feature/currency-add-save-disabled
-#+pr:
+#+pr: 1670
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1670][#1670]] | [qt/codegen] Fix currency Save-button and pagination state machines |
 
 * Review
 

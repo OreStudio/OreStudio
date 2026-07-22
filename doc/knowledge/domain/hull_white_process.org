@@ -73,6 +73,51 @@ point exactly, while keeping $\kappa$ and $\sigma$ as the (still just
 two) parameters controlling the curve's *dynamics* — how it moves —
 rather than its *shape today*.
 
+** =dt=: an explicit, separate step-length parameter
+
+$\kappa$, $\theta(t)$, $\sigma$ are always expressed in the SDE's own
+time unit (years); a *tick* is a purely internal simulation step whose
+real-world length is a separate, explicit =dt= (year fraction per
+tick) — a constructor parameter defaulting to =1.0= (one tick per
+year), never something a caller pre-folds into =kappa=/=sigma=
+themselves. Both =next()='s transition and =discount_factor()='s
+recursion take =dt= into account:
+
+\begin{equation}
+r_{i+1} = \theta_i + (r_i - \theta_i)\, e^{-\kappa\, dt} + \sigma
+\sqrt{\frac{1 - e^{-2\kappa\, dt}}{2\kappa}}\, Z
+\end{equation}
+
+and the backward recursion for $B_i$ (see below) accumulates $dt$ of
+bond-time per tick, not a flat $1$ — a tick spanning, say, one
+calendar day (=dt = 1/365=) must integrate only $1/365$ of a year's
+discounting, not a full year's. Getting this wrong is not a cosmetic
+error: at =dt = 1/365= over a 730-tick (2-year) horizon, treating each
+tick as a full year of bond-time computes $e^{-730\, r}$ instead of
+$e^{-2\, r}$ — an astronomically over-discounted price, and the
+concrete bug this =dt= parameter fixes (see
+[[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][the task that found and
+fixed it]]).
+
+Cross-checked against QuantLib
+(=Engine.remote/QuantLib/ql/processes/ornsteinuhlenbeckprocess.cpp=,
+=ql/models/shortrate/onefactormodels/vasicek.cpp=): every QuantLib
+short-rate formula keeps =speed= (kappa) and =dt=/=Time= arguments
+always separate (=exp(-speed*dt)=, never a pre-scaled composite), and
+Vasicek/Hull-White's own bond pricing in QuantLib uses a genuine closed
+form in real $(t,T)$ years, $B(t,T) = (1-e^{-a(T-t)})/a$, rather than
+an iterative per-tick recursion at all — a possible future
+simplification for this class's own constant-$\theta$ (Vasicek)
+special case, not implemented here, since the general time-varying
+$\theta(t)$ case this class exists for still needs the recursion. Only
+the domain knowledge (the $dt$ discipline, the closed forms, the
+degenerate small-$\kappa$ algebraic-limit handling) is adopted from
+QuantLib here, not its object-oriented shape (=StochasticProcess1D=
+inheritance, observer-pattern term-structure handles) — this codebase
+stays data-oriented, both by convention and because a future
+GPU-batched simulation of many processes at once favours plain
+parameter arrays over one object per process.
+
 ** Two equivalent forms
 
 Hull & White's original paper writes the SDE in "drift intercept" form,

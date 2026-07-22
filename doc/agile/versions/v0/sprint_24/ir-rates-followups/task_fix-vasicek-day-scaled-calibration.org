@@ -64,27 +64,86 @@ or wiring it into the feed.
 
 * Acceptance
 
-- Root cause (missing =sigma*sqrt(dt)= scaling alongside =kappa*dt=)
-  is documented in the relevant process knowledge docs
-  ([[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]/process docs as
-  applicable — see =doc/knowledge/domain/vasicek_process.org=,
-  =cir_process.org=, =hull_white_process.org=).
-- A properly-conditioned day-scaling is implemented for the "1 tick =
-  1 calendar day" convention, covering Vasicek/Hull-White and CIR
-  uniformly (not a Vasicek-only patch).
+- =hull_white_process=/=vasicek_process=/=cir_process= gain an
+  explicit =dt= (year-fraction per tick) parameter, defaulting to
+  =1.0= (full backward compatibility); =kappa=/=theta=/=sigma=/
+  =initial_rate= stay in their natural annualised units, never
+  pre-scaled by callers.
+- =discount_factor()='s per-tick bond-time accumulation is =dt=-aware
+  for both Hull-White's recursion and CIR's closed form (not just the
+  state-transition side) — this is the actual source of the
+  ~150-250% published-rate bug, not sigma scaling.
+- =process_factory::make_yield_curve_process()= and every
+  =ores.synthetic= call site thread =dt= through explicitly (1/365 for
+  the IR curve feed's day-per-tick convention), replacing the SQL-
+  embedded =kappa/365=/=sigma/sqrt(365)= scaling in
+  =synthetic_ir_curve_configs_basic_populate.sql=/
+  =_realistic_populate.sql=, which revert to plain annualised
+  parameters.
+- Root cause and the corrected recursion are documented in
+  =doc/knowledge/domain/vasicek_process.org=, =hull_white_process.org=,
+  =cir_process.org=, including the QuantLib cross-check and
+  attribution.
 - The published =synthetic.ir_curve_configs.basic= dataset produces
   realistic rates end-to-end (verified via the same manual
   verification path that surfaced the bug) for at least a 2Y entry, for
   each process type the dataset exercises.
-- Existing =vasicek_process_tests.cpp=/=cir_process_tests.cpp=/
-  =hull_white_process_tests.cpp= gain coverage for day-scaled
-  parameters producing sane single-day rate moves.
+- Comprehensive test coverage in
+  =vasicek_process_tests.cpp=/=hull_white_process_tests.cpp=/
+  =cir_process_tests.cpp= (see Plan): flat-curve reproduction across a
+  =dt= sweep (year/day/hour/minute), cross-=dt= consistency, degenerate
+  small-=kappa= branch sanity, and default-=dt= backward-compatibility
+  (existing assertions unchanged).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Cross-checked against QuantLib
+(=/mnt/development/Development/OreStudio/Engine.remote/QuantLib=):
+=ql/processes/ornsteinuhlenbeckprocess.cpp=,
+=ql/processes/coxingersollrossprocess.cpp=,
+=ql/models/shortrate/onefactormodels/vasicek.cpp=,
+=hullwhite.cpp=. Confirms the fix direction and supersedes the
+=sigma*sqrt(dt)= framing above — the actual numeric root cause is more
+specific and doesn't need caller-side sigma pre-scaling at all once
+=dt= is explicit (see the parent story's =* Decisions= for the full
+writeup):
+
+- QuantLib keeps =speed=(kappa) and =dt= always separate:
+  =exp(-speed*dt)=, =variance = sigma^2*(1-exp(-2*speed*dt))/(2*speed)=
+  — never a pre-scaled composite kappa.
+- Applying that to =hull_white_process=: the *only* change needed in
+  =next()= is =decay = exp(-kappa_ * dt_)= (was =exp(-kappa_)=); the
+  existing =var = (1-decay^2)/(2*kappa_)= formula is already correct
+  once =decay= itself is dt-aware (dividing by annualised =kappa_=
+  was never the bug — the missing =*dt= in the exponent was).
+- The actual, more damaging bug is in =discount_factor()=: its
+  =next_b = 1.0 + b*decay= treats every tick as one full *year* of
+  bond-time regardless of what a tick represents. Fix:
+  =next_b = dt_ + b*decay=. For a 730-daily-tick 2Y entry this was
+  integrating =exp(-730*rate_)= instead of =exp(-2*rate_)= — the
+  actual source of the ~150-250% published rates, not sigma at all.
+- =cir_process=: =next_stochastic()='s =decay=/=c=/=lambda= need the
+  same =exp(-kappa_*dt_)= fix; =discount_factor()='s closed form needs
+  =tau = ticks_ahead * dt_= (was raw =ticks_ahead=) — CIR already uses
+  a closed form (no iteration), so this is a one-line fix once =dt= is
+  threaded through, unlike Hull-White's recursion.
+- Degenerate small-=kappa= branches (Hull-White's =kappa &lt;= 0=, both
+  processes' driftless/ODE paths) get the same =*dt= treatment
+  (=b += dt_=, =rate_ += sigma_*sqrt(dt_)*z=), following QuantLib's
+  =speed &lt; sqrt(QL_EPSILON)= algebraic-limit pattern rather than a
+  bare =&lt;= 0= guard.
+- =dt= defaults to =1.0= (one tick per year) on every constructor —
+  exactly today's behaviour, so this is purely additive for every
+  existing caller/test that doesn't pass it.
+- =process_factory::make_yield_curve_process()= gains the same =dt=
+  parameter (default =1.0=); =ores.synthetic='s three call sites
+  (=ir_curve_feed.cpp=, =ir_curve_preview_handler.hpp= x2) pass
+  =1.0/365.0=, matching =ir_curve_template_resolver='s already-
+  documented "1 tick == 1 calendar day" convention.
+- =synthetic_ir_curve_configs_basic_populate.sql=/
+  =_realistic_populate.sql= revert their =kappa/365=/=sigma/sqrt(365)=
+  SQL-embedded scaling back to plain, real annualised Vasicek
+  parameters — the scaling now lives in tested C++, not SQL comments.
 
 * Notes
 

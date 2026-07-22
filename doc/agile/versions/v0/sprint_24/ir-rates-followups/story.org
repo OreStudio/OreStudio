@@ -49,6 +49,57 @@ Extend [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data genera
 
 * Decisions
 
+** dt is a first-class, explicit process parameter (not caller-side pre-scaling)
+
+[[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][The calibration-fix
+task]]'s root-cause analysis, cross-checked against QuantLib's own
+=OrnsteinUhlenbeckProcess=/=CoxIngersollRossProcess=/=Vasicek=/
+=HullWhite= sources
+(=Engine.remote/QuantLib/ql/processes/=,
+=ql/models/shortrate/onefactormodels/=): every QuantLib formula keeps
+=speed= (kappa) and =dt= as two always-separate arguments (=exp(-speed
+* dt)=, =variance(speed, sigma, dt)=), never a caller-pre-scaled
+composite. Our =synthetic_ir_curve_configs_basic_populate.sql= instead
+computed =kappa/365= and =sigma/sqrt(365)= as SQL constants — quant
+scaling logic with no tests, living outside =ores.analytics.quant=
+entirely. Decision: =dt= (year-fraction per tick) becomes an explicit
+constructor parameter on =hull_white_process=/=cir_process= (and
+=vasicek_process=, forwarding), defaulting to =1.0= for full backward
+compatibility; =kappa=/=theta=/=sigma=/=initial_rate= stay in their
+natural annualised units always, and callers never pre-scale them.
+=process_factory::make_yield_curve_process()= gains the same =dt=
+parameter, threaded from =ir_curve_template_resolver='s already-
+documented "1 tick == 1 calendar day" convention. The SQL populate
+scripts revert to plain, real annualised Vasicek parameters.
+
+This also fixed a second, independent bug the day-scaling investigation
+surfaced: =discount_factor()='s backward recursion accumulated =+1.0=
+of bond-time per tick regardless of what a tick represents, rather
+than =+dt= — for a 730-daily-tick 2Y entry this integrated ~730
+years of a rate meant to run for 2, producing the ~150-250% published
+rates that triggered this investigation.
+=cir_process::discount_factor()='s closed form had the identical
+defect (=tau = ticks_ahead= used as literal elapsed years).
+
+** Domain knowledge from QuantLib, not its OOP shape
+
+QuantLib's =StochasticProcess1D= inheritance,
+=Handle&lt;YieldTermStructure&gt;= observer wiring, and virtual
+=drift()=/=diffusion()= are deliberately *not* adopted — this codebase
+stays data-oriented (plain structs/free functions over flat parameter
+arrays), both for its own conventions and because
+[[id:A1A92FFB-FCFF-4B51-B5DF-6F8A240E0B21][a GPU-batched stochastic-
+process backlog capture]] wants these processes parallel-simulation-
+friendly, which an object-per-process virtual-dispatch design works
+against. What *is* adopted is QuantLib's domain knowledge: the explicit
+=speed=/=dt= separation above, degenerate small-=kappa= algebraic-limit
+branches (QuantLib branches at =speed &lt; sqrt(QL_EPSILON)= rather
+than only guarding =speed &lt;= 0=), and its
+=testExtendedCoxIngersollRossDiscountFactor= test pattern (calibrate to
+a flat-rate curve, assert the model reproduces =exp(-r*(T-t))=
+exactly) — adapted into a per-=dt= regression test in this codebase's
+own Catch2 style, not ported as QuantLib code.
+
 * Out of scope
 
 -

@@ -81,6 +81,23 @@ before Monte Carlo simulation was cheap: the whole term structure
 implied by a given $(\kappa, \theta, \sigma, r_0)$ can be computed
 analytically, with no simulation at all.
 
+** =dt= is an explicit, separate parameter from =kappa=
+
+$\kappa$, $\theta$, $\sigma$, $r_0$ are always expressed in the SDE's
+*own* time unit (conventionally years) — advancing the state or pricing
+a bond over a step of length $dt$ (one tick) requires $dt$ itself as a
+genuinely separate input, appearing as $\kappa\,dt$ in the decay
+($e^{-\kappa\,dt}$) and as $dt$ itself in the bond-time accumulated per
+tick — never folded into $\kappa$ or $\sigma$ ahead of time by a
+caller. QuantLib's
+=Engine.remote/QuantLib/ql/processes/ornsteinuhlenbeckprocess.cpp=
+follows exactly this shape (=speed=, =dt= always separate arguments,
+never a pre-scaled composite); =hull_white_process= (which this class
+composes) follows the same convention. See
+[[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]'s own doc for
+the derivation, since =vasicek_process= inherits it unchanged rather
+than re-deriving it.
+
 ** The trade-off: rates can go negative
 
 Because Vasicek's volatility term $\sigma$ (constant, not

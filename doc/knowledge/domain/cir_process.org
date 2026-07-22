@@ -128,6 +128,29 @@ A(\tau) &= \left[ \frac{2\gamma\, e^{(\kappa+\gamma)\tau/2}}
 P(\tau) &= A(\tau)\, e^{-B(\tau)\, r_t}
 \end{align}
 
+** =dt=: an explicit, separate step-length parameter
+
+As with [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]]/
+[[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], $\kappa$,
+$\theta$, $\sigma$ are always in the SDE's own (annual) time unit; a
+tick's real-world length is a separate, explicit =dt= — a constructor
+parameter defaulting to =1.0=. Both the exact transition and the
+closed-form bond price need it: =decay=/=c=/=lambda= in the transition
+use $e^{-\kappa\, dt}$ in place of $e^{-\kappa}$, and $\tau$ in the
+bond price is $\text{ticks\_ahead} \times dt$, not the raw tick count.
+Because CIR's bond price is *already* a closed form (no iterative
+recursion the way Hull-White's time-varying-$\theta$ case needs), this
+=dt= fix is a single substitution once =dt= is threaded through — but
+omitting it has the same failure mode as Hull-White's uncorrected
+recursion: $\tau$ used as a raw tick count silently treats each tick as
+a full year, over-discounting by a factor of $1/dt$ at fine tick
+granularities (e.g. daily ticks, =dt = 1/365=). See
+[[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][the task that found and
+fixed this]] for the concrete numbers, and
+[[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]]'s own doc for
+the cross-check against QuantLib's identical =speed=/=dt= separation
+convention.
+
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub, including the comparison table across all four mean-reverting processes.

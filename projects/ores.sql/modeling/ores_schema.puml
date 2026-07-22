@@ -6052,19 +6052,6 @@ package "marketdata" #E3F2FD {
     the binding.
     end note
 
-    entity ores_marketdata_fixings_tbl <<temporal>> #C6F0D8 {
-        * id : uuid <<PK>>
-        * fixing_date : date <<PK>>
-        --
-        * tenant_id : uuid <<FK>>
-        * series_id : uuid <<FK>>
-        * value : text
-          source : text
-        * workspace_id : uuid <<FK>>
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * fixing_date : date <<PK>>
@@ -6155,40 +6142,6 @@ package "marketdata" #E3F2FD {
     Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
     asset_class and series_subclass carry the coarse taxonomy for filtering.
     end note
-
-    entity ores_marketdata_observations_tbl <<temporal>> #C6F0D8 {
-        * id : uuid <<PK>>
-        * observation_datetime : timestamptz <<PK>>
-        --
-        * tenant_id : uuid <<FK>>
-        * series_id : uuid <<FK>>
-          point_id : text <<FK>>
-        * value : text
-          source : text
-        * workspace_id : uuid <<FK>>
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    entity ores_marketdata_series_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * series_type : text
-        * metric : text
-        * qualifier : text
-        * asset_class : text
-        * series_subclass : text
-        * is_scalar : boolean
-        * workspace_id : uuid <<FK>>
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
 
 }
 

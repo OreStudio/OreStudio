@@ -122,7 +122,7 @@ struct get_{{entity_plural}}_{{name_suffix}}_request {
         "{{component}}.v1.{{entity_plural}}.{{nats_suffix}}";
     std::string {{filter_column}};
     std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+    std::uint32_t limit = {{default_limit}};
 };
 
 struct get_{{entity_plural}}_{{name_suffix}}_response {

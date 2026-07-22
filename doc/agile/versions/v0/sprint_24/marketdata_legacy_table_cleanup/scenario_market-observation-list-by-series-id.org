@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: C9EC600D-05CB-4539-B5CD-1C070771829A
+:END:
+#+title: Test Scenario: Market observation list_by_series_id endpoint works
+#+description: Verify FX Spot chart/editor windows correctly load market observations via the new dedicated list_by_series_id NATS endpoint (replacing the retired hand-written series_id filter on the generic .list endpoint).
+#+type: test_scenario
+#+level: s1
+#+filetags: :marketdata_legacy_table_cleanup:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]] in [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]] |
+| Parent story  | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =prime_origin= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*. If the database has been recreated since last use,
+re-provision first: =compass shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+(publishes real FX driver-rate observations needed for this test).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open an FX Spot chart window
+
+Menu: *Market Data > FX Spot* (or the equivalent currency-pair chart
+window). Pick a currency pair that has data, e.g. EUR/USD.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the chart renders observation data
+
+Confirms PASS if the chart plots a non-empty price series for the
+selected pair with no error dialog or empty-state message. Confirms
+FAIL if the chart is blank, shows an error, or the app logs a failed
+=marketdata.v1.market_observations.list_by_series_id= request.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | its hard to make sense of the chart. we need to change the chart to only plot last 5 mins by default; ; [[file:scenario_market-observation-list-by-series-id_step3_20260722_223937.png]] |
+
+** Confirm no console/log errors on load
+
+Check the running client's log
+(=build/output/linux-clang-debug-make/publish/log/ores.qt.<colour>.log=)
+for the chart-loading window: confirms PASS if it shows a successful
+=list_by_series_id= round trip (no =Failed to fetch observations=
+message).
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-22T21:39:49Z |
+| Branch        | feature/drop-legacy-marketdata-tables |
+| Commit        | bdd49c165 |
+| Worktree      | prime_origin |
+
+* Notes

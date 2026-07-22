@@ -31,16 +31,32 @@ using namespace ores::logging;
 market_observation_service::market_observation_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::market_observation> market_observation_service::list_market_observations(
-    std::uint32_t offset, std::uint32_t limit, const std::string& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing market observations";
-    return repo_.read_latest(ctx_, offset, limit, series_id);
+std::vector<domain::market_observation>
+market_observation_service::list_market_observations(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all market observations";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_observation_service::count_market_observations() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total market observations count";
     return repo_.get_total_market_observation_count(ctx_);
 }
+
+std::vector<domain::market_observation>
+market_observation_service::list_market_observations_by_series_id(const std::string& series_id,
+                                                                  std::uint32_t offset,
+                                                                  std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing market observations by series_id: " << series_id;
+    return repo_.read_latest_by_series_id(ctx_, series_id, offset, limit);
+}
+
+std::uint32_t
+market_observation_service::count_market_observations_by_series_id(const std::string& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total market observations count by series_id: "
+                               << series_id;
+    return repo_.get_total_market_observation_count_by_series_id(ctx_, series_id);
+}
+
 
 std::optional<domain::market_observation>
 market_observation_service::get_market_observation(const std::string& id) {

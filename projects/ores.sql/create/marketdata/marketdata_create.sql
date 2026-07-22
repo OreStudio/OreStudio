@@ -18,11 +18,6 @@
  *
  */
 
--- Series must be created before observations and fixings (trigger references it).
-\ir ./marketdata_series_create.sql
-\ir ./marketdata_observations_create.sql
-\ir ./marketdata_fixings_create.sql
-
 -- Codegen market data entities (market_series must precede observations/fixings).
 \ir ./marketdata_market_series_create.sql
 \ir ./marketdata_market_series_notify_trigger_create.sql

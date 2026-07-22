@@ -124,7 +124,7 @@ std::expected<std::optional<domain::market_series>, std::string> market_data_cli
 
 std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations(const std::string& series_id) {
-    messaging::get_market_observations_request req;
+    messaging::get_market_observations_by_series_id_request req;
     req.series_id = series_id;
     req.limit = 10000;
     auto resp = send(nats_, req);
@@ -137,7 +137,7 @@ std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations_page(const std::string& series_id,
                                            std::uint32_t offset,
                                            std::uint32_t limit) {
-    messaging::get_market_observations_request req;
+    messaging::get_market_observations_by_series_id_request req;
     req.series_id = series_id;
     req.offset = offset;
     req.limit = limit;

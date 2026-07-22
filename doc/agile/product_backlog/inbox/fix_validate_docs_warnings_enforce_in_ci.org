@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: EF37CDA6-DCC7-439B-AF40-CD3CC1D425EC
+:END:
+#+title: Fix validate_docs.sh warnings and enforce it in CI
+#+description: Clear the 63 existing component-documentation warnings from projects/ores.codegen/validate_docs.sh and add it as an enforced CI check, mirroring how validate_schemas.sh already fails CI on warnings.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:ci:codegen:component:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/validate_docs.sh= checks every =ores.*= component
+has a well-formed =modeling/component_overview.org= (required =#+type:
+component=, required sections =Inputs=/=Outputs=/=Entry points=/
+=Dependencies=/=See also=, and a =.puml= diagram in =modeling/=).
+Running it today reports 63 warning lines across most components
+(=MISSING_TYPE=, =MISSING_SECTION=, =MISSING_PUML=, and two components —
+=ores.marketdata=, =ores.synthetic= — missing
+=component_overview.org= entirely). Fix every component's overview doc
+to clear these warnings, then wire =validate_docs.sh= into a CI
+workflow so it fails the build on any warning, exactly like
+=projects/ores.sql/utility/validate_schemas.sh= already does for the
+SQL schema.
+
+* Why
+
+The check exists and is runnable locally (=doc-add-component-model=
+skill references it) but nothing enforces it — component documentation
+has drifted silently across most of the codebase with no CI signal.
+=validate_schemas.sh= proves the pattern works well for SQL; the same
+discipline should apply to component-level docs so drift is caught at
+PR time instead of accumulating indefinitely.
+
+* References
+
+- =projects/ores.codegen/validate_docs.sh= — the validator.
+- =projects/ores.sql/utility/validate_schemas.sh= — the sibling
+  validator already enforced in CI; model the new workflow step on it.
+
+* See also
+
+- [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]]
+- [[id:FBA1F66D-BACF-4C5C-AD83-C6AE56131DDC][Run validate_schemas.sh before pushing any SQL schema change]]

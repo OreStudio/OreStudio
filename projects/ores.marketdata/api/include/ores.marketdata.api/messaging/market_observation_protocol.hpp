@@ -30,7 +30,6 @@ namespace ores::marketdata::messaging {
 struct get_market_observations_request {
     using response_type = struct get_market_observations_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.list";
-    std::string series_id; // optional: if set, return only observations for this series
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
 };
@@ -76,6 +75,22 @@ struct get_market_observation_history_request {
 
 struct get_market_observation_history_response {
     std::vector<ores::marketdata::domain::market_observation> history;
+    bool success = false;
+    std::string message;
+};
+
+struct get_market_observations_by_series_id_request {
+    using response_type = struct get_market_observations_by_series_id_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.market_observations.list_by_series_id";
+    std::string series_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 1000;
+};
+
+struct get_market_observations_by_series_id_response {
+    std::vector<ores::marketdata::domain::market_observation> market_observations;
+    int total_available_count = 0;
     bool success = false;
     std::string message;
 };

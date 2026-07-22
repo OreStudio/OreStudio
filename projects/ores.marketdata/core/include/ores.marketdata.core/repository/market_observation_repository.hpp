@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -74,16 +76,33 @@ public:
      */
     std::vector<domain::market_observation> read_all(context ctx, const std::string& id);
 
+
+    /**
+     * @brief Reads latest market observations filtered by series_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param series_id The series_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::market_observation> read_latest_by_series_id(context ctx,
+                                                                     const std::string& series_id,
+                                                                     std::uint32_t offset,
+                                                                     std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active market observations filtered by series_id.
+     */
+    std::uint32_t get_total_market_observation_count_by_series_id(context ctx,
+                                                                  const std::string& series_id);
+
     /**
      * @brief Reads latest market observations with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      */
-    std::vector<domain::market_observation> read_latest(context ctx,
-                                                        std::uint32_t offset,
-                                                        std::uint32_t limit,
-                                                        const std::string& series_id = {});
+    std::vector<domain::market_observation>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active market observations.

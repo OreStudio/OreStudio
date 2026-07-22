@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata_legacy_table_cleanup:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/drop-legacy-marketdata-tables
+#+pr: 1673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-21
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +38,11 @@ one) so future regenerations don't clobber them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -56,22 +56,159 @@ one) so future regenerations don't clobber them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated every caller of the hand-written =series_id= filter
+first: =ClientMarketObservationModel=, =FxSpotChartWindow=,
+=FxSpotRateEditor=, and =market_data_client::list_observations[_page]=
+— *every* real caller always sets =series_id=; there is no genuine
+"list all observations across every series" use case anywhere in the
+codebase. This isn't an optional filter on the generic list, it's the
+entity's only real list mode — so modelled it properly via codegen's
+existing =list_by= foreign-key facet (already used elsewhere, e.g.
+=book.parent_portfolio_id=) rather than protecting the hand-written
+override in place:
+
+1. Added =* Foreign keys= / =** series_id= (=:table:
+   ores_marketdata_market_series_tbl=, =:list_by: true=) to
+   =ores.marketdata.market_observation.org=. Confirmed via
+   =org_loader.py= that =* Foreign keys= feeds only the C++ facets
+   (protocol/repository/service/handler/registrar) here — no SQL-side
+   validation trigger is generated unless a =* Insert trigger= section
+   also references the column, which this entity doesn't have, so this
+   was a purely additive, zero-SQL-risk change.
+2. Added a =default_limit= override (=core.py= +
+   =ores.cpp.protocol.protocol_header.org=, re-tangled into
+   =cpp_protocol.hpp.mustache=) so a =list_by= facet's default page
+   size can be set per foreign key, driven by a new
+   =:list_by_default_limit:= property. Set it to 1000 for
+   =series_id= (market data is high-volume tick data, not
+   user-managed reference rows — the usual default of 100 would be too
+   small).
+3. Regenerated =market_observation= across =ores.cpp.protocol=,
+   =ores.cpp.repository=, =ores.cpp.service=, =ores.cpp.nats-handler=,
+   =ores.cpp.nats-sub-registrar= via =compass codegen entity generate=
+   (per-entity, not whole-component, to avoid unrelated churn). This
+   produced a dedicated, paginated
+   =marketdata.v1.market_observations.list_by_series_id= endpoint and
+   retired the hand-written =series_id= parameter from the generic
+   =.list= endpoint entirely.
+4. =ores.marketdata= was still on the older hand-wired monolithic
+   =registrar.cpp= pattern (per-subject =queue_subscribe= calls written
+   by hand), unlike components already migrated to generated per-entity
+   sub-registrars (e.g. =ores.synthetic=). Migrated =market_observation=
+   specifically: wired the newly-generated
+   =register_market_observation_handlers()= into the aggregator,
+   removing the 3 hand-wired subscriptions it replaces. This also fixed
+   a latent gap: =get_market_observation_history_request= had a
+   =history()= handler method but was never actually subscribed in the
+   old hand-wired file — the generated sub-registrar covers all 5
+   subjects correctly.
+5. Migrated the 4 real call sites from the generic
+   =get_market_observations_request= to the new
+   =get_market_observations_by_series_id_request=; simplified
+   =FxSpotChartWindow= by dropping a redundant client-side
+   series-id re-filter that was defensive/dead code once the server
+   guarantees exact filtering.
+6. =file(GLOB_RECURSE ...)= in =ores.marketdata.core='s CMakeLists.txt
+   doesn't pick up new source files without a CMake reconfigure; the
+   first build after adding =market_observation_registrar.cpp= linked
+   against a stale =.so= (undefined reference) until
+   =CMakeLists.txt= was touched to force one.
+7. Verified idempotency directly (the task's actual acceptance
+   criterion): ran the same =codegen entity generate= commands a
+   second time after building/testing — zero further diff, confirming
+   regeneration is now a no-op.
+8. Ran the full marketdata test suites (core/api/client/service, all
+   pass), =ores.qt.tests= (pass), and a full clean build. Verified live
+   against a freshly recreated database: Barclays Plc re-provisioned
+   (publishing real FX driver-rate observations), Qt client launched
+   with a QA Validation Runner scenario covering the FX Spot chart's
+   use of the new endpoint.
 
 * Notes
+
+The QA scenario's step 3 failure is a pre-existing chart-usability gap
+(the FX Spot chart has always plotted its whole retained sample buffer
+with no time-window default), not something this task introduced or
+regressed — the underlying data path it actually verifies (a
+successful =list_by_series_id= round trip with correct, non-empty,
+correctly-filtered results) passed. Filed as its own capture rather
+than folded into this task's acceptance, since it's chart-rendering UX
+scoped well beyond this task's codegen/override goal, and applies
+equally to CRM plots: [[id:7F5BE078-A845-4E90-B470-268F23B9DB46][Shared
+chart-data presentation layer for FX Spot and CRM plots]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:C9EC600D-05CB-4539-B5CD-1C070771829A][Market observation list_by_series_id endpoint works]] | FAILED (chart usability; endpoint itself confirmed working) | Steps 1/2/4 PASS — connect, chart opens, no log/round-trip errors. Step 3 PASS on data (non-empty series rendered, no errors) but FAILED on usability: chart plots the full retained history at once, making it hard to read. Not a regression from this task — filed as a separate capture, see Notes. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1673][#1673]] | [marketdata,codegen] Retire legacy marketdata tables; make market_observation's series filter codegen-native |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | list_by ordering regressed from observation_datetime desc to id (random UUID) — affects ClientMarketObservationModel grid (no client-side sort) and any series exceeding its page limit | market_observation_repository.cpp | Accepted | Added a new list_by_order_by codegen property (defaults to primary-key order, unchanged for every other list_by facet); set to "observation_datetime desc" for series_id and regenerated. |
+| 2 | Unnecessary #include <chrono> in repository/service headers | market_observation_repository.hpp, market_observation_service.hpp | Declined | Pre-existing codegen template boilerplate (list_by/list_by_as_of template), not introduced by this PR, not worth an unrelated template change here. |
+| 3 | Double blank line after generated list_by methods | market_observation_repository.cpp, market_observation_service.hpp | Declined | Template whitespace artefact of the {{#list_by}} mustache section boundary; cosmetic only, out of scope for this fix. |
+| 4 | ores.marketdata.api.puml not updated for new request/response classes | ores.marketdata.api.puml | Declined | Manually-maintained diagram, not codegen output; pre-existing gap unrelated to this task's goal. |
 
 * Result
+
+=market_observation='s hand-written =series_id= filter and pagination
+overrides no longer exist to be silently reverted — the acceptance
+criterion (=compass codegen regenerate= producing no diff on the
+affected files) is met by construction, since the behaviour is now
+codegen-native rather than a hand-maintained override layered on top
+of it.
+
+- Modelled =series_id= as a proper =list_by= foreign key in
+  =ores.marketdata.market_observation.org= (every real caller always
+  filters by series; there was no genuine "list all" use case), adding
+  a new reusable =:list_by_default_limit:= codegen property (=core.py=
+  + =ores.cpp.protocol.protocol_header.org=) so this facet's default
+  page size can be set independently of the usual 100 — set to 1000
+  here, since market observations are high-volume tick data.
+- Regenerated =market_observation= across all five affected facets
+  (protocol/repository/service/handler/nats-sub-registrar) via
+  =compass codegen entity generate= (scoped per-entity, avoiding
+  unrelated churn). This produced a dedicated, paginated
+  =marketdata.v1.market_observations.list_by_series_id= endpoint,
+  retiring the hand-written =series_id= parameter on the generic
+  =.list= endpoint entirely.
+- Migrated =market_observation= from the legacy hand-wired
+  =registrar.cpp= subscription style onto the generated per-entity
+  sub-registrar pattern already used elsewhere (e.g.
+  =ores.synthetic=), fixing a latent bug in the process: the
+  =history= endpoint had a handler but was never actually subscribed
+  under the old hand-wired file.
+- Migrated all four real call sites (=ClientMarketObservationModel=,
+  =FxSpotChartWindow=, =FxSpotRateEditor=,
+  =market_data_client::list_observations[_page]=) to the new
+  =get_market_observations_by_series_id_request=; dropped a
+  now-redundant client-side series-id re-filter in
+  =FxSpotChartWindow= since the server guarantees exact filtering.
+- Verified idempotency directly (the actual acceptance criterion): a
+  second =codegen entity generate= pass after building/testing
+  produced zero further diff.
+- Verified via the full marketdata test suites (core/api/client/service),
+  =ores.qt.tests=, a full clean build, and a live QA pass against a
+  freshly re-provisioned Barclays Plc environment — the new endpoint
+  round-trips correctly with no console/log errors and returns
+  correctly-filtered, non-empty data. Confirmed directly against
+  =ores_marketdata_market_observations_tbl= (13,258 rows, spanning
+  2016-01-04 to 2026-07-22) that the FX Spot chart's non-empty series
+  reflects genuine, real observation data end-to-end, not an artefact
+  of the migration. The QA scenario also surfaced a pre-existing
+  chart-usability gap (unrelated to this task's own acceptance — see
+  =* Notes=), filed separately.

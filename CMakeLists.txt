@@ -59,7 +59,7 @@ configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)
 # genuine uninitialized-variable bugs in our own CMake code.
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
     cmake_diagnostic(PUSH)
-    cmake_diagnostic(SET uninitialized IGNORE)
+    cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)
 endif()
 
 project(OreStudio VERSION 0.0.24 LANGUAGES CXX

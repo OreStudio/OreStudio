@@ -68,9 +68,9 @@ where the root cause overlaps.
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] |
-| Now          | Fixed and verified locally.            |
+| Now          | Fixed and verified against a real CMake 4.4.0 binary. |
 | Waiting on   | Nothing.                               |
-| Next         | Confirm clean on CI (CMake 4.4.0) post-merge. |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -110,19 +110,40 @@ Since vcpkg's toolchain file is vendored (overwritten on the next
 =vcpkg= update) and we still want uninitialized-variable warnings for
 our own code, suppressed the diagnostic narrowly: bracketed only the
 =project(OreStudio ...)= call in =CMakeLists.txt= with
-=cmake_diagnostic(PUSH)= / =cmake_diagnostic(SET uninitialized IGNORE)=
+=cmake_diagnostic(PUSH)= / =cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)=
 / =cmake_diagnostic(POP)=, guarded behind
 =CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"= so CMake < 4.4 (no
 =cmake_diagnostic()= command) and our current local dev CMake (4.3.4)
 are unaffected.
 
+First attempt used =cmake_diagnostic(SET uninitialized IGNORE)= (the
+=warnings.uninitialized= preset key's own name); PR #1664's CI caught
+that this is the wrong category token — =cmake_diagnostic()= errors
+with "unrecognized diagnostic category 'uninitialized'", non-fatally,
+so configure continued but the suppression never took effect and the
+=site= CI job hard-failed downstream. Confirmed the correct token is
+=CMD_UNINITIALIZED= via the =cmake-diagnostics(7)= manual, then
+verified directly: downloaded the real CMake 4.4.0 binary (via
+=pip download cmake==4.4.0=, since it wasn't installable through
+normal package channels here) and ran =cmake --preset= against it —
+all five originally-reported warnings (the =vcpkg.cmake= batch and
+the parent story's compiler-detection batch) are gone and configure
+exits clean.
+
 * Notes
 
-Could not install CMake 4.4.0 locally to directly reproduce/verify
-the warnings disappearing — verification is that the fix compiles
-clean under 4.3.4 (guard skips the new commands, unchanged behaviour)
-and the reasoning traces the exact mechanism CMake 4.4 uses. Final
-confirmation is the next Linux CI run post-merge.
+Verified against a real CMake 4.4.0 binary (obtained via
+=pip download cmake==4.4.0= and extracted, since no system package
+was available locally) rather than by reasoning alone. Also surfaced,
+but did *not* fix (out of scope for this task): three more
+uninitialized-variable warnings CMake 4.4.0 newly reports elsewhere —
+=CMakeLists.txt:274= (=SPRINT=), =CMakeLists.txt:479= (=DOGEN_VERSION=),
+and =projects/CMakeLists.txt:30= (=flags=) — plus two from CMake's own
+bundled =CPack.cmake=/=InstallRequiredSystemLibraries.cmake= modules.
+The first three are genuine gaps in our own CMake code and worth a
+follow-up capture; the CPack ones are the same vendored-file situation
+as this task but a different call site (=include(CPack)=, not
+=project()=), so out of scope here too.
 
 * Test Scenarios
 
@@ -154,9 +175,13 @@ Root cause identified: the 2026-07-20 Dependabot bump of
 long-standing =warnings.uninitialized: true= preset during
 =project()='s compiler/toolchain-detection phase, which now flags
 vcpkg's vendored toolchain file's harmless cache-variable idiom.
-Fixed by narrowly suppressing the =uninitialized= diagnostic only
-around the =project(OreStudio ...)= call in =CMakeLists.txt=, guarded
-for CMake >= 4.4, so warnings for our own code are unaffected. Local
-configure verified clean under CMake 4.3.4 (guard no-ops); CMake 4.4.0
-wasn't available locally to directly reproduce, so final confirmation
-is the next Linux CI run.
+Fixed by narrowly suppressing the diagnostic only around the
+=project(OreStudio ...)= call in =CMakeLists.txt= via
+=cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)=, guarded for CMake
+>= 4.4, so warnings for our own code are unaffected. First attempt
+used the wrong category token (=uninitialized= instead of
+=CMD_UNINITIALIZED=); PR #1664's CI caught it hard-failing the =site=
+job, corrected per the =cmake-diagnostics(7)= manual. Verified
+directly against a real CMake 4.4.0 binary (downloaded via =pip=,
+since not otherwise available locally): all five originally-reported
+warnings gone, configure exits clean.

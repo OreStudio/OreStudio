@@ -54,7 +54,7 @@ configured that should be.
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Confirm clean on CI (CMake 4.4.0) post-merge. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-22                               |
 
 * Acceptance

@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 99044531-76EB-4F0A-980A-597C4FA84408
+:END:
+#+title: FOMC Dates
+#+description: The Federal Reserve's scheduled policy meeting dates, and their role as the short-end pillar schedule for SOFR OIS curve construction, distinct from the exchange-fixed IMM calendar.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+* Summary
+
+FOMC (Federal Open Market Committee) dates are the Federal Reserve's ~8
+scheduled policy meeting dates per year, at each of which the Fed Funds
+target range may step. For a SOFR OIS curve, market practice bootstraps
+the short end directly off FOMC-dated OIS contracts rather than the
+ordinary [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] grid, because
+the target rate is genuinely constant *between* meetings and steps
+discretely *at* each meeting — a fixed policy schedule, not a
+calendar-arithmetic offset. This is the same "fixed schedule, not a
+horizon-relative offset" shape as [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM dates]],
+but a different underlying calendar and a different purpose: IMM dates
+are exchange-fixed quarterly futures/CDS roll dates, while FOMC dates are
+the central bank's own meeting calendar and apply specifically to
+short-end OIS curve construction.
+
+* Detail
+
+** Definition
+
+An FOMC date is one of the Federal Reserve's scheduled policy meeting
+dates (typically eight per calendar year, published by the Fed years in
+advance). Unlike a standard [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]],
+it is not computed relative to a horizon date by calendar arithmetic — it
+is a lookup into a fixed, externally-published set of dates, exactly as
+[[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM dates]] are.
+
+** Role in SOFR OIS curve construction
+
+The short end of a USD SOFR curve is conventionally built from OIS
+contracts referencing consecutive FOMC dates, not generic tenor points.
+Because the Fed Funds target range is administratively fixed between
+meetings, the *forward* SOFR rate implied by the curve should be flat
+(a step function) within each FOMC-to-FOMC interval, stepping only at
+the meeting date itself. This is a stronger and more specific claim than
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]]'s general
+"log-linear is the industry default for the short end": at the very
+short end of a SOFR curve, the correct short-end method is a flat-forward
+step aligned to the FOMC schedule, not a generically log-linear
+interpolation between arbitrary tenor pillars.
+
+** Transition to the long end
+
+Beyond the FOMC-dated segment, the curve transitions into liquid
+Fixed-vs-Compounded-SOFR swap pillars (the =IRS= instruments described in
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]), where
+a continuous non-local method (e.g. log-linear on discount factors, or a
+spline — see [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]])
+is appropriate, since term premia and macro expectations evolve
+continuously rather than in discrete policy steps. A robust curve
+construction must therefore mix a step-function short end with a smooth
+long end, matched at their boundary — the same "different method by
+tenor range, joined at a split point" pattern
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] already
+describes for log-linear/spline, applied here with FOMC-stepped flat
+forward as the specific short-end method for OIS/SOFR curves.
+
+** Provenance
+
+This document was prompted by two LinkedIn posts by André Luiz
+Rodrigues (Capital Markets Technology Director), "USD SOFR Curve"
+(short-end FOMC-dated flat-forward vs. long-end spline) and "The Yield
+Curve" (calibration/interpolation overview), used here as a market-
+practice reference for the FOMC-dated short end; the write-up and its
+integration into this codebase's domain model are original.
+
+* See also
+
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the sibling fixed-schedule concept for exchange-traded futures/CDS rolls, not to be confused with FOMC dates.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the general local/non-local interpolation-method framework this specializes for the SOFR short end.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — OIS instruments and USD curve bootstrapping in general.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.

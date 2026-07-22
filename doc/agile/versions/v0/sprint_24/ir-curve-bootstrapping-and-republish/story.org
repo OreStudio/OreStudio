@@ -65,7 +65,7 @@ mission includes improving IR generation.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:4F78BAA7-71A0-4433-AF1E-54180DB0669A][FOMC-dated OIS short end with flat-forward interpolation]] | BACKLOG | | | Bootstrap the SOFR OIS short end off FOMC-meeting-dated pillars with a flat-forward (step) interpolation method, transitioning to a continuous method (log-linear/spline) at the long-end swap pillars. |
 
 * Decisions
 

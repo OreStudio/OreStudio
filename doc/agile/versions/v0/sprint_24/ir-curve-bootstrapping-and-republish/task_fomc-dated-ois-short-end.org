@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 4F78BAA7-71A0-4433-AF1E-54180DB0669A
+:END:
+#+title: Task: FOMC-dated OIS short end with flat-forward interpolation
+#+description: Bootstrap the SOFR OIS short end off FOMC-meeting-dated pillars with a flat-forward (step) interpolation method, transitioning to a continuous method (log-linear/spline) at the long-end swap pillars.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model the USD SOFR OIS short end correctly: bootstrap it off
+[[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC-meeting-dated]] pillars
+rather than the ordinary tenor grid, and interpolate within that segment
+with a flat-forward (step) method, since the Fed Funds target is
+administratively constant between meetings and only steps at the meeting
+date. Beyond the FOMC-dated segment, transition to a continuous
+non-local method (log-linear on discount factors, or a spline — see
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]]) for the
+liquid Fixed-vs-Compounded-SOFR swap pillars, matched at a curve split
+tenor. Getting the direction of this split wrong is a real modelling
+error: a continuous spline between FOMC dates implies daily Fed policy
+moves (false), while a flat-forward step between long-dated swap
+pillars produces jagged, arbitrageable forwards.
+
+Prompted by two LinkedIn posts by André Luiz Rodrigues ("USD SOFR
+Curve" and "The Yield Curve") reviewed against this codebase's existing
+domain docs; see [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]]
+for the write-up and full attribution.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- The USD SOFR curve's OIS pillar instruments in the short end are
+  generated/bootstrapped off consecutive FOMC dates, not the ordinary
+  tenor grid.
+- The short-end interpolation method between FOMC-dated pillars is a
+  flat-forward step (constant forward rate within each FOMC-to-FOMC
+  interval), distinct from the generic log-linear default.
+- Beyond the FOMC-dated segment, the curve transitions to a continuous
+  non-local interpolation method (log-linear or spline) for the
+  longer-dated swap pillars, matched at a defined curve split tenor.
+- Domain docs ([[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]],
+  [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]]) reflect
+  the implemented behaviour, updating them if the implementation
+  diverges from what was documented up front.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

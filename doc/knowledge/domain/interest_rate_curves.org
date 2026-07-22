@@ -10,6 +10,7 @@
 #+updated: 2026-07-12
 
 Interest rate curves are a core market data input in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+For the SOFR-specific short-end construction, see [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]].
 [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] uses them as discount and projection curves throughout valuation. This
 document covers day-count conventions and the bootstrapping process for a
 *single* curve; for how the resulting pillars are interpolated between and
@@ -164,6 +165,12 @@ EONIA, SONIA, SOFR, etc.) over a given period. Post-2008, OIS curves became
 the standard collateralised discount curve. The OIS rate represents near-risk-free
 funding; the spread over OIS is the basis adjustment for uncollateralised
 exposure (relevant for FVA and MVA calculations).
+
+For USD SOFR specifically, the short end is conventionally built from OIS
+contracts referencing consecutive [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC dates]]
+rather than generic tenor points — see that document for the resulting
+flat-forward short end and its transition to the continuous long-end
+methods described in [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]].
 
 * Bootstrapping: USD Curve Construction
 

@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+created: 2026-07-20
 #+updated: 2026-07-21
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Extend [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data genera
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started. Pulled into Sprint 24 (mission includes improving IR generation). |
 | Waiting on    | Nothing.                               |
@@ -39,12 +39,66 @@ Extend [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data genera
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic IR curve sample data (vintage + DQ datasets)]] | BACKLOG | | | Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern. |
+| [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic IR curve sample data (vintage + DQ datasets)]] | STARTED | 2026-07-22 | | Source a vintage IR rate dataset, add vintage-aware seeding to ir_curve_feed, day-scale default kappa/theta/sigma for the 1-tick=1-day convention, and build basic+realistic synthetic.ir_curve_configs DQ datasets mirroring the existing FX pattern. |
 | [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] | BACKLOG | | | Consolidate the duplicate flat CCY-INDEX catalogs (floating_index_type, overnight_index_convention) into an index entity + currency_index junction. |
 | [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve (discount + projection) short-rate model]] | BACKLOG | | | Extend the single self-discounting curve to a proper discounting/projection dual-curve model with a basis spread, closer to real market practice. |
 | [[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][IR rate display/quoting conventions (basis points, per-index precision)]] | BACKLOG | | | Research real trading-system IR rate quoting conventions (percent vs basis points, per-currency/index decimal precision) and add the equivalent of currency_pair_convention's pip_factor/tick_size/decimal_places for IR indices, plus a shared Qt formatter. |
+| [[id:0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB][Source vintage historical IR rate dataset + populate script]] | BACKLOG | | | Source a small set of real historical (currency, tenor, date) IR points from a public source (FRED/ECB/BoE) and add a vintage populate script mirroring marketdata_fx_driver_rates_populate.sql, covering enough currencies/tenors to seed DEPO/FRA/IRS entries for a basic Curve Template. |
+| [[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][Fix day-scaled kappa/sigma calibration across short-rate processes]] | DONE | 2026-07-22 | 2026-07-22 | Root-cause and fix the day-scaling bug shared by Vasicek/Hull-White and CIR: day-scaling only divides kappa by 365, leaving sigma at its annual scale, so per-tick variance stays roughly annual-sized regardless of how small kappa gets. |
+| [[id:390E6886-6A04-4840-A53D-9873FC491ABB][Rename CIR, OU, and GMM processes to their proper names]] | BACKLOG | | | Rename cir_process/ou_process/gmm_process/arithmetic_gmm_process to Cox-Ingersoll-Ross/Ornstein-Uhlenbeck/Gaussian Mixture Model, matching QuantLib's naming and this codebase's other spelled-out process names; includes fixing IrCurveEditor's combo, which shows the raw "CIR" code instead of a spelled-out label. |
 
 * Decisions
+
+** dt is a first-class, explicit process parameter (not caller-side pre-scaling)
+
+[[id:0A64C0F5-2720-41EA-9AEC-8327FA841B5F][The calibration-fix
+task]]'s root-cause analysis, cross-checked against QuantLib's own
+=OrnsteinUhlenbeckProcess=/=CoxIngersollRossProcess=/=Vasicek=/
+=HullWhite= sources
+(=Engine.remote/QuantLib/ql/processes/=,
+=ql/models/shortrate/onefactormodels/=): every QuantLib formula keeps
+=speed= (kappa) and =dt= as two always-separate arguments (=exp(-speed
+* dt)=, =variance(speed, sigma, dt)=), never a caller-pre-scaled
+composite. Our =synthetic_ir_curve_configs_basic_populate.sql= instead
+computed =kappa/365= and =sigma/sqrt(365)= as SQL constants — quant
+scaling logic with no tests, living outside =ores.analytics.quant=
+entirely. Decision: =dt= (year-fraction per tick) becomes an explicit
+constructor parameter on =hull_white_process=/=cir_process= (and
+=vasicek_process=, forwarding), defaulting to =1.0= for full backward
+compatibility; =kappa=/=theta=/=sigma=/=initial_rate= stay in their
+natural annualised units always, and callers never pre-scale them.
+=process_factory::make_yield_curve_process()= gains the same =dt=
+parameter, threaded from =ir_curve_template_resolver='s already-
+documented "1 tick == 1 calendar day" convention. The SQL populate
+scripts revert to plain, real annualised Vasicek parameters.
+
+This also fixed a second, independent bug the day-scaling investigation
+surfaced: =discount_factor()='s backward recursion accumulated =+1.0=
+of bond-time per tick regardless of what a tick represents, rather
+than =+dt= — for a 730-daily-tick 2Y entry this integrated ~730
+years of a rate meant to run for 2, producing the ~150-250% published
+rates that triggered this investigation.
+=cir_process::discount_factor()='s closed form had the identical
+defect (=tau = ticks_ahead= used as literal elapsed years).
+
+** Domain knowledge from QuantLib, not its OOP shape
+
+QuantLib's =StochasticProcess1D= inheritance,
+=Handle&lt;YieldTermStructure&gt;= observer wiring, and virtual
+=drift()=/=diffusion()= are deliberately *not* adopted — this codebase
+stays data-oriented (plain structs/free functions over flat parameter
+arrays), both for its own conventions and because
+[[id:A1A92FFB-FCFF-4B51-B5DF-6F8A240E0B21][a GPU-batched stochastic-
+process backlog capture]] wants these processes parallel-simulation-
+friendly, which an object-per-process virtual-dispatch design works
+against. What *is* adopted is QuantLib's domain knowledge: the explicit
+=speed=/=dt= separation above, degenerate small-=kappa= algebraic-limit
+branches (QuantLib branches at =speed &lt; sqrt(QL_EPSILON)= rather
+than only guarding =speed &lt;= 0=), and its
+=testExtendedCoxIngersollRossDiscountFactor= test pattern (calibrate to
+a flat-rate curve, assert the model reproduces =exp(-r*(T-t))=
+exactly) — adapted into a per-=dt= regression test in this codebase's
+own Catch2 style, not ported as QuantLib code.
 
 * Out of scope
 

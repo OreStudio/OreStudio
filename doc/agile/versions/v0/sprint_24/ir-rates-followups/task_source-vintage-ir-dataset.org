@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 0FA7ADA7-9A8F-4616-B835-FE2C717B4CBB
+:END:
+#+title: Task: Source vintage historical IR rate dataset + populate script
+#+description: Source a small set of real historical (currency, tenor, date) IR points from a public source (FRED/ECB/BoE) and add a vintage populate script mirroring marketdata_fx_driver_rates_populate.sql, covering enough currencies/tenors to seed DEPO/FRA/IRS entries for a basic Curve Template.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give IR curve synthetic feeds a real vintage reference dataset, the same
+way FX spot feeds have =marketdata_fx_driver_rates_populate.sql=. No
+vintage IR/yield dataset exists anywhere in this codebase today. Source
+a handful of (currency, tenor, date) IR points from a public,
+redistributable source — candidates: FRED (SOFR, USD OIS/Treasury
+series), ECB Data Portal (€STR, euro-area yield points), Bank of
+England SIDB (SONIA history), ICE Benchmark Administration
+(IBOR-successor fixings, licensing needs checking) — and add a new
+vintage populate script mirroring
+=marketdata_fx_driver_rates_populate.sql=: catalog/dataset
+registration, per-value =source_url=/=retrieved_at= citation, no
+derived/triangulated values. Only a handful of points are needed to
+seed one vintage row per Curve Template entry, not a full historical
+curve archive.
+
+Split out of [[id:FC800706-1673-4E48-84C2-22569E836DF5][Seed realistic
+IR curve sample data]] because sourcing/licensing a new external
+dataset is independent work from the seeding plumbing that consumes
+it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A public source is chosen and its licensing/redistribution terms
+  confirmed acceptable for this codebase.
+- A small set of real historical (currency, tenor, date) IR points is
+  added as a new vintage populate script, covering enough
+  currencies/tenors to seed the =DEPO=/=FRA=/=IRS= entries a basic
+  Curve Template needs, mirroring
+  =marketdata_fx_driver_rates_populate.sql='s structure (catalog/
+  dataset registration, per-value source citation, idempotent).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

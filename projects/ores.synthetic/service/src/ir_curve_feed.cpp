@@ -180,7 +180,13 @@ make_ir_curve_feed(ores::nats::service::client& nats,
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
-        lowercase(cfg.process_type), cfg.kappa, {cfg.theta}, cfg.sigma, cfg.initial_rate);
+        lowercase(cfg.process_type),
+        cfg.kappa,
+        {cfg.theta},
+        cfg.sigma,
+        cfg.initial_rate,
+        42,
+        ir_curve_feed_dt);
 
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather

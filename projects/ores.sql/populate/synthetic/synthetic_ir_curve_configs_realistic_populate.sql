@@ -31,7 +31,7 @@
  * reflecting each market's own typical short-rate level and
  * volatility -- e.g. JPY near-zero and low-vol, EM currencies
  * (MXN/ZAR/INR/PLN) higher level and higher vol than G10) rather than
- * one uniform day-scaled set, and a seven-entry Curve Template per
+ * one uniform set, and a seven-entry Curve Template per
  * curve (short-end deposits through a 10Y swap) so a bootstrapped
  * curve has real shape to show. CIR chosen over Vasicek here because
  * volatility scaling with the level and non-negativity by
@@ -46,11 +46,16 @@
  * swap referencing an overnight index is genuinely single-curve/
  * self-discounting in real markets; an IBOR-referencing swap is not).
  *
- * All parameters remain day-scaled (kappa/sigma calibrated per
- * calendar day, matching ir_curve_template_resolver's "1 tick = 1
- * day" convention) -- "realistic" here means per-curve calibration,
- * not vintage grounding; no real historical curve is sourced yet (see
- * the seed-ir-curve-sample-data follow-on task for that).
+ * Parameters are plain, real annualised CIR values -- day-per-tick
+ * scaling (ir_curve_template_resolver's "1 tick = 1 day" convention)
+ * is handled by process_factory::make_yield_curve_process()'s own dt
+ * parameter, not here (see the "Fix day-scaled kappa/sigma
+ * calibration" task: doing this arithmetic in SQL was untested and
+ * was masking a second, more serious bug in discount_factor()'s own
+ * tick-to-time accounting). "Realistic" here means per-curve
+ * calibration, not vintage grounding; no real historical curve is
+ * sourced yet (see the seed-ir-curve-sample-data follow-on task for
+ * that).
  *
  * This script is idempotent.
  */
@@ -72,7 +77,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic IR Curve Configs: Realistic',
-        'One overnight-RFR CIR short-rate curve per top-20-by-turnover currency, per-curve-calibrated day-scaled parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
+        'One overnight-RFR CIR short-rate curve per top-20-by-turnover currency, per-curve-calibrated annualised parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
         'ORESTUDIO',
         'Realistic archetype for the Synthetic data collections bundle',
         current_date,
@@ -89,7 +94,6 @@ do $$
 declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
-    v_days constant double precision := 365.0;
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
@@ -111,12 +115,11 @@ begin
 
     raise debug 'Populating synthetic IR curve configs (realistic) for dataset: synthetic.ir_curve_configs.realistic';
 
-    -- Per-currency calibration: annual kappa/sigma divided by v_days to day-scale them, distinct
-    -- per curve rather than one uniform set. G10 currencies keep the original tighter reversion/
-    -- lower vol; EM currencies (INR/MXN/ZAR/PLN) get slower reversion and higher vol, matching
-    -- their typically less liquid, more volatile short-rate markets; JPY keeps its long-standing
-    -- near-zero level and low vol; HKD (USD-pegged) and DKK (EUR-pegged) mirror their anchor
-    -- currency's level.
+    -- Per-currency calibration: plain annualised kappa/sigma, distinct per curve rather than one
+    -- uniform set. G10 currencies keep the original tighter reversion/lower vol; EM currencies
+    -- (INR/MXN/ZAR/PLN) get slower reversion and higher vol, matching their typically less
+    -- liquid, more volatile short-rate markets; JPY keeps its long-standing near-zero level and
+    -- low vol; HKD (USD-pegged) and DKK (EUR-pegged) mirror their anchor currency's level.
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled,
@@ -127,9 +130,9 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (Realistic): ' || c.currency_code || '/' || c.index_name,
-        'Realistic-archetype synthetic IR curve generator: CIR short-rate process (volatility scales with the level, non-negative by construction -- a better fit for short rates than Vasicek''s constant-vol Gaussian without needing a real curve to calibrate against, unlike Hull-White), per-curve-calibrated day-scaled parameters.',
+        'Realistic-archetype synthetic IR curve generator: CIR short-rate process (volatility scales with the level, non-negative by construction -- a better fit for short rates than Vasicek''s constant-vol Gaussian without needing a real curve to calibrate against, unlike Hull-White), per-curve-calibrated annualised parameters.',
         true, c.currency_code, c.index_name, 'CIR',
-        c.annual_kappa / v_days, c.theta, c.annual_sigma / sqrt(v_days), c.theta,
+        c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly'
     from (values
         -- currency, index code, annual kappa, annual sigma, theta (mean/initial level)

@@ -24,11 +24,12 @@
 namespace ores::analytics::quant::service {
 
 cir_process::cir_process(
-    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed)
+    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)
     , rate_(initial_rate)
+    , dt_(dt)
     , rng_(seed) {
 
     if (kappa_ <= 0.0)
@@ -39,10 +40,12 @@ cir_process::cir_process(
         throw std::invalid_argument("cir_process: sigma must be non-negative");
     if (initial_rate < 0.0)
         throw std::invalid_argument("cir_process: initial_rate must be non-negative");
+    if (dt_ <= 0.0)
+        throw std::invalid_argument("cir_process: dt must be strictly positive");
 }
 
 double cir_process::next_stochastic() {
-    const double decay = std::exp(-kappa_);
+    const double decay = std::exp(-kappa_ * dt_);
     const double c = sigma_ * sigma_ * (1.0 - decay) / (4.0 * kappa_);
     const double d = 4.0 * kappa_ * theta_ / (sigma_ * sigma_);
     const double lambda = rate_ * decay / c;
@@ -64,7 +67,7 @@ double cir_process::next() {
         // general stochastic formulas above have a sigma-in-the-denominator
         // singularity at sigma == 0, so this is a genuinely separate branch,
         // not just an optimisation.
-        rate_ = theta_ + (rate_ - theta_) * std::exp(-kappa_);
+        rate_ = theta_ + (rate_ - theta_) * std::exp(-kappa_ * dt_);
     } else {
         rate_ = next_stochastic();
     }
@@ -76,7 +79,10 @@ double cir_process::current() const {
 }
 
 double cir_process::discount_factor(std::size_t ticks_ahead) const {
-    const double tau = static_cast<double>(ticks_ahead);
+    // tau is real elapsed years, not a raw tick count -- see the class
+    // docstring for why omitting the *dt_ scaling here silently
+    // over-discounts by roughly 1/dt_ at fine tick granularities.
+    const double tau = static_cast<double>(ticks_ahead) * dt_;
     if (sigma_ == 0.0) {
         // Exact deterministic path: P = exp(-integral of r(s) ds, 0..tau),
         // r(s) = theta + (r_0 - theta) * e^{-kappa*s}.

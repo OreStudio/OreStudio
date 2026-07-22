@@ -51,6 +51,12 @@ public:
      * (volatility), and initial_price doubles as theta (long-run mean) — the
      * process reverts toward its own starting level by default. means is
      * unused for "ou".
+     *
+     * @param dt The year-fraction one tick represents, forwarded to "ou"
+     *        only (default 1.0 -- one tick per year); "geometric"/
+     *        "arithmetic" take means/stdevs as already-per-tick log-return
+     *        moments with no kappa/dt coupling, so dt does not apply to
+     *        them.
      */
     static std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
     make_process(const std::string& process_type,
@@ -58,7 +64,8 @@ public:
                  std::vector<double> stdevs,
                  std::vector<double> weights,
                  double initial_price,
-                 std::uint32_t seed = 42);
+                 std::uint32_t seed = 42,
+                 double dt = 1.0);
 
     /**
      * @brief Build a short-rate process that also exposes the model's
@@ -73,6 +80,12 @@ public:
      * @param theta_path The mean-reversion level (constant for "vasicek"/
      *        "cir" -- only theta_path.front() is used; piecewise-constant
      *        per tick for "hull_white", see hull_white_process).
+     * @param dt The year-fraction one tick represents (default 1.0 -- one
+     *        tick per year). kappa/theta_path/sigma/initial_rate stay in
+     *        their natural annualised units regardless of dt; callers never
+     *        pre-scale them for a finer tick granularity (e.g. daily ticks
+     *        use dt=1.0/365.0, not a pre-divided kappa) -- see
+     *        hull_white_process's docstring for why.
      */
     static std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
     make_yield_curve_process(const std::string& process_type,
@@ -80,7 +93,8 @@ public:
                              std::vector<double> theta_path,
                              double sigma,
                              double initial_rate,
-                             std::uint32_t seed = 42);
+                             std::uint32_t seed = 42,
+                             double dt = 1.0);
 };
 
 }

@@ -2,7 +2,7 @@
 :ID: 1427C01C-17C0-4D7E-AE55-BF16C414FD58
 :END:
 #+title: Term Structures and Tenors
-#+description: Hub note for the time-dependence of market data: scalar vs tenor vs term structure, and the atomic docs covering tenor labels, horizon date, date rolling, broken dates/turn points, and IMM dates.
+#+description: Hub note for the time-dependence of market data: scalar vs tenor vs term structure, and the atomic docs covering tenor labels, horizon date, date rolling, broken dates/turn points, IMM dates, and FOMC dates.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:tenors:curves:ore:
@@ -58,10 +58,13 @@ for vol surface tenors see
 - *Irregular dates* → [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken
   Dates and Turn Points]] (bespoke maturities vs. fixed-calendar-time
   discontinuities, the three-way tenor classification, and how broken
-  dates are entered/displayed) and
+  dates are entered/displayed),
   [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] (the fixed
   quarterly roll schedule CDS and STIR futures use instead of
-  horizon-relative tenor arithmetic).
+  horizon-relative tenor arithmetic), and
+  [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] (the sibling
+  fixed-schedule concept for the Fed's own meeting calendar, used for the
+  FOMC-dated flat-forward short end of a SOFR OIS curve).
 - *How far a curve goes* → [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term
   Structure Extent]] (30Y for interest rate curves, 5Y-default/30Y-available
   for vol surfaces, open-ended for CDS, and the flatten-beyond-the-end

@@ -50,8 +50,17 @@ pillar does not affect distant tenors.
   for the short end.
 - *Zero-linear (linear in zero rate)*: linear in $-\ln(DF)/t$. Daily
   forward rates change at a constant rate within each interval.
+- *Flat forward (step function)*: the forward rate is held exactly
+  constant within an interval and steps discretely at the interval
+  boundary, rather than merely being locally linear. This is the correct
+  method — not just a convenient approximation — wherever the underlying
+  rate is administratively fixed between boundaries, as with a SOFR OIS
+  curve's short end bootstrapped off [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC dates]]:
+  the Fed Funds target genuinely does not move between meetings, so a
+  smoother method would misrepresent the instrument, not just
+  over-fit it.
 
-Both perform well in low-curvature regimes.
+Both log-linear and zero-linear perform well in low-curvature regimes.
 
 ** Non-local methods
 
@@ -75,6 +84,15 @@ other. The same split-tenor idea recurs on the volatility side: a
 volatility surface's default 5-year extent, described in
 [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]], is
 conventionally reused as its own curve split tenor.
+
+The USD SOFR curve is a concrete instance of this split: a flat-forward
+step function over the [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC-dated]]
+short end, transitioning to a continuous non-local method (log-linear on
+discount factors, or a spline) over the longer-dated swap pillars. Mixing
+the two the wrong way round is a real modelling error, not a stylistic
+choice: a continuous spline between FOMC dates implies the Fed adjusts
+rates daily (false), while a flat-forward step between long-dated swap
+pillars produces jagged, arbitrageable forwards.
 
 ** Agreement across consuming systems
 

@@ -93,3 +93,38 @@ TEST_CASE("vasicek_process one-tick discount_factor is exp(-r_t)", "[vasicek_pro
     vasicek_process p(0.3, 0.04, 0.02, 0.05);
     CHECK(p.discount_factor(1) == Catch::Approx(std::exp(-0.05)));
 }
+
+// -- dt (year-fraction per tick) coverage --------------------------------
+
+TEST_CASE("vasicek_process forwards dt to hull_white_process exactly (composition consistency)",
+          "[vasicek_process][dt]") {
+    vasicek_process v(0.3, 0.04, 0.015, 0.05, 99, 1.0 / 365.0);
+    hull_white_process h(0.3, {0.04}, 0.015, 0.05, 99, 1.0 / 365.0);
+
+    for (int i = 0; i < 30; ++i)
+        CHECK(v.next() == h.next());
+    for (std::size_t t = 0; t <= 400; t += 50)
+        CHECK(v.discount_factor(t) == h.discount_factor(t));
+}
+
+TEST_CASE("vasicek_process discount_factor with zero volatility reproduces a flat curve exactly "
+          "across a dt sweep",
+          "[vasicek_process][dt]") {
+    const double r = 0.04;
+    for (const double dt : {1.0, 1.0 / 365.0, 1.0 / (365.0 * 24.0)}) {
+        vasicek_process p(0.3, r, 0.0, r, 42, dt);
+        for (const std::size_t ticks : {std::size_t{1}, std::size_t{10}, std::size_t{365}}) {
+            const double expected = std::exp(-r * static_cast<double>(ticks) * dt);
+            CHECK(p.discount_factor(ticks) == Catch::Approx(expected).epsilon(1e-9));
+        }
+    }
+}
+
+TEST_CASE("vasicek_process default dt is exactly today's un-scaled behaviour",
+          "[vasicek_process][dt]") {
+    vasicek_process implicit(0.3, 0.04, 0.02, 0.05, 7);
+    vasicek_process explicit_default(0.3, 0.04, 0.02, 0.05, 7, 1.0);
+
+    for (int i = 0; i < 20; ++i)
+        CHECK(implicit.next() == explicit_default.next());
+}

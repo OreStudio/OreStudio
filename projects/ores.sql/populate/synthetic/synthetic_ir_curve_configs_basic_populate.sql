@@ -24,13 +24,12 @@
  * Registers the synthetic.ir_curve_configs.basic dataset: one curve
  * per top-20-by-turnover currency (same currency/index set as
  * synthetic.ir_curve_configs.realistic), each a Vasicek short-rate
- * process with day-scaled parameters (kappa/sigma calibrated per
- * calendar day, matching ir_curve_template_resolver's "1 tick = 1
- * day" convention -- annual-scale numbers here would produce
- * nonsensical published rates and frozen far-dated points, as
- * happened during this dataset's own manual verification) and a
- * simple three-entry Curve Template (Deposit/FRA/Swap) per curve, so
- * every curve_role pricing derivation gets exercised.
+ * process with plain, real annualised parameters -- the day-per-tick
+ * scaling (ir_curve_template_resolver's "1 tick = 1 day" convention)
+ * is handled by process_factory::make_yield_curve_process()'s own dt
+ * parameter, not here -- and a simple three-entry Curve Template
+ * (Deposit/FRA/Swap) per curve, so every curve_role pricing
+ * derivation gets exercised.
  *
  * Basic vs realistic, by design: basic keeps one uniform kappa/sigma
  * across all 20 curves (only theta/initial_rate vary, by currency)
@@ -76,7 +75,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic IR Curve Configs: Basic',
-        'One Vasicek short-rate curve per top-20-by-turnover currency, uniform day-scaled kappa/sigma, three-entry (Deposit/FRA/Swap) Curve Template each.',
+        'One Vasicek short-rate curve per top-20-by-turnover currency, uniform annualised kappa/sigma, three-entry (Deposit/FRA/Swap) Curve Template each.',
         'ORESTUDIO',
         'Basic archetype for the Synthetic data collections bundle',
         current_date,
@@ -93,13 +92,16 @@ do $$
 declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
-    -- Day-scaled Vasicek parameters: kappa/sigma calibrated per calendar day
-    -- (ir_curve_template_resolver's "1 tick = 1 day" convention), not per
-    -- year. kappa = 0.5/365 gives a realistic multi-year reversion half-life
-    -- (~1.4 years); sigma = 0.01/sqrt(365) is an annualised-1%-vol short rate
-    -- discretised to daily steps.
-    v_kappa constant double precision := 0.5 / 365.0;
-    v_sigma constant double precision := 0.01 / sqrt(365.0);
+    -- Plain, real annualised Vasicek parameters -- day-per-tick scaling
+    -- (ir_curve_template_resolver's "1 tick = 1 day" convention) is handled
+    -- by process_factory::make_yield_curve_process()'s own dt parameter, not
+    -- here (see the "Fix day-scaled kappa/sigma calibration" task: doing
+    -- this arithmetic in SQL was untested and, worse, was masking a second,
+    -- more serious bug in discount_factor()'s own tick-to-time accounting).
+    -- kappa = 0.5 gives a realistic multi-year reversion half-life (~1.4
+    -- years); sigma = 0.01 is a 1%-annualised-vol short rate.
+    v_kappa constant double precision := 0.5;
+    v_sigma constant double precision := 0.01;
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
@@ -131,7 +133,7 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (Basic): ' || c.currency_code || '/' || c.index_name,
-        'Basic-archetype synthetic IR curve generator: Vasicek short-rate process, day-scaled parameters.',
+        'Basic-archetype synthetic IR curve generator: Vasicek short-rate process, plain annualised parameters.',
         true, c.currency_code, c.index_name, 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly'

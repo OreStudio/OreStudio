@@ -117,7 +117,8 @@ public:
                         {req->theta},
                         req->sigma,
                         req->initial_rate,
-                        req->seed + static_cast<std::uint32_t>(p));
+                        req->seed + static_cast<std::uint32_t>(p),
+                        ir_curve_feed_dt);
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)
@@ -190,7 +191,9 @@ public:
                     req->kappa,
                     {req->theta},
                     req->sigma,
-                    req->initial_rate);
+                    req->initial_rate,
+                    42,
+                    ir_curve_feed_dt);
 
             for (const auto& re : resolved) {
                 preview_ir_curve_shape_point pt;

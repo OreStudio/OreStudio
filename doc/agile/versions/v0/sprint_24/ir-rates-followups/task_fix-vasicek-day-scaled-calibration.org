@@ -55,11 +55,11 @@ or wiring it into the feed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | dt implemented and tested across vasicek/hull_white/cir/ou; SQL reverted to plain annualised parameters. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Manual verification of the published synthetic.ir_curve_configs.basic dataset end-to-end. |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -202,3 +202,30 @@ observations only:
 | 3 | preview_shape() passes a literal 42 seed rather than deriving one from req, unlike simulate_paths() | ir_curve_preview_handler.hpp | Declined | Not a regression from this PR -- matches prior behaviour (the old 4-arg call relied on the constructor's implicit seed=42 default); out of scope for a dt-focused fix. |
 
 * Result
+
+Root-caused and fixed the day-scaling bug shared by every discrete-
+time short-rate process (Vasicek/Hull-White, CIR) plus OU: the actual
+bug was =discount_factor()='s bond-time accumulation treating every
+tick as a full year regardless of what a tick represents (=+1.0= per
+tick instead of =+dt=), not the =sigma= scaling first suspected —
+confirmed by cross-checking against QuantLib's own process sources,
+which always keep =speed=/=dt= as separate arguments.
+
+Shipped: an explicit =dt= (year-fraction per tick) constructor
+parameter on all four processes, defaulting to =1.0= for full
+backward compatibility; =process_factory= and every =ores.synthetic=
+call site thread =dt=1/365= through explicitly; the SQL populate
+scripts reverted to plain annualised parameters; 191 new =dt=-tagged
+Catch2 assertions across all four processes (flat-curve exactness,
+discretisation convergence, statistical variance scaling, degenerate-
+branch sanity); three knowledge docs updated with the QuantLib cross-
+check; and a real regression the fix's own manual verification
+surfaced — =IrCurveEditor='s κ/σ sliders/tooltips/defaults, still
+calibrated for the old day-scaled magnitudes — fixed in the same PR.
+
+All acceptance criteria met. Manual end-to-end verification (PR
+#1661) PASSED: AUD/AONIA curve snapshot showed plausible, moving
+rates (4.17-4.28%) across every tenor 1M-10Y, confirming the original
+"~150-250% blown-up, frozen far point" symptom is gone. Full build
+green, =rat= test suite green, schema validation clean, three
+independent @claude review passes found no correctness issues.

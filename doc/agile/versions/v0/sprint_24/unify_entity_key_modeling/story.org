@@ -8,7 +8,7 @@
 #+filetags: :codegen:infrastructure:tooling:sprint_24:v0:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -249,7 +249,7 @@ Rules of the new layout:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -295,7 +295,7 @@ Rules of the new layout:
 | Migrate every entity .org model to the new syntax | BACKLOG | | | All ~131 models across every component (ores.dq, ores.iam, ores.trading, ores.analytics, ores.refdata, ores.compute, ores.controller, ores.marketdata, ores.reporting, ores.scheduler, ores.synthetic, ores.workflow, ores.workspace, ores.database, ores.sql). Docs-only migration for everything outside ores.dq — no regeneration. |
 | Regenerate and verify ores.dq | BACKLOG | | | Regenerate SQL/C++/Qt for every ores.dq entity, including subject_area's new true compound key. Build, unit tests, and a QA validation runner pass. |
 | Update the codegen meta-model documentation | BACKLOG | | | Rewrite doc/llm's "Codegen entity meta-model — keys and columns" knowledge doc (and its PlantUML diagram) to describe the unified Columns/:primary_key: shape; retire the Primary key/Natural keys sections from the doc. |
-| [[id:D230B754-3456-445A-812C-6854E8F63AE3][Design and implement the unified Columns/:primary_key: model shape in org_loader.py]] | BACKLOG | | | Supersedes task 52FE40FA. Replace the * Primary key / * Natural keys / * Columns three-way split with one * Columns section whose ** sub-headings may carry :primary_key: true. org_loader.py derives primary_key (list, declaration order, plus back-compat scalars) as a filter over Columns for both the surrogate (domain_entity) and surrogate-less (table/lookup_entity) archetypes -- no dual-syntax fallback. |
+| [[id:D230B754-3456-445A-812C-6854E8F63AE3][Design and implement the unified Columns/:primary_key: model shape in org_loader.py]] | STARTED | 2026-07-22 | | Supersedes task 52FE40FA. Replace the * Primary key / * Natural keys / * Columns three-way split with one * Columns section whose ** sub-headings may carry :primary_key: true. org_loader.py derives primary_key (list, declaration order, plus back-compat scalars) as a filter over Columns for both the surrogate (domain_entity) and surrogate-less (table/lookup_entity) archetypes -- no dual-syntax fallback. |
 
 * Decisions
 

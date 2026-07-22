@@ -180,7 +180,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:A1AD1629-9EF3-4895-AF7A-F441086A5450][Verify day-scaled kappa/sigma calibration fix for IR curve feeds]] | PENDING | Client started (colour blue) with the scenario preloaded; handed to user to execute. |
+| [[id:A1AD1629-9EF3-4895-AF7A-F441086A5450][Verify day-scaled kappa/sigma calibration fix for IR curve feeds]] | PASSED | All 5 steps passed after the IrCurveEditor slider fix; AUD/AONIA curve snapshot showed plausible, moving rates (4.17-4.28%) across every tenor. |
 
 * PRs
 

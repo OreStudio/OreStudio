@@ -111,6 +111,7 @@ notes back as a =*** Result= child heading directly under it.
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
+| Notes  | kappa, sigma, theta etc look fine now; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_152024.png]] |
 
 ** View the published curve snapshot
 
@@ -131,8 +132,8 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | now the rates look a tad too small, is this expected? should we change the chart to bps instead.; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_131546.png]]; ; also kappa and sigma are maxed in dialog, is this correct?; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_131647.png]] |
+| Status | PASS |
+| Notes  | looks fine to me but inspect it; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_160255.png]] |
 
 ** Stop the IR curve feed
 
@@ -152,10 +153,10 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-22T12:17:01Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-22T15:33:42Z |
 | Branch        | feature/fix-vasicek-day-scaled-calibration |
-| Commit        | f6b049a03 |
+| Commit        | c720c354d |
 | Worktree      | bright_faraday |
 
 * Notes

@@ -1,0 +1,52 @@
+[
+  {
+    "lei": "9695ACMEGROUP0000030",
+    "entity_legal_name": "Acme Bank Group plc",
+    "entity_entity_category": "GENERAL",
+    "entity_entity_status": "ACTIVE",
+    "entity_legal_jurisdiction": "GB",
+    "entity_legal_address_city": "London",
+    "entity_legal_address_country": "GB",
+    "entity_headquarters_address_city": "London",
+    "entity_headquarters_address_country": "GB"
+  },
+  {
+    "lei": "9695ACMEUK0000000047",
+    "entity_legal_name": "Acme Bank UK plc",
+    "entity_entity_category": "GENERAL",
+    "entity_entity_status": "ACTIVE",
+    "entity_legal_jurisdiction": "GB",
+    "entity_legal_address_first_address_line": "8 Leonard Island",
+    "entity_legal_address_city": "London",
+    "entity_legal_address_country": "GB",
+    "entity_headquarters_address_first_address_line": "8 Leonard Island",
+    "entity_headquarters_address_city": "London",
+    "entity_headquarters_address_country": "GB"
+  },
+  {
+    "lei": "9695ACMEUS0000000043",
+    "entity_legal_name": "Acme Bank US Inc",
+    "entity_entity_category": "GENERAL",
+    "entity_entity_status": "ACTIVE",
+    "entity_legal_jurisdiction": "US",
+    "entity_legal_address_first_address_line": "673 Todd Villages",
+    "entity_legal_address_city": "New York",
+    "entity_legal_address_country": "US",
+    "entity_headquarters_address_first_address_line": "673 Todd Villages",
+    "entity_headquarters_address_city": "New York",
+    "entity_headquarters_address_country": "US"
+  },
+  {
+    "lei": "9695ACMEHK0000000018",
+    "entity_legal_name": "Acme Bank HK Ltd",
+    "entity_entity_category": "GENERAL",
+    "entity_entity_status": "ACTIVE",
+    "entity_legal_jurisdiction": "HK",
+    "entity_legal_address_first_address_line": "Wai Ming Building, Central",
+    "entity_legal_address_city": "Hong Kong",
+    "entity_legal_address_country": "HK",
+    "entity_headquarters_address_first_address_line": "Wai Ming Building, Central",
+    "entity_headquarters_address_city": "Hong Kong",
+    "entity_headquarters_address_country": "HK"
+  }
+]

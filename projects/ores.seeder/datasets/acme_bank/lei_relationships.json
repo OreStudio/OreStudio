@@ -1,0 +1,26 @@
+[
+  {
+    "relationship_start_node_node_id": "9695ACMEUK0000000047",
+    "relationship_start_node_node_id_type": "LEI",
+    "relationship_end_node_node_id": "9695ACMEGROUP0000030",
+    "relationship_end_node_node_id_type": "LEI",
+    "relationship_relationship_type": "IS_DIRECTLY_CONSOLIDATED_BY",
+    "relationship_relationship_status": "ACTIVE"
+  },
+  {
+    "relationship_start_node_node_id": "9695ACMEUS0000000043",
+    "relationship_start_node_node_id_type": "LEI",
+    "relationship_end_node_node_id": "9695ACMEGROUP0000030",
+    "relationship_end_node_node_id_type": "LEI",
+    "relationship_relationship_type": "IS_DIRECTLY_CONSOLIDATED_BY",
+    "relationship_relationship_status": "ACTIVE"
+  },
+  {
+    "relationship_start_node_node_id": "9695ACMEHK0000000018",
+    "relationship_start_node_node_id_type": "LEI",
+    "relationship_end_node_node_id": "9695ACMEGROUP0000030",
+    "relationship_end_node_node_id_type": "LEI",
+    "relationship_relationship_type": "IS_DIRECTLY_CONSOLIDATED_BY",
+    "relationship_relationship_status": "ACTIVE"
+  }
+]

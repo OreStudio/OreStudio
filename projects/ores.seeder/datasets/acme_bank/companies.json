@@ -1,0 +1,33 @@
+[
+  {
+    "code": "acme_group",
+    "name": "Acme Bank Group plc",
+    "lei": "9695ACMEGROUP0000030",
+    "parent_code": null,
+    "is_holding": true
+  },
+  {
+    "code": "acme_uk",
+    "name": "Acme Bank UK plc",
+    "lei": "9695ACMEUK0000000047",
+    "parent_code": "acme_group",
+    "is_holding": false,
+    "business_centre_code": "GBLO"
+  },
+  {
+    "code": "acme_us",
+    "name": "Acme Bank US Inc",
+    "lei": "9695ACMEUS0000000043",
+    "parent_code": "acme_group",
+    "is_holding": false,
+    "business_centre_code": "USNY"
+  },
+  {
+    "code": "acme_hk",
+    "name": "Acme Bank HK Ltd",
+    "lei": "9695ACMEHK0000000018",
+    "parent_code": "acme_group",
+    "is_holding": false,
+    "business_centre_code": "HKHK"
+  }
+]

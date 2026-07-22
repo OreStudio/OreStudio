@@ -335,3 +335,4 @@ tasks under the parent story, not part of this analysis task.
 - [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] — contrast case: a self-contained fictional world, deliberately *not* the pattern Acme follows.
 - [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] — the backlog capture behind =external/facestudio=.
 - [[id:8C53F763-1DB4-4287-AB72-7471E1A7DE29][Add a sample set of gravatars for profiles]] — existing backlog capture covering the account-picture gap identified here; should probably be superseded/merged into the follow-up task.
+- [[id:4835C149-5A02-4454-93E4-3D3CAD96F1CF][acme_bank]] — the actual source-data dataset implementing this analysis (parties/LEIs, business units, portfolios, books, staff accounts).

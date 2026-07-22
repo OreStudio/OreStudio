@@ -1,0 +1,123 @@
+{
+    "name": "Acme Bank Reference Data",
+    "description": "Source data for Acme Bank: a synthetic four-entity investment-bank holding group (Group, UK, US, HK) with LEIs, business units, portfolios, books, and staff accounts, used as the system's fully-populated reference/demo entity.",
+    "generated_at": "2026-07-22",
+    "methodologies": [
+        {
+            "name": "OreStudio Code Generation Methodology",
+            "description": "Methodology for generating artefact files using the OreStudio code generator",
+            "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen",
+            "steps_file": "methodology.txt"
+        }
+    ],
+    "catalogs": [
+        {
+            "name": "Acme Bank",
+            "description": "Synthetic investment-bank holding group used to exercise the full system (organisation, RBAC, trading structure).",
+            "owner": "Testing Team"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "Acme Bank LEI Entities",
+            "code": "acme.lei_entities",
+            "catalog": "Acme Bank",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Acme Bank's four legal entities (Group, UK, US, HK), each with a checksum-valid synthetic LEI on GLEIF's reserved 9695 test prefix.",
+            "source_system": "ACMEBANK",
+            "business_context": "Party hierarchy for Acme Bank",
+            "license": "Internal use only",
+            "artefact_type": "lei_entities",
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        },
+        {
+            "name": "Acme Bank LEI Relationships",
+            "code": "acme.lei_relationships",
+            "catalog": "Acme Bank",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Parent/subsidiary consolidation relationships linking each Acme Bank office to the holding company.",
+            "source_system": "ACMEBANK",
+            "business_context": "Party hierarchy for Acme Bank",
+            "license": "Internal use only",
+            "artefact_type": "lei_relationships",
+            "dependencies": ["acme.lei_entities"],
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        },
+        {
+            "name": "Acme Bank Business Units",
+            "code": "acme.business_units",
+            "catalog": "Acme Bank",
+            "subject_area": "Organisation",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Trading desks (IR Swaps, Credit Trading, FX Rates) and support functions (Middle Office, Market Risk) per Acme Bank office.",
+            "source_system": "ACMEBANK",
+            "business_context": "Organisational hierarchy for Acme Bank",
+            "license": "Internal use only",
+            "artefact_type": "business_units",
+            "dependencies": ["acme.lei_entities"],
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        },
+        {
+            "name": "Acme Bank Portfolios",
+            "code": "acme.portfolios",
+            "catalog": "Acme Bank",
+            "subject_area": "Trading",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "One physical portfolio per desk, rolled up under a per-office virtual Global Markets portfolio.",
+            "source_system": "ACMEBANK",
+            "business_context": "Portfolio hierarchy for Acme Bank",
+            "license": "Internal use only",
+            "artefact_type": "portfolios",
+            "dependencies": ["acme.business_units"],
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        },
+        {
+            "name": "Acme Bank Books",
+            "code": "acme.books",
+            "catalog": "Acme Bank",
+            "subject_area": "Trading",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "One trading book per desk portfolio.",
+            "source_system": "ACMEBANK",
+            "business_context": "Trading books for Acme Bank",
+            "license": "Internal use only",
+            "artefact_type": "books",
+            "dependencies": ["acme.portfolios"],
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        },
+        {
+            "name": "Acme Bank Staff Accounts",
+            "code": "acme.accounts",
+            "catalog": "Acme Bank",
+            "subject_area": "Organisation",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Locale-appropriate staff accounts (desk heads, traders, managers, analysts) per Acme Bank business unit, one fixed shared password. NOTE: requires a new 'accounts' artefact_type/DQ artefact table/publish-from-dq function -- see the server-side-orchestration follow-up task; this dataset is defined ahead of that infrastructure landing.",
+            "source_system": "ACMEBANK",
+            "business_context": "Staff accounts for Acme Bank, one per desk/support-function role",
+            "license": "Internal use only",
+            "artefact_type": "accounts",
+            "dependencies": ["acme.business_units"],
+            "tag_code": "acme",
+            "tag_description": "Acme Bank reference data"
+        }
+    ]
+}

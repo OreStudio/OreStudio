@@ -55,11 +55,11 @@ sibling tasks on the parent story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Writing the JSON generator script.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -93,9 +93,29 @@ sibling tasks on the parent story.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One script, =generate_data.py=, config-driven over =OFFICES=
+  (name/country/business_centre_code/locale) and a fixed
+  =DESKS=/=SUPPORT_FUNCTIONS= shape applied per office.
+- LEIs: checksum via the same ISO 17442 mod-97 algorithm used in the
+  earlier analysis, on GLEIF's =9695= test prefix.
+- Filler data: Python's =Faker= (added to
+  =projects/ores.codegen/requirements.txt=, reusing the existing
+  codegen venv rather than adding a new one) for =en_GB=/=en_US=; a
+  small curated name pool for Hong Kong (Faker has no English-script
+  HK locale).
+- Password: computed the real scrypt hash for "Secure-Password-123"
+  once via a throwaway program linked against the actual
+  =ores.security= library (not re-derived in Python), hardcoded as a
+  constant reused by every generated account.
+- Output: flat-array JSON per DQ artefact family (mirroring
+  =slovaris='s =country_currency.json= convention), each
+  business-unit/portfolio/book/account record tagged with
+  =company_code= since each of the 4 legal entities needs its own
+  independently-publishable structure.
+- Account "real names" (first/last name, not just username/email) are
+  explicitly out of scope here — accounts have no name field today;
+  that's [[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]],
+  scheduled after this framework lands.
 
 * Notes
 
@@ -123,3 +143,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landed under [[proj:projects/ores.seeder/datasets/acme_bank/][projects/ores.seeder/datasets/acme_bank/]]:
+
+- =generate_data.py= — the config-driven generator (4 offices incl.
+  the holding company; 3 desks + 2 support functions per operating
+  office; re-run to regenerate).
+- =companies.json= (4), =lei_entities.json= (4, checksum-valid =9695=
+  LEIs), =lei_relationships.json= (3, holding→subsidiary
+  consolidation), =business_units.json= (18), =portfolios.json= (12),
+  =books.json= (9), =accounts.json= (45 staff, one fixed real password
+  hash, GB/US via Faker + curated HK name pool).
+- =manifest.json=, =methodology.txt=, =dataset_overview.org= —
+  discoverable via compass the same way as =slovaris=.
+
+Verified: all seven JSON files parse; all four LEIs independently
+checksum-verified (ISO 17442 mod-97). No C++/SQL touched — pure data
+generation, so no build/test run beyond that verification.
+
+Confirmed with the user along the way: four independent legal
+entities (not a Group→International→3-branches hierarchy), a
+JSON-then-codegen split (this task stops at JSON), and that account
+"real names" need proper contact-information modelling — split into
+[[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]] rather
+than bolted on here.

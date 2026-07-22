@@ -1,0 +1,452 @@
+[
+  {
+    "company_code": "acme_uk",
+    "id": "f3b00be5-b4e6-4d6e-b093-2baa101186f8",
+    "username": "toby.harrison.acme_uk.0",
+    "email": "toby.harrison@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_uk.ir_swaps"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "760ab6f2-f5c7-46d6-87aa-1e0f222d54c1",
+    "username": "dorothy.todd.acme_uk.1",
+    "email": "dorothy.todd@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.ir_swaps"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "0196e1cf-c25e-4484-b76b-b8f2816d7c3b",
+    "username": "sharon.long.acme_uk.2",
+    "email": "sharon.long@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.ir_swaps"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d3c83eb4-9c91-4709-9d40-d3354aadad06",
+    "username": "gerard.ball.acme_uk.3",
+    "email": "gerard.ball@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_uk.credit_trading"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "162b7d9b-650c-4622-aa5d-fadf7f21768b",
+    "username": "heather.powell.acme_uk.4",
+    "email": "heather.powell@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.credit_trading"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a99ca844-f472-47ad-b36c-eb8ab833d71e",
+    "username": "leah.edwards.acme_uk.5",
+    "email": "leah.edwards@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.credit_trading"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "54c4d40c-315f-4fa9-9f59-a5a8e6a37fd1",
+    "username": "victor.holt.acme_uk.6",
+    "email": "victor.holt@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_uk.fx_rates"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "4d4cc6a0-cd5c-4bd5-9234-b831cd0f849b",
+    "username": "gregory.bruce.acme_uk.7",
+    "email": "gregory.bruce@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.fx_rates"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "68590aa5-734f-4f4e-be89-75267d060548",
+    "username": "norman.hunter.acme_uk.8",
+    "email": "norman.hunter@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_uk.fx_rates"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "723cca6e-ebd5-4631-8ca4-decc766fb4f8",
+    "username": "brenda.nixon.acme_uk.9",
+    "email": "brenda.nixon@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_uk.middle_office"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2280a122-e5de-4499-bf21-a9a0cfe207e2",
+    "username": "lesley.robinson.acme_uk.10",
+    "email": "lesley.robinson@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_uk.middle_office"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "6500fa32-6b53-419e-9cff-f7660bc1e057",
+    "username": "lorraine.byrne.acme_uk.11",
+    "email": "lorraine.byrne@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_uk.middle_office"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "3da30ae4-f9b2-4020-93ef-26da1785dc59",
+    "username": "naomi.morris.acme_uk.12",
+    "email": "naomi.morris@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_uk.market_risk"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "928568f2-1471-43d0-a7d0-1db1d656eeb5",
+    "username": "olivia.evans.acme_uk.13",
+    "email": "olivia.evans@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_uk.market_risk"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "161e23d4-4140-4c72-b57d-7b11c0f86c33",
+    "username": "christopher.bryant.acme_uk.14",
+    "email": "christopher.bryant@acme_uk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_uk.market_risk"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "5dd2acce-c541-4a7f-a727-73290dfa8d20",
+    "username": "robert.shaffer.acme_us.0",
+    "email": "robert.shaffer@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_us.ir_swaps"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "538c3c75-f7c4-4907-a9a3-3e74f25d5234",
+    "username": "anna.christensen.acme_us.1",
+    "email": "anna.christensen@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.ir_swaps"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "8701e717-d3af-4ae6-8d4b-9751839f406b",
+    "username": "michael.collins.acme_us.2",
+    "email": "michael.collins@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.ir_swaps"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "049f4167-7ab0-4cbc-86c1-dee5107ef7d1",
+    "username": "kevin.zimmerman.acme_us.3",
+    "email": "kevin.zimmerman@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_us.credit_trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "b0b3cc92-5170-4d76-a821-0487171ea83d",
+    "username": "brett.lopez.acme_us.4",
+    "email": "brett.lopez@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.credit_trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "64270827-9fba-4a43-a57d-9299bb5c474b",
+    "username": "dennis.smith.acme_us.5",
+    "email": "dennis.smith@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.credit_trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "f8043bb2-f6d5-4a40-b46e-ff5f14966795",
+    "username": "jared.smith.acme_us.6",
+    "email": "jared.smith@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_us.fx_rates"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "2a2b5f03-ef4a-40bd-95aa-28338c28470e",
+    "username": "alexis.fisher.acme_us.7",
+    "email": "alexis.fisher@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.fx_rates"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "849cf5d3-766a-4456-bdb2-fc8aa7a6d83b",
+    "username": "jason.smith.acme_us.8",
+    "email": "jason.smith@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_us.fx_rates"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "a6af5fa9-8fc9-4410-a32c-b65b5eec5309",
+    "username": "elizabeth.freeman.acme_us.9",
+    "email": "elizabeth.freeman@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_us.middle_office"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "8068e7f0-e4b9-4e4d-8c8b-12f190da9208",
+    "username": "paul.wilson.acme_us.10",
+    "email": "paul.wilson@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_us.middle_office"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "ab317633-7250-4b4e-9870-81888ddb470e",
+    "username": "donna.mendoza.acme_us.11",
+    "email": "donna.mendoza@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_us.middle_office"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "1d7adc25-deca-45b8-9f31-2983675fa1bb",
+    "username": "holly.johnston.acme_us.12",
+    "email": "holly.johnston@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_us.market_risk"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "83d60b92-c4a8-41c5-9c91-7fd71959b6a8",
+    "username": "cassandra.krueger.acme_us.13",
+    "email": "cassandra.krueger@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_us.market_risk"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "6b349541-883e-4e33-b77a-6b6a55bd425c",
+    "username": "jeffery.wright.acme_us.14",
+    "email": "jeffery.wright@acme_us.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_us.market_risk"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "76607886-2f15-428d-a92d-6050a53bcb41",
+    "username": "wai.ming.chan.acme_hk.0",
+    "email": "wai.ming.chan@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_hk.ir_swaps"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "98df4296-c8a5-4929-a31f-9787a047d068",
+    "username": "siu.fung.wong.acme_hk.1",
+    "email": "siu.fung.wong@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.ir_swaps"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "4a47a5c6-ce5a-4694-a902-71b4e638bfa5",
+    "username": "ka.yee.lee.acme_hk.2",
+    "email": "ka.yee.lee@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.ir_swaps"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "3da9d943-13cb-42eb-a549-464c59f1443d",
+    "username": "chi.wing.cheung.acme_hk.3",
+    "email": "chi.wing.cheung@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_hk.credit_trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "870f264e-4619-47a1-88d5-fb369b3de360",
+    "username": "man.yee.ng.acme_hk.4",
+    "email": "man.yee.ng@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.credit_trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "27569b76-ff8a-4f74-8acd-4fd15ecabdbc",
+    "username": "tsz.ching.lau.acme_hk.5",
+    "email": "tsz.ching.lau@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.credit_trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "28a93e07-804d-49c7-a08f-da03e79ec6e5",
+    "username": "ho.yin.tang.acme_hk.6",
+    "email": "ho.yin.tang@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Desk Head",
+    "business_unit_code": "acme_hk.fx_rates"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f6b36693-d307-4805-a4f0-d143313601a1",
+    "username": "ying.ying.lam.acme_hk.7",
+    "email": "ying.ying.lam@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.fx_rates"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "0e70eb11-78cb-42d7-823b-984505339b24",
+    "username": "kwok.wing.yip.acme_hk.8",
+    "email": "kwok.wing.yip@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Trader",
+    "business_unit_code": "acme_hk.fx_rates"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f9d5d20f-e68b-4976-b2a1-5c728685ae06",
+    "username": "suet.ying.ho.acme_hk.9",
+    "email": "suet.ying.ho@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_hk.middle_office"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "9aaeeb0e-f101-43ed-8e0d-23f34cd08324",
+    "username": "hoi.yan.chan.acme_hk.10",
+    "email": "hoi.yan.chan@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_hk.middle_office"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "bbde24f1-f83e-4bcc-838e-f94b2081b5fe",
+    "username": "chun.kit.wong.acme_hk.11",
+    "email": "chun.kit.wong@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_hk.middle_office"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "71accd03-a9b9-4458-bb07-7317f1a022af",
+    "username": "wai.ming.lee.acme_hk.12",
+    "email": "wai.ming.lee@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Manager",
+    "business_unit_code": "acme_hk.market_risk"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "9979ef6a-607d-4c8e-940f-ac527085a748",
+    "username": "siu.fung.cheung.acme_hk.13",
+    "email": "siu.fung.cheung@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_hk.market_risk"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "808cc32b-c01f-4a0d-8632-887a39fa8039",
+    "username": "ka.yee.ng.acme_hk.14",
+    "email": "ka.yee.ng@acme_hk.acmebank.example",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
+    "account_type": "user",
+    "role": "Analyst",
+    "business_unit_code": "acme_hk.market_risk"
+  }
+]

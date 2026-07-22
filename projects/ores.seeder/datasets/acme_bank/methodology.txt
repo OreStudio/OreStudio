@@ -1,0 +1,70 @@
+Acme Bank Source Data Generation Methodology
+=============================================
+
+This dataset describes Acme Bank, a synthetic four-entity investment-bank
+holding group (Acme Bank Group plc, Acme Bank UK plc, Acme Bank US Inc, Acme
+Bank HK Ltd), used as the system's fully-populated reference/demo entity.
+
+Unlike slovaris (a fully self-contained fictional universe), Acme Bank is
+designed to integrate with the system's real reference data: its parties
+carry fake-but-checksum-valid LEIs on GLEIF's reserved 9695 pre-LOU test
+prefix, so it fits the same GLEIF-import machinery real tenants (e.g.
+Barclays Plc) use, and its trades are meant to reference real
+GLEIF-imported counterparties.
+
+GENERATION
+
+1. SOURCE
+   File: generate_data.py (this directory)
+   Method: a Python script, config-driven over an OFFICES list -- the
+   org-chart shape (which desks/support functions, how many people per
+   role) is fixed per office; adding a new office (e.g. Singapore) is a
+   config change to OFFICES, not new code.
+   Filler data (names, emails) is generated: Faker for locales it
+   supports (en_GB for UK, en_US for US), a small curated name pool for
+   Hong Kong (Faker has no English-script HK locale).
+   All generated accounts share one fixed password ("Secure-Password-123",
+   matching the barclays_system_provision.ores convention) -- the real
+   scrypt hash, computed once via ores::security::crypto::password_hasher,
+   is a literal constant in the script (FIXED_PASSWORD_HASH), not
+   re-derived per account.
+
+2. OUTPUT
+   Flat-array JSON files, one per DQ artefact family, field names chosen
+   to map directly onto the corresponding ores_dq_*_artefact_tbl columns
+   (the same convention as slovaris's country_currency.json):
+     - companies.json        -- the 4 legal entities (reference/documentation)
+     - lei_entities.json     -- ores_dq_lei_entities_artefact_tbl shape
+     - lei_relationships.json -- ores_dq_lei_relationships_artefact_tbl shape
+     - business_units.json   -- ores_dq_business_units_artefact_tbl shape
+     - portfolios.json       -- ores_dq_portfolios_artefact_tbl shape
+     - books.json            -- ores_dq_books_artefact_tbl shape
+     - accounts.json         -- a NEW artefact shape (ores_dq_accounts_artefact_tbl
+                                 does not exist yet -- see the server-side
+                                 orchestration follow-up task)
+   Each business_units/portfolios/books/accounts record carries a
+   company_code field tagging which of the 4 legal entities it belongs
+   to, since each entity needs its own independently-published
+   organisational structure (existing publish-from-dq functions are
+   single-party-scoped per call).
+
+3. REGENERATE
+   python3 generate_data.py
+   (requires the faker package -- see projects/ores.codegen/requirements.txt)
+
+NOT IN THIS TASK
+
+Turning this JSON into SQL (via ores.codegen, extended as needed to match
+hand-written ores.sql conventions) is a separate follow-up task, as is the
+server-side orchestration that publishes each entity's structure and the
+ores.shell/ores.qt UX exposing it. This dataset's job stops at "clean,
+versioned, extensible source data."
+
+EXTENDING THE DATASET
+
+As the system grows, Acme Bank should grow with it (more entities, more
+desks, more staff) to keep exercising new functionality:
+1. Add a new office to OFFICES (or a new desk to DESKS/SUPPORT_FUNCTIONS)
+   in generate_data.py.
+2. Re-run the script; commit the regenerated JSON files.
+3. Re-run the codegen step (follow-up task) to regenerate SQL.

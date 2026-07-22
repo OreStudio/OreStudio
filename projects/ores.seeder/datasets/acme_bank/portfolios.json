@@ -1,0 +1,110 @@
+[
+  {
+    "company_code": "acme_uk",
+    "id": "517aaf04-c55a-454e-bc1b-24b5c3fca4c4",
+    "name": "Acme Bank UK plc Global Markets",
+    "parent_portfolio_code": null,
+    "portfolio_code": "acme_uk.global_markets",
+    "owner_unit_code": "acme_uk.global_markets",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "54631481-14a9-408c-8537-1507cbd2fb31",
+    "name": "IR Swaps London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets",
+    "portfolio_code": "acme_uk.ir_swaps.portfolio",
+    "owner_unit_code": "acme_uk.ir_swaps",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "dda8ae7f-d53d-4c04-9dd0-21544954cfe5",
+    "name": "Credit Trading London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets",
+    "portfolio_code": "acme_uk.credit_trading.portfolio",
+    "owner_unit_code": "acme_uk.credit_trading",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "8539f5fd-2f65-4fe4-8171-9ffaec6ca66e",
+    "name": "FX Rates London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets",
+    "portfolio_code": "acme_uk.fx_rates.portfolio",
+    "owner_unit_code": "acme_uk.fx_rates",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_us",
+    "id": "8dc362dc-d8e9-471d-83a2-1fcfaf13afe5",
+    "name": "Acme Bank US Inc Global Markets",
+    "parent_portfolio_code": null,
+    "portfolio_code": "acme_us.global_markets",
+    "owner_unit_code": "acme_us.global_markets",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_us",
+    "id": "fcaea337-93f3-470d-9785-b7315d615f7f",
+    "name": "IR Swaps New York Portfolio",
+    "parent_portfolio_code": "acme_us.global_markets",
+    "portfolio_code": "acme_us.ir_swaps.portfolio",
+    "owner_unit_code": "acme_us.ir_swaps",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_us",
+    "id": "6de72dce-ef56-47ba-a2a0-08c67951b02f",
+    "name": "Credit Trading New York Portfolio",
+    "parent_portfolio_code": "acme_us.global_markets",
+    "portfolio_code": "acme_us.credit_trading.portfolio",
+    "owner_unit_code": "acme_us.credit_trading",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_us",
+    "id": "0605a89a-af60-4352-9c34-806d5c80864d",
+    "name": "FX Rates New York Portfolio",
+    "parent_portfolio_code": "acme_us.global_markets",
+    "portfolio_code": "acme_us.fx_rates.portfolio",
+    "owner_unit_code": "acme_us.fx_rates",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "754f4fa9-4328-4994-b186-cc47b22e3081",
+    "name": "Acme Bank HK Ltd Global Markets",
+    "parent_portfolio_code": null,
+    "portfolio_code": "acme_hk.global_markets",
+    "owner_unit_code": "acme_hk.global_markets",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "05e559a6-72cb-4e34-8e90-c36ec00a46f5",
+    "name": "IR Swaps Hong Kong Portfolio",
+    "parent_portfolio_code": "acme_hk.global_markets",
+    "portfolio_code": "acme_hk.ir_swaps.portfolio",
+    "owner_unit_code": "acme_hk.ir_swaps",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "d6b275f9-75a9-4b14-b627-1ca7dc2f566d",
+    "name": "Credit Trading Hong Kong Portfolio",
+    "parent_portfolio_code": "acme_hk.global_markets",
+    "portfolio_code": "acme_hk.credit_trading.portfolio",
+    "owner_unit_code": "acme_hk.credit_trading",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "18fecdb0-7c32-48c7-9b1d-3a2e10b28fc5",
+    "name": "FX Rates Hong Kong Portfolio",
+    "parent_portfolio_code": "acme_hk.global_markets",
+    "portfolio_code": "acme_hk.fx_rates.portfolio",
+    "owner_unit_code": "acme_hk.fx_rates",
+    "is_virtual": false
+  }
+]

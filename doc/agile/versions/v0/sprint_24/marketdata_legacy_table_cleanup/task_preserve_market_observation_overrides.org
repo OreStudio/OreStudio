@@ -8,7 +8,7 @@
 #+filetags: :marketdata_legacy_table_cleanup:sprint_24:v0:
 #+owner: marco
 #+branch: feature/drop-legacy-marketdata-tables
-#+pr:
+#+pr: 1673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -152,7 +152,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1673][#1673]] | [marketdata,codegen] Retire legacy marketdata tables; make market_observation's series filter codegen-native |
 
 * Review
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:infrastructure:tooling:sprint_24:v0:unify_entity_key_modeling:
 #+owner: marco
-#+branch:
+#+branch: feature/unify-columns-primary-key-model-shape
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -64,6 +64,7 @@ public:
         TicksPerHour,
         FixedLegPaymentFrequencyCode,
         Enabled,
+        AutoStart,
         Version,
         ModifiedBy,
         RecordedAt,

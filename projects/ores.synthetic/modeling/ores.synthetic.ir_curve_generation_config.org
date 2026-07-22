@@ -201,10 +201,55 @@ faker::number::integer(1, 3600)
 :nullable: false
 :END:
 
-Whether the configuration is active and eligible for generation.
+Whether the configuration is startable at all -- manually or
+automatically. =enabled=false= means retired/disabled: neither
+auto-start nor a manual Start action may start it. Orthogonal to
+=auto_start= (see below), which further restricts which of the
+enabled configs actually start on their own.
 
 #+begin_src cpp :name generator
 faker::datatype::boolean()
+#+end_src
+
+** auto_start
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether this config starts automatically when the service comes up,
+as opposed to manual-start-only. Orthogonal to =enabled=: a config can
+be =enabled=true, auto_start=false= (valid, manually startable, but
+never auto-started -- e.g. a legacy/alternate-index variant living
+alongside a currency's primary config so the two never silently fight
+over the same published qualifier at boot). Starting a feed --
+whether auto-start-at-boot or a manual Start -- is rejected outright
+if another feed is already running for the same
+=(currency_code, index_name)= qualifier; nothing auto-disables the
+running one, so switching requires an explicit Stop then Start.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Free-text description of what this configuration represents -- what
+regime/vintage/index it targets, and, for a legacy index (e.g. USD
+LIBOR-3M, EONIA), that it is historical/discontinued and why it is
+still offered (testing pre-cessation scenarios). Shown in the Detail
+dialog and list views rather than left to a bare currency/index code
+to explain itself.
+
+#+begin_src cpp :name generator
+std::string("")
 #+end_src
 
 ** fixed_leg_payment_frequency_code
@@ -392,6 +437,8 @@ std::nullopt
 | ticks_per_hour                     | Ticks per Hour                 | ticksPerHourEdit               | spin_box  |        | true        |                                            |
 | fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit |        | true        | Enter payment frequency code (e.g. Annual)|
 | enabled                            | Enabled                        | enabledCheck                   | check_box |        |             |                                            |
+| auto_start                         | Auto-Start                     | autoStartCheck                 | check_box |        |             |                                            |
+| description                        | Description                    | descriptionEdit                | plain_text_edit |   |             | What this configuration represents        |
 
 *** Columns (Qt model)
 
@@ -407,6 +454,7 @@ std::nullopt
 | TicksPerHour                 | ticks_per_hour                      | Ticks/Hr                    | int       | 80    |
 | FixedLegPaymentFrequencyCode | fixed_leg_payment_frequency_code    | Fixed Leg Payment Frequency  | string    | 140   |
 | Enabled                      | enabled                             | Enabled                      | bool      | 70    |
+| AutoStart                    | auto_start                          | Auto-Start                   | bool      | 80    |
 | Version      | version        | Version        | int       | 70    |
 | ModifiedBy   | modified_by    | Modified By    | string    | 120   |
 | RecordedAt   | recorded_at    | Recorded At    | timestamp | 150   |

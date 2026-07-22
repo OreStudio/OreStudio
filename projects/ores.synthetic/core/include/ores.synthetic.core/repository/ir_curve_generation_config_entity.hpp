@@ -57,6 +57,8 @@ struct ir_curve_generation_config_entity {
     double initial_rate = 0.0;
     int ticks_per_hour = 0;
     bool enabled = false;
+    bool auto_start = false;
+    std::optional<std::string> description;
     std::string fixed_leg_payment_frequency_code = "Annual";
     std::string source_name;
     std::optional<std::string> folder_id;

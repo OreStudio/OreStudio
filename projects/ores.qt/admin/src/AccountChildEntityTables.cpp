@@ -59,7 +59,9 @@ AccountChildEntityTables::AccountChildEntityTables(QWidget* dialogParent)
 }
 
 void AccountChildEntityTables::attachTo(QTabWidget* tabWidget) {
-    tabWidget->addTab(contactTable_, "Contact Information");
+    // Insert before the last tab (Provenance) so dynamically-attached
+    // tabs never push it out of the last slot.
+    tabWidget->insertTab(tabWidget->count() - 1, contactTable_, "Contact Information");
 }
 
 void AccountChildEntityTables::reload(const boost::uuids::uuid& accountId,
@@ -143,6 +145,8 @@ void AccountChildEntityTables::onAddContact() {
     auto* dialog = new AccountContactInformationDetailDialog(&wrapper);
     layout->addWidget(dialog);
     dialog->setClientManager(clientManager_);
+    dialog->setChangeReasonCache(changeReasonCache_);
+    dialog->setImageCache(imageCache_);
     dialog->setUsername(username_);
     dialog->setCreateMode(true);
 
@@ -204,6 +208,8 @@ void AccountChildEntityTables::onEditContact(int row) {
     auto* dialog = new AccountContactInformationDetailDialog(&wrapper);
     layout->addWidget(dialog);
     dialog->setClientManager(clientManager_);
+    dialog->setChangeReasonCache(changeReasonCache_);
+    dialog->setImageCache(imageCache_);
     dialog->setUsername(username_);
     dialog->setCreateMode(false);
     dialog->setReadOnly(readOnly_ || !clientManager_ || !clientManager_->isConnected());

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D230B754-3456-445A-812C-6854E8F63AE3
+:END:
+#+title: Task: Design and implement the unified Columns/:primary_key: model shape in org_loader.py
+#+description: Supersedes task 52FE40FA. Replace the * Primary key / * Natural keys / * Columns three-way split with one * Columns section whose ** sub-headings may carry :primary_key: true. org_loader.py derives primary_key (list, declaration order, plus back-compat scalars) as a filter over Columns for both the surrogate (domain_entity) and surrogate-less (table/lookup_entity) archetypes -- no dual-syntax fallback.
+#+type: task
+#+level: s1
+#+filetags: :codegen:infrastructure:tooling:sprint_24:v0:unify_entity_key_modeling:
+#+owner: marco
+#+branch: feature/unify-columns-primary-key-model-shape
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

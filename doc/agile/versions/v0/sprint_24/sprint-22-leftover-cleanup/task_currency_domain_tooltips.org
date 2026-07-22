@@ -99,6 +99,9 @@ one-off hand-edits:
 
 * Notes
 
+Verified by [[id:58FB9E8A-B7CF-4883-A59A-31D2313E4EE5][Test Scenario: Verify Currency and Currency Pair Convention tooltips]],
+run manually against the Qt client by the developer.
+
 * PRs
 
 | PR | Title |

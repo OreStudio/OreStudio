@@ -992,7 +992,7 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         if (series_id.empty())
             return {.success = true, .vintages = {}, .error = {}};
 
-        m::get_market_observations_request obs_req;
+        m::get_market_observations_by_series_id_request obs_req;
         obs_req.series_id = series_id;
         obs_req.limit = 10000;
         auto obs_resp = cm->process_authenticated_request(obs_req);

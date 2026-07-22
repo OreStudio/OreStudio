@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata_legacy_table_cleanup:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/drop-legacy-marketdata-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-21
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ nodes from =ores_schema.puml=. Verify with a fresh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -47,9 +47,33 @@ nodes from =ores_schema.puml=. Verify with a fresh
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Confirmed zero C++ references to =ores_marketdata_series_tbl=/
+=ores_marketdata_observations_tbl=/=ores_marketdata_fixings_tbl=
+(only a comment mention in =fixing.hpp=) before removing anything.
+
+1. Deleted =marketdata_series_create.sql=,
+   =marketdata_observations_create.sql=, =marketdata_fixings_create.sql=
+   and their =drop/= counterparts.
+2. Removed their =\ir= includes from =marketdata_create.sql=/
+   =marketdata_drop.sql=.
+3. Removed their =create policy=/=alter table ... enable row level
+   security= blocks from =marketdata_rls_policies_create.sql=.
+   =marketdata_rls_policies_drop.sql= only ever contained the three
+   legacy =drop policy= statements (never any for the codegen-managed
+   =market_*= tables, which drop their policies along with their own
+   generated tables) — replaced its content with an explanatory
+   comment rather than deleting the file, matching the placeholder
+   pattern already used by =controller_rls_policies_drop.sql= for
+   domains with nothing to drop.
+4. Removed the three entities' blocks from =ores_schema.puml=;
+   regenerated =ores_schema.png= via
+   =compass build --preset linux-clang-debug-make
+   generate_ores_schema_diagram=.
+5. Verified with =compass db recreate -y -k=: legacy tables absent,
+   =ores_marketdata_market_series_tbl= (codegen-managed) present.
+   Also ran =validate_schemas.sh= (0 warnings) and the marketdata unit
+   test suites (=ores.marketdata.core.tests=,
+   =ores.marketdata.api.tests= — all pass) and a full clean build.
 
 * Notes
 
@@ -66,3 +90,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+All three legacy tables removed cleanly: SQL create/drop files
+deleted, =\ir= includes and RLS policy blocks removed, ER diagram
+(=ores_schema.puml=/=.png=) updated. Verified via a fresh =compass db
+recreate -y -k= (legacy tables absent, codegen-managed =market_*=
+tables intact), =validate_schemas.sh= (0 warnings), marketdata unit
+tests (all pass), and a full clean build. Acceptance met in full.

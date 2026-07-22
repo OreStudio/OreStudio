@@ -2015,6 +2015,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 'filter_column': fk['column'],
                 'service_method': f"list_{entity_plural_short}_by_{fk['column']}",
                 'count_service_method': f"count_{entity_plural_short}_by_{fk['column']}",
+                'default_limit': int(fk.get('list_by_default_limit', 100)),
             }
             for fk in domain_entity.get('foreign_keys', [])
             if fk.get('list_by')

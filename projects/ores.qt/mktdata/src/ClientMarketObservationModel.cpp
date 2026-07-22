@@ -122,12 +122,7 @@ void ClientMarketObservationModel::fetch_data() {
                             .error_message = "Model destroyed",
                             .error_details = {}};
                 }
-                marketdata::messaging::get_market_observations_request req;
-                // Filter server-side: an unfiltered fetch-then-client-filter was
-                // silently truncating this series' rows out of the result once
-                // continuously-ticking synthetic feeds across other series grew
-                // past the page limit — see the fx_spot_chart_stale_on_binding_change
-                // capture's sibling bug report.
+                marketdata::messaging::get_market_observations_by_series_id_request req;
                 req.series_id = boost::uuids::to_string(self->series_id_);
                 req.limit = 10000;
 

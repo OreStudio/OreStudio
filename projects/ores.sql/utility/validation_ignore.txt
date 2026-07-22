@@ -207,16 +207,6 @@ TENANT_001 ores_controller_service_dependencies_tbl
 # instead. version/modified_by/change_reason_code are intentionally absent:
 # these are time-series ingest tables, not user-managed entities.
 # =============================================================================
-TEMPORAL_003 ores_marketdata_observations_tbl
-TEMPORAL_003 ores_marketdata_fixings_tbl
-TEMPORAL_004 ores_marketdata_observations_tbl
-TEMPORAL_004 ores_marketdata_fixings_tbl
-TEMPORAL_005 ores_marketdata_observations_tbl
-TEMPORAL_005 ores_marketdata_fixings_tbl
-TEMPORAL_006 ores_marketdata_observations_tbl
-TEMPORAL_006 ores_marketdata_fixings_tbl
-TENANT_002 ores_marketdata_observations_tbl
-TENANT_002 ores_marketdata_fixings_tbl
 TEMPORAL_003 ores_marketdata_market_observations_tbl
 TEMPORAL_003 ores_marketdata_market_fixings_tbl
 TEMPORAL_004 ores_marketdata_market_observations_tbl

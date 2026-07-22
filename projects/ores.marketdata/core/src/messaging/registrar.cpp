@@ -23,7 +23,7 @@
 #include "ores.marketdata.core/messaging/feed_binding_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
-#include "ores.marketdata.core/messaging/market_observation_handler.hpp"
+#include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -70,28 +70,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.export_to_storage(std::move(msg), http_base_url);
         }));
 
-    // Market observations
-    subs.push_back(nats.queue_subscribe(std::string(get_market_observations_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_observation_handler h(nats, ctx, verifier);
-                                            h.list(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_market_observation_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_observation_handler h(nats, ctx, verifier);
-                                            h.save(std::move(msg));
-                                        }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_market_observation_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 market_observation_handler h(nats, ctx, verifier);
-                                 h.remove(std::move(msg));
-                             }));
+    // Market observations (generated sub-registrar, unlike the hand-wired
+    // entities elsewhere in this file — see the marketdata_legacy_table_cleanup
+    // story: migrated while adding the list_by_series_id endpoint).
+    {
+        auto s = register_market_observation_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
 
     // Curve snapshots (as-of / as-of-buckets, for curve/grid viewers)
     subs.push_back(nats.queue_subscribe(std::string(get_curve_snapshot_request::nats_subject),

@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -66,8 +67,8 @@ public:
      * @param limit Maximum number of records to return.
      * @return Vector of market observations for the requested page.
      */
-    std::vector<domain::market_observation> list_market_observations(
-        std::uint32_t offset, std::uint32_t limit, const std::string& series_id = {});
+    std::vector<domain::market_observation> list_market_observations(std::uint32_t offset,
+                                                                     std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active market observations.
@@ -75,6 +76,26 @@ public:
      * @return Total number of active market observations.
      */
     std::uint32_t count_market_observations();
+
+    /**
+     * @brief Lists market observations filtered by series_id, with pagination.
+     *
+     * @param series_id The series_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching market observations for the requested page.
+     */
+    std::vector<domain::market_observation> list_market_observations_by_series_id(
+        const std::string& series_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active market observations filtered by series_id.
+     *
+     * @param series_id The series_id to filter by.
+     * @return Total number of matching market observations.
+     */
+    std::uint32_t count_market_observations_by_series_id(const std::string& series_id);
+
 
     /**
      * @brief Retrieves a single market observation by its id.

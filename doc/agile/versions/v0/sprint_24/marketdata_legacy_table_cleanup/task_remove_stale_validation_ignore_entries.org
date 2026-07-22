@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata_legacy_table_cleanup:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/drop-legacy-marketdata-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-21
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,11 +34,11 @@ drift.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -48,9 +48,15 @@ drift.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Removed the 10 dead =TEMPORAL_003=/=004=/=005=/=006=/=TENANT_002=
+entries for =ores_marketdata_observations_tbl=/=ores_marketdata_fixings_tbl=
+(=ores_marketdata_series_tbl= never had ignore entries — it doesn't
+use the TimescaleDB hypertable pattern the others do). Left the
+=ores_marketdata_market_observations_tbl=/=market_fixings_tbl=
+entries in place (intentional no-audit-columns hypertable design, not
+drift) and their explanatory comment block, since it still accurately
+describes only the remaining entries. Ran =validate_schemas.sh=: 263
+tables parsed, 0 warnings.
 
 * Notes
 
@@ -67,3 +73,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Removed all 10 dead ignore entries for the dropped legacy tables;
+kept the =market_*= entries untouched. =validate_schemas.sh= passes
+with 0 warnings. Acceptance met in full.

@@ -96,6 +96,50 @@ market_observation_repository::read_all(context ctx, const std::string& id) {
         "Reading all market observation versions by id.");
 }
 
+
+std::vector<domain::market_observation> market_observation_repository::read_latest_by_series_id(
+    context ctx, const std::string& series_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations. series_id: " << series_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<market_observation_entity>> |
+        where("tenant_id"_c == tid && "series_id"_c == series_id && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<market_observation_entity, domain::market_observation>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_observation_mapper::map(entities); },
+        lg(),
+        "Reading latest market observations by series_id.");
+}
+
+std::uint32_t market_observation_repository::get_total_market_observation_count_by_series_id(
+    context ctx, const std::string& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observations count. series_id: "
+                               << series_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<market_observation_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "series_id"_c == series_id && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active market observations count by series_id: " << count;
+    return count;
+}
+
 void market_observation_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market observation: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -106,28 +150,12 @@ void market_observation_repository::remove(context ctx, const std::string& id) {
     execute_delete_query(ctx, query, lg(), "Removing market observation from database.");
 }
 
-std::vector<domain::market_observation> market_observation_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit, const std::string& series_id) {
+std::vector<domain::market_observation>
+market_observation_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations with offset: " << offset
-                               << " and limit: " << limit
-                               << (series_id.empty() ? "" : " series_id: " + series_id);
+                               << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-
-    if (!series_id.empty()) {
-        const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                           where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("observation_datetime"_c.desc()) | sqlgen::offset(offset) |
-                           sqlgen::limit(limit);
-        return execute_read_query<market_observation_entity, domain::market_observation>(
-            ctx,
-            query,
-            [](const auto& entities) { return market_observation_mapper::map(entities); },
-            lg(),
-            "Reading latest market observations by series with pagination.");
-    }
-
     const auto query = sqlgen::read<std::vector<market_observation_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);

@@ -8,7 +8,7 @@
 #+filetags: :marketdata:cleanup:codegen:sprint_24:v0:
 #+created: 2026-07-02
 #+updated: 2026-07-21
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -36,7 +36,7 @@ were never decommissioned.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -59,9 +59,9 @@ were never decommissioned.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B3A445A2-F4E1-4315-BDEC-BC9FD9072B9D][Drop legacy pre-codegen marketdata tables]] | BACKLOG | | | Remove ores_marketdata_series_tbl, ores_marketdata_observations_tbl and ores_marketdata_fixings_tbl: their \ir includes in marketdata_create.sql/marketdata_drop.sql, their entries in marketdata_rls_policies_create.sql/drop.sql, and their nodes in ores_schema.puml. Zero C++ references exist; superseded by market_series/market_observations/market_fixings (codegen-managed). |
-| [[id:4FE46380-C13D-43EE-B75D-76BFBC18C8BC][Remove stale validation_ignore.txt entries for legacy marketdata tables]] | BACKLOG | | | Once the legacy tables (ores_marketdata_observations_tbl, ores_marketdata_fixings_tbl, ores_marketdata_series_tbl) are dropped, remove their now-dead TEMPORAL_003..006/TENANT_002 ignore entries from projects/ores.sql/utility/validation_ignore.txt. Keep the entries for the current market_* tables (intentional no-audit-columns design). |
-| [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]] | BACKLOG | | | market_observation_repository.{hpp,cpp}, market_observation_service.{hpp,cpp} and market_observation_protocol.hpp carry hand-written customizations (a series_id filter param on the paginated list query, plus custom pagination logic) layered on top of codegen output. These are silently reverted every time 'compass codegen regenerate --component marketdata --profile all-cpp' runs. Either model the series_id filter properly in ores.marketdata.market_observation.org so codegen produces it, or clearly mark these files/blocks as hand-maintained so future regenerations don't clobber them. |
+| [[id:B3A445A2-F4E1-4315-BDEC-BC9FD9072B9D][Drop legacy pre-codegen marketdata tables]] | DONE | 2026-07-22 | 2026-07-22 | Remove ores_marketdata_series_tbl, ores_marketdata_observations_tbl and ores_marketdata_fixings_tbl: their \ir includes in marketdata_create.sql/marketdata_drop.sql, their entries in marketdata_rls_policies_create.sql/drop.sql, and their nodes in ores_schema.puml. Zero C++ references exist; superseded by market_series/market_observations/market_fixings (codegen-managed). |
+| [[id:4FE46380-C13D-43EE-B75D-76BFBC18C8BC][Remove stale validation_ignore.txt entries for legacy marketdata tables]] | DONE | 2026-07-22 | 2026-07-22 | Once the legacy tables (ores_marketdata_observations_tbl, ores_marketdata_fixings_tbl, ores_marketdata_series_tbl) are dropped, remove their now-dead TEMPORAL_003..006/TENANT_002 ignore entries from projects/ores.sql/utility/validation_ignore.txt. Keep the entries for the current market_* tables (intentional no-audit-columns design). |
+| [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]] | STARTED | 2026-07-22 | | market_observation_repository.{hpp,cpp}, market_observation_service.{hpp,cpp} and market_observation_protocol.hpp carry hand-written customizations (a series_id filter param on the paginated list query, plus custom pagination logic) layered on top of codegen output. These are silently reverted every time 'compass codegen regenerate --component marketdata --profile all-cpp' runs. Either model the series_id filter properly in ores.marketdata.market_observation.org so codegen produces it, or clearly mark these files/blocks as hand-maintained so future regenerations don't clobber them. |
 
 * Decisions
 

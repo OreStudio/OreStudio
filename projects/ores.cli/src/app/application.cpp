@@ -96,6 +96,7 @@
 #include "ores.refdata.api/domain/leg_type_table_io.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
@@ -127,9 +128,11 @@
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
 #include <rfl/json.hpp>
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 
 namespace ores::cli::app {
 
@@ -216,14 +219,41 @@ void application::import_conventions(const std::vector<std::filesystem::path>& f
 
         std::vector<refdata::domain::currency_pair> pairs;
         std::vector<refdata::domain::currency_pair_convention> pair_conventions;
+        std::vector<refdata::domain::currency_pair_convention_calendar> pair_calendars;
+        std::set<std::pair<std::string, std::string>> seen_pair_calendars;
         pairs.reserve(convs.fx.size());
         pair_conventions.reserve(convs.fx.size());
         for (const auto& fx : convs.fx) {
             pairs.push_back(fx.pair);
             pair_conventions.push_back(fx.convention);
+            for (const auto& calendar_code : fx.advance_calendars) {
+                // conventions.xml can list the same pair_code more than once
+                // (e.g. EUR/USD entered twice with different SpotDays) --
+                // only currency_pair_convention's own "last one wins" write
+                // survives for the convention row, so skip a
+                // (pair_code, calendar_code) combination already queued
+                // rather than sending a duplicate into the same batch,
+                // which would fail the whole junction insert atomically.
+                if (!seen_pair_calendars.insert({fx.convention.pair_code, calendar_code}).second)
+                    continue;
+                refdata::domain::currency_pair_convention_calendar pcc;
+                pcc.tenant_id = context_.tenant_id().to_string();
+                pcc.pair_code = fx.convention.pair_code;
+                pcc.calendar_code = calendar_code;
+                pcc.modified_by = fx.convention.modified_by;
+                pcc.performed_by = fx.convention.modified_by;
+                pcc.change_reason_code = fx.convention.change_reason_code;
+                pcc.change_commentary = fx.convention.change_commentary;
+                pair_calendars.push_back(std::move(pcc));
+            }
         }
         currency_pair_rp.write(context_, pairs);
         currency_pair_convention_rp.write(context_, pair_conventions);
+        if (!pair_calendars.empty()) {
+            refdata::repository::currency_pair_convention_calendar_repository
+                currency_pair_convention_calendar_rp(context_);
+            currency_pair_convention_calendar_rp.write(pair_calendars);
+        }
 
         cds_rp.write(context_, convs.cds);
 

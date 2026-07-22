@@ -133,3 +133,45 @@ create or replace trigger ores_iam_accounts_insert_trg
 before insert on ores_iam_accounts_tbl
 for each row
 execute function ores_iam_accounts_insert_fn();
+
+-- Bumps an account's own version when a child entity (e.g. account
+-- contact information) is written -- composite entity versioning, same
+-- pattern as ores_refdata_parties_touch_version_fn. See the "Temporal
+-- composite entity versioning" architecture doc.
+create or replace function ores_iam_accounts_touch_version_fn(
+    p_tenant_id uuid,
+    p_id uuid,
+    p_reason_code text,
+    p_commentary text,
+    p_modified_by text,
+    p_performed_by text,
+    p_child_entity text
+) returns void as $$
+declare
+    rec ores_iam_accounts_tbl%rowtype;
+begin
+    -- for update: takes the same row lock the parent's own insert
+    -- trigger takes, so the snapshot in rec can't be based on a
+    -- business-column value a concurrent direct edit is about to
+    -- change.
+    select * into rec
+    from ores_iam_accounts_tbl
+    where tenant_id = p_tenant_id
+      and id = p_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if not found then
+        return;
+    end if;
+
+    rec.version := 0;
+    rec.modified_by := p_modified_by;
+    rec.performed_by := p_performed_by;
+    rec.change_reason_code := p_reason_code;
+    rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
+
+    insert into ores_iam_accounts_tbl
+    select (rec).*;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

@@ -1,0 +1,178 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_IAM_API_DOMAIN_ACCOUNT_CONTACT_INFORMATION_HPP
+#define ORES_IAM_API_DOMAIN_ACCOUNT_CONTACT_INFORMATION_HPP
+
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
+
+namespace ores::iam::domain {
+
+/**
+ * @brief Real name and contact details for an account.
+ *
+ * An account's real-world identity: full name, plus the usual address/
+ * phone/email/web page fields. Accounts (ores_iam_accounts_tbl) carry
+ * only username/email/credentials — no name field — so this is the
+ * only place an account's actual name is recorded. One contact record
+ * per account (unlike party contact information, which allows several
+ * by contact_type — a person doesn't need a Legal/Operations/
+ * Settlement/Billing split).
+ */
+struct account_contact_information final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief UUID uniquely identifying this contact information record.
+     *
+     * Surrogate key for the account contact information record.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief The account this contact information belongs to. One contact record per account.
+     *
+     * References the parent account record.
+     */
+    boost::uuids::uuid account_id;
+
+    /**
+     * @brief The account holder's full name.
+     *
+     * Not nullable -- this is the whole point of the entity: accounts have no name field of their
+     * own.
+     */
+    std::string full_name;
+
+    /**
+     * @brief First line of the street address.
+     *
+     * Primary address line.
+     */
+    std::string street_line_1;
+
+    /**
+     * @brief Second line of the street address.
+     *
+     * Additional address line (suite, floor, etc.).
+     */
+    std::string street_line_2;
+
+    /**
+     * @brief City name.
+     *
+     * City or town of the address.
+     */
+    std::string city;
+
+    /**
+     * @brief State or province.
+     *
+     * State, province, or region.
+     */
+    std::string state;
+
+    /**
+     * @brief ISO 3166-1 alpha-2 country code.
+     *
+     * References the countries table (soft FK).
+     */
+    std::string country_code;
+
+    /**
+     * @brief Postal or ZIP code.
+     *
+     * Postal code for the address.
+     */
+    std::string postal_code;
+
+    /**
+     * @brief Phone number.
+     *
+     * Contact phone number in international format.
+     */
+    std::string phone;
+
+    /**
+     * @brief Email address.
+     *
+     * Contact email address. May differ from the account's login email.
+     */
+    std::string email;
+
+    /**
+     * @brief Web page URL.
+     *
+     * Contact web page address.
+     */
+    std::string web_page;
+
+    /**
+     * @brief Username of the person who last modified this account contact information.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+/**
+ * @brief Dispatch-key identifier for account_contact_information, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const account_contact_information&) {
+    return "ores.iam.account_contact_information";
+}
+
+}
+
+#endif

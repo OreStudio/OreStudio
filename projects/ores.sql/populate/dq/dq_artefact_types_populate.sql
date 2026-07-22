@@ -169,6 +169,12 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'synthetic_ir_curve_configs', 0, 'Synthetic IR Curve Configs', 'Synthetic IR curve generation configs (writes both market_data_generation_configs and ir_curve_generation_configs)',
      'dq_synthetic_ir_curve_configs_artefact_tbl', 'synthetic_market_data_generation_configs_tbl', 'synthetic.v1.ir-curve-configs.publish-from-dq', 54,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'accounts', 0, 'Accounts', 'Generated staff login accounts (e.g. Acme Bank); target/publish-from-dq wiring lands with the server-side-orchestration follow-up task',
+     'dq_accounts_artefact_tbl', 'iam_accounts_tbl', 'iam.v1.accounts.publish-from-dq', 55,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'account_contact_informations', 0, 'Account Contact Informations', 'Generated staff real names/contact details (e.g. Acme Bank); target/publish-from-dq wiring lands with the server-side-orchestration follow-up task',
+     'dq_account_contact_informations_artefact_tbl', 'iam_account_contact_informations_tbl', 'iam.v1.account-contact-informations.publish-from-dq', 56,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

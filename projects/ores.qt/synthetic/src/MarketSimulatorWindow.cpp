@@ -1894,11 +1894,23 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     // server-side, so IR curves in the current selection always go through the
     // per-feed path in addition, never through the folder fast-path.
     const auto folderId = selectedFolderId();
-    if (!folderId.empty())
+    if (!folderId.empty()) {
         startFolderAsync(folderId);
-    else
+        // Folder-level "start everything under here" is a bulk cascade, not
+        // per-curve consent -- auto_start=false curves (e.g. legacy IBOR-era
+        // ones living in the same folder as their RFR siblings) must stay
+        // out of it and only start via an explicit single-curve selection
+        // below, exactly like the service's own startup behaviour.
+        auto curves = selectedIrCurves();
+        curves.erase(std::remove_if(curves.begin(),
+                                    curves.end(),
+                                    [](const auto& ir) { return !ir.auto_start; }),
+                    curves.end());
+        startIrCurvesAsync(std::move(curves));
+    } else {
         startPairsAsync(selectedFxPairs());
-    startIrCurvesAsync(selectedIrCurves());
+        startIrCurvesAsync(selectedIrCurves());
+    }
 }
 
 void MarketSimulatorWindow::startFolderAsync(const std::string& folderId) {

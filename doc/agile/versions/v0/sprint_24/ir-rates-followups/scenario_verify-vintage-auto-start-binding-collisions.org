@@ -73,8 +73,7 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | LIBOR 3M has index name of SONIA; ; ; [[file:scenario_verify-vintage-auto-start-binding-collisions_step2_20260722_231759.png]]; ;  |
+| Status | PASS |
 
 ** Confirm legacy and realistic curves coexist
 
@@ -107,8 +106,7 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | it startd all feeds.  ; ; ; [[file:scenario_verify-vintage-auto-start-binding-collisions_step4_20260722_231944.png]] |
+| Status | PASS |
 
 ** Manually start a legacy feed alongside its realistic sibling
 
@@ -122,7 +120,7 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Attempt to double-start the same qualifier
 
@@ -136,7 +134,7 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Run Validate Vintage and confirm binding-collision detection
 
@@ -170,16 +168,16 @@ Log in against the =prime_origin= environment as
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-22T22:19:51Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-22T23:05:22Z |
 | Branch        | feature/source-vintage-ir-dataset |
-| Commit        | 6b5f2991a |
+| Commit        | 0845d9695 |
 | Worktree      | bright_faraday |
 
 * Notes

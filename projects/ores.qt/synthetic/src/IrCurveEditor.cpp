@@ -647,12 +647,14 @@ void IrCurveEditor::populateIndexNameCombo() {
         for (const auto& code : codes) {
             if (!code.starts_with(prefix))
                 continue;
-            // Overnight-style indices are exactly "<CCY>-<INDEX>" (two segments); exclude
-            // term-IBOR tenor variants ("<CCY>-<INDEX>-<TENOR>", three segments) -- those aren't a
-            // single curve's identity, the curve's own Curve Template already carries tenors.
+            // Both shapes are valid curve identities: overnight-style
+            // "<CCY>-<INDEX>" (e.g. USD-SOFR) and term-IBOR
+            // "<CCY>-<INDEX>-<TENOR>" (e.g. USD-LIBOR-3M, legacy curves) --
+            // the tenor segment here identifies *which* term-IBOR fixing
+            // this curve tracks, distinct from the Curve Template's own
+            // tenor points (which cover the curve's *shape*, not its
+            // fixing identity).
             const auto suffix = code.substr(prefix.size());
-            if (suffix.find('-') != std::string::npos)
-                continue;
             self->indexNameCombo_->addItem(QString::fromStdString(suffix));
         }
         BOOST_LOG_SEV(lg(), debug)

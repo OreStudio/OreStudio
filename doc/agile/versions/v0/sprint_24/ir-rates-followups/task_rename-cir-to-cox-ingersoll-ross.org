@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 390E6886-6A04-4840-A53D-9873FC491ABB
+:END:
+#+title: Task: Rename CIR process to Cox-Ingersoll-Ross
+#+description: Rename the cir_process type/files/identifiers to their proper name (Cox-Ingersoll-Ross / cox_ingersoll_ross_process), matching QuantLib's naming and this codebase's other spelled-out process names (vasicek_process, hull_white_process), rather than the bare acronym.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every other short-rate process in this codebase is spelled out
+(=vasicek_process=, =hull_white_process=); only =cir_process= is a bare
+acronym. QuantLib itself spells it out
+(=CoxIngersollRossProcess=/=ExtendedCoxIngersollRoss=). Rename
+=cir_process= (class, file, test file, header, doc) to
+=cox_ingersoll_ross_process= for consistency.
+
+The acronym also appears well beyond the process class itself — the
+=synthetic_yield_curve_process_types= catalog/enum, the
+=ir_curve_generation_config.process_type= stored value, Qt's
+=IrCurveEditor= dropdown, =process_factory=/
+=process_parameter_validation=, and doc references across sprint_23/24.
+Scope this task to identifier/type renames the codebase controls
+directly; whether the *stored* =process_type= string value (=cir=
+today) also changes, or stays as a stable wire/DB identifier while only
+the C++ symbol changes, is a decision to make explicit in the Plan —
+changing a stored enum value is a data-compatibility concern the class
+rename alone is not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- =cir_process= (class, header, source, tests) renamed to
+  =cox_ingersoll_ross_process= throughout
+  =ores.analytics.quant= (including =process_factory=/
+  =process_parameter_validation=).
+- Every other codebase reference to the class/type (Qt's
+  =IrCurveEditor=, =ores.ore= domain, doc knowledge pages) updated to
+  match.
+- A documented decision on whether the stored =process_type= enum
+  value/DB catalog row changes from =cir= or stays as-is for wire/DB
+  stability, with any resulting SQL migration if it does change.
+- Full build and test suite green after the rename (this is a rename,
+  not a behaviour change — no test assertions should need updating
+  beyond identifier names).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

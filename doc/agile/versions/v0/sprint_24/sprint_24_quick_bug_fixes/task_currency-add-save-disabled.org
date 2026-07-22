@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-add-save-disabled
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,7 +33,7 @@ against =main= to confirm scope and find the root cause in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

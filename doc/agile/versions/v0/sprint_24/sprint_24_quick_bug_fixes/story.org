@@ -8,7 +8,7 @@
 #+filetags: :bug:qt:refdata:currency:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -31,7 +31,7 @@ blocking or degrading basic functionality:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -52,7 +52,7 @@ blocking or degrading basic functionality:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] | BACKLOG | | | Save button remains disabled even after filling in all required fields when adding a new currency, blocking creation. |
+| [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] | STARTED | 2026-07-22 | | Save button remains disabled even after filling in all required fields when adding a new currency, blocking creation. |
 | [[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]] | BACKLOG | | | The currencies list window's pagination controls don't appear to be enabled/working, unlike other entity list windows. |
 | [[id:B9410C52-E635-4A7E-B4B4-7A4DFEAE552A][Party re-provisioning fails on duplicate report definitions]] | ABANDONED | | | provision party --reports all in ores.shell/Qt wizard throws a raw Postgres duplicate-key error instead of skipping/upserting cleanly when re-run against an already-provisioned party. |
 

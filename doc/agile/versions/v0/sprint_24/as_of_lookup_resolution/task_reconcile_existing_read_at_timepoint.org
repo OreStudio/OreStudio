@@ -2,7 +2,7 @@
 :ID: A61D91CC-61A9-4140-8F26-AA76621FBB80
 :END:
 #+title: Task: Reconcile existing hand-written read_at_timepoint methods
-#+description: currency_repository/country_repository/business_centre_repository already have a hand-written, unwired read_at_timepoint. Once the codegen facet lands, either replace these with the generated version or explicitly document why they diverge -- don't leave two parallel implementations of the same concept.
+#+description: currency_repository/country_repository already have a hand-written read_at_timepoint (not business_centre_repository), unwired to any service/NATS/UI caller and with a valid_to >= t boundary bug versus the documented valid_to > t convention. Once the codegen facet lands, either replace these with the generated (corrected) version or explicitly document why they diverge -- don't leave two parallel implementations of the same concept.
 #+type: task
 #+level: s1
 #+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
-#+updated: 2026-07-21
+#+updated: 2026-07-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace =currency_repository=/=country_repository='s hand-written
+=read_at_timepoint= with the generated (corrected) facet method — see
+[[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]]. The =valid_to >= t= boundary
+bug is *not* backported to the hand-written methods independently —
+it's fixed as part of this reconciliation replacing them outright,
+not as a standalone earlier patch, so there's no window where a
+known-buggy hand-written version is deliberately left live longer
+than the replacement takes to land.
 
 * Status
 

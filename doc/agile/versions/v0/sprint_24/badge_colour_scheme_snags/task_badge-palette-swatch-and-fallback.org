@@ -52,9 +52,71 @@ mechanism for consistency, not reinvent a second rendering approach.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=badge_definition= is already on the standard codegen stack
+(regenerated in 772982ea5), but two Qt detail-dialog/list-delegate
+facets it needs don't exist in codegen yet — this is not a plain
+model-declaration task, it starts with two small codegen extensions.
+
+Investigation findings:
+
+- ~BadgeDefinitionMdiWindow~ sets no item delegate at all today;
+  ~BackgroundColour~/~TextColour~ render as raw hex-string text
+  (~ClientBadgeDefinitionModel::data()~).
+- ~BadgeDefinitionDetailDialog~ has *no UI fields at all* for
+  ~background_colour~/~text_colour~/~severity_code~/~display_order~ —
+  only ~code~/~name~/~description~ exist. This is because
+  ~ores.dq.badge_definition.org~ never declares a =** Detail fields=
+  table under =** Qt=, so ~core.py~'s auto-generate fallback
+  (~core.py:2256~) only emits key/name/description.
+- Codegen's detail-field vocabulary
+  (~line_edit/text_edit/static_combo/dynamic_combo/flagged_combo/check_box/spin_box~,
+  see ~core.py:2290-2345~) has *no colour-picker type*. Needs adding
+  before the model can declare one.
+- Codegen's list-column badge facet (~is_badge~, ~cpp_qt_mdi_window.cpp.mustache:245~)
+  always resolves via ~BadgeCache::resolve(badge_key, value)~ —
+  i.e. "this column's value is a code that points at a separate
+  badge_definition". ~background_colour~/~text_colour~ are the
+  opposite: they *are* the colour, not a code to look up. Needs a
+  second resolver shape, not reuse of ~is_badge~ as-is.
+- ~BadgeSeverityMdiWindow~/~ClientBadgeSeverityModel~ have no reverse-FK
+  facet in codegen at all — the "which badge_definitions reference
+  this severity" column has to be hand-added.
+- Fallback: ~ColorConstants::badge_fallback~ (orange/white) is the
+  hardcoded pair ~EntityItemDelegate::paint()~ falls back to. Real
+  seed rows live in ~dq_badge_system_populate.sql~ via
+  ~ores_dq_badge_definitions_upsert_fn~.
+
+Steps:
+
+1. Codegen: add a ~colour~ detail-field type — flag computation in
+   ~core.py~, swatch-button + ~QColorDialog~ block in
+   ~qt_detail_dialog_ui.mustache~, wiring in the detail-dialog impl
+   mustache.
+2. Codegen: add a self-colour list-column style (parallel to
+   ~is_badge~) whose generated resolver reads the row's own two
+   colour fields instead of calling ~BadgeCache::resolve~.
+3. Model: add =** Detail fields= to ~ores.dq.badge_definition.org~
+   (code/name/description as today; ~background_colour~/~text_colour~
+   as ~colour~; ~severity_code~ as ~dynamic_combo~ fetching
+   ~badge_severity~; ~display_order~ as ~spin_box~); flag
+   ~BackgroundColour~/~TextColour~ in "Columns (Qt model)" with the
+   new self-colour style; add =** Related entity shortcuts=
+   (Severities, Mappings).
+4. Regenerate; reconcile hand-wiring at the controller/plugin level
+   (~BadgeDefinitionController~ → ~DqPlugin~, mirroring
+   ~BookController~/~RefdataPlugin~'s ~showBookStatusesRequested~
+   pattern).
+5. Hand-add the ~BadgeSeverityMdiWindow~ reverse-link column/widget —
+   no codegen facet for this exists.
+6. Fallback: reserved ~badge_definition~ row (~code='__unmapped__'~)
+   in ~dq_badge_system_populate.sql~; ~BadgeCache::fallback()~
+   accessor; switch both the codegen-generated ~is_badge~ resolver
+   template and ~EntityItemDelegate~'s built-in fallback off
+   ~ColorConstants::badge_fallback~ onto it; distinct dashed-border
+   treatment in ~DelegatePaintUtils~ so it doesn't read as
+   inactive/grey.
+7. Manual QA scenario per acceptance (remove a ~badge_mapping~ row,
+   confirm fallback rendering).
 
 * Notes
 

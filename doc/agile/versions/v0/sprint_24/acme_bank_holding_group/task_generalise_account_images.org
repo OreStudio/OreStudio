@@ -7,35 +7,60 @@
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generalise-account-images
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Accounts have no way to carry a profile picture today. The only
+existing image storage, =ores_assets_images_tbl=, is SVG-only
+(=svg_data text not null=) — built for country flags, not photos —
+and =ores_iam_accounts_tbl= has no image reference at all.
+
+Generalise =ores_assets_images_tbl= into a binary-agnostic asset table
+(per the parent story's =* Decisions=: extend the existing table
+rather than add a parallel face-images table), migrating existing SVG
+consumers (country flags, etc.) onto the generalised shape, and add an
+=image_id= FK on =ores_iam_accounts_tbl= so an account can reference
+an image row — of either kind. This is schema/infrastructure work; it
+does not itself populate any Acme Bank staff pictures (that's
+[[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Build Acme Bank party/LEI/contact/staff generator]]'s job), it just makes
+it possible.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Investigating current images table/entity and every SVG consumer before changing shape. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Design the generalised asset shape, then implement. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
 
--
+- =ores_assets_images_tbl= (or its successor) can store both SVG and
+  binary (e.g. JPEG) image data without a separate parallel table.
+- Every existing SVG consumer (country flags, etc.) is migrated onto
+  the generalised shape and keeps working — verified via existing
+  tests/UI, not just compilation.
+- =ores_iam_accounts_tbl= gains an =image_id= FK (nullable — most
+  accounts still have no picture) referencing the generalised images
+  table.
+- Schema/codegen changes follow the standard ORE Studio entity
+  pipeline (domain class, mapper, repository, SQL, Qt where
+  applicable) — not hand-written one-off SQL.
+- Existing tests pass; new tests cover the generalised storage and the
+  account FK.
 
 * Plan
 

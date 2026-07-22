@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
-#+updated: 2026-07-21
+#+updated: 2026-07-22
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -96,7 +96,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Analysis doesn't account for ores.synthetic's existing organisation_generator_service (parties, business units, portfolios, books, GB/US contacts, LEI/BIC) | dataset_overview.org | Accepted | Added "Relationship to the existing ores.synthetic generator" section; reconciled the acme/"Acme Corp" tenant naming collision; updated the generator follow-up task to extend ores.synthetic rather than write from scratch |
+| 2 | FaceStudio image count off by one (378 vs 377) | dataset_overview.org | Accepted | Fixed to 377 |
+| 3 | Stale #+updated/Last touched/Now fields after this task's own edits | story.org, task_analyse_acme_bank_structure.org | Accepted | Bumped dates and reworded Now/Next to reflect current state |
 
 * Result
 

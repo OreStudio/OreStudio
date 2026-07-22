@@ -86,6 +86,51 @@ scheme either. Concretely:
   counterparties — Acme is the one net-new entity, everything it
   interacts with is real.
 
+* Relationship to the existing ores.synthetic generator
+
+=ores.synthetic='s =organisation_generator_service= already generates,
+deterministically from a seed, a party hierarchy, GB/US-locale
+contacts (addresses, postcodes, phone formats), party/counterparty LEI
+and BIC identifiers, and typed business units
+(=DIVISION=/=BUSINESS_AREA=/=DESK=/=COST_CENTRE=), plus portfolios and
+books — wired into shell provisioning today via =provision tenant
+--source synthetic --seed 42= against a tenant named =acme=/"Acme
+Corp" ([[proj:doc/recipes/shell/provisioning/acme_system_provision.org][How do I provision the system with Acme (synthetic)?]]). This
+overlaps with a meaningful slice of what's proposed here, so it's
+worth being explicit about why Acme Bank doesn't just reuse it:
+
+- *Shape*: the existing generator builds a randomised tree from a
+  seed; Acme Bank needs a specific, hand-authored org chart (fixed
+  branches, fixed desks, fixed headcounts) that reads as a coherent,
+  recognisable bank rather than an arbitrary structure.
+- *Staff*: the existing generator stops at business units — it has no
+  concept of accounts/staff sitting on a desk, which is the core new
+  thing this story needs.
+- *Locale*: GB/US contact generation exists; Hong Kong does not, and
+  none of it covers *person* names (only company/address data).
+- *LEIs*: the existing generator's LEI is =ctx.alphanumeric(20)= — a
+  plain random 20-character string, not ISO 17442 mod-97 checksum-valid
+  and not on GLEIF's =9695= test-prefix range. Acme Bank's identifiers
+  need to be well-formed enough to look like real LEIs, which the
+  current generator does not attempt.
+
+Given that, the follow-up "build the generator" task should be scoped
+as *extending* =ores.synthetic= (reusing its contact/LEI-storage
+plumbing where it fits, fixing the LEI checksum gap, adding a
+staff/account layer and HK locale) rather than a from-scratch
+Python/Faker script, unless the fixed-shape requirement turns out to
+fight the generator's random-tree design too much — that's a call for
+the generator task itself to make once it's scoped in code, not this
+analysis.
+
+*Naming collision*: the existing synthetic-provisioning recipe already
+claims the tenant code =acme= / name "Acme Corp" for its generic,
+randomised smoke-test tenant. Acme Bank is a different, deliberately
+curated entity and should not collide with it — the follow-up task
+should provision it under a distinct tenant code (e.g. =acmebank= /
+"Acme Bank Group plc"), leaving the existing =acme= synthetic tenant
+untouched for its current purpose.
+
 * Reference structure: Barclays Group
 
 Barclays plc is a UK-headquartered universal bank organised (per its
@@ -192,7 +237,7 @@ Each account's name is generated using the *branch's locale* — British
 names for London, American names for New York, and Hong
 Kong/Cantonese-appropriate names for Hong Kong — not a single Western
 default across all three. Each account's profile picture is drawn
-from [[proj:external/facestudio/manifest.json][FaceStudio Face Dataset]] (=external/facestudio/faces=, 378
+from [[proj:external/facestudio/manifest.json][FaceStudio Face Dataset]] (=external/facestudio/faces=, 377
 images already committed), matched loosely to the generated name's
 apparent gender and the branch's predominant ethnicity bucket (e.g.
 =east_asian= for Hong Kong, =european=/=african=/=south_asian=/etc.
@@ -212,7 +257,7 @@ than a monoculture per office).
 | Business units, portfolios, books             | =business_unit=/=portfolio=/=book=          | Deferred — waiting on =prime_origin='s unified dataset mechanism |
 | Staff login accounts                          | =account=                                    | Yes (accounts already exist) |
 | Desk-scoped RBAC roles                        | RBAC roles (tenant/party-scoped today)       | Partial — no desk-level granularity |
-| Locale-matched staff names                    | *none* — no name-generation/locale capability | *No — needs the Python generator* |
+| Locale-matched staff names                    | *none* — =ores.synthetic= has GB/US contact locales but no person-name/HK locale | *No — needs generator extension* |
 | Account profile pictures                      | *none* — accounts have no image field, and =ores_assets_images_tbl= stores SVG only (JPEGs don't fit) | *No — needs schema work* |
 | Tracking the generated party/account data as a first-class DQ dataset | =ores_dq_datasets_tbl= / =ores_dq_artefact_types_tbl= | Partial — no artefact type yet for "generated organisation" or "generated accounts" data |
 
@@ -256,26 +301,29 @@ staff-generation script can be considered complete end-to-end.
 
 * Generation approach
 
-A Python script (Faker or an equivalent locale-aware name/address
-library), driven by a hand-authored, hardcoded company-structure
+A generator driven by a hand-authored, hardcoded company-structure
 definition (the branches/desks/headcounts table above), rather than a
-purely synthetic/randomised org chart:
+purely synthetic/randomised org chart — see the previous section for
+why this likely means *extending* =ores.synthetic= rather than a
+from-scratch Python/Faker script, pending that task's own scoping:
 
 - The *shape* (which branches, which desks, how many people per desk)
-  is fixed data in the script — a human decided it's "sensible."
-- For each slot in that shape, the script *generates* the filler data:
-  name (locale-matched to the branch), email, a plausible
-  employee-style username, and a =faces/= image path chosen by
-  matching the branch's ethnicity mix and the generated name's
-  apparent gender.
+  is fixed data — a human decided it's "sensible" — layered on top of
+  whichever generator ends up producing it.
+- For each slot in that shape, the generator *generates* the filler
+  data: name (locale-matched to the branch, including Hong Kong —
+  net-new locale work regardless of which generator is extended),
+  email, a plausible employee-style username, a checksum-valid LEI on
+  the =9695= test prefix, and a =faces/= image path chosen by matching
+  the branch's ethnicity mix and the generated name's apparent gender.
 - Output should follow the same shape as other =ores.seeder= dataset
   folders (manifest/model/populate-style JSON) so it plugs into the
   standard seeder pipeline once the account-picture and DQ
   artefact-type gaps are closed — not a bespoke one-off script whose
   output has to be hand-wired in.
 
-This script, and the schema work it depends on, are follow-up tasks
-under the parent story, not part of this analysis task.
+This generator work, and the schema work it depends on, are follow-up
+tasks under the parent story, not part of this analysis task.
 
 * See also
 

@@ -1,7 +1,7 @@
 [
   {
     "company_code": "acme_uk",
-    "id": "9cc6c5d8-6242-471d-929d-2752a0c2d4f9",
+    "id": "c274e96e-8243-558e-853d-a23c446a8651",
     "name": "IR Swaps London Book",
     "portfolio_code": "acme_uk.ir_swaps.portfolio",
     "owner_unit_code": "acme_uk.ir_swaps",
@@ -9,7 +9,7 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "1532aab8-74af-4802-bda6-5ec1bcaa3211",
+    "id": "7caf8914-98e5-5656-a1a1-c9a7330cd925",
     "name": "Credit Trading London Book",
     "portfolio_code": "acme_uk.credit_trading.portfolio",
     "owner_unit_code": "acme_uk.credit_trading",
@@ -17,7 +17,7 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "3b0b0188-4b54-4721-8b53-a9ac59c9d978",
+    "id": "45406787-863c-5ddf-98e3-5d909000c8ca",
     "name": "FX Rates London Book",
     "portfolio_code": "acme_uk.fx_rates.portfolio",
     "owner_unit_code": "acme_uk.fx_rates",
@@ -25,7 +25,7 @@
   },
   {
     "company_code": "acme_us",
-    "id": "0104043f-9753-4b0e-b77f-7b4a14349479",
+    "id": "7587dbc4-6099-5efd-b6b3-5e3f15fac2c6",
     "name": "IR Swaps New York Book",
     "portfolio_code": "acme_us.ir_swaps.portfolio",
     "owner_unit_code": "acme_us.ir_swaps",
@@ -33,7 +33,7 @@
   },
   {
     "company_code": "acme_us",
-    "id": "13034c78-e12e-4ad6-907d-0f380c12fbdd",
+    "id": "35400c12-2a43-5b5c-934e-96f09f406887",
     "name": "Credit Trading New York Book",
     "portfolio_code": "acme_us.credit_trading.portfolio",
     "owner_unit_code": "acme_us.credit_trading",
@@ -41,7 +41,7 @@
   },
   {
     "company_code": "acme_us",
-    "id": "bb189045-4cdc-45dd-8866-3cbaab7353fc",
+    "id": "b60bea04-a671-5dcb-8fb4-9fea97d7d9e6",
     "name": "FX Rates New York Book",
     "portfolio_code": "acme_us.fx_rates.portfolio",
     "owner_unit_code": "acme_us.fx_rates",
@@ -49,7 +49,7 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "a2a0f510-5ade-4edd-8611-c98c99f9ce6e",
+    "id": "c7ae93ca-f8b0-52b7-aecd-77fd75f6bc67",
     "name": "IR Swaps Hong Kong Book",
     "portfolio_code": "acme_hk.ir_swaps.portfolio",
     "owner_unit_code": "acme_hk.ir_swaps",
@@ -57,7 +57,7 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "28809e65-ed76-40d5-bddb-a1f58a7c41a0",
+    "id": "5cf716d2-1fa0-5680-9116-302be2e8cede",
     "name": "Credit Trading Hong Kong Book",
     "portfolio_code": "acme_hk.credit_trading.portfolio",
     "owner_unit_code": "acme_hk.credit_trading",
@@ -65,7 +65,7 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "9bc99aec-cb2e-44f0-938b-02f2adc59cf4",
+    "id": "741085ae-71e9-51af-86c6-d4d199e432b5",
     "name": "FX Rates Hong Kong Book",
     "portfolio_code": "acme_hk.fx_rates.portfolio",
     "owner_unit_code": "acme_hk.fx_rates",

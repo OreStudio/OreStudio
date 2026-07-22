@@ -27,6 +27,11 @@ from faker import Faker
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Fixed namespace for deterministic UUIDs (uuid5), so regenerating the
+# dataset without changing its shape produces identical output -- an
+# additive diff when e.g. a new office is added, not a full rewrite.
+NAMESPACE = uuid.UUID("6f2a6c1e-6b8c-4e6a-9b8e-2b6b6b6b6b6b")
+
 # GLEIF's reserved pre-LOU test prefix -- never assigned to a real entity.
 LEI_TEST_PREFIX = "9695"
 
@@ -63,8 +68,10 @@ def make_lei(entity_code: str) -> str:
     return base + lei_check_digits(base)
 
 
-def new_uuid() -> str:
-    return str(uuid.uuid4())
+def new_uuid(key: str) -> str:
+    """Deterministic uuid5 off a stable key, so regenerating the dataset
+    without changing its shape reproduces identical IDs."""
+    return str(uuid.uuid5(NAMESPACE, key))
 
 
 # =============================================================================
@@ -177,8 +184,12 @@ def gen_person(office, faker, index):
         first, last = gen_hk_name(index)
     slug_first = first.lower().replace(" ", ".")
     slug_last = last.lower().replace(" ", ".")
+    # index is folded into both username and email: two people can
+    # legitimately draw the same Faker name within an office, and email
+    # is unique per (tenant_id, email) -- see accounts_email_uniq_idx in
+    # iam_accounts_create.sql.
     username = f"{slug_first}.{slug_last}.{office['code']}.{index}"
-    email = f"{slug_first}.{slug_last}@{office['code']}.acmebank.example"
+    email = f"{slug_first}.{slug_last}.{index}@{office['code']}.acmebank.example"
     return username, email
 
 
@@ -199,7 +210,7 @@ def build_office(office, faker):
         person_index += 1
         accounts.append({
             "company_code": company_code,
-            "id": new_uuid(),
+            "id": new_uuid(f"account:{username}"),
             "username": username,
             "email": email,
             "password_hash": FIXED_PASSWORD_HASH,
@@ -208,18 +219,19 @@ def build_office(office, faker):
             "business_unit_code": unit_code,
         })
 
-    global_markets_id = new_uuid()
+    global_markets_code = f"{company_code}.global_markets"
+    global_markets_id = new_uuid(f"business_unit:{global_markets_code}")
     business_units.append({
         "company_code": company_code,
         "id": global_markets_id,
         "unit_name": "Global Markets",
-        "unit_code": f"{company_code}.global_markets",
+        "unit_code": global_markets_code,
         "parent_business_unit_code": None,
         "business_centre_code": office["business_centre_code"],
         "unit_type_code": "DIVISION",
     })
 
-    global_virtual_portfolio_id = new_uuid()
+    global_virtual_portfolio_id = new_uuid(f"portfolio:{global_markets_code}")
     portfolios.append({
         "company_code": company_code,
         "id": global_virtual_portfolio_id,
@@ -234,7 +246,7 @@ def build_office(office, faker):
         desk_code = f"{company_code}.{desk['code']}"
         business_units.append({
             "company_code": company_code,
-            "id": new_uuid(),
+            "id": new_uuid(f"business_unit:{desk_code}"),
             "unit_name": f"{desk['name']} {office['city']}",
             "unit_code": desk_code,
             "parent_business_unit_code": f"{company_code}.global_markets",
@@ -245,7 +257,7 @@ def build_office(office, faker):
         physical_portfolio_code = f"{desk_code}.portfolio"
         portfolios.append({
             "company_code": company_code,
-            "id": new_uuid(),
+            "id": new_uuid(f"portfolio:{physical_portfolio_code}"),
             "name": f"{desk['name']} {office['city']} Portfolio",
             "parent_portfolio_code": f"{company_code}.global_markets",
             "portfolio_code": physical_portfolio_code,
@@ -255,7 +267,7 @@ def build_office(office, faker):
 
         books.append({
             "company_code": company_code,
-            "id": new_uuid(),
+            "id": new_uuid(f"book:{physical_portfolio_code}"),
             "name": f"{desk['name']} {office['city']} Book",
             "portfolio_code": physical_portfolio_code,
             "owner_unit_code": desk_code,
@@ -271,7 +283,7 @@ def build_office(office, faker):
         func_code = f"{company_code}.{func['code']}"
         business_units.append({
             "company_code": company_code,
-            "id": new_uuid(),
+            "id": new_uuid(f"business_unit:{func_code}"),
             "unit_name": f"{func['name']} {office['city']}",
             "unit_code": func_code,
             "parent_business_unit_code": None,
@@ -306,7 +318,14 @@ def main():
     }]
 
     for office in OFFICES:
-        faker = Faker(office["locale"]) if office["locale"] else None
+        if office["locale"]:
+            faker = Faker(office["locale"])
+            # Seeded per office (not globally) so adding a new office
+            # doesn't change the names already generated for existing
+            # ones -- regeneration stays additive.
+            faker.seed_instance(f"acme_bank:{office['code']}")
+        else:
+            faker = None
         lei, entity, business_units, portfolios, books, accounts = build_office(office, faker)
 
         lei_entities.append(entity)

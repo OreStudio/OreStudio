@@ -44,12 +44,12 @@ populatable with the entities ORE Studio supports today:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
@@ -99,3 +99,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landed the analysis as [[proj:projects/ores.seeder/datasets/acme_bank_structure_analysis/dataset_overview.org][acme_bank_structure_analysis]], a first-class
+=ores.seeder= dataset:
+
+- Barclays' real corporate structure researched and cited (CIB
+  Markets as the reference shape for the trading floor).
+- Proposed Acme Bank party hierarchy: Group → International → three
+  branches (London, New York, Hong Kong), each with a checksum-valid
+  synthetic LEI on GLEIF's reserved =9695= pre-LOU test prefix, so
+  Acme integrates with the real GLEIF counterparty universe rather
+  than being an isolated fictional world (contrast with =slovaris=).
+- Trading floor + Middle Office + Market Risk support functions
+  proposed per branch (49 staff accounts total), with locale-matched
+  names and FaceStudio-sourced profile pictures.
+- Gaps identified: no locale-aware name generation, no account
+  profile-picture support (accounts have no image field; the existing
+  images table is SVG-only), only 1 business centre seeded today, no
+  DQ artefact type for tracking generated org/staff data, and RBAC
+  roles don't reach desk granularity.
+- Scope decisions made with the user: existing orphaned business
+  unit/portfolio/book/report fixtures should be re-parented under
+  Acme; business-unit/portfolio/book *population* is deferred until
+  =prime_origin='s unified DQ dataset-publish refactor lands; picture
+  storage will generalise the existing =ores_assets_images_tbl=
+  rather than add a parallel table.
+
+Follow-up implementation tasks split out separately per those
+decisions (see story =* Tasks=).

@@ -8,7 +8,7 @@
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generate-acme-sql-via-codegen
-#+pr:
+#+pr: 1672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1672][#1672]] | [iam,sql,qt] Generate Acme Bank SQL from JSON via codegen, add account contact information |
 
 * Review
 

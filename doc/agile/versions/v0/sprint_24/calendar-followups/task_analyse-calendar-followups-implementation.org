@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 61622B26-5E92-42B7-825A-7395A83B9179
+:END:
+#+title: Task: Analyse implementation approach for calendar entity follow-ups
+#+description: Analyse how to implement the three calendar-followup items (holiday-aware date picker widget, list-pagination fix, QuantLib calendar materialisation/adjustments): scope each, identify design decisions and risks, and produce a plan before implementation starts.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scope and produce an implementation plan for the three calendar
+entity follow-ups before any of them is picked up: a holiday-aware
+date picker widget, the silent 100-row list-pagination truncation
+fix, and QuantLib calendar-holiday materialisation with
+calendar-adjustment support. This is analysis-only — no
+implementation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin analysis.                        |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- [ ] Each of the three follow-ups has a documented implementation
+  approach: affected components/files, key design decisions, and
+  open risks.
+- [ ] Holiday-aware date picker: identify the reusable widget's
+  interface (calendar input, holiday highlighting/tooltip) and where
+  it plugs into existing Qt date-entry points.
+- [ ] Pagination fix: identify why =Client*Model.cpp= never sends
+  offset/limit and confirm the scope of affected entities (currently
+  estimated at 27) and the fix pattern to apply consistently.
+- [ ] QuantLib materialisation: confirm how QuantLib-computed
+  holiday dates get persisted into a DQ-published, read-only refdata
+  table, and how =calendar_adjustment= should be modelled as a
+  layerable override on top of a QuantLib base calendar.
+- [ ] Findings distilled into the parent story's =* Decisions= and
+  each of the three implementation tasks updated with a =* Plan=
+  reflecting this analysis.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

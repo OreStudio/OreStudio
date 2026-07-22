@@ -5,13 +5,13 @@
 #+description: Extras beyond Sprint 23's 'Model calendars as proper ORE Studio reference data' story's own acceptance: a holiday-aware date picker widget, a generic entity list-truncation/pagination bug fix surfaced during calendar development, and materializing real QuantLib calendar holidays/adjustments.
 #+type: story
 #+level: s2
-#+filetags: :calendar-followups:next:
+#+filetags: :calendar-followups:sprint_24:v0:
 #+created: 2026-07-20
-#+updated: 2026-07-20
-#+environment:
+#+updated: 2026-07-22
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,11 +22,11 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | None (product backlog)                 |
-| Now           | Not yet started. Split out to keep the parent story's remaining tasks focused on its own unmet acceptance (XML export boundary, DQ publish). |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Promoted into Sprint 24. Starting with an analysis task before picking up any of the three implementation tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Any of the three tasks is independently startable when pulled into a sprint. |
-| Last touched  | 2026-07-20                               |
+| Next          | Analyse implementation approach for all three follow-ups. |
+| Last touched  | 2026-07-22                               |
 
 * Acceptance
 
@@ -38,11 +38,18 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:61622B26-5E92-42B7-825A-7395A83B9179][Analyse implementation approach for calendar entity follow-ups]] | BACKLOG | | | Analyse how to implement the three calendar-followup items (holiday-aware date picker widget, list-pagination fix, QuantLib calendar materialisation/adjustments): scope each, identify design decisions and risks, and produce a plan before implementation starts. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
 | [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]] | BACKLOG | | | 27 ores.refdata Qt entities show working-looking pagination controls (Next/Load All/page size) but their Client*Model.cpp never sends offset/limit to the server and reports total_available_count as just the fetched page size -- silently capping every list at the server's default limit (100) with no visible indication rows are missing. |
 | [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] | BACKLOG | | | Materialise QuantLib-computed holiday dates into a real, DQ-published, read-only refdata table, clearly attributed as QuantLib-sourced, and model calendar_adjustment as a proper refdata entity so users can layer institution-specific overrides on top of a QuantLib base calendar instead of editing it directly. |
 
 * Decisions
+
+- Promoted from the product backlog into Sprint 24 rather than
+  starting straight into the three pre-scaffolded implementation
+  tasks: added an analysis task first to scope each item, surface
+  design decisions and risks, and produce an implementation plan
+  before committing to any of the three.
 
 * Out of scope
 

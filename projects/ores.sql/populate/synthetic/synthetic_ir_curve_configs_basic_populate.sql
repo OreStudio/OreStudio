@@ -46,6 +46,16 @@
  * and basic/realistic split is tracked separately (see the
  * seed-ir-curve-sample-data follow-on task).
  *
+ * auto_start = false: this dataset is the lightweight/uniform-parameter
+ * archetype, not the one Barclays provisioning actually publishes as
+ * the running default (that is synthetic.ir_curve_configs.realistic,
+ * auto_start = true) -- both seed the identical (currency_code,
+ * index_name) pairs (e.g. USD/USD-SOFR), so at most one may be
+ * auto_start = true or curve_feed_controller's qualifier-collision
+ * check would trip at boot for every currency. Still enabled = true
+ * (available, manually startable) for direct comparison against
+ * realistic's own calibration.
+ *
  * This script is idempotent.
  */
 
@@ -125,7 +135,7 @@ begin
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
-        name, description, enabled,
+        name, description, enabled, auto_start,
         currency_code, index_name, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code
@@ -133,8 +143,16 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (Basic): ' || c.currency_code || '/' || c.index_name,
-        'Basic-archetype synthetic IR curve generator: Vasicek short-rate process, plain annualised parameters.',
-        true, c.currency_code, c.index_name, 'VASICEK',
+        'Basic archetype: a single, uniform Vasicek short-rate process (same kappa/sigma '
+        || 'across every currency, only theta/initial_rate vary) applied to '
+        || c.currency_code || '''s current risk-free rate, ' || c.index_name || '. '
+        || 'Intended for exercising the tick-batch/pricing pipeline with predictable, '
+        || 'easy-to-reason-about dynamics -- not for realistic curve shape or '
+        || 'per-currency calibration (see synthetic.ir_curve_configs.realistic for that). '
+        || 'Not auto-started by default -- both this and realistic seed the same '
+        || '(currency, index) pairs, so only one may run at a time per currency; enable '
+        || 'and start this one explicitly to compare against realistic''s calibration.',
+        true, false, c.currency_code, c.index_name, 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly'
     from (values

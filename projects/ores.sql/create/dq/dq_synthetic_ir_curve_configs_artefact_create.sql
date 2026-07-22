@@ -31,6 +31,7 @@ create table if not exists "ores_dq_synthetic_ir_curve_configs_artefact_tbl" (
     "name" text not null,
     "description" text null,
     "enabled" boolean not null,
+    "auto_start" boolean not null default false,
     "currency_code" text not null,
     "index_name" text not null,
     "process_type" text not null,

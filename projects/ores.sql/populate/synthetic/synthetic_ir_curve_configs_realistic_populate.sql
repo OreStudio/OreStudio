@@ -122,7 +122,7 @@ begin
     -- low vol; HKD (USD-pegged) and DKK (EUR-pegged) mirror their anchor currency's level.
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
-        name, description, enabled,
+        name, description, enabled, auto_start,
         currency_code, index_name, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code
@@ -130,8 +130,16 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (Realistic): ' || c.currency_code || '/' || c.index_name,
-        'Realistic-archetype synthetic IR curve generator: CIR short-rate process (volatility scales with the level, non-negative by construction -- a better fit for short rates than Vasicek''s constant-vol Gaussian without needing a real curve to calibrate against, unlike Hull-White), per-curve-calibrated annualised parameters.',
-        true, c.currency_code, c.index_name, 'CIR',
+        'Realistic archetype: a per-currency-calibrated CIR short-rate process for '
+        || c.currency_code || '''s current overnight risk-free rate, ' || c.index_name || '. '
+        || 'CIR''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
+        || 'better fit for short rates than Vasicek''s constant-vol Gaussian, without needing '
+        || 'a real reference curve to calibrate Hull-White against. This is the dataset '
+        || 'Barclays'' own provisioning flow publishes and auto-starts by default -- the '
+        || 'primary, currently-live curve for this currency; see the sibling basic dataset '
+        || 'for a simpler, uniform-parameter comparison, kept enabled but not auto-started '
+        || 'to avoid both claiming the same market data key at once.',
+        true, true, c.currency_code, c.index_name, 'CIR',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly'
     from (values

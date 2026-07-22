@@ -69,5 +69,11 @@ BEGIN
         'Synthetic Data: Realistic',
         'Realistic-archetype synthetic FX spot generation for all 8 major + 3 EM/exotic driver pairs: 2-component geometric Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.'
     );
+
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic_legacy',
+        'Synthetic Data: Legacy (IBOR-era)',
+        'Legacy-archetype synthetic IR curve generation for USD/EUR/GBP/JPY, referencing each currency''s discontinued IBOR-era benchmark (LIBOR/EURIBOR) instead of its current RFR -- for testing pre-cessation scenarios. Never auto-started; coexists with, does not replace, basic/realistic''s RFR-based curves.'
+    );
 END $$;
 

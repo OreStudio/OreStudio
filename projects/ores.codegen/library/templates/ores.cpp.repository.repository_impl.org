@@ -238,12 +238,12 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
-        order_by("{{primary_key.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
-        order_by("{{primary_key.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
@@ -251,12 +251,12 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
-        order_by("{{primary_key.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
-        order_by("{{primary_key.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 

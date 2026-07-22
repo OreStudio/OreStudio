@@ -158,7 +158,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | list_by ordering regressed from observation_datetime desc to id (random UUID) — affects ClientMarketObservationModel grid (no client-side sort) and any series exceeding its page limit | market_observation_repository.cpp | Accepted | Added a new list_by_order_by codegen property (defaults to primary-key order, unchanged for every other list_by facet); set to "observation_datetime desc" for series_id and regenerated. |
+| 2 | Unnecessary #include <chrono> in repository/service headers | market_observation_repository.hpp, market_observation_service.hpp | Declined | Pre-existing codegen template boilerplate (list_by/list_by_as_of template), not introduced by this PR, not worth an unrelated template change here. |
+| 3 | Double blank line after generated list_by methods | market_observation_repository.cpp, market_observation_service.hpp | Declined | Template whitespace artefact of the {{#list_by}} mustache section boundary; cosmetic only, out of scope for this fix. |
+| 4 | ores.marketdata.api.puml not updated for new request/response classes | ores.marketdata.api.puml | Declined | Manually-maintained diagram, not codegen output; pre-existing gap unrelated to this task's goal. |
 
 * Result
 

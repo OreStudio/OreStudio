@@ -161,6 +161,7 @@ Source tag identifying the producer channel that published this observation
 :nullable:             false
 :list_by:              true
 :list_by_default_limit: 1000
+:list_by_order_by:     observation_datetime desc
 :END:
 
 Every real caller lists observations scoped to one series (tick-level
@@ -169,6 +170,13 @@ paginated =list_by_series_id= endpoint (protocol/repository/service/
 registrar) instead of an optional filter bolted onto the generic
 =.list= endpoint. Default page size is 1000 (vs the usual 100):
 market data is high-volume tick data, not user-managed reference rows.
+Ordered by =observation_datetime desc= (not the facet's usual primary-key
+order): a fully random UUID id has no correlation to time, so the
+default order would silently return an arbitrary subset rather than
+the most recent observations whenever a series exceeds the page limit
+— exactly the "most recent N" behaviour the hand-written override this
+facet replaces used to provide, and the =observations_series_datetime=
+index below exists specifically to serve this ordering.
 
 * C++
 

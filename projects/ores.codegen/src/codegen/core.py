@@ -2020,6 +2020,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for fk in domain_entity.get('foreign_keys', [])
             if fk.get('list_by')
         ]
+        # A list_by facet orders by the primary key by default; a foreign key
+        # may override this via :list_by_order_by: "<column> [desc]" (e.g. a
+        # time-series entity ordering its "latest N" query by its own
+        # timestamp column instead of an unordered-with-respect-to-time UUID
+        # primary key).
+        for fk in domain_entity.get('foreign_keys', []):
+            if not fk.get('list_by'):
+                continue
+            order_by_spec = fk.get('list_by_order_by', pk_col).split()
+            fk['list_by_order_column'] = order_by_spec[0]
+            fk['list_by_order_desc'] = (
+                len(order_by_spec) > 1 and order_by_spec[1].lower() == 'desc')
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(

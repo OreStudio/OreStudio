@@ -106,7 +106,7 @@ std::vector<domain::market_observation> market_observation_repository::read_late
     const auto query =
         sqlgen::read<std::vector<market_observation_entity>> |
         where("tenant_id"_c == tid && "series_id"_c == series_id && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("observation_datetime"_c.desc()) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,

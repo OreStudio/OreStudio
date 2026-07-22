@@ -92,13 +92,13 @@ IrCurveEditor::IrCurveEditor(ClientManager* cm,
     ir_.id = boost::uuids::random_generator()();
     ir_.config_id = parentFeedId;
     ir_.process_type = "VASICEK";
-    // Day-scaled defaults (1 tick == 1 calendar day) matching the seeded Barclays curves'
-    // magnitude -- see the Process tab's own slider-range comment for why kappa/sigma default to
-    // ~0.05/~0.01 (annual-scale values, 30-1000x too large) would previously produce numerically
-    // unstable discount factors at longer tenors.
-    ir_.kappa = 0.001;
+    // Plain, real annualised defaults matching the seeded Barclays curves' magnitude --
+    // process_factory threads dt (1/365 for this feed's day-per-tick convention) through
+    // separately now, so kappa/theta/sigma/initial_rate are never pre-scaled here; see the
+    // Process tab's own slider-range comment.
+    ir_.kappa = 0.35;
     ir_.theta = 0.03;
-    ir_.sigma = 0.0005;
+    ir_.sigma = 0.01;
     ir_.initial_rate = 0.03;
     ir_.ticks_per_hour = 3600;
     ir_.enabled = true;
@@ -352,13 +352,12 @@ void IrCurveEditor::buildProcessTab() {
     layout->addLayout(headerRow);
 
     // ===== 2. Mode stack: Simple (slider-only, value echoed in a label -- precise entry is
-    // Advanced-only, same philosophy as FX) vs Advanced (directly-editable table). Ranges sized
-    // to this system's actual day-scaled convention (1 tick == 1 calendar day, see
-    // ir_curve_template_resolver's own doc) -- the seeded Barclays curves run kappa
-    // ~0.0007-0.0015, sigma ~0.0004-0.0007 (e.g. USD-SOFR: kappa=0.00151, sigma=0.00042). A wider
-    // range would put every real value imperceptibly near zero, so a slider nudge would jump by
-    // orders of magnitude into the numerically-unstable regime documented in the
-    // seed-ir-curve-sample-data follow-on task.
+    // Advanced-only, same philosophy as FX) vs Advanced (directly-editable table). kappa/sigma
+    // are plain, real annualised values -- process_factory's own dt parameter (1/365 for this
+    // feed's day-per-tick convention, see ir_curve_template_resolver's own doc) handles the
+    // tick-granularity scaling now, not a caller-side pre-scale, so ranges are sized to real
+    // annualised magnitudes: the seeded Barclays curves run kappa ~0.2-0.55, sigma ~0.006-0.022
+    // (e.g. USD-SOFR: kappa=0.55, sigma=0.008).
     modeStack_ = new QStackedWidget(tab);
 
     auto* simplePage = new QWidget(modeStack_);
@@ -433,26 +432,24 @@ void IrCurveEditor::buildProcessTab() {
                 0.15,
                 ir_.theta,
                 0.0001);
-    addParamRow(
-        tr("Reversion κ"),
-        tr("Mean-reversion speed, per tick (1 tick = 1 day). Larger κ pulls the rate back "
-           "toward θ faster. Real seeded curves run κ ≈ 0.0007-0.0015 -- values much larger "
-           "than that make longer-tenor discount factors numerically unstable."),
-        kappaSlider_,
-        kappaSpin_,
-        0.0,
-        0.02,
-        ir_.kappa,
-        0.00001);
+    addParamRow(tr("Reversion κ"),
+                tr("Annualised mean-reversion speed. Larger κ pulls the rate back toward θ faster. "
+                   "Real seeded curves run κ ≈ 0.2-0.55."),
+                kappaSlider_,
+                kappaSpin_,
+                0.0,
+                2.0,
+                ir_.kappa,
+                0.001);
     addParamRow(tr("Volatility σ"),
-                tr("Per-tick volatility of the short rate. Real seeded curves run σ ≈ "
-                   "0.0004-0.0007."),
+                tr("Annualised volatility of the short rate. Real seeded curves run σ ≈ "
+                   "0.006-0.022."),
                 sigmaSlider_,
                 sigmaSpin_,
                 0.0,
-                0.005,
+                0.05,
                 ir_.sigma,
-                0.00001);
+                0.0001);
     simpleLayout->addStretch(1);
     modeStack_->addWidget(simplePage);
 

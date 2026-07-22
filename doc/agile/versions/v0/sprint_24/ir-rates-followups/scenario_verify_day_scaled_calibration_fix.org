@@ -71,6 +71,12 @@ notes back as a =*** Result= child heading directly under it.
 - Select party *BARCLAYS PLC* if not already the default.
 - Confirm login succeeds and the main window opens with no error dialog.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open IR Curve Generation Configs
 
 - Menu: Market Data > Synthetic > Configuration > IR Curve Generation
@@ -84,6 +90,12 @@ notes back as a =*** Result= child heading directly under it.
   annualised numbers now (e.g. =theta= around =0.04=, not a
   day-scaled fraction like =0.0001=).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Start the IR curve feed
 
 - With the row from the previous step selected, use the toolbar
@@ -93,6 +105,12 @@ notes back as a =*** Result= child heading directly under it.
 - Leave the feed running for at least 30 seconds so several ticks
   publish (=ticks_per_hour=60= means roughly one tick per minute of
   wall-clock time; a longer wait sees more ticks).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** View the published curve snapshot
 
@@ -109,6 +127,13 @@ notes back as a =*** Result= child heading directly under it.
   so far — a frozen far-dated point was part of the original bug
   report (the FRA point that "never moved").
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | now the rates look a tad too small, is this expected? should we change the chart to bps instead.; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_131546.png]]; ; also kappa and sigma are maxed in dialog, is this correct?; ; [[file:scenario_verify_day_scaled_calibration_fix_step4_20260722_131647.png]] |
+
 ** Stop the IR curve feed
 
 - Return to the IR Curve Generation Configs window, select the same
@@ -117,14 +142,20 @@ notes back as a =*** Result= child heading directly under it.
   publish after stopping (re-check the Curve Snapshot after another
   30 seconds — the last published values should not have changed).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-22T12:17:01Z |
+| Branch        | feature/fix-vasicek-day-scaled-calibration |
+| Commit        | f6b049a03 |
+| Worktree      | bright_faraday |
 
 * Notes

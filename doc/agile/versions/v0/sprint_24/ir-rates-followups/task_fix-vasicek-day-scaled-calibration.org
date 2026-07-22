@@ -147,6 +147,30 @@ writeup):
 
 * Notes
 
+Manual scenario run surfaced a real gap this fix's original scope
+missed: =IrCurveEditor='s (Qt) Process tab -- the Simple-mode κ/σ
+sliders, their tooltips, and a new curve's default κ/θ/σ values --
+was never updated from the old day-scaled convention. Its slider
+ranges were hardcoded to =[0, 0.02]=/=[0, 0.005]= (assuming
+day-scaled kappa ~0.0007-0.0015, sigma ~0.0004-0.0007), so once the
+SQL populate scripts reverted to real annualised values (kappa
+~0.2-0.55, sigma ~0.006-0.022) the sliders pegged visually at their
+max even though the underlying stored value was correct. Fixed:
+slider ranges to =[0, 2.0]=/=[0, 0.05]=, tooltips to describe
+annualised (not per-tick) magnitudes with the real seeded ranges, and
+a new curve's defaults from =kappa=0.001,sigma=0.0005= to
+=kappa=0.35,sigma=0.01=.
+
+Also flagged during the same run: published rates read as "a tad
+small" in the Curve Snapshot chart (raw decimal, e.g. =0.03022=
+rather than =3.022%= or =302.2bp=). The rates themselves are correct
+(EUR ESTR hovering ~2.98-3.04%, exactly =theta≈3%= plus a few bp of
+realistic vol) -- this is a display-scale question, not a
+calibration bug, and is already the exact scope of the sibling
+[[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][IR rate display/quoting
+conventions]] task in this story, so it stays there rather than
+expanding this task's scope.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

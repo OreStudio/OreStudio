@@ -8,7 +8,7 @@
 #+filetags: :cmake-44-remaining-uninitialized-warnings:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-cmake-44-remaining-uninitialized-warnings
-#+pr:
+#+pr: 1666
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1666][#1666]] | [build] Fix remaining CMake 4.4 uninitialized-variable warnings |
 
 * Review
 

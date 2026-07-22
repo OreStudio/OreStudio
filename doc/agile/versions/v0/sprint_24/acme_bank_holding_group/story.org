@@ -82,8 +82,12 @@ each time.
 |------+-------+-------+-----+-------------|
 | [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | DONE | 2026-07-22 | 2026-07-22 | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
 | [[id:4FAF7D46-7EC6-4814-94EE-F47832020D6E][Generalise account images: SVG-only asset table to binary-agnostic, add account image_id FK]] | DONE | 2026-07-22 | 2026-07-22 | Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces). |
-| [[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated organisation/staff data]] | BACKLOG | | | Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact. |
-| [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Build Acme Bank party/LEI/contact/staff generator]] | STARTED | 2026-07-22 | | Extend ores.synthetic's organisation_generator_service (rather than write a from-scratch Python/Faker script) to accept a hardcoded Acme company structure, fix its LEI generation to be checksum-valid on GLEIF's 9695 test prefix, add a Hong Kong locale, and add a staff/account layer with locale-matched names and FaceStudio pictures; provisioned under a distinct tenant code to avoid colliding with the existing acme/"Acme Corp" synthetic tenant. |
+| [[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated organisation/staff data]] | ABANDONED | | | Superseded by "Server-side orchestration for one-click Acme provisioning" below. |
+| [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Generate Acme Bank source data (JSON dataset)]] | STARTED | 2026-07-22 | | Task 1/4: Python script generating a versioned, extensible JSON dataset (parties/LEIs, contacts, business units, portfolios, books, staff) for Acme Bank's four legal entities, following the ores.seeder manifest/methodology convention. |
+| [[id:E2850625-0ACC-43E1-A283-28CE4BF03B19][Generate Acme Bank SQL from JSON via ores.codegen]] | BACKLOG | | | Extend ores.codegen as needed to turn the acme_bank JSON dataset (task: generate Acme Bank source data) into populate SQL matching the shape/conventions of hand-written ores.sql -- new DQ artefact rows for LEI entities/relationships, business units, portfolios, books, and accounts, one dataset per legal entity so each can be published independently. |
+| [[id:BE3039F6-EDDC-425C-B0BC-8D7A89F8A322][Server-side orchestration for one-click Acme provisioning]] | BACKLOG | | | New tenant-provisioning source (alongside --source gleif/synthetic) that server-side orchestrates creating the tenant, importing the Acme LEI hierarchy (all 4 parties in one shot), and publishing each party's business units/portfolios/books plus the group-wide accounts dataset -- no repeated per-party logins, no client-side orchestration logic, callable identically from ores.shell and ores.qt. Includes the new accounts DQ artefact table, publish-from-dq function, and NATS handler (the actual missing piece -- parties/business-units/portfolios/books already have artefact tables and publish functions). |
+| [[id:F9D8112C-CA73-43E1-9CAD-3578E993CC30][ores.shell and ores.qt UX for one-click Acme provisioning]] | BACKLOG | | | Wire the new tenant-provisioning source into ores.shell (provision tenant --source acme) and the ores.qt tenant-creation wizard, offering a simple 'ACME (full sample bank) vs Manual' choice; no orchestration logic client-side, just invoking the server-side command from task: server-side orchestration for one-click Acme provisioning. |
+| [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]] | BACKLOG | | | Add a nullable image_id FK on counterparties (same generalised ores_assets_images_tbl / soft-FK pattern used for accounts), so a counterparty can carry a logo -- e.g. the Acme Corp logo asset already supplied for this purpose. |
 
 * Decisions
 
@@ -118,6 +122,55 @@ each time.
   field-count-detection bug (segfault/corrupted JSON on multi-element
   vectors) specific to that struct; =boost::uuids::nil_uuid()= as
   "unset" is an existing codebase convention and sidesteps it.
+- *Four legal entities, each with its own full structure.* Acme Bank
+  Group plc (holding), Acme Bank UK plc, Acme Bank US Inc, Acme Bank
+  HK Ltd — each needs its own business units, portfolios, books, and
+  staff, not just the holding company. Existing publish-from-dq
+  functions are single-party-scoped per call (=params.party_id=), so
+  giving four entities their own structure means four calls against
+  four small per-entity datasets — this is a real, accepted platform
+  characteristic, not a bug to route around by modifying the generic
+  publish functions.
+- *Provisioning architecture, four tasks, clean separation*:
+  1. *Source data* — a Python script generates a versioned,
+     extensible JSON dataset (=ores.seeder='s manifest/methodology
+     convention, internal not =external/=) describing all four
+     entities: parties/LEIs, contacts, business units, portfolios,
+     books, staff. Config-driven over an office list (adding e.g.
+     Singapore later is a config change); the org-chart/book shape
+     per office is fixed, employee names/emails/addresses are
+     generated (Faker for GB/US, a curated pool for Hong Kong since
+     Faker's non-Latin locales don't fit ASCII usernames). All
+     generated accounts share one fixed password ("Secure-Password-123")
+     — a real scrypt hash computed via =ores::security::crypto::password_hasher=,
+     not a placeholder.
+  2. *Codegen* — =ores.codegen= (extended if needed) turns that JSON
+     into populate SQL matching hand-written =ores.sql= conventions,
+     landing DQ artefact rows exactly like any other dataset. Data
+     and SQL generation are deliberately separate steps/tasks.
+  3. *Server-side orchestration* — the actual missing piece is
+     accounts (parties/business-units/portfolios/books already have
+     artefact tables and publish functions via the GLEIF-import reuse
+     described above): a new accounts DQ artefact table,
+     publish-from-dq function, and NATS handler, plus a new
+     tenant-provisioning source (e.g. =--source acme=) that
+     server-side creates the tenant, imports the LEI hierarchy (all
+     four parties in one shot), and loops the per-party
+     business-unit/portfolio/book publishes plus the group-wide
+     accounts publish — no repeated per-party logins, no
+     orchestration logic duplicated client-side.
+  4. *Client UX* — =ores.shell=/=ores.qt= just invoke the new
+     server-side command; the tenant-creation wizard offers "ACME
+     (full sample bank)" vs "Manual" (existing GLEIF/synthetic flow,
+     kept — Acme's own party creation depends on it; hiding it behind
+     "Manual" is a UI simplification, not a removal).
+  Plus a fifth, smaller, independent task: a nullable =image_id= FK
+  on counterparties (same pattern as accounts) so a counterparty can
+  carry a logo.
+- *No account profile pictures in the JSON-generation task.* Deferred
+  to whichever task actually populates =image_id= — the schema
+  supports it (=generalise-account-images=), wiring FaceStudio
+  selection is separate follow-up work.
 
 * Out of scope
 

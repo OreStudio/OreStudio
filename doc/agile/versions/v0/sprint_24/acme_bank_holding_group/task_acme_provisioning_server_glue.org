@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C
+:ID: BE3039F6-EDDC-425C-B0BC-8D7A89F8A322
 :END:
-#+title: Task: Add DQ artefact type(s) for generated organisation/staff data
-#+description: Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact.
+#+title: Task: Server-side orchestration for one-click Acme provisioning
+#+description: New tenant-provisioning source (alongside --source gleif/synthetic) that server-side orchestrates creating the tenant, importing the Acme LEI hierarchy (all 4 parties in one shot), and publishing each party's business units/portfolios/books plus the group-wide accounts dataset -- no repeated per-party logins, no client-side orchestration logic, callable identically from ores.shell and ores.qt. Includes the new accounts DQ artefact table, publish-from-dq function, and NATS handler (the actual missing piece -- parties/business-units/portfolios/books already have artefact tables and publish functions).
 #+type: task
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
@@ -20,21 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Superseded by [[id:BE3039F6-EDDC-425C-B0BC-8D7A89F8A322][Server-side orchestration for one-click Acme provisioning]],
-which covers this exact scope (a new accounts DQ artefact table +
-publish-from-dq function + NATS handler) as part of the fuller
-provisioning-architecture design worked out with the user, rather
-than as a standalone artefact-type registration.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                            |
+| State        | BACKLOG                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Superseded, see Goal.                  |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing — see BE3039F6 instead.        |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

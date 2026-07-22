@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -109,6 +110,20 @@ struct account final {
      * account must always go through the party picker.
      */
     std::optional<boost::uuids::uuid> default_party_id;
+
+    /**
+     * @brief Profile picture for this account.
+     *
+     * Soft reference to an image owned by ores.assets. A nil UUID
+     * (boost::uuids::nil_uuid()) means the account has no profile picture.
+     *
+     * A second std::optional<boost::uuids::uuid> field on this struct (in
+     * addition to default_party_id) triggers a reflect-cpp aggregate
+     * field-count miscount that corrupts JSON/table serialization for
+     * multi-element vectors (segfault/duplicate-field exceptions) — hence
+     * the nil-sentinel plain-uuid representation instead of optional.
+     */
+    boost::uuids::uuid image_id = boost::uuids::nil_uuid();
 
     /**
      * @brief Timestamp when this version of the record was recorded in the system.

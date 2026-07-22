@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-07-18T01:52:27.470465Z
+' Generated: 2026-07-22T12:19:41.432647Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -123,6 +123,7 @@ package "iam" #E8F4FD {
         * totp_secret : text
         * email : text
           default_party_id : uuid <<FK>>
+          image_id : uuid <<FK>>
         * modified_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
@@ -358,7 +359,8 @@ package "assets" #F3E5F5 {
         * version : integer
         * key : text
         * description : text
-        * svg_data : text
+        * mime_type : text
+        * data : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -368,7 +370,9 @@ package "assets" #F3E5F5 {
     }
 
     note right of ores_assets_images_tbl
-    SVG image storage.
+    Image storage, format-agnostic (SVG, JPEG, ...).
+    "data" holds the raw bytes, base64-encoded; "mime_type" says how to
+    interpret them (e.g. image/svg+xml, image/jpeg).
     Key provides human-readable lookup.
     end note
 
@@ -2916,6 +2920,24 @@ package "dq_staging" #F3E5F5 {
           holiday_calendar : text
     }
 
+    entity ores_dq_currency_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_iso_code : text
+        * calendar_code : text
+        * version : integer
+    }
+
+    entity ores_dq_currency_pair_convention_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * calendar_code : text
+        * version : integer
+    }
+
     entity ores_dq_currency_pair_conventions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3260,6 +3282,49 @@ package "dq_staging" #F3E5F5 {
     Synthetic GMM Components artefacts - per-pair Gaussian mixture components
     backing an fx_spot_configs artefact row, keyed by currency pair within the
     same dataset - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_ir_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * currency_code : text <<FK>>
+        * index_name : text
+        * process_type : text
+        * kappa : double
+        * theta : double
+        * sigma : double
+        * initial_rate : double
+        * ticks_per_hour : integer
+        * fixed_leg_payment_frequency_code : text
+    }
+
+    note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl
+    Synthetic IR Curve Config artefacts - denormalized parent+child IR curve
+    generation config rows for the synthetic market data bundle - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_ir_curve_template_entries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * index_name : text
+        * sequence_index : integer
+        * start_tenor_code : text
+        * end_tenor_code : text
+        * instrument_code : text
+    }
+
+    note right of ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
+    Synthetic IR Curve Template Entry artefacts - per-currency Curve Template
+    rows backing an ir_curve_configs artefact row, keyed by currency+index
+    within the same dataset - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {
@@ -3688,10 +3753,22 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_dq_change_reason_categories_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Change Reason Category Table
+    A change reason category groups related change reasons into a
+    taxonomy used to classify why a change was made. Examples: "Data
+    Correction", "Regulatory Update", "Source System Change". Rows are
+    authored directly (not mirrored from an external source).
+    end note
 
     entity ores_dq_change_reasons_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3707,10 +3784,23 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_dq_change_reasons_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Change Reason Table
+    A change reason is a specific, selectable reason for making a change
+    to a record, scoped to a change reason category. Examples: "Typo
+    Fix" (category: data_correction), "New Regulation" (category:
+    regulatory_update). Rows are authored directly (not mirrored from an
+    external source).
+    end note
 
     entity ores_dq_code_domains_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -3814,8 +3904,13 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_data_domains_tbl
-    High-level data classification.
-    Examples: reference_data, market_data, trade_data.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Data Domain Table
+    High-level data classification. Examples: reference_data, market_data,
+    trade_data. Rows are authored directly (not mirrored from an external
+    source).
     end note
 
     entity ores_dq_fsm_machines_tbl <<temporal>> #C6F0D8 {
@@ -6474,6 +6569,8 @@ package "synthetic" #F9FBE7 {
         * ticks_per_hour : integer
         * enabled : boolean
         * fixed_leg_payment_frequency_code : text
+        * source_name : text
+          folder_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

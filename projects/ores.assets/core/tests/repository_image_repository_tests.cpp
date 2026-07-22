@@ -112,6 +112,8 @@ TEST_CASE("read_latest_image_by_id", tags) {
     REQUIRE(read_images.size() == 1);
     CHECK(read_images[0].image_id == img.image_id);
     CHECK(read_images[0].description == original_description + " v2");
+    CHECK(read_images[0].mime_type == img.mime_type);
+    CHECK(read_images[0].data == img.data);
 }
 
 TEST_CASE("read_latest_image_by_key", tags) {

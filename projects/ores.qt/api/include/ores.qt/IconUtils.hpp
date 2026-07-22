@@ -26,7 +26,9 @@
 #include <QColor>
 #include <QIcon>
 #include <QString>
+#include <cstdint>
 #include <optional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -220,6 +222,20 @@ public:
      * @return QIcon rendered from the SVG, or empty icon on failure
      */
     static QIcon svgDataToIcon(const std::string& svg_data);
+
+    /**
+     * @brief Renders format-agnostic image data (e.g. from
+     * ores.assets.domain::image) to a QIcon, preserving aspect ratio.
+     *
+     * Dispatches to SVG rendering for "image/svg+xml" and to raster
+     * decoding (QImage::fromData) for any other MIME type (e.g.
+     * "image/jpeg").
+     *
+     * @param data Raw image bytes
+     * @param mime_type MIME type of the data (e.g. "image/svg+xml", "image/jpeg")
+     * @return QIcon rendered from the data, or empty icon on failure
+     */
+    static QIcon imageDataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type);
 
     /**
      * @brief Renders SVG data to a QPixmap at specified height, preserving aspect ratio.

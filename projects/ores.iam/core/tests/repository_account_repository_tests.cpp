@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.assets.core/generators/image_generator.hpp"
+#include "ores.assets.core/repository/image_repository.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
@@ -253,4 +255,44 @@ TEST_CASE("write_and_read_account_by_id", tags) {
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].username == acc.username);
     CHECK(read_accounts[0].email == acc.email);
+}
+
+TEST_CASE("write_and_read_account_with_image_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    // Write a real image so the account's image_id soft-FK has something to
+    // point at.
+    auto image = ores::assets::generators::generate_synthetic_image(ctx);
+    ores::assets::repository::image_repository image_repo;
+    image_repo.write(h.context(), image);
+
+    account_repository repo(h.context());
+    auto acc = generate_synthetic_account(ctx);
+    acc.image_id = image.image_id;
+    BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
+
+    repo.write(acc);
+
+    auto read_accounts = repo.read_latest(acc.id);
+    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+
+    REQUIRE(read_accounts.size() == 1);
+    CHECK(read_accounts[0].image_id == image.image_id);
+}
+
+TEST_CASE("write_account_with_nonexistent_image_id_throws", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    account_repository repo(h.context());
+    auto acc = generate_synthetic_account(ctx);
+    acc.image_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, debug) << "Account with nonexistent image_id: " << acc;
+
+    CHECK_THROWS(repo.write(acc));
 }

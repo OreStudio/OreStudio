@@ -107,7 +107,7 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
 
     // Build the complete SQL query
     std::ostringstream sql;
-    sql << "SELECT image_id, tenant_id, version, key, description, svg_data, "
+    sql << "SELECT image_id, tenant_id, version, key, description, mime_type, data, "
         << "modified_by, performed_by, change_reason_code, change_commentary, "
         << "valid_from, valid_to " << "FROM ores_assets_images_tbl " << "WHERE image_id IN ("
         << in_clause.str() << ") " << "AND valid_to = '9999-12-31 23:59:59' "
@@ -121,7 +121,7 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
     results.reserve(rows.size());
 
     for (const auto& row : rows) {
-        if (row.size() < 12)
+        if (row.size() < 13)
             continue;
 
         image_entity entity;
@@ -137,13 +137,14 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
 
         entity.key = row[3].value_or("");
         entity.description = row[4].value_or("");
-        entity.svg_data = row[5].value_or("");
-        entity.modified_by = row[6].value_or("");
-        entity.performed_by = row[7].value_or("");
-        entity.change_reason_code = row[8].value_or("");
-        entity.change_commentary = row[9].value_or("");
-        entity.valid_from = row[10].value_or("9999-12-31 23:59:59");
-        entity.valid_to = row[11].value_or("9999-12-31 23:59:59");
+        entity.mime_type = row[5].value_or("image/svg+xml");
+        entity.data = row[6].value_or("");
+        entity.modified_by = row[7].value_or("");
+        entity.performed_by = row[8].value_or("");
+        entity.change_reason_code = row[9].value_or("");
+        entity.change_commentary = row[10].value_or("");
+        entity.valid_from = row[11].value_or("9999-12-31 23:59:59");
+        entity.valid_to = row[12].value_or("9999-12-31 23:59:59");
 
         results.push_back(image_mapper::map(entity));
     }

@@ -23,13 +23,15 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::assets::domain {
 
 /**
- * @brief Represents a dynamically loaded image (typically SVG).
+ * @brief Represents a dynamically loaded image (SVG, JPEG, ...).
  */
 struct image final {
     /**
@@ -60,9 +62,15 @@ struct image final {
     std::string description;
 
     /**
-     * @brief The entire SVG content stored as plain text.
+     * @brief MIME type of the image data (e.g. "image/svg+xml", "image/jpeg").
      */
-    std::string svg_data;
+    std::string mime_type = "image/svg+xml";
+
+    /**
+     * @brief Raw image bytes (SVG markup as UTF-8 bytes, or a binary format
+     * such as JPEG). Stored base64-encoded at the database layer.
+     */
+    std::vector<std::uint8_t> data;
 
     /**
      * @brief Username of the person who recorded this version in the system.

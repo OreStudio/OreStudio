@@ -29,9 +29,11 @@
 #include <QIcon>
 #include <QObject>
 #include <QPixmap>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace ores::qt {
 
@@ -43,7 +45,7 @@ namespace ores::qt {
  * entity that references them.
  *
  * Simplified design:
- * - Single mapping: image_id -> SVG data and rendered QIcon
+ * - Single mapping: image_id to raw image data (SVG, JPEG, ...) and rendered QIcon
  * - Entities (currencies, countries) have their own image_id field
  * - Call getIcon(image_id) to get the icon for any image
  * - On-demand loading: if image not cached, loads from server
@@ -302,12 +304,13 @@ private slots:
 
 private:
     /**
-     * @brief Convert SVG string data to QIcon.
+     * @brief Convert format-agnostic image data to QIcon.
      *
-     * @param svg_data The SVG content as a string
-     * @return QIcon rendered from the SVG, or empty icon on failure
+     * @param data Raw image bytes (as returned by ores.assets.domain::image)
+     * @param mime_type MIME type of the data (e.g. "image/svg+xml", "image/jpeg")
+     * @return QIcon rendered from the data, or empty icon on failure
      */
-    static QIcon svgToIcon(const std::string& svg_data);
+    static QIcon dataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type);
 
     /**
      * @brief Load a specific image by ID (internal use).
@@ -408,10 +411,13 @@ private:
 
     ClientManager* clientManager_;
 
-    // image_id -> cached SVG data
-    std::unordered_map<std::string, std::string> image_svg_cache_;
+    // image_id -> cached raw image bytes (SVG markup, JPEG, ...)
+    std::unordered_map<std::string, std::string> image_data_cache_;
 
-    // image_id -> QIcon (rendered from SVG)
+    // image_id -> cached MIME type (e.g. "image/svg+xml", "image/jpeg")
+    std::unordered_map<std::string, std::string> image_mime_cache_;
+
+    // image_id -> QIcon (rendered from image data)
     std::unordered_map<std::string, QIcon> image_icons_;
 
     // Loading state

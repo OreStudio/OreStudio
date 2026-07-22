@@ -48,7 +48,11 @@ domain::account account_mapper::map(const account_entity& v) {
     if (v.default_party_id) {
         r.default_party_id = boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id);
     }
+    if (v.image_id) {
+        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
+    }
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    // Note: r.image_id defaults to nil_uuid() when v.image_id is unset
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,6 +73,9 @@ account_entity account_mapper::map(const domain::account& v) {
     r.email = v.email;
     if (v.default_party_id) {
         r.default_party_id = boost::lexical_cast<std::string>(*v.default_party_id);
+    }
+    if (!v.image_id.is_nil()) {
+        r.image_id = boost::lexical_cast<std::string>(v.image_id);
     }
     r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;

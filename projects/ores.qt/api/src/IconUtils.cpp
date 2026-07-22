@@ -390,4 +390,23 @@ QIcon IconUtils::svgDataToIcon(const std::string& svg_data) {
     return icon;
 }
 
+QIcon IconUtils::imageDataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type) {
+    if (data.empty()) {
+        return {};
+    }
+
+    if (mime_type == "image/svg+xml") {
+        return svgDataToIcon(std::string(data.begin(), data.end()));
+    }
+
+    QByteArray bytes(reinterpret_cast<const char*>(data.data()), static_cast<qsizetype>(data.size()));
+    QImage image;
+    if (!image.loadFromData(bytes)) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid " << mime_type << " image data, cannot render icon.";
+        return {};
+    }
+
+    return QIcon(QPixmap::fromImage(image));
+}
+
 }

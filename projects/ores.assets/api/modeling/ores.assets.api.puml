@@ -29,7 +29,8 @@ namespace ores #F2F2F2 {
                 +image_id : boost::uuids::uuid
                 +key : string
                 +description : string
-                +svg_data : string
+                +mime_type : string
+                +data : vector<uint8_t>
                 +modified_by : string
                 +change_reason_code : string
                 +change_commentary : string

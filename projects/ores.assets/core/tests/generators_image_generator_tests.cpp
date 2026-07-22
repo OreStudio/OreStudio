@@ -47,7 +47,8 @@ TEST_CASE("generate_single_image", tags) {
     CHECK(!image.image_id.is_nil());
     CHECK(!image.key.empty());
     CHECK(!image.description.empty());
-    CHECK(!image.svg_data.empty());
+    CHECK(!image.data.empty());
+    CHECK(image.mime_type == "image/svg+xml");
     CHECK(!image.modified_by.empty());
     CHECK(image.recorded_at != std::chrono::system_clock::time_point{});
 }

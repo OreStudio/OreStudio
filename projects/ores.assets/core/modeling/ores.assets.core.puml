@@ -42,7 +42,8 @@ namespace ores #F2F2F2 {
                 +version : int
                 +key : string
                 +description : string
-                +svg_data : string
+                +mime_type : string
+                +data : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string

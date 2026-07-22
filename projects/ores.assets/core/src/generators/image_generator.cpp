@@ -36,11 +36,13 @@ domain::image generate_synthetic_image(utility::generation::generation_context& 
     r.image_id = ctx.generate_uuid();
     r.key = faker::string::alphanumeric(8);
     r.description = std::string(faker::lorem::sentence());
-    r.svg_data = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
-                 "<rect fill=\"#" +
-                 faker::number::hexadecimal(6) +
-                 "\" width=\"100\" height=\"100\"/>"
-                 "</svg>";
+    r.mime_type = "image/svg+xml";
+    const std::string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
+                             "<rect fill=\"#" +
+                             faker::number::hexadecimal(6) +
+                             "\" width=\"100\" height=\"100\"/>"
+                             "</svg>";
+    r.data.assign(svg.begin(), svg.end());
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";

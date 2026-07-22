@@ -41,7 +41,8 @@ struct image_entity {
     int version = 0;
     std::string key;
     std::string description;
-    std::string svg_data;
+    std::string mime_type;
+    std::string data;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

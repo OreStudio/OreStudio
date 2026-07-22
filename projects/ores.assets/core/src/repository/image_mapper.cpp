@@ -19,6 +19,7 @@
  */
 #include "ores.assets.core/repository/image_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -36,7 +37,8 @@ domain::image image_mapper::map(const image_entity& v) {
     r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
     r.key = v.key;
     r.description = v.description;
-    r.svg_data = v.svg_data;
+    r.mime_type = v.mime_type;
+    r.data = utility::converter::base64_converter::convert(v.data);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -56,7 +58,8 @@ image_entity image_mapper::map(const domain::image& v) {
     r.version = v.version;
     r.key = v.key;
     r.description = v.description;
-    r.svg_data = v.svg_data;
+    r.mime_type = v.mime_type;
+    r.data = utility::converter::base64_converter::convert(v.data);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

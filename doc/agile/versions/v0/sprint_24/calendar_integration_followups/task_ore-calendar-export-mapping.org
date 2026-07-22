@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar_integration_followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ore-calendar-export-mapping
 #+pr:
-#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
-#+blocked_since: 2026-07-08
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,10 +30,10 @@ calendar FK(s).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
+| Now          | Starting: blocker (calendar entity codegen) is DONE, unblocked. |
+| Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-08                               |
 

@@ -1,0 +1,386 @@
+:PROPERTIES:
+:ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
+:END:
+#+title: ores.iam.account_contact_information
+#+description: Contact details for an account, including the person's full name (accounts have no name field on their own).
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: account_contact_information
+#+entity_plural: account_contact_informations
+#+entity_title: Account Contact Information
+#+brief: Real name and contact details for an account.
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+An account's real-world identity: full name, plus the usual address/
+phone/email/web page fields. Accounts (=ores_iam_accounts_tbl=) carry
+only =username=/=email=/credentials — no name field — so this is the
+only place an account's actual name is recorded. One contact record
+per account (unlike party contact information, which allows several
+by =contact_type= — a person doesn't need a Legal/Operations/
+Settlement/Billing split).
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:has_tenant_id:    true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this contact information record.
+
+Surrogate key for the account contact information record.
+
+* Natural keys
+
+** account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The account this contact information belongs to. One contact record
+per account.
+
+References the parent account record.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+* Columns
+
+** full_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The account holder's full name.
+
+Not nullable -- this is the whole point of the entity: accounts have
+no name field of their own.
+
+#+begin_src cpp :name generator
+std::string("Test User")
+#+end_src
+
+** street_line_1
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+First line of the street address.
+
+Primary address line.
+
+#+begin_src cpp :name generator
+std::string("123 Test Street")
+#+end_src
+
+** street_line_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Second line of the street address.
+
+Additional address line (suite, floor, etc.).
+
+#+begin_src cpp :name generator
+std::string("Suite 100")
+#+end_src
+
+** city
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+City name.
+
+City or town of the address.
+
+#+begin_src cpp :name generator
+std::string("London")
+#+end_src
+
+** state
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+State or province.
+
+State, province, or region.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** country_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+ISO 3166-1 alpha-2 country code.
+
+References the countries table (soft FK).
+
+#+begin_src cpp :name generator
+// Left blank: validated against the tenant-scoped countries table, which
+// isolated test tenants don't seed; empty skips validation.
+std::string("")
+#+end_src
+
+#+begin_src sql :name country_code_validation :implements 6f1f5e4b-3f8b-4d18-9d3f-8a1b6c2e9f70
+    -- Paste block: doesn't fit soft_fk_validations (joins on id, not
+    -- an alpha-2 code column) or the Validations table
+    -- (ores_refdata_validate_country_fn only checks non-null/empty,
+    -- not existence).
+    -- Validate country_code (nullable, inline check against countries table)
+    if NEW.country_code is not null and NEW.country_code != '' then
+        if not exists (
+            select 1 from ores_refdata_countries_tbl
+            where tenant_id = NEW.tenant_id
+              and alpha2_code = NEW.country_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid country_code: %. Must be a valid ISO 3166-1 alpha-2 code.',
+                NEW.country_code
+                using errcode = '23503';
+        end if;
+    end if;
+#+end_src
+
+** postal_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Postal or ZIP code.
+
+Postal code for the address.
+
+#+begin_src cpp :name generator
+std::string("EC2V 8AS")
+#+end_src
+
+** phone
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Phone number.
+
+Contact phone number in international format.
+
+#+begin_src cpp :name generator
+std::string("+44 20 7000 0000")
+#+end_src
+
+** email
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Email address.
+
+Contact email address. May differ from the account's login email.
+
+#+begin_src cpp :name generator
+std::string("contact@example.com")
+#+end_src
+
+** web_page
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Web page URL.
+
+Contact web page address.
+
+#+begin_src cpp :name generator
+std::string("https://example.com")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_account_contact_informations_tbl
+:END:
+
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:error_message: Invalid account_id: %. No active account found with this id.
+:list_by:       true
+:bump_parent_version: true
+:list_by_as_of: true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: account_contact_information
+:entity_plural_short:   account_contact_informations
+:entity_singular_words: account contact information
+:entity_plural_words:   account contact informations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: aci
+:END:
+
+** Table display
+
+| column       | header      |
+|--------------+-------------|
+| account_id   | Account     |
+| full_name    | Full Name   |
+| city         | City        |
+| country_code | Country     |
+| phone        | Phone       |
+| email        | Email       |
+| modified_by  | Modified By |
+| version      | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.iam.api/domain/account_contact_information.hpp
+:domain_class:            iam::domain::account_contact_information
+:protocol_include:        ores.iam.api/messaging/account_contact_information_protocol.hpp
+:collection_name:         account_contact_informations
+:item_var:                accountContactInformation
+:key_field:               full_name
+:get_request_class:       iam::messaging::get_account_contact_informations_request
+:get_response_class:      iam::messaging::get_account_contact_informations_response
+:get_message_type:        get_account_contact_informations_request
+:save_request_class:      iam::messaging::save_account_contact_information_request
+:save_response_class:     iam::messaging::save_account_contact_information_response
+:save_message_type:       save_account_contact_information_request
+:save_request_item_field: data
+:delete_request_class:    iam::messaging::delete_account_contact_information_request
+:delete_response_class:   iam::messaging::delete_account_contact_information_response
+:delete_message_type:     delete_account_contact_information_request
+:history_request_class:   iam::messaging::get_account_contact_information_history_request
+:history_response_class:  iam::messaging::get_account_contact_information_history_response
+:history_message_type:    get_account_contact_information_history_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:has_explorer_api:        true
+:has_export_macro:        true
+:has_pagination:          true
+:parent_entity_singular:  account
+:settings_group:          AccountContactInformationListWindow
+:window_title:            Account Contact Information
+:icon:                    PersonAccounts
+:END:
+
+Note: =account_id= is deliberately not exposed as a Detail field —
+like =Party Contact Information='s =party_id=, it's always known from
+the owning context (the account's own Contact Information tab/page in
+the notebook) and set programmatically before the dialog is shown,
+never user-chosen.
+
+*** Detail fields
+
+| field         | label          | widget            | type          | is_key | is_required | placeholder          | flag_source | combo_allow_blank | combo_fetch          | combo_domain_type              | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
+|---------------+----------------+--------------------+---------------+--------+-------------+-----------------------+--------------+---------------------+------------------------+----------------------------------+-----------------------------+------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
+| id            | Id             | idEdit            | line_edit     | true   | true        | Contact id           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| full_name     | Full Name      | fullNameEdit      | line_edit     | false  | true        | Enter full name      |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| street_line_1 | Street Line 1  | streetLine1Edit   | line_edit     | false  | false       | Enter street line 1  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| street_line_2 | Street Line 2  | streetLine2Edit   | line_edit     | false  | false       | Enter street line 2  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| city          | City           | cityEdit          | line_edit     | false  | false       | Enter city           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| state         | State          | stateEdit         | line_edit     | false  | false       | Enter state          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| country_code  | Country Code   | countryCodeCombo  | flagged_combo | false  | false       |                       | country     | true                | fetch_country_codes    |                                 | ores.qt/LookupFetcher.hpp   |                        |                      |                    |                        |                    |                 |                        |            |
+| postal_code   | Postal Code    | postalCodeEdit    | line_edit     | false  | false       | Enter postal code    |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| phone         | Phone          | phoneEdit         | line_edit     | false  | false       | Enter phone          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| email         | Email          | emailEdit         | line_edit     | false  | false       | Enter email          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| web_page      | Web Page       | webPageEdit       | line_edit     | false  | false       | Enter web page       |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header         | type      | width |
+|--------------+---------------+----------------+-----------+-------|
+| FullName     | full_name     | Full Name      | string    |   160 |
+| StreetLine1  | street_line_1 | Street         | string    |   180 |
+| City         | city          | City           | string    |   120 |
+| CountryCode  | country_code  | Country        | string    |   100 |
+| Phone        | phone         | Phone          | string    |   140 |
+| Email        | email         | Email          | string    |   180 |
+| Version      | version       | Version        | int       |    80 |
+| ModifiedBy   | modified_by   | Modified By    | string    |   120 |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp |   150 |
+
+*** Icon columns (Qt model)
+
+| column      | accessor          | field1       | field2 |
+|-------------+--------------------+--------------+--------|
+| CountryCode | country_flag_icon  | country_code |        |
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.
+- [[id:B2497625-247E-4B80-A5D2-926A453FB338][ores.refdata.party_contact_information]] — the pattern this entity mirrors.

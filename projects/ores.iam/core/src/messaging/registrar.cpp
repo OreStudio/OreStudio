@@ -32,6 +32,7 @@
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.iam.core/messaging/account_contact_information_registrar.hpp"
 #include "ores.iam.core/messaging/account_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
@@ -355,6 +356,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         BOOST_LOG_SEV(lg(), warn) << "Party cache warm-up failed: " << e.what();
     }
     subs.push_back(service::cache::warm_and_subscribe_party_cache(nats, pc, tenant_ids));
+
+    // --- Account contact information ---
+    auto aci_subs = register_account_contact_information_handlers(nats, ctx, signer);
+    subs.insert(subs.end(),
+               std::make_move_iterator(aci_subs.begin()),
+               std::make_move_iterator(aci_subs.end()));
 
     return subs;
 }

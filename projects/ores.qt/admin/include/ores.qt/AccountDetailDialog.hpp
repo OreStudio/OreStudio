@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/AccountChildEntityTables.hpp"
 #include "ores.qt/AccountPartiesWidget.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -187,6 +188,7 @@ private:
     std::optional<iam::domain::login_info> currentLoginInfo_;
     AccountRolesWidget* rolesWidget_;
     AccountPartiesWidget* partiesWidget_;
+    AccountChildEntityTables* childTables_;
 };
 
 }

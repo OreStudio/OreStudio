@@ -190,7 +190,8 @@ def gen_person(office, faker, index):
     # iam_accounts_create.sql.
     username = f"{slug_first}.{slug_last}.{office['code']}.{index}"
     email = f"{slug_first}.{slug_last}.{index}@{office['code']}.acmebank.example"
-    return username, email
+    full_name = f"{first} {last}"
+    return username, email, full_name
 
 
 def build_office(office, faker):
@@ -206,13 +207,14 @@ def build_office(office, faker):
 
     def add_account(unit_code, role):
         nonlocal person_index
-        username, email = gen_person(office, faker, person_index)
+        username, email, full_name = gen_person(office, faker, person_index)
         person_index += 1
         accounts.append({
             "company_code": company_code,
             "id": new_uuid(f"account:{username}"),
             "username": username,
             "email": email,
+            "full_name": full_name,
             "password_hash": FIXED_PASSWORD_HASH,
             "account_type": "user",
             "role": role,

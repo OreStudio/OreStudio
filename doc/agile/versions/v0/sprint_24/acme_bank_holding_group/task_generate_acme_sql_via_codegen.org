@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-acme-sql-via-codegen
+#+pr: 1672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -49,11 +49,11 @@ Two halves:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -77,11 +77,67 @@ Two halves:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =ores_iam_account_contact_informations_tbl= via the legacy
+   =entity_org= codegen (=ores.codegen.entity=), mirroring
+   =ores.refdata.party_contact_information.org= but scoped to
+   =account_id= (not =party_id=), with a required =full_name= field.
+   Generate SQL, C++ (domain/service/repository/messaging), and Qt
+   (model/controller/dialogs) layers. Hand-add the missing
+   =ores_iam_accounts_touch_version_fn= (accounts predates the entity
+   codegen system). Move the Qt output from the codegen's naively
+   derived =ores.qt.iam= into the actual =ores.qt.admin= subcomponent.
+   Wire a hand-written =AccountChildEntityTables= (mirroring
+   =PartyChildEntityTables=) into =AccountDetailDialog= for the
+   Contact Information notebook tab.
+2. Add =full_name= to generated accounts (=generate_data.py='s
+   =gen_person=/=add_account=) and regenerate the JSON.
+3. Write =generate_sql.py=: reads the =acme_bank= JSON files and
+   emits populate SQL under =projects/ores.sql/populate/acme/= —
+   dataset registration (=acme.lei_entities=, =acme.lei_relationships=,
+   and per-company =acme.<company>.{business_units,portfolios,books,
+   accounts,account_contact_informations}=) plus per-family artefact
+   INSERT scripts, matching the hand-written =ores.sql= conventions
+   observed in =testdata_business_units_artefact_populate.sql=. Two
+   new DQ staging tables (=dq_accounts_artefact_tbl=,
+   =dq_account_contact_informations_artefact_tbl=) plus their
+   artefact_type registrations (target/publish-from-dq wiring
+   explicitly deferred to the server-side-orchestration follow-up
+   task).
+4. Verify end-to-end via =compass db recreate=, fixing every schema
+   mismatch the run surfaced: =business_units=/=portfolios=/=books=
+   artefact tables use uuid-typed self/cross-referential parent/owner
+   columns (resolved from the JSON's deterministic per-code uuids),
+   not the natural-key codes originally assumed; =portfolios.is_virtual=
+   is an integer column, not boolean; =books= has no =owner_unit_id=
+   column but does require =functional_currency=/=book_status=; the
+   new DQ artefact create scripts and the Acme populate scripts were
+   both missing from their respective =\ir= include chains
+   (=dq_create.sql=, =populate.sql=); a catalog row and a
+   dataset-registration methodology were both required before the
+   first dataset upsert would succeed.
+5. Full local build (=linux-gcc-debug-ninja=) and =compass build rat=
+   to confirm the whole tree still compiles/tests green, fixing two
+   codegen-generated defects surfaced by the rebuild: a bogus
+   =#include "ores.qt/IamExport.hpp"= (a nonexistent export header —
+   no sibling class in =ores.qt.admin= uses per-class export macros at
+   all, so removed to match the existing convention) and a field-name
+   mismatch (=parent_account_id= vs the domain struct's actual
+   =account_id=) in =AccountContactInformationController=.
 
 * Notes
+
+- =ores.shell= automation for one-click Acme provisioning (a
+  =acme_system_provision.ores= recipe/script analogous to
+  =barclays_system_provision.ores=) is explicitly out of scope here:
+  none of the publish-from-dq functions the Acme datasets need exist
+  yet (=ores_refdata_publish_lei_parties_from_dq_fn= is hardcoded to
+  =gleif.lei_entities.<size>=-pattern dataset codes and won't resolve
+  =acme.lei_entities=), so a script written now would just fail. That
+  wiring belongs to the server-side-orchestration follow-up task
+  (BE3039F6), which should also retire/replace the existing, unrelated
+  =acme_system_provision.org= (old =ores.synthetic= random-org
+  generator under the same =acme= tenant-code) once real Acme Bank
+  provisioning lands.
 
 * Test Scenarios
 
@@ -98,12 +154,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1672][#1672]] | [iam,sql,qt] Generate Acme Bank SQL from JSON via codegen, add account contact information |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Save/Delete broken on account contact-info popup: missing setChangeReasonCache/setImageCache | AccountChildEntityTables.cpp | Accepted | Added both calls in onAddContact/onEditContact, matching PartyChildEntityTables. |
+| 1 | Contact Information tab lands after Provenance instead of before it | AccountChildEntityTables.cpp | Accepted | attachTo() now uses insertTab(count()-1, ...) matching PartyChildEntityTables/CounterpartyChildEntityTables. |
 
 * Result
+
+Both halves of the Goal shipped:
+
+- =ores_iam_account_contact_informations_tbl= (full SQL/C++/Qt stack,
+  generated via the legacy entity codegen) gives accounts a real
+  =full_name= plus address/phone/email fields, with a "Contact
+  Information" notebook tab on =AccountDetailDialog= matching the
+  party/counterparty pattern.
+- =generate_sql.py= turns the =acme_bank= JSON dataset into 18
+  populate SQL scripts under =projects/ores.sql/populate/acme/=
+  (shared LEI entities/relationships + per-company business units,
+  portfolios, books, accounts, and account contact informations),
+  wired into =populate.sql= and verified via a full
+  =compass db recreate= — all Acme data lands correctly in the DQ
+  staging tables, including business-unit/portfolio/book parent-id
+  resolution.
+- Local =linux-gcc-debug-ninja= build and =compass build rat= both
+  green (all 75 test suites passed, 0 failures), after fixing the two
+  codegen defects noted above.
+
+Publish-from-dq wiring (turning the staged Acme data into live
+=ores_iam_accounts_tbl=/=ores_refdata_business_units_tbl=/etc. rows,
+and the corresponding =ores.shell= provisioning script) is explicitly
+out of scope — that is the server-side-orchestration follow-up task's
+job.

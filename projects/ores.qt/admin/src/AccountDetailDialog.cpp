@@ -61,7 +61,8 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     , historicalVersion_(0)
     , clientManager_(nullptr)
     , rolesWidget_(nullptr)
-    , partiesWidget_(nullptr) {
+    , partiesWidget_(nullptr)
+    , childTables_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -192,6 +193,12 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
         updateSaveResetButtonState();
     });
 
+    // Create and attach the Contact Information tab (dynamically inserted,
+    // like PartyDetailDialog's identifiers/contact tabs -- account has no
+    // .ui-defined tab for it).
+    childTables_ = new AccountChildEntityTables(this);
+    childTables_->attachTo(tabWidget());
+
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
 }
@@ -269,6 +276,11 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
         partiesWidget_->setDefaultPartyId(
             account.default_party_id.value_or(boost::uuids::nil_uuid()));
         partiesWidget_->load();
+    }
+
+    if (childTables_ && !isAddMode_) {
+        childTables_->reload(
+            account.id, clientManager_, modifiedByUsername_, imageCache(), changeReasonCache());
     }
 
     isDirty_ = false;
@@ -991,6 +1003,10 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     if (partiesWidget_) {
         partiesWidget_->setReadOnly(readOnly);
         partiesWidget_->setVisible(versionNumber == 0);
+    }
+
+    if (childTables_) {
+        childTables_->setReadOnly(readOnly);
     }
 
     updateSaveResetButtonState();

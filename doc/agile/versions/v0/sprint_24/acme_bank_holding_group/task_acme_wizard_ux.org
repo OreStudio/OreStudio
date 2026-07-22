@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C
+:ID: F9D8112C-CA73-43E1-9CAD-3578E993CC30
 :END:
-#+title: Task: Add DQ artefact type(s) for generated organisation/staff data
-#+description: Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact.
+#+title: Task: ores.shell and ores.qt UX for one-click Acme provisioning
+#+description: Wire the new tenant-provisioning source into ores.shell (provision tenant --source acme) and the ores.qt tenant-creation wizard, offering a simple 'ACME (full sample bank) vs Manual' choice; no orchestration logic client-side, just invoking the server-side command from task: server-side orchestration for one-click Acme provisioning.
 #+type: task
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
@@ -20,21 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Superseded by [[id:BE3039F6-EDDC-425C-B0BC-8D7A89F8A322][Server-side orchestration for one-click Acme provisioning]],
-which covers this exact scope (a new accounts DQ artefact table +
-publish-from-dq function + NATS handler) as part of the fuller
-provisioning-architecture design worked out with the user, rather
-than as a standalone artefact-type registration.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                            |
+| State        | BACKLOG                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Superseded, see Goal.                  |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing — see BE3039F6 instead.        |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C
+:ID: EB43B66D-8500-4150-A83E-22386D1FB17D
 :END:
-#+title: Task: Add DQ artefact type(s) for generated organisation/staff data
-#+description: Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact.
+#+title: Task: Add contact information (real names) support for accounts
+#+description: Accounts have no name field today (only username/email) -- model account contact information properly: a new ores_iam_account_contact_informations_tbl junction mirroring the existing party/counterparty contact-information pattern (refdata_party_contact_informations_tbl), including a real name field; a DQ artefact table + dataset so generated accounts (e.g. Acme Bank staff) can carry actual names; and ores.qt UI to display/edit it. Scheduled after the basic Acme provisioning framework (source data, codegen, server-side orchestration, client UX) lands.
 #+type: task
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
@@ -20,11 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Superseded by [[id:BE3039F6-EDDC-425C-B0BC-8D7A89F8A322][Server-side orchestration for one-click Acme provisioning]],
-which covers this exact scope (a new accounts DQ artefact table +
-publish-from-dq function + NATS handler) as part of the fuller
-provisioning-architecture design worked out with the user, rather
-than as a standalone artefact-type registration.
+Merged into [[id:E2850625-0ACC-43E1-A283-28CE4BF03B19][Generate Acme Bank SQL from JSON via ores.codegen, plus
+account contact information]] at the user's request — doing it in the
+same pass as the codegen task avoids a second, separate round of
+end-to-end retesting.
 
 * Status
 
@@ -32,9 +31,9 @@ than as a standalone artefact-type registration.
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Superseded, see Goal.                  |
+| Now          | Merged, see Goal.                      |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing — see BE3039F6 instead.        |
+| Next         | Nothing — see E2850625 instead.        |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

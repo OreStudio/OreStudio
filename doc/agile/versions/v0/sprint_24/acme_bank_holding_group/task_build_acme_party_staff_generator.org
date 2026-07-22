@@ -1,58 +1,121 @@
 :PROPERTIES:
 :ID: 9E96F1DB-85DE-415C-AE83-2D8BDD9D7158
 :END:
-#+title: Task: Build Acme Bank party/LEI/contact/staff generator
-#+description: Extend ores.synthetic's organisation_generator_service (rather than write a from-scratch Python/Faker script) to accept a hardcoded Acme company structure (Group/International/3 branches, trading floor + Middle Office + Market Risk per branch), fix its LEI generation to be checksum-valid on GLEIF's 9695 test prefix, add a Hong Kong contact locale, and add a staff/account layer with locale-matched names and FaceStudio profile pictures; provision under a distinct tenant code (e.g. acmebank) to avoid colliding with the existing acme/"Acme Corp" synthetic smoke-test tenant.
+#+title: Task: Generate Acme Bank source data (JSON dataset)
+#+description: Python script generating a versioned, extensible JSON dataset (parties/LEIs, business units, portfolios, books, staff) for Acme Bank's four legal entities, following the ores.seeder manifest/methodology convention (internal, not external/) -- the source-of-truth that later codegen turns into SQL.
 #+type: task
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-acme-party-staff-generator
+#+pr: 1667
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Extend =ores.synthetic='s =organisation_generator_service= (not a
-from-scratch script) to produce Acme Bank's party hierarchy, LEIs,
-contacts, and staff accounts against the hand-authored company
-structure from the analysis task, plus its business
-units/portfolios/books — the latter now unblocked by [[https://github.com/OreStudio/OreStudio/pull/1662][PR #1662]]
-(prime_origin's data-driven bundle-publish refactor, merged
-2026-07-22): populate Acme's org/portfolio/book structure through the
-new =risk_management= bundle rather than a bespoke path. See
-[[proj:projects/ores.seeder/datasets/acme_bank_structure_analysis/dataset_overview.org][acme_bank_structure_analysis]] for the full proposed shape (branches,
-desks, headcounts, LEI scheme) and the =ores.synthetic= gaps
-(fixed-shape vs. random tree, no staff layer, no HK locale, LEI not
-checksum-valid) this task closes.
+This is task 1 of 4 in the Acme provisioning architecture (see the
+parent story's =* Decisions= for the full picture). This task covers
+*only* the source data: a Python script that generates a clean,
+versioned, extensible JSON dataset describing Acme Bank's four legal
+entities —
+
+- Acme Bank Group plc (holding company)
+- Acme Bank UK plc (London)
+- Acme Bank US Inc (New York)
+- Acme Bank HK Ltd (Hong Kong)
+
+— each with its own LEI, contact details, business units (trading
+desks + Middle Office + Market Risk), portfolios, books, and staff
+accounts. The shape (which desks, how many people) is fixed/hardcoded
+per office; the filler data (names, emails, addresses) is generated
+via Faker where the locale supports it, or a curated name pool where
+it doesn't (Hong Kong). Config-driven over a list of offices, so
+adding e.g. a Singapore office later is a config change, not new
+code — the dataset is meant to grow as the system grows, to keep
+exercising new functionality.
+
+Output lands under =projects/ores.seeder/datasets/acme_bank/=
+(manifest.json + methodology.txt + the generated data JSON),
+mirroring the =external/facestudio=/=slovaris= convention but
+internal, since this isn't third-party sourced data.
+
+*Not* in scope for this task: turning the JSON into SQL (task 2, via
+=ores.codegen=), the server-side orchestration to publish it
+per-party (task 3), or the =ores.shell=/=ores.qt= UX (task 4) — see
+sibling tasks on the parent story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
 
--
+- A Python script (checked in, re-runnable, not a one-off) generates
+  a JSON file (or small set of JSON files) describing all four Acme
+  entities' parties/LEIs, contacts, business units, portfolios,
+  books, and staff accounts.
+- LEIs are checksum-valid (ISO 17442 / mod-97) on GLEIF's reserved
+  =9695= pre-LOU test prefix.
+- The four-entity/office shape (which desks, headcounts) is defined
+  as data/config in the script, not hardcoded per-row — adding a new
+  office is a config change.
+- Employee names/emails/addresses are generated per office locale:
+  Faker for GB/US, a curated name pool for Hong Kong.
+- All generated accounts reference one fixed, real password hash
+  (scrypt hash of "Secure-Password-123", matching the
+  =barclays_system_provision.ores= convention) computed via the
+  actual =ores::security::crypto::password_hasher=, not a
+  placeholder.
+- Each employee account is linked to the specific legal entity
+  (party) they work for in the JSON (not just the top holding
+  company), so a later single publish pass can assign every account
+  to its correct party.
+- Output follows the =ores.seeder= dataset convention: =manifest.json=,
+  =methodology.txt=, the data JSON, under
+  =projects/ores.seeder/datasets/acme_bank/= — registered/discoverable
+  the same way as =slovaris=/=external/facestudio=.
+- No SQL, no server-side/service code, no shell/Qt changes in this
+  task — those are tasks 2-4.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One script, =generate_data.py=, config-driven over =OFFICES=
+  (name/country/business_centre_code/locale) and a fixed
+  =DESKS=/=SUPPORT_FUNCTIONS= shape applied per office.
+- LEIs: checksum via the same ISO 17442 mod-97 algorithm used in the
+  earlier analysis, on GLEIF's =9695= test prefix.
+- Filler data: Python's =Faker= (added to
+  =projects/ores.codegen/requirements.txt=, reusing the existing
+  codegen venv rather than adding a new one) for =en_GB=/=en_US=; a
+  small curated name pool for Hong Kong (Faker has no English-script
+  HK locale).
+- Password: computed the real scrypt hash for "Secure-Password-123"
+  once via a throwaway program linked against the actual
+  =ores.security= library (not re-derived in Python), hardcoded as a
+  constant reused by every generated account.
+- Output: flat-array JSON per DQ artefact family (mirroring
+  =slovaris='s =country_currency.json= convention), each
+  business-unit/portfolio/book/account record tagged with
+  =company_code= since each of the 4 legal entities needs its own
+  independently-publishable structure.
+- Account "real names" (first/last name, not just username/email) are
+  explicitly out of scope here — accounts have no name field today;
+  that's [[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]],
+  scheduled after this framework lands.
 
 * Notes
 
@@ -71,12 +134,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1667][#1667]] | [seeder] Generate Acme Bank source data (JSON dataset) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Email collisions not prevented (no per-person index, unlike username) | generate_data.py | Accepted | Folded the same index into the email local-part |
+| 2 | Generator not seeded, so regeneration isn't reproducible/additive | generate_data.py | Accepted | Faker seeded per-office; UUIDs switched from uuid4 to deterministic uuid5 off a stable key |
 
 * Result
+
+Landed under [[proj:projects/ores.seeder/datasets/acme_bank/][projects/ores.seeder/datasets/acme_bank/]]:
+
+- =generate_data.py= — the config-driven generator (4 offices incl.
+  the holding company; 3 desks + 2 support functions per operating
+  office; re-run to regenerate).
+- =companies.json= (4), =lei_entities.json= (4, checksum-valid =9695=
+  LEIs), =lei_relationships.json= (3, holding→subsidiary
+  consolidation), =business_units.json= (18), =portfolios.json= (12),
+  =books.json= (9), =accounts.json= (45 staff, one fixed real password
+  hash, GB/US via Faker + curated HK name pool).
+- =manifest.json=, =methodology.txt=, =dataset_overview.org= —
+  discoverable via compass the same way as =slovaris=.
+
+Verified: all seven JSON files parse; all four LEIs independently
+checksum-verified (ISO 17442 mod-97). No C++/SQL touched — pure data
+generation, so no build/test run beyond that verification.
+
+Confirmed with the user along the way: four independent legal
+entities (not a Group→International→3-branches hierarchy), a
+JSON-then-codegen split (this task stops at JSON), and that account
+"real names" need proper contact-information modelling — split into
+[[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]] rather
+than bolted on here.

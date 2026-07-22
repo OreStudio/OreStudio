@@ -1,0 +1,164 @@
+[
+  {
+    "company_code": "acme_uk",
+    "id": "57e8e604-dcb6-515a-a6bd-38f0be805480",
+    "unit_name": "Global Markets",
+    "unit_code": "acme_uk.global_markets",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DIVISION"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "1e719eee-612e-5927-8e71-4107008a1590",
+    "unit_name": "IR Swaps London",
+    "unit_code": "acme_uk.ir_swaps",
+    "parent_business_unit_code": "acme_uk.global_markets",
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "aeb8a9e6-86a6-5382-b5eb-54c1b9577c32",
+    "unit_name": "Credit Trading London",
+    "unit_code": "acme_uk.credit_trading",
+    "parent_business_unit_code": "acme_uk.global_markets",
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "c3264d1e-2c3a-538c-b598-915a8b354dec",
+    "unit_name": "FX Rates London",
+    "unit_code": "acme_uk.fx_rates",
+    "parent_business_unit_code": "acme_uk.global_markets",
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a3c5e2ae-d25f-5f39-b334-e59d76ceff31",
+    "unit_name": "Middle Office London",
+    "unit_code": "acme_uk.middle_office",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "648136b1-4548-59e8-80c7-2eb7639c4a89",
+    "unit_name": "Market Risk London",
+    "unit_code": "acme_uk.market_risk",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "4951bc79-5e32-5677-ad77-77deea521a90",
+    "unit_name": "Global Markets",
+    "unit_code": "acme_us.global_markets",
+    "parent_business_unit_code": null,
+    "business_centre_code": "USNY",
+    "unit_type_code": "DIVISION"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "25523799-1194-5c84-b415-40b6cd952335",
+    "unit_name": "IR Swaps New York",
+    "unit_code": "acme_us.ir_swaps",
+    "parent_business_unit_code": "acme_us.global_markets",
+    "business_centre_code": "USNY",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "4e9fdb9b-1d8e-5318-9c00-27a522595f6f",
+    "unit_name": "Credit Trading New York",
+    "unit_code": "acme_us.credit_trading",
+    "parent_business_unit_code": "acme_us.global_markets",
+    "business_centre_code": "USNY",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "2075badb-b410-5488-98ea-4c63eca7b475",
+    "unit_name": "FX Rates New York",
+    "unit_code": "acme_us.fx_rates",
+    "parent_business_unit_code": "acme_us.global_markets",
+    "business_centre_code": "USNY",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "8141f088-c156-5003-8a86-3811f0e7e251",
+    "unit_name": "Middle Office New York",
+    "unit_code": "acme_us.middle_office",
+    "parent_business_unit_code": null,
+    "business_centre_code": "USNY",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "369a24e9-5568-5903-a163-910ca818e3dd",
+    "unit_name": "Market Risk New York",
+    "unit_code": "acme_us.market_risk",
+    "parent_business_unit_code": null,
+    "business_centre_code": "USNY",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "87610f63-6cca-525a-b311-65b163df00ed",
+    "unit_name": "Global Markets",
+    "unit_code": "acme_hk.global_markets",
+    "parent_business_unit_code": null,
+    "business_centre_code": "HKHK",
+    "unit_type_code": "DIVISION"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "1b46ae4a-d742-5e50-a01c-570e51808fcd",
+    "unit_name": "IR Swaps Hong Kong",
+    "unit_code": "acme_hk.ir_swaps",
+    "parent_business_unit_code": "acme_hk.global_markets",
+    "business_centre_code": "HKHK",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc",
+    "unit_name": "Credit Trading Hong Kong",
+    "unit_code": "acme_hk.credit_trading",
+    "parent_business_unit_code": "acme_hk.global_markets",
+    "business_centre_code": "HKHK",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "d4191374-ae29-5672-afae-62f15a8d2ca1",
+    "unit_name": "FX Rates Hong Kong",
+    "unit_code": "acme_hk.fx_rates",
+    "parent_business_unit_code": "acme_hk.global_markets",
+    "business_centre_code": "HKHK",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "7a577348-efc7-52ca-ae73-2d56a9b09535",
+    "unit_name": "Middle Office Hong Kong",
+    "unit_code": "acme_hk.middle_office",
+    "parent_business_unit_code": null,
+    "business_centre_code": "HKHK",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "fe95e779-6356-5cab-bcfd-2ef6de13274f",
+    "unit_name": "Market Risk Hong Kong",
+    "unit_code": "acme_hk.market_risk",
+    "parent_business_unit_code": null,
+    "business_centre_code": "HKHK",
+    "unit_type_code": "COST_CENTRE"
+  }
+]

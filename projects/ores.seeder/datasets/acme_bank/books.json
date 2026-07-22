@@ -1,0 +1,74 @@
+[
+  {
+    "company_code": "acme_uk",
+    "id": "c274e96e-8243-558e-853d-a23c446a8651",
+    "name": "IR Swaps London Book",
+    "portfolio_code": "acme_uk.ir_swaps.portfolio",
+    "owner_unit_code": "acme_uk.ir_swaps",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "7caf8914-98e5-5656-a1a1-c9a7330cd925",
+    "name": "Credit Trading London Book",
+    "portfolio_code": "acme_uk.credit_trading.portfolio",
+    "owner_unit_code": "acme_uk.credit_trading",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "45406787-863c-5ddf-98e3-5d909000c8ca",
+    "name": "FX Rates London Book",
+    "portfolio_code": "acme_uk.fx_rates.portfolio",
+    "owner_unit_code": "acme_uk.fx_rates",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "7587dbc4-6099-5efd-b6b3-5e3f15fac2c6",
+    "name": "IR Swaps New York Book",
+    "portfolio_code": "acme_us.ir_swaps.portfolio",
+    "owner_unit_code": "acme_us.ir_swaps",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "35400c12-2a43-5b5c-934e-96f09f406887",
+    "name": "Credit Trading New York Book",
+    "portfolio_code": "acme_us.credit_trading.portfolio",
+    "owner_unit_code": "acme_us.credit_trading",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "b60bea04-a671-5dcb-8fb4-9fea97d7d9e6",
+    "name": "FX Rates New York Book",
+    "portfolio_code": "acme_us.fx_rates.portfolio",
+    "owner_unit_code": "acme_us.fx_rates",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "c7ae93ca-f8b0-52b7-aecd-77fd75f6bc67",
+    "name": "IR Swaps Hong Kong Book",
+    "portfolio_code": "acme_hk.ir_swaps.portfolio",
+    "owner_unit_code": "acme_hk.ir_swaps",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "5cf716d2-1fa0-5680-9116-302be2e8cede",
+    "name": "Credit Trading Hong Kong Book",
+    "portfolio_code": "acme_hk.credit_trading.portfolio",
+    "owner_unit_code": "acme_hk.credit_trading",
+    "regulatory_book_type": "Trading"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "741085ae-71e9-51af-86c6-d4d199e432b5",
+    "name": "FX Rates Hong Kong Book",
+    "portfolio_code": "acme_hk.fx_rates.portfolio",
+    "owner_unit_code": "acme_hk.fx_rates",
+    "regulatory_book_type": "Trading"
+  }
+]

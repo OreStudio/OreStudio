@@ -109,6 +109,10 @@ void DayCountFractionTypeDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &DayCountFractionTypeDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &DayCountFractionTypeDetailDialog::onFieldChanged);
 }
 
 void DayCountFractionTypeDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -249,24 +253,27 @@ void DayCountFractionTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Day Count Fraction Type saved successfully";
-            QString code = QString::fromStdString(self->type_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->typeSaved(code);
-            self->notifySaveSuccess(tr("Day Count Fraction Type '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Day Count Fraction Type saved successfully";
+                    QString code = QString::fromStdString(self->type_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->typeSaved(code);
+                    self->notifySaveSuccess(tr("Day Count Fraction Type '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

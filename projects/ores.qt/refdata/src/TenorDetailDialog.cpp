@@ -105,10 +105,12 @@ void TenorDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &TenorDetailDialog::onFieldChanged);
+    connect(ui_->sortOrderEdit, &QSpinBox::valueChanged, this, &TenorDetailDialog::onFieldChanged);
     connect(
         ui_->kindCombo, &QComboBox::currentIndexChanged, this, &TenorDetailDialog::onFieldChanged);
     connect(
         ui_->unitCombo, &QComboBox::currentIndexChanged, this, &TenorDetailDialog::onFieldChanged);
+    connect(ui_->multiplierEdit, &QSpinBox::valueChanged, this, &TenorDetailDialog::onFieldChanged);
 }
 
 void TenorDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -318,24 +320,27 @@ void TenorDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Tenor saved successfully";
-            QString code = QString::fromStdString(self->tenor_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->tenorSaved(code);
-            self->notifySaveSuccess(tr("Tenor '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Tenor saved successfully";
+                    QString code = QString::fromStdString(self->tenor_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->tenorSaved(code);
+                    self->notifySaveSuccess(tr("Tenor '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

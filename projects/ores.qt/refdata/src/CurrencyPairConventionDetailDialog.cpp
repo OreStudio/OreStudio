@@ -129,6 +129,10 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CurrencyPairConventionDetailDialog::onFieldChanged);
+    connect(ui_->decimalPlacesSpinBox,
+            &QSpinBox::valueChanged,
+            this,
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
     connect(ui_->businessDayConventionCombo,
             &QComboBox::currentIndexChanged,
             this,

@@ -8,7 +8,7 @@
 #+filetags: :cmake-4-4-uninitialized-variable-warnings:sprint_24:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1663
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1663][#1663]] | [agile] Add task for vcpkg-toolchain uninitialized-variable CI warnings |
 
 * Review
 

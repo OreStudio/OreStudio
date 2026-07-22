@@ -48,11 +48,6 @@ inline auto& ir_curve_preview_handler_lg() {
     return instance;
 }
 
-// 1 tick == 1 calendar day (see ir_curve_template_resolver.hpp's own doc comment for this
-// convention) -- dt is real elapsed years per tick, matching make_ir_curve_feed()'s own dt, so a
-// preview simulates the same model a real feed would.
-constexpr double preview_dt = 1.0 / 365.0;
-
 // process_factory::make_yield_curve_process() dispatches on lowercase engine names ("vasicek",
 // "cir", "hull_white"); ir_curve_generation_config.process_type and this protocol's wire value
 // both carry the catalog's uppercase code (VASICEK/CIR/HULL_WHITE) -- same lowercasing
@@ -123,7 +118,7 @@ public:
                         req->sigma,
                         req->initial_rate,
                         req->seed + static_cast<std::uint32_t>(p),
-                        preview_dt);
+                        ir_curve_feed_dt);
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)
@@ -198,7 +193,7 @@ public:
                     req->sigma,
                     req->initial_rate,
                     42,
-                    preview_dt);
+                    ir_curve_feed_dt);
 
             for (const auto& re : resolved) {
                 preview_ir_curve_shape_point pt;

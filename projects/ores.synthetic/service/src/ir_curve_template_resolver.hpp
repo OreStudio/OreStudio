@@ -39,6 +39,15 @@
 namespace ores::synthetic::service {
 
 /**
+ * @brief Year-fraction one IR curve feed tick represents, matching the "1 tick == 1 calendar
+ * day" convention documented on resolve() below. Passed as IYieldCurveProcess::dt wherever a
+ * process is constructed for this feed (auto-start, on-demand start, path simulation, shape
+ * preview) so every consumer of that convention shares one definition rather than each
+ * redeclaring its own copy.
+ */
+inline constexpr double ir_curve_feed_dt = 1.0 / 365.0;
+
+/**
  * @brief One fixed-leg payment date of a Swap entry's schedule, reduced to what
  * curve_instrument_pricer::swap_par_rate() needs.
  */

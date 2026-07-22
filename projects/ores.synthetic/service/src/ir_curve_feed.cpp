@@ -179,11 +179,14 @@ make_ir_curve_feed(ores::nats::service::client& nats,
                    const ir_curve_refdata_context& refctx) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
-    // 1 tick == 1 calendar day (see ir_curve_template_resolver.hpp's own doc comment for this
-    // convention) -- dt is real elapsed years per tick, not a caller-side kappa/sigma pre-scale.
-    constexpr double dt = 1.0 / 365.0;
     auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
-        lowercase(cfg.process_type), cfg.kappa, {cfg.theta}, cfg.sigma, cfg.initial_rate, 42, dt);
+        lowercase(cfg.process_type),
+        cfg.kappa,
+        {cfg.theta},
+        cfg.sigma,
+        cfg.initial_rate,
+        42,
+        ir_curve_feed_dt);
 
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather

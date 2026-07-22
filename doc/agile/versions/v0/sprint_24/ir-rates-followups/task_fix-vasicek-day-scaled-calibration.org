@@ -166,8 +166,15 @@ via its "Verifies task" field.
 
 * Review
 
+Three independent @claude review passes on #1661, all issue-level
+(no line comments): all three found no correctness/security/
+maintainability issues and marked the PR ready to merge. Non-blocking
+observations only:
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | dt=1.0/365.0 duplicated as two separately-named constants (ir_curve_feed.cpp's dt, ir_curve_preview_handler.hpp's preview_dt) | ir_curve_feed.cpp, ir_curve_preview_handler.hpp | Accepted | Consolidated into one ir_curve_feed_dt constant in ir_curve_template_resolver.hpp, next to the "1 tick == 1 calendar day" convention it implements; both call sites now reference it. |
+| 2 | dt isn't validated by the shared process_parameter_validation layer (Qt client's validation surface), only by each process constructor's own throw | process_parameter_validation.hpp/.cpp | Declined | dt is never user-facing input (fixed 1/365 convention set in code, not an editable config field), so there is nothing for the shared UI-facing validator to validate; the constructor throw is the only meaningful validation site. |
+| 3 | preview_shape() passes a literal 42 seed rather than deriving one from req, unlike simulate_paths() | ir_curve_preview_handler.hpp | Declined | Not a regression from this PR -- matches prior behaviour (the old 4-arg call relied on the constructor's implicit seed=42 default); out of scope for a dt-focused fix. |
 
 * Result

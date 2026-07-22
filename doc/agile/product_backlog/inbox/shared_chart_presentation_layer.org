@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 7F5BE078-A845-4E90-B470-268F23B9DB46
+:END:
+#+title: Shared chart-data presentation layer for FX Spot and CRM plots
+#+description: Extract candle/line aggregation, windowing, and downsampling logic out of Qt chart windows into a plain-C++ presentation-layer class (mirroring crm_rate_display_service), reused by Qt, ASCII shell rendering, and CRM plots.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:mktdata:charts:architecture:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=FxSpotChartWindow= (=projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp=)
+currently does all of its candle-bucketing, rolling-sample retention,
+visible-window trimming (=k_max_candles=/=k_max_line_points=), and
+axis-range computation inline, as Qt-only logic with no non-Qt
+consumer. Extract this into a new plain-C++ presentation-layer class —
+e.g. =fx_chart_series_builder= in
+=ores.marketdata.client/presentation/= — that takes raw
+=(timestamp, value)= samples plus a requested window/interval and
+returns ready-to-render =candle=/=line_point= vectors and their visible
+={x_min,x_max}=/={y_min,y_max}= ranges. No Qt or NATS dependency, same
+shape as the existing =crm_rate_display_service= /
+=crm_rate_formatter= facade (=ores.marketdata.client/presentation/=)
+that already does this for CRM rate tables/matrices.
+
+Concrete behaviour to move into the builder (raised while triaging
+[[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]],
+where a QA scenario found the FX Spot chart "hard to make sense of"):
+
+- Default the visible window to a recent slice (e.g. last 5 minutes)
+  instead of everything fetched, for both line and candle modes.
+- Recompute X/Y axis range from the visible window only, not the full
+  retained history.
+- Roll the window forward as live ticks arrive rather than fixing it
+  once at load.
+- Pixel-stride downsampling / moving-average smoothing for the line
+  view (see the related, narrower capture below) — a natural fit for
+  the same builder rather than a one-off in =FxSpotChartWindow=.
+
+Once built, wire =FxSpotChartWindow= to it (candles and line both),
+add an ASCII renderer for =ores.shell= consuming the same
+=candle=/=line_point= output (mirroring
+=presentation/crm_rate_table.hpp='s console-table pattern), and apply
+the same builder to CRM cross-rate plots so both use cases share one
+tested aggregation/windowing implementation instead of parallel
+Qt-only logic.
+
+* Why
+
+Chart usability logic (windowing, bucketing, axis scaling) is
+currently Qt-only, untested outside manual QA, and would have to be
+re-implemented from scratch for any non-Qt consumer (e.g. an ASCII
+chart in =ores.shell=) or for CRM plots, which have the same
+underlying need. The =crm_rate_display_service= /
+=crm_rate_formatter= split already establishes the pattern this
+codebase uses to keep formatting/aggregation logic Qt-free and
+Catch2-testable, shared across Qt/shell/future consumers — this is
+the same pattern applied to chart series data instead of rate-table
+rows.
+
+* References
+
+- =projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp= — current
+  Qt-only candle/line bucketing, sample retention, and axis logic to
+  extract.
+- =projects/ores.marketdata/client/include/ores.marketdata.client/presentation/crm_rate_display_service.hpp=
+  and sibling files — the existing presentation-layer pattern to
+  mirror.
+- =projects/ores.qt/mktdata/src/CrmCrossRatesMatrixMdiWindow.*= (or
+  equivalent) — CRM plot use case to fold into the same builder.
+
+* See also
+
+- [[id:A752E521-9E9C-4DCA-BC0F-205EE4C3B1D9][Add pixel-stride downsampling or MA smoothing to FX line chart]] —
+  narrower, folds naturally into this builder rather than being a
+  one-off Qt change.
+- [[id:C810AAA1-E088-449D-ACF5-CF38055CB702][Fix notification toast blocking FX chart Y-axis area]] — separate,
+  unrelated Qt z-order bug on the same window; not in scope here.
+- [[id:2E1183B1-31B2-400D-B291-55F9DB87839C][Model or document market_observation's hand-written repository/service overrides]] —
+  the task whose QA scenario surfaced the chart-usability problem this
+  capture proposes to fix properly.

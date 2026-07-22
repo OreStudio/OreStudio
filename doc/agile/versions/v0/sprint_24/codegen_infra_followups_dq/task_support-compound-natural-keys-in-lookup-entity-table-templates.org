@@ -7,31 +7,54 @@
 #+level: s1
 #+filetags: :codegen_infra_followups_dq:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/support-compound-natural-keys-in-lookup-entity-table-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
 #+updated: 2026-07-21
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend the =table=/=lookup_entity= codegen pathway so a
+=domain_entity= model's =* Primary key= section can declare more than
+one column, and have that compound key flow correctly through:
+
+- ~org_loader.py~'s primary-key parsing
+  (~org_document_to_model~/~load_org_lookup_entity_model~) and the
+  ~domain_entity_to_table_context~ projection.
+- ~sql_schema_table_create.mustache~ (shared by the =table= and
+  =lookup_entity= model types): create-table column list, physical
+  primary key + GIST exclusion constraint, the =_version_uniq_idx= and
+  =_uniq_idx= unique indexes, insert-trigger current-version lookup,
+  delete rule, and the =validate_<entity>_fn= existence-check
+  function.
+
+so an entity like =ores.dq.subject_area= (naturally keyed by =name= +
+=domain_name=) can declare its real compound key directly instead of
+demoting the second key column to a plain, non-unique-enforcing
+=Column= plus a bolt-on compound =Indexes= entry (the current
+workaround, called out in
+[[file:../../../../../../projects/ores.dq/modeling/ores.dq.subject_area.org][ores.dq.subject_area.org]]'s
+=domain_name= column body).
+
+Existing single-column entities must regenerate byte-identical SQL
+after this change — this is purely additive.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded.                            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-18                               |
+| Next         | Work continues under [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling]]'s tasks. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
@@ -42,6 +65,68 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. *Model shape* — keep =* Primary key= a single org section (one
+   =:PROPERTIES:= drawer per column doesn't compose cleanly with the
+   existing single-drawer parsing), but let it hold either one column
+   (today's shape, unchanged) or an ordered list of columns for a
+   compound key. Needs a concrete decision on the org syntax (e.g. a
+   =:columns:= property holding a comma-separated list, each with its
+   own type/cpp_type, vs. sub-headings like =* Columns= already used
+   for plain columns) — this is the first thing to settle before
+   touching code.
+
+2. *~org_loader.py~ parsing* — in ~org_document_to_model~ (table
+   pathway) and ~load_org_lookup_entity_model~ (lookup_entity
+   pathway), normalise whatever org syntax is chosen into a canonical
+   ~primary_key.columns: [{column, type, cpp_type, is_text, ...}, ...]~
+   list, while keeping ~primary_key.column~/~primary_key.type~
+   populated for the single-column case so nothing downstream that
+   isn't touched by this task breaks.
+
+3. *~domain_entity_to_table_context~* — project the normalised list
+   through unchanged (it already does a light dict copy); add the
+   compound-aware derived flags the template needs (e.g. a
+   Mustache-friendly ~primary_key.columns~ list with last-item
+   markers for comma-joining, plus a boolean like
+   ~primary_key.is_compound~ to switch template branches).
+
+4. *~sql_schema_table_create.mustache~* — replace every bare
+   ~{{entity.primary_key.column}}~ reference with either the existing
+   scalar (single-column entities) or a joined/iterated form over
+   ~primary_key.columns~ for: column declarations, primary key +
+   GIST exclusion tuple, both unique indexes, the insert-trigger
+   current-version =where= clause and =update= clause, the delete
+   rule's =where= clause, and the =check (... <> '')= empty-string
+   guard (needs to become one check per text column).
+
+5. *~validate_<entity>_fn~* — this is the one genuinely open design
+   question: today it is =(p_tenant_id, p_value) returns
+   primary_key.type=, called from other entities' insert triggers to
+   soft-FK-validate a single value. A compound key has no single
+   scalar to validate against. Decide whether this task (a) extends
+   the function to accept N positional value params keyed off
+   ~primary_key.columns~ (breaks/complicates every call site, even
+   though no *current* FK references a compound-keyed entity), or (b)
+   documents that compound-keyed entities don't get a generated
+   ~validate_*_fn~ at all yet (soft-FK validation against them stays
+   out of scope until a caller actually needs it) — leaning towards
+   (b) as the minimal, YAGNI-respecting cut, to confirm with Marco.
+
+6. *Regenerate and diff* — regenerate every existing =table=/
+   =lookup_entity= SQL schema after the template change and confirm
+   byte-identical output (single-column entities must be unaffected).
+
+7. *Prove it on =subject_area=* — model =ores.dq.subject_area='s real
+   compound key (=name= + =domain_name=) using the new syntax,
+   regenerate its schema, and confirm the generated DDL now enforces
+   true compound-key uniqueness (replacing the current bolt-on
+   =Indexes= workaround) — this is the acceptance bar, not just
+   template plumbing in the abstract.
+
+8. *Tests* — add/extend codegen unit tests for compound-key parsing
+   and SQL rendering (single-column regression + new compound-key
+   case).
 
 * Notes
 
@@ -69,3 +154,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned in favour of
+[[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys,
+with compound-key support]]. Investigating this task's Goal/Plan
+surfaced that the surrogate-less =table=/=lookup_entity= archetype
+and the surrogate =domain_entity= archetype render through two
+~90%-duplicated Mustache templates with two different, incompatible
+ways of expressing a key — patching only the surrogate-less side's
+=* Primary key= section to accept a list would have meant extending
+(and then having to migrate again) a syntax already slated for
+replacement. The new story unifies both templates and both key
+syntaxes into one =* Columns= + =:primary_key:= flag model and
+carries this task's =subject_area= compound-key goal forward as one
+of its tasks. See that story's =* Findings= for the full comparison
+of the two archetypes/templates.

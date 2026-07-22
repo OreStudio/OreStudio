@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 25374909-6DD3-4818-ACC2-60B5B8E53FDE
+:END:
+#+title: Add automated cross-tenant regression tests for DQ governanc…
+#+description: Add automated cross-tenant regression tests for DQ governance 'shared reference data' repositories (catalog, data_domain, change_reason, change_reason_category, badge_severity, badge_definition): seed a row as the system tenant, then assert a *different* tenant context can read it back via read_latest/read_all/get_total_*_count. None of the existing repository unit tests exercise this path (they all write+read within a single tenant), so a future accidental reintroduction of an app-level tenant_id filter (the exact bug fixed by tenant_read_scope: shared) would go uncaught by CI. Flagged by PR #1668 review. Needs database_helper (or a new helper) support for constructing a second, distinct tenant context within one test, which it doesn't cleanly support today.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

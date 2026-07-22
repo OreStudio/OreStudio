@@ -146,7 +146,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No automated regression test for the cross-tenant/system-tenant-fallback read path | repository tests | Accepted (deferred) | Filed backlog capture add_cross_tenant_regression_tests_dq_shared_entities.org; needs database_helper support for a second tenant context, out of scope for this fix. |
+| 2 | tenant_read_shared computed in core.py but never referenced by any template | core.py | Accepted | Inlined into read_tenant_filtered's single expression; confirmed regenerating the 6 target entities produces byte-identical output. |
+| 3 | No validation of tenant_read_scope values (e.g. a typo silently falls back to tenant-filtered reads) | core.py | Declined | Fails closed (stricter, safer default) on any unrecognised value, not open; not a correctness risk. |
+| 4 | Single-row lookups (read_latest(ctx,name), read_at_version) on shared entities have no deterministic tie-break if a tenant's natural key collides with a system-tenant row of the same key | repository template | Accepted (deferred) | Filed backlog capture fix_shared_entity_name_collision_ambiguity.org; not a security issue (RLS still enforces the boundary), fixing properly needs a template-level query redesign beyond this fix's scope. |
 
 * Result
 

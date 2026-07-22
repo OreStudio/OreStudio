@@ -1987,11 +1987,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # top would defeat the policy's system-tenant fallback (exactly the
         # bug this flag fixes). Mutations (insert/update/delete) always stay
         # tenant-scoped regardless of this flag.
-        domain_entity['tenant_read_shared'] = (
-            domain_entity.get('tenant_read_scope', 'tenant') == 'shared')
         domain_entity['read_tenant_filtered'] = (
             domain_entity.get('has_tenant_id', False)
-            and not domain_entity['tenant_read_shared'])
+            and domain_entity.get('tenant_read_scope', 'tenant') != 'shared')
         # Set defaults for messaging handler knobs if not provided by entity model.
         # Entities override via ** Repository section; these cover the common cases.
         pk = domain_entity.get('primary_key', {})

@@ -32,8 +32,16 @@ namespace ores::assets::messaging {
 
 /**
  * @brief Maximum number of images to request in a single batch.
+ *
+ * This is a count cap, not a byte-size cap -- SVG images vary widely in size
+ * (a few KB for a simple flag, considerably more for a complex one), so a
+ * batch of this many images can still exceed NATS's default max payload
+ * (1MB) if several large images cluster into the same batch, silently
+ * dropping the whole batch. 15 keeps batches comfortably under that limit
+ * even in the worst case observed so far; a byte-size-aware batching pass
+ * is the correct long-term fix (see the "Image batching" follow-on task).
  */
-constexpr std::size_t MAX_IMAGES_PER_REQUEST = 50;
+constexpr std::size_t MAX_IMAGES_PER_REQUEST = 15;
 
 /**
  * @brief Lightweight image metadata (no SVG data) for list responses.

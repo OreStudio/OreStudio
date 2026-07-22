@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA
+:END:
+#+title: Task: Make ImageCache batching byte-size aware, add SVG compression
+#+description: Track cumulative payload size while building each image-fetch batch, not just count; add gzip compression to the image transfer pipeline.
+#+type: task
+#+level: s1
+#+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+First, weigh the three options the parent story lays out: (a) byte-
+size-aware NATS batching, (b) add compression to the existing NATS
+request-reply path, (c) move image transfer to the existing S3-like
+HTTP storage endpoint (=GET /api/v1/storage/{bucket}/{key}=,
+=ores.http.core/routes/storage_routes.hpp=) the way
+=ores.compute.wrapper= already downloads binaries. These aren't
+mutually exclusive (HTTP transfer would still benefit from
+compression), but the batching-vs-transport question should be decided
+explicitly before implementing, not defaulted to "patch what's there."
+Then implement the chosen approach so that country flags (and any
+other batch-loaded image set) never partially fail to load again,
+regardless of how many or how large the images in a given request are.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A written decision (recorded in this task's =* Plan=, distilled to the
+  story's =* Decisions= at close) on NATS-byte-aware-batching vs. HTTP
+  storage-endpoint transfer vs. both, with rationale.
+- No image batch (however constructed) can silently fail to load due to
+  exceeding a transport payload limit -- verified against a synthetic
+  worst case of many large SVGs requested together.
+- Image data is compressed on the wire regardless of which transport is
+  chosen.
+- =MAX_IMAGES_PER_REQUEST= (currently lowered to 15 as an interim
+  mitigation) is revisited once the real fix lands -- raised back up,
+  removed, or reinterpreted depending on the chosen transport.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

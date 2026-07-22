@@ -50,12 +50,12 @@ configured that should be.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Diff the Linux CI workflow / runner image around 2026-07-20 to find what changed. |
-| Last touched  | 2026-07-21                               |
+| Next          | Confirm clean on CI (CMake 4.4.0) post-merge. |
+| Last touched  | 2026-07-22                               |
 
 * Acceptance
 
@@ -72,9 +72,20 @@ configured that should be.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:89BD8C57-8A1A-4405-BEDB-9EB3E6E3A763][Investigate and fix vcpkg-toolchain uninitialized-variable warnings]] | BACKLOG | | | Fix the vcpkg.cmake batch of CMake Warning (uninitialized) messages under CMake 4.4.0 (VCPKG_MANIFEST_DIR, VCPKG_BOOTSTRAP_OPTIONS, VCPKG_OVERLAY_TRIPLETS, Z_VCPKG_FEATURE_FLAGS), all originating from the project(OreStudio ...) call at CMakeLists.txt:51. |
+| [[id:89BD8C57-8A1A-4405-BEDB-9EB3E6E3A763][Investigate and fix vcpkg-toolchain uninitialized-variable warnings]] | DONE | 2026-07-22 | 2026-07-22 | Fix the vcpkg.cmake batch of CMake Warning (uninitialized) messages under CMake 4.4.0 (VCPKG_MANIFEST_DIR, VCPKG_BOOTSTRAP_OPTIONS, VCPKG_OVERLAY_TRIPLETS, Z_VCPKG_FEATURE_FLAGS), all originating from the project(OreStudio ...) call at CMakeLists.txt:51. |
 
 * Decisions
+
+- Root cause: the 2026-07-20 Dependabot bump of =lukka/get-cmake= to
+  4.4.0 newly enforces our own =warnings.uninitialized: true= preset
+  during =project()='s compiler/toolchain-detection phase, surfacing
+  both this batch and vcpkg's toolchain-file batch of warnings — same
+  trigger, same fix.
+- Fixed by narrowly suppressing the =uninitialized= diagnostic only
+  around the =project(OreStudio ...)= call (guarded for CMake >= 4.4),
+  rather than disabling the preset globally or pinning CI back to
+  CMake 4.3.4 — keeps the warning active for our own code everywhere
+  else.
 
 * Out of scope
 

@@ -48,8 +48,26 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 enable_testing()
 configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)
 
+# CMake >= 4.4 enforces our warnings.uninitialized preset (see
+# CMakePresets.json) during project()'s own compiler/toolchain detection,
+# which now flags vcpkg's bundled toolchain file (vcpkg/scripts/buildsystems/
+# vcpkg.cmake) for its standard set(VAR "${VAR}" CACHE ... FORCE) idiom on
+# VCPKG_MANIFEST_DIR/VCPKG_BOOTSTRAP_OPTIONS/VCPKG_OVERLAY_TRIPLETS/
+# Z_VCPKG_FEATURE_FLAGS. That file is vendored and gets overwritten on the
+# next vcpkg update, so silence uninitialized warnings only around the
+# project() call that triggers it; the rest of the build still catches
+# genuine uninitialized-variable bugs in our own CMake code.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(PUSH)
+    cmake_diagnostic(SET uninitialized IGNORE)
+endif()
+
 project(OreStudio VERSION 0.0.24 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(POP)
+endif()
 
 # Copy all binaries into the publish directory.
 set(ORES_PUBLISH_DIRECTORY ${CMAKE_BINARY_DIR}/publish)

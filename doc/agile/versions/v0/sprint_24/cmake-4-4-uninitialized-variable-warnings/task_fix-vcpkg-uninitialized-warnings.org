@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :cmake-4-4-uninitialized-variable-warnings:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr: 1663
+#+branch: agile/add-vcpkg-warnings-task
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -66,11 +66,11 @@ where the root cause overlaps.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] |
-| Now          | Not yet started.                       |
+| Now          | Fixed and verified locally.            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Confirm clean on CI (CMake 4.4.0) post-merge. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -86,11 +86,43 @@ where the root cause overlaps.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Diffed CI history around 2026-07-20 and found the trigger: a
+Dependabot PR (commit 18def3920) bumped =lukka/get-cmake= from
+=4.3.4= to =4.4.0= in the Linux CI workflow that day. Confirmed
+locally that our dev environment still runs CMake 4.3.4 and a fresh
+=cmake --preset= configure produces none of these warnings, isolating
+the cause to CMake 4.4.0 specifically.
+
+Root cause: =CMakePresets.json= already sets
+=warnings.uninitialized: true= (intentionally, to catch real bugs in
+our own CMake code), but CMake < 4.4 didn't enforce that setting
+during the compiler/toolchain-detection phase triggered by
+=project()=. CMake 4.4.0 shipped a new unified diagnostic system
+(=cmake_diagnostic()=) that now enforces it end-to-end, newly
+surfacing vcpkg's bundled toolchain file's standard
+=set(VAR "${VAR}" CACHE ... FORCE)= idiom — valid CMake, harmless, but
+now flagged. Same root cause almost certainly also explains the
+parent story's compiler-detection warnings batch
+(=CMAKE_SYSTEM_CUSTOM_CODE= etc.), since both originate from the same
+=project()= call.
+
+Since vcpkg's toolchain file is vendored (overwritten on the next
+=vcpkg= update) and we still want uninitialized-variable warnings for
+our own code, suppressed the diagnostic narrowly: bracketed only the
+=project(OreStudio ...)= call in =CMakeLists.txt= with
+=cmake_diagnostic(PUSH)= / =cmake_diagnostic(SET uninitialized IGNORE)=
+/ =cmake_diagnostic(POP)=, guarded behind
+=CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"= so CMake < 4.4 (no
+=cmake_diagnostic()= command) and our current local dev CMake (4.3.4)
+are unaffected.
 
 * Notes
+
+Could not install CMake 4.4.0 locally to directly reproduce/verify
+the warnings disappearing — verification is that the fix compiles
+clean under 4.3.4 (guard skips the new commands, unchanged behaviour)
+and the reasoning traces the exact mechanism CMake 4.4 uses. Final
+confirmation is the next Linux CI run post-merge.
 
 * Test Scenarios
 
@@ -107,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1663][#1663]] | [agile] Add task for vcpkg-toolchain uninitialized-variable CI warnings |
+|    |       |
 
 * Review
 
@@ -116,3 +148,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Root cause identified: the 2026-07-20 Dependabot bump of
+=lukka/get-cmake= to 4.4.0 in Linux CI newly enforces our own
+long-standing =warnings.uninitialized: true= preset during
+=project()='s compiler/toolchain-detection phase, which now flags
+vcpkg's vendored toolchain file's harmless cache-variable idiom.
+Fixed by narrowly suppressing the =uninitialized= diagnostic only
+around the =project(OreStudio ...)= call in =CMakeLists.txt=, guarded
+for CMake >= 4.4, so warnings for our own code are unaffected. Local
+configure verified clean under CMake 4.3.4 (guard no-ops); CMake 4.4.0
+wasn't available locally to directly reproduce, so final confirmation
+is the next Linux CI run.

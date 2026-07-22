@@ -8,7 +8,7 @@
 #+filetags: :unify_report_definitions_publish_infrastructure:sprint_24:v0:
 #+owner: marco
 #+branch: feature/fix-librarian-tree-regression
-#+pr:
+#+pr: 1668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1668][#1668]] | [dq,codegen,qt] Fix Data Librarian tree: DQ governance reads must trust RLS alone |
 
 * Review
 

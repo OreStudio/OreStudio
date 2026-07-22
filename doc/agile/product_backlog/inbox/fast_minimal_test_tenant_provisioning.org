@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: CB07AD45-4C84-4BCA-8679-1AC2B4A9223E
+:END:
+#+title: Fast, minimal synthetic dataset for test-tenant provisioning
+#+description: Give test-tenant provisioning a lightweight fixture path so DB-backed test suites don't pay the full production-like refdata copy cost.
+#+type: capture
+#+level: cross
+#+filetags: :testing:performance:iam:database:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Define a minimal synthetic reference-data fixture — purpose-built for
+tests, just enough rows in each affected table to satisfy FK/trigger
+validation (e.g. one party category, one business day convention, one
+tenor, one change reason, etc.) — and give =ores_iam_provision_tenant_fn=
+(or a new lighter sibling function/flag) a fast path that seeds only
+this minimal set for test tenants, instead of copying the full
+production-like reference-data set from the system tenant. Any
+made-up =tenant_id= is rejected by =ores_iam_validate_tenant_fn='s
+trigger on every RLS-protected table, so a real, registered tenant is
+the only way to write test data — the fixture needs to be genuinely
+smaller, not bypassed.
+
+* Why
+
+=ores_iam_provision_tenant_fn= (764 lines of SQL) is the only
+sanctioned way to get a trigger-valid tenant for a DB-backed test
+suite, and it copies ~30 full reference-data tables from the system
+tenant into every new test tenant: parties, business-day conventions,
+tenors, change reasons, business centres, party categories/types/
+statuses, contact types, id schemes, book statuses, regulatory book
+types, purpose types, day count fractions, rounding types, monetary
+natures, currency market tiers, asset class codes, instrument codes,
+tenor kinds/units/anchors/conventions/resolutions, DQ change reason
+categories/reasons, and more.
+
+Measured impact: =ores.refdata.core.tests= (147 test cases, each
+individually ~1s) takes 193 seconds total wall-clock — almost
+entirely provisioning/deprovisioning overhead, not test logic. While
+implementing task
+[[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]]
+(story
+[[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]]),
+adding the same listener pair (=database_lifecycle_listener= +
+=test_timeout_listener=) to a previously DB-free suite
+(=ores.ore.core.tests=, 480 tests, 5.85s baseline) — needed to support
+one new DB-backed integration test proving the ORE =AdvanceCalendar=
+string is correctly derived from the =currency_pair_convention_calendar=
+junction table at export time — ballooned that suite's runtime to
+~499 seconds: an ~85x regression to add a single test.
+
+Every DB-backed test suite in the monorepo currently pays this ~190s
+tax once per binary run (not per test), and any new suite that wants
+to add even one DB-backed test inherits the same fixed cost. Cutting
+provisioning down closer to instant would speed up the whole test
+suite and remove a real disincentive against writing DB-backed
+integration tests where they're the right tool.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql=
+  (=ores_iam_provision_tenant_fn=, ~764 lines, the full-copy provisioner)
+- =projects/ores.testing/src/test_database_manager.cpp=
+  (=provision_test_tenant=/=terminate_test_tenant=, the C++ side)
+- =projects/ores.testing/src/database_lifecycle_listener.cpp= (the
+  Catch2 listener that triggers provisioning once per test-binary run)
+
+* See also
+
+- [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Task: Build ORE's comma-joined calendar string only at the XML export boundary]] — where this was discovered.

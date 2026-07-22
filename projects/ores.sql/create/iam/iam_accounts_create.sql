@@ -36,6 +36,7 @@ create table if not exists ores_iam_accounts_tbl (
     "totp_secret" text not null,
     "email" text not null,
     "default_party_id" uuid null,
+    "image_id" uuid null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
@@ -80,6 +81,17 @@ begin
 
     -- Validate account_type
     new.account_type := ores_iam_validate_account_type_fn(new.tenant_id, new.account_type);
+
+    -- Validate image_id, if set (soft FK: no real FK given the temporal key shape)
+    if new.image_id is not null and not exists (
+        select 1 from ores_assets_images_tbl
+        where tenant_id = new.tenant_id
+          and image_id = new.image_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid image_id: %. Image must exist.', new.image_id
+        using errcode = '23503';
+    end if;
 
     select version into current_version
     from ores_iam_accounts_tbl

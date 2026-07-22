@@ -81,7 +81,7 @@ each time.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] | DONE | 2026-07-22 | 2026-07-22 | In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow. |
-| [[id:4FAF7D46-7EC6-4814-94EE-F47832020D6E][Generalise account images: SVG-only asset table to binary-agnostic, add account image_id FK]] | STARTED | 2026-07-22 | | Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces). |
+| [[id:4FAF7D46-7EC6-4814-94EE-F47832020D6E][Generalise account images: SVG-only asset table to binary-agnostic, add account image_id FK]] | DONE | 2026-07-22 | 2026-07-22 | Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces). |
 | [[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated organisation/staff data]] | BACKLOG | | | Register new ores_dq_artefact_types_tbl entries (e.g. generated parties, generated accounts) and dataset rows so Acme's generated party/staff data is trackable in the Data Librarian like every other reference-data artefact. |
 | [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Build Acme Bank party/LEI/contact/staff generator]] | BACKLOG | | | Extend ores.synthetic's organisation_generator_service (rather than write a from-scratch Python/Faker script) to accept a hardcoded Acme company structure, fix its LEI generation to be checksum-valid on GLEIF's 9695 test prefix, add a Hong Kong locale, and add a staff/account layer with locale-matched names and FaceStudio pictures; provisioned under a distinct tenant code to avoid colliding with the existing acme/"Acme Corp" synthetic tenant. |
 
@@ -102,7 +102,18 @@ each time.
   follow-the-sun trading without needing "the biggest bank."
 - *Account pictures*: generalise the existing =ores_assets_images_tbl=
   (currently SVG-only) to a binary-agnostic asset table, rather than
-  add a parallel face-images table.
+  add a parallel face-images table. Implemented as =mime_type= +
+  base64-encoded =data= (text, not =bytea= — no existing pqxx/mapper
+  precedent for binary columns in this codebase); the DQ
+  artefact-staging table stays untouched SVG-only text, since it's
+  inherently a flag/GLEIF-style import pipeline, not a generic image
+  store.
+- *Account =image_id= is a plain UUID with a nil sentinel, not
+  =std::optional=.* A second =std::optional<boost::uuids::uuid>= field
+  on =ores::iam::domain::account= triggers a real reflect-cpp
+  field-count-detection bug (segfault/corrupted JSON on multi-element
+  vectors) specific to that struct; =boost::uuids::nil_uuid()= as
+  "unset" is an existing codebase convention and sidesteps it.
 
 * Out of scope
 

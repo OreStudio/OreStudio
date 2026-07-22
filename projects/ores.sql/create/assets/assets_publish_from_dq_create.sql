@@ -104,13 +104,16 @@ begin
 
         -- Insert image - trigger handles versioning automatically.
         -- Use existing image_id when updating to preserve referential integrity.
+        -- DQ artefact staging is SVG-only text; base64-encode into the
+        -- generalised (mime_type, data) shape of the live table.
         insert into ores_assets_images_tbl (
             tenant_id,
-            image_id, version, key, description, svg_data,
+            image_id, version, key, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
-            coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
+            coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description,
+            'image/svg+xml', encode(convert_to(r.svg_data, 'UTF8'), 'base64'),
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import',
             'Published from DQ dataset: ' || v_dataset_name

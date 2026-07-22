@@ -19,7 +19,9 @@
  */
 
 -- =============================================================================
--- SVG image storage.
+-- Image storage, format-agnostic (SVG, JPEG, ...).
+-- "data" holds the raw bytes, base64-encoded; "mime_type" says how to
+-- interpret them (e.g. image/svg+xml, image/jpeg).
 -- Key provides human-readable lookup.
 -- =============================================================================
 
@@ -29,7 +31,8 @@ create table if not exists "ores_assets_images_tbl" (
     "version" integer not null,
     "key" text not null,
     "description" text not null,
-    "svg_data" text not null,
+    "mime_type" text not null default 'image/svg+xml',
+    "data" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

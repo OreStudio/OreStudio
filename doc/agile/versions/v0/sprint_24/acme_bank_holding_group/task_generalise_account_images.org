@@ -39,11 +39,11 @@ it possible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Investigating current images table/entity and every SVG consumer before changing shape. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Design the generalised asset shape, then implement. |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -64,11 +64,64 @@ it possible.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+No backwards compatibility to preserve (user instruction) — go
+straight to the clean end shape rather than an additive/dual-column
+compromise:
+
+- Replace =svg_data text not null= on =ores_assets_images_tbl= with
+  =mime_type text not null default 'image/svg+xml'= + =data text not
+  null= (base64-encoded raw bytes — no existing precedent in this
+  codebase for binary =bytea= columns through the pqxx/mapper layer,
+  so base64-over-text keeps every layer consistent with the existing
+  "everything is text" convention, using the pre-existing
+  =ores::utility::converter::base64_converter= helper). SVG rows store
+  their UTF-8 markup bytes base64-encoded with
+  =mime_type='image/svg+xml'=; raster rows (JPEG, from
+  =external/facestudio/faces=) store their bytes base64-encoded with
+  =mime_type='image/jpeg'=. No dual-column/default-value shim — every
+  existing SVG populate/publish path is migrated onto the new shape in
+  this same change; the DQ artefact-staging table
+  (=ores_dq_images_artefact_tbl=) stays SVG-only text unchanged (it's
+  inherently a flag/GLEIF-style import pipeline, not a generic image
+  store) — only the publish-from-dq/sync-to-dq functions base64
+  encode/decode at the boundary.
+- =ores.assets= domain =image= struct/mapper/repository/JSON-IO:
+  =svg_data= (=std::string=) becomes =data=
+  (=std::vector<std::uint8_t>=, base64 en/decoded at the mapper layer)
+  + =mime_type= (=std::string=).
+- All 27 files touching =svg_data=/=ores_assets_images_tbl=/
+  =assets::domain::image= updated in this task: SQL populate scripts
+  (flags, solvaris, crypto), the DQ artefact-publish pipeline
+  (=dq_images_artefact_create.sql=, =assets_publish_from_dq_create.sql=,
+  =refdata_publish_from_dq_create.sql=), the generator, mapper,
+  repository, tests, and =ores.qt='s =IconUtils=/=ImageCache=.
+- =ores.qt='s =IconUtils=/=ImageCache= branch on =mime_type=:
+  =QSvgRenderer= for =image/svg+xml=, =QImage::fromData= for anything
+  else.
+- =ores_iam_accounts_tbl= gains a nullable =image_id uuid= referencing
+  =ores_assets_images_tbl= (soft FK + insert-trigger validation, same
+  pattern as other cross-component temporal FKs — no real DB FK given
+  the =(tenant_id, id, valid_from, valid_to)= temporal key shape).
+- Kept as a single task/PR — schema, domain/mapper, and Qt rendering
+  are tightly coupled and reviewed together.
 
 * Notes
+
+Adding =image_id= to =ores::iam::domain::account= as a *second*
+=std::optional<boost::uuids::uuid>= field (alongside the existing
+=default_party_id=) triggered a real reflect-cpp bug: its
+aggregate-initialization-based field-count detection miscounts the
+struct, corrupting JSON/table serialization for multi-element vectors
+— reproduced as a segfault and "could not add field 'modified_by' to
+object" exceptions in =ores.iam.api.tests= (=account_convert_multiple_to_table=/
+=account_convert_multiple_to_json=). Confirmed by bisection that a
+second optional-uuid field on =account= specifically (not optional-uuid
+fields in general — =portfolio=/=business_unit=/=trade_parties= each
+already have two, and work fine) causes it. Fixed by representing
+=image_id= as a plain =boost::uuids::uuid= with =boost::uuids::nil_uuid()=
+as the "no picture" sentinel instead of =std::optional=, matching an
+existing codebase convention (nil UUID = unset) rather than inventing
+a new pattern.
 
 * Test Scenarios
 
@@ -94,3 +147,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Generalised =ores_assets_images_tbl= from SVG-only to format-agnostic
+(=mime_type= + base64 =data=), migrated every consumer, and added an
+=image_id= FK on accounts:
+
+- SQL: =ores_assets_images_tbl= replaced =svg_data= with =mime_type=
+  (default =image/svg+xml=) + base64 =data=; =assets_publish_from_dq_create.sql=
+  and =dq_functions_create.sql= updated to base64 encode/decode at the
+  DQ-staging boundary (staging itself stays untouched SVG-only text).
+  =ores_iam_accounts_tbl= gained a nullable =image_id uuid= with
+  insert-trigger soft-FK validation against the images table.
+- =ores.assets=: domain =image= struct, entity, mapper, repository
+  (raw SQL column list/indices), generator, and tests updated to the
+  =mime_type=/=data= (=std::vector<uint8_t>=, base64 via the existing
+  =base64_converter=) shape.
+- =ores.qt=: added =IconUtils::imageDataToIcon=/=ImageCache::dataToIcon=
+  that branch on =mime_type= (=QSvgRenderer= for SVG, =QImage::fromData=
+  otherwise); all =ImageCache= call sites and its caches
+  (=image_svg_cache_= now holds raw bytes generically, new
+  =image_mime_cache_=) migrated off the removed =svg_data= field.
+- =ores.iam=: =account= domain gained =image_id= (plain
+  =boost::uuids::uuid=, nil = unset — see =* Notes= for why not
+  =std::optional=), entity/mapper updated, new tests for the
+  nil-default and set cases.
+- Full local build (linux-clang-debug-make) and test suite green:
+  74/74 passed, including new assertions verifying the base64
+  mime_type/data DB round-trip and the account image_id default/set
+  behaviour.
+
+Deferred to the next task ([[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated
+organisation/staff data]] and [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Build Acme Bank party/LEI/contact/staff
+generator]]): actually setting any account's =image_id= to a
+FaceStudio picture, and wiring account picture display into the Qt
+account UI (this task only makes it possible at the data layer).

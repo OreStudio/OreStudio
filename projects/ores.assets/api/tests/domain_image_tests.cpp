@@ -56,7 +56,8 @@ TEST_CASE("default_constructed_image_has_zero_version", tags) {
     CHECK(sut.version == 0);
     CHECK(sut.key.empty());
     CHECK(sut.description.empty());
-    CHECK(sut.svg_data.empty());
+    CHECK(sut.data.empty());
+    CHECK(sut.mime_type == "image/svg+xml");
 }
 
 TEST_CASE("image_version_can_be_set", tags) {

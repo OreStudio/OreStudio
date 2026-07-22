@@ -143,6 +143,7 @@ void ImageCache::reload() {
     const auto svg_count = image_svg_cache_.size();
     const auto icon_count = image_icons_.size();
     image_svg_cache_.clear();
+    image_mime_cache_.clear();
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
@@ -159,6 +160,7 @@ void ImageCache::clear() {
     BOOST_LOG_SEV(lg(), info) << "clear() called - resetting all caches and load state.";
 
     image_svg_cache_.clear();
+    image_mime_cache_.clear();
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
@@ -668,12 +670,13 @@ void ImageCache::onImagesLoaded() {
                                << ", failed_batches=" << result.failed_batches;
 
     if (result.success) {
-        // Cache SVG data and render icons
+        // Cache image data and render icons
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
-            image_svg_cache_[image_id_str] = img.svg_data;
+            image_svg_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
+            image_mime_cache_[image_id_str] = img.mime_type;
 
-            QIcon icon = svgToIcon(img.svg_data);
+            QIcon icon = dataToIcon(img.data, img.mime_type);
             if (!icon.isNull()) {
                 image_icons_[image_id_str] = icon;
             }
@@ -737,10 +740,14 @@ void ImageCache::loadImageById(const std::string& image_id) {
         return;
     }
 
-    // Check if already cached in SVG cache
+    // Check if already cached
     auto svg_it = image_svg_cache_.find(image_id);
     if (svg_it != image_svg_cache_.end()) {
-        QIcon icon = svgToIcon(svg_it->second);
+        const auto mime_it = image_mime_cache_.find(image_id);
+        const std::string mime_type =
+            mime_it != image_mime_cache_.end() ? mime_it->second : "image/svg+xml";
+        QIcon icon = dataToIcon(
+            std::vector<std::uint8_t>(svg_it->second.begin(), svg_it->second.end()), mime_type);
         if (!icon.isNull()) {
             image_icons_[image_id] = icon;
             emit imageLoaded(QString::fromStdString(image_id));
@@ -793,9 +800,11 @@ void ImageCache::onSingleImageLoaded() {
     pending_image_requests_.erase(result.image_id);
 
     if (result.success) {
-        // Cache SVG and render icon
-        image_svg_cache_[result.image_id] = result.image.svg_data;
-        QIcon icon = svgToIcon(result.image.svg_data);
+        // Cache image data and render icon
+        image_svg_cache_[result.image_id] =
+            std::string(result.image.data.begin(), result.image.data.end());
+        image_mime_cache_[result.image_id] = result.image.mime_type;
+        QIcon icon = dataToIcon(result.image.data, result.image.mime_type);
         if (!icon.isNull()) {
             image_icons_[result.image_id] = icon;
         }
@@ -809,6 +818,10 @@ void ImageCache::onSingleImageLoaded() {
 
 QIcon ImageCache::svgToIcon(const std::string& svg_data) {
     return IconUtils::svgDataToIcon(svg_data);
+}
+
+QIcon ImageCache::dataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type) {
+    return IconUtils::imageDataToIcon(data, mime_type);
 }
 
 ImageCache::ImagesResult
@@ -972,12 +985,13 @@ void ImageCache::onAllAvailableImagesLoaded() {
         return;
     }
     if (result.success) {
-        // Cache SVG data and render icons
+        // Cache image data and render icons
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
             pending_image_requests_.erase(image_id_str);
-            image_svg_cache_[image_id_str] = img.svg_data;
-            QIcon icon = svgToIcon(img.svg_data);
+            image_svg_cache_[image_id_str] = std::string(img.data.begin(), img.data.end());
+            image_mime_cache_[image_id_str] = img.mime_type;
+            QIcon icon = dataToIcon(img.data, img.mime_type);
             if (!icon.isNull()) {
                 image_icons_[image_id_str] = icon;
             }

@@ -29,9 +29,11 @@
 #include <QIcon>
 #include <QObject>
 #include <QPixmap>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace ores::qt {
 
@@ -310,6 +312,15 @@ private:
     static QIcon svgToIcon(const std::string& svg_data);
 
     /**
+     * @brief Convert format-agnostic image data to QIcon.
+     *
+     * @param data Raw image bytes (as returned by ores.assets.domain::image)
+     * @param mime_type MIME type of the data (e.g. "image/svg+xml", "image/jpeg")
+     * @return QIcon rendered from the data, or empty icon on failure
+     */
+    static QIcon dataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type);
+
+    /**
      * @brief Load a specific image by ID (internal use).
      *
      * @param image_id The image ID to load
@@ -408,10 +419,13 @@ private:
 
     ClientManager* clientManager_;
 
-    // image_id -> cached SVG data
+    // image_id -> cached raw image bytes (SVG markup, JPEG, ...)
     std::unordered_map<std::string, std::string> image_svg_cache_;
 
-    // image_id -> QIcon (rendered from SVG)
+    // image_id -> cached MIME type (e.g. "image/svg+xml", "image/jpeg")
+    std::unordered_map<std::string, std::string> image_mime_cache_;
+
+    // image_id -> QIcon (rendered from image data)
     std::unordered_map<std::string, QIcon> image_icons_;
 
     // Loading state

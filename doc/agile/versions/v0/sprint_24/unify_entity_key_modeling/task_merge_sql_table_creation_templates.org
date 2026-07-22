@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 6C5FADD1-478A-46ED-A266-35A8182B814E
 :END:
-#+title: Task: Merge sql_schema_table_create.mustache and sql_schema_domain_entity_create.mustache into one template
-#+description: The two Mustache table-creation templates duplicate ~90% of their bi-temporal DDL (audit columns, temporal range, version trigger, delete rule, index families) while diverging in an enumerable set of axes (physical primary-key cardinality, tenant scoping mode, workspace_id, audit columns, GIST exclusion, coding scheme). Converge into one template and one core.py SQL-projection path, with primary-key cardinality (1..N flagged Columns) as an independent axis rather than a template choice.
+#+title: Task: Extend sql_schema_domain_entity_create.mustache to support a compound primary key
+#+description: Rescoped from an initial "merge two templates" plan (see the parent story's Findings correction, 2026-07-22): only sql_schema_domain_entity_create.mustache is in active use for #+type: ores.codegen.entity models regardless of surrogate-vs-natural key; sql_schema_table_create.mustache is legacy ores.codegen.lookup_entity-only and already being retired by task AEFAE247. Extend the ~20 primary_key.column references in the one active template to support the primary_key.columns list (1..N) task 1 already produces, so a compound natural_keys set can serve as the physical primary key when there is no separate surrogate id.
 #+type: task
 #+level: s1
 #+filetags: :codegen:infrastructure:tooling:sprint_24:v0:unify_entity_key_modeling:
@@ -20,7 +20,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend ~sql_schema_domain_entity_create.mustache~ and its
+~core.py~ render-context builder so a *compound* primary key (>1
+column, task 1's =primary_key.columns= list) renders correctly,
+without changing output for any existing single-column entity.
+
+- Every =primary_key.columns= element gets the same per-column
+  derived flags the top-level scalar =primary_key= dict already gets
+  (=is_uuid=, =is_text=, =render_label=, default =cpp_type=), plus a
+  =last= marker (reusing ~_mark_last_item~) for comma/and-joining in
+  the template.
+- Add =primary_key.is_compound= (=len(columns) > 1=) so the ~20
+  call sites that assume a single type/uuid-ness can branch cleanly
+  where a compound key has no single "the" type.
+- Rewrite every =\{\{domain_entity.primary_key.column\}\}= scalar
+  reference in the template into a loop over
+  =\{\{#domain_entity.primary_key.columns\}\}...\{\{/domain_entity.primary_key.columns\}\}=
+  wherever the site needs one entry per key column (create-table
+  declarations, GIST exclusion clause list, comma-joined primary-key
+  tuple, AND-joined =where=/=set= clauses); leave the scalar form
+  where a site is genuinely single-value by nature (e.g. the
+  generated =validate_<entity>_fn='s single =p_value= parameter —
+  scope that function to single-column keys only, per task 1's
+  =Plan= decision, rather than inventing an N-ary signature no
+  caller needs yet).
+- Zero behaviour change for any single-column entity: every
+  currently-checked-in generated SQL file for a =#+type:
+  ores.codegen.entity= model must regenerate byte-identical.
+- Prove the compound case on =ores.dq.subject_area= specifically —
+  remodel it with the new syntax (=name= + =domain_name= both
+  =:primary_key: true=) and confirm the generated DDL enforces a true
+  composite primary key + GIST exclusion, replacing its current
+  hand-written =dq_subject_area_create.sql= (which predates codegen
+  regeneration entirely) and the Column-plus-bolt-on-Indexes
+  workaround this story exists to retire.
+- =sql_schema_table_create.mustache= is untouched by this task.
 
 * Status
 

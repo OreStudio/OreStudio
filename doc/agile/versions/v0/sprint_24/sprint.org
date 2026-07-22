@@ -81,7 +81,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] | BACKLOG | | | Linux CI started emitting a batch of new CMake Warning (uninitialized) messages on 2026-07-20, all from the project() call at CMakeLists.txt:51 under CMake 4.4.0. |
+| [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] | DONE | 2026-07-22 | 2026-07-22 | Linux CI started emitting a batch of new CMake Warning (uninitialized) messages on 2026-07-20, all from the project() call at CMakeLists.txt:51 under CMake 4.4.0. |
+| [[id:36ABA3D4-FEC5-4D65-9FBC-A3819C46284A][Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] | DONE | 2026-07-22 | 2026-07-22 | Fix the remaining CMake 4.4.0 uninitialized-variable warnings discovered while fixing the vcpkg-toolchain batch in PR #1664: two genuine use-before-define bugs (SPRINT, flags), one dead-variable reference (DOGEN_VERSION), and CPack/InstallRequiredSystemLibraries vendored-module noise. |
 
 * Achievements
 

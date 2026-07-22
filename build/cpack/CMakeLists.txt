@@ -17,7 +17,21 @@
 #
 
 include(GNUInstallDirs)
+
+# CMake >= 4.4 enforces our warnings.uninitialized preset (see
+# CMakePresets.json) inside CMake's own bundled
+# Modules/InstallRequiredSystemLibraries.cmake, which reads
+# CMAKE_C_COMPILER_ID/CMAKE_Fortran_COMPILER_ID before anything sets them.
+# That module isn't ours to patch, so silence uninitialized warnings only
+# around this include.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(PUSH)
+    cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)
+endif()
 include(InstallRequiredSystemLibraries)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(POP)
+endif()
 
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -139,4 +153,16 @@ else()
     message(FATAL_ERROR "unknown operating system")
 endif()
 
+# CMake >= 4.4 enforces our warnings.uninitialized preset inside CMake's own
+# bundled Modules/CPack.cmake, which reads CPACK_SOURCE_GENERATOR/
+# CPACK_SOURCE_INSTALL_CMAKE_PROJECTS before anything sets them. That module
+# isn't ours to patch, so silence uninitialized warnings only around this
+# include.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(PUSH)
+    cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)
+endif()
 include(CPack)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+    cmake_diagnostic(POP)
+endif()

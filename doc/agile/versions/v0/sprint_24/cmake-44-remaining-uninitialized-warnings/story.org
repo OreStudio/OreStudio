@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 36ABA3D4-FEC5-4D65-9FBC-A3819C46284A
+:END:
+#+title: Story: Hotfix: remaining CMake 4.4 uninitialized-variable warnings
+#+description: Fix the remaining CMake 4.4.0 uninitialized-variable warnings discovered while fixing the vcpkg-toolchain batch in PR #1664: two genuine use-before-define bugs (SPRINT, flags), one dead-variable reference (DOGEN_VERSION), and CPack/InstallRequiredSystemLibraries vendored-module noise.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Fix the four remaining CMake 4.4.0 uninitialized-variable warnings
+surfaced while fixing PR #1664's vcpkg-toolchain batch, but out of
+scope for that PR: two genuine use-before-define bugs in our own
+CMake code (=SPRINT=, =flags=), one dead-variable reference
+(=DOGEN_VERSION=), and CPack/InstallRequiredSystemLibraries vendored-
+module noise.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                  |
+| Last touched  | 2026-07-22                               |
+
+* Acceptance
+
+- All four warnings fixed or suppressed at the source; verified
+  against a real CMake 4.4.0 binary (clean configure, zero
+  uninitialized warnings).
+- Full local build and =ctest= pass under CMake 4.3.4 (no
+  regressions).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:15306DB3-3EFE-496A-8381-ACE8F9DA07ED][Scaffold story: Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] | DONE | 2026-07-22 | 2026-07-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:39D6E9E7-ED34-4718-8878-98CE6681F3B0][Implement Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] | DONE | 2026-07-22 | 2026-07-22 | Initial task for: Hotfix: remaining CMake 4.4 uninitialized-variable warnings |
+
+* Decisions
+
+- Scaffold and implementation landed together in a single PR/commit
+  set (the scaffold docs were never separately committed before work
+  started), rather than as two sequential PRs — reasonable for a
+  hotfix this small.
+- Removed the =SPRINT= CACHE variable entirely rather than bumping
+  its stale default to 24: =compass sprint charts= already
+  auto-detects the current sprint when =--sprint= is omitted (see
+  =cmd_sprint_charts= in =compass.py=), so the CMake-side override was
+  redundant and would just go stale again next sprint.
+
+* Out of scope
+
+-

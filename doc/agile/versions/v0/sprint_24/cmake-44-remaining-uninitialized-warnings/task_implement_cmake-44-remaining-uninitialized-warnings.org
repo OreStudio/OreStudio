@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 39D6E9E7-ED34-4718-8878-98CE6681F3B0
+:END:
+#+title: Task: Implement Hotfix: remaining CMake 4.4 uninitialized-variable warnings
+#+description: Initial task for: Hotfix: remaining CMake 4.4 uninitialized-variable warnings
+#+type: task
+#+level: s1
+#+filetags: :cmake-44-remaining-uninitialized-warnings:sprint_24:v0:
+#+owner: marco
+#+branch: feature/implement-cmake-44-remaining-uninitialized-warnings
+#+pr: 1666
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36ABA3D4-FEC5-4D65-9FBC-A3819C46284A][Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the remaining CMake 4.4.0 uninitialized-variable warnings not
+covered by PR #1664: two genuine use-before-define bugs, one
+dead-variable reference, and CPack/InstallRequiredSystemLibraries
+vendored-module noise.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:36ABA3D4-FEC5-4D65-9FBC-A3819C46284A][Hotfix: remaining CMake 4.4 uninitialized-variable warnings]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- =CMakeLists.txt=: =sprint_charts= custom target no longer reads an
+  uninitialized =SPRINT= variable — the =SPRINT= CACHE variable was
+  removed entirely, since =compass sprint charts= already
+  auto-detects the current sprint.
+- =CMakeLists.txt=: dead =DOGEN_VERSION= reference replaced with
+  =CMAKE_PROJECT_VERSION=.
+- =projects/CMakeLists.txt=: =flags= initialised before first use.
+- =build/cpack/CMakeLists.txt=: =InstallRequiredSystemLibraries=/=CPack=
+  vendored-module uninitialized warnings suppressed narrowly around
+  their two =include()= calls (CMake >= 4.4 only).
+- Verified clean (no uninitialized warnings, no errors) against a
+  real CMake 4.4.0 binary; full local build and =ctest= pass under
+  CMake 4.3.4.
+
+* Plan
+
+While fixing PR #1664's vcpkg-toolchain warning batch, a real
+CMake-4.4.0 configure surfaced four more uninitialized-variable
+warnings out of scope for that task: two genuine use-before-define
+bugs in our own CMake code, one dead-variable reference, and two more
+from CMake's own bundled =CPack.cmake=/=InstallRequiredSystemLibraries.cmake=
+modules (same vendored-module class as vcpkg's, different
+=include()= call site).
+
+Fixed each:
+- =sprint_charts= custom target: initially moved
+  =set(SPRINT 18 CACHE STRING ...)= before =add_custom_target(sprint_charts ...)=
+  so =${SPRINT}= would resolve to =18= instead of empty, but that
+  default was already six sprints stale (current sprint is 24).
+  Removed the =SPRINT= CACHE variable entirely instead — see below.
+- =DOGEN_VERSION= (a dead reference, likely a leftover from before the
+  project's current name) replaced with =CMAKE_PROJECT_VERSION=,
+  which is already used elsewhere in the same file.
+- =projects/CMakeLists.txt=: added =set(flags "")= before first use —
+  harmless in practice (CMake treats unset as empty) but exactly the
+  class of bug =warnings.uninitialized= exists to catch.
+- =build/cpack/CMakeLists.txt=: bracketed the two vendored-module
+  =include()= calls individually with
+  =cmake_diagnostic(PUSH)=/=SET CMD_UNINITIALIZED IGNORE=/=POP=, guarded
+  for CMake >= 4.4, using the correct category token learned from
+  PR #1664's review round (=CMD_UNINITIALIZED=, not =uninitialized=).
+
+Verified directly against a real CMake 4.4.0 binary (downloaded via
+=pip download cmake==4.4.0=, same approach as PR #1664): fresh
+configure exits clean, zero uninitialized warnings or errors.
+
+Removed the =SPRINT= CACHE variable entirely rather than bumping its
+stale default (=18=) to the current sprint (=24=): =compass sprint
+charts= already auto-detects the current sprint via
+=current_version_sprint()= when =--sprint= is omitted
+(=cmd_sprint_charts= in =compass.py=), so the CMake-side override was
+redundant and would only go stale again next sprint. Confirmed
+concretely — the generated build rule now invokes =compass.sh sprint
+charts= with no =--sprint= argument at all. Ran a full local build
+(=compass build=, exit 0) and =ctest --preset linux-clang-debug-make=
+(74/74 tests passed) under the local CMake 4.3.4 to confirm no
+regressions.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1666][#1666]] | [build] Fix remaining CMake 4.4 uninitialized-variable warnings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Task doc left stale passages describing the discarded "reorder SPRINT" approach after the fix changed to "remove SPRINT entirely" in ce8acdfd | task_implement_cmake-44-remaining-uninitialized-warnings.org | Accepted | Fixed: updated Acceptance/Plan passages to describe the final "removed entirely" approach, no longer self-contradictory. |
+
+* Result
+
+Fixed the four remaining CMake 4.4.0 uninitialized-variable warnings
+out of scope for PR #1664: removed the redundant/stale =SPRINT=
+CACHE variable entirely (=sprint_charts= now runs =compass sprint
+charts= with no arguments, which already auto-detects the current
+sprint), replaced the dead =DOGEN_VERSION= reference with
+=CMAKE_PROJECT_VERSION=, initialised =flags= in
+=projects/CMakeLists.txt=, and suppressed the
+=CPack=/=InstallRequiredSystemLibraries= vendored-module warnings
+narrowly around their =include()= calls (=CMD_UNINITIALIZED=, CMake
+>= 4.4 only). Verified against a real CMake 4.4.0 binary (clean
+configure, zero uninitialized warnings) and a full local build +
+=ctest= (74/74 passed) under CMake 4.3.4.

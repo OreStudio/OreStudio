@@ -157,7 +157,11 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
 
     int started = 0;
     for (const auto& cfg : configs) {
-        if (!cfg.enabled)
+        // auto_start is the auto-start-eligibility flag; enabled alone only means "startable at
+        // all" (manually or automatically) -- an enabled=true, auto_start=false config (e.g. a
+        // legacy/alternate-index variant) is deliberately skipped here and left for on-demand
+        // start only.
+        if (!cfg.enabled || !cfg.auto_start)
             continue;
         const auto it = entries_by_config.find(cfg.id);
         if (it == entries_by_config.end() || it->second.empty()) {
@@ -168,8 +172,19 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
         }
 
         try {
-            ctrl.add(make_ir_curve_feed(nats, cfg, it->second, *refctx));
-            ++started;
+            std::string conflicting_source_name;
+            if (ctrl.add(make_ir_curve_feed(nats, cfg, it->second, *refctx),
+                         &conflicting_source_name)) {
+                ++started;
+            } else {
+                // A genuine seed-data misconfiguration (two auto_start=true configs sharing a
+                // qualifier), not a per-request error -- log clearly and move on rather than
+                // failing the whole auto-start pass.
+                BOOST_LOG_SEV(auto_start_lg(), error)
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_name
+                    << " — qualifier already held by auto-started feed '" << conflicting_source_name
+                    << "'; both are enabled+auto_start for the same market data key.";
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auto_start_lg(), error)
                 << "Failed to start IR curve feed for " << cfg.currency_code << "/"

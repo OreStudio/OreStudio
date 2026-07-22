@@ -84,11 +84,11 @@ each time.
 | [[id:4FAF7D46-7EC6-4814-94EE-F47832020D6E][Generalise account images: SVG-only asset table to binary-agnostic, add account image_id FK]] | DONE | 2026-07-22 | 2026-07-22 | Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces). |
 | [[id:B56ED53B-A7C4-4D90-8CA9-41500F0F3C6C][Add DQ artefact type(s) for generated organisation/staff data]] | ABANDONED | | | Superseded by "Server-side orchestration for one-click Acme provisioning" below. |
 | [[id:9E96F1DB-85DE-415C-AE83-2D8BDD9D7158][Generate Acme Bank source data (JSON dataset)]] | DONE | 2026-07-22 | 2026-07-22 | Task 1/4: Python script generating a versioned, extensible JSON dataset (parties/LEIs, contacts, business units, portfolios, books, staff) for Acme Bank's four legal entities, following the ores.seeder manifest/methodology convention. |
-| [[id:E2850625-0ACC-43E1-A283-28CE4BF03B19][Generate Acme Bank SQL from JSON via ores.codegen]] | BACKLOG | | | Extend ores.codegen as needed to turn the acme_bank JSON dataset (task: generate Acme Bank source data) into populate SQL matching the shape/conventions of hand-written ores.sql -- new DQ artefact rows for LEI entities/relationships, business units, portfolios, books, and accounts, one dataset per legal entity so each can be published independently. |
+| [[id:E2850625-0ACC-43E1-A283-28CE4BF03B19][Generate Acme Bank SQL from JSON via ores.codegen, plus account contact information]] | BACKLOG | | | Extend ores.codegen to turn the acme_bank JSON dataset into populate SQL matching hand-written ores.sql conventions; bundled in the same pass: a new ores_iam_account_contact_informations_tbl junction (mirroring the party/counterparty contact-information pattern, with a real name field), Acme's contact data generated/included in the same JSON/SQL pass, and an ores.qt notebook contact-info page for accounts -- one round of end-to-end testing instead of two. |
 | [[id:BE3039F6-EDDC-425C-B0BC-8D7A89F8A322][Server-side orchestration for one-click Acme provisioning]] | BACKLOG | | | New tenant-provisioning source (alongside --source gleif/synthetic) that server-side orchestrates creating the tenant, importing the Acme LEI hierarchy (all 4 parties in one shot), and publishing each party's business units/portfolios/books plus the group-wide accounts dataset -- no repeated per-party logins, no client-side orchestration logic, callable identically from ores.shell and ores.qt. Includes the new accounts DQ artefact table, publish-from-dq function, and NATS handler (the actual missing piece -- parties/business-units/portfolios/books already have artefact tables and publish functions). |
 | [[id:F9D8112C-CA73-43E1-9CAD-3578E993CC30][ores.shell and ores.qt UX for one-click Acme provisioning]] | BACKLOG | | | Wire the new tenant-provisioning source into ores.shell (provision tenant --source acme) and the ores.qt tenant-creation wizard, offering a simple 'ACME (full sample bank) vs Manual' choice; no orchestration logic client-side, just invoking the server-side command from task: server-side orchestration for one-click Acme provisioning. |
 | [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]] | BACKLOG | | | Add a nullable image_id FK on counterparties (same generalised ores_assets_images_tbl / soft-FK pattern used for accounts), so a counterparty can carry a logo -- e.g. the Acme Corp logo asset already supplied for this purpose. |
-| [[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]] | BACKLOG | | | Accounts have no name field today (only username/email) -- model account contact information properly: a new ores_iam_account_contact_informations_tbl junction mirroring the existing party/counterparty contact-information pattern (refdata_party_contact_informations_tbl), including a real name field; a DQ artefact table + dataset so generated accounts (e.g. Acme Bank staff) can carry actual names; and ores.qt UI to display/edit it. Scheduled after the basic Acme provisioning framework (source data, codegen, server-side orchestration, client UX) lands. |
+| [[id:EB43B66D-8500-4150-A83E-22386D1FB17D][Add contact information (real names) support for accounts]] | ABANDONED | | | Merged into "Generate Acme Bank SQL from JSON via ores.codegen, plus account contact information" above, at the user's request, to avoid a second round of end-to-end retesting. |
 
 * Decisions
 
@@ -172,6 +172,11 @@ each time.
   to whichever task actually populates =image_id= — the schema
   supports it (=generalise-account-images=), wiring FaceStudio
   selection is separate follow-up work.
+- *Account contact information (real names) moved earlier*, merged
+  into the codegen task rather than scheduled after the whole
+  provisioning framework — doing the junction table, Acme contact
+  data, and the =ores.qt= notebook page in the same pass as the SQL
+  generation avoids a second, separate round of end-to-end retesting.
 
 * Out of scope
 

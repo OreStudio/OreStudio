@@ -20,17 +20,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Merged into [[id:E2850625-0ACC-43E1-A283-28CE4BF03B19][Generate Acme Bank SQL from JSON via ores.codegen, plus
+account contact information]] at the user's request — doing it in the
+same pass as the codegen task avoids a second, separate round of
+end-to-end retesting.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Merged, see Goal.                      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — see E2850625 instead.        |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

@@ -8,7 +8,7 @@
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/analyse-acme-bank-structure
-#+pr:
+#+pr: 1660
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1660][#1660]] | [agile] Analyse Acme Bank corporate structure and current populatability |
 
 * Review
 

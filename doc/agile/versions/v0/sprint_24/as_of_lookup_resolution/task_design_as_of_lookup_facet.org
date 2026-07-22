@@ -8,7 +8,7 @@
 #+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
 #+branch: feature/design-as-of-lookup-facet
-#+pr:
+#+pr: 1675
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -212,7 +212,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1675][#1675]] | [agile] Design the as-of lookup codegen facet |
 
 * Review
 

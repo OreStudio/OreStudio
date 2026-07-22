@@ -72,7 +72,7 @@ configured that should be.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:89BD8C57-8A1A-4405-BEDB-9EB3E6E3A763][Investigate and fix vcpkg-toolchain uninitialized-variable warnings]] | BACKLOG | | | Fix the vcpkg.cmake batch of CMake Warning (uninitialized) messages under CMake 4.4.0 (VCPKG_MANIFEST_DIR, VCPKG_BOOTSTRAP_OPTIONS, VCPKG_OVERLAY_TRIPLETS, Z_VCPKG_FEATURE_FLAGS), all originating from the project(OreStudio ...) call at CMakeLists.txt:51. |
 
 * Decisions
 

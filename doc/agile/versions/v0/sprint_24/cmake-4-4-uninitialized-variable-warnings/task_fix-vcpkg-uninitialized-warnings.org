@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 89BD8C57-8A1A-4405-BEDB-9EB3E6E3A763
+:END:
+#+title: Task: Investigate and fix vcpkg-toolchain uninitialized-variable warnings
+#+description: Fix the vcpkg.cmake batch of CMake Warning (uninitialized) messages under CMake 4.4.0 (VCPKG_MANIFEST_DIR, VCPKG_BOOTSTRAP_OPTIONS, VCPKG_OVERLAY_TRIPLETS, Z_VCPKG_FEATURE_FLAGS), all originating from the project(OreStudio ...) call at CMakeLists.txt:51.
+#+type: task
+#+level: s1
+#+filetags: :cmake-4-4-uninitialized-variable-warnings:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Linux CI builds under CMake 4.4.0 emit a second batch of
+=CMake Warning (uninitialized)= messages, distinct from the
+compiler-detection set already documented on the parent story. These
+originate from =vcpkg/scripts/buildsystems/vcpkg.cmake= rather than
+CMake's bundled =CMakeDetermine*.cmake= modules, but trip at the same
+=project(OreStudio ...)= call at =CMakeLists.txt:51=:
+
+#+begin_example
+-- CMake Version: 4.4.0
+CMake Warning (uninitialized) at vcpkg/scripts/buildsystems/vcpkg.cmake:60 (set):
+  uninitialized variable 'VCPKG_MANIFEST_DIR'
+Call Stack (most recent call first):
+  .../CMakeDetermineSystem.cmake:152 (include)
+  CMakeLists.txt:51 (project)
+
+CMake Warning (uninitialized) at vcpkg/scripts/buildsystems/vcpkg.cmake:112 (set):
+  uninitialized variable 'VCPKG_BOOTSTRAP_OPTIONS'
+Call Stack (most recent call first):
+  .../CMakeDetermineSystem.cmake:152 (include)
+  CMakeLists.txt:51 (project)
+
+CMake Warning (uninitialized) at vcpkg/scripts/buildsystems/vcpkg.cmake:114 (set):
+  uninitialized variable 'VCPKG_OVERLAY_TRIPLETS'
+Call Stack (most recent call first):
+  .../CMakeDetermineSystem.cmake:152 (include)
+  CMakeLists.txt:51 (project)
+
+-- Running vcpkg install
+CMake Warning (uninitialized) at vcpkg/scripts/buildsystems/vcpkg.cmake:541 (execute_process):
+  uninitialized variable 'Z_VCPKG_FEATURE_FLAGS'
+Call Stack (most recent call first):
+  .../CMakeDetermineSystem.cmake:152 (include)
+  CMakeLists.txt:51 (project)
+#+end_example
+
+Investigate whether these are cosmetic (vcpkg.cmake reading its own
+optional manifest/feature-flag variables before the toolchain sets
+them) or symptomatic of a real vcpkg configuration gap, and fix or
+suppress narrowly. Since both this and the parent story's warnings
+share the same trigger point and CMake version, resolve them together
+where the root cause overlaps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:474B7173-EB04-485A-BEB5-87FC0B34CE32][Hotfix: CMake 4.4 uninitialized-variable warnings on Linux CI]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- Root cause identified for the =vcpkg.cmake= uninitialized-variable
+  warnings (=VCPKG_MANIFEST_DIR=, =VCPKG_BOOTSTRAP_OPTIONS=,
+  =VCPKG_OVERLAY_TRIPLETS=, =Z_VCPKG_FEATURE_FLAGS=) under CMake 4.4.0.
+- Confirmed whether they are purely cosmetic or indicate a real
+  vcpkg configuration gap.
+- Linux CI builds no longer emit these warnings (fixed at the
+  source) or, if confirmed both upstream and harmless, explicitly
+  and narrowly suppressed with a comment explaining why.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

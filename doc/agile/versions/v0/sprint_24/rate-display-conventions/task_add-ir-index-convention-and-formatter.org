@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: F2B75880-D40A-426F-B52D-08B29B70BD84
+:END:
+#+title: Task: Add ir_index_convention table and ir_rate_formatter, wire into IR display sites
+#+description: Add an ir_index_convention table (keyed by floating_index_type.code, decimal_places only -- see story Goal for why no percent/bp unit switch) backed by a research note on real per-currency/index-tier precision, a sibling ir_rate_formatter matching crm_rate_formatter's architectural contract, and wire it into CurveSnapshotMdiWindow (IR series), CurveShapePreviewChart, SampleShortRatePathsChart, IrCurveEditor, and IrCurveGenerationConfigDetailDialog/HistoryDialog.
+#+type: task
+#+level: s1
+#+filetags: :rate-display-conventions:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84CD9093-DF67-4BC6-AD66-9C4045BCE959][Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give IR indices the same data-driven display-convention story FX has
+via =currency_pair_convention=. Today IR has no convention entity to
+resolve at all: =floating_index_type= is bare code+description,
+=overnight_index_convention= holds fixing calendar/day-count/
+settlement-lag but nothing about display precision. Every IR
+rate-displaying surface hand-formats as a result:
+=CurveSnapshotMdiWindow= (IR series), =CurveShapePreviewChart=,
+=SampleShortRatePathsChart=, =IrCurveEditor= (Simple-mode label,
+Advanced table), =IrCurveGenerationConfigDetailDialog=/
+=HistoryDialog=.
+
+- Add =ir_index_convention=, keyed by =floating_index_type.code=
+  (mirroring =currency_pair_convention='s bitemporal shape/trigger
+  pattern), carrying =decimal_places= only — per the story Goal, real
+  trading-system practice fixes an outright rate level's unit at
+  percent always; bp is a different quantity (deltas/spreads/risk),
+  not an alternate display mode for the same level, so no unit field
+  is needed, only per-index precision (e.g. JPY TONAR's near-zero
+  level plausibly wants more decimals than USD SOFR's).
+- Research real precision practice by currency/index tier (G10
+  overnight RFRs vs EM curves) to seed sensible =decimal_places=
+  defaults — write the findings into this doc's =* Notes= before
+  picking values, not from assumption.
+- Add a sibling =ir_rate_formatter= (=ores.marketdata.client/
+  presentation= or =ores.synthetic.api=, whichever the index
+  convention's own natural home turns out to be) matching
+  =crm_rate_formatter='s architectural contract: stateless,
+  presentation-layer, DB/NATS-free, takes an already-resolved
+  convention.
+- Wire it into every surveyed IR surface above.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:84CD9093-DF67-4BC6-AD66-9C4045BCE959][Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- Research note (this doc's =* Notes=) covering real per-currency/
+  index-tier decimal precision, citing concrete market practice.
+- =ir_index_convention= table exists, keyed by
+  =floating_index_type.code=, bitemporal, trigger-validated, matching
+  =currency_pair_convention='s pattern; seeded with researched
+  =decimal_places= defaults for the currencies/indices this codebase
+  already generates synthetic curves for.
+- =ir_rate_formatter= exists, matching =crm_rate_formatter='s
+  architectural contract, with real Catch2 coverage independent of
+  any Qt/NATS harness.
+- =CurveSnapshotMdiWindow= (IR series), =CurveShapePreviewChart=,
+  =SampleShortRatePathsChart=, =IrCurveEditor=,
+  =IrCurveGenerationConfigDetailDialog=/=HistoryDialog= all resolve
+  the relevant index's convention and format through
+  =ir_rate_formatter=, replacing every hardcoded call site listed in
+  the Goal.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -271,10 +271,9 @@ add_custom_target(deploy_plan
     COMMAND tj3 version_zero.tjp
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-set(SPRINT 18 CACHE STRING "Sprint number for sprint_charts target")
 add_custom_target(sprint_charts
     COMMENT "Generating sprint health charts (requires gnuplot)" VERBATIM
-    COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts --sprint ${SPRINT}
+    COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(make_all_diagrams)

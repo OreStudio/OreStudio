@@ -85,11 +85,16 @@ rule now invokes =compass.sh sprint charts --sprint 18= instead of
 build=, exit 0) and =ctest --preset linux-clang-debug-make= (74/74
 tests passed) under the local CMake 4.3.4 to confirm no regressions.
 
-* Notes
+Also removed the =SPRINT= CACHE variable entirely, rather than
+bumping its stale default (=18=) to the current sprint (=24=):
+=compass sprint charts= already auto-detects the current sprint via
+=current_version_sprint()= when =--sprint= is omitted
+(=cmd_sprint_charts= in =compass.py=), so the CMake-side override was
+redundant and would only go stale again next sprint. The
+=sprint_charts= target now just runs =compass.sh sprint charts= with
+no arguments.
 
-Did not bump the =SPRINT= cache default (=18=, stale versus the
-current sprint 24) — that's a separate, pre-existing staleness issue
-unrelated to the uninitialized-warning fix, not addressed here.
+* Notes
 
 * Test Scenarios
 
@@ -117,10 +122,12 @@ via its "Verifies task" field.
 * Result
 
 Fixed the four remaining CMake 4.4.0 uninitialized-variable warnings
-out of scope for PR #1664: reordered =SPRINT=/=sprint_charts= so the
-target's =--sprint= value is no longer empty, replaced the dead
-=DOGEN_VERSION= reference with =CMAKE_PROJECT_VERSION=, initialised
-=flags= in =projects/CMakeLists.txt=, and suppressed the
+out of scope for PR #1664: removed the redundant/stale =SPRINT=
+CACHE variable entirely (=sprint_charts= now runs =compass sprint
+charts= with no arguments, which already auto-detects the current
+sprint), replaced the dead =DOGEN_VERSION= reference with
+=CMAKE_PROJECT_VERSION=, initialised =flags= in
+=projects/CMakeLists.txt=, and suppressed the
 =CPack=/=InstallRequiredSystemLibraries= vendored-module warnings
 narrowly around their =include()= calls (=CMD_UNINITIALIZED=, CMake
 >= 4.4 only). Verified against a real CMake 4.4.0 binary (clean

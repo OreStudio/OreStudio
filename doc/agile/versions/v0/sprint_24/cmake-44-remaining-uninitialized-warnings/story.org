@@ -54,11 +54,12 @@ module noise.
   set (the scaffold docs were never separately committed before work
   started), rather than as two sequential PRs — reasonable for a
   hotfix this small.
-- Did not bump the stale =SPRINT= cache default (=18=, vs. current
-  sprint 24) — pre-existing staleness, unrelated to this fix, left
-  for a separate capture.
+- Removed the =SPRINT= CACHE variable entirely rather than bumping
+  its stale default to 24: =compass sprint charts= already
+  auto-detects the current sprint when =--sprint= is omitted (see
+  =cmd_sprint_charts= in =compass.py=), so the CMake-side override was
+  redundant and would just go stale again next sprint.
 
 * Out of scope
 
-- Bumping the =SPRINT= CACHE default in =CMakeLists.txt= to the
-  current sprint number.
+-

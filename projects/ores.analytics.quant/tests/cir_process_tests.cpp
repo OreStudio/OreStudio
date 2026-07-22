@@ -168,3 +168,87 @@ TEST_CASE("cir_process rejects a negative initial rate", "[cir_process]") {
 TEST_CASE("cir_process accepts a zero initial rate", "[cir_process]") {
     CHECK_NOTHROW(cir_process(0.3, 0.03, 0.05, 0.0));
 }
+
+// -- dt (year-fraction per tick) coverage --------------------------------
+
+TEST_CASE("cir_process default dt is exactly today's un-scaled behaviour", "[cir_process][dt]") {
+    cir_process implicit(0.5, 0.04, 0.1, 0.05, 7);
+    cir_process explicit_default(0.5, 0.04, 0.1, 0.05, 7, 1.0);
+
+    for (int i = 0; i < 20; ++i)
+        CHECK(implicit.next() == explicit_default.next());
+    for (std::size_t t = 0; t <= 10; ++t)
+        CHECK(implicit.discount_factor(t) == explicit_default.discount_factor(t));
+}
+
+TEST_CASE("cir_process discount_factor with zero volatility reproduces the deterministic "
+          "closed form across a dt sweep",
+          "[cir_process][dt]") {
+    // Extends the existing "matches the deterministic closed form" test
+    // (tau == raw ticks_ahead, dt == 1 implicitly) to a dt sweep, using the
+    // same independently-recomputed oracle with tau = ticks_ahead * dt.
+    const double kappa = 0.5, theta = 0.03, r0 = 0.05;
+    for (const double dt : {1.0, 1.0 / 365.0, 1.0 / (365.0 * 24.0)}) {
+        cir_process p(kappa, theta, 0.0, r0, 42, dt);
+        for (const std::size_t t : {std::size_t{1}, std::size_t{10}, std::size_t{365}}) {
+            const double tau = static_cast<double>(t) * dt;
+            const double integral =
+                theta * tau + (r0 - theta) * (1.0 - std::exp(-kappa * tau)) / kappa;
+            CHECK(p.discount_factor(t) == Catch::Approx(std::exp(-integral)).epsilon(1e-9));
+        }
+    }
+}
+
+TEST_CASE("cir_process discount_factor converges to the closed-form CIR bond price as dt "
+          "shrinks (zero volatility)",
+          "[cir_process][dt]") {
+    // Same discretisation-convergence property as hull_white_process's
+    // equivalent test: CIR's closed form is itself continuous-time exact
+    // (unlike Hull-White's iterative recursion), so unlike Hull-White this
+    // is really testing that tau = ticks_ahead*dt converges the *argument*
+    // correctly, not a discretisation-error convergence -- with dt chosen
+    // so that ticks_ahead*dt lands on the same T for every granularity,
+    // the result should already match the closed form (near-)exactly at
+    // every dt, not just in a limit.
+    const double kappa = 0.5, theta = 0.03, r0 = 0.05;
+    const double T = 1.0;
+    const double integral_closed = theta * T + (r0 - theta) * (1.0 - std::exp(-kappa * T)) / kappa;
+    const double df_closed = std::exp(-integral_closed);
+
+    for (const double dt : {1.0, 1.0 / 365.0, 1.0 / (365.0 * 24.0)}) {
+        cir_process p(kappa, theta, 0.0, r0, 42, dt);
+        const auto ticks = static_cast<std::size_t>(std::lround(T / dt));
+        CHECK(p.discount_factor(ticks) == Catch::Approx(df_closed).epsilon(1e-9));
+    }
+}
+
+TEST_CASE("cir_process next_stochastic per-tick variance scales with dt (statistical)",
+          "[cir_process][dt]") {
+    const std::uint32_t seed = 99;
+    const double kappa = 0.5, theta = 0.05, sigma = 0.05, r0 = 0.05;
+
+    auto sample_stdev = [&](double dt) {
+        cir_process p(kappa, theta, sigma, r0, seed, dt);
+        double prev = r0;
+        double sum_sq = 0.0;
+        const int n = 3000;
+        for (int i = 0; i < n; ++i) {
+            const double next = p.next();
+            const double diff = next - prev;
+            sum_sq += diff * diff;
+            prev = next;
+        }
+        return std::sqrt(sum_sq / n);
+    };
+
+    const double stdev_annual = sample_stdev(1.0);
+    const double stdev_daily = sample_stdev(1.0 / 365.0);
+    const double ratio = stdev_daily / stdev_annual;
+
+    CHECK(ratio == Catch::Approx(std::sqrt(1.0 / 365.0)).margin(0.03));
+}
+
+TEST_CASE("cir_process rejects non-positive dt", "[cir_process][dt]") {
+    CHECK_THROWS_AS(cir_process(0.3, 0.03, 0.05, 0.03, 42, 0.0), std::invalid_argument);
+    CHECK_THROWS_AS(cir_process(0.3, 0.03, 0.05, 0.03, 42, -1.0), std::invalid_argument);
+}

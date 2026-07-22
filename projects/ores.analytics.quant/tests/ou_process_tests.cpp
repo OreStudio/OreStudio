@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/ou_process.hpp"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -86,4 +87,64 @@ TEST_CASE("ou_process rejects negative sigma", "[ou_process]") {
 TEST_CASE("ou_process rejects a non-positive initial price", "[ou_process]") {
     CHECK_THROWS_AS(ou_process(0.1, 100.0, 1.0, 0.0), std::invalid_argument);
     CHECK_THROWS_AS(ou_process(0.1, 100.0, 1.0, -5.0), std::invalid_argument);
+}
+
+// -- dt (year-fraction per tick) coverage --------------------------------
+
+TEST_CASE("ou_process default dt is exactly today's un-scaled behaviour", "[ou_process][dt]") {
+    ou_process implicit(0.3, 105.0, 2.0, 100.0, 7);
+    ou_process explicit_default(0.3, 105.0, 2.0, 100.0, 7, 1.0);
+
+    for (int i = 0; i < 20; ++i)
+        CHECK(implicit.next() == explicit_default.next());
+}
+
+TEST_CASE("ou_process per-tick variance scales with dt (statistical)", "[ou_process][dt]") {
+    // Same statistical scaling check as hull_white_process's dt coverage --
+    // a daily tick's stdev should be ~sqrt(1/365) times an annual tick's,
+    // for the same annualised sigma.
+    const std::uint32_t seed = 99;
+    const double kappa = 0.05, theta = 100.0, sigma = 2.0, x0 = 100.0;
+
+    auto sample_stdev = [&](double dt) {
+        ou_process p(kappa, theta, sigma, x0, seed, dt);
+        double prev = x0;
+        double sum_sq = 0.0;
+        const int n = 2000;
+        for (int i = 0; i < n; ++i) {
+            const double next = p.next();
+            const double diff = next - prev;
+            sum_sq += diff * diff;
+            prev = next;
+        }
+        return std::sqrt(sum_sq / n);
+    };
+
+    const double stdev_annual = sample_stdev(1.0);
+    const double stdev_daily = sample_stdev(1.0 / 365.0);
+    const double ratio = stdev_daily / stdev_annual;
+
+    CHECK(ratio == Catch::Approx(std::sqrt(1.0 / 365.0)).margin(0.02));
+}
+
+TEST_CASE("ou_process degenerate kappa<=0 branch is dt-aware", "[ou_process][dt]") {
+    ou_process daily(0.0, 100.0, 2.0, 100.0, 5, 1.0 / 365.0);
+    ou_process annual(0.0, 100.0, 2.0, 100.0, 5, 1.0);
+
+    double max_abs_diff_daily = 0.0, max_abs_diff_annual = 0.0;
+    double prev_daily = 100.0, prev_annual = 100.0;
+    for (int i = 0; i < 50; ++i) {
+        const double nd = daily.next();
+        const double na = annual.next();
+        max_abs_diff_daily = std::max(max_abs_diff_daily, std::fabs(nd - prev_daily));
+        max_abs_diff_annual = std::max(max_abs_diff_annual, std::fabs(na - prev_annual));
+        prev_daily = nd;
+        prev_annual = na;
+    }
+    CHECK(max_abs_diff_daily < max_abs_diff_annual);
+}
+
+TEST_CASE("ou_process rejects non-positive dt", "[ou_process][dt]") {
+    CHECK_THROWS_AS(ou_process(0.1, 100.0, 1.0, 100.0, 42, 0.0), std::invalid_argument);
+    CHECK_THROWS_AS(ou_process(0.1, 100.0, 1.0, 100.0, 42, -1.0), std::invalid_argument);
 }

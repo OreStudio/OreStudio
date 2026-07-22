@@ -35,7 +35,8 @@ process_factory::make_process(const std::string& process_type,
                               std::vector<double> stdevs,
                               std::vector<double> weights,
                               double initial_price,
-                              std::uint32_t seed) {
+                              std::uint32_t seed,
+                              double dt) {
     // Single source of truth for "are these parameters good?" — shared with the
     // Qt client (ores.analytics.quant::domain::validate_process_parameters), so
     // both surfaces enforce identical rules without duplicating them.
@@ -50,7 +51,7 @@ process_factory::make_process(const std::string& process_type,
     if (process_type == "ou") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
-        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed);
+        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed, dt);
     }
     // Default to the geometric engine for "geometric" and any unknown value.
     // ores.analytics.quant deliberately carries no logging dependency (it stays
@@ -66,7 +67,8 @@ process_factory::make_yield_curve_process(const std::string& process_type,
                                           std::vector<double> theta_path,
                                           double sigma,
                                           double initial_rate,
-                                          std::uint32_t seed) {
+                                          std::uint32_t seed,
+                                          double dt) {
     const auto validation = ores::analytics::quant::domain::validate_yield_curve_process_parameters(
         process_type, kappa, theta_path, sigma, initial_rate);
     if (!validation.valid)
@@ -74,12 +76,13 @@ process_factory::make_yield_curve_process(const std::string& process_type,
 
     if (process_type == "vasicek")
         return std::make_unique<vasicek_process>(
-            kappa, theta_path.front(), sigma, initial_rate, seed);
+            kappa, theta_path.front(), sigma, initial_rate, seed, dt);
     if (process_type == "cir")
-        return std::make_unique<cir_process>(kappa, theta_path.front(), sigma, initial_rate, seed);
+        return std::make_unique<cir_process>(
+            kappa, theta_path.front(), sigma, initial_rate, seed, dt);
     if (process_type == "hull_white")
         return std::make_unique<hull_white_process>(
-            kappa, std::move(theta_path), sigma, initial_rate, seed);
+            kappa, std::move(theta_path), sigma, initial_rate, seed, dt);
 
     throw std::invalid_argument(
         "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type +

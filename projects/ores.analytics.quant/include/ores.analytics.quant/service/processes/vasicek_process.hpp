@@ -41,8 +41,12 @@ namespace ores::analytics::quant::service {
 class ORES_ANALYTICS_QUANT_EXPORT vasicek_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
-    vasicek_process(
-        double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed = 42);
+    vasicek_process(double kappa,
+                    double theta,
+                    double sigma,
+                    double initial_rate,
+                    std::uint32_t seed = 42,
+                    double dt = 1.0);
 
     double next() override;
     double current() const override;

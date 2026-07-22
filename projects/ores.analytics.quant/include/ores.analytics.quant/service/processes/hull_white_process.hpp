@@ -55,24 +55,36 @@ namespace ores::analytics::quant::service {
  * is a caller-supplied input; deriving a realistic one from real market
  * data is future work.
  *
+ * dt is the year-fraction one tick represents (default 1.0 -- one tick per
+ * year, i.e. this class's original, unscaled behaviour); kappa/theta/sigma
+ * stay in their natural annualised units always -- callers never pre-scale
+ * them for a finer tick granularity, they pass the real dt instead. See the
+ * class's knowledge doc for the QuantLib cross-check this convention is
+ * drawn from (speed and dt are always separate arguments there too, never a
+ * pre-scaled composite).
+ *
  * next() advances the short rate one tick using the *exact* one-step
  * Gaussian transition (not an Euler approximation) for that tick's local
  * theta:
- *   r_{i+1} = theta_i + (r_i - theta_i) * e^{-kappa} +
- *             sigma * sqrt((1 - e^{-2*kappa}) / (2*kappa)) * Z,  Z ~ N(0, 1)
+ *   r_{i+1} = theta_i + (r_i - theta_i) * e^{-kappa*dt} +
+ *             sigma * sqrt((1 - e^{-2*kappa*dt}) / (2*kappa)) * Z,  Z ~ N(0, 1)
  *
  * discount_factor() prices a zero-coupon bond off the *same* state and the
  * *same* per-tick transition law, via the standard backward recursion for
  * a discrete-time Gaussian affine short-rate model (Brigo & Mercurio,
  * "Interest Rate Models -- Theory and Practice", ch. 3): assuming
  * P_i = exp(A_i - B_i * r_i), matching moments of
- * P_i = exp(-r_i) * E_i[P_{i+1}] gives, per tick (kappa > 0 case):
- *   B_i = 1 + B_{i+1} * e^{-kappa}
- *   A_i = A_{i+1} - B_{i+1} * theta_i * (1 - e^{-kappa}) +
- *         0.5 * B_{i+1}^2 * sigma^2 * (1 - e^{-2*kappa}) / (2*kappa)
+ * P_i = exp(-r_i*dt) * E_i[P_{i+1}] gives, per tick (kappa > 0 case):
+ *   B_i = dt + B_{i+1} * e^{-kappa*dt}
+ *   A_i = A_{i+1} - B_{i+1} * theta_i * (1 - e^{-kappa*dt}) +
+ *         0.5 * B_{i+1}^2 * sigma^2 * (1 - e^{-2*kappa*dt}) / (2*kappa)
  * with B_N = A_N = 0 at the bond's own maturity (tick N). This recursion
  * is exact and, by construction, consistent with next()'s simulation --
- * not a separate continuous-time approximation of it.
+ * not a separate continuous-time approximation of it. The B_i accumulation
+ * uses dt (not a flat 1) because each tick represents dt years of
+ * bond-time, not a full year -- getting this wrong at a fine tick
+ * granularity (e.g. dt=1/365) silently over-discounts by roughly a factor
+ * of 1/dt over a multi-tick horizon.
  */
 class ORES_ANALYTICS_QUANT_EXPORT hull_white_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
@@ -81,7 +93,8 @@ public:
                        std::vector<double> theta_path,
                        double sigma,
                        double initial_rate,
-                       std::uint32_t seed = 42);
+                       std::uint32_t seed = 42,
+                       double dt = 1.0);
 
     double next() override;
     double current() const override;
@@ -94,6 +107,7 @@ private:
     std::vector<double> theta_path_;
     double sigma_;
     double rate_;
+    double dt_;
     std::size_t tick_ = 0;
     std::mt19937 rng_;
     std::normal_distribution<double> normal_;

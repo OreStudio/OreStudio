@@ -57,6 +57,10 @@ namespace ores::analytics::quant::service {
  * closed-form bond price both have a sigma-in-the-denominator singularity
  * at sigma == 0.
  *
+ * dt is the year-fraction one tick represents (default 1.0); kappa/theta/
+ * sigma stay in their natural annualised units always. decay/c/lambda in
+ * the transition above use e^{-kappa*dt} in place of e^{-kappa}.
+ *
  * discount_factor() uses the standard CIR closed-form affine bond price
  * (Cox, Ingersoll & Ross, 1985, "A Theory of the Term Structure of
  * Interest Rates", Econometrica 53(2)):
@@ -64,13 +68,20 @@ namespace ores::analytics::quant::service {
  *   B(tau) = 2*(e^{gamma*tau} - 1) / ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)
  *   A(tau) = [2*gamma*e^{(kappa+gamma)*tau/2} /
  *             ((gamma+kappa)*(e^{gamma*tau}-1) + 2*gamma)] ^ (2*kappa*theta/sigma^2)
- *   P(tau) = A(tau) * e^{-B(tau)*r_t},  tau = ticks_ahead
+ *   P(tau) = A(tau) * e^{-B(tau)*r_t},  tau = ticks_ahead * dt
+ * tau is scaled by dt because it represents real elapsed years, not a raw
+ * tick count -- see the class's knowledge doc for why omitting this
+ * silently over-discounts by roughly 1/dt at fine tick granularities.
  */
 class ORES_ANALYTICS_QUANT_EXPORT cir_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
-    cir_process(
-        double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed = 42);
+    cir_process(double kappa,
+                double theta,
+                double sigma,
+                double initial_rate,
+                std::uint32_t seed = 42,
+                double dt = 1.0);
 
     double next() override;
     double current() const override;
@@ -81,6 +92,7 @@ private:
     double theta_;
     double sigma_;
     double rate_;
+    double dt_;
     std::mt19937 rng_;
 
     /// True Feller-consistent step (sigma > 0); sigma == 0 uses the

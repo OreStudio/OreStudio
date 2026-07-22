@@ -57,9 +57,9 @@ or wiring it into the feed.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | dt implemented and tested across vasicek/hull_white/cir/ou; SQL reverted to plain annualised parameters. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Manual verification of the published synthetic.ir_curve_configs.basic dataset end-to-end. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

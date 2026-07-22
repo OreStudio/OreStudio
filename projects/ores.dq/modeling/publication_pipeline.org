@@ -246,8 +246,9 @@ pipeline order:
 
 2. Bundle membership — [[proj:projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql][~projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql~]]
    maps the =ore.report_definitions= dataset into the =risk_management=
-   bundle at =display_order 10= — this row is what stage 3's workflow
-   builder iterates to build one step.
+   bundle at =display_order 40= (after business_units/portfolios/books
+   at 10/20/30) — this row is what stage 3's workflow builder iterates
+   to build one step.
 
 3. Artefact-type registration — [[proj:projects/ores.sql/populate/dq/dq_artefact_types_populate.sql][~projects/ores.sql/populate/dq/dq_artefact_types_populate.sql~]]
    registers the =report_definitions= artefact type, pointing

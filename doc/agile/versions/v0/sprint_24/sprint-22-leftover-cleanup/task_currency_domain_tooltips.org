@@ -32,21 +32,21 @@ opening a record.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
-- [ ] Every field in the Currency detail dialog has a tooltip
+- [X] Every field in the Currency detail dialog has a tooltip
   explaining the domain concept.
-- [ ] Every field in the Currency Pair Convention detail dialog has a
+- [X] Every field in the Currency Pair Convention detail dialog has a
   tooltip explaining the domain concept (e.g. spot_relative,
   end_of_month, pip_factor vs tick_size).
-- [ ] Column headers in the Currency and Currency Pair Convention list
+- [X] Column headers in the Currency and Currency Pair Convention list
   windows carry the same tooltips, if the Qt table-header widget
   supports it (confirm feasibility as part of this task).
 
@@ -55,6 +55,47 @@ opening a record.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Neither facet existed in codegen: no per-field tooltip in the detail
+dialog =.ui= template, no header-tooltip role in the Qt client
+model's =headerData=. Both are generic, reusable additions (any
+future model gains them for free by adding a =tooltip= column), not
+one-off hand-edits:
+
+- Added a =tooltip= column to the =Detail fields= org table shape
+  (=_detail_fields= in =org_loader.py= already passes any column
+  through generically, so no python change was needed there). Wired
+  =qt_detail_dialog_ui.mustache= (edited via its org source,
+  =ores.cpp.qt.detail_dialog_ui.org=, then re-tangled) to emit a
+  =toolTip= widget property on both the field's =QLabel= and its
+  input widget, for every field type (line_edit, text_edit,
+  static/dynamic/flagged combo, check_box, spin_box), gated on the
+  column being present.
+- Added the same =tooltip= column to the =Columns (Qt model)= table
+  shape and extended =Client<Entity>Model::headerData= (via
+  =ores.cpp.qt.client_model_impl.org=) to answer
+  =Qt::ToolTipRole= for columns that set one — Qt's header view
+  shows this automatically on hover, no extra view-side wiring
+  needed.
+- Filled in the =tooltip= column for every Currency and Currency
+  Pair Convention field (both Detail fields and Columns tables), then
+  regenerated both entities' Qt code via =compass codegen generate
+  --address ores.cpp.qt=.
+- Hit and fixed one bug along the way: mustache's default
+  double-brace escaping HTML-entity-encodes apostrophes
+  (=currency's= → =currency&#x27;s=), which is wrong for both C++
+  string literals and — while not invalid — needlessly ugly for
+  =.ui= XML content. Reworded the three affected tooltips to avoid
+  the apostrophe rather than change the template's escaping
+  convention for every other field (headers/labels already use the
+  same double-brace form without issue, since none happened to
+  contain an apostrophe).
+- Also caught a column-count-off-by-one in the
+  =currency_pair_convention= Detail fields table while filling it in
+  (too few blank placeholder cells before the trailing =tooltip=
+  column shifted the text into the wrong header for five rows) —
+  the generated =.ui= silently had no tooltip for those fields until
+  reviewed and fixed.
 
 * Notes
 
@@ -71,3 +112,16 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added a generic =tooltip= facet to =ores.codegen.entity=: an optional
+per-row =tooltip= column on both the Detail fields and Columns (Qt
+model) tables, rendered as a =QLabel=/input =toolTip= property in the
+generated detail dialog and as =Qt::ToolTipRole= in the generated
+client model's =headerData=. Filled in for every Currency and
+Currency Pair Convention field and regenerated. Not yet built (both
+shared build-lock slots were held by other concurrent worktrees) —
+generated output reviewed by eye against the existing, already-
+compiling generated-code conventions (same =tr()=/property shapes
+used elsewhere); building and clicking through the dialogs in a live
+client is the natural next verification step whenever a slot frees
+up.

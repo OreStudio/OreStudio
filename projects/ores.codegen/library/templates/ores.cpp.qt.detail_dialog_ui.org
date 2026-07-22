@@ -71,6 +71,11 @@ The full template source. Edit here and re-tangle with
             <property name="text">
              <string>{{label}}:</string>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
           </item>
           <item row="{{_group_row_index}}" column="1">
@@ -79,6 +84,11 @@ The full template source. Edit here and re-tangle with
             <property name="placeholderText">
              <string>{{placeholder}}</string>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
 {{#is_key}}
             <property name="readOnly">
              <bool>true</bool>
@@ -103,6 +113,11 @@ The full template source. Edit here and re-tangle with
             <property name="placeholderText">
              <string>{{placeholder}}</string>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_text_edit}}
 {{#is_static_combo}}
@@ -110,6 +125,11 @@ The full template source. Edit here and re-tangle with
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
@@ -117,6 +137,11 @@ The full template source. Edit here and re-tangle with
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_dynamic_combo}}
 {{#is_flagged_combo}}
@@ -124,6 +149,11 @@ The full template source. Edit here and re-tangle with
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_flagged_combo}}
 {{#is_check_box}}
@@ -136,6 +166,11 @@ The full template source. Edit here and re-tangle with
              <bool>true</bool>
             </property>
 {{/is_tristate}}
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_check_box}}
 {{#is_spin_box}}
@@ -151,6 +186,11 @@ The full template source. Edit here and re-tangle with
              <string>(unset)</string>
             </property>
 {{/is_nullable_int}}
+{{#tooltip}}
+            <property name="toolTip">
+             <string>{{tooltip}}</string>
+            </property>
+{{/tooltip}}
            </widget>
 {{/is_spin_box}}
           </item>

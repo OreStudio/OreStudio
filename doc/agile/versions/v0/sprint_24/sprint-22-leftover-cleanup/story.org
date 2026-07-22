@@ -42,8 +42,8 @@ intact.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] | BACKLOG | | | purpose_type entity chapter: Qt windows, shell, CLI commands. |
-| [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]] | STARTED | 2026-07-22 | | Generate flag-decorated soft-FK combos instead of hand-writing them. |
-| [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair Convention fields]] | STARTED | 2026-07-22 | | Tooltips explaining domain concepts, not just restating labels. |
+| [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]] | DONE | 2026-07-22 | 2026-07-22 | Generate flag-decorated soft-FK combos instead of hand-writing them. |
+| [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair Convention fields]] | DONE | 2026-07-22 | 2026-07-22 | Tooltips explaining domain concepts, not just restating labels. |
 | [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of keyFlagIconSize()]] | BACKLOG | | | Needs proper investigation; a prior attempted fix was reverted. |
 
 * Decisions

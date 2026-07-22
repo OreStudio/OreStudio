@@ -51,9 +51,9 @@ mustache/org templates.
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Closed as already delivered.           |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing — no code changes needed.      |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance

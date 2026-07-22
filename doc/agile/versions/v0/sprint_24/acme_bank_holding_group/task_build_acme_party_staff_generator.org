@@ -8,7 +8,7 @@
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/build-acme-party-staff-generator
-#+pr:
+#+pr: 1667
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -134,7 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1667][#1667]] | [seeder] Generate Acme Bank source data (JSON dataset) |
 
 * Review
 

@@ -123,6 +123,10 @@ void InstrumentCodeDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &InstrumentCodeDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &InstrumentCodeDetailDialog::onFieldChanged);
 }
 
 void InstrumentCodeDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -209,7 +213,8 @@ void InstrumentCodeDetailDialog::populateCurveRoleCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
-        [](const auto&) { return false; });
+        [](const auto&) { return false; },
+        QString{});
 }
 void InstrumentCodeDetailDialog::updateUiFromCode() {
     ui_->codeEdit->setText(QString::fromStdString(code__.code));
@@ -335,24 +340,27 @@ void InstrumentCodeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Instrument Code saved successfully";
-            QString code = QString::fromStdString(self->code__.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->code_Saved(code);
-            self->notifySaveSuccess(tr("Instrument Code '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Instrument Code saved successfully";
+                    QString code = QString::fromStdString(self->code__.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->code_Saved(code);
+                    self->notifySaveSuccess(tr("Instrument Code '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

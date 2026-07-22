@@ -118,6 +118,11 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_int}}
             return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_int}}
+{{#is_optional_int}}
+            return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+                ? QVariant(static_cast<qlonglong>(*{{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}))
+                : QVariant();
+{{/is_optional_int}}
 {{#is_bool}}
             return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} ? tr("true") : tr("false");
 {{/is_bool}}

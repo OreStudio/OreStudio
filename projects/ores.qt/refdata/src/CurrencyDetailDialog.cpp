@@ -190,9 +190,17 @@ void CurrencyDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->fractionsPerUnitSpinBox,
+            &QSpinBox::valueChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->formatEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->roundingTypeCombo,
             &QComboBox::currentIndexChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->roundingPrecisionSpinBox,
+            &QSpinBox::valueChanged,
             this,
             &CurrencyDetailDialog::onFieldChanged);
 }

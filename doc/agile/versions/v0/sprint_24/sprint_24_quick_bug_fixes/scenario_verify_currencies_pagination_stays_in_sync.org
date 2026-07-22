@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 60F85D7C-3CEA-49CB-829E-DF0D548330DF
+:END:
+#+title: Test Scenario: Verify Currencies list pagination stays in sync
+#+description: Confirms the Currencies list window's pagination controls navigate correctly across pages, and that the page counter stays in sync with the displayed data after a reload, a delete, and an import.
+#+type: test_scenario
+#+level: s1
+#+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
+#+target_dialog: CurrencyMdiWindow — Menu: Reference Data > Currencies
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]] in [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]] |
+| Parent story  | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]]   |
+| Target dialog | =CurrencyMdiWindow= — Menu: Reference Data > Currencies |
+| Clients       | blue, red                               |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+Both clients run the *same* checklist independently against their
+own Currencies list window — there is no cross-client waiting here
+(unlike a typical eventing scenario); using both instances at once
+is just to confirm the fix holds under two simultaneous sessions,
+each with its own pagination state. Barclays Plc has 168 seeded
+currencies and a default page size of 100, so the list starts at
+"page 1 of 2" for both.
+
+** blue
+
+*** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=.
+- Select party *BARCLAYS PLC*.
+- Open Reference Data > Currencies; confirm the pager reads
+  "Showing page 1 of 2 (168 records)".
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Navigate through all pages
+
+- Confirm on page 1: *First*/*Previous* are disabled, *Next*/*Last*
+  are enabled.
+- Click *Next*; confirm the pager reads "page 2 of 2" and the rows
+  shown are different currencies than page 1 (not the same ones
+  re-displayed).
+- Confirm *Next*/*Last* are now disabled and *First*/*Previous* are
+  enabled.
+- Click *First*; confirm the pager returns to "page 1 of 2" and the
+  rows match what was shown at the start.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Reload while on page two stays in sync
+
+- Click *Next* to return to page 2; confirm "page 2 of 2".
+- Click the toolbar *Reload* action.
+- Confirm the pager *still* reads "page 2 of 2" and the displayed
+  rows are page 2's data — not page 1's data under a "page 2" label
+  (the regression under test).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create and delete currency, confirm sync
+
+- Navigate to page 1 (click *First*).
+- Click Add; create currency ISO code =ZZB=, name =Zzb Pagination
+  Test=, numeric code =991=, symbol =B=, plus monetary nature,
+  market tier, rounding type; save with a change reason.
+- If the toolbar shows the stale-data pulse, click *Reload*.
+- Confirm the pager's page/record count and the displayed rows still
+  agree with each other (whichever page =ZZB= or the reload leaves
+  you on).
+- Select =ZZB= and delete it, picking a change reason.
+- Confirm the pager and displayed rows still agree with each other
+  immediately after the delete (no page-counter/data mismatch).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** red
+
+*** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=.
+- Select party *BARCLAYS PLC*.
+- Open Reference Data > Currencies; confirm the pager reads
+  "Showing page 1 of 2 (168 records)".
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Navigate through all pages
+
+- Confirm on page 1: *First*/*Previous* are disabled, *Next*/*Last*
+  are enabled.
+- Click *Next*; confirm the pager reads "page 2 of 2" and the rows
+  shown are different currencies than page 1 (not the same ones
+  re-displayed).
+- Confirm *Next*/*Last* are now disabled and *First*/*Previous* are
+  enabled.
+- Click *First*; confirm the pager returns to "page 1 of 2" and the
+  rows match what was shown at the start.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Reload while on page two stays in sync
+
+- Click *Next* to return to page 2; confirm "page 2 of 2".
+- Click the toolbar *Reload* action.
+- Confirm the pager *still* reads "page 2 of 2" and the displayed
+  rows are page 2's data — not page 1's data under a "page 2" label
+  (the regression under test).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create and delete currency, confirm sync
+
+- Navigate to page 1 (click *First*).
+- Click Add; create currency ISO code =ZZR=, name =Zzr Pagination
+  Test=, numeric code =992=, symbol =R=, plus monetary nature,
+  market tier, rounding type; save with a change reason.
+- If the toolbar shows the stale-data pulse, click *Reload*.
+- Confirm the pager's page/record count and the displayed rows still
+  agree with each other (whichever page =ZZR= or the reload leaves
+  you on).
+- Select =ZZR= and delete it, picking a change reason.
+- Confirm the pager and displayed rows still agree with each other
+  immediately after the delete (no page-counter/data mismatch).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-22T20:55:43Z |
+| Branch        | feature/currency-add-save-disabled |
+| Commit        | 267e71347 |
+| Worktree      | merry_newton |
+
+* Notes

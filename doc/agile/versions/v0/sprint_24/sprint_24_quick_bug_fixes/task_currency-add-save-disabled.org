@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-add-save-disabled
+#+pr: 1670
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ against =main= to confirm scope and find the root cause in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-21                               |
 
 * Acceptance
@@ -49,11 +49,36 @@ against =main= to confirm scope and find the root cause in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Root cause: =CurrencyDetailDialog::setupConnections()= wired every
+editable widget to the dirty-flag handler (=onFieldChanged=/
+=onCodeChanged=) except the two =QSpinBox= fields —
+=fractionsPerUnitSpinBox= and =roundingPrecisionSpinBox= — which had
+no =valueChanged= connection at all, so editing only those never set
+=hasChanges_= and Save stayed disabled. Traced to a template gap:
+=cpp_qt_detail_dialog.cpp.mustache='s connection loop had branches
+for every other field kind (=is_line_edit=, =is_static_combo=,
+=is_dynamic_combo=, =is_flagged_combo=, =is_check_box=, =is_text_edit=)
+but none for =is_spin_box= — so every generated detail dialog with a
+spin-box field has the same gap, not just currency.
+
+Fixed the template and regenerated the 23 refdata entities with a
+spin-box field (out of ~57 total across the app; refdata is the only
+commissioned component today, so scope stopped there). Regenerating
+also surfaced a second, unrelated template bug in
+=cpp_qt_client_model.cpp.mustache=: its =is_int= column-rendering
+case did an unchecked =static_cast<qlonglong>=, with no
+=is_optional_int= branch mirroring the existing =is_optional_string=
+one — silently dropping the null case for =std::optional<int>=
+columns (surfaced via =payment_frequency='s =period_multiplier=).
+Fixed by adding the missing classification in =core.py= and the
+corresponding template branch.
 
 * Notes
+
+Manual QA testing of this task's scenario also surfaced a second,
+genuinely unrelated bug — the currencies list pagination
+counter/data desync — tracked and fixed separately as
+[[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]].
 
 * Test Scenarios
 
@@ -62,15 +87,15 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                                              | State  | Notes |
+|-------------------------------------------------------------------------+--------+-------|
+| [[id:238E8ABA-76F1-43F0-93F0-C6CCEF604B10][Verify Currency Save button enables from spin-box fields]] | PASSED |       |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1670][#1670]] | [qt/codegen] Fix currency Save-button and pagination state machines |
 
 * Review
 
@@ -79,3 +104,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed at the codegen level rather than hand-patched: added an
+=is_spin_box= branch to =cpp_qt_detail_dialog.cpp.mustache='s
+=setupConnections()= loop, wiring =QSpinBox::valueChanged= to
+=onFieldChanged=, and regenerated all 23 refdata entities with a
+spin-box detail field. Also fixed the =is_optional_int= gap in
+=cpp_qt_client_model.cpp.mustache=/=core.py= uncovered along the way.
+Full test suite green (382 assertions, 119 cases), SQL schemas
+validated, and
+[[id:238E8ABA-76F1-43F0-93F0-C6CCEF604B10][Verify Currency Save button enables from spin-box fields]] PASSED
+manually — filling in only the fractions-per-unit or
+rounding-precision spin box now enables Save, and the create/read/
+update/delete/history/eventing round-trip all check out.

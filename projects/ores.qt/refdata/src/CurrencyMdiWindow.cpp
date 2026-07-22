@@ -276,6 +276,7 @@ void CurrencyMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -293,7 +294,7 @@ void CurrencyMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading currencies";
     clearStaleIndicator();
     emit statusChanged(tr("Loading currencies..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
@@ -465,7 +466,8 @@ void CurrencyMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
@@ -640,7 +642,8 @@ void CurrencyMdiWindow::importFromXML() {
                 this,
                 [this](int success_count, int total_count) {
                     if (success_count > 0) {
-                        model_->refresh();
+                        paginationWidget_->reset_page();
+                        model_->load_page(0, paginationWidget_->page_size());
                         QString message = QString("Successfully imported %1 of %2 currencies")
                                               .arg(success_count)
                                               .arg(total_count);

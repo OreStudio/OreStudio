@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-add-save-disabled
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ server-side offset/limit handling) and find the root cause.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-21                               |
 
 * Acceptance
@@ -48,11 +48,36 @@ server-side offset/limit handling) and find the root cause.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Root cause turned out to be client-side wiring, not server-side
+offset/limit handling (the backend request/service/repository chain
+for =get_currencies_request= correctly threads offset/limit through
+and was ruled out first). =CurrencyMdiWindow= (and every other
+=EntityListMdiWindow= subclass generated from
+=cpp_qt_mdi_window.cpp.mustache=) called =model_->refresh()= — which
+unconditionally re-fetches offset 0 — from =doReload()=, the
+delete-success handler, and the import-complete handler, but never
+told =PaginationWidget= to reset its own =current_page_= counter.
+After any of those paths ran while on page 2+, the widget kept
+showing "page N" while the data underneath had silently snapped back
+to page 1; from that point, Next/Prev button enablement and the
+offset computed for the next navigation click were both wrong,
+manifesting as paging that "doesn't appear to be enabled/working".
+
+Fixed in =cpp_qt_mdi_window.cpp.mustache= (and regenerated for the
+23 refdata entities already touched by the sibling Save-button task)
+by having =doReload()= and the delete-success handler reload the
+page the user is actually on (=load_page(current_offset, page_size)=)
+instead of forcing back to page 0, and having the two paths that
+*should* legitimately jump to page 1 (page-size change, load-all)
+explicitly call the new =PaginationWidget::reset_page()= so the
+widget's counter and the data stay in sync either way.
 
 * Notes
+
+Found mid-testing of the sibling "Save button" task's scenario, via
+=doc/agile/versions/v0/sprint_24/sprint_24_quick_bug_fixes/scenario_verify_currency_save_button_spin_box_fields.org=
+— reopening/deleting =ZZT= while the currencies list was on page 2
+showed page 1 data with the pager still reading "page 2 of N".
 
 * Test Scenarios
 
@@ -61,9 +86,9 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                                                  | State  | Notes |
+|-----------------------------------------------------------------------------+--------+-------|
+| [[id:60F85D7C-3CEA-49CB-829E-DF0D548330DF][Verify Currencies list pagination stays in sync]]           | PASSED |       |
 
 * PRs
 
@@ -78,3 +103,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Root cause was client-side, not server-side: =doReload()=, the
+delete-success handler, and the import-complete handler all called
+=model_->refresh()= (hardcoded to offset 0) without resetting
+=PaginationWidget='s own page counter, so the widget's displayed
+"page N" went stale relative to the data actually on screen the
+moment any of those paths ran while on page 2+. Fixed by having
+those reload paths reload the page the user is actually on
+(=load_page(current_offset, page_size)=) instead of silently forcing
+back to page 1, and added =PaginationWidget::reset_page()= for the
+two paths (page-size change, load-all) that legitimately should jump
+to page 1. Fixed in =cpp_qt_mdi_window.cpp.mustache= and regenerated
+for the same 23 refdata entities touched by the sibling Save-button
+task. Full test suite green, and
+[[id:60F85D7C-3CEA-49CB-829E-DF0D548330DF][Verify Currencies list pagination stays in sync]] PASSED in both
+=blue= and =red= — navigation, reload-on-page-2, and create/delete
+while paginated all stay in sync now.

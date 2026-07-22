@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 238E8ABA-76F1-43F0-93F0-C6CCEF604B10
+:END:
+#+title: Test Scenario: Verify Currency Save button enables from spin-box fields
+#+description: Confirms the Currency add dialog's Save button enables when only spin-box fields (fractions per unit, rounding precision) are edited, and that a new currency round-trips through CRUD, history, and eventing.
+#+type: test_scenario
+#+level: s1
+#+filetags: :sprint_24_quick_bug_fixes:sprint_24:v0:
+#+target_dialog: CurrencyDetailDialog — Menu: Reference Data > Currencies
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] in [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] |
+| Parent story  | [[id:CA396E06-FC1C-4461-A9C4-18DB1B1BA080][Sprint 24 quick bug fixes: currency CRUD, party re-provisioning]]   |
+| Target dialog | =CurrencyDetailDialog= — Menu: Reference Data > Currencies |
+| Clients       | blue, red                               |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** blue
+
+*** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=.
+- Select party *BARCLAYS PLC*.
+- Open Reference Data > Currencies to reach the Currencies list window.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create currency, save via spin-box fields only
+
+- Click Add on the Currencies list window to open
+  =CurrencyDetailDialog= in create mode; Save starts disabled.
+- Fill in ISO code =ZZT=, name =Zzt Test Currency=, numeric code
+  =999=, symbol =Z=, monetary nature, market tier, and rounding
+  type. Save should now be enabled (these are the required fields).
+- Close the dialog *without* saving and reopen Add — Save is
+  disabled again.
+- This time, fill in the same required fields *except* leave
+  *Fractions Per Unit* at its default, then edit only that spin box
+  last; confirm Save transitions from disabled to *enabled* right
+  after that edit (this is the specific regression under test —
+  previously the spin box never set the dialog's dirty flag).
+- Also edit *Rounding Precision*; confirm Save stays enabled.
+- Click Save, pick a change reason, and confirm a success
+  notification; the new currency =ZZT= appears in the Currencies
+  list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Reopen and verify round-trip
+
+- Double-click =ZZT= in the list to reopen the detail dialog.
+- Confirm every field — including Fractions Per Unit and Rounding
+  Precision — shows the values entered in the previous step.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | there is a paging bug. this currency is in the second page. when i reload, it shows me the first page, e.g. AED, but the page widget at the bottom thinks we are in the second page. they are out of sync. |
+
+*** Edit rounding precision and save
+
+- With =ZZT= open, change *Rounding Precision* only (e.g. increment
+  it by one) and confirm Save enables from that single edit.
+- Click Save, pick a change reason, confirm success.
+- Confirm the list window reflects the dialog is no longer dirty and
+  the change reason was recorded (visible in the next step's History
+  check).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Delete the test currency
+
+- Select =ZZT= in the Currencies list and choose Delete.
+- Confirm the confirmation dialog, pick a change reason.
+- Confirm =ZZT= disappears from the list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | the same problem of widget page being out of sync, deleting takes me back to first page but widget at bottom thinks i'm on second page. |
+
+*** Verify history shows all changes
+
+- Reopen =ZZT='s History dialog (via the list window's History
+  action, or from within the detail dialog if deleted records remain
+  browsable).
+- Confirm three versions are present: create, the rounding-precision
+  update, and the delete — each with the change reason entered for
+  it.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** red
+
+*** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=.
+- Select party *BARCLAYS PLC*.
+- Open Reference Data > Currencies and leave the list window visible
+  — do not touch it until instructed below.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Verify create event refreshes list live
+
+- Wait for *blue* to complete "Create currency, save via spin-box
+  fields only".
+- Without manually refreshing, confirm =ZZT= appears in *red*'s
+  Currencies list within a few seconds (NATS notification, not a
+  manual reload).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Verify update event refreshes list live
+
+- Wait for *blue* to complete "Edit rounding precision and save".
+- Without manually refreshing, confirm *red*'s list (or an open
+  =ZZT= detail dialog, if opened) reflects the updated rounding
+  precision.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Verify delete event refreshes list live
+
+- Wait for *blue* to complete "Delete the test currency".
+- Without manually refreshing, confirm =ZZT= disappears from *red*'s
+  Currencies list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-22T19:29:12Z |
+| Branch        | feature/currency-add-save-disabled |
+| Commit        | 267e71347 |
+| Worktree      | merry_newton |
+
+* Notes

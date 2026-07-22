@@ -158,6 +158,7 @@ void IborIndexConventionMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -175,7 +176,7 @@ void IborIndexConventionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading IBOR index conventions";
     clearStaleIndicator();
     emit statusChanged(tr("Loading IBOR index conventions..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void IborIndexConventionMdiWindow::onDataLoaded() {
@@ -349,7 +350,8 @@ void IborIndexConventionMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg =

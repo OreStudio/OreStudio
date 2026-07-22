@@ -38,8 +38,10 @@ vendored-module noise.
 
 * Acceptance
 
-- =CMakeLists.txt=: =sprint_charts= custom target no longer reads
-  =SPRINT= before its =set(SPRINT 18 CACHE STRING ...)= definition.
+- =CMakeLists.txt=: =sprint_charts= custom target no longer reads an
+  uninitialized =SPRINT= variable — the =SPRINT= CACHE variable was
+  removed entirely, since =compass sprint charts= already
+  auto-detects the current sprint.
 - =CMakeLists.txt=: dead =DOGEN_VERSION= reference replaced with
   =CMAKE_PROJECT_VERSION=.
 - =projects/CMakeLists.txt=: =flags= initialised before first use.
@@ -61,9 +63,11 @@ modules (same vendored-module class as vcpkg's, different
 =include()= call site).
 
 Fixed each:
-- =sprint_charts= custom target: moved =set(SPRINT 18 CACHE STRING ...)=
-  before =add_custom_target(sprint_charts ...)= so =${SPRINT}= actually
-  resolves to =18= in the generated command instead of empty.
+- =sprint_charts= custom target: initially moved
+  =set(SPRINT 18 CACHE STRING ...)= before =add_custom_target(sprint_charts ...)=
+  so =${SPRINT}= would resolve to =18= instead of empty, but that
+  default was already six sprints stale (current sprint is 24).
+  Removed the =SPRINT= CACHE variable entirely instead — see below.
 - =DOGEN_VERSION= (a dead reference, likely a leftover from before the
   project's current name) replaced with =CMAKE_PROJECT_VERSION=,
   which is already used elsewhere in the same file.
@@ -78,21 +82,19 @@ Fixed each:
 
 Verified directly against a real CMake 4.4.0 binary (downloaded via
 =pip download cmake==4.4.0=, same approach as PR #1664): fresh
-configure exits clean, zero uninitialized warnings or errors. Also
-confirmed the =sprint_charts= fix concretely — the generated build
-rule now invokes =compass.sh sprint charts --sprint 18= instead of
-=--sprint= with an empty value. Ran a full local build (=compass
-build=, exit 0) and =ctest --preset linux-clang-debug-make= (74/74
-tests passed) under the local CMake 4.3.4 to confirm no regressions.
+configure exits clean, zero uninitialized warnings or errors.
 
-Also removed the =SPRINT= CACHE variable entirely, rather than
-bumping its stale default (=18=) to the current sprint (=24=):
-=compass sprint charts= already auto-detects the current sprint via
+Removed the =SPRINT= CACHE variable entirely rather than bumping its
+stale default (=18=) to the current sprint (=24=): =compass sprint
+charts= already auto-detects the current sprint via
 =current_version_sprint()= when =--sprint= is omitted
 (=cmd_sprint_charts= in =compass.py=), so the CMake-side override was
-redundant and would only go stale again next sprint. The
-=sprint_charts= target now just runs =compass.sh sprint charts= with
-no arguments.
+redundant and would only go stale again next sprint. Confirmed
+concretely — the generated build rule now invokes =compass.sh sprint
+charts= with no =--sprint= argument at all. Ran a full local build
+(=compass build=, exit 0) and =ctest --preset linux-clang-debug-make=
+(74/74 tests passed) under the local CMake 4.3.4 to confirm no
+regressions.
 
 * Notes
 
@@ -117,7 +119,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task doc left stale passages describing the discarded "reorder SPRINT" approach after the fix changed to "remove SPRINT entirely" in ce8acdfd | task_implement_cmake-44-remaining-uninitialized-warnings.org | Accepted | Fixed: updated Acceptance/Plan passages to describe the final "removed entirely" approach, no longer self-contradictory. |
 
 * Result
 

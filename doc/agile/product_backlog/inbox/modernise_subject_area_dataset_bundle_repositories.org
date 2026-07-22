@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F8104B7D-C283-4F59-95CC-6D6C22990356
+:END:
+#+title: Modernise subject_area and dataset_bundle repositories to th…
+#+description: Modernise subject_area and dataset_bundle repositories to the current domain_entity codegen template (both are on a legacy ctx_-member interface predating the current per-call-ctx convention, and were never actually regenerated when their .org models were authored). Discovered while fixing the Data Librarian tree regression: regenerating them via 'compass codegen regenerate --component dq --address ores.cpp.repository' to apply the new tenant_read_scope: shared flag changed their public interface (constructor, method signatures), a bigger blast radius than that bug fix warranted, so it was deferred here. Also mark them tenant_read_scope: shared explicitly once regenerated (their current behaviour already relies on RLS alone and is correct, just not yet expressed via the new codegen property).
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

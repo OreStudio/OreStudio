@@ -106,6 +106,7 @@ std::string(faker::person::fullName())
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: catalog
 :entity_plural_short:   catalogs
 :entity_singular_words: catalog

@@ -67,11 +67,11 @@ code change, in either provisioner.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Pulled into Sprint 24; breaking into tasks. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-22                               |
 
 * Acceptance
@@ -104,7 +104,7 @@ code change, in either provisioner.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F41337CB-B763-4222-8AC1-41DF08353AB7][Replace hand-written bundle-publish phases with a data-driven bundle list]] | DONE | 2026-07-22 | 2026-07-22 | Replace the fixed, hand-written phase-per-bundle sequence in both PartyExecutePage (Qt) and provision_commands::process_party (ores.shell CLI) with iteration over a data-driven list of party-scoped bundle codes to publish via dq.v1.bundles.publish, retiring the bespoke report-definition-templates RPC path. |
-| [[id:F66E39CF-9136-4FD2-8150-17432D331F33][Fix Data Librarian tree: no longer shows datasets]] | BACKLOG | | | Moved from Commission remaining DQ entities: the Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ codegen commissioning work; investigate and fix. |
+| [[id:F66E39CF-9136-4FD2-8150-17432D331F33][Fix Data Librarian tree: no longer shows datasets]] | DONE | 2026-07-22 | 2026-07-22 | Moved from Commission remaining DQ entities: the Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ codegen commissioning work; investigate and fix. |
 
 * Decisions
 
@@ -139,6 +139,17 @@ code change, in either provisioner.
   =ores_reporting_publish_report_definitions_from_dq_fn= already skips
   if the party has report definitions, unlike the retired per-record
   =save_report_definition_request= loop that threw on re-provisioning.
+- Data Librarian tree fix: rather than hand-patching the two visibly
+  broken repositories, added a =tenant_read_scope: shared= codegen
+  model property (domain_entity) so DQ governance "shared reference
+  data" entities generate read queries that rely on RLS alone (no
+  app-level tenant filter), matching the already-documented RLS
+  design in =dq_rls_policies_create.sql=. Applied to all 8 affected
+  entities; regenerated 6 cleanly. =subject_area=/=dataset_bundle=
+  turned out to be far more architecturally stale than expected
+  (regenerating them changes their public interface) — deferred their
+  modernisation to a separate backlog capture rather than widen this
+  fix's blast radius.
 
 * Out of scope
 

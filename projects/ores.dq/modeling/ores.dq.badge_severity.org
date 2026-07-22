@@ -96,6 +96,7 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: severity
 :entity_plural_short:   severities
 :entity_singular_words: badge severity

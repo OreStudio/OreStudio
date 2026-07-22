@@ -158,6 +158,7 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope: shared
 :entity_singular_short: definition
 :entity_plural_short:   definitions
 :entity_singular_words: badge definition

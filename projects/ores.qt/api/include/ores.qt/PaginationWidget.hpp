@@ -61,6 +61,18 @@ public:
     void update_state(std::uint32_t loaded_count, std::uint32_t total_count);
 
     /**
+     * @brief Reset to the first page without emitting page_requested.
+     *
+     * Call before any reload that bypasses page_requested (e.g. a plain
+     * model refresh() after save/delete, which always re-fetches from
+     * offset 0) -- otherwise current_page() goes stale relative to what
+     * is actually displayed once update_state() reports the new data.
+     */
+    void reset_page() {
+        current_page_ = 0;
+    }
+
+    /**
      * @brief Get the selected page size.
      *
      * @return The number of records per page

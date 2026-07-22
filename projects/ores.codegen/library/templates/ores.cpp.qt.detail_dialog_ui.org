@@ -193,6 +193,13 @@ The full template source. Edit here and re-tangle with
 {{/tooltip}}
            </widget>
 {{/is_spin_box}}
+{{#is_colour}}
+           <widget class="QPushButton" name="{{widget}}">
+            <property name="text">
+             <string>{{placeholder}}</string>
+            </property>
+           </widget>
+{{/is_colour}}
           </item>
 {{/detail_fields}}
          </layout>

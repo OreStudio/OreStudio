@@ -2487,6 +2487,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         f.setdefault('combo_widget_header', 'ores.qt/OreCurrencyComboBox.hpp')
                 f['is_check_box'] = f.get('type') == 'check_box'
                 f['is_spin_box'] = f.get('type') == 'spin_box'
+                # Colour swatch button (QColorDialog-backed) — see
+                # ColourSwatchHelper.hpp. Distinct from is_badge/combo
+                # fields: a colour field's own value IS the colour, not a
+                # code resolved against a separate badge_definition.
+                f['is_colour'] = f.get('type') == 'colour'
+                if f['is_colour']:
+                    f.setdefault('placeholder', '#rrggbb')
                 field_cpp = domain_col_types.get(f.get('field'), '')
                 f['is_optional_string'] = (
                     field_cpp.startswith('std::optional<std::string>')
@@ -2607,6 +2614,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'is_dynamic_combo': f['is_dynamic_combo'],
                     'is_flagged_combo': f['is_flagged_combo'],
                     'is_check_box': f['is_check_box'],
+                    'is_colour': f['is_colour'],
                     # The primary key's own line_edit is never
                     # user-editable when the entity has a UUID primary
                     # key: setCreateMode() auto-generates it
@@ -2651,6 +2659,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             qt['has_static_combo_fields'] = any(
                 f.get('type') == 'static_combo' for f in detail_fields
+            )
+            qt['has_colour_fields'] = any(
+                f.get('type') == 'colour' for f in detail_fields
             )
             # Deduplicated <customwidgets> entries for any promoted combo
             # widget class a detail field resolved to above (e.g. every

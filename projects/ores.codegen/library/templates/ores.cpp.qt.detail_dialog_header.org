@@ -80,6 +80,10 @@ The full template source. Edit here and re-tangle with
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 {{/domain_entity.qt.has_flagged_combo_fields}}
+{{#domain_entity.qt.has_colour_fields}}
+#include "ores.qt/ColourSwatchHelper.hpp"
+#include <QPushButton>
+{{/domain_entity.qt.has_colour_fields}}
 <<paste:9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A>>
 
 namespace Ui {

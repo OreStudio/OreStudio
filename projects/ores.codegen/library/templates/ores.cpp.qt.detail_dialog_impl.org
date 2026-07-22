@@ -437,6 +437,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->{{widget}}, &QSpinBox::valueChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_spin_box}}
+{{#is_colour}}
+    wire_colour_picker(this, ui_->{{widget}}, [this]() { onFieldChanged(); });
+{{/is_colour}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
 {{! see * Extension points above }}
@@ -586,6 +589,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
 {{#is_check_box}}
     ui_->{{widget}}->setEnabled(createMode);
 {{/is_check_box}}
+{{#is_colour}}
+    ui_->{{widget}}->setEnabled(createMode);
+{{/is_colour}}
 {{/domain_entity.qt.locked_fields}}
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
@@ -637,6 +643,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_check_box}}
     ui_->{{widget}}->setEnabled(false);
 {{/is_check_box}}
+{{#is_colour}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_colour}}
 {{/is_locked_after_create}}
 {{^is_locked_after_create}}
 {{#is_line_edit}}
@@ -657,6 +666,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_check_box}}
     ui_->{{widget}}->setEnabled(!readOnly);
 {{/is_check_box}}
+{{#is_colour}}
+    ui_->{{widget}}->setEnabled(!readOnly);
+{{/is_colour}}
 {{/is_locked_after_create}}
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
@@ -1067,6 +1079,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
         ui_->{{widget}}->setCurrentIndex(idx);
     }
 {{/is_flagged_combo}}
+{{#is_colour}}
+    set_colour_swatch(ui_->{{widget}}, QString::fromStdString(
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_colour}}
 {{/domain_entity.qt.detail_fields}}
 
     populateProvenance({{domain_entity.qt.item_var}}_.{{#domain_entity.qt.version_access}}{{domain_entity.qt.version_access}}{{/domain_entity.qt.version_access}}{{^domain_entity.qt.version_access}}version{{/domain_entity.qt.version_access}},
@@ -1263,6 +1279,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
         ui_->{{widget}}->currentText().toStdString();
 {{/is_optional_string}}
 {{/is_flagged_combo}}
+{{#is_colour}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+        colour_swatch_value(ui_->{{widget}}).toStdString();
+{{/is_colour}}
 {{/is_locked_after_create}}
 {{/domain_entity.qt.detail_fields}}
     {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.modified_by_access}}{{domain_entity.qt.modified_by_access}}{{/domain_entity.qt.modified_by_access}}{{^domain_entity.qt.modified_by_access}}modified_by{{/domain_entity.qt.modified_by_access}} = username_;

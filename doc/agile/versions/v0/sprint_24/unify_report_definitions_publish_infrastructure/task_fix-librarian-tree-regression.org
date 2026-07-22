@@ -5,18 +5,18 @@
 #+description: The Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ commissioning work; investigate and fix.
 #+type: task
 #+level: s1
-#+filetags: :commission_remaining_dq_entities:sprint_24:v0:
+#+filetags: :unify_report_definitions_publish_infrastructure:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-21
-#+updated: 2026-07-21
+#+updated: 2026-07-22
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

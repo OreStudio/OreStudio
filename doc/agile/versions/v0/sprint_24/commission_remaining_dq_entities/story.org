@@ -70,9 +70,14 @@ separately in [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure 
 | [[id:4E9D57E6-A4CB-4243-8335-D39D63650A3A][Commission subject_area onto standard codegen]] | BLOCKED | | | Finish the fifth entity split out of 819B050A: author subject_area's codegen .org model with its compound natural key (name, domain_name) properly expressed, regenerate core/repository/service/handler/protocol, retire hand-written equivalents. Blocked on compound natural-key support in lookup_entity/table SQL templates (52FE40FA). |
 | [[id:7E714F07-FDAC-4041-9815-04B6219A93BA][Migrate ores.qt.data_management's history dialogs to the generic HistoryDialog]] | BACKLOG | | | 14 DQ-owned entities live in ores.qt.data_management with hand-written backend glue and legacy per-entity HistoryDialog classes. Author codegen models for the 12 that have none, then migrate all 14 onto the generic HistoryDialog. |
 | [[id:5DF07DAD-4D0A-4851-ADDA-E317824855D4][Fix change_reason_code never assigned before save in ~9 Qt detail dialogs]] | BACKLOG | | | ~8 remaining dialogs (CodingSchemeAuthorityTypeDetailDialog, CodingSchemeDetailDialog, DataDomainDetailDialog, MethodologyDetailDialog, NatureDimensionDetailDialog, OriginDimensionDetailDialog, SubjectAreaDetailDialog, TreatmentDimensionDetailDialog) still have the promptChangeReason()/change_reason_code-not-assigned bug already fixed in catalog/change_reason/change_reason_category. |
-| [[id:F66E39CF-9136-4FD2-8150-17432D331F33][Fix Data Librarian tree: no longer shows datasets]] | BACKLOG | | | The Data Librarian's navigation tree regressed and no longer lists datasets, apparently caused by last sprint's DQ commissioning work; investigate and fix. |
 
 * Decisions
+
+- "Fix Data Librarian tree: no longer shows datasets" moved to
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one
+  hand-written phase per bundle]] — grouped with the other
+  provisioning/bundle-surfacing work rather than the entity
+  commissioning backlog.
 
 * Out of scope
 

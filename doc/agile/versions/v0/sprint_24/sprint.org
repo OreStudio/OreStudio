@@ -43,6 +43,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] | DONE | 2026-07-21 | 2026-07-21 | Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule. |
+| [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] | STARTED | 2026-07-22 | | Pulled from product backlog next: replace the fixed hand-written phase list in both the Qt provisioning wizard and the ores.shell CLI with a data-driven list of bundle codes to publish, so a new party-scoped bundle never requires new phase code in either provisioner. |
 | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] | BACKLOG | | | Comprehensive synthetic holding-group entity — parties, business units, portfolios, books, and locale-appropriate staff — to replace Barclays Plc as the fully populated test entity. |
 | [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
 | [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Carried from sprint 23: replace ores.iam.core's direct refdata table access with NATS calls. |

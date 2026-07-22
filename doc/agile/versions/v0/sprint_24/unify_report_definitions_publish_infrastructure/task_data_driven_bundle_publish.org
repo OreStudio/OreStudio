@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: F41337CB-B763-4222-8AC1-41DF08353AB7
+:END:
+#+title: Task: Replace hand-written bundle-publish phases with a data-driven bundle list
+#+description: Replace the fixed, hand-written phase-per-bundle sequence in both PartyExecutePage (Qt) and provision_commands::process_party (ores.shell CLI) with iteration over a data-driven list of party-scoped bundle codes to publish via dq.v1.bundles.publish, retiring the bespoke report-definition-templates RPC path.
+#+type: task
+#+level: s1
+#+filetags: :unify_report_definitions_publish_infrastructure:sprint_24:v0:
+#+owner: marco
+#+branch: feature/data-driven-bundle-publish
+#+pr: 1662
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new party-scoped bundle requires only a data change (adding a bundle code), never new phase code, in either provisioner.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- Report definitions are created solely via dq.v1.bundles.publish against the risk_management bundle, in both PartyExecutePage (Qt) and provision_commands::process_party (CLI) — no per-record save_report_definition_request or list_dq_report_definition_templates_request call remains on either provisioning path.
+- Both provisioners iterate a single shared, data-driven list of party-scoped bundle codes (ores::dq::messaging::party_provisioning_bundle_plan()), each published in full (no opted_in_datasets filter).
+- Adding a new asset class to synthetic_realistic (a new dataset row in SQL) requires no further code changes in either provisioner.
+
+* Plan
+
+Fixed the underlying bundle taxonomy first, then made both
+provisioners data-driven against it:
+
+1. SQL (=dq_dataset_bundle_populate.sql=,
+   =dq_dataset_bundle_member_populate.sql=): retired the =organisation=
+   and =ore_analytics= bundle codes; merged their members into a single
+   =risk_management= bundle (business_units, portfolios, books,
+   report_definitions — reports reference the book/portfolio tree, so
+   they publish together, per discussion with Marco). Left
+   =synthetic_basic=/=synthetic_realistic= as market-data-only bundles
+   (dropped the misplaced =ore.report_definitions= member from each).
+   Dropped the unused starter =synthetic.fx_spot_configs= member from
+   the old =ore_analytics= (nothing published that bundle before this
+   task).
+2. Added =ores.dq.api/messaging/party_provisioning_plan.hpp=: a
+   shared, header-only list of =party_bundle_publish_step
+   {bundle_code, label}= — =risk_management=, =synthetic_realistic=,
+   =marketdata.reference_vintage_2016_02_05= — each published in full
+   (no dataset-level filter), so a new bundle member is a data change
+   only.
+3. Qt (=PartyProvisioningWizard.cpp/.hpp=): replaced
+   =startOrgPublish=/=startReportInstall=/=startFxSpotConfigsPublish=/
+   =startFxDriverRatesPublish= and their four =on*WorkflowComplete=
+   handlers with one generic =startNextPartyBundle=/
+   =onPartyBundleWorkflowComplete= pair walking the shared plan.
+   Removed =PartyReportSetupPage= (its checkboxes no longer controlled
+   anything real — report creation became unconditional, like
+   organisation/marketdata already were) and the now-dead
+   =ReportSpec=/=selectedReports=/=organisationPublished= wizard state.
+4. Shell (=provision_commands.cpp/.hpp=): replaced phases =[2/6]-[4/6]=
+   (organisation publish, list-templates-then-save-per-record report
+   loop, synthetic config publish) with a loop over the shared plan;
+   retired the =--reports= flag entirely.
+5. Fixed two other stale =ore_analytics= defaults the rename would
+   have broken silently: =list_dq_report_definition_templates_request::bundle_code=
+   and =get_report_definition_templates_request::bundle_code= (a
+   separate, currently-unused =reporting.v1.*= forwarding pair) both
+   now default to =risk_management=; =reports_commands.hpp='s doc
+   comment updated to match.
+6. Updated the shell script library (regenerated via
+   =compass build --direct tangle_shell_scripts= after editing the
+   source recipes, never hand-editing the =.ores= files), two recipes,
+   and the shell-provisioning manual chapter's transcripts/prose.
+   =chapter_initial_setup.org='s Party Setup wizard section (Report
+   Definitions page removed, phase count 4→5) updated in prose; its
+   remaining 3 screenshots (welcome, execute, summary) are now stale
+   and marked =[SCREENSHOT OUTDATED — retake needed]= (the 4th,
+   report-definitions-page screenshot, removed outright along with
+   its section since that page no longer exists) — recapturing needs
+   the =doc-run-manual-screenshots= skill against a live app, out of
+   scope for this pass. Also removed the now-orphaned
+   =party_provisioner_report_definitions.png= asset.
+7. Superseded task B9410C52 ("Party re-provisioning fails on
+   duplicate report definitions") in a different story: routing
+   through =ores_reporting_publish_report_definitions_from_dq_fn=
+   (already idempotent — skips if the party has report definitions)
+   makes the duplicate-key error it described impossible, since the
+   per-record RPC loop it came from no longer exists. Marked ABANDONED
+   with a cross-reference.
+8. Verified end-to-end against a freshly recreated database: full
+   =barclays_system_provision.ores= run (system → tenant → party)
+   completed clean; confirmed in the database that the =risk_management=
+   bundle publish alone created business_units (13), portfolios (20),
+   books (22), and report_definitions (28) in one call — the exact
+   defect this story set out to fix. =reports templates= (standalone
+   command, unrelated to the provisioning path) confirmed working
+   against the new default bundle.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1662][#1662]] | [dq,qt,shell] Make party-scoped bundle provisioning data-driven |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Worked example says report_definitions is at display_order 10 in risk_management; actual SQL has it at 40 | publication_pipeline.org | Accepted | Fixed: doc now says 40 (after business_units/portfolios/books at 10/20/30). |
+| 2 | Orphaned screenshot asset (party_provisioner_report_definitions.png) no longer referenced anywhere | assets/images/ | Accepted | Removed via git rm. |
+| 3 | PR description said "5 screenshots" flagged stale; only 3 were flagged (4th removed outright, no 5th exists) | task doc, PR description | Accepted | Corrected task doc wording to "remaining 3 screenshots... the 4th removed outright". |
+
+* Result
+
+Shipped and verified end-to-end. Party provisioning (Qt wizard and
+=ores.shell=) now iterates a single shared, data-driven list of three
+party-scoped bundle codes (=risk_management=, =synthetic_realistic=,
+=marketdata.reference_vintage_2016_02_05=), each published in full via
+=dq.v1.bundles.publish= — no dataset-level filtering, no per-bundle
+hand-written phase. The =organisation=/=ore_analytics= bundle split was
+retired in favour of a single =risk_management= bundle (business
+units, portfolios, books, and report definitions, since reports
+reference the book/portfolio tree). Report definitions are now created
+through the same idempotent publish-from-dq path as everything else,
+retiring the per-record RPC loop and the =--reports= flag/Qt Report
+Setup page entirely.
+
+Verified against a freshly recreated database with all 23 services
+running: a full =barclays_system_provision.ores= run (system → tenant
+→ party) completed cleanly end to end; confirmed in Postgres that the
+=risk_management= bundle publish alone created 13 business units, 20
+portfolios, 22 books, and 28 report definitions in a single call — the
+exact defect this story set out to fix. =reports templates= (the
+standalone shell command, unrelated to the provisioning path) verified
+working against its new default bundle. All touched targets
+(=ores.qt.lib=, =ores.shell.lib=, =ores.dq.api.lib=,
+=ores.reporting.api.lib=, =ores.reporting.core.lib=) and a full
+=compass build= (no target) build clean with no warnings.
+
+Acceptance met in full. Also superseded and closed task B9410C52
+("Party re-provisioning fails on duplicate report definitions") in a
+different story, as a side effect of the fix.

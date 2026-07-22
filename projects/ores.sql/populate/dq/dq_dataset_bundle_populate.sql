@@ -53,15 +53,9 @@ BEGIN
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'organisation',
-        'Organisation',
-        'Sample organisational hierarchy data for development and testing. Includes business units, portfolios, and trading books.'
-    );
-
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore_analytics',
-        'ORE Analytics',
-        'Default ORE analytics report definitions and synthetic market data generation configs. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) plus a starter FX spot generator for use during party provisioning.'
+        'risk_management',
+        'Risk Management',
+        'Sample organisational and risk-reporting data for development and testing. Includes business units, portfolios, trading books, and the standard set of risk report definitions (NPV, VaR, CVA, XVA, etc.) -- reports reference the book/portfolio tree, so both live in one bundle.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),

@@ -44,9 +44,9 @@ blocking or degrading basic functionality:
   Save; a new currency can be created from the Qt client.
 - The currencies list window pages correctly for a list with more
   entries than one page.
-- Re-running party provisioning with --reports all against an
-  already-provisioned party succeeds (skip/upsert) instead of
-  throwing a raw duplicate-key error.
+- Re-running party provisioning against an already-provisioned party
+  succeeds (skip/upsert) instead of throwing a raw duplicate-key
+  error — superseded by the bundle-provisioning story (see Decisions).
 
 * Tasks
 
@@ -54,9 +54,16 @@ blocking or degrading basic functionality:
 |------+-------+-------+-----+-------------|
 | [[id:070153C0-E91D-4CAD-AE66-4FBCEC578F97][Currency add dialog: Save button stays disabled]] | BACKLOG | | | Save button remains disabled even after filling in all required fields when adding a new currency, blocking creation. |
 | [[id:C3374605-AA28-4DBD-A5FB-88C656C7F685][Currencies list window paging does not seem to work]] | BACKLOG | | | The currencies list window's pagination controls don't appear to be enabled/working, unlike other entity list windows. |
-| [[id:B9410C52-E635-4A7E-B4B4-7A4DFEAE552A][Party re-provisioning fails on duplicate report definitions]] | BACKLOG | | | provision party --reports all in ores.shell/Qt wizard throws a raw Postgres duplicate-key error instead of skipping/upserting cleanly when re-run against an already-provisioned party. |
+| [[id:B9410C52-E635-4A7E-B4B4-7A4DFEAE552A][Party re-provisioning fails on duplicate report definitions]] | ABANDONED | | | provision party --reports all in ores.shell/Qt wizard throws a raw Postgres duplicate-key error instead of skipping/upserting cleanly when re-run against an already-provisioned party. |
 
 * Decisions
+
+- "Party re-provisioning fails on duplicate report definitions"
+  abandoned: superseded by [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning
+  data-driven, not one hand-written phase per bundle]], which routes
+  report definitions through the already-idempotent
+  =dq.v1.bundles.publish=/publish-from-dq path, retiring the
+  per-record RPC loop that threw the duplicate-key error.
 
 * Out of scope
 

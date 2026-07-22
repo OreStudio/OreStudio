@@ -20,15 +20,14 @@
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
@@ -148,10 +147,11 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            [&session](std::ostream& out, std::vector<std::string> args) {
                                process_party(std::ref(out), std::ref(session), args);
                            },
-                           "Provision a party: import counterparties, publish its organisation "
-                           "bundle, create report definitions and activate it",
+                           "Provision a party: import counterparties, publish its risk "
+                           "management, synthetic market data, and FX driver-rate bundles, "
+                           "and activate it",
                            {"party-uuid-or-full-name [--dataset-size small|large] "
-                            "[--reports all|none|<name,...>] [--timeout <seconds>]"});
+                            "[--timeout <seconds>]"});
 
     root_menu.Insert(std::move(provision_menu));
 }
@@ -478,7 +478,6 @@ void provision_commands::process_party(std::ostream& out,
     auto parsed =
         parse_args(args,
                    {{.name = "dataset-size", .requires_value = true, .default_value = "small"},
-                    {.name = "reports", .requires_value = true, .default_value = "all"},
                     {.name = "timeout",
                      .requires_value = true,
                      .default_value = std::to_string(default_wait_timeout.count())}});
@@ -488,8 +487,7 @@ void provision_commands::process_party(std::ostream& out,
     }
     if (parsed->positionals.size() != 1) {
         fail(out) << "Usage: provision party <party-uuid-or-full-name> "
-                     "[--dataset-size small|large] [--reports all|none|<name,...>] "
-                     "[--timeout <seconds>]"
+                     "[--dataset-size small|large] [--timeout <seconds>]"
                   << std::endl;
         return;
     }
@@ -543,7 +541,7 @@ void provision_commands::process_party(std::ostream& out,
     // Phase 1: publish the counterparty dataset, as the wizard's
     // counterparty import does (bundle "base", opted-in GLEIF
     // counterparties dataset of the requested size).
-    out << "[1/6] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
+    out << "[1/5] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "base";
@@ -572,11 +570,22 @@ void provision_commands::process_party(std::ostream& out,
             return;
     }
 
-    // Phase 2: publish the organisation bundle for this party.
-    out << "[2/6] Publishing organisation bundle for the party..." << std::endl;
-    {
+    // Phases 2-4: publish every party-scoped bundle in the shared
+    // provisioning plan, each in full (no dataset-level filter), so a
+    // new bundle member -- a new asset class under synthetic_realistic,
+    // a new dataset under risk_management -- never requires a change
+    // here, only a new row in dq_dataset_bundle_member_populate.sql.
+    // risk_management (business_units, portfolios, books, and report
+    // definitions -- reports reference the book/portfolio tree, so they
+    // publish together) replaces the old organisation bundle plus the
+    // hand-written report-definition-templates RPC loop.
+    const auto& plan = dq::messaging::party_provisioning_bundle_plan();
+    for (std::size_t i = 0; i < plan.size(); ++i) {
+        const auto& step = plan[i];
+        out << "[" << (i + 2) << "/5] Publishing " << step.label << "..." << std::endl;
+
         dq::messaging::publish_bundle_request req;
-        req.bundle_code = "organisation";
+        req.bundle_code = step.bundle_code;
         req.mode = dq::domain::publication_mode::upsert;
         req.published_by = username;
         req.atomic = true;
@@ -587,7 +596,7 @@ void provision_commands::process_party(std::ostream& out,
         if (!published)
             return;
         if (!published->success) {
-            fail(out) << "Failed to publish organisation bundle: " << published->error_message
+            fail(out) << "Failed to publish " << step.label << ": " << published->error_message
                       << std::endl;
             return;
         }
@@ -602,173 +611,10 @@ void provision_commands::process_party(std::ostream& out,
             return;
     }
 
-    // Phase 3: create the selected report definitions. The wizard
-    // pre-checks every template; --reports none skips, a comma list
-    // selects by exact name. Failures are fatal, as in the wizard.
-    const auto& reports = parsed->flag("reports");
-    if (reports == "none") {
-        out << "[3/6] Skipping report definitions (--reports none)." << std::endl;
-    } else {
-        out << "[3/6] Creating report definitions..." << std::endl;
-        dq::messaging::list_dq_report_definition_templates_request templates_req;
-        auto templates = do_request(out, session, templates_req, std::chrono::seconds(30), true);
-        if (!templates)
-            return;
-        if (!templates->success) {
-            fail(out) << "Failed to list report templates: " << templates->message << std::endl;
-            return;
-        }
-
-        std::vector<dq::messaging::dq_report_definition_template> selected;
-        if (reports == "all") {
-            selected = templates->templates;
-        } else {
-            for (const auto& name : [&] {
-                     std::vector<std::string> names;
-                     std::string current;
-                     for (const char c : reports) {
-                         if (c == ',') {
-                             if (!current.empty())
-                                 names.push_back(current);
-                             current.clear();
-                         } else {
-                             current += c;
-                         }
-                     }
-                     if (!current.empty())
-                         names.push_back(current);
-                     return names;
-                 }()) {
-                const auto i = std::find_if(templates->templates.begin(),
-                                            templates->templates.end(),
-                                            [&](const auto& tpl) { return tpl.name == name; });
-                if (i == templates->templates.end()) {
-                    fail(out) << "Unknown report template: " << name << std::endl;
-                    return;
-                }
-                selected.push_back(*i);
-            }
-        }
-
-        // Report definitions are owned by the System party, as the
-        // wizard resolves it (fallback: the first party).
-        refdata::messaging::get_parties_request parties_req;
-        parties_req.limit = 1000;
-        auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
-        if (!parties || parties->parties.empty()) {
-            fail(out) << "Could not resolve the System party for report ownership." << std::endl;
-            return;
-        }
-        auto system_party =
-            std::find_if(parties->parties.begin(), parties->parties.end(), [](const auto& p) {
-                return p.party_category == "System";
-            });
-        const auto owner_id =
-            system_party != parties->parties.end() ? system_party->id : parties->parties.front().id;
-
-        boost::uuids::random_generator gen;
-        for (const auto& tpl : selected) {
-            reporting::messaging::save_report_definition_request req;
-            req.definition.id = gen();
-            req.definition.name = tpl.name;
-            req.definition.description = tpl.description;
-            req.definition.report_type = tpl.report_type;
-            req.definition.schedule_expression = tpl.schedule_expression;
-            req.definition.concurrency_policy = tpl.concurrency_policy;
-            req.definition.party_id = owner_id;
-            req.definition.modified_by = username;
-            req.definition.performed_by = username;
-            req.definition.change_reason_code =
-                std::string(dq::domain::change_reason_constants::codes::new_record);
-            req.definition.change_commentary = "Created during party provisioning";
-            req.definition.recorded_at = std::chrono::system_clock::now();
-            auto saved = do_request(out, session, req, std::chrono::seconds(30), true);
-            if (!saved)
-                return;
-            if (!saved->success) {
-                fail(out) << "Failed to create report definition '" << tpl.name
-                          << "': " << saved->message << std::endl;
-                return;
-            }
-            out << "  Created report definition '" << tpl.name << "'." << std::endl;
-        }
-    }
-
-    // Phase 4: publish the synthetic FX spot and IR curve config
-    // datasets — both members of the synthetic_realistic bundle
-    // (alongside report definitions; FX is not the plain 2-pair
-    // ore_analytics fx_spot_configs starter, so the party's driver
-    // feeds cover all 11 currency pairs the CRM story's majors/exotics
-    // topologies need real, live ticks for), opted in together so this
-    // doesn't re-trigger report creation already handled by Phase 3.
-    out << "[4/6] Publishing synthetic data configuration for the party..." << std::endl;
-    {
-        dq::messaging::publish_bundle_request req;
-        req.bundle_code = "synthetic_realistic";
-        req.mode = dq::domain::publication_mode::upsert;
-        req.published_by = username;
-        req.atomic = true;
-        dq::messaging::publish_bundle_params params;
-        params.party_id = boost::uuids::to_string(party->id);
-        params.opted_in_datasets.push_back("synthetic.fx_spot_configs.realistic");
-        params.opted_in_datasets.push_back("synthetic.ir_curve_configs.realistic");
-        req.params_json = dq::messaging::build_params_json(params);
-        auto published = do_request(out, session, req, publish_timeout, true);
-        if (!published)
-            return;
-        if (!published->success) {
-            fail(out) << "Failed to publish synthetic data configuration: "
-                      << published->error_message << std::endl;
-            return;
-        }
-        out << "  Dispatched " << published->datasets_dispatched
-            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(
-                out,
-                session,
-                published->instance_id,
-                *wait_timeout,
-                static_cast<std::size_t>(published->datasets_dispatched)))
-            return;
-    }
-
-    // Phase 5: publish the curated FX driver-rate dataset — the
-    // marketdata.reference_vintage_2016_02_05 bundle's first member,
-    // so the party has real market series/observations to browse
-    // without a separate manual step.
-    out << "[5/6] Publishing FX driver rates for the party..." << std::endl;
-    {
-        dq::messaging::publish_bundle_request req;
-        req.bundle_code = "marketdata.reference_vintage_2016_02_05";
-        req.mode = dq::domain::publication_mode::upsert;
-        req.published_by = username;
-        req.atomic = true;
-        dq::messaging::publish_bundle_params params;
-        params.party_id = boost::uuids::to_string(party->id);
-        req.params_json = dq::messaging::build_params_json(params);
-        auto published = do_request(out, session, req, publish_timeout, true);
-        if (!published)
-            return;
-        if (!published->success) {
-            fail(out) << "Failed to publish FX driver rates: " << published->error_message
-                      << std::endl;
-            return;
-        }
-        out << "  Dispatched " << published->datasets_dispatched
-            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(
-                out,
-                session,
-                published->instance_id,
-                *wait_timeout,
-                static_cast<std::size_t>(published->datasets_dispatched)))
-            return;
-    }
-
-    // Phase 6: activate the party. Hard failure by design — a
+    // Phase 5: activate the party. Hard failure by design — a
     // completed run must mean a provisioned party (the wizard merely
     // warns here).
-    out << "[6/6] Activating party '" << party->full_name << "'..." << std::endl;
+    out << "[5/5] Activating party '" << party->full_name << "'..." << std::endl;
     auto fresh = find_party(out);
     if (!fresh)
         return;

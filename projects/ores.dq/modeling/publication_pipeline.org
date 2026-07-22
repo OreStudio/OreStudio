@@ -234,20 +234,21 @@ proceeding — the 25 existing functions are structurally identical
 enough (read artefact table, honor =mode=, upsert into one target
 table) to make a generic profile plausible.
 
-** Worked example: =report_definitions= in the =ore_analytics= bundle
+** Worked example: =report_definitions= in the =risk_management= bundle
 
 Every file the pipeline touches for one concrete artefact type, in
 pipeline order:
 
 1. Bundle row — [[proj:projects/ores.sql/populate/dq/dq_dataset_bundle_populate.sql][~projects/ores.sql/populate/dq/dq_dataset_bundle_populate.sql~]]
-   registers the =ore_analytics= bundle itself
-   (=ores_dq_dataset_bundles_upsert_fn('ore_analytics', 'ORE
-   Analytics', ...)=) — the thing a user picks in the Librarian.
+   registers the =risk_management= bundle itself
+   (=ores_dq_dataset_bundles_upsert_fn('risk_management', 'Risk
+   Management', ...)=) — the thing a user picks in the Librarian.
 
 2. Bundle membership — [[proj:projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql][~projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql~]]
-   maps the =ore.report_definitions= dataset into the =ore_analytics=
-   bundle at =display_order 10= — this row is what stage 3's workflow
-   builder iterates to build one step.
+   maps the =ore.report_definitions= dataset into the =risk_management=
+   bundle at =display_order 40= (after business_units/portfolios/books
+   at 10/20/30) — this row is what stage 3's workflow builder iterates
+   to build one step.
 
 3. Artefact-type registration — [[proj:projects/ores.sql/populate/dq/dq_artefact_types_populate.sql][~projects/ores.sql/populate/dq/dq_artefact_types_populate.sql~]]
    registers the =report_definitions= artefact type, pointing
@@ -316,9 +317,9 @@ pipeline order:
 
 13. Librarian UI (generic — no bespoke wizard page needed here, unlike
     LEI's =root_lei= parameters) — [[proj:projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp][~projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp~]]
-    lists the =ore_analytics= bundle for the user to select, and
+    lists the =risk_management= bundle for the user to select, and
     [[proj:projects/ores.qt/refdata/src/PublishBundleWizard.cpp][~projects/ores.qt/refdata/src/PublishBundleWizard.cpp~]] sends
-    =dq.v1.bundles.publish= with =bundle_code = "ore_analytics"= when
+    =dq.v1.bundles.publish= with =bundle_code = "risk_management"= when
     the user clicks Apply — no per-entity code here at all, since
     =report_definitions= needs no publish-time parameters (stage 5).
 

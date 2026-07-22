@@ -188,7 +188,7 @@ shows the candidates:
 #+name: shellprov-party
 #+begin_src ores-shell :exports code
 login tenant_admin@default Secure-Password-123
-provision party "Lloyds Wealth Management Ltd" --reports all
+provision party "Lloyds Wealth Management Ltd"
 logout
 exit
 #+end_src
@@ -202,26 +202,30 @@ EOF
 #+RESULTS:
 #+begin_example
 ores-shell> ✓ Login successful!
-ores-shell> [1/4] Importing counterparties (dataset small)...
+ores-shell> [1/5] Importing counterparties (dataset small)...
 ✓ All 1 step(s) completed.
-[2/4] Publishing organisation bundle for the party...
-✓ All 3 step(s) completed.
-[3/4] Creating report definitions...
-  Created report definition 'Cashflows'.
-  ...
-[4/4] Activating party 'Lloyds Wealth Management Ltd'...
+[2/5] Publishing organisation structure and risk reporting...
+✓ All 4 step(s) completed.
+[3/5] Publishing synthetic market data configuration...
+✓ All 2 step(s) completed.
+[4/5] Publishing FX driver rates...
+✓ All 1 step(s) completed.
+[5/5] Activating party 'Lloyds Wealth Management Ltd'...
 ✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
-The options mirror the wizard's pages: =--dataset-size small|large=
-selects the counterparty import size (small is the default), and
-=--reports= takes =all= (the default — the wizard pre-selects every
-template), =none=, or a comma-separated list of template names from
-=reports templates=. The command imports the counterparties,
-publishes the party's organisation data, creates the selected report
-definitions, and activates the party.
+The only option is =--dataset-size small|large=, selecting the
+counterparty import size (small is the default). The command imports
+the counterparties, then publishes every party-scoped bundle in turn
+-- risk management (business units, portfolios, books, and report
+definitions; reports reference the book/portfolio tree, so both
+publish together), synthetic market data configuration (FX, IR curve,
+and any future asset class -- adding one is a data change in
+=dq_dataset_bundle_member_populate.sql=, never a shell code change),
+and the curated FX driver-rate dataset -- and finally activates the
+party.
 
 ** The supporting commands
 
@@ -242,7 +246,7 @@ hand.
 | =parties list= | List parties, with =--category= and =--status= filters. |
 | =account-parties add <account> <party>= | Grant an account access to a party. |
 | =tenants complete-provisioning= | Mark the logged-in tenant's provisioning complete. |
-| =reports templates= | The report definitions available to the party provisioner. |
+| =reports templates= | The standard report definitions seeded in the risk_management bundle. |
 
 The =provision= commands call these in sequence; you can call them
 individually to inspect the system or to recover a failed run from
@@ -275,7 +279,8 @@ than editing the original, which the build regenerates.
 The library's =acme_system_provision.ores= provisions a complete system
 from a fresh installation: platform administrator, an Acme tenant with
 a reproducible synthetic organisation, and the house's root party with
-every standard report. (Its sibling =barclays_system_provision.ores=
+its risk management, synthetic market data, and FX driver-rate bundles.
+(Its sibling =barclays_system_provision.ores=
 does the same from the GLEIF golden copy instead of synthetic data.) It
 expects a fresh installation in bootstrap mode, all services running,
 and a connected, logged-out session.
@@ -302,8 +307,8 @@ ores-shell> Loading script: projects/ores.shell/scripts/library/acme_system_prov
 > provision system super_admin Secure-Password-123 admin@localhost.com ...
 ✓ System provisioned. Tenant 'Default Tenant' ...
 ...
-> provision party "Lloyds Wealth Management Ltd" --reports all
-[4/4] Activating party 'Lloyds Wealth Management Ltd'...
+> provision party "Lloyds Wealth Management Ltd"
+[5/5] Activating party 'Lloyds Wealth Management Ltd'...
 ✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
 > logout
 ✓ Logged out successfully.

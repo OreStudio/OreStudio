@@ -67,7 +67,7 @@ public:
         }
         get_report_definition_templates_response resp;
         try {
-            std::string bundle_code = "ore_analytics";
+            std::string bundle_code = "risk_management";
             if (auto req = decode<get_report_definition_templates_request>(msg))
                 bundle_code = req->bundle_code;
 

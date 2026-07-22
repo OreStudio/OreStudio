@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 84CD9093-DF67-4BC6-AD66-9C4045BCE959
+:END:
+#+title: Story: Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)
+#+description: Extend the crm_rate_formatter pattern (stateless, convention-aware, presentation-layer formatter) to every remaining FX rate-display surface still hand-formatting with hardcoded precision, and build the equivalent for IR (ir_index_convention + ir_rate_formatter) -- both families share the same underlying gap: conventions exist in the DB but most Qt surfaces don't consume them.
+#+type: story
+#+level: s2
+#+filetags: :rate-display-conventions:sprint_24:v0:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=CrmCrossRatesMatrixMdiWindow= already does this right:
+[[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][a prior task]] replaced its
+hand-rolled =QString::number(rate, 'f', 5)= with a stateless,
+convention-aware =crm_rate_formatter= (=ores.marketdata.client/
+presentation=) that resolves =currency_pair_convention= via a cache
+and snaps/renders at the pair's real =pip_factor=/=tick_size=/
+=decimal_places=. But that fix only reached the CRM matrix's own
+cells — every other rate-displaying surface in the Qt client still
+hand-formats with a hardcoded precision, including a residual gap in
+the *same* CRM window (its overview-panel sparkline label, missed by
+the original wiring). Surveyed sites, all currently hardcoded:
+
+- =CurveSnapshotMdiWindow= — Grid/History tabs, shared by *both* FX
+  and IR series (dispatched by =series_type=) — hardcoded =\='f\=, 6=
+  everywhere, delta-bp column hardcoded =\='f\=, 1=.
+- =CrmCrossRatesMatrixMdiWindow='s overview panel (selected-pair
+  label + sparkline) — hardcoded =\='f\=, 5=, missed by the original
+  formatter wiring.
+- =CurveShapePreviewChart=/=SampleShortRatePathsChart= (IR) and
+  =SamplePricePathsChart= (FX) — QtCharts =QValueAxis= default label
+  format, no unit/precision awareness at all.
+- =IrCurveEditor= (Simple-mode value label, Advanced table),
+  =IrCurveGenerationConfigDetailDialog=/=HistoryDialog=,
+  =FxSpotGenerationConfigDetailDialog=/=HistoryDialog=,
+  =MarketSimulatorWindow= summary panel — all bare
+  =QString::number(double)= (=%g=, 6 significant figures) or a
+  hardcoded =\='g\=/\='f\==.
+
+IR has no convention entity to even resolve in the first place:
+=floating_index_type= is bare code+description,
+=overnight_index_convention= holds fixing calendar/day-count/
+settlement-lag but no display precision/unit. This story:
+- Closes the residual FX gaps by reusing existing
+  =currency_pair_convention= data and extending the
+  =crm_rate_formatter= architecture's *pattern* (stateless,
+  presentation-layer, convention-in/strings-out, DB/NATS-free) to the
+  non-CRM FX surfaces above — the pip/tick-snapping logic itself
+  stays CRM/FX-spot-specific, not generalised past its own domain.
+- Adds an =ir_index_convention= table mirroring
+  =currency_pair_convention='s shape (keyed by
+  =floating_index_type.code=, since the separate, unrelated
+  [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][index-catalog
+  consolidation task]] hasn't landed yet), plus a sibling
+  =ir_rate_formatter= following the same architectural contract.
+  Research confirms real trading-system practice does *not* offer a
+  global percent/bp display toggle: an outright rate level (a fixing,
+  a swap rate, a curve point) is always quoted in *percent* at a
+  precision fixed by the instrument/currency, never in bp — bp is
+  reserved for a different quantity entirely (deltas, spreads over a
+  benchmark, DV01/risk), not an alternate unit for the same level.
+  =CurveSnapshotMdiWindow='s existing =Δ (bp)= column already gets
+  this right by instinct (level in the grid, tick-to-tick move
+  separately in bp) — so =ir_index_convention= only needs
+  =decimal_places=, mirroring =currency_pair_convention=, not a unit-
+  switching mechanism.
+- Wires both formatters into every surveyed site. Since every rate
+  level stays in percent, chart axes only need per-index decimal
+  precision on their label format, not a data-rescaling step — no
+  percent/bp axis-unit switching to design around.
+
+Absorbs the remaining scope of
+[[id:3E2AC28A-181F-480A-8A9D-CD88949378F5][the narrower, IR-only
+"IR rate display/quoting conventions" task]] in the IR Rates
+follow-ups story, which is marked ABANDONED with a pointer here
+rather than tracked twice — the FX and IR gaps are the same
+architectural problem and are better solved together in one pass than
+designed independently and reconciled later.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-22                               |
+
+* Acceptance
+
+- =CurveSnapshotMdiWindow= (Grid/History, both FX and IR series) and
+  =CrmCrossRatesMatrixMdiWindow='s overview panel consume
+  =currency_pair_convention=/=ir_index_convention= via a formatter
+  instead of a hardcoded =\='f\=, N=.
+- =CurveShapePreviewChart=, =SampleShortRatePathsChart=,
+  =SamplePricePathsChart= axis labels use per-index/pair decimal
+  precision instead of QtCharts' default format.
+- =IrCurveEditor=, IR/FX config detail and history dialogs, and
+  =MarketSimulatorWindow='s summary panel use the shared formatter(s)
+  instead of bare =QString::number(double)=.
+- A new =ir_index_convention= table (keyed by
+  =floating_index_type.code=) with =decimal_places=, backed by a
+  research note on real per-currency/index-tier precision (G10
+  overnight RFRs vs EM curves), and a sibling =ir_rate_formatter=
+  matching =crm_rate_formatter='s architectural contract (stateless,
+  presentation-layer, DB/NATS-free).
+- Real Catch2 coverage of =ir_rate_formatter=, independent of any
+  Qt/NATS harness, matching =crm_rate_formatter_tests.cpp='s own
+  coverage shape (precision rounding, missing-convention fallback).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9393DB22-7D9D-4D0C-A315-42022548E8DF][Close remaining FX rate-display gaps in Qt]] | BACKLOG | | | Wire currency_pair_convention (via the existing crm_rate_formatter architectural pattern, not the CRM-specific formatter itself) into every FX rate-display surface still hand-formatting with hardcoded precision: CurveSnapshotMdiWindow, CrmCrossRatesMatrixMdiWindow's overview panel, SamplePricePathsChart, FxSpotGenerationConfigDetailDialog/HistoryDialog, MarketSimulatorWindow summary panel. |
+| [[id:F2B75880-D40A-426F-B52D-08B29B70BD84][Add ir_index_convention table and ir_rate_formatter, wire into IR display sites]] | BACKLOG | | | Add an ir_index_convention table (keyed by floating_index_type.code, decimal_places only -- see story Goal for why no percent/bp unit switch) backed by a research note on real per-currency/index-tier precision, a sibling ir_rate_formatter matching crm_rate_formatter's architectural contract, and wire it into CurveSnapshotMdiWindow (IR series), CurveShapePreviewChart, SampleShortRatePathsChart, IrCurveEditor, and IrCurveGenerationConfigDetailDialog/HistoryDialog. |
+
+* Decisions
+
+* Out of scope
+
+- A user-facing percent/basis-point display toggle — real trading
+  systems don't offer one for outright rate levels (see Goal); bp
+  stays reserved for deltas, which =CurveSnapshotMdiWindow= already
+  shows correctly.
+- Consolidating =floating_index_type=/=overnight_index_convention=
+  into one index entity — tracked separately by
+  [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate
+  index reference data]]; =ir_index_convention= keys off the current
+  =floating_index_type.code= and can be re-keyed later if that task
+  changes the identifier space.
+- Extending =crm_rate_formatter='s own pip/tick-snapping logic beyond
+  CRM — the non-CRM FX surfaces reuse the *architectural pattern*,
+  not the CRM-specific formatter itself.

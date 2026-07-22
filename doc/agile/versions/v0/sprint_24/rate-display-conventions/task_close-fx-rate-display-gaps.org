@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 9393DB22-7D9D-4D0C-A315-42022548E8DF
+:END:
+#+title: Task: Close remaining FX rate-display gaps in Qt
+#+description: Wire currency_pair_convention (via the existing crm_rate_formatter architectural pattern, not the CRM-specific formatter itself) into every FX rate-display surface still hand-formatting with hardcoded precision: CurveSnapshotMdiWindow, CrmCrossRatesMatrixMdiWindow's overview panel, SamplePricePathsChart, FxSpotGenerationConfigDetailDialog/HistoryDialog, MarketSimulatorWindow summary panel.
+#+type: task
+#+level: s1
+#+filetags: :rate-display-conventions:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84CD9093-DF67-4BC6-AD66-9C4045BCE959][Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=CrmCrossRatesMatrixMdiWindow='s main grid cells are already
+convention-aware ([[id:4F2FC58A-D715-4159-A93F-E372AD720D0D][via
+crm_rate_formatter]]), but that fix was scoped to the CRM matrix only.
+Every other FX rate-display surface still hand-formats:
+
+- =CurveSnapshotMdiWindow= (Grid/History) — hardcoded =\='f\=, 6=;
+  its =Δ (bp)= column hardcoded =\='f\=, 1= (this column is correct
+  to keep in bp — see story Goal — it just needs the same
+  convention-driven precision the level column gets).
+- =CrmCrossRatesMatrixMdiWindow='s own overview panel (selected-pair
+  label + sparkline) — hardcoded =\='f\=, 5=, missed by the original
+  wiring task.
+- =SamplePricePathsChart= axis labels — QtCharts default format, no
+  precision awareness.
+- =FxSpotGenerationConfigDetailDialog=/=HistoryDialog=,
+  =MarketSimulatorWindow= summary panel — bare
+  =QString::number(double)=.
+
+Build a small, reusable presentation-layer formatter (mirroring
+=crm_rate_formatter='s shape but generic to any
+=currency_pair_convention=-keyed rate, not CRM-specific data) and
+wire each site above to resolve the relevant pair's convention (via
+=currency_pair_convention_cache=, the same cache the CRM wiring
+already uses) and format through it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:84CD9093-DF67-4BC6-AD66-9C4045BCE959][Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A generic, convention-aware rate formatter exists (stateless,
+  presentation-layer, DB/NATS-free, matching =crm_rate_formatter='s
+  contract) usable by any =currency_pair_convention=-keyed surface,
+  not just CRM cells.
+- =CurveSnapshotMdiWindow=, =CrmCrossRatesMatrixMdiWindow='s overview
+  panel, =SamplePricePathsChart=,
+  =FxSpotGenerationConfigDetailDialog=/=HistoryDialog=, and
+  =MarketSimulatorWindow='s summary panel all resolve the relevant
+  pair's convention and format through it, replacing every hardcoded
+  =\='f\=/\='g\=, N= call site listed in the Goal.
+- =CurveSnapshotMdiWindow='s =Δ (bp)= column keeps showing deltas in
+  bp (not converted to the level's own precision) — only the level
+  column's precision becomes convention-driven.
+- Real Catch2 coverage of the new formatter, independent of any
+  Qt/NATS harness.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

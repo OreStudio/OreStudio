@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ir-rate-quoting-conventions
+#+pr: 1669
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
 #+updated: 2026-07-21
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -48,12 +48,12 @@ genuine reference-data question, not a UI-only concern.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded before implementation started. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-19                               |
+| Next         | Nothing -- see the superseding story.  |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
@@ -67,6 +67,19 @@ genuine reference-data question, not a UI-only concern.
 - A shared Qt formatter consumes it; =curve-snapshot-builder-viewer=
   (and any future rate-displaying UI) uses the formatter rather than
   a hardcoded format string.
+
+Superseded, before any implementation started, by
+[[id:84CD9093-DF67-4BC6-AD66-9C4045BCE959][Rate display conventions:
+convention-aware formatting across all Qt rate surfaces (FX + IR)]] —
+manual verification of a sibling task surfaced that FX has the exact
+same gap (most Qt surfaces don't consume =currency_pair_convention=
+either, despite it existing), and designing the IR side in isolation
+would have meant reconciling two independently-built formatter
+architectures later rather than one shared design now. See that
+story's Goal for the full survey and
+[[id:F2B75880-D40A-426F-B52D-08B29B70BD84][its IR-specific task]] for
+this task's continued scope (=ir_index_convention=/=ir_rate_formatter=,
+same acceptance criteria as below).
 
 * Plan
 
@@ -91,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1669][#1669]] | [agile] Add rate display conventions story, abandon narrower IR-only task |
 
 * Review
 

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 3461BD8C-B8B1-4037-9B3D-D07AF9EA4768
 :END:
-#+title: Task: Merge per-asset-class synthetic collection folders into one theme unit
-#+description: FX and IR curve publish-from-dq functions each create their own collection folder keyed by dataset-scoped config id, so a single theme (e.g. 2016 ORE Samples) shows as two duplicate top-level Market Simulator tree nodes instead of one; fix so all asset classes of a theme share one folder/start-stop unit, scaling to future asset classes without one click per class.
+#+title: Task: Make a synthetic theme one atomic dataset, not one dataset per asset class
+#+description: A synthetic theme (e.g. 2016 ORE Samples) is currently modelled as N independently-published DQ datasets, one per asset class, which is why it shows as N duplicate top-level Market Simulator tree nodes and lets a party half-publish a theme (FX only, no IR). Redesign so a theme is one bundle/dataset published atomically -- not a folder-reuse patch over the existing per-asset-class datasets.
 #+type: task
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
@@ -20,38 +20,101 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Make a synthetic data theme (e.g. "2016 ORE Samples") one logical
-unit in the Market Simulator tree and in the backend folder model,
-instead of one duplicate top-level node per asset class. Today
-=ores_synthetic_publish_fx_spot_configs_from_dq_fn= and
-=ores_synthetic_publish_ir_curve_configs_from_dq_fn=
-(=projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=)
-each resolve/create the "collection" folder keyed by
-=collection_id = v_config_id=, and =v_config_id= is scoped to that
-call's own =dataset_id= -- so FX and IR curves for the same theme,
-published from two separate DQ datasets, each get their own
-collection folder that happens to share a display name. This already
-forces the tester through this sprint's theme test scenario to
-special-case "appears twice" as expected, and will only get worse as
-more asset classes (rates, credit, equity, ...) are added to a
-theme -- a party operator should be able to start/stop/browse a whole
-theme as one unit, not click once per asset class.
+Make a synthetic theme (e.g. "2016 ORE Samples") one atomic unit
+end to end -- one DQ dataset/bundle a party either has or doesn't,
+published in a single operation -- not the current model where each
+asset class is its own independently-published dataset that
+happens to share a display-name convention. The Market Simulator's
+duplicate top-level tree nodes are a *symptom* of this: a theme
+today is =N= separate =ores_dq_datasets_tbl= rows
+(=synthetic.fx_spot_configs.ore_samples_2016=,
+=synthetic.ir_curve_configs.ore_samples_2016=, ...), each with its
+own =ores_synthetic_publish_*_from_dq_fn= call, its own
+=ores_synthetic_market_data_generation_configs_tbl= container
+(=v_config_id=), and consequently its own "collection" folder
+(=collection_id = v_config_id=, in
+=projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=).
+A party can end up with FX published for a theme but not IR (or
+vice versa) with no atomicity guarantee, which is a real correctness
+gap, not just a cosmetic tree-duplication one -- and it will compound
+as more asset classes (credit, equity, ...) join a theme.
 
-Change both publish functions to resolve the collection folder by
-=(tenant_id, party_id, name = v_config_name)= instead of by
-=collection_id=, so every asset class published under the same theme
-name reuses one shared collection folder with per-asset-class
-children underneath (mirroring the existing FX/Rates ->
-FX Rates/IR Curves sub-folder shape). Because
-=promptThemeAndStart()= and folder-scoped start/stop
-(=projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp=) already
-operate on the folder hierarchy (via each generation config's own
-=folder_id=), not on =collection_id=, merging the folder should not
-require Qt-side changes -- confirm that during implementation.
-Existing already-provisioned tenants (including this one) will keep
-their duplicate folders until a one-off data migration merges them;
-scope that migration as part of this task or split it out
-explicitly, but don't leave it undocumented.
+Do NOT patch this by having the two independent publish functions
+resolve/reuse a folder keyed by name -- that treats the symptom
+(duplicate folder) while leaving the actual data model (N
+independently-publishable datasets masquerading as one theme)
+unchanged, and is exactly the kind of hack that reappears the next
+time someone adds an asset class or calls one of the two functions
+without the other (a party stuck with FX published, IR failed
+halfway through, no atomicity). See =* Analysis= below for the
+options actually considered.
+
+* Analysis
+
+The underlying question: should a "theme" (2016 ORE Samples, 2026
+Realistic, Uniform Volatility Demo) be modelled as one DQ dataset
+covering every asset class, or stay as several datasets that must be
+published together? This determines whether atomicity is structural
+(one dataset, one publish call, can't half-succeed) or merely
+enforced by caller discipline (several datasets, orchestration layer
+promises to call all of them, can still partially fail).
+
+Options considered:
+
+1. *Keep folder-reuse-by-name (rejected).* Cheapest change (two
+   =where= clauses in the publish-from-dq SQL functions), but fixes
+   only the tree's cosmetic symptom. The DQ layer still has =N=
+   independently-publishable datasets per theme; nothing stops a
+   caller (a future shell script, a retried NATS publish, a partial
+   =bundles publish= run) from publishing FX but not IR for the same
+   theme, silently leaving a theme half-installed with no artefact
+   recording that it's incomplete. Rejected per direction above.
+
+2. *Single DQ dataset per theme, covering every asset class
+   (recommended direction).* Model =synthetic.themes.ore_samples_2016=
+   (etc.) as one =ores_dq_datasets_tbl= row whose artefact tables
+   carry FX rows, IR curve rows, and any future asset class's rows
+   together, published by one
+   =ores_synthetic_publish_theme_from_dq_fn= in a single transaction.
+   One dataset id, one container
+   (=ores_synthetic_market_data_generation_configs_tbl= row), one
+   collection folder -- atomicity is structural, and the Market
+   Simulator tree naturally shows one node. Requires:
+   - Reshaping the DQ artefact tables/bundle members
+     (=dq_dataset_bundle_member_populate.sql=,
+     =dq_synthetic_fx_spot_configs_artefact_create.sql=,
+     =dq_synthetic_ir_curve_configs_artefact_create.sql=) so a
+     theme's FX and IR rows are addressable under one dataset id
+     instead of two, without losing the ability to add an asset
+     class's rows independently at seed-script-authoring time (the
+     seed scripts can still be separate =.sql= files "ir_curve
+     rows for theme X" while the *published* runtime artefact/
+     dataset identity is one dataset).
+   - A migration for existing artefact/dataset rows and, separately,
+     the config/folder rows already provisioned for parties (this
+     environment included).
+   - Deciding whether the party-provisioning bundle plan
+     (=party_provisioning_plan.hpp=, already flagged as needing a
+     data-driven bundle list in a separate tracked story) publishes
+     one bundle-per-theme instead of the current bespoke phase list.
+
+3. *Keep N datasets, but make the publish caller atomic
+   (rejected).* Wrap both =ores_synthetic_publish_*_from_dq_fn=
+   calls in one outer transaction/orchestration step so they always
+   succeed or fail together, without touching the dataset model.
+   Still leaves N independently-addressable datasets that a future
+   caller could invoke separately (the atomicity is a promise made
+   by one orchestration layer, not a property of the data model
+   itself) -- weaker guarantee than option 2, and doesn't solve the
+   tree duplication without also doing option 1's folder-reuse hack
+   on top, compounding rather than replacing it.
+
+*Recommendation*: option 2. It is a genuine data-model change, not a
+one-file patch, and should be scoped/estimated as such before
+implementation starts -- likely large enough to warrant its own
+design note under =doc/plans/= given it touches the DQ artefact
+schema, the publish-from-dq SQL functions, the party provisioning
+plan, and a data migration for already-provisioned parties.
 
 * Status
 
@@ -66,20 +129,30 @@ explicitly, but don't leave it undocumented.
 
 * Acceptance
 
-- A theme published with both FX and IR curve datasets (e.g. "2016
-  ORE Samples") shows as exactly one top-level Collection node in
-  the Market Simulator tree, with FX and IR curve asset-class
-  sub-folders underneath it -- not two sibling top-level nodes with
-  the same name.
-- Starting/stopping the merged theme node still starts/stops every
-  asset class under it (regression check against
+- A theme (e.g. "2016 ORE Samples") is one DQ dataset covering
+  every asset class it contains, published by a single
+  publish-from-dq call -- not N independently-publishable datasets
+  that happen to share a name. Publishing a theme either installs
+  every asset class or none; there is no partially-installed state.
+- The Market Simulator tree shows exactly one top-level Collection
+  node per theme, with FX/IR/future-asset-class sub-folders
+  underneath it, as a consequence of the dataset model above -- not
+  achieved by a folder-name-reuse patch over the existing N-dataset
+  model.
+- Starting/stopping the theme node still starts/stops every asset
+  class under it (regression check against
   =promptThemeAndStart()= and the Start-at-Root theme picker from
   the "Synthetic data themes" test scenario).
-- A future third asset class published under the same theme name
-  joins the same folder instead of creating a fourth top-level node.
-- Existing duplicate folders in already-provisioned tenants are
-  either migrated or the gap is explicitly called out as a known
-  follow-up, not silently left broken.
+- A future third asset class added to a theme is a new artefact
+  table/row under the same dataset, not a new independently
+  publishable dataset.
+- Existing already-provisioned tenants (this environment included)
+  are migrated to the new model, or the gap is explicitly called
+  out as a scoped-out follow-up -- not silently left broken.
+- Given the scope, this task's =* Plan= records the actual schema
+  change made (artefact tables, bundle members, publish-from-dq
+  functions, provisioning plan) before implementation starts, not
+  just after the fact.
 
 * Plan
 

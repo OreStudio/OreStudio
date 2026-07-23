@@ -8,7 +8,7 @@
 #+filetags: :sprint_24:v0:
 #+owner: marco
 #+branch: feature/codegen-fk-combo-flag-icons
-#+pr:
+#+pr: 1680
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
@@ -105,7 +105,7 @@ addressing the flag case.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1680][#1680]] | [refdata,qt] Add domain-explanation tooltips to Currency and Currency Pair Convention detail fields |
 
 * Review
 

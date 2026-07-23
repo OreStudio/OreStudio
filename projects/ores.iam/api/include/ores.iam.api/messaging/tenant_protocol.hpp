@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/tenant.hpp"
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -83,6 +84,31 @@ struct complete_tenant_provisioning_command {
 struct complete_tenant_provisioning_response {
     bool success = false;
     std::string message;
+};
+
+// --- Acme one-click tenant provisioning (--source acme) ---
+//
+// A single server-side orchestrated request: imports the four-party Acme
+// Bank LEI hierarchy, publishes real GLEIF counterparties (small), then
+// for each operating company publishes its business units, portfolios,
+// books, accounts, and account contact informations. No repeated
+// per-party logins, no orchestration logic client-side -- see
+// ores_iam_provision_acme_tenant_fn.
+struct provision_acme_tenant_command {
+    using response_type = struct provision_acme_tenant_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";
+};
+
+struct provision_acme_tenant_step {
+    std::string step;
+    std::string action;
+    std::uint64_t record_count = 0;
+};
+
+struct provision_acme_tenant_response {
+    bool success = false;
+    std::string message;
+    std::vector<provision_acme_tenant_step> steps;
 };
 
 }

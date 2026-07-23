@@ -5702,11 +5702,12 @@ def cmd_site(argv):
     return 0
 
 
-# Two build-lock slots so up to two environments on this host can build at
-# once without oversubscribing it: slot 'a' gets -j3, slot 'b' gets -j2
-# (5 cores in flight, max). A third slot could be added the same way if
-# the host ever has headroom for it -- nothing else assumes exactly two.
-BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))
+# Three build-lock slots so up to three environments on this host can build
+# at once without oversubscribing it: slot 'a' gets -j3, slot 'b' gets -j2,
+# slot 'c' gets -j2 (7 cores in flight, max, on this 8-core host). Another
+# slot could be added the same way if the host ever has more headroom --
+# nothing else assumes exactly three.
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 2), ("c", 2))
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
 

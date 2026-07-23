@@ -95,23 +95,25 @@ def write(filename, content):
 
 
 def dataset_upsert(code, subject_area, name, description, artefact_type):
+    def q(v):
+        return v.replace("'", "''")
     return f"""    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        '{code}',
+        '{q(code)}',
         'Acme Bank',
-        '{subject_area}',
+        '{q(subject_area)}',
         'Reference Data',
         'NONE',
         'Primary',
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        '{name}',
-        '{description}',
+        '{q(name)}',
+        '{q(description)}',
         'ACMEBANK',
         'Acme Bank generated data',
         current_date,
         'Internal Use Only',
-        '{artefact_type}'
+        '{q(artefact_type)}'
     );
 """
 
@@ -147,12 +149,20 @@ END $$;
 def generate_dataset_populate(companies):
     body = [dataset_upsert(
         "acme.lei_entities", "Parties", "Acme Bank LEI Entities",
-        "Acme Bank''s four legal entities, checksum-valid synthetic LEIs on the 9695 test prefix.",
+        "Acme Bank's four legal entities, checksum-valid synthetic LEIs on the 9695 test prefix.",
         "lei_entities")]
     body.append(dataset_upsert(
         "acme.lei_relationships", "Parties", "Acme Bank LEI Relationships",
         "Parent/subsidiary consolidation relationships for the Acme Bank group.",
         "lei_relationships"))
+    body.append(dataset_upsert(
+        "acme.lei_parties", "Parties", "Acme Bank LEI Parties",
+        "Publish trigger for the Acme Bank party hierarchy -- publishing this "
+        "dataset (via ores_refdata_publish_lei_parties_from_dq_fn, params.root_lei "
+        "= the Acme Bank Group plc LEI) reads acme.lei_entities/acme.lei_relationships "
+        "and creates the four-party hierarchy. Carries no artefact rows of its own, "
+        "same convention as the gleif.lei_parties.<size> dataset.",
+        "lei_parties"))
     for company in companies:
         label = company.replace("acme_", "").upper()
         body.append(dataset_upsert(
@@ -367,6 +377,7 @@ end $$;
 def generate_portfolios_populate(company, portfolios, units):
     unit_id_by_code = {u["unit_code"]: u["id"] for u in units if u.get("unit_code")}
     portfolio_id_by_code = {p["portfolio_code"]: p["id"] for p in portfolios}
+    ccy = COMPANY_CCY[company]
     rows = []
     for p in portfolios:
         parent_id = portfolio_id_by_code.get(p.get("parent_portfolio_code"))
@@ -377,7 +388,7 @@ def generate_portfolios_populate(company, portfolios, units):
             f"{sql_str(p['id'])}, 0, {sql_str(p['name'])}, "
             f"{sql_str(parent_id)}, "
             f"{sql_str(owner_id)}, "
-            f"'Trading', null, {is_virtual})"
+            f"'Risk', {sql_str(ccy)}, {is_virtual})"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.portfolios"

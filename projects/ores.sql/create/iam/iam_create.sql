@@ -33,6 +33,10 @@
 \ir ./iam_accounts_notify_trigger_create.sql
 \ir ./iam_login_info_create.sql
 
+-- Account contact information (an account's real name; depends on accounts)
+\ir ./iam_account_contact_informations_create.sql
+\ir ./iam_account_contact_informations_notify_trigger_create.sql
+
 -- Sessions
 \ir ./iam_sessions_create.sql
 \ir ./iam_session_stats_create.sql
@@ -51,6 +55,14 @@
 -- Account-party association (depends on accounts and refdata.parties)
 \ir ./iam_account_party_create.sql
 \ir ./iam_account_party_functions_create.sql
+
+-- Publish-from-DQ functions (must follow accounts, account contact
+-- informations, roles, and account-party association)
+\ir ./iam_publish_from_dq_create.sql
+
+-- Acme one-click tenant provisioner (must follow the publish-from-dq
+-- functions above, and refdata's own, which it orchestrates)
+\ir ./iam_acme_provisioner_create.sql
 
 -- Tenant lifecycle (must come after all tables it references)
 \ir ./iam_system_provisioner_create.sql

@@ -37,6 +37,7 @@
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
+#include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.iam.core/messaging/reset_handler.hpp"
 #include "ores.iam.core/messaging/role_handler.hpp"
 #include "ores.iam.core/messaging/session_handler.hpp"
@@ -50,6 +51,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <array>
 #include <boost/uuid/uuid_io.hpp>
 #include <memory>
 #include <string>
@@ -274,6 +276,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         complete_tenant_provisioning_command::nats_subject, qg, [th](ores::nats::message msg) {
             th->complete_provisioning(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        provision_acme_tenant_command::nats_subject, qg, [th](ores::nats::message msg) {
+            th->provision_acme(std::move(msg));
+        }));
 
     // --- Tenant statuses ---
     auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);
@@ -362,6 +368,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(aci_subs.begin()),
                 std::make_move_iterator(aci_subs.end()));
+
+    // --- Publish-from-DQ workflow step handlers ---
+    {
+        auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        static constexpr std::array publish_subjects{
+            "iam.v1.accounts.publish-from-dq",
+            "iam.v1.account-contact-informations.publish-from-dq",
+        };
+        for (const auto subject : publish_subjects) {
+            subs.push_back(nats.queue_subscribe(
+                subject, qg, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+        }
+    }
 
     return subs;
 }

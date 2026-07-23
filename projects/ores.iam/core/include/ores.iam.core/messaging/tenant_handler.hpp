@@ -59,6 +59,7 @@ using ores::service::messaging::log_handler_entry;
 using ores::database::service::tenant_context;
 using ores::database::repository::execute_parameterized_string_query;
 using ores::database::repository::execute_parameterized_command;
+using ores::database::repository::execute_parameterized_multi_column_query;
 using namespace ores::logging;
 
 class tenant_handler {
@@ -237,6 +238,61 @@ public:
             reply(nats_,
                   msg,
                   complete_tenant_provisioning_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void provision_acme(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+
+            auto ids =
+                execute_parameterized_string_query(*ctx_expected,
+                                                   "SELECT ores_iam_current_tenant_id_fn()::text",
+                                                   {},
+                                                   tenant_handler_lg(),
+                                                   "provision_acme");
+            if (ids.empty()) {
+                reply(nats_,
+                      msg,
+                      provision_acme_tenant_response{.success = false,
+                                                     .message = "No tenant context"});
+                return;
+            }
+
+            auto rows = execute_parameterized_multi_column_query(
+                *ctx_expected,
+                "SELECT step, action, record_count FROM "
+                "ores_iam_provision_acme_tenant_fn($1::uuid)",
+                {ids.front()},
+                tenant_handler_lg(),
+                "provision_acme");
+
+            provision_acme_tenant_response resp;
+            resp.success = true;
+            for (const auto& row : rows) {
+                if (row.size() >= 3 && row[0] && row[1] && row[2]) {
+                    provision_acme_tenant_step step;
+                    step.step = *row[0];
+                    step.action = *row[1];
+                    step.record_count = static_cast<std::uint64_t>(std::stoll(*row[2]));
+                    resp.steps.push_back(std::move(step));
+                }
+            }
+
+            BOOST_LOG_SEV(tenant_handler_lg(), info)
+                << "Acme tenant provisioned: " << ids.front() << " (" << resp.steps.size()
+                << " step(s))";
+
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, provision_acme_tenant_response{.success = false, .message = e.what()});
         }
     }
 

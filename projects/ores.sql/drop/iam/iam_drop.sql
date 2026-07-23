@@ -48,6 +48,8 @@
 \ir ./iam_login_info_drop.sql
 
 -- Accounts
+\ir ./iam_account_contact_informations_notify_trigger_drop.sql
+\ir ./iam_account_contact_informations_drop.sql
 \ir ./iam_accounts_notify_trigger_drop.sql
 \ir ./iam_accounts_drop.sql
 \ir ./iam_account_types_drop.sql

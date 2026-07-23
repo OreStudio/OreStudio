@@ -7,43 +7,87 @@
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/acme-provisioning-server-glue
+#+pr: 1678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =--source acme= to =provision tenant=: a single server-side
+orchestrated request that creates the tenant, imports the four-party
+Acme LEI hierarchy, publishes GLEIF counterparties, then per-company
+business units/portfolios/books/accounts/account-contact-informations
+-- no repeated per-party logins, no client-side orchestration logic,
+callable identically from ores.shell and ores.qt.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
 
--
+- =provision tenant --source acme= provisions the full four-party
+  Acme Bank holding group in one shot (tenant, LEI hierarchy, GLEIF
+  counterparties, per-company business units/portfolios/books,
+  accounts and account contact informations).
+- No client-side orchestration or per-party re-login required.
+- =rat= build/test green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add =provision_acme_tenant_command/response= to =tenant_protocol.hpp=
+  and a =provision_acme= handler in =tenant_handler.hpp=, wired
+  through =registrar.cpp=, calling a new
+  =ores_iam_provision_acme_tenant_fn= SQL function that loops over
+  the three operating companies.
+- Add the missing accounts DQ artefact table and a
+  =publish_from_dq_handler= (accounts + account-contact-informations)
+  -- parties/business-units/portfolios/books already had artefact
+  tables and publish functions, accounts didn't.
+- Add =--source acme= to =ores.shell='s =provision tenant= alongside
+  =gleif=/=synthetic=, calling the new command then
+  =complete_tenant_provisioning_command=.
+- Verify end-to-end via a real =compass shell= script: bootstrap
+  system + tenant, then =provision tenant --source acme=.
 
 * Notes
+
+Two real, general (not Acme-specific) bugs surfaced by the
+orchestrator looping over three companies in one transaction:
+
+- =on commit drop= temp tables in
+  =refdata_publish_from_dq_create.sql= collided when the same publish
+  function ran more than once per transaction -- fixed with a =drop
+  table if exists= guard before each =create temp table=.
+- Sibling-dataset ref-map lookups (=bu_ref_map=,
+  =portfolio_ref_map=) matched by name only, unscoped by party --
+  identical unit/portfolio names across different companies (e.g. a
+  shared top-level division name) collided -- fixed to scope the
+  match by party.
+
+The initial local build under =linux-gcc-debug-ninja= needed a
+one-off =cmake --preset= reconfigure after adding new source files;
+switched to building/testing under the environment's actual preset
+(=linux-clang-debug-make=) throughout.
+
+A session crash mid-build left =publish/lib= with a truncated
+=libores.logging.so= (8MB, missing section headers) and ~26
+zero-byte/broken-symlink artefacts from concurrent contention;
+cleared and relinked before the final green =rat= run.
 
 * Test Scenarios
 
@@ -60,12 +104,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1678][#1678]] | [iam,shell,sql] Server-side glue for one-click Acme provisioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =p_performed_by= accepted but never used -- actor silently dropped from audit trail | iam_acme_provisioner_create.sql | Accepted | Downstream publish-from-dq functions don't accept an actor param either, so fully threading it through was out of scope; dropped the unused parameter and the now-misleading actor argument on the C++ side instead |
+| 2 | Stale file reference in header comment (=acme_provisioner_handler.hpp= doesn't exist) | iam_acme_provisioner_create.sql | Accepted | Fixed to point at =tenant_handler.hpp=; also noted why the function doesn't take a performed_by param |
+| 3 | Silent skip when a company party isn't found | iam_acme_provisioner_create.sql | Accepted | Now emits a =<code>.skipped= step row with =party_not_found= instead of silently continuing |
+| 4 | No drop script for the two new SQL files | iam_acme_provisioner_create.sql, iam_publish_from_dq_create.sql | Declined | Pre-existing gap shared with =refdata_publish_from_dq_create.sql=; worth a follow-up across the whole publish-from-dq family, not this PR |
+| 5 | No automated tests for the new handler/function paths | tenant_handler.hpp, publish_from_dq_handler | Declined | Follow-up; not blocking, existing suites cover regressions |
 
 * Result
+
+Shipped =provision tenant --source acme= end-to-end: verified via a
+real shell run producing the four-party LEI hierarchy, 12,959 GLEIF
+counterparties, and per-company business units/portfolios/books/
+accounts (45 accounts, 9 books) correctly distributed across the
+three operating companies with the holding company retaining none
+of its own. Full =rat= build/test green under
+=linux-clang-debug-make= after clearing build artefacts corrupted by
+a session crash.
+
+Sideloaded two unrelated small fixes onto this branch while
+resuming from the crash: a third =compass= build-lock slot
+(=projects/ores.compass/src/compass.py=) now that the host has
+headroom for three concurrent builds, and a batch of sample face
+images for =facestudio= synthetic staff/portrait generation.

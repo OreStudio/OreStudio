@@ -2056,7 +2056,8 @@ declare
     v_inserted_bic_identifiers bigint := 0;
     v_dataset_name text;
     v_dataset_code text;
-    v_dataset_size text;
+    v_entity_dataset_code text;
+    v_relationship_dataset_code text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
     v_bic_dataset_id uuid;
@@ -2070,19 +2071,24 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
-    v_dataset_size := coalesce(
-        substring(v_dataset_code from '[^.]+$'),
-        p_params ->> 'lei_dataset_size',
-        'small');
+    -- See ores_refdata_publish_lei_parties_from_dq_fn for why the
+    -- sibling entity/relationship dataset codes are derived from this
+    -- dataset's own code rather than hardcoded to the 'gleif.' family.
+    v_entity_dataset_code := coalesce(
+        p_params ->> 'entity_dataset_code',
+        replace(v_dataset_code, 'lei_counterparties', 'lei_entities'));
+    v_relationship_dataset_code := coalesce(
+        p_params ->> 'relationship_dataset_code',
+        replace(v_dataset_code, 'lei_counterparties', 'lei_relationships'));
 
     select id into v_entity_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'gleif.lei_entities.' || v_dataset_size
+    where code = v_entity_dataset_code
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_rel_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'gleif.lei_relationships.' || v_dataset_size
+    where code = v_relationship_dataset_code
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_bic_dataset_id
@@ -2091,7 +2097,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_entity_dataset_id is null or v_rel_dataset_id is null then
-        raise exception 'LEI dataset not found for size: %', v_dataset_size;
+        raise exception 'LEI dataset not found for: % / %', v_entity_dataset_code, v_relationship_dataset_code;
     end if;
 
     if exists (
@@ -2107,6 +2113,11 @@ begin
         return;
     end if;
 
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists lei_counterparty_uuid_map;
     create temp table lei_counterparty_uuid_map (
         lei text primary key,
         counterparty_uuid uuid not null default gen_random_uuid(),
@@ -2289,7 +2300,8 @@ declare
     v_inserted_bic_identifiers bigint := 0;
     v_dataset_name text;
     v_dataset_code text;
-    v_dataset_size text;
+    v_entity_dataset_code text;
+    v_relationship_dataset_code text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
     v_bic_dataset_id uuid;
@@ -2303,19 +2315,28 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
-    v_dataset_size := coalesce(
-        substring(v_dataset_code from '[^.]+$'),
-        p_params ->> 'lei_dataset_size',
-        'small');
+    -- Sibling entity/relationship dataset codes are derived from this
+    -- dataset's own code by convention (e.g. 'gleif.lei_parties.small'
+    -- -> 'gleif.lei_entities.small'/'gleif.lei_relationships.small';
+    -- 'acme.lei_parties' -> 'acme.lei_entities'/'acme.lei_relationships')
+    -- rather than hardcoded to the 'gleif.' family -- any explicit
+    -- override always wins, so a family whose datasets don't follow the
+    -- convention isn't blocked.
+    v_entity_dataset_code := coalesce(
+        p_params ->> 'entity_dataset_code',
+        replace(v_dataset_code, 'lei_parties', 'lei_entities'));
+    v_relationship_dataset_code := coalesce(
+        p_params ->> 'relationship_dataset_code',
+        replace(v_dataset_code, 'lei_parties', 'lei_relationships'));
 
     select id into v_entity_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'gleif.lei_entities.' || v_dataset_size
+    where code = v_entity_dataset_code
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_rel_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'gleif.lei_relationships.' || v_dataset_size
+    where code = v_relationship_dataset_code
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_bic_dataset_id
@@ -2324,7 +2345,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_entity_dataset_id is null or v_rel_dataset_id is null then
-        raise exception 'LEI dataset not found for size: %', v_dataset_size;
+        raise exception 'LEI dataset not found for: % / %', v_entity_dataset_code, v_relationship_dataset_code;
     end if;
 
     v_root_lei := coalesce(
@@ -2359,6 +2380,11 @@ begin
         return;
     end if;
 
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists lei_party_subtree;
     create temp table lei_party_subtree (
         lei text primary key,
         party_uuid uuid not null default gen_random_uuid(),
@@ -2593,6 +2619,11 @@ begin
         ) as t(code, name, level, description);
     end if;
 
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists bu_publish_map;
     create temp table bu_publish_map (
         artefact_id uuid primary key,
         new_id uuid not null default gen_random_uuid(),
@@ -2682,6 +2713,8 @@ returns table (
     record_count bigint
 ) as $$
 declare
+    v_dataset_code text;
+    v_bu_dataset_code text;
     v_root_party_id uuid;
     v_bu_dataset_id uuid;
     v_inserted bigint := 0;
@@ -2714,27 +2747,57 @@ begin
         return;
     end if;
 
-    select id into v_bu_dataset_id
+    -- The sibling business_units dataset code is derived from this
+    -- dataset's own code by convention (e.g. 'testdata.portfolios' ->
+    -- 'testdata.business_units'; 'acme.acme_uk.portfolios' ->
+    -- 'acme.acme_uk.business_units') rather than hardcoded to a single
+    -- dataset -- any explicit override always wins.
+    select code into v_dataset_code
     from ores_dq_datasets_tbl
-    where code = 'testdata.business_units'
+    where id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 
+    v_bu_dataset_code := coalesce(
+        p_params ->> 'business_units_dataset_code',
+        replace(v_dataset_code, 'portfolios', 'business_units'));
+
+    select id into v_bu_dataset_id
+    from ores_dq_datasets_tbl
+    where code = v_bu_dataset_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists bu_ref_map;
     create temp table bu_ref_map (
         artefact_id uuid primary key,
         published_id uuid not null
     ) on commit drop;
 
     if v_bu_dataset_id is not null then
+        -- Scoped to the target party, not just (tenant, unit_name): two
+        -- different parties can legitimately have identically-named
+        -- business units (e.g. every legal entity in a holding group
+        -- having its own "Global Markets" division), and an unscoped
+        -- match would return multiple r rows for one artefact_id.
         insert into bu_ref_map (artefact_id, published_id)
         select a.id, r.id
         from ores_dq_business_units_artefact_tbl a
         join ores_refdata_business_units_tbl r
             on r.unit_name = a.unit_name
             and r.tenant_id = p_target_tenant_id
+            and r.party_id = v_root_party_id
             and r.valid_to = ores_utility_infinity_timestamp_fn()
         where a.dataset_id = v_bu_dataset_id;
     end if;
 
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists portfolio_publish_map;
     create temp table portfolio_publish_map (
         artefact_id uuid primary key,
         new_id uuid not null default gen_random_uuid(),
@@ -2824,6 +2887,8 @@ returns table (
     record_count bigint
 ) as $$
 declare
+    v_dataset_code text;
+    v_portfolio_dataset_code text;
     v_root_party_id uuid;
     v_portfolio_dataset_id uuid;
     v_inserted bigint := 0;
@@ -2853,11 +2918,28 @@ begin
         return;
     end if;
 
-    select id into v_portfolio_dataset_id
+    -- See ores_refdata_publish_portfolios_from_dq_fn for why the
+    -- sibling portfolios dataset code is derived from this dataset's
+    -- own code rather than hardcoded to a single dataset.
+    select code into v_dataset_code
     from ores_dq_datasets_tbl
-    where code = 'testdata.portfolios'
+    where id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 
+    v_portfolio_dataset_code := coalesce(
+        p_params ->> 'portfolios_dataset_code',
+        replace(v_dataset_code, 'books', 'portfolios'));
+
+    select id into v_portfolio_dataset_id
+    from ores_dq_datasets_tbl
+    where code = v_portfolio_dataset_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- Explicit drop, not just ON COMMIT DROP: this function may be
+    -- called more than once within a single enclosing transaction
+    -- (e.g. a multi-party orchestrator), so the temp table from a
+    -- prior call in the same transaction must not collide.
+    drop table if exists portfolio_ref_map;
     create temp table portfolio_ref_map (
         artefact_id uuid primary key,
         published_id uuid not null,
@@ -2865,12 +2947,15 @@ begin
     ) on commit drop;
 
     if v_portfolio_dataset_id is not null then
+        -- Scoped to the target party -- see the matching comment in
+        -- ores_refdata_publish_portfolios_from_dq_fn's bu_ref_map join.
         insert into portfolio_ref_map (artefact_id, published_id, published_owner_unit_id)
         select a.id, r.id, r.owner_unit_id
         from ores_dq_portfolios_artefact_tbl a
         join ores_refdata_portfolios_tbl r
             on r.name = a.name
             and r.tenant_id = p_target_tenant_id
+            and r.party_id = v_root_party_id
             and r.valid_to = ores_utility_infinity_timestamp_fn()
         where a.dataset_id = v_portfolio_dataset_id;
     end if;

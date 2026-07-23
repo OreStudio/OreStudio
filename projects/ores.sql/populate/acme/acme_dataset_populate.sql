@@ -71,6 +71,24 @@ BEGIN
         'lei_relationships'
     );
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.lei_parties',
+        'Acme Bank',
+        'Parties',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'Acme Bank LEI Parties',
+        'Publish trigger for the Acme Bank party hierarchy -- publishing this dataset (via ores_refdata_publish_lei_parties_from_dq_fn, params.root_lei = the Acme Bank Group plc LEI) reads acme.lei_entities/acme.lei_relationships and creates the four-party hierarchy. Carries no artefact rows of its own, same convention as the gleif.lei_parties.<size> dataset.',
+        'ACMEBANK',
+        'Acme Bank generated data',
+        current_date,
+        'Internal Use Only',
+        'lei_parties'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.business_units',
         'Acme Bank',
         'Organisation',

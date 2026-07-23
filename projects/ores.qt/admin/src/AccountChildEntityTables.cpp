@@ -98,8 +98,7 @@ void AccountChildEntityTables::loadContacts() {
         return result->account_contact_informations;
     };
 
-    auto* watcher =
-        new QFutureWatcher<std::vector<iam::domain::account_contact_information>>(this);
+    auto* watcher = new QFutureWatcher<std::vector<iam::domain::account_contact_information>>(this);
     connect(watcher,
             &QFutureWatcher<std::vector<iam::domain::account_contact_information>>::finished,
             this,
@@ -127,8 +126,9 @@ void AccountChildEntityTables::onAddContact() {
     if (readOnly_)
         return;
     if (accountId_.is_nil()) {
-        MessageBoxHelper::warning(
-            dialogParent_, "Save Required", "Save the account first, then add contact information.");
+        MessageBoxHelper::warning(dialogParent_,
+                                  "Save Required",
+                                  "Save the account first, then add contact information.");
         return;
     }
     if (!clientManager_ || !clientManager_->isConnected()) {

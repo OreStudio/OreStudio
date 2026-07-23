@@ -235,7 +235,8 @@ public:
      * @param mime_type MIME type of the data (e.g. "image/svg+xml", "image/jpeg")
      * @return QIcon rendered from the data, or empty icon on failure
      */
-    static QIcon imageDataToIcon(const std::vector<std::uint8_t>& data, const std::string& mime_type);
+    static QIcon imageDataToIcon(const std::vector<std::uint8_t>& data,
+                                 const std::string& mime_type);
 
     /**
      * @brief Renders SVG data to a QPixmap at specified height, preserving aspect ratio.

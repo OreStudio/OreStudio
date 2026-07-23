@@ -412,8 +412,8 @@ void PartyExecutePage::startNextPartyBundle() {
         }
 
         BOOST_LOG_SEV(lg(), info) << "Bundle workflow started: instance=" << result.instance_id;
-        appendLog(tr("Workflow started: %1 dataset(s) dispatched.")
-                      .arg(result.datasets_dispatched));
+        appendLog(
+            tr("Workflow started: %1 dataset(s) dispatched.").arg(result.datasets_dispatched));
 
         progressBar_->setVisible(false);
         stepsWidget_->setVisible(true);
@@ -427,8 +427,8 @@ void PartyExecutePage::startNextPartyBundle() {
         stepsWidget_->preSeed(result.datasets_dispatched);
     });
 
-    QFuture<BundleResult> future = QtConcurrent::run(
-        [clientManager, step, publishedBy = publishedBy_]() -> BundleResult {
+    QFuture<BundleResult> future =
+        QtConcurrent::run([clientManager, step, publishedBy = publishedBy_]() -> BundleResult {
             BundleResult result;
             dq::messaging::publish_bundle_params params;
             params.party_id = boost::uuids::to_string(clientManager->currentPartyId());

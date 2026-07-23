@@ -360,8 +360,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // --- Account contact information ---
     auto aci_subs = register_account_contact_information_handlers(nats, ctx, signer);
     subs.insert(subs.end(),
-               std::make_move_iterator(aci_subs.begin()),
-               std::make_move_iterator(aci_subs.end()));
+                std::make_move_iterator(aci_subs.begin()),
+                std::make_move_iterator(aci_subs.end()));
 
     return subs;
 }

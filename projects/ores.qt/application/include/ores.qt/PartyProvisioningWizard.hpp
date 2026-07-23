@@ -69,12 +69,7 @@ private:
     }
 
 public:
-    enum PageId {
-        Page_Welcome,
-        Page_CounterpartySetup,
-        Page_Execute,
-        Page_Summary
-    };
+    enum PageId { Page_Welcome, Page_CounterpartySetup, Page_Execute, Page_Summary };
 
     explicit PartyProvisioningWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 

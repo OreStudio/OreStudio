@@ -28,13 +28,18 @@
 -- accounts, and account contact informations, plus a single tenant-wide
 -- import of real GLEIF counterparties (small) so every Acme party can
 -- trade against a realistic counterparty set. Called from a single NATS
--- request/handler (see ores.iam.core/messaging/acme_provisioner_handler.hpp)
+-- request/handler (see ores.iam.core/messaging/tenant_handler.hpp)
 -- -- no repeated per-party logins, no orchestration logic client-side.
+--
+-- Note: the downstream ores_refdata_publish_*_from_dq_fn /
+-- ores_iam_publish_*_from_dq_fn functions this orchestrates do not accept
+-- a performed_by/actor parameter today (they all attribute rows to
+-- current_user), so this function does not accept one either -- there is
+-- nothing to thread it through to yet.
 -- =============================================================================
 
 create or replace function ores_iam_provision_acme_tenant_fn(
-    p_target_tenant_id uuid,
-    p_performed_by text default current_user
+    p_target_tenant_id uuid
 )
 returns table (
     step text,
@@ -112,6 +117,9 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         if v_party_id is null then
+            step := v_company.code || '.skipped';
+            action := 'party_not_found'; record_count := 0;
+            return next;
             continue;
         end if;
 

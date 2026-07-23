@@ -251,7 +251,6 @@ public:
                 return;
             }
 
-            const auto actor = ctx_expected->actor();
             auto ids =
                 execute_parameterized_string_query(*ctx_expected,
                                                    "SELECT ores_iam_current_tenant_id_fn()::text",
@@ -269,8 +268,8 @@ public:
             auto rows = execute_parameterized_multi_column_query(
                 *ctx_expected,
                 "SELECT step, action, record_count FROM "
-                "ores_iam_provision_acme_tenant_fn($1::uuid, $2)",
-                {ids.front(), actor},
+                "ores_iam_provision_acme_tenant_fn($1::uuid)",
+                {ids.front()},
                 tenant_handler_lg(),
                 "provision_acme");
 

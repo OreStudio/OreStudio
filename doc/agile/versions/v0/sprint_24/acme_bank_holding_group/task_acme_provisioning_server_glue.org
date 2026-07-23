@@ -110,7 +110,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =p_performed_by= accepted but never used -- actor silently dropped from audit trail | iam_acme_provisioner_create.sql | Accepted | Downstream publish-from-dq functions don't accept an actor param either, so fully threading it through was out of scope; dropped the unused parameter and the now-misleading actor argument on the C++ side instead |
+| 2 | Stale file reference in header comment (=acme_provisioner_handler.hpp= doesn't exist) | iam_acme_provisioner_create.sql | Accepted | Fixed to point at =tenant_handler.hpp=; also noted why the function doesn't take a performed_by param |
+| 3 | Silent skip when a company party isn't found | iam_acme_provisioner_create.sql | Accepted | Now emits a =<code>.skipped= step row with =party_not_found= instead of silently continuing |
+| 4 | No drop script for the two new SQL files | iam_acme_provisioner_create.sql, iam_publish_from_dq_create.sql | Declined | Pre-existing gap shared with =refdata_publish_from_dq_create.sql=; worth a follow-up across the whole publish-from-dq family, not this PR |
+| 5 | No automated tests for the new handler/function paths | tenant_handler.hpp, publish_from_dq_handler | Declined | Follow-up; not blocking, existing suites cover regressions |
 
 * Result
 

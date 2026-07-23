@@ -53,7 +53,7 @@ const std::string tags("[repository][currency_pair_convention_calendar]");
 // records. Each test uses a different slice of the synthetic
 // conventions/calendars lists to avoid interfering with records
 // written by other tests in the same shared tenant database.
-constexpr std::size_t total_slots = 12;
+constexpr std::size_t total_slots = 10;
 
 currency_pair_convention_calendar make_pair_convention_calendar(scoped_database_helper& h,
                                                                 const std::string& pair_code,

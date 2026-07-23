@@ -123,7 +123,9 @@ independently verified correct via direct SQL inspection.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction rows unioned across duplicate pair entries instead of following the convention row's last-one-wins semantics | application.cpp | Accepted | Now group by pair_code first and only emit calendars for the last fx entry per pair |
+| 2 | Repository constructed inside the file loop instead of once above it | application.cpp | Accepted | Hoisted alongside the other repositories |
+| 3 | =total_slots= bumped 10 -> 12 without the new test needing indices past 10 | repository_currency_pair_convention_calendar_repository_tests.cpp | Accepted | Reverted to 10 |
 
 * Result
 

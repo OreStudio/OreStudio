@@ -31,12 +31,12 @@ blocking or degrading basic functionality:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                                |
 | Waiting on    | Nothing.                               |
-| Next          | Each task is independently startable.  |
-| Last touched  | 2026-07-21                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-22                               |
 
 * Acceptance
 

@@ -4920,6 +4920,101 @@ def _claude_refresh_warnings():
         print()
 
 
+def _claude_project_slug(path):
+    """Mirror Claude Code's ~/.claude/projects/<slug> naming: every
+    non-alphanumeric character in the absolute path becomes a dash."""
+    return re.sub(r"[^A-Za-z0-9]", "-", str(Path(path).resolve()))
+
+def _claude_last_session_file():
+    """Return the most recently modified Claude session .jsonl for this
+    project, excluding the session currently running this command.
+
+    CLAUDE_CODE_SESSION_ID excludes it by id when set (e.g. this command
+    ran from a Claude-spawned shell). But 'bearings' is meant to be run
+    from a *fresh* session after a crash, often via a plain terminal
+    where that env var is unset — so as a second, always-on guard we
+    also drop the single newest-mtime file: whatever session is live
+    right now is, by construction, still being written to and therefore
+    always the most recently modified one.
+    """
+    slug = _claude_project_slug(PROJECT_ROOT)
+    sessions_dir = Path.home() / ".claude" / "projects" / slug
+    if not sessions_dir.is_dir():
+        return None
+    current_id = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+    candidates = [
+        f for f in sessions_dir.glob("*.jsonl")
+        if f.stat().st_size > 0 and f.stem != current_id
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+    if not current_id and len(candidates) > 1:
+        candidates = candidates[1:]
+    return candidates[0] if candidates else None
+
+def _claude_message_text(entry):
+    """Flatten a session entry's message content into a short snippet, or
+    None if the entry carries no user/assistant-visible text."""
+    if entry.get("type") not in ("user", "assistant"):
+        return None
+    message = entry.get("message")
+    if not isinstance(message, dict):
+        return None
+    content = message.get("content")
+    if isinstance(content, str):
+        text = content
+    elif isinstance(content, list):
+        parts = [c.get("text", "") for c in content
+                 if isinstance(c, dict) and c.get("type") == "text"]
+        text = "\n".join(p for p in parts if p)
+    else:
+        return None
+    text = text.strip()
+    return text or None
+
+def _bearings_last_conversation(limit=5):
+    session_file = _claude_last_session_file()
+    if session_file is None:
+        print("  No prior Claude session log found for this environment.")
+        return
+
+    raw_lines = session_file.read_text(encoding="utf-8", errors="replace").splitlines()
+    exchanges = []
+    corrupted = 0
+    for line in raw_lines:
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            corrupted += 1
+            continue
+        text = _claude_message_text(entry)
+        if not text:
+            continue
+        exchanges.append((entry.get("timestamp", ""), entry.get("type"), text))
+
+    print(f"  Session: {session_file.name}")
+    if corrupted:
+        print(f"  ⚠  {corrupted} unparseable line(s) in this log — "
+              f"likely a crash mid-write. Showing what could be recovered.")
+
+    if exchanges:
+        for ts, role, text in exchanges[-limit:]:
+            snippet = text[:300].replace("\n", " ")
+            who = "user" if role == "user" else "assistant"
+            print(f"\n  [{ts}] {who}")
+            print(f"    {snippet}")
+        return
+
+    # No line parsed as valid, message-bearing JSON — fall back to a raw
+    # tail so there is still something to read instead of nothing.
+    print("  ⚠  Could not recover any structured messages — raw tail of the log file:")
+    tail = raw_lines[-40:]
+    for line in tail:
+        print(f"    {line[:300]}")
+
 def cmd_bearings(argv):
     """compass bearings — cold-start orientation for LLMs and new contributors."""
     import types as _types
@@ -5160,6 +5255,10 @@ def cmd_bearings(argv):
         except SystemExit as e:
             if e.code:
                 print("  (compass heading unavailable)")
+
+    # ── Where were we? ───────────────────────────────────────────────────────
+    _bearings_section("💬", "Where were we? (last conversation)")
+    _bearings_last_conversation()
 
     print()
     return 0

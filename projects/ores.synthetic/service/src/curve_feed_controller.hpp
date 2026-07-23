@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -34,42 +35,85 @@ namespace ores::synthetic::service {
  * @brief Owns the running ir_curve_feed producers; one tick thread per feed, keyed by
  * source_name -- same shape as feed_controller's own feeds_ map for FX.
  *
- * Supports both auto-start (add(), used at application startup for every enabled config) and
- * on-demand start/stop/list via ir_curve_feed_config_handler's NATS control-plane, mirroring
- * feed_controller/market_feed_config_handler's manual-control surface for FX.
+ * Supports both auto-start (add(), used at application startup for every enabled+auto_start
+ * config) and on-demand start/stop/list via ir_curve_feed_config_handler's NATS control-plane,
+ * mirroring feed_controller/market_feed_config_handler's manual-control surface for FX.
+ *
+ * Enforces one additional invariant neither source_name uniqueness nor the config-level
+ * enabled/auto_start flags can, on their own: at most one running feed per published qualifier
+ * (currency_code + index_name -- see ir_curve_feed::qualifier(), what every consumer actually
+ * looks up market_observation rows by). Two different configs (different source_name, e.g. one
+ * from the basic dataset, one from realistic, or a legacy-vs-recent vintage pair) can carry the
+ * identical (currency_code, index_name) and would otherwise race to publish into the same
+ * observation series if both were ever started. Both add() and start() reject a feed whose
+ * qualifier already has a different feed running -- never silently, and never by stopping the
+ * existing one; switching requires an explicit stop() first, real consent rather than an implicit
+ * rebind.
  */
 class curve_feed_controller final {
 public:
-    enum class start_result { started, already_running };
+    enum class start_result { started, already_running, qualifier_conflict };
 
     /**
-     * @brief Auto-start path: adds an already-constructed feed and starts its tick thread.
-     * Caller is responsible for ensuring source_name uniqueness (add() does not check).
+     * @brief Auto-start path: adds an already-constructed feed and starts its tick thread, unless
+     * its qualifier is already held by a different running feed, in which case the feed is
+     * dropped without starting (auto-start must not crash the service over a seed-data
+     * misconfiguration -- the caller logs the skip).
+     *
+     * @return false if skipped due to a qualifier conflict (with @p out_conflicting_source_name
+     * set to the running feed's source_name), true if started.
      */
-    void add(std::shared_ptr<ir_curve_feed> feed) {
+    bool add(std::shared_ptr<ir_curve_feed> feed,
+             std::string* out_conflicting_source_name = nullptr) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
+        if (const auto conflict = find_qualifier_conflict(feed->qualifier(), source_name)) {
+            if (out_conflicting_source_name)
+                *out_conflicting_source_name = *conflict;
+            return false;
+        }
         auto* raw = feed.get();
         running_feed rf;
         rf.feed = feed;
+        rf.qualifier = feed->qualifier();
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(source_name, std::move(rf));
+        return true;
     }
 
     /**
-     * @brief On-demand path: starts a feed by source_name if not already running.
+     * @brief On-demand path: starts a feed by source_name if not already running, and if no
+     * *different* feed already holds its qualifier. Use running_source_name_for_qualifier() to
+     * build an actionable message when this returns qualifier_conflict.
      */
     start_result start(std::shared_ptr<ir_curve_feed> feed) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
         if (feeds_.contains(source_name))
             return start_result::already_running;
+        if (find_qualifier_conflict(feed->qualifier(), source_name))
+            return start_result::qualifier_conflict;
         auto* raw = feed.get();
         running_feed rf;
         rf.feed = feed;
+        rf.qualifier = feed->qualifier();
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(source_name, std::move(rf));
         return start_result::started;
+    }
+
+    /**
+     * @brief The source_name of the running feed currently holding @p qualifier, if any --
+     * for building the "already running as X -- stop it first" message after a qualifier_conflict
+     * result.
+     */
+    std::optional<std::string>
+    running_source_name_for_qualifier(const std::string& qualifier) const {
+        std::lock_guard lock(mu_);
+        for (const auto& [name, rf] : feeds_)
+            if (rf.qualifier == qualifier)
+                return name;
+        return std::nullopt;
     }
 
     /**
@@ -119,6 +163,7 @@ public:
 private:
     struct running_feed {
         std::shared_ptr<ir_curve_feed> feed;
+        std::string qualifier;
         std::thread thread;
     };
 
@@ -127,6 +172,20 @@ private:
             rf.feed->stop();
         if (rf.thread.joinable())
             rf.thread.join();
+    }
+
+    /**
+     * @brief Source_name of a *different* running feed already holding @p qualifier, if any --
+     * excludes @p excluding_source_name so re-adding/restarting the same config never
+     * self-conflicts. Caller must already hold mu_.
+     */
+    std::optional<std::string>
+    find_qualifier_conflict(const std::string& qualifier,
+                            const std::string& excluding_source_name) const {
+        for (const auto& [name, rf] : feeds_)
+            if (rf.qualifier == qualifier && name != excluding_source_name)
+                return name;
+        return std::nullopt;
     }
 
     mutable std::mutex mu_;

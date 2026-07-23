@@ -40,6 +40,8 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Initial Rate", .value = std::to_string(v.initial_rate)});
     fields.push_back({.name = "Ticks Per Hour", .value = std::to_string(v.ticks_per_hour)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
+    fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});
+    fields.push_back({.name = "Description", .value = v.description});
     fields.push_back(
         {.name = "Fixed Leg Payment Frequency Code", .value = v.fixed_leg_payment_frequency_code});
     fields.push_back({.name = "Source Name", .value = v.source_name});

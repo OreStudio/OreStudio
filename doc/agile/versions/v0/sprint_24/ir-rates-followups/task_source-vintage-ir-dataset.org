@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/source-vintage-ir-dataset
+#+pr: 1676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,69 @@ IR curve sample data]] because sourcing/licensing a new external
 dataset is independent work from the seeding plumbing that consumes
 it.
 
+** Design, worked out before implementation (see Plan for the full trace)
+
+Sourcing real IR data surfaced a genuine anachronism: this
+codebase's IR curve configs are indexed on RFRs (SOFR/€STR/SONIA)
+that did not exist at FX's own 2016-02-05 reference vintage (SOFR:
+Apr 2018; €STR: Oct 2019; reformed SONIA: Apr 2018) — EUR additionally
+never retires EURIBOR at all, unlike USD/GBP LIBOR. Rather than force
+period-inappropriate index names onto a 2016 date, or abandon vintage
+alignment with FX, the resolution is to model the underlying domain
+properly:
+
+- *Two vintages, not one*: a legacy vintage (~2016, matching FX's own
+  reference date, IBOR-era indices — USD LIBOR-3M, EURIBOR-3M, GBP
+  LIBOR-3M, EONIA) and a recent vintage (2026, RFR indices — SOFR,
+  €STR, SONIA) — each period-correct for the indices it seeds.
+- *Multiple coexisting configs per currency* are already structurally
+  fine (=ir_curve_generation_config= has no uniqueness on
+  =currency_code= alone) — the real gap is exclusivity of *who is
+  actually running*, not how many configs exist.
+- =enabled= keeps meaning "startable at all"; a new =auto_start=
+  boolean (orthogonal) governs whether a config starts automatically
+  at service boot vs. manual-start-only (e.g. the legacy LIBOR variant
+  stays =enabled=true, auto_start=false= — available, never
+  auto-started, no silent fight with the RFR variant for the same
+  qualifier).
+- *Exclusivity is enforced at runtime, not the DB schema*:
+  =curve_feed_controller::start()= (auto-start-at-boot and manual
+  Start alike) checks whether a feed is already running for the same
+  =(currency_code, index_name)= qualifier (the exact pair
+  =ir_curve_feed.cpp= derives the published qualifier from) and
+  *rejects* the start outright if so — "already running as
+  =<source_name>= — stop it first." Nothing auto-disables anything;
+  explicit Stop, then explicit Start, is the only path to rebinding —
+  real consent, not an implicit switch.
+- This is not hypothetical: =synthetic_ir_curve_configs_basic_populate.sql=
+  and =_realistic_populate.sql= *already* both seed =USD/USD-SOFR= (and
+  every other currency/index pair) with =enabled=true= unconditionally
+  today — a tenant with both DQ datasets published would already hit
+  this exact collision, before any vintage work adds more variants.
+- Use-case separation, per discussion: whole-bundle exclusivity
+  (basic vs. realistic) is *not* solved here — folder-scoped manual
+  navigation ("press play at the right node") is accepted as
+  sufficient; only the *within-one-bundle* case (multiple configs for
+  the same qualifier, e.g. legacy-vs-recent index variants living in
+  the same folder) gets the =auto_start=/runtime-check treatment.
+- *Sanity check*: extend the existing =Validate Vintage=
+  toolbar action (=MarketSimulatorWindow=, currently FX-only — a
+  batch =validate()= call per config with a ✓/✗ pass/fail summary
+  dialog) to (a) cover IR curve configs too, and (b) add a new check
+  alongside the existing per-config vintage check: within each
+  =folder_id=, group configs by =(currency_code, index_name)=; any
+  group with more than one =enabled=true, auto_start=true= config is
+  flagged. No persisted status/badge — same ephemeral, live-computed
+  ✓/✗-with-message pattern =Validate Vintage= already uses, generic
+  (not IR/FX-specific), shown both in the summary dialog and
+  re-computed live in the config's own Detail dialog, with the
+  specific conflicting =source_name=(s) in the hover/message text.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -54,13 +112,38 @@ it.
 * Acceptance
 
 - A public source is chosen and its licensing/redistribution terms
-  confirmed acceptable for this codebase.
-- A small set of real historical (currency, tenor, date) IR points is
-  added as a new vintage populate script, covering enough
-  currencies/tenors to seed the =DEPO=/=FRA=/=IRS= entries a basic
-  Curve Template needs, mirroring
+  confirmed acceptable for this codebase, for both vintages below.
+- *Legacy vintage* (~2016, matching FX's own reference date): a small
+  set of real historical (currency, tenor, date) IR points using
+  period-correct IBOR-era indices (USD LIBOR-3M, EURIBOR-3M, GBP
+  LIBOR-3M, EONIA), added as a new vintage populate script mirroring
   =marketdata_fx_driver_rates_populate.sql='s structure (catalog/
   dataset registration, per-value source citation, idempotent).
+- *Recent vintage* (2026): the same shape, using period-correct RFR
+  indices (SOFR, €STR, SONIA).
+- Both vintages' seeded configs carry a =description= explaining what
+  they represent (the legacy configs explicitly noting they're
+  historical/discontinued indices), covering enough currencies/tenors
+  to seed =DEPO=/=FRA=/=IRS= entries a basic Curve Template needs.
+- =ir_curve_generation_config= gains an =auto_start= column, orthogonal
+  to =enabled=; seeded so at most one config per
+  =(folder_id, currency_code, index_name)= is =auto_start=true=.
+- =curve_feed_controller::start()= rejects starting a feed when
+  another is already running for the same =(currency_code,
+  index_name)= qualifier, both for auto-start-at-boot and manual
+  Start, with an actionable "already running as X — stop it first"
+  message — no automatic disabling of the running feed.
+- The existing =Validate Vintage= action covers IR curve configs (not
+  just FX) and additionally flags, per folder, any
+  =(currency_code, index_name)= group with more than one
+  =enabled=true, auto_start=true= config — same ephemeral ✓/✗-plus-
+  message pattern already used, surfaced in both the summary dialog
+  and the config's own Detail dialog.
+- =synthetic_ir_curve_configs_basic_populate.sql=/
+  =_realistic_populate.sql='s existing unconditional =enabled=true=
+  seeding is revisited so the two bundles don't already collide on
+  shared qualifiers (e.g. both seeding =USD/USD-SOFR= as auto-starting)
+  independent of the new vintages.
 
 * Plan
 
@@ -79,18 +162,19 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:29886E46-8502-441A-BD48-34F247AF8232][Verify vintage auto_start and binding-collision validation]] | PASSED | Confirmed legacy/realistic coexist, auto_start filters the default set, qualifier collisions rejected, Validate Vintage flags folder-scoped collisions -- after fixing flag-loading, index-name filtering, and folder-bulk-start bugs found along the way. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1676][#1676]] | [synthetic,qt] Merge legacy IBOR curves into realistic dataset, fix batch-image payload overflow |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead lambda captures (crReasonCode/crCommentary never used) | IrCurveGenerationConfigDetailDialog.cpp | Accept | Fixed: reverted to =[self, watcher]=. |
+| 2 | No dedicated unit tests for qualifier-collision logic | curve_feed_controller.hpp | Decline | Informational, not a regression (no test file existed before this PR either); covered for now by the manual scenario doc. |
 
 * Result

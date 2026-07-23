@@ -41,7 +41,7 @@
 \echo '--- IR Curve Config Seed Data: Basic ---'
 \ir ./synthetic_ir_curve_configs_basic_populate.sql
 
-\echo '--- IR Curve Config Seed Data: Realistic ---'
+\echo '--- IR Curve Config Seed Data: Realistic (+ legacy IBOR-era curves) ---'
 \ir ./synthetic_ir_curve_configs_realistic_populate.sql
 
 \echo ''

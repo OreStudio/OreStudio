@@ -129,12 +129,26 @@ public:
 
             auto feed = make_ir_curve_feed(nats_, cfg, entries, *refctx);
             const auto source_name = feed->source_name();
+            const auto qualifier = feed->qualifier();
             const auto result = ctrl_->start(std::move(feed));
 
-            resp.success = true;
-            resp.message = result == curve_feed_controller::start_result::started ?
-                               "Feed started: " + source_name :
-                               "Feed already running: " + source_name;
+            switch (result) {
+                case curve_feed_controller::start_result::started:
+                    resp.success = true;
+                    resp.message = "Feed started: " + source_name;
+                    break;
+                case curve_feed_controller::start_result::already_running:
+                    resp.success = true;
+                    resp.message = "Feed already running: " + source_name;
+                    break;
+                case curve_feed_controller::start_result::qualifier_conflict: {
+                    const auto conflicting = ctrl_->running_source_name_for_qualifier(qualifier);
+                    resp.success = false;
+                    resp.message = "Already running as '" + conflicting.value_or("<unknown>") +
+                                   "' — stop it first before starting '" + source_name + "'.";
+                    break;
+                }
+            }
             BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.message;
         } catch (const std::exception& e) {

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1
+:END:
+#+title: Story: Fix image-batch NATS payload overflow, add SVG compression
+#+description: ImageCache batches image fetches by count (MAX_IMAGES_PER_REQUEST), not byte size, so a batch with several large SVGs can exceed NATS's max payload and silently drop the whole batch (root cause of missing country flags). SVG data is also sent uncompressed. Make batching byte-size aware and add compression.
+#+type: story
+#+level: s2
+#+filetags: :assets:qt:bugfix:performance:sprint_24:v0:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Discovered while testing the vintage IR dataset story: country flags (and
+any other batch-loaded image set) were partially missing in the Qt
+client. Root-caused to two distinct issues:
+
+1. A now-fixed stale-binary bug: =ores.assets.service= queried a renamed
+   column (=svg_data= -> =mime_type=/=data=) and had not been rebuilt
+   since. (Fixed by rebuild; no code change needed for this part.)
+2. =ImageCache='s batch-fetch caps each NATS request at
+   =MAX_IMAGES_PER_REQUEST= images by *count*, not byte size. SVG flags
+   vary widely in size (a few KB for a simple flag, considerably more for
+   a complex one, e.g. Norfolk Island or CEFTA), so a batch that happens
+   to cluster several large images together can still exceed NATS's
+   default 1MB max payload -- and the entire batch silently fails when
+   that happens, dropping every image in it. As an immediate mitigation,
+   =MAX_IMAGES_PER_REQUEST= was lowered from 50 to 15 (this story's
+   prerequisite commit) -- reduces the odds without eliminating the
+   pathological case.
+
+Additionally: image data (SVG) is sent completely uncompressed --
+base64-encoded raw XML inside a JSON payload, no gzip/zstd anywhere in
+the pipeline. SVGs compress very well (typically 70-80% size reduction),
+so this is both a payload-size contributor and a bandwidth/latency cost
+independent of the batching bug.
+
+This story's goal: make batching genuinely byte-size aware (track
+cumulative payload size while building each batch, not just count) so a
+batch is cut short whenever adding the next image would risk exceeding
+the NATS payload limit, and add compression to the image transfer
+pipeline (client and server) so payloads shrink regardless of batch size.
+
+** Alternative worth weighing: HTTP download instead of NATS request-reply
+
+=ores.compute.wrapper= already downloads binaries via a plain HTTP GET
+against the generic S3-like object storage endpoint
+(=ores.http.core/routes/storage_routes.hpp=,
+=GET /api/v1/storage/{bucket}/{key}=) rather than a NATS request-reply
+round trip. Bulk binary transfer (many images, each independently
+addressable by key) is arguably a better fit for that same pattern than
+for NATS request-reply: no payload-size ceiling to chunk around at all,
+standard HTTP caching/range-request semantics apply for free, and it
+sidesteps the batching problem entirely rather than tuning around it.
+Whether images should move to =ores_assets_images_tbl= id being S3-object-
+addressable (or reuse the existing storage bucket mechanism directly) vs.
+staying NATS-delivered-but-fixed is a design choice the first task should
+make explicitly, not assume -- weigh against the two other options above
+before committing to an approach.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-22                               |
+
+* Acceptance
+
+- =ImageCache='s client-side batching tracks cumulative estimated payload
+  size (accounting for base64 + JSON overhead, not just raw SVG bytes)
+  and closes a batch early, before adding an image that would push it
+  over a safe threshold below NATS's max payload.
+- The fix is verified against a synthetic worst case: many large SVGs
+  (e.g. duplicate the largest known flag N times) requested in one
+  fetch, confirming no batch ever exceeds the payload limit regardless
+  of MAX_IMAGES_PER_REQUEST.
+- Image data is compressed on the wire (server compresses on write or
+  send, client decompresses on receive) -- gzip is sufficient, no need
+  for a more exotic codec for text/SVG payloads this size.
+- =MAX_IMAGES_PER_REQUEST= can be raised back towards its original value
+  (or removed as a meaningful constraint) once byte-size-aware batching
+  and compression are both in place, since count alone is no longer the
+  binding constraint.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA][Make ImageCache batching byte-size aware, add SVG compression]] | BACKLOG | | | Track cumulative payload size while building each image-fetch batch, not just count; add gzip compression to the image transfer pipeline. |
+
+* Decisions
+
+* Out of scope
+
+-

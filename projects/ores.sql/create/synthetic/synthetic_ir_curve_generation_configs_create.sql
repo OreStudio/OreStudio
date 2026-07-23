@@ -49,6 +49,8 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "initial_rate" double precision not null,
     "ticks_per_hour" integer not null,
     "enabled" boolean not null,
+    "auto_start" boolean not null,
+    "description" text null,
     "fixed_leg_payment_frequency_code" text not null,
     "source_name" text not null,
     "folder_id" uuid null,

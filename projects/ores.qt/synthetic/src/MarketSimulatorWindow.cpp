@@ -1894,11 +1894,23 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     // server-side, so IR curves in the current selection always go through the
     // per-feed path in addition, never through the folder fast-path.
     const auto folderId = selectedFolderId();
-    if (!folderId.empty())
+    if (!folderId.empty()) {
         startFolderAsync(folderId);
-    else
+        // Folder-level "start everything under here" is a bulk cascade, not
+        // per-curve consent -- auto_start=false curves (e.g. legacy IBOR-era
+        // ones living in the same folder as their RFR siblings) must stay
+        // out of it and only start via an explicit single-curve selection
+        // below, exactly like the service's own startup behaviour.
+        auto curves = selectedIrCurves();
+        curves.erase(std::remove_if(curves.begin(),
+                                    curves.end(),
+                                    [](const auto& ir) { return !ir.auto_start; }),
+                    curves.end());
+        startIrCurvesAsync(std::move(curves));
+    } else {
         startPairsAsync(selectedFxPairs());
-    startIrCurvesAsync(selectedIrCurves());
+        startIrCurvesAsync(selectedIrCurves());
+    }
 }
 
 void MarketSimulatorWindow::startFolderAsync(const std::string& folderId) {
@@ -2272,21 +2284,69 @@ void MarketSimulatorWindow::stopIrCurvesAsync(
     watcher->setFuture(QtConcurrent::run(task));
 }
 
+// Local, synchronous check -- no NATS round-trip needed. Two enabled+auto_start IR curve
+// configs in the same folder targeting the same (currency_code, index_name) qualifier would
+// both be eligible for auto-start, but curve_feed_controller only ever lets one actually run
+// (see its own doc comment) -- the other silently never starts at boot, which reads as "broken"
+// rather than "misconfigured" unless flagged here. Scoped per folder deliberately: basic vs.
+// realistic living in different folders and sharing a qualifier is accepted (manual "press play
+// at the right node" is how that's resolved, see this story's Decisions), only a collision
+// *within* one folder is a real error.
+MarketSimulatorWindow::Results MarketSimulatorWindow::computeIrCurveBindingCollisions() const {
+    MarketSimulatorWindow::Results results;
+
+    // Group by (folder_id, currency_code, index_name); folder_id absent (not yet
+    // folder-resolved) is its own group via a nil-uuid stand-in, not skipped.
+    std::map<std::tuple<boost::uuids::uuid, std::string, std::string>, std::vector<std::string>>
+        by_binding;
+    for (const auto& [id, ir] : irCurves_) {
+        if (!ir.enabled || !ir.auto_start)
+            continue;
+        const auto folder = ir.folder_id.value_or(boost::uuids::uuid{});
+        const auto label =
+            ir.source_name.empty() ? (ir.currency_code + "/" + ir.index_name) : ir.source_name;
+        by_binding[{folder, ir.currency_code, ir.index_name}].push_back(label);
+    }
+
+    for (const auto& [binding, labels] : by_binding) {
+        const auto& [folder, currency_code, index_name] = binding;
+        if (labels.size() <= 1)
+            continue;
+        for (const auto& label : labels) {
+            QStringList others;
+            for (const auto& other : labels)
+                if (other != label)
+                    others << QString::fromStdString(other);
+            results.push_back(
+                {label,
+                 false,
+                 tr("binding conflict: %1/%2 also auto-starts as %3 in the same folder — only "
+                    "one may be auto_start at a time")
+                     .arg(QString::fromStdString(currency_code),
+                          QString::fromStdString(index_name),
+                          others.join(", "))});
+        }
+    }
+    return results;
+}
+
 void MarketSimulatorWindow::onValidateVintageClicked() {
     std::vector<synthetic::domain::fx_spot_generation_config> all;
     for (const auto& [id, fx] : fxPairs_)
         all.push_back(fx);
-    if (all.empty()) {
+
+    const auto ir_binding_results = computeIrCurveBindingCollisions();
+
+    if (all.empty() && ir_binding_results.empty() && irCurves_.empty()) {
         QMessageBox::information(
-            this, tr("Validate Vintage"), tr("No FX rates are configured yet."));
+            this, tr("Validate Vintage"), tr("No FX rates or IR curves are configured yet."));
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Validating vintage data for " << all.size() << " FX rate(s).";
+    BOOST_LOG_SEV(lg(), info) << "Validating vintage data for " << all.size() << " FX rate(s), "
+                              << irCurves_.size() << " IR curve config(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
-    // ok=true (pass/not-applicable), message
-    using Results = std::vector<std::tuple<std::string, bool, QString>>;
     auto task = [cm, all]() -> Results {
         Results results;
         for (const auto& fx : all) {
@@ -2319,27 +2379,29 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
     };
 
     auto* watcher = new QFutureWatcher<Results>(self);
-    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
-        auto results = watcher->result();
-        watcher->deleteLater();
-        if (!self)
-            return;
-        QStringList lines;
-        int okCount = 0;
-        for (const auto& [label, ok, message] : results) {
-            if (ok)
-                ++okCount;
-            lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message) :
-                           tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
-        }
-        QMessageBox::information(
-            self,
-            tr("Validate Vintage"),
-            tr("%1 of %2 FX rate(s) pass (or don't need) vintage validation:\n\n")
-                    .arg(okCount)
-                    .arg(results.size()) +
-                lines.join("\n"));
-    });
+    connect(
+        watcher, &QFutureWatcher<Results>::finished, self, [self, watcher, ir_binding_results]() {
+            auto results = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+            results.insert(results.end(), ir_binding_results.begin(), ir_binding_results.end());
+
+            QStringList lines;
+            int okCount = 0;
+            for (const auto& [label, ok, message] : results) {
+                if (ok)
+                    ++okCount;
+                lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message) :
+                               tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
+            }
+            QMessageBox::information(self,
+                                     tr("Validate Vintage"),
+                                     tr("%1 of %2 item(s) pass (or don't need) validation:\n\n")
+                                             .arg(okCount)
+                                             .arg(results.size()) +
+                                         lines.join("\n"));
+        });
     watcher->setFuture(QtConcurrent::run(task));
 }
 

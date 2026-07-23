@@ -74,6 +74,15 @@ public:
     const std::string& source_name() const {
         return source_name_;
     }
+    /**
+     * @brief The published market-data key (series_type/metric implied, currency_code +
+     * strip_currency_prefix(currency_code, index_name)) -- the value curve_feed_controller checks
+     * for cross-config collisions, since it is what every consumer actually looks up by, unlike
+     * source_name (unique per config, not per market-data identity).
+     */
+    const std::string& qualifier() const {
+        return qualifier_;
+    }
 
 private:
     ores::nats::service::client& nats_;

@@ -46,6 +46,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <tuple>
 
 // Forward declarations for chart members (full headers only needed in .cpp).
 class QBarCategoryAxis;
@@ -140,6 +141,12 @@ private slots:
     void onTickChartFlash();
 
 private:
+    // (label, ok, message) -- shared by every Validate Vintage contributor (FX's NATS-backed
+    // vintage-availability check, IR's local binding-collision check) so they can be merged into
+    // one summary.
+    using Results = std::vector<std::tuple<std::string, bool, QString>>;
+    Results computeIrCurveBindingCollisions() const;
+
     // Node levels stored in the tree items via Qt::UserRole markers. The tree
     // mirrors the feed's own namespace path (synthetic.<collection>.<asset
     // class>.<instrument type>.<pair>, e.g. synthetic.basic.fx.fxrates.gbpusd):

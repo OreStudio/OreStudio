@@ -53,6 +53,8 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
+    r.description = v.description.value_or("");
     r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.source_name = v.source_name;
     r.folder_id = v.folder_id.has_value() ?
@@ -93,6 +95,8 @@ ir_curve_generation_config_mapper::map(const domain::ir_curve_generation_config&
     r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.source_name = v.source_name;
     r.folder_id = v.folder_id.has_value() ? std::optional(boost::uuids::to_string(*v.folder_id)) :

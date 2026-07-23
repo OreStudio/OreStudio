@@ -123,9 +123,33 @@ struct ir_curve_generation_config final {
     int ticks_per_hour = 0;
 
     /**
-     * @brief Whether the configuration is active and eligible for generation.
+     * @brief Whether the configuration is startable at all -- manually or automatically.
+     * enabledfalse= means retired/disabled: neither auto-start nor a manual Start action may start
+     * it. Orthogonal to auto_start (see below), which further restricts which of the enabled
+     * configs actually start on their own.
      */
     bool enabled = false;
+
+    /**
+     * @brief Whether this config starts automatically when the service comes up, as opposed to
+     * manual-start-only. Orthogonal to enabled: a config can be enabledtrue, auto_startfalse
+     * (valid, manually startable, but never auto-started -- e.g. a legacy/alternate-index variant
+     * living alongside a currency's primary config so the two never silently fight over the same
+     * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start
+     * -- is rejected outright if another feed is already running for the same (currency_code,
+     * index_name) qualifier; nothing auto-disables the running one, so switching requires an
+     * explicit Stop then Start.
+     */
+    bool auto_start = false;
+
+    /**
+     * @brief Free-text description of what this configuration represents -- what
+     * regime/vintage/index it targets, and, for a legacy index (e.g. USD LIBOR-3M, EONIA), that it
+     * is historical/discontinued and why it is still offered (testing pre-cessation scenarios).
+     * Shown in the Detail dialog and list views rather than left to a bare currency/index code to
+     * explain itself.
+     */
+    std::string description;
 
     /**
      * @brief Payment frequency for a Swap curve-template entry's fixed leg (references

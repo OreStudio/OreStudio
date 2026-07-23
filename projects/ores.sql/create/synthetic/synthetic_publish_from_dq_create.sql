@@ -673,7 +673,9 @@ begin
             a.initial_rate,
             a.ticks_per_hour,
             a.fixed_leg_payment_frequency_code,
-            a.enabled
+            a.enabled,
+            a.auto_start,
+            a.description
         from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
         where a.dataset_id = p_dataset_id
         order by a.currency_code, a.index_name
@@ -697,6 +699,7 @@ begin
             tenant_id, id, version, party_id, config_id, folder_id,
             currency_code, index_name, process_type,
             kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
+            auto_start, description,
             fixed_leg_payment_frequency_code, source_name,
             modified_by, performed_by, change_reason_code, change_commentary
         )
@@ -708,6 +711,8 @@ begin
             r.currency_code, r.index_name, r.process_type,
             r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
             coalesce(r.enabled, true),
+            coalesce(r.auto_start, false),
+            r.description,
             r.fixed_leg_payment_frequency_code,
             -- Same shape as fx_spot_generation_config.source_name: namespaced by collection only
             -- (so two collections' same currency+index never collide), not by asset class -- the

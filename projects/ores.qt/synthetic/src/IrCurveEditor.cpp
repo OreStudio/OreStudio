@@ -492,21 +492,22 @@ void IrCurveEditor::buildProcessTab() {
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, &IrCurveEditor::onModeChanged);
 
-    // ===== 3. Middle row: mode stack (left, dominant) | compact curve-shape chart (right) --
-    // same zone assignment as FX (compact chart is the supporting view, prominent bottom chart
-    // is the hero view -- sample paths, matching FX's own "sample paths is the hero" choice).
+    // ===== 3. Middle row: mode stack (left, compact -- engine params need only enough room for
+    // four sliders) | curve-shape chart (right, dominant -- a full LIBOR-style Curve Template can
+    // carry 10-12 tenor points now, e.g. legacy USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid,
+    // and needs real horizontal room for its tenor-axis labels not to overlap).
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
-    middleRow->addWidget(modeStack_, 1);
+    modeStack_->setMaximumWidth(340);
+    middleRow->addWidget(modeStack_, 0);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
-    shapeBox->setMinimumWidth(380);
-    shapeBox->setMaximumWidth(560); // tenor category labels need more room than a plain index did
+    shapeBox->setMinimumWidth(480);
     auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
     shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
     shapeChart_->setMinimumHeight(240);
     shapeBoxLayout->addWidget(shapeChart_);
-    middleRow->addWidget(shapeBox, 0, Qt::AlignTop);
+    middleRow->addWidget(shapeBox, 1, Qt::AlignTop);
     layout->addLayout(middleRow);
 
     // ===== 4. Bottom row (full width): prominent sample-paths preview.
@@ -646,12 +647,14 @@ void IrCurveEditor::populateIndexNameCombo() {
         for (const auto& code : codes) {
             if (!code.starts_with(prefix))
                 continue;
-            // Overnight-style indices are exactly "<CCY>-<INDEX>" (two segments); exclude
-            // term-IBOR tenor variants ("<CCY>-<INDEX>-<TENOR>", three segments) -- those aren't a
-            // single curve's identity, the curve's own Curve Template already carries tenors.
+            // Both shapes are valid curve identities: overnight-style
+            // "<CCY>-<INDEX>" (e.g. USD-SOFR) and term-IBOR
+            // "<CCY>-<INDEX>-<TENOR>" (e.g. USD-LIBOR-3M, legacy curves) --
+            // the tenor segment here identifies *which* term-IBOR fixing
+            // this curve tracks, distinct from the Curve Template's own
+            // tenor points (which cover the curve's *shape*, not its
+            // fixing identity).
             const auto suffix = code.substr(prefix.size());
-            if (suffix.find('-') != std::string::npos)
-                continue;
             self->indexNameCombo_->addItem(QString::fromStdString(suffix));
         }
         BOOST_LOG_SEV(lg(), debug)

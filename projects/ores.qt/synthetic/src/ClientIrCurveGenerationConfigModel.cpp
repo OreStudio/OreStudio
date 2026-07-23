@@ -104,6 +104,8 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
                     ir_curve_generation_config.fixed_leg_payment_frequency_code);
             case Enabled:
                 return ir_curve_generation_config.enabled ? tr("true") : tr("false");
+            case AutoStart:
+                return ir_curve_generation_config.auto_start ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(ir_curve_generation_config.version);
             case ModifiedBy:
@@ -149,6 +151,8 @@ QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
             return tr("Fixed Leg Payment Frequency");
         case Enabled:
             return tr("Enabled");
+        case AutoStart:
+            return tr("Auto-Start");
         case Version:
             return tr("Version");
         case ModifiedBy:

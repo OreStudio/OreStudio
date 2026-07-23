@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: CEC7844C-B3AE-4858-BF67-71F511007F82
+:END:
+#+title: Market Data Snapshot
+#+description: The materialisation of a resolved market data set's values at a point in time, fixed or floating, for reproducibility -- an ORE-Studio-specific concept with no confirmed equivalent in ORE or OpenGamma Strata.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:snapshot:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+* Summary
+
+A *market data snapshot* is the materialisation, at a specific point in
+time, of the actual values attached to a resolved
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data set]] — not the
+set of identifiers itself, but a specific, recorded assignment of a
+value to each of them. A snapshot can be *fixed* (pinned permanently to
+the values it recorded, regardless of what happens to the underlying
+data afterwards) or *floating* (re-evaluated as the reference time point
+advances, picking up whatever the current resolution produces at each
+new evaluation). This document defines both precisely, and is
+deliberately candid about a negative research finding: unlike almost
+every other concept in this cluster, dedicated, direct source-code
+searches of both ORE and OpenGamma Strata turned up no confirmed
+equivalent concept in either codebase. This document should therefore be
+read as this repository's own considered treatment of an idea the
+underlying pricing systems evidently need in some form, rather than as
+a term this cluster is borrowing from established prior art the way its
+sibling documents can.
+
+* Layperson's mental model
+
+DNS again supplies a close analogue, though — consistent with the
+honest finding above — an imperfect one. Every DNS resolver caches the
+result of a lookup for a period of time set by that record's *time to
+live* (TTL), so that repeated lookups of the same domain name do not
+have to repeat the full resolution process on every single request. That
+cached record is a snapshot in miniature: a specific IP address, paired
+with the moment it was recorded, treated as valid until its TTL expires.
+A market data snapshot plays a structurally similar role — a recorded
+value, paired with when it was recorded, treated as authoritative for
+some purpose (an audit trail, a reproducible historical valuation) for
+some period, or indefinitely.
+
+Where the analogy breaks down is *purpose*. A DNS cache exists purely
+for performance — to avoid repeating a lookup whose answer is not
+expected to have changed. A market data snapshot exists primarily for a
+different reason entirely: *reproducibility and audit*. A firm needs to
+be able to answer, months after the fact, "what exact market data values
+were used to produce Tuesday's official valuation?" — a question a
+performance-oriented cache was never designed to answer reliably, since
+a cache is free to be evicted, resized, or simply not populated at all
+for data nobody happened to ask for at the time. A market data snapshot
+must be *deliberately* recorded and *deliberately* retained, precisely
+because its purpose depends on it persisting, not on it merely being
+convenient to have around.
+
+* Detail
+
+** Formal definition
+
+Given a valuation-scoped market data set $\mathrm{MDS}(T)$ (see
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
+its full derivation), a snapshot is the materialisation of a function
+
+$$\mathrm{value}: \mathrm{MDS}(T) \to \mathrm{Data}$$
+
+assigning an actual value — a number, a curve's full set of pillar
+points, a vol surface's full grid — to every identifier in the set,
+recorded together with the moment that assignment was made. Two
+snapshots taken of the identical $\mathrm{MDS}(T)$ at two different
+moments need not agree, because $\mathrm{value}$ is itself a function of
+time: the market moves, and the same curve identifier legitimately holds
+a different value tomorrow than it does today.
+
+- A *fixed* snapshot pins $\mathrm{value}$ permanently to whatever it
+  evaluated to at the moment of capture — re-reading a fixed snapshot
+  next year returns the exact same numbers it returned the day it was
+  taken, by construction, regardless of what the live market data system
+  now says.
+- A *floating* snapshot instead pins only the *pipeline* — which trade
+  set, which market data configuration, which valuation-date convention
+  (e.g. "always today") — and re-evaluates $\mathrm{value}$ fresh each
+  time it is consulted. Reading a floating snapshot next year returns
+  whatever the pipeline produces *then*, not what it produced when the
+  floating snapshot was first defined.
+
+** A candid account of the research finding
+
+Direct content searches of ORE's =OREData=, =OREAnalytics=, and
+=QuantExt= source trees, and of OpenGamma Strata's =market=, =data=, and
+=calc= modules, for the word "snapshot" in any market-data-related
+context produced no meaningful hits in either codebase — one incidental,
+unrelated match in ORE (inside a cross-asset model builder, concerning
+model calibration state, not market data) and none at all in Strata's
+relevant modules. Strata's closest structural neighbour is
+=com.opengamma.strata.data.ImmutableMarketData= — a concrete,
+immutable implementation of the
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][=MarketData=]] interface —
+but Strata's own documentation does not distinguish a "fixed" from a
+"floating" variant of it the way this document does above; immutability
+of a single Java object is a weaker property than this document's
+fixed/floating distinction, which is about the *evaluation pipeline*
+over time, not about whether one already-materialised object can be
+mutated in place.
+
+This absence is worth taking at face value rather than explained away.
+It is plausible that neither ORE nor Strata needed to name this concept
+explicitly because neither library, on its own, owns the layer of a
+production system responsible for long-term reproducibility and audit
+retention — both are pricing/calculation *engines*, consumed by a larger
+platform that would be the actual owner of "recording what was used for
+Tuesday's official run." That larger-platform responsibility is
+precisely the layer ORE Studio itself occupies, which is a reasonable
+explanation for why this document cluster needs to name and define the
+concept carefully even where the two reference codebases did not have
+occasion to.
+
+** An existing, unreviewed usage in this repository
+
+This repository's own
+[[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]]
+document already uses "market data snapshot" as one of five inputs whose
+conjunction it says is required for a reproducible valuation, alongside
+a trade population snapshot and a pricing configuration snapshot. That
+usage predates this document and was not itself traced back to any
+cited source at the time it was written. It is consistent with the
+definition given here, and this document does not propose changing it —
+but its provenance should be checked, and if it turns out to trace back
+to the same informal notes this cluster's research process was careful
+not to treat as authoritative, that is worth a short, separate
+follow-up capture rather than silently left as an unexamined assumption
+now embedded in two documents instead of one.
+
+* See also
+
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the market data set a snapshot materialises values for.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — part of what a floating snapshot pins in place of a specific resolved value.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — this repository's existing, related use of "snapshot," flagged above for provenance review.

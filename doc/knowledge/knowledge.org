@@ -52,6 +52,11 @@ Finance concepts the codebase relies on, grouped by topic.
   the two-level subscription model (generation config vs client subscription),
   and the mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
   e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — hub note for how a
+  logical need for market data (a requirement) resolves into a concrete
+  item drawn from the market data universe: requirements, identifiers,
+  configuration/resolution, dependency closure, snapshotting, and
+  filtering, framed throughout in terms of sets and a running DNS analogy.
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — why FX forward
   rates are fully determined by the spot rate and IR curves, the
   arbitrage argument, the QuantLib discount-factor formula, and why

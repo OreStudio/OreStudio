@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 3D56DB59-8075-42BB-8139-A7440C9786B2
+:END:
+#+title: Market Data Identifier
+#+description: The structured, physical identifier that addresses a single concrete item in the market data universe, and how it differs from a logical requirement it satisfies.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:identifiers:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+* Summary
+
+A *market data identifier* is the structured, physical address of a
+single, concrete item in the [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data
+universe]] — the thing a
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]
+resolves *to*, and the only kind of reference that can actually be used
+to fetch or build a piece of data. This document defines what an
+identifier is, what constitutes its identity (what tuple of fields two
+identifiers must agree on to be the same identifier), and works through
+two independently engineered concrete identifier schemes — this repo's
+own and ORE's — to ground the abstract definition in real, citable
+examples rather than an invented ideal.
+
+* Layperson's mental model
+
+Continuing the analogy introduced in
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]]: if
+a requirement is a domain name (=www.example.com=), a market data
+identifier is the IP address it resolves to (=93.184.216.34=). The
+domain name is chosen for human legibility and stability of meaning; the
+IP address is chosen for machine routability and says nothing at all
+about what the server behind it does. A market data identifier plays the
+IP address's role exactly: it is the thing a database query, a NATS
+subject, or a pricing engine's internal lookup actually operates on, and
+— just as an IP address on its own tells a network engineer nothing
+about whether the machine at that address serves a news site or an email
+server — a bare identifier string tells a reader nothing about *why* it
+was needed, only *what it precisely is*.
+
+The IP-address analogy also surfaces a property worth making explicit: an
+IP address is *structured*, not opaque — it decomposes into a network
+portion and a host portion, and that structure is exactly what lets
+routers make forwarding decisions without understanding the whole
+address space. A market data identifier is structured in the same
+spirit: it is not a single opaque string but a small tuple of typed
+fields (an asset class, a currency, sometimes a tenor), and that
+structure is exactly what lets a repository query, a NATS wildcard
+subscription, or a curve-building routine operate on *part* of an
+identifier without needing to parse the whole thing as free text.
+
+* Detail
+
+** Identifier identity: what fields compose the physical address?
+
+Two market data identifiers are the same identifier exactly when every
+field of their structure is equal — the same principle as requirement
+identity in
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]],
+applied on the physical rather than the logical side. What differs
+between the two documents is *which* fields make up that tuple, because
+a physical identifier must be precise enough to select exactly one
+concrete data item, where a logical requirement is deliberately
+permitted to be less precise (it may, for instance, name a whole curve
+without naming a specific point on it). This section grounds that claim
+in two real, independently designed identifier schemes rather than
+inventing a canonical field list from first principles.
+
+*** This repository's own scheme
+
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]
+documents this system's own identifier format in detail; the essential
+structure is a slash-delimited tuple
+
+: <series_type>/<metric>/<qualifier>[/<point_id>]
+
+where =series_type= names the asset class and curve family (=FX=,
+=DISCOUNT=, =SWAPTION=), =metric= names what is being quoted (=RATE=,
+=RATE_LNVOL=), =qualifier= names the specific instance within that family
+(a currency, a currency pair, a credit name), and the optional
+=point_id= — present only for term-structure series — names a specific
+tenor or surface coordinate. =FX/RATE/EUR/USD= identifies EUR/USD spot;
+=SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= identifies one specific point on the
+EUR swaption volatility surface. This tuple maps directly onto the
+=market_series= table's own =(series_type, metric, qualifier)= columns
+and converts deterministically to a NATS subject by lowercasing and
+replacing =/= with =.= — see that document for the full mapping and its
+worked examples.
+
+*** ORE's scheme
+
+ORE — the Open Source Risk Engine that this system's own pricing model
+is built to interoperate with — solves the identical problem with its
+own =CurveSpec= class hierarchy, documented in
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
+The base class, in =OREData/ored/marketdata/curvespec.hpp=, carries a
+=curveConfigID= field common to every curve type, and each concrete
+subclass — =YieldCurveSpec=, =FXVolatilityCurveSpec=,
+=SwaptionVolatilityCurveSpec=, and so on — adds the type-specific fields
+that particular curve family needs to be uniquely addressed (a currency
+code for a yield curve; a currency pair for an FX volatility curve).
+=CurveSpec= additionally carries an explicit =CurveType= enumeration
+(=FX=, =Yield=, =CapFloorVolatility=, ...) discriminating which concrete
+subclass applies — structurally the same role this system's own
+=series_type= field plays, arrived at independently.
+
+One genuine terminological trap surfaces here, worth flagging explicitly
+rather than silently working around: the file-level documentation
+comment at the top of =curvespec.hpp= reads /"Curve requirements
+specification."/ ORE's own prose calls *this* concept — the physical
+identifier — a "requirement," which is the exact opposite of how this
+document cluster, and OpenGamma Strata (see below), use that word. This
+is not a contradiction to resolve; it is a warning that "requirement"
+is not a safe, field-wide term with one settled meaning, and a reader
+moving between this document cluster and ORE's own source comments
+should not assume the word carries the same meaning in both places.
+
+*** OpenGamma Strata's scheme
+
+OpenGamma Strata's identifier abstraction,
+=com.opengamma.strata.data.MarketDataId<T>=, is deliberately more
+minimal than either scheme above — an interface, not a concrete tuple of
+fields, whose Javadoc describes it as "an identifier for a unique item
+of market data... Implementations can identify any piece of market data.
+This includes observable values, such as the quoted market value of a
+security, and derived values, such as a volatility surface or a
+discounting curve." Strata pushes the actual field structure down into
+each concrete implementing class (there is no single canonical field
+list at the interface level, by design — the interface's only contract
+is uniqueness and a declared value type =T=), whereas both this
+repository's scheme and ORE's =CurveSpec= commit to a shared field
+shape at the base-class level. Strata's choice and this repository's/ORE's
+choice are both defensible engineering positions, not a case of one
+being more correct than the other — Strata optimises for extensibility
+across an open-ended set of data kinds a third-party library cannot
+anticipate in advance; this repository and ORE optimise for a smaller,
+closed, well-understood set of curve/surface families where a shared
+field shape (currency, curve family, tenor) genuinely does hold across
+almost every case.
+
+*** What the three schemes agree on
+
+Despite differing in exactly which fields they commit to at which
+level of the class hierarchy, all three schemes — this repository's,
+ORE's, and Strata's — agree on the same underlying shape of *identity*:
+an asset-class/type discriminator, a qualifying instance within that
+type, and, optionally, a further coordinate for identifiers that name a
+single point on a term structure or surface rather than the structure
+as a whole. This convergence, across three independently engineered
+systems, is the strongest evidence available that this is close to the
+irreducible shape of the concept, not an accident of any one system's
+design history.
+
+** Why an identifier must be more precise than the requirement it satisfies
+
+A [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]
+is deliberately allowed to be coarser than the identifier it eventually
+resolves to — "the EUR discount curve" as a requirement says nothing
+about *which* specific instrument set built it, while the identifier
+that requirement resolves to must, by construction, pick out exactly one
+concrete item in the
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]]. This
+asymmetry is not a defect to eliminate; it is the entire point of having
+two distinct concepts. A domain name is likewise permitted to be
+under-specified relative to an IP address in exactly the same way: DNS's
+own =A= record type maps one domain name to potentially several IP
+addresses (for load-balancing across multiple servers), and it is only
+at the moment a client actually needs to open a connection that one
+specific address is chosen from among them. The
+[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]]
+document covers the mechanism — resolution — by which that narrowing
+from "coarser, possibly ambiguous requirement" to "exactly one precise
+identifier" actually happens.
+
+* See also
+
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; introduces the set-theoretic framing this document assumes.
+- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical need an identifier satisfies.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space of every valid identifier.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the mechanism resolving a requirement to exactly one identifier.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete identifier scheme, worked through above.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, worked through above.

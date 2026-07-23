@@ -8,7 +8,7 @@
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/acme-provisioning-server-glue
-#+pr:
+#+pr: 1678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1678][#1678]] | [iam,shell,sql] Server-side glue for one-click Acme provisioning |
 
 * Review
 

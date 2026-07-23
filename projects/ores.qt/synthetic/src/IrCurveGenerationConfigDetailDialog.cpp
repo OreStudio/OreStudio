@@ -322,7 +322,7 @@ void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
     connect(watcher,
             &QFutureWatcher<SaveResult>::finished,
             self,
-            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            [self, watcher]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
 

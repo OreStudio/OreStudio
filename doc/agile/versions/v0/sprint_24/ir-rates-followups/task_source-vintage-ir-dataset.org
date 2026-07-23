@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:29886E46-8502-441A-BD48-34F247AF8232][Verify vintage auto_start and binding-collision validation]] | PENDING | |
+| [[id:29886E46-8502-441A-BD48-34F247AF8232][Verify vintage auto_start and binding-collision validation]] | PASSED | Confirmed legacy/realistic coexist, auto_start filters the default set, qualifier collisions rejected, Validate Vintage flags folder-scoped collisions -- after fixing flag-loading, index-name filtering, and folder-bulk-start bugs found along the way. |
 
 * PRs
 
@@ -174,6 +174,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead lambda captures (crReasonCode/crCommentary never used) | IrCurveGenerationConfigDetailDialog.cpp | Accept | Fixed: reverted to =[self, watcher]=. |
+| 2 | No dedicated unit tests for qualifier-collision logic | curve_feed_controller.hpp | Decline | Informational, not a regression (no test file existed before this PR either); covered for now by the manual scenario doc. |
 
 * Result

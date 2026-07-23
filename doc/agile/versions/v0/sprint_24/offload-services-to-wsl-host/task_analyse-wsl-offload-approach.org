@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 04EE8D76-9F8E-47FF-AB3A-D6E6C3308385
+:END:
+#+title: Task: Analyse approach for offloading services/DB to a WSL host
+#+description: Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network.
+#+type: task
+#+level: s1
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a written analysis outlining the approach for the story:
+how to provision a WSL host, how services and the database will run
+on it (bare processes vs. a Docker image built for testing), how the
+local dev machine reaches it over SSH, and how the local Qt client
+connects to the remote services/DB. The output guides the
+implementation tasks that follow, rather than implementing anything
+itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

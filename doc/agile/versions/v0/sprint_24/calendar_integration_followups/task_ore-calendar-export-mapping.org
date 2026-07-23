@@ -8,7 +8,7 @@
 #+filetags: :calendar_integration_followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/ore-calendar-export-mapping
-#+pr:
+#+pr: 1679
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -117,7 +117,7 @@ independently verified correct via direct SQL inspection.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1679][#1679]] | [cli,refdata,agile] Persist AdvanceCalendar codes to the junction table on import |
 
 * Review
 

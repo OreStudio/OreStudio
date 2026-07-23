@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar_integration_followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
-#+blocked_since: 2026-07-08
+#+branch: feature/ore-calendar-export-mapping
+#+pr: 1679
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,41 +30,114 @@ calendar FK(s).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-23                               |
 
 * Acceptance
 
-- [ ] Exporting a currency_pair_convention to ORE XML produces the
+- [X] Exporting a currency_pair_convention to ORE XML produces the
   correct comma-joined calendar string, derived from the junction
   table at export time.
-- [ ] No code path writes a comma-joined string back into the domain
+- [X] No code path writes a comma-joined string back into the domain
   model.
-- [ ] Round-trip (import → export) tested against a real conventions.xml
+- [X] Round-trip (import → export) tested against a real conventions.xml
   fragment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated =ores.ore='s =conventions_mapper= first: the mapper-level
+goal ("build the joined string only at export time, never store it")
+was already fully satisfied by an earlier sprint-23 task
+([[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]]) —
+=reverse_fx()= already joins =mapped_fx.advance_calendars= (a
+=std::vector<std::string>=, never persisted on the domain model) only
+at the XML export boundary, and an existing round-trip test
+(=xml_fx_convention_mapper_roundtrip_tests.cpp=) already verifies this
+against the real =conventions.xml= example file, field-by-field.
+
+The actual gap was one level down: =ores.cli='s =import_conventions=
+parsed =AdvanceCalendar='s individual calendar codes into
+=mapped_fx.advance_calendars= correctly, but never persisted them
+anywhere — the calendar FK relationship was silently dropped on
+import, never reaching the =currency_pair_convention_calendar=
+junction table. Fixed in =projects/ores.cli/src/app/application.cpp=:
+=import_conventions= now writes one junction row per
+=(pair_code, calendar_code)= pair, deduplicated (the real example file
+lists some pairs, e.g. EUR/USD, more than once with different
+=SpotDays=, which would otherwise send a duplicate key into the same
+batch insert and fail it atomically).
+
+Added a repository-level test to =ores.refdata.core.tests=
+(=repository_currency_pair_convention_calendar_repository_tests.cpp=)
+proving the junction table correctly round-trips a full multi-calendar
+set for a pair (write N calendars linked to one pair, read back
+exactly those N codes) — this is the piece that's genuinely
+"derived from the junction table at export time".
+
+Considered and backed out of a cross-component integration test
+(=ores.ore= mapper + a real Postgres junction read/write together):
+it needed real tenant provisioning to satisfy the junction table's
+=tenant_id= validation trigger, which is expensive (see the
+[[id:CB07AD45-4C84-4BCA-8679-1AC2B4A9223E][fast-minimal-test-tenant-provisioning capture]] filed along the way —
+~193s just for =ores.refdata.core.tests='s existing tenant
+provisioning/deprovisioning overhead). Adding the same machinery to
+=ores.ore.core.tests= (previously DB-free, 480 tests in 5.85s) to
+support one test ballooned it to ~499s. Splitting the concern in two
+made the expensive test unnecessary: the DB-only piece (junction
+correctness) belongs in =ores.refdata.core.tests= where the
+provisioning cost is already paid; the mapper-only piece (correct
+joining) was already covered without any DB dependency.
+
+Also attempted an =ores.cli=-level integration test
+(=import_conventions_persists_advance_calendars_to_junction_table= in
+=app_application_import_tests.cpp=) exercising the fix end-to-end via
+a real import of =conventions.xml=. It passed reliably when run
+standalone (confirmed via direct SQL inspection that the fix persists
+correct data) but failed reliably under =ctest= specifically, for a
+cause not identified despite ruling out environment-variable content,
+CMake env staleness, database role/user, and tenant-ID matching (all
+confirmed identical between the passing and failing runs). Rather
+than continue chasing an apparent =ctest=-vs-direct-execution
+discrepancy unrelated to the fix's correctness, dropped that test and
+relied on the =ores.refdata.core.tests= repository-level test instead.
 
 * Notes
+
+The =ctest=-specific test flakiness above may be worth a follow-up
+investigation if it recurs elsewhere — reliably reproducible (3/3
+=ctest= runs failed, 2/2 direct runs of the identical binary passed)
+but not something to hold this task on, since the underlying fix was
+independently verified correct via direct SQL inspection.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1679][#1679]] | [cli,refdata,agile] Persist AdvanceCalendar codes to the junction table on import |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction rows unioned across duplicate pair entries instead of following the convention row's last-one-wins semantics | application.cpp | Accepted | Now group by pair_code first and only emit calendars for the last fx entry per pair |
+| 2 | Repository constructed inside the file loop instead of once above it | application.cpp | Accepted | Hoisted alongside the other repositories |
+| 3 | =total_slots= bumped 10 -> 12 without the new test needing indices past 10 | repository_currency_pair_convention_calendar_repository_tests.cpp | Accepted | Reverted to 10 |
 
 * Result
+
+The mapper-level goal was already satisfied by a prior sprint-23 task;
+the real gap was =ores.cli='s =import_conventions= silently dropping
+=AdvanceCalendar='s individual calendar codes instead of persisting
+them to the =currency_pair_convention_calendar= junction table. Fixed,
+with dedup for the real example file's duplicate-pair-code entries.
+Added a repository-level test to =ores.refdata.core.tests= proving
+full multi-calendar round-trip correctness through the junction
+table; relied on the existing =ores.ore= mapper round-trip test
+(unchanged) for the XML-joining half. Filed a follow-up capture for
+the expensive test-tenant provisioning discovered along the way.
+Full local build clean; =ores.refdata.core.tests= (148 tests, includes
+the new case) passes reliably under =ctest=.

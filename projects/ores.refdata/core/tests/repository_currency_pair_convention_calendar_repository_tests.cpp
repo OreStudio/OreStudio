@@ -31,6 +31,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
@@ -158,6 +159,48 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", tags) {
         }
     }
     CHECK(found);
+}
+
+// Proves the AdvanceCalendar-style multi-calendar case (a convention linked
+// to more than one calendar, joined at the ORE XML export boundary -- see
+// conventions_mapper::reverse_fx, which never touches this table) is
+// correctly resolvable at export time from the junction table alone: read
+// back exactly the set of calendars written, no more, no less.
+TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_pair", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+
+    currency_pair_convention_repository conv_repo;
+    calendar_repository cal_repo;
+    currency_pair_convention_calendar_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    conv_repo.write(h.context(), {conventions[7]});
+    std::vector<ores::refdata::domain::calendar> test_calendars = {calendars[7], calendars[8]};
+    cal_repo.write(h.context(), test_calendars);
+
+    std::vector<currency_pair_convention_calendar> pccs;
+    for (const auto& c : test_calendars)
+        pccs.push_back(make_pair_convention_calendar(h, conventions[7].pair_code, c.code));
+    repo.write(pccs);
+
+    auto read_pccs = repo.read_latest_by_pair(conventions[7].pair_code);
+    BOOST_LOG_SEV(lg, debug) << "Read currency pair convention calendars: " << read_pccs;
+
+    std::vector<std::string> read_codes;
+    read_codes.reserve(read_pccs.size());
+    for (const auto& r : read_pccs)
+        read_codes.push_back(r.calendar_code);
+    std::ranges::sort(read_codes);
+
+    std::vector<std::string> expected_codes = {calendars[7].code, calendars[8].code};
+    std::ranges::sort(expected_codes);
+
+    CHECK(read_codes == expected_codes);
 }
 
 TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", tags) {

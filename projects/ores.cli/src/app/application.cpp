@@ -96,6 +96,7 @@
 #include "ores.refdata.api/domain/leg_type_table_io.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
@@ -127,9 +128,12 @@
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
 #include <rfl/json.hpp>
+#include <map>
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 
 namespace ores::cli::app {
 
@@ -200,6 +204,8 @@ void application::import_conventions(const std::vector<std::filesystem::path>& f
     refdata::repository::overnight_index_convention_repository overnight_rp;
     refdata::repository::currency_pair_repository currency_pair_rp;
     refdata::repository::currency_pair_convention_repository currency_pair_convention_rp;
+    refdata::repository::currency_pair_convention_calendar_repository
+        currency_pair_convention_calendar_rp(context_);
     refdata::repository::cds_convention_repository cds_rp;
 
     for (const auto& f : files) {
@@ -216,14 +222,50 @@ void application::import_conventions(const std::vector<std::filesystem::path>& f
 
         std::vector<refdata::domain::currency_pair> pairs;
         std::vector<refdata::domain::currency_pair_convention> pair_conventions;
+        std::vector<refdata::domain::currency_pair_convention_calendar> pair_calendars;
+
+        // conventions.xml can list the same pair_code more than once (e.g.
+        // EUR/USD entered twice with different SpotDays). currency_pair_convention
+        // resolves this with "last one wins" per pair_code, so the junction
+        // rows must follow the same entry -- otherwise the calendars would end
+        // up as the union of every duplicate entry's calendars, rather than
+        // just the ones belonging to the convention row that actually survives.
+        std::map<std::string, std::size_t> last_fx_index_by_pair_code;
+        for (std::size_t i = 0; i < convs.fx.size(); ++i)
+            last_fx_index_by_pair_code[convs.fx[i].convention.pair_code] = i;
+
+        std::set<std::pair<std::string, std::string>> seen_pair_calendars;
         pairs.reserve(convs.fx.size());
         pair_conventions.reserve(convs.fx.size());
-        for (const auto& fx : convs.fx) {
+        for (std::size_t i = 0; i < convs.fx.size(); ++i) {
+            const auto& fx(convs.fx[i]);
             pairs.push_back(fx.pair);
             pair_conventions.push_back(fx.convention);
+            if (last_fx_index_by_pair_code[fx.convention.pair_code] != i)
+                continue;
+
+            for (const auto& calendar_code : fx.advance_calendars) {
+                // a single entry can list the same calendar code more than
+                // once; skip a (pair_code, calendar_code) combination already
+                // queued rather than sending a duplicate into the same batch,
+                // which would fail the whole junction insert atomically.
+                if (!seen_pair_calendars.insert({fx.convention.pair_code, calendar_code}).second)
+                    continue;
+                refdata::domain::currency_pair_convention_calendar pcc;
+                pcc.tenant_id = context_.tenant_id().to_string();
+                pcc.pair_code = fx.convention.pair_code;
+                pcc.calendar_code = calendar_code;
+                pcc.modified_by = fx.convention.modified_by;
+                pcc.performed_by = fx.convention.modified_by;
+                pcc.change_reason_code = fx.convention.change_reason_code;
+                pcc.change_commentary = fx.convention.change_commentary;
+                pair_calendars.push_back(std::move(pcc));
+            }
         }
         currency_pair_rp.write(context_, pairs);
         currency_pair_convention_rp.write(context_, pair_conventions);
+        if (!pair_calendars.empty())
+            currency_pair_convention_calendar_rp.write(pair_calendars);
 
         cds_rp.write(context_, convs.cds);
 

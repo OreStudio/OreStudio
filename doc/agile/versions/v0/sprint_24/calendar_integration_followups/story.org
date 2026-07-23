@@ -8,7 +8,7 @@
 #+filetags: :refdata:calendar:market_data:dq:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -36,12 +36,12 @@ than just existing in the database:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | XML export boundary task done; DQ-publish task remains. |
 | Waiting on    | Nothing.                               |
-| Next          | Either task can start independently.   |
-| Last touched  | 2026-07-21                               |
+| Next          | Start the DQ-publish task.             |
+| Last touched  | 2026-07-23                               |
 
 * Acceptance
 
@@ -58,7 +58,7 @@ than just existing in the database:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML. |
+| [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | DONE | 2026-07-22 | 2026-07-23 | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML. |
 | [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline. |
 
 * Decisions

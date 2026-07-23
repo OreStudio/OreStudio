@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: F7E0833B-EA19-4374-B38F-C919487535DE
+:END:
+#+title: Test Scenario: Verify currency_countries DQ publish
+#+description: Verify the refdata.currency_countries dataset publishes cleanly through the Librarian's base bundle and lands rows in the currency_countries table.
+#+type: test_scenario
+#+level: s1
+#+filetags: :calendar_integration_followups:sprint_24:v0:
+#+target_dialog: DataLibrarianWindow — Menu: Data Quality > Data Librarian
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment: clever_dijkstra
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] in [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] |
+| Parent story  | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]]   |
+| Target dialog | DataLibrarianWindow — Menu: Data Quality > Data Librarian |
+| Clients       |                                          |
+| State         | PASSED                                |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+- Log in against the =clever_dijkstra= environment as
+  =tenant_admin@barclays_plc= / =Secure-Password-123= and select
+  *BARCLAYS PLC*.
+- If the database has been recreated since last use, re-provision
+  first: =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=.
+
+** Open the Data Librarian window
+
+- Menu: *Data Quality > Data Librarian*.
+- Confirms PASS if the window opens showing the navigation tree
+  ("The Stacks") and a dataset table ("The Registry").
+
+** Find currency_countries in the base bundle
+
+- In the navigation tree, expand *Bundles > base*.
+- Locate the =refdata.currency_countries= dataset row in the
+  Registry table (display_order 18, alongside
+  =refdata.currency_calendars= and
+  =refdata.currency_pair_convention_calendars=).
+- Confirms PASS if the dataset row is present and shows a non-zero
+  record count (39 currency-country mappings from the seed data).
+- Confirms FAIL if the dataset is missing from the bundle, or shows
+  zero records.
+
+** Publish the base bundle
+
+- Select the =base= bundle and click *Publish* (or right-click >
+  Publish, per the dataset/bundle context menu).
+- Confirm the bundle-publish workflow progresses through every
+  member dataset, including =refdata.currency_countries=, without
+  error.
+- Confirms PASS if the workflow reports all steps completed and no
+  error dialog appears.
+
+** Verify currency-country rows landed
+
+- In the Data Librarian toolbar, click *Publication Audit* to open
+  =PublicationAuditDialog=.
+- Find the audit row for =refdata.currency_countries= from the
+  publish just performed.
+- Confirms PASS if the row shows a completed status with a non-zero
+  =inserted=/=updated= record count (39 currency-country mappings,
+  absent any tenant-specific overrides).
+- Confirms FAIL if the row is missing, shows an error status, or
+  shows a zero record count.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Publication Audit dialog confirmed the completed publish. Cross-checked directly against the database: =ores_refdata_currency_countries_tbl= holds exactly 39 rows for the Barclays tenant, 39 distinct (currency, country) pairs, zero duplicates; EUR correctly maps to all 6 Eurozone countries (AT, DE, ES, FI, FR, IT). |
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-23T23:03:38Z |
+| Branch        | feature/dq-publish-calendar-reference-data |
+| Commit        | 9cdcc0475 |
+| Worktree      | clever_dijkstra |
+
+* Notes

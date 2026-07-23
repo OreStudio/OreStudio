@@ -53,11 +53,11 @@ names and add a genuinely current real-vintage theme:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-23                               |
 
 * Acceptance
@@ -76,11 +76,26 @@ names and add a genuinely current real-vintage theme:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Renamed the "basic"/"realistic" synthetic FX+IR populate scripts to
+=uniform_demo=/=ore_samples_2016=, added a sibling
+=realistic_2026= dataset sourced from a real Fed H.10 2026-05-05
+vintage (fetched via the new =tools/fetch_fed_h10_rates.sh=), wired
+=promptThemeAndStart()= into =MarketSimulatorWindow='s Start-at-Root
+path so cascading every theme at once is no longer possible, then
+fixed the QA screenshot capture bug blocking manual verification
+under WSLg and ran the scenario end to end against a freshly
+provisioned Barclays Plc tenant.
 
 * Notes
+
+Manual testing surfaced three real gaps beyond this task's scope,
+filed as separate tasks under this story rather than fixed inline:
+duplicate per-asset-class theme folders
+([[id:3461BD8C-B8B1-4037-9B3D-D07AF9EA4768][task]]), 2026 Realistic
+missing its vintage FX driver rates on provision
+([[id:094075A2-1443-4DE0-B7B4-433C5F10F572][task]]), and a
+=find_series= false-negative in vintage validity
+([[id:2DD250F6-7B4C-4204-B742-AC24290F7A81][task]]).
 
 * Test Scenarios
 
@@ -89,9 +104,9 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                                            | State  | Notes                                              |
+|----------------------------------------------------------------------+--------+-----------------------------------------------------|
+| [[id:90B1018E-C019-4C75-B0EE-91284A1E1A75][Synthetic data themes and Start-at-Root guard]] | FAILED | Step 1 passed; step 2 failed (duplicate folders, red vintage badges) — both filed as follow-up tasks, not blocking this task's close. |
 
 * PRs
 
@@ -104,5 +119,31 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+Shipped: renamed the "basic"/"realistic" synthetic themes to
+Uniform Volatility Demo / 2016 ORE Samples, added a new 2026
+Realistic theme sourced from a real 2026-05-05 Fed H.10 FX vintage,
+added the Start-at-Root theme picker
+(=MarketSimulatorWindow::promptThemeAndStart()=) so starting from
+the tree root now prompts for a theme instead of cascading every
+mutually-exclusive vintage at once, and fixed
+=QaValidationRunnerWidget::captureScreenshot()= to use
+=QWidget::grab()= instead of the X11 root-window grab that returned
+black frames under WSLg.
+
+Acceptance met except the last bullet's "no gaps left silently for a
+future tester" clause, which is satisfied by filing rather than
+fixing: manual testing (via the new "Synthetic data themes and
+Start-at-Root guard" scenario) found the tree still shows each
+theme's FX and IR asset classes as two separate top-level nodes
+(diagnosed but not fixed — root cause and proposed fix captured in
+the follow-up task) and that FX vintage badges render red more
+broadly than expected (two distinct causes found: 2026 Realistic's
+vintage data is never published by standard party provisioning, and
+a separate =find_series= false-negative affects themes with correct
+data too). All three filed as their own tasks under this story
+rather than blocking this one's close.
 
 * Result

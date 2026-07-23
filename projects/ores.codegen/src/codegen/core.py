@@ -2081,6 +2081,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             col.get('name', col.get('column')): bool(col.get('nullable', False))
             for col in (domain_entity.get('columns', []) or [])
             + (domain_entity.get('natural_keys', []) or [])
+            + (domain_entity.get('primary_key', {}).get('columns', []) or [])
         }
         for v in domain_entity.get('insert_trigger', {}).get('validations', []):
             v['nullable'] = _nullable_by_column.get(v.get('column'), False)
@@ -2098,27 +2099,50 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:
             _mark_last_item(sql_section['extra_delete_sets'])
-        # Add computed properties for primary key type detection
-        if 'primary_key' in domain_entity:
-            pk = domain_entity['primary_key']
-            pk_type = pk.get('type', 'uuid')
-            pk['is_uuid'] = pk_type == 'uuid'
-            pk['is_text'] = pk_type == 'text'
-            if pk['is_uuid'] and 'uuid_check_fn' not in pk:
-                pk['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
-            # Ensure cpp_type is set with sensible defaults
-            if 'cpp_type' not in pk:
-                if pk['is_uuid']:
-                    pk['cpp_type'] = 'boost::uuids::uuid'
-                else:
-                    pk['cpp_type'] = 'std::string'
+        # Add computed properties for primary key type detection. Applied to
+        # both the top-level (back-compat, first-flagged-column) scalar dict
+        # and, identically, to each entry of primary_key['columns'] -- a
+        # compound key's SQL template rendering (sql_schema_domain_entity_
+        # create.mustache) loops that list, so every column needs the same
+        # is_uuid/is_text/uuid_check_fn/cpp_type/render_label flags the
+        # single-column case already relied on as scalars.
+        def _enrich_primary_key_field(field):
+            field_type = field.get('type', 'uuid')
+            field['is_uuid'] = field_type == 'uuid'
+            field['is_text'] = field_type == 'text'
+            if field['is_uuid'] and 'uuid_check_fn' not in field:
+                field['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
+            if 'cpp_type' not in field:
+                field['cpp_type'] = (
+                    'boost::uuids::uuid' if field['is_uuid'] else 'std::string'
+                )
             # Mechanical title-case label — see the identical column-level
             # 'render_label' computation below for why this doesn't reuse
             # 'description' (long prose, not a UI-sized label).
-            pk['render_label'] = ' '.join(
+            field['render_label'] = ' '.join(
                 word.upper() if word.lower() in ('id', 'iso', 'fx')
                 else word.capitalize()
-                for word in pk.get('column', '').split('_')
+                for word in field.get('column', '').split('_')
+            )
+
+        if 'primary_key' in domain_entity:
+            pk = domain_entity['primary_key']
+            _enrich_primary_key_field(pk)
+            pk_columns = pk.get('columns', [])
+            for field in pk_columns:
+                _enrich_primary_key_field(field)
+            _mark_last_item(pk_columns)
+            pk['is_compound'] = len(pk_columns) > 1
+            pk['column_list'] = ', '.join(c['column'] for c in pk_columns)
+            pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
+            pk['gist_column_clause'] = '\n        '.join(
+                f"{c['column']} WITH =," for c in pk_columns
+            )
+            pk['where_new'] = ' and '.join(
+                f"{c['column']} = NEW.{c['column']}" for c in pk_columns
+            )
+            pk['where_old'] = ' and '.join(
+                f"{c['column']} = OLD.{c['column']}" for c in pk_columns
             )
         # Process Qt-specific fields
         if 'qt' in domain_entity:

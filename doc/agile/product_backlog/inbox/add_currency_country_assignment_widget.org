@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0791D7BE-9C93-496F-ACE5-53E9CFE990AC
+:END:
+#+title: Add a currency-country assignment widget to CurrencyDetailDialog
+#+description: currency_calendar has a CalendarAssignmentWidget in CurrencyDetailDialog for viewing/assigning calendars; currency_country, the sibling junction, has no UI at all.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:currency:ui:gap:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a currency-to-country assignment widget to =CurrencyDetailDialog=,
+mirroring the existing =CalendarAssignmentWidget= pattern used for
+=currency_calendar= (see =projects/ores.qt/refdata/src/CurrencyDetailDialog.cpp:690=
+and =projects/ores.qt/api/include/ores.qt/CalendarAssignmentWidget.hpp=):
+a reusable widget embedded in the currency detail dialog that lists a
+currency's assigned countries and lets a user assign/revoke them,
+backed by the existing =ores_refdata_currency_countries_tbl=
+junction (=projects/ores.sql/create/refdata/refdata_currency_country_create.sql=)
+and its NATS messaging surface.
+
+* Why
+
+=currency_country= (a currency can be issued by more than one
+country, e.g. EUR spans DE/FR/IT/ES/AT/FI) is a sibling junction to
+=currency_calendar= — both are many-to-many currency assignments —
+but only =currency_calendar= has a Qt UI. =currency_country= has none
+anywhere in the application: no way to view or manage which countries
+issue a currency. The gap surfaced while writing the QA test scenario
+for [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] (which wired
+=currency_country= into the DQ bundle-publish pipeline) — that
+scenario had to fall back to the generic Publication Audit dialog to
+confirm data landed, instead of a dedicated screen, because none
+exists.
+
+* References
+
+- =projects/ores.qt/refdata/src/CurrencyDetailDialog.cpp:690= — the
+  =CalendarAssignmentWidget= embedding this widget should mirror.
+- =projects/ores.qt/api/include/ores.qt/CalendarAssignmentWidget.hpp=
+- =projects/ores.sql/create/refdata/refdata_currency_country_create.sql=
+
+* See also
+
+- [[id:D1B2BDB5-D35B-4EF3-9A4D-030CF28BDF83][ores.codegen.junction: ores.refdata.currency_country]]
+- [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Story: Finish integrating calendar reference data: XML export and DQ publish]]
+- [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][Task: DQ-publish the calendar reference data]]

@@ -56,8 +56,8 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '93925bc5-1800-5c69-a18b-f683dae17f2e', 0, 'Acme Bank UK plc Global Markets', null, '57e8e604-dcb6-515a-a6bd-38f0be805480', 'Trading', null, 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2e99eb72-bab9-5a7f-9b57-a194cc2e164b', 0, 'IR Swaps London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', '1e719eee-612e-5927-8e71-4107008a1590', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e7f6b28c-f0b3-5c66-a9f9-bcc057369e3f', 0, 'Credit Trading London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'aeb8a9e6-86a6-5382-b5eb-54c1b9577c32', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4ae8aa86-e0f2-56fc-9cf5-5a631ec54120', 0, 'FX Rates London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'c3264d1e-2c3a-538c-b598-915a8b354dec', 'Trading', null, 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '93925bc5-1800-5c69-a18b-f683dae17f2e', 0, 'Acme Bank UK plc Global Markets', null, '57e8e604-dcb6-515a-a6bd-38f0be805480', 'Risk', 'GBP', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2e99eb72-bab9-5a7f-9b57-a194cc2e164b', 0, 'IR Swaps London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', '1e719eee-612e-5927-8e71-4107008a1590', 'Risk', 'GBP', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e7f6b28c-f0b3-5c66-a9f9-bcc057369e3f', 0, 'Credit Trading London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'aeb8a9e6-86a6-5382-b5eb-54c1b9577c32', 'Risk', 'GBP', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4ae8aa86-e0f2-56fc-9cf5-5a631ec54120', 0, 'FX Rates London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'c3264d1e-2c3a-538c-b598-915a8b354dec', 'Risk', 'GBP', 0);
 end $$;

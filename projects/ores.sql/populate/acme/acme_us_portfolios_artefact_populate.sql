@@ -56,8 +56,8 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', 0, 'Acme Bank US Inc Global Markets', null, '4951bc79-5e32-5677-ad77-77deea521a90', 'Trading', null, 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c6826c25-9de0-5d23-b39b-96f53c714d65', 0, 'IR Swaps New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '25523799-1194-5c84-b415-40b6cd952335', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '840f7ff0-f868-5c63-98d4-91fb24180e51', 0, 'Credit Trading New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '4e9fdb9b-1d8e-5318-9c00-27a522595f6f', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e1b393f8-d984-5ae7-b3ae-0c16ac371aa7', 0, 'FX Rates New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '2075badb-b410-5488-98ea-4c63eca7b475', 'Trading', null, 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', 0, 'Acme Bank US Inc Global Markets', null, '4951bc79-5e32-5677-ad77-77deea521a90', 'Risk', 'USD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c6826c25-9de0-5d23-b39b-96f53c714d65', 0, 'IR Swaps New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '25523799-1194-5c84-b415-40b6cd952335', 'Risk', 'USD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '840f7ff0-f868-5c63-98d4-91fb24180e51', 0, 'Credit Trading New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '4e9fdb9b-1d8e-5318-9c00-27a522595f6f', 'Risk', 'USD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e1b393f8-d984-5ae7-b3ae-0c16ac371aa7', 0, 'FX Rates New York Portfolio', '8be4b2e1-2c9c-526f-8b01-d23c8456f09e', '2075badb-b410-5488-98ea-4c63eca7b475', 'Risk', 'USD', 0);
 end $$;

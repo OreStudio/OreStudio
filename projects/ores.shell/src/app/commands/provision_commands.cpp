@@ -140,7 +140,7 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
         "Provision the logged-in bootstrap-mode tenant: publish a bundle, "
         "optionally generate synthetic data, associate the admin with the "
         "parties and finalize",
-        {"[--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>] "
+        {"[--bundle <code>] [--source gleif|synthetic|acme] [--root-lei <lei>] "
          "[--timeout <seconds>] [synthetic generation knobs — see synthetic generate]"});
 
     provision_menu->Insert("party",
@@ -308,8 +308,8 @@ void provision_commands::process_tenant(std::ostream& out,
     }
 
     const auto& source = parsed->flag("source");
-    if (source != "gleif" && source != "synthetic") {
-        fail(out) << "--source must be gleif or synthetic: " << source << std::endl;
+    if (source != "gleif" && source != "synthetic" && source != "acme") {
+        fail(out) << "--source must be gleif, synthetic, or acme: " << source << std::endl;
         return;
     }
     if (source != "gleif" && !parsed->flag("root-lei").empty()) {
@@ -334,6 +334,43 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     }
     const auto username = session.auth().username;
+
+    // --source acme: a single server-side orchestrated request (no
+    // per-dataset bundle publishes, no synthetic generation, no
+    // client-side party-association loop -- see
+    // ores_iam_provision_acme_tenant_fn).
+    if (source == "acme") {
+        out << "[1/2] Provisioning the Acme Bank holding group..." << std::endl;
+        iam::messaging::provision_acme_tenant_command provision_req;
+        auto provisioned = do_request(out, session, provision_req, publish_timeout, true);
+        if (!provisioned)
+            return;
+        if (!provisioned->success) {
+            fail(out) << "Failed to provision Acme tenant: " << provisioned->message << std::endl;
+            return;
+        }
+        for (const auto& step : provisioned->steps)
+            out << "  " << step.step << ": " << step.action << " (" << step.record_count << ")"
+                << std::endl;
+
+        out << "[2/2] Finalizing tenant provisioning..." << std::endl;
+        iam::messaging::complete_tenant_provisioning_command complete_req;
+        auto completed = do_request(out, session, complete_req, std::chrono::seconds(30), true);
+        if (!completed)
+            return;
+        if (!completed->success) {
+            fail(out) << "Failed to complete tenant provisioning: " << completed->message
+                      << std::endl;
+            return;
+        }
+
+        out << "✓ Acme Bank holding group provisioned." << std::endl;
+        out << "Next: logout, then log back in — the party setup is per party; run "
+               "provision party <party>."
+            << std::endl;
+        BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; source acme";
+        return;
+    }
 
     // Resolve the bundle: explicit --bundle, else the first available,
     // which is the wizard's default selection.

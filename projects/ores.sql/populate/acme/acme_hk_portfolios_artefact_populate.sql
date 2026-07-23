@@ -56,8 +56,8 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b47aff75-fda3-5c47-bd47-392914198fdb', 0, 'Acme Bank HK Ltd Global Markets', null, '87610f63-6cca-525a-b311-65b163df00ed', 'Trading', null, 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', 0, 'IR Swaps Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '695b6f3f-350e-571f-b16f-faedddefbfd4', 0, 'Credit Trading Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Trading', null, 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '94115253-8f1d-5d49-8912-3657b14a3530', 0, 'FX Rates Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Trading', null, 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b47aff75-fda3-5c47-bd47-392914198fdb', 0, 'Acme Bank HK Ltd Global Markets', null, '87610f63-6cca-525a-b311-65b163df00ed', 'Risk', 'HKD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', 0, 'IR Swaps Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'HKD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '695b6f3f-350e-571f-b16f-faedddefbfd4', 0, 'Credit Trading Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Risk', 'HKD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '94115253-8f1d-5d49-8912-3657b14a3530', 0, 'FX Rates Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'HKD', 0);
 end $$;

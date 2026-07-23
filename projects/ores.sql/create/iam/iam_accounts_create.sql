@@ -108,17 +108,23 @@ begin
         end if;
         new.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. this composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        -- See ores_refdata_parties_insert_fn for the same pattern.
         update ores_iam_accounts_tbl
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = new.tenant_id
         and id = new.id
         and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+        and valid_from < clock_timestamp();
     else
         new.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
+    new.valid_from = clock_timestamp();
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);

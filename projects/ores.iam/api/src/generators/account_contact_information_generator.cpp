@@ -47,7 +47,7 @@ generate_synthetic_account_contact_information(utility::generation::generation_c
     r.city = std::string("London");
     r.state = std::string("");
     r.country_code = // Left blank: validated against the tenant-scoped countries table, which
-        // isolated test tenants don't seed; empty skips validation.
+                     // isolated test tenants don't seed; empty skips validation.
         std::string("");
     r.postal_code = std::string("EC2V 8AS");
     r.phone = std::string("+44 20 7000 0000");

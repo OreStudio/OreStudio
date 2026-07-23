@@ -38,10 +38,10 @@ domain::image generate_synthetic_image(utility::generation::generation_context& 
     r.description = std::string(faker::lorem::sentence());
     r.mime_type = "image/svg+xml";
     const std::string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
-                             "<rect fill=\"#" +
-                             faker::number::hexadecimal(6) +
-                             "\" width=\"100\" height=\"100\"/>"
-                             "</svg>";
+                            "<rect fill=\"#" +
+                            faker::number::hexadecimal(6) +
+                            "\" width=\"100\" height=\"100\"/>"
+                            "</svg>";
     r.data.assign(svg.begin(), svg.end());
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";

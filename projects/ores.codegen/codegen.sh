@@ -16,12 +16,16 @@ if [ ! -d "$VENV_PATH" ]; then
         echo "You may need: sudo apt install python3-venv"
         exit 1
     fi
-    if [ -f "$SCRIPT_DIR/requirements.txt" ]; then
-        echo "Installing dependencies from requirements.txt..."
-        "$VENV_PATH/bin/pip" install --upgrade pip -q
-        "$VENV_PATH/bin/pip" install -r "$SCRIPT_DIR/requirements.txt" -q
-    fi
-    echo "Virtual environment ready."
+fi
+
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+STAMP_PATH="$VENV_PATH/.requirements.stamp"
+
+if [ -f "$REQUIREMENTS_FILE" ] && { [ ! -f "$STAMP_PATH" ] || [ "$REQUIREMENTS_FILE" -nt "$STAMP_PATH" ]; }; then
+    echo "Installing dependencies from requirements.txt..."
+    "$VENV_PATH/bin/pip" install --upgrade pip -q
+    "$VENV_PATH/bin/pip" install -r "$REQUIREMENTS_FILE" -q
+    cp "$REQUIREMENTS_FILE" "$STAMP_PATH"
 fi
 
 source "$VENV_PATH/bin/activate"

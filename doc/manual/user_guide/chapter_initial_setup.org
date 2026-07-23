@@ -395,9 +395,17 @@ OreStudio runs the party setup in five phases, shown in the log panel:
    risk-report definitions (=ore.report_definitions=), since reports
    reference the book/portfolio tree.
 3. *Phase 3: publishing synthetic market data configuration* —
-   publishes the =synthetic_realistic= bundle in full: FX spot and
-   IR curve generation configs, and any further asset class added to
-   the bundle in future.
+   publishes the =synthetic_realistic_2026= bundle in full: the
+   "2026 Realistic" theme's FX spot and IR curve generation configs,
+   and any further asset class added to the bundle in future. Two
+   other themes exist -- =synthetic_ore_samples_2016= ("2016 ORE
+   Samples", matching the conventions ORE's own sample data comes
+   from) and =synthetic_uniform_demo= (a simple, non-vintage
+   demo/exercise archetype) -- publish those separately (e.g. via
+   =ores.shell=) if you want them available too. Only one theme's
+   feeds should ever run at once: the Market Simulator's Start action
+   at the collection root prompts you to pick a theme rather than
+   starting them all.
 4. *Phase 4: publishing FX driver rates* — publishes the curated
    =marketdata.reference_vintage_2016_02_05= bundle so the party has
    real market series/observations to browse.

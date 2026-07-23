@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 8A6B2BFC-9E40-4AF6-BFE2-DB59922E614C
+:END:
+#+title: Task: Rename synthetic themes and add 2026 Realistic vintage dataset
+#+description: Rename the 'basic'/'realistic' synthetic FX+IR themes to their clearer identities (Uniform Volatility Demo, 2016 ORE Samples), split out a new 2026 Realistic theme sourced from a real 2026-05-05 FX driver-rates vintage, add the QA screenshot capture fix needed to test it under WSLg, and file the follow-up tasks the manual test scenario surfaced.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch: feature/rename-and-split-synthetic-themes-2026-vintage
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the synthetic FX/IR data themes clearer, self-explanatory
+names and add a genuinely current real-vintage theme:
+
+- Rename the "basic" theme to "Uniform Volatility Demo" (exaggerated
+  uniform volatility, for visual demo purposes) and "realistic" to
+  "2016 ORE Samples" (calibrated to plausible 2016 real FX
+  volatility, aligned to ORE's own bundled 2016-02-05 reference
+  vintage).
+- Add a new "2026 Realistic" theme sourced from a real
+  2026-05-05 Federal Reserve H.10 FX driver-rates vintage
+  (=marketdata_fx_driver_rates_2026_populate.sql=,
+  =tools/fetch_fed_h10_rates.sh=), so there is a current-vintage
+  option alongside the 2016 one.
+- Add the =MarketSimulatorWindow= Start-at-Root guard
+  (=promptThemeAndStart()=) so starting from the tree root prompts
+  for which theme to run instead of cascading all mutually-exclusive
+  vintages at once.
+- Fix =QaValidationRunnerWidget::captureScreenshot()= to grab the
+  app's own top-level window via =QWidget::grab()= instead of
+  =QScreen::grabWindow(0)= on the X11 root window, which returned
+  black frames under WSLg's compositing XWayland setup -- needed to
+  actually run the manual test scenario for this work.
+- Manually test the above via a new =test_scenario= doc and file the
+  three follow-up bugs/gaps it surfaced (duplicate per-asset-class
+  theme folders, 2026 Realistic missing its vintage FX driver rates
+  on provision, and a =find_series= false-negative in vintage
+  validity) as separate tasks under this story rather than fixing
+  them inline.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+- The Market Simulator tree shows the three renamed/added themes
+  (Uniform Volatility Demo, 2016 ORE Samples, 2026 Realistic).
+- Starting at the tree root prompts for a theme instead of
+  cascading all of them; cancelling is a no-op; picking one starts
+  only that theme's feeds.
+- The QA Validation Runner's screenshot button produces a real,
+  non-black capture of the app window under this WSLg environment.
+- The three gaps found during manual testing (duplicate theme
+  folders, missing 2026 vintage data on provision, false-negative
+  vintage validity) are filed as their own tasks under this story,
+  not silently left for a future tester to rediscover.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

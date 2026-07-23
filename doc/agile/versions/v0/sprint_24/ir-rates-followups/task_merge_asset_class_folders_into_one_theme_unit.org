@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 3461BD8C-B8B1-4037-9B3D-D07AF9EA4768
+:END:
+#+title: Task: Merge per-asset-class synthetic collection folders into one theme unit
+#+description: FX and IR curve publish-from-dq functions each create their own collection folder keyed by dataset-scoped config id, so a single theme (e.g. 2016 ORE Samples) shows as two duplicate top-level Market Simulator tree nodes instead of one; fix so all asset classes of a theme share one folder/start-stop unit, scaling to future asset classes without one click per class.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make a synthetic data theme (e.g. "2016 ORE Samples") one logical
+unit in the Market Simulator tree and in the backend folder model,
+instead of one duplicate top-level node per asset class. Today
+=ores_synthetic_publish_fx_spot_configs_from_dq_fn= and
+=ores_synthetic_publish_ir_curve_configs_from_dq_fn=
+(=projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=)
+each resolve/create the "collection" folder keyed by
+=collection_id = v_config_id=, and =v_config_id= is scoped to that
+call's own =dataset_id= -- so FX and IR curves for the same theme,
+published from two separate DQ datasets, each get their own
+collection folder that happens to share a display name. This already
+forces the tester through this sprint's theme test scenario to
+special-case "appears twice" as expected, and will only get worse as
+more asset classes (rates, credit, equity, ...) are added to a
+theme -- a party operator should be able to start/stop/browse a whole
+theme as one unit, not click once per asset class.
+
+Change both publish functions to resolve the collection folder by
+=(tenant_id, party_id, name = v_config_name)= instead of by
+=collection_id=, so every asset class published under the same theme
+name reuses one shared collection folder with per-asset-class
+children underneath (mirroring the existing FX/Rates ->
+FX Rates/IR Curves sub-folder shape). Because
+=promptThemeAndStart()= and folder-scoped start/stop
+(=projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp=) already
+operate on the folder hierarchy (via each generation config's own
+=folder_id=), not on =collection_id=, merging the folder should not
+require Qt-side changes -- confirm that during implementation.
+Existing already-provisioned tenants (including this one) will keep
+their duplicate folders until a one-off data migration merges them;
+scope that migration as part of this task or split it out
+explicitly, but don't leave it undocumented.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+- A theme published with both FX and IR curve datasets (e.g. "2016
+  ORE Samples") shows as exactly one top-level Collection node in
+  the Market Simulator tree, with FX and IR curve asset-class
+  sub-folders underneath it -- not two sibling top-level nodes with
+  the same name.
+- Starting/stopping the merged theme node still starts/stops every
+  asset class under it (regression check against
+  =promptThemeAndStart()= and the Start-at-Root theme picker from
+  the "Synthetic data themes" test scenario).
+- A future third asset class published under the same theme name
+  joins the same folder instead of creating a fourth top-level node.
+- Existing duplicate folders in already-provisioned tenants are
+  either migrated or the gap is explicitly called out as a known
+  follow-up, not silently left broken.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

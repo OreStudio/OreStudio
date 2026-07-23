@@ -170,16 +170,21 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
 
-    -- --- Synthetic Data: Basic Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.fx_spot_configs.basic', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_basic', 'synthetic.ir_curve_configs.basic', 20);
-
-    -- --- Synthetic Data: Realistic Bundle Members ---
+    -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
     -- Market-data generation config only, across all asset classes: a new
     -- asset class never requires a client code change, only a new row here.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.fx_spot_configs.realistic', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic', 'synthetic.ir_curve_configs.realistic', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.fx_spot_configs.ore_samples_2016', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.ir_curve_configs.ore_samples_2016', 20);
+
+    -- --- Synthetic Data: 2026 Realistic Bundle Members ---
+
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.fx_spot_configs.realistic_2026', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.ir_curve_configs.realistic_2026', 20);
+
+    -- --- Synthetic Data: Uniform Volatility Demo Bundle Members ---
+
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.fx_spot_configs.uniform_demo', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.ir_curve_configs.uniform_demo', 20);
 END $$;
 

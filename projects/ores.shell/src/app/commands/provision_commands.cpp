@@ -609,7 +609,7 @@ void provision_commands::process_party(std::ostream& out,
 
     // Phases 2-4: publish every party-scoped bundle in the shared
     // provisioning plan, each in full (no dataset-level filter), so a
-    // new bundle member -- a new asset class under synthetic_realistic,
+    // new bundle member -- a new asset class under synthetic_realistic_2026,
     // a new dataset under risk_management -- never requires a change
     // here, only a new row in dq_dataset_bundle_member_populate.sql.
     // risk_management (business_units, portfolios, books, and report

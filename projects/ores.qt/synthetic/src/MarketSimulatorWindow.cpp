@@ -49,6 +49,7 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QIcon>
+#include <QInputDialog>
 #include <QMdiArea>
 #include <QMessageBox>
 #include <QPainter>
@@ -1884,6 +1885,58 @@ void MarketSimulatorWindow::updateToolbarState() {
     stopFeedAction_->setEnabled(anySelected);
 }
 
+std::vector<QStandardItem*> MarketSimulatorWindow::rootCollections() const {
+    std::vector<QStandardItem*> result;
+    auto* root = treeModel_->invisibleRootItem();
+    for (int i = 0; i < root->rowCount(); ++i) {
+        auto* child = root->child(i, 0);
+        if (static_cast<NodeType>(child->data(NodeTypeRole).toInt()) == NodeType::Collection)
+            result.push_back(child);
+    }
+    return result;
+}
+
+void MarketSimulatorWindow::promptThemeAndStart() {
+    // Themes are identified by Collection display name: FX and IR curves for
+    // the same theme (e.g. "2016 ORE Samples") are two sibling Collection
+    // nodes sharing that name, not one node -- so a theme's items are every
+    // root Collection whose text matches the chosen one, not just the first.
+    const auto collections = rootCollections();
+    QStringList names;
+    for (const auto* item : collections)
+        if (!names.contains(item->text()))
+            names << item->text();
+
+    if (names.isEmpty())
+        return;
+
+    bool ok = false;
+    const QString chosen = QInputDialog::getItem(
+        this,
+        tr("Start"),
+        tr("Starting everything at once would run mutually-exclusive vintages "
+           "side by side. Which dataset would you like to start?"),
+        names,
+        0,
+        false,
+        &ok);
+    if (!ok || chosen.isEmpty())
+        return;
+
+    for (auto* item : collections) {
+        if (item->text() != chosen)
+            continue;
+        const auto folderId = item->data(FolderIdRole).toString().toStdString();
+        startFolderAsync(folderId);
+        auto curves = irCurvesUnderIndex(item->index());
+        curves.erase(std::remove_if(curves.begin(),
+                                    curves.end(),
+                                    [](const auto& ir) { return !ir.auto_start; }),
+                    curves.end());
+        startIrCurvesAsync(std::move(curves));
+    }
+}
+
 void MarketSimulatorWindow::onStartFeedClicked() {
     // A single non-Feed node selected (Root/Collection/Group with a real
     // backing folder) cascades via one folder-scoped backend request instead
@@ -1893,6 +1946,15 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     // The folder-scoped request only ever resolves fx_spot_generation_config rows
     // server-side, so IR curves in the current selection always go through the
     // per-feed path in addition, never through the folder fast-path.
+    if (currentNodeType() == NodeType::Root) {
+        // Starting at Root would cascade every theme at once (e.g. "2016 ORE
+        // Samples" and "2026 Realistic" simultaneously), which is nonsensical --
+        // themes are mutually exclusive vintages, not layers to combine. Ask
+        // which one instead.
+        promptThemeAndStart();
+        return;
+    }
+
     const auto folderId = selectedFolderId();
     if (!folderId.empty()) {
         startFolderAsync(folderId);

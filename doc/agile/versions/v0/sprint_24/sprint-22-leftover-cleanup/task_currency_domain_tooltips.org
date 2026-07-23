@@ -121,10 +121,14 @@ per-row =tooltip= column on both the Detail fields and Columns (Qt
 model) tables, rendered as a =QLabel=/input =toolTip= property in the
 generated detail dialog and as =Qt::ToolTipRole= in the generated
 client model's =headerData=. Filled in for every Currency and
-Currency Pair Convention field and regenerated. Not yet built (both
-shared build-lock slots were held by other concurrent worktrees) —
-generated output reviewed by eye against the existing, already-
-compiling generated-code conventions (same =tr()=/property shapes
-used elsewhere); building and clicking through the dialogs in a live
-client is the natural next verification step whenever a slot frees
-up.
+Currency Pair Convention field and regenerated.
+
+Verified live via [[id:58FB9E8A-B7CF-4883-A59A-31D2313E4EE5][Test Scenario: Verify Currency and Currency Pair
+Convention tooltips]] against a rebuilt Qt client — all 8 steps
+PASSED, confirming every detail-dialog field and list-window column
+header shows a domain-explanatory tooltip. The first verification
+run had failed on an unrelated environment issue (the =jolly_knuth=
+tenant's Barclays Plc provisioning was missing badge seed data,
+making every badge render with the shared fallback colour); fixed by
+recreating the database and re-running the full provisioning script,
+which is unrelated to the tooltip work itself.

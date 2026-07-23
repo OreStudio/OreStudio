@@ -44,10 +44,22 @@ notes back as a =*** Result= child heading directly under it.
   =tenant_admin@barclays_plc= / =Secure-Password-123= and select
   *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Currencies list window
 
 - Menu: Reference Data > Currencies.
 - Confirms: the list window opens and shows currency rows (e.g. USD, EUR).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Hover every Currencies column header
 
@@ -59,11 +71,23 @@ notes back as a =*** Result= child heading directly under it.
   (not just the header text itself), except Version/Modified
   By/Recorded At, which have none by design.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open a currency's detail dialog
 
 - Double-click any currency row (e.g. USD) to open
   =CurrencyDetailDialog=.
 - Confirms: the dialog opens on the General tab.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Hover every Currency detail field
 
@@ -75,12 +99,24 @@ notes back as a =*** Result= child heading directly under it.
   (e.g. Fractions Per Unit explains it drives sub-unit precision, not
   just "Fractions Per Unit").
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Currency Pair Conventions list
 
 - Menu: Reference Data > Conventions > Curve Building > Currency
   Pair Conventions.
 - Confirms: the list window opens and shows convention rows (e.g.
   EUR/USD).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Hover every convention column header
 
@@ -89,11 +125,23 @@ notes back as a =*** Result= child heading directly under it.
 - Confirms: each header shows a domain-explanation tooltip, except
   Version/Modified By/Recorded At.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open a convention's detail dialog
 
 - Double-click any row (e.g. EUR/USD) to open
   =CurrencyPairConventionDetailDialog=.
 - Confirms: the dialog opens with the convention's fields populated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Hover every convention detail field
 
@@ -104,14 +152,20 @@ notes back as a =*** Result= child heading directly under it.
   (e.g. Spot Relative explains forward dates are relative to the
   spot date, End Of Month explains the month-end forward-date rule).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-23T14:37:44Z |
+| Branch        | feature/codegen-fk-combo-flag-icons |
+| Commit        | dff4b1507 |
+| Worktree      | jolly_knuth |
 
 * Notes

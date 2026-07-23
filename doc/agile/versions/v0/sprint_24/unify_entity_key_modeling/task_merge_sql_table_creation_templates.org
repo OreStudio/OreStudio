@@ -60,11 +60,11 @@ without changing output for any existing single-column entity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -103,3 +103,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Extended =sql_schema_domain_entity_create.mustache= and its
+=core.py= render-context builder so a compound =primary_key.columns=
+list (>1 entry) renders correctly:
+
+- ~_enrich_primary_key_field~ applies the same =is_uuid=/=is_text=/
+  =uuid_check_fn=/=cpp_type=/=render_label= derivation to every
+  =primary_key.columns= entry that the single-column scalar
+  =primary_key= dict already received, plus a =last= marker via
+  ~_mark_last_item~ for comma/and-joining in the template.
+- Added =primary_key.is_compound= plus precomputed
+  =column_list=/=index_suffix=/=gist_column_clause=/=where_new=/=where_old=
+  strings so the template's ~20 call sites don't each re-derive
+  joining logic.
+- =validate_<entity>_fn= generation stays scoped to single-column
+  keys, per task 1's =Plan= decision — no N-ary signature was
+  invented.
+- Regression coverage added in
+  =tests/test_compound_primary_key_sql.py= (6 cases: composite
+  constraint, composite indexes, AND-joined where clauses,
+  one-column-per-field, validate-fn suppression, and the
+  single-column-key path staying byte-identical). Full
+  =ores.codegen= suite (67 tests) passes.
+
+Not done in this task: remodeling =ores.dq.subject_area= onto the
+new compound-key syntax to retire its hand-written
+=dq_subject_area_create.sql= — left for a follow-up task, since this
+task's scope is the template/core.py mechanism, not any specific
+entity's migration.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :nats:messaging:external:knowledge:
 #+created: 2026-05-26
-#+updated: 2026-07-12
+#+updated: 2026-07-24
 
 [[https://nats.io][NATS]] is an open-source, cloud-native messaging system written in Go
 and maintained by [[https://synadia.com][Synadia]]. It provides publish/subscribe,
@@ -122,6 +122,15 @@ Both are called automatically by =compass env configure=.
 
 To add a certificate for a new service, add its name to the =_SERVICES= list
 in [[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]] and re-run =compass nats certs=.
+
+** Vendored binary
+
+[[proj:external/nats][=external/nats/=]] vendors prebuilt =nats-server= release
+archives (one per OS/arch — linux-amd64, windows-amd64, darwin-amd64,
+darwin-arm64) for deploying the message bus to hosts without a
+current =nats-server= package in their own repositories (e.g. an
+older distro base). See =external/nats/manifest.json= and
+=methodology.txt= for provenance and the pinned version.
 
 * See also
 

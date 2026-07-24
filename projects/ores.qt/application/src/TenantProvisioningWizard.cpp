@@ -723,6 +723,8 @@ void TenantExecutePage::startAcmeProvisioning() {
 
     QFuture<AcmeResult> future = QtConcurrent::run([clientManager]() -> AcmeResult {
         AcmeResult result;
+        // Parameterless by design -- tenant context comes from the
+        // authenticated session, not the request.
         iam::messaging::provision_acme_tenant_command request;
         auto resp = clientManager->process_authenticated_request(std::move(request),
                                                                   std::chrono::minutes(5));

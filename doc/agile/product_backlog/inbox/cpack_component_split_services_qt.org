@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: BB1390E8-5C6B-4B5D-A789-576B6F83B2F3
+:END:
+#+title: CPack COMPONENT split: services vs Qt install targets
+#+description: Add COMPONENT tags across install(TARGETS) call sites so a services-only package can be produced without bundling ores.qt.
+#+type: capture
+#+level: cross
+#+filetags: :cmake:packaging:tech-debt:
+#+created: 2026-07-24
+#+updated: 2026-07-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+CPack today packages everything on Linux as a single =DEB= with
+=CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE=
+(=build/cpack/CMakeLists.txt=), and none of the ~97
+=install(TARGETS ...)= call sites across =projects/*/CMakeLists.txt=
+tag a =COMPONENT=. Splitting into a =services= component (everything
+except the =ores.qt/*= subprojects) and a =qt= component (the 16
+=ores.qt/*= CMakeLists.txt) would let CPack produce a services-only
+archive, avoiding Qt6 runtime/dev bulk on headless deploy targets.
+This requires classifying and editing each of the ~97 call sites by
+hand (no shared install macro/function exists to centralise this),
+plus adding component-based CPack config
+(=CPACK_COMPONENTS_ALL=/=CPACK_INSTALL_CMAKE_PROJECTS= or turning off
+=ALL_COMPONENTS_IN_ONE=). Before doing the sweep, confirm none of
+these CMakeLists.txt files are codegen-generated/templated (no
+=.j2= templates were found for them, but worth double-checking with
+the codegen skills) — a bulk hand-edit would otherwise be silently
+undone on next regeneration.
+
+* Why
+
+Surfaced while scoping deploy packaging for the "Offload service and
+DB runtime to a WSL host over SSH" story: the target host is a bare
+service runtime (no GUI), and today the only reusable packaging
+primitive (=cmake --install= / CPack DEB) carries the full desktop
+client along for the ride. A component split would make the eventual
+package genuinely minimal, but is a wide mechanical sweep, not a
+quick fix — out of scope for the current analysis task.
+
+* References
+
+- =build/cpack/CMakeLists.txt= — CPack config, =ALL_COMPONENTS_IN_ONE=
+  on Linux.
+- =projects/ores.qt/*/CMakeLists.txt= (16 files) — candidate =qt=
+  component.
+
+* See also
+
+- [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] (story)
+- [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] (task)

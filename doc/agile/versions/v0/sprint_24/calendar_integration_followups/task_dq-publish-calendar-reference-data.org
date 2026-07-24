@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar_integration_followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/dq-publish-calendar-reference-data
+#+pr: 1681
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-21
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,37 +47,38 @@ wiring, per entity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:25DE932F-0857-4F23-97DC-75118A849EFC][Finish integrating calendar reference data: XML export and DQ publish]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing — both currency_country and currency_calendar have landed. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-23                             |
 
 * Acceptance
 
-- [ ] Artefact tables (and matching drop scripts) exist for
+- [X] Artefact tables (and matching drop scripts) exist for
   =currency_country= and =currency_calendar=, mirroring
   =dq_calendars_artefact_tbl='s shape.
-- [ ] =publish-from-dq= SQL functions exist for both junctions in
+- [X] =publish-from-dq= SQL functions exist for both junctions in
   =refdata_publish_from_dq_create.sql=, supporting the same
   upsert/insert_only/replace_all mode contract as every other
   publish-from-dq function.
-- [ ] Both are registered as NATS subjects
+- [X] Both are registered as NATS subjects
   (=refdata.v1.currency-countries.publish-from-dq=,
   =refdata.v1.currency-calendars.publish-from-dq=) in
   =registrar.cpp=.
-- [ ] Both artefact types are registered in
+- [X] Both artefact types are registered in
   =dq_artefact_types_populate.sql=.
-- [ ] =currency_pair_convention_calendar= is evaluated separately: it
+- [X] =currency_pair_convention_calendar= is evaluated separately: it
   does not yet exist as a table (calendars are still attached to
   =currency_pair_convention.advance_calendar= as free text, per
   [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][the pending advance_calendar
   migration task]]) — DQ publish for it is out of scope here and
   belongs with that migration once the column becomes a real
-  relationship.
-- [ ] Published bundles are visible and consumable via the Librarian
-  UI.
+  relationship. Turned out moot: see Notes — it was already fully
+  wired as part of task 1's delivery.
+- [X] Published bundles are visible and consumable via the Librarian
+  UI. Verified via [[id:F7E0833B-EA19-4374-B38F-C919487535DE][Verify currency_countries DQ publish]]: PASSED.
 
 * Plan
 
@@ -85,7 +86,66 @@ wiring, per entity.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Checked what already existed before writing anything: =currency_calendar=
+and, surprisingly, =currency_pair_convention_calendar= both already had
+a full DQ-publish path (artefact table, drop script, publish-from-dq SQL
+function, NATS subject registration, artefact-type row) — delivered
+alongside the =calendar=/=calendar_type= pipeline in
+=0a167d548 [sql/dq] Add DQ publish pipeline for calendars and calendar
+types=, before this task's acceptance criteria were written. Only
+=currency_country= had a real gap. Followed the existing hand-written
+pattern exactly (=currency_calendar='s artefact table/function as the
+template, since it is the closest shape: a simple two-column junction):
+
+1. =dq_currency_countries_artefact_create.sql= /
+   =dq_currency_countries_artefact_drop.sql=, wired into
+   =dq_create.sql=/=dq_drop.sql=.
+2. =ores_refdata_publish_currency_countries_from_dq_fn= in
+   =refdata_publish_from_dq_create.sql=.
+3. =refdata.v1.currency-countries.publish-from-dq= added to the
+   subject list in =registrar.cpp= (generic
+   =publish_from_dq_handler= derives the SQL function name from the
+   subject, so no C++ dispatch logic needed).
+4. =currency_countries= artefact-type row in
+   =dq_artefact_types_populate.sql= (display_order 62).
+
+Registering the artefact type alone isn't enough for the Librarian to
+actually offer it — a bundle only publishes datasets it's a member of,
+and a dataset needs its own =ores_dq_datasets_tbl= row plus real rows
+in the shadow artefact table. So, mirroring
+=refdata_currency_calendars_seed_populate.sql=:
+
+5. =refdata_currency_countries_seed_populate.sql=: registers the
+   =refdata.currency_countries= dataset and copies
+   =ores_refdata_currency_countries_tbl= (already seeded by the
+   foundation layer) into =ores_dq_currency_countries_artefact_tbl=
+   verbatim — no derivation needed here, unlike
+   =currency_calendars=, since currency_countries *is* the source of
+   truth, not something derived from it.
+6. =refdata.currency_countries= added to the =base= bundle's members
+   in =dq_dataset_bundle_member_populate.sql= at =display_order 18=
+   (after =currency_pair_convention_calendars= at 17, to avoid
+   renumbering an already-shipped entry).
+
+=compass db recreate= confirmed the new SQL applies cleanly end to
+end: 39 currency-country rows land in the DQ artefact table, and
+calling =ores_refdata_publish_currency_countries_from_dq_fn= directly
+against the real seeded dataset successfully republishes all 39 rows
+(same live-table upsert path the Librarian's workflow step would
+invoke). Calling it with a bogus dataset id raises the same "Dataset
+not found" error as every sibling function. Full =rat= (build + test)
+passed clean on both the pre- and post-seed-script db recreate.
+
 * Notes
+
+=currency_calendar='s and =currency_pair_convention_calendar='s DQ
+publish infrastructure was already complete when this task started —
+this task's own acceptance criteria (written 2026-07-13/21) were
+already stale by the time work began. Left a note here rather than
+silently rewriting history, since the "not yet a table" claim about
+=currency_pair_convention_calendar= was true when written but the
+table, and its DQ publish path, landed in the interim (task 1's early
+delivery + this story's junction-persistence follow-up, PR #1679).
 
 * Test Scenarios
 
@@ -96,18 +156,44 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:F7E0833B-EA19-4374-B38F-C919487535DE][Verify currency_countries DQ publish]] | PASSED | Librarian bundle publish + Publication Audit dialog; cross-checked against the database (39 rows, no dupes, EUR maps to all 6 Eurozone countries). |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1681][#1681]] | [refdata,sql] DQ-publish currency_country into the base bundle |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | display_order (62) placed before currency_pair_convention_calendars (61) in file order | dq_artefact_types_populate.sql | Accepted | Reordered the INSERT rows to match numeric display_order |
+| 2 | Missing blank line before "* Out of scope" heading | story.org | Accepted | Added blank line for consistency with other heading transitions |
 
 * Result
+
+=currency_country= now has a full DQ-publish path: artefact table
+(=ores_dq_currency_countries_artefact_tbl=), drop script,
+=ores_refdata_publish_currency_countries_from_dq_fn=, a
+=refdata.v1.currency-countries.publish-from-dq= NATS subject, a
+=currency_countries= artefact-type row, a dataset-registration +
+seed-populate script mirroring the live table, and =base= bundle
+membership at display_order 18. =currency_calendar= and
+=currency_pair_convention_calendar= turned out to already be fully
+wired (see Notes) — only =currency_country= had a real gap.
+
+Verified end to end: full =rat= build+test clean; a real
+=barclays_system_provision.ores= run publishing the =base= bundle
+against the Barclays Plc tenant completed
+=refdata.currency_countries= without error; the Publication Audit
+dialog and a direct database check both confirm 39 currency-country
+rows landed with zero duplicates and the correct EUR/Eurozone
+mapping. Manual QA scenario [[id:F7E0833B-EA19-4374-B38F-C919487535DE][Verify currency_countries DQ publish]]:
+PASSED.
+
+Filed a follow-up capture,
+[[id:0791D7BE-9C93-496F-ACE5-53E9CFE990AC][Add a currency-country assignment widget to CurrencyDetailDialog]],
+for the UI gap discovered while writing the scenario: =currency_calendar=
+has a =CalendarAssignmentWidget= in the currency detail dialog;
+=currency_country= has no UI anywhere. Out of scope for this task.

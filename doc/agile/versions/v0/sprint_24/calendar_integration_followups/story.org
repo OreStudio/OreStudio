@@ -36,12 +36,12 @@ than just existing in the database:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | XML export boundary task done; DQ-publish task remains. |
+| Now           | Both tasks done.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start the DQ-publish task.             |
-| Last touched  | 2026-07-23                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-24                               |
 
 * Acceptance
 
@@ -59,9 +59,21 @@ than just existing in the database:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | DONE | 2026-07-22 | 2026-07-23 | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML. |
-| [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline. |
+| [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | DONE | 2026-07-23 | 2026-07-24 | Wire currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline. |
 
 * Decisions
+
+- =currency_calendar= and =currency_pair_convention_calendar= turned
+  out to already be fully DQ-publish-wired, delivered early alongside
+  the =calendar=/=calendar_type= pipeline
+  (=0a167d548 [sql/dq] Add DQ publish pipeline for calendars and
+  calendar types=) — only =currency_country= had a real gap by the
+  time the DQ-publish task started.
+- =currency_country='s DQ artefact seed script copies the live
+  =ores_refdata_currency_countries_tbl= verbatim rather than deriving
+  it, unlike =currency_calendars= (which derives calendar assignments
+  from country matches) — =currency_country= itself is the source of
+  truth, not something computed from other data.
 
 * Out of scope
 

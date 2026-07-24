@@ -151,6 +151,20 @@ void ProvisioningWelcomePage::setupUI() {
                            "</ol>"));
     layout->addWidget(stepsLabel);
 
+    layout->addSpacing(10);
+
+    auto* modeBox = new QGroupBox(tr("Setup Mode"), this);
+    auto* modeLayout = new QVBoxLayout(modeBox);
+    manualRadio_ = new QRadioButton(tr("Manual setup - choose a catalogue and party source"), this);
+    manualRadio_->setChecked(true);
+    modeLayout->addWidget(manualRadio_);
+    acmeRadio_ = new QRadioButton(
+        tr("Acme Bank (full sample holding group) - one-click setup with a realistic "
+           "four-entity banking group, ready to use"),
+        this);
+    modeLayout->addWidget(acmeRadio_);
+    layout->addWidget(modeBox);
+
     layout->addStretch();
 
     auto* noteBox = new QGroupBox(tr("Note"), this);
@@ -163,6 +177,18 @@ void ProvisioningWelcomePage::setupUI() {
     noteLabel->setWordWrap(true);
     noteLayout->addWidget(noteLabel);
     layout->addWidget(noteBox);
+}
+
+bool ProvisioningWelcomePage::validatePage() {
+    if (acmeRadio_->isChecked())
+        wizard_->setDataSourceMode(TenantProvisioningWizard::DataSourceMode::acme);
+    return true;
+}
+
+int ProvisioningWelcomePage::nextId() const {
+    if (acmeRadio_->isChecked())
+        return TenantProvisioningWizard::Page_Execute;
+    return TenantProvisioningWizard::Page_BundleSelection;
 }
 
 // ============================================================================
@@ -636,10 +662,84 @@ void TenantExecutePage::initializePage() {
                                 "background: #2d2d2d; height: 20px; }"
                                 "QProgressBar::chunk { background-color: #4a9eff; }");
     statusLabel_->setStyleSheet("font-weight: bold;");
+
+    if (wizard_->dataSourceMode() == TenantProvisioningWizard::DataSourceMode::acme) {
+        statusLabel_->setText(tr("Provisioning Acme Bank holding group..."));
+        startAcmeProvisioning();
+        return;
+    }
+
     statusLabel_->setText(
         tr("Publishing base catalogue '%1'...").arg(wizard_->selectedBundleName()));
 
     startBundlePublish();
+}
+
+// Acme mode: a single server-side orchestrated request (tenant, LEI hierarchy,
+// GLEIF counterparties, per-company business units/portfolios/books/accounts)
+// -- see ores_iam_provision_acme_tenant_fn. No bundle publish, no synthetic
+// generation, no client-side party association: the orchestrator does it all.
+void TenantExecutePage::startAcmeProvisioning() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Acme mode: provisioning holding group";
+    appendLog(tr("Provisioning the Acme Bank holding group..."));
+
+    struct AcmeResult {
+        bool success = false;
+        std::string error_message;
+        std::vector<iam::messaging::provision_acme_tenant_step> steps;
+    };
+
+    auto* watcher = new QFutureWatcher<AcmeResult>(this);
+    connect(watcher, &QFutureWatcher<AcmeResult>::finished, this, [this, watcher]() {
+        AcmeResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Acme provisioning async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        for (const auto& step : result.steps) {
+            appendLog(tr("  %1: %2 (%3)")
+                          .arg(QString::fromStdString(step.step))
+                          .arg(QString::fromStdString(step.action))
+                          .arg(step.record_count));
+        }
+        BOOST_LOG_SEV(lg(), info) << "Acme provisioning complete: " << result.steps.size()
+                                  << " step(s)";
+        appendLog(tr("Acme Bank holding group provisioned."));
+
+        statusLabel_->setText(tr("Finalizing tenant setup..."));
+        startFinalize();
+    });
+
+    QFuture<AcmeResult> future = QtConcurrent::run([clientManager]() -> AcmeResult {
+        AcmeResult result;
+        iam::messaging::provision_acme_tenant_command request;
+        auto resp = clientManager->process_authenticated_request(std::move(request),
+                                                                  std::chrono::minutes(5));
+        if (!resp) {
+            result.error_message = "Failed to communicate with server (Acme provisioning)";
+            return result;
+        }
+        if (!resp->success) {
+            result.error_message = resp->message;
+            return result;
+        }
+        result.success = true;
+        result.steps = std::move(resp->steps);
+        return result;
+    });
+
+    watcher->setFuture(future);
 }
 
 void TenantExecutePage::appendLog(const QString& msg) {
@@ -1082,7 +1182,11 @@ void TenantApplyAndSummaryPage::setupUI() {
 void TenantApplyAndSummaryPage::initializePage() {
     QString summary = tr("<p>Your organisation has been onboarded successfully.</p>");
 
-    if (!wizard_->selectedBundleCode().isEmpty()) {
+    if (wizard_->dataSourceMode() == TenantProvisioningWizard::DataSourceMode::acme) {
+        summary += tr("<p><b>Acme Bank holding group provisioned:</b> four-party LEI hierarchy, "
+                      "GLEIF counterparties, and per-company business units/portfolios/books/"
+                      "accounts.</p>");
+    } else if (!wizard_->selectedBundleCode().isEmpty()) {
         summary += tr("<p><b>Reference data loaded:</b> %1</p>").arg(wizard_->selectedBundleName());
     }
 

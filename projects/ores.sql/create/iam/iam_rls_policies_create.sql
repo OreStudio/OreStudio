@@ -148,6 +148,19 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Account Contact Informations
+-- -----------------------------------------------------------------------------
+alter table ores_iam_account_contact_informations_tbl enable row level security;
+
+create policy account_contact_informations_tenant_isolation_policy on ores_iam_account_contact_informations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Account Parties (many-to-many)
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_parties_tbl enable row level security;

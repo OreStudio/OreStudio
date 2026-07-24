@@ -23,6 +23,9 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
+-- Account Contact Informations
+drop policy if exists account_contact_informations_tenant_isolation_policy on "ores_iam_account_contact_informations_tbl";
+
 -- Account Parties
 drop policy if exists account_parties_tenant_isolation_policy on "ores_iam_account_parties_tbl";
 

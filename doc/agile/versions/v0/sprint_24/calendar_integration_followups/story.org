@@ -74,6 +74,7 @@ than just existing in the database:
   it, unlike =currency_calendars= (which derives calendar assignments
   from country matches) — =currency_country= itself is the source of
   truth, not something computed from other data.
+
 * Out of scope
 
 - Everything already shipped by the parent story (entity model, FK

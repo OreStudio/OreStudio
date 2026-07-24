@@ -468,6 +468,272 @@ purpose:
   =calendar_dates= directly — same rationale as any other
   repository/service boundary already in the codebase.
 
+** Revision: no QuantLib at runtime — our own rule engine in =ores.analytics.quant=
+
+Supersedes: the "1. =calendar=" QuantLib-linkage assumption, all of
+"2. =calendar_adjustment= (wire up the existing domain type)", and
+the ORE-export section's framing of =source='quantlib'= as "computed
+by QuantLib" rather than "transcribed from QuantLib's published
+rules." The three-entity shape (=calendar= / a rules side-table /
+=calendar_dates=) and the ORE-export logic (bare code reference for
+=source='quantlib'=, a =CalendarAdjustments= entry only for
+=source='user'=) are unchanged in spirit — only *how the dates get
+computed* changes, and *where that code lives*.
+
+*** Why QuantLib was dropped from the runtime path
+
+QuantLib was added, linked, and verified working (commit =7c5d2d09f=)
+as step 1, then reverted after further discussion surfaced two
+problems with keeping it as the live computation engine:
+
+- =QuantLib::Calendar=/=Settings= rely on global/static singleton
+  state (evaluation-date singleton, static per-calendar impl
+  registries) that is not safe to call concurrently from server
+  request handlers — a real architectural cost for a codebase whose
+  refdata/messaging services are concurrent.
+- Reading QuantLib's actual calendar source (vendored at
+  =Engine.remote/QuantLib/ql/time/calendars/= in this checkout — a
+  full source tree, not just headers) shows every calendar decomposes
+  into the same small set of primitives: fixed dates (=target.cpp='s
+  New Year/Christmas), nth-weekday-of-month (=unitedstates.cpp='s
+  Thanksgiving, 4th Thursday of November), Easter-relative offsets
+  (Good Friday = Easter Monday minus 3 days, via the classic
+  Gauss/Computus algorithm), and a per-country weekend-observance
+  shift policy (US: Saturday→Friday, Sunday→Monday;
+  =unitedkingdom.cpp=: always roll forward to the next Monday) — none
+  of which need QuantLib itself, only =std::chrono='s C++20/23
+  calendar types (=year_month_day=, =year_month_weekday=,
+  =weekday=), which the codebase already targets and already uses
+  elsewhere (=calendar.hpp='s =recorded_at= field).
+- This rule shape is not something invented for this task — it is
+  the pattern several independent open-source projects converge on
+  by themselves: Java's =holiday-calculator= and =fumiX/holidays=,
+  Python's =workalendar=, JS's =date-holidays= (whose own docs
+  describe the approach as "data with rules instead of code"), Rust's
+  =cal-calc=. Convergence across unrelated implementations is a good
+  signal the decomposition is sound, not a novel risk.
+- The genuinely irregular part of real calendars — one-off historical
+  exceptions (=unitedkingdom.cpp='s Golden/Diamond/Platinum Jubilee
+  bank holidays, royal-wedding and state-funeral closures;
+  =unitedstates.cpp='s =NyseImpl= "Special closings" block covering
+  Presidential funerals, Hurricane Sandy, the 1977 blackout, the 1968
+  "four day week... Paperwork Crisis", back to 1954) — is *data*, not
+  a rule, and QuantLib's own source mixes the two together as
+  year-gated conditionals (=y >= 1983=, =y == 2025 && ...=) inside
+  the rule function. The revised model strips these apart on
+  purpose: an indefinite, timeless *rule* table, and a flat,
+  no-logic-at-all *exception* table for everything else.
+
+*** Revised three-part storage model (=ores.refdata=)
+
+- =calendar= (unchanged from the earlier plan): =source=
+  (=quantlib=|=user=), =is_editable=, =base_calendar_code= (self-FK).
+  =source='quantlib'= now means "this rule set was transcribed from
+  QuantLib's published rules and matches one of ORE's recognised
+  built-in names" — a taxonomic fact driving read-only enforcement
+  and the ORE-export skip logic, *not* an instruction to call the
+  QuantLib library.
+- =calendar_rule= (new, replaces the =calendar_adjustment=-as-entity
+  plan): one row per indefinite recurring rule, only meaningful for
+  base-less calendars (=base_calendar_code is null=) — used for both
+  the transcribed QuantLib-equivalent calendars and for a genuinely
+  new base-less user calendar with its own recurring pattern. Columns
+  mirror =ores.analytics.quant='s =domain::calendar_rule= (below)
+  plus the usual refdata plumbing (=tenant_id=, =version=, audit
+  fields, =calendar_code= FK).
+- =calendar_exception= (new, replaces =calendar_adjustment='s
+  =additional_holidays=/=additional_business_days= array fields):
+  one row per one-off override — =(calendar_code, date,
+  is_business_day, description)=. Applies uniformly to *any*
+  calendar: transcribed or user-authored, based or base-less. A
+  based calendar's full override story is entirely
+  =base_calendar_code= (which base) + its own =calendar_exception=
+  rows (what's different) — no separate "adjustment" concept needed.
+  The existing =ores::refdata::domain::calendar_adjustment= struct
+  and its already-tested ORE XML mapper
+  (=calendar_adjustment_mapper=) are kept exactly as they are, but
+  demoted from "the entity" to a transient export-time DTO: assembled
+  from =calendar= + =calendar_exception= rows only when building the
+  =CalendarAdjustments= file for =source='user'= calendars, never
+  itself persisted.
+- =calendar_dates= (unchanged from the earlier plan): materialised,
+  DQ-published, read-only. Populated by the new engine below instead
+  of a live QuantLib call.
+
+*** New component: calendar rule evaluation in =ores.analytics.quant=
+
+=ores.analytics.quant= (=projects/ores.analytics.quant=) is an
+existing, dependency-light quant-math library — no database,
+messaging, or refdata coupling, everything supplied as plain
+parameters by the caller (see its own
+=modeling/component_overview.org=) — exactly the separation asked
+for between storage (=ores.refdata=, unchanged) and pure calendaring
+logic. It already follows the convention of defining its own minimal
+value types instead of reusing a rich persisted domain type (e.g.
+=domain::currency_id= vs. =ores.refdata='s full =currency=), which is
+the same pattern applied here.
+
+Designed *data-oriented and batch-first*, not one-object-per-calendar
+like QuantLib's =Calendar= API — every real call site (materialising
+all ~60+ calendars for a version bump; building a whole tenor grid
+across every currency on a curve) is inherently a "many" operation,
+never a "one":
+
+**** =domain::calendar_rule= / =domain::calendar_exception=
+
+Minimal value types (no =calendar_code=, no tenant/audit fields —
+=ores.refdata= owns those, mapping into these types only at the call
+boundary, the same pattern as the existing ORE mappers):
+
+#+begin_src cpp
+enum class calendar_rule_kind {
+    fixed_date, nth_weekday_of_month, last_weekday_of_month, easter_offset
+};
+enum class observance_shift { none, nearest_weekday, roll_forward_to_monday };
+
+struct calendar_rule final {
+    calendar_rule_kind kind;
+    std::optional<std::chrono::month> month;
+    std::optional<unsigned> day;                // fixed_date
+    std::optional<std::chrono::weekday> weekday; // nth/last_weekday_of_month
+    std::optional<unsigned> occurrence;          // nth_weekday_of_month: 1..4
+    std::optional<int> day_offset;               // easter_offset (e.g. -3 = Good Friday)
+    observance_shift shift = observance_shift::none;
+    std::optional<std::chrono::year> effective_from;
+    std::optional<std::chrono::year> effective_to;
+};
+
+struct calendar_exception final {
+    std::chrono::year_month_day date;
+    bool is_business_day; // true = override to open; false = additional holiday
+};
+#+end_src
+
+**** Batch instantiation — one pass over the date range for N calendars
+
+#+begin_src cpp
+struct calendar_ruleset {
+    std::vector<calendar_rule> rules;
+    std::vector<calendar_exception> exceptions;
+};
+
+struct instantiated_holiday {
+    std::size_t calendar_index; // index into the input span
+    std::chrono::year_month_day date;
+};
+
+std::vector<instantiated_holiday> instantiate_holidays_batch(
+    std::span<const calendar_ruleset> calendars,
+    std::chrono::year_month_day start,
+    std::chrono::year_month_day end);
+#+end_src
+
+Walks the date range once, evaluating every calendar's active rules
+per day (skipping any whose =effective_from=/=to= excludes that
+day's year) instead of re-scanning the whole range once per
+calendar; =easter_sunday(year)= is computed once per year and shared
+across every calendar with an =easter_offset= rule that year. Output
+is one flat =(calendar_index, date)= list — exactly the shape scanned
+once to bulk-insert into =calendar_dates=, never a
+=vector<vector<...>>=.
+
+**** Materialised holidays, stored CSR-style for bulk queries
+
+#+begin_src cpp
+class business_day_calendar_set {
+public:
+    // Bulk-built from calendar_dates rows ordered by (calendar_code, date) --
+    // one query, one construction, no per-calendar round trips.
+    static business_day_calendar_set from_rows(
+        std::span<const calendar_date_row> rows, std::size_t calendar_count);
+
+    std::vector<bool> is_business_day_batch(
+        std::span<const calendar_query> queries) const;
+    std::vector<std::chrono::year_month_day> resolve_tenors_batch(
+        std::span<const tenor_query> queries) const;
+
+private:
+    std::vector<std::chrono::year_month_day> holidays_;  // flat, sorted
+    std::vector<std::size_t> calendar_offsets_;            // CSR row-pointers
+    std::vector<std::bitset<7>> weekend_masks_;             // per calendar
+};
+#+end_src
+
+Mirrors exactly how a bulk =SELECT ... ORDER BY calendar_code, date=
+comes back from Postgres — contiguous, cache-friendly — instead of N
+separately heap-allocated =std::vector<year_month_day>= objects
+scattered in memory.
+
+**** Batch tenor resolution — the actual use case (many tenors from a reference date), generalised
+
+#+begin_src cpp
+struct tenor_query {
+    std::size_t calendar_index;
+    std::chrono::year_month_day reference_date;
+    tenor period;                // count + unit (days/weeks/months/years)
+    roll_convention convention;  // following/preceding/modified_following/...
+};
+
+std::vector<std::chrono::year_month_day> resolve_tenors_batch(
+    const business_day_calendar_set& calendars,
+    std::span<const tenor_query> queries);
+#+end_src
+
+Output aligned 1:1 with =queries= by index. A curve-building call
+site fills one flat =tenor_query= array for an entire grid (every
+currency, every tenor) and gets one flat, aligned answer back — no
+virtual dispatch, no per-lookup object construction, no =Calendar=
+instance per query the way QuantLib does it.
+
+*** Consequence for =ores.refdata='s =calendar_service=
+
+Its job changes from "construct a =business_day_calendar= per
+=calendar_code= on demand" to "bulk-load whatever =calendar_dates=
+rows this request actually needs into one
+=business_day_calendar_set=, then issue one batched query" —
+matching the storage layout end-to-end, and giving the Qt UI (a
+month grid needing many =is_business_day= answers at once) and the
+tenor/curve-setup code (many tenors per curve) the same efficient
+path.
+
+*** Revised sequencing (supersedes the earlier six-step list)
+
+1. Design and build =ores.analytics.quant='s =domain::calendar_rule=,
+   =domain::calendar_exception=, =service::calendar_rule_engine=
+   (batch instantiation + =easter_sunday=), and
+   =domain::business_day_calendar_set= (CSR storage + batch
+   is-business-day/tenor-resolution) — pure, dependency-light, fully
+   unit-testable in isolation per that component's existing
+   convention. No SQL, no refdata coupling.
+2. Transcribe rules for the starter set (TARGET, WeekendsOnly,
+   UnitedStates + its market variants, UnitedKingdom) from the
+   vendored QuantLib source at
+   =Engine.remote/QuantLib/ql/time/calendars/= into
+   =calendar_rule=/=calendar_exception= seed data, splitting each
+   calendar's =isBusinessDay()= by hand into its timeless rules vs.
+   its one-off exceptions. File a follow-up capture for the
+   remaining ~55 calendars.
+3. Extend =calendar= (=source=/=is_editable=/=base_calendar_code=)
+   and codegen =calendar_rule=/=calendar_exception= as refdata
+   entities (SQL, repository, mapper into
+   =ores.analytics.quant='s types, Qt CRUD for user-authored rows).
+4. Build the =calendar_dates= materialisation service
+   (=ores.refdata=): resolves the =base_calendar_code= chain, calls
+   =ores.analytics.quant='s batch engine for base-less calendars,
+   applies =calendar_exception= overlays for based ones, persists via
+   the existing DQ-publish pattern from PR #1681. On-demand
+   "regenerate up to <year>" command, no cron.
+5. Wire the ORE export path: unchanged from the original plan —
+   =source='quantlib'= stays a bare code reference;
+   =source='user'= rows get a =CalendarAdjustments= file assembled
+   (dependency-ordered for chains) from the existing
+   =calendar_adjustment_mapper=, fed by a transient DTO built from
+   =calendar= + =calendar_exception=, not a stored table.
+6. Qt UI: calendar detail screen shows =source=/editability; a
+   "browse holidays" view backed by =business_day_calendar_set=. This
+   is also the =Holiday-aware date picker widget= task's real data
+   source — that task stays blocked on this one finishing steps 3–4.
+
 * Notes
 
 * Test Scenarios

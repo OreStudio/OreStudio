@@ -38,8 +38,7 @@
         "cnats",
         "libarchive",
         "sqlite3",
-        "immer",
-        "quantlib"
+        "immer"
     ],
     "default-features": [ "wt" ],
     "features": {

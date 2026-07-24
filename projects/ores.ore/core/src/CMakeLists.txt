@@ -53,8 +53,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib
-        Boost::boost
-        QuantLib::QuantLib)
+        Boost::boost)
 # Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
 # Do not add it explicitly to avoid duplicate library warnings on macOS.
 

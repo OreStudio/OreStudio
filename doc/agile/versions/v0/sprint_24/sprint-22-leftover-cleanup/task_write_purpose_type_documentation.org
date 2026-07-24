@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-purpose-type-documentation
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Author the purpose_type chapter in the user manual covering Qt list/detail/histo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

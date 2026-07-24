@@ -102,11 +102,11 @@ properly:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -178,3 +178,20 @@ via its "Verifies task" field.
 | 2 | No dedicated unit tests for qualifier-collision logic | curve_feed_controller.hpp | Decline | Informational, not a regression (no test file existed before this PR either); covered for now by the manual scenario doc. |
 
 * Result
+
+Sourced two period-correct IR vintage datasets (legacy ~2016 IBOR-era
+indices: USD LIBOR-3M, EURIBOR-3M, GBP LIBOR-3M, EONIA; recent 2026 RFR
+indices: SOFR, €STR, SONIA) and added populate scripts mirroring
+=marketdata_fx_driver_rates_populate.sql='s structure. Added
+=ir_curve_generation_config.auto_start=, orthogonal to =enabled=, seeded
+so at most one config per =(folder_id, currency_code, index_name)= is
+=auto_start=true=. =curve_feed_controller::start()= now rejects starting
+a feed already running for the same =(currency_code, index_name)=
+qualifier, both auto-start-at-boot and manual Start, with an actionable
+error. Extended =Validate Vintage= to cover IR curve configs and flag
+folder-scoped qualifier collisions. Revisited the basic/realistic
+populate scripts so the two bundles no longer collide on shared
+qualifiers. Landed via PR #1676, verified by the "Verify vintage
+auto_start and binding-collision validation" test scenario (PASSED,
+after fixing flag-loading, index-name filtering, and folder-bulk-start
+bugs found during manual verification).

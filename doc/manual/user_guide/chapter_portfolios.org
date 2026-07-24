@@ -34,8 +34,10 @@ carries. From there it surveys the body of records in
 [[*Portfolio Details][Portfolio Details]] and its General and Provenance tabs. It then turns
 to changing a record under audit — [[*Editing a portfolio][Editing]], [[*Deleting a portfolio][Deleting]], and
 [[*Portfolio history][Portfolio history]] — culminating in reverting to an earlier version,
-the point at which the bitemporal audit trail does its work. The
-[[*Conclusion][Conclusion]] draws these steps together.
+the point at which the bitemporal audit trail does its work. Before
+concluding, it turns to the lookup entity backing the portfolio's own
+purpose classification field in [[*Purpose Types][Purpose Types]]. The [[*Conclusion][Conclusion]] draws
+these steps together.
 
 ** Portfolios and books
 
@@ -200,6 +202,57 @@ selected versions. The *Revert* button reinstates any historical
 version as a *new* version, preserving the full audit chain — the old
 version is never rewritten.
 
+** Purpose Types
+
+Where the portfolio record's *Purpose Type* field (see [[*What is a Portfolio?][What is a
+Portfolio?]] above) captures a single classification chosen from a
+combo box, a second, separate window manages the set of values that
+combo box offers. Purpose types are reference data in their own
+right — a system-tenant-managed lookup entity, seeded on
+provisioning with four values (/Risk/, /Regulatory/, /Client
+Reporting/, /Internal/) but editable and extensible like any other
+reference-data record — kept as a distinct entity for the same
+reason the [[id:055488FE-81DF-4881-8866-B90FB0E71A04][Currency Pairs]] chapter kept Currency Pair Conventions
+separate from the Currency Pair record itself: the set of valid
+classifications changes at a different rate, and for different
+reasons, than any individual portfolio that references one.
+
+Open the Purpose Types window from the /Reference Data/ menu.
+
+#+caption: [SCREENSHOT NEEDED] The Purpose Types window, listing the four seeded values (Risk, Regulatory, Client Reporting, Internal) with their display order.
+# Capture: open the Purpose Types window from the Reference Data menu and
+# screenshot the full list.
+[[proj:assets/images/purpose_types_main_window.png]]
+
+Each row shows the code, name, description, display order, version,
+and the usual provenance columns. Double-clicking a row opens the
+*Purpose Type Details* dialog.
+
+#+caption: [SCREENSHOT NEEDED] The Purpose Type Details dialog for the Risk purpose type, showing its code, name, description, and display order fields.
+# Capture: double-click a row (e.g. Risk) in the Purpose Types window
+# and screenshot the Details dialog.
+[[proj:assets/images/purpose_type_details.png]]
+
+*Code* is the purpose type's unique identifier and, like a
+currency's ISO code, locks once the record is created. *Name* is the
+human-readable label shown in the Portfolio Details' Purpose Type
+combo. *Description* is free-text, explaining what the classification
+means in practice — the four seeded values' descriptions are the
+source for the meanings given in [[*What is a Portfolio?][What is a Portfolio?]] above.
+*Display Order* is an integer controlling the combo box's ordering,
+lowest first.
+
+Editing, deleting, and history follow the same pattern as every
+other reference-data entity in ORE Studio and are not repeated here
+in full: open the record, change a field, and *Save*, confirming a
+change reason as described for currencies in the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]]
+chapter; deletion is a soft close preserving history; and the history
+icon opens the same Compare/Revert workflow described in [[*Portfolio history][Portfolio
+history]] above. Purpose types have no shell or command-line access —
+a gap shared by every reference-data entity in ORE Studio, not
+specific to purpose types, and tracked separately as part of ongoing
+commissioning work.
+
 ** Conclusion
 
 The chapter set out to show that managing a portfolio well follows
@@ -214,10 +267,15 @@ list view down to a single detail dialog — its currency picker
 showing flags, its status and virtual flag shown as badges — and
 through the editing, deleting, and history workflows, where reverting
 to an earlier version demonstrated the same bitemporal audit trail
-described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. Shell and command-line access
-to portfolios, and an editable parent-portfolio field in the Details
-dialog, are not yet implemented; both are tracked separately as part
-of ongoing commissioning work.
+described in the [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter. The chapter then turned to the
+purpose type lookup entity backing the portfolio's own classification
+field — a small reference-data record with the same list/detail/
+history interface, kept separate for the same reasons a currency pair
+convention is kept separate from a currency pair. Shell and
+command-line access to portfolios and purpose types, and an editable
+parent-portfolio field in the Details dialog, are not yet
+implemented; all are tracked separately as part of ongoing
+commissioning work.
 
 ** See also
 

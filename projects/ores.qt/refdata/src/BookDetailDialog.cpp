@@ -26,6 +26,7 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookDetailDialog.h"
 #include <QComboBox>
@@ -189,6 +190,13 @@ void BookDetailDialog::setUsername(const std::string& username) {
 void BookDetailDialog::setBook(const refdata::domain::book& book) {
     book_ = book;
     updateUiFromBook();
+    // Re-resolve the as-of combos if setClientManager() already ran with a
+    // different (or no) book -- see the call-order note in
+    // populateBookStatusCombo().
+    if (clientManager_ && readOnly_) {
+        populateBookStatusCombo();
+        populateRegulatoryBookTypeCombo();
+    }
 }
 
 void BookDetailDialog::setCreateMode(bool createMode) {
@@ -222,15 +230,36 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->ratesCentreCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+    // Re-resolve the as-of combos if setClientManager() already ran before
+    // this call established readOnly_ -- see the call-order note in
+    // populateBookStatusCombo().
+    if (clientManager_) {
+        populateBookStatusCombo();
+        populateRegulatoryBookTypeCombo();
+    }
 }
 
 void BookDetailDialog::populateBookStatusCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating book_status combo";
+    std::function<std::expected<std::vector<refdata::domain::book_status>, QString>(
+        ClientManager*)>
+        fetch = &fetch_book_statuses;
+    if (readOnly_) {
+        // Resolve this historical book version's status badge as-of its own
+        // recorded_at, not against the current (possibly since-renamed or
+        // deleted) status list -- see the As-of lookup resolution codegen
+        // facet story. setBook()/setReadOnly() re-invoke this populate call
+        // if they run after setClientManager(), so call order between them
+        // doesn't matter -- see setBook()/setReadOnly().
+        const auto as_of = QString::fromStdString(
+            ores::platform::time::datetime::to_db_string(book_.recorded_at));
+        fetch = [as_of](ClientManager* cm) { return fetch_book_statuses_at_timepoint(cm, as_of); };
+    }
     populateDynamicCombo<refdata::domain::book_status>(
         ui_->bookStatusCombo,
         this,
         clientManager_,
-        &fetch_book_statuses,
+        fetch,
         "bookStatusWatcher",
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
@@ -248,11 +277,22 @@ void BookDetailDialog::populateBookStatusCombo() {
 }
 void BookDetailDialog::populateRegulatoryBookTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
+    std::function<std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>(
+        ClientManager*)>
+        fetch = &fetch_regulatory_book_types;
+    if (readOnly_) {
+        // See the matching comment in populateBookStatusCombo().
+        const auto as_of = QString::fromStdString(
+            ores::platform::time::datetime::to_db_string(book_.recorded_at));
+        fetch = [as_of](ClientManager* cm) {
+            return fetch_regulatory_book_types_at_timepoint(cm, as_of);
+        };
+    }
     populateDynamicCombo<refdata::domain::regulatory_book_type>(
         ui_->regulatoryBookTypeCombo,
         this,
         clientManager_,
-        &fetch_regulatory_book_types,
+        fetch,
         "regulatoryBookTypeWatcher",
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },

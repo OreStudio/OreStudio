@@ -42,6 +42,15 @@ std::uint32_t regulatory_book_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+std::vector<domain::regulatory_book_type>
+regulatory_book_type_service::list_types_at_timepoint(const std::string& as_of,
+                                                      const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing regulatory book types at timepoint: " << as_of;
+    if (code.empty())
+        return repo_.read_at_timepoint(ctx_, as_of);
+    return repo_.read_at_timepoint(ctx_, as_of, code);
+}
+
 std::optional<domain::regulatory_book_type>
 regulatory_book_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type at version: " << code

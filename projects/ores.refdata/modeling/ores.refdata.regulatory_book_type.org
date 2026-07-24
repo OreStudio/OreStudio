@@ -115,6 +115,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :subcomponent:       api
 :has_batch_remove:   true
+:has_as_of_lookup:   true
 :END:
 
 ** Repository

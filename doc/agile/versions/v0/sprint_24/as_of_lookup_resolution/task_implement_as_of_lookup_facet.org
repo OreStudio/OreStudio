@@ -7,43 +7,89 @@
 #+level: s1
 #+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-as-of-lookup-facet
+#+pr: 1682
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-21
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add codegen support for resolving a lookup entity's value as-of a
+given timepoint (not just "latest"), turn it on for =book_status= and
+=regulatory_book_type=, and wire the Book history dialog to use it so
+a historical Book version renders its status/type badge from the
+data that was actually in force at that version's =recorded_at=,
+instead of always showing the current lookup value.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                          |
+|--------------+-----------------------------------------------------------------|
+| State        | DONE                                                             |
 | Parent story | [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-12                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                                        |
+| Next         | Nothing. |
+| Last touched | 2026-07-24                                                       |
 
 * Acceptance
 
--
+- [X] Repository/service/protocol/handler templates support an
+  as-of (timepoint) lookup query in addition to the existing
+  latest/paginated queries.
+- [X] =book_status.org= and =regulatory_book_type.org= opt into the
+  facet and regenerate cleanly.
+- [X] Unit tests cover: resolving the version in force at a given
+  timepoint, an empty result before the entity existed, and the
+  unfiltered-by-code path.
+- [X] Wired to a real caller: the Book history dialog resolves each
+  historical Book version's status/type badge via the as-of lookup
+  rather than the latest value (=BookDetailDialog.cpp=,
+  =BookController.cpp=, via =LookupFetcher=).
+- [X] Full build (=ores.refdata.core=, =ores.refdata.api=,
+  =ores.qt.api=, =ores.qt.refdata=) and =ores.refdata.core.tests=
+  pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Design the as-of query shape at the repository layer (SQL
+   =WHERE recorded_at <= :timepoint ORDER BY ... LIMIT 1= per
+   code, optionally unfiltered) and thread it up through
+   service/protocol/NATS handler.
+2. Extend the codegen templates (=cpp_domain_type_repository.*=,
+   =cpp_service.*=, =cpp_protocol.hpp=, =cpp_nats_handler.hpp=, and
+   their literate =.org= counterparts) to emit the as-of method set
+   whenever an entity opts in.
+3. Flip =:has_as_of_lookup: true= on =book_status.org= and
+   =regulatory_book_type.org=, regenerate, and hand-verify the diff
+   is confined to the two entities.
+4. Add repository-level Catch2 tests for both entities:
+   resolves-prior-version, before-creation-is-empty, and
+   without-code-filter.
+5. Wire a real caller: extend =ores.qt.api::LookupFetcher= with an
+   as-of fetch, and use it from =BookController=/
+   =BookDetailDialog= so the Book history view resolves each
+   version's status/type badge from the as-of data instead of the
+   latest lookup value.
+6. Build the full affected surface and run
+   =ores.refdata.core.tests= to confirm no regressions.
 
 * Notes
+
+- Mid-task the environment hit an OOM kill (exit 137) during a
+  =ores.refdata.core.tests= build; re-running the build cleanly
+  succeeded afterwards with no code changes needed — a resourcing
+  blip, not a defect.
+- The task doc was picked up mid-implementation (git status already
+  showed the templates/entities/Qt wiring changed); this write-up
+  documents the work as completed and verified rather than as a
+  plan for work not yet done.
 
 * Test Scenarios
 
@@ -60,12 +106,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1682][#1682]] | [codegen] Add as-of lookup facet, pilot on book_status/regulatory_book_type |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | has_as_of_lookup unwired when combined with list_filter_column | cpp_nats_handler.hpp.mustache / .org | Fixed | Added an explicit comment documenting the unsupported combination instead of half-wiring an untested filter/timepoint interaction. |
+| 2 | as_of requests bypass offset/limit pagination, undocumented | cpp_protocol.hpp.mustache / .org, book_status/regulatory_book_type_protocol.hpp | Fixed | Documented the pagination-bypass behaviour on the as_of field's comment. |
+| 3 | populate*Combo call-order dependency on setBook/setReadOnly running before setClientManager, enforced only by comment | BookDetailDialog.cpp, BookController.cpp | Fixed | setBook()/setReadOnly() now re-invoke the as-of combo populate calls if setClientManager() already ran, so the result is correct regardless of call order. |
+| 4 | read_all order_by drift (pre-existing, unrelated) | book_status_repository.cpp, regulatory_book_type_repository.cpp | Declined | Flagged as FYI only by reviewer, not a defect; no change needed. |
+| 5 | sleep_for(1s) pattern in new tests | repository_*_tests.cpp | Declined | Necessary given second-granularity db_timestamp truncation; reviewer flagged for awareness only. |
+| 6 | list_by_as_of boundary semantics diverge from new facet (>= vs >) | currency_repository.cpp (untouched) | Declined | Pre-existing, out of scope for this PR; tracked by the "Reconcile existing hand-written read_at_timepoint methods" backlog task. |
 
 * Result
+
+Implemented the as-of lookup facet end-to-end and piloted it on the
+two entities that surfaced the gap:
+
+- Codegen templates (=cpp_domain_type_repository.{cpp,hpp}=,
+  =cpp_service.{cpp,hpp}=, =cpp_protocol.hpp=,
+  =cpp_nats_handler.hpp=, and their literate =.org= counterparts)
+  gained an as-of (timepoint) query path alongside the existing
+  latest/paginated ones, gated behind a =:has_as_of_lookup:= flag so
+  entities opt in explicitly.
+- =book_status.org= and =regulatory_book_type.org= flipped the flag
+  and regenerated; the resulting repository/service/protocol/handler
+  diffs are confined to those two entities plus the shared templates.
+- Added repository-level Catch2 coverage for both entities:
+  resolving the version in force at a timepoint, an empty result
+  before the entity existed, and the unfiltered-by-code path.
+- Wired to a real caller: =ores.qt.api::LookupFetcher= gained an
+  as-of fetch, used from =BookController=/=BookDetailDialog= so the
+  Book history dialog now resolves each historical version's
+  status/type badge from the as-of data rather than the current
+  lookup value — the facet is proven live, not dead code.
+- Verified: full build of =ores.refdata.core=, =ores.refdata.api=,
+  =ores.qt.api=, =ores.qt.refdata= and =ores.refdata.core.tests=
+  green — 288 assertions across 164 test cases, no regressions. An
+  unrelated mid-task OOM kill (exit 137) on a build was transient and
+  resolved on retry with no code change.
+
+Next: raise the PR.

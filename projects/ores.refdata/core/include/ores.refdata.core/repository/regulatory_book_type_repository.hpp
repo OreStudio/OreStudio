@@ -72,6 +72,21 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads regulatory book types as they stood at a specific
+     * timepoint — valid_from <= as_of < valid_to — possibly filtered by
+     * code. Distinct from read_at_version (a specific
+     * version number) and from a parent/child *_as_of query (a validity
+     * window overlap): this resolves what this entity's own row meant at
+     * a single instant in time.
+     */
+    /**@{*/
+    std::vector<domain::regulatory_book_type> read_at_timepoint(context ctx,
+                                                                const std::string& as_of);
+    std::vector<domain::regulatory_book_type>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
+    /**@}*/
+
+    /**
      * @brief Reads all regulatory book types, possibly filtered by code.
      */
     std::vector<domain::regulatory_book_type> read_all(context ctx, const std::string& code);

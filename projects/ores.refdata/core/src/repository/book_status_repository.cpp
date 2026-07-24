@@ -79,13 +79,48 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
         "Reading latest book status by code.");
 }
 
+std::vector<domain::book_status>
+book_status_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book statuses at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_status_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("code"_c);
+
+    return execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading book statuses at timepoint.");
+}
+
+std::vector<domain::book_status> book_status_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book status at timepoint. code: " << code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_status_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading book status at timepoint by code.");
+}
+
 std::vector<domain::book_status> book_status_repository::read_all(context ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all book status versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_status_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<book_status_entity, domain::book_status>(
         ctx,

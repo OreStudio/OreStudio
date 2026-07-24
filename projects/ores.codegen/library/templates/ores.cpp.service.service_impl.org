@@ -53,6 +53,17 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
 }
 
+{{#has_as_of_lookup}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::list_{{entity_plural_short}}_at_timepoint(
+    const std::string& as_of, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} at timepoint: " << as_of;
+    if ({{primary_key.column}}.empty())
+        return repo_.read_at_timepoint(ctx_, as_of);
+    return repo_.read_at_timepoint(ctx_, as_of, {{primary_key.column}});
+}
+{{/has_as_of_lookup}}
+
 {{#foreign_keys}}
 {{#list_by}}
 std::vector<domain::{{entity_singular}}>

@@ -119,6 +119,7 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :PROPERTIES:
 :subcomponent:       api
 :has_batch_remove:   true
+:has_as_of_lookup:   true
 :END:
 
 ** Repository

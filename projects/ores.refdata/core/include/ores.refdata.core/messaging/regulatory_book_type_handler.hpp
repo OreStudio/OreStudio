@@ -71,8 +71,13 @@ public:
         get_regulatory_book_types_response resp;
         if (auto req = decode<get_regulatory_book_types_request>(msg)) {
             try {
-                resp.types = svc.list_types(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_types());
+                if (!req->as_of.empty()) {
+                    resp.types = svc.list_types_at_timepoint(req->as_of);
+                    resp.total_available_count = static_cast<int>(resp.types.size());
+                } else {
+                    resp.types = svc.list_types(req->offset, req->limit);
+                    resp.total_available_count = static_cast<int>(svc.count_types());
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(regulatory_book_type_handler_lg(), error)

@@ -2,7 +2,7 @@
 :ID: 3D56DB59-8075-42BB-8139-A7440C9786B2
 :END:
 #+title: Market Data Identifier
-#+description: The structured, physical identifier that addresses a single concrete item in the market data universe, and how it differs from a logical requirement it satisfies.
+#+description: The single, fully-specified market data identifier — its logical fields (shared with the requirement it satisfies) and physical fields (needed to re-express it in any external vendor's own notation) — and how it differs from the requirement it satisfies.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:identifiers:
@@ -11,61 +11,102 @@
 
 * Summary
 
-A *market data identifier* is the structured, physical address of a
-single, concrete item in the [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data
-universe]] — the thing a
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]
-resolves *to*, and the only kind of reference that can actually be used
-to fetch or build a piece of data. This document defines what an
-identifier is, what constitutes its identity (what tuple of fields two
-identifiers must agree on to be the same identifier), and works through
-two independently engineered concrete identifier schemes — this repo's
-own and ORE's — to ground the abstract definition in real, citable
-examples rather than an invented ideal.
+A *market data identifier* is the single, fully-specified description of
+one concrete item in the
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]]. It is
+not a different kind of object from a
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]; a
+requirement is what remains of an identifier once its *physical* fields
+are set aside (and, for a term-structure identifier, once its specific
+point is forgotten too) — the coarser, logical-only view a valuation's
+requirement-generation step actually needs. An identifier is what a
+requirement becomes once every field, logical and physical, is pinned
+down. This document defines the identifier's two field groups, what
+makes two identifiers the same identifier, and — since an identifier is
+expected to carry enough information to be re-expressed in any external
+vendor's own notation (Bloomberg, Reuters, ORE, ...) — what "physical"
+actually has to include for that to be possible, worked through this
+repository's own concrete scheme.
 
 * Layperson's mental model
 
-Continuing the analogy introduced in
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]]: if
-a requirement is a domain name (=www.example.com=), a market data
-identifier is the IP address it resolves to (=93.184.216.34=). The
-domain name is chosen for human legibility and stability of meaning; the
-IP address is chosen for machine routability and says nothing at all
-about what the server behind it does. A market data identifier plays the
-IP address's role exactly: it is the thing a database query, a NATS
-subject, or a pricing engine's internal lookup actually operates on, and
-— just as an IP address on its own tells a network engineer nothing
-about whether the machine at that address serves a news site or an email
-server — a bare identifier string tells a reader nothing about *why* it
-was needed, only *what it precisely is*.
+Think of an identifier as a form with two sections. The top section —
+asset class, qualifier, curve role, and (where relevant) a specific
+tenor or surface point — is exactly what a requirement already
+specifies; a requirement *is* this section on its own, with the bottom
+left blank. The bottom section holds whatever a specific vendor's own
+notation needs but our logical description never cared about: which
+source produced the value, calendar and day-count conventions,
+ticker-construction hints — whatever Bloomberg's, Reuters', or ORE's own
+format requires to be reconstructed. A requirement is the form with only
+the top half filled in; an identifier is the form filled in completely.
 
-The IP-address analogy also surfaces a property worth making explicit: an
-IP address is *structured*, not opaque — it decomposes into a network
-portion and a host portion, and that structure is exactly what lets
-routers make forwarding decisions without understanding the whole
-address space. A market data identifier is structured in the same
-spirit: it is not a single opaque string but a small tuple of typed
-fields (an asset class, a currency, sometimes a tenor), and that
-structure is exactly what lets a repository query, a NATS wildcard
-subscription, or a curve-building routine operate on *part* of an
-identifier without needing to parse the whole thing as free text.
+Going from identifier to requirement — forgetting the bottom half — is
+mechanical: no decision is involved, just discarding fields. Going the
+other way is not the same operation run backwards. Given only the top
+half filled in, several different bottom halves could complete it (more
+than one source might supply "the EUR discount curve's 3M point"), so
+producing one specific identifier from a requirement is a *choice*, not
+a computation on the requirement's fields alone — that choice is
+[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]], covered in its
+own document.
+
+** Aside, for readers who know IP networking
+
+#+begin_note
+*A CIDR analogy*
+
+This two-way asymmetry has a direct parallel in CIDR addressing, if it
+helps: a requirement is like a network prefix (=10.1.0.0/16=, several
+trailing bits left unspecified, covering a whole range of hosts), and an
+identifier is like one fully-specified host address (=10.1.3.47/32=)
+drawn from within that range. Projecting an identifier down to its
+requirement is like applying a subnet mask — mechanical, no decision
+required. Going the other way is not a mask's inverse; it is closer to a
+DHCP lease — an external allocation from a pool, using information (a
+policy, a preference order) the prefix itself does not carry. Skip this
+paragraph entirely if CIDR isn't already familiar; nothing later in this
+document depends on it.
+#+end_note
 
 * Detail
 
-** Identifier identity: what fields compose the physical address?
+** Two field groups, one entity
+
+Rather than model logical and physical addressing as two different
+kinds of object, an identifier is one entity with two field groups:
+
+- *Logical fields* — asset class, qualifier, curve role, and (for a
+  fully resolved, single-point identifier) the specific tenor or surface
+  coordinate. These are the same fields a
+  [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][requirement]] names.
+- *Physical fields* — whatever else is needed to re-express the
+  identifier in a specific external vendor's own notation without
+  inventing new information: which source supplied it, calendar and
+  day-count conventions, ticker-construction hints, and so on.
+
+A requirement is the *projection* of an identifier onto its logical
+fields alone. Because a projection only ever forgets fields, it is
+many-to-one — several identifiers, differing only in their physical
+fields (different sources, say), can project onto the same requirement —
+and it requires no external decision, only discarding. Resolution, which
+runs in the opposite direction, is neither of those things: it must pick
+one identifier from among however many project onto a given requirement,
+which is a genuine decision, not a computation performable on the
+requirement's fields alone.
+
+** Identifier identity: what makes two identifiers the same?
 
 Two market data identifiers are the same identifier exactly when every
-field of their structure is equal — the same principle as requirement
-identity in
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]],
-applied on the physical rather than the logical side. What differs
-between the two documents is *which* fields make up that tuple, because
-a physical identifier must be precise enough to select exactly one
-concrete data item, where a logical requirement is deliberately
-permitted to be less precise (it may, for instance, name a whole curve
-without naming a specific point on it). This section grounds that claim
-in two real, independently designed identifier schemes rather than
-inventing a canonical field list from first principles.
+field of their structure agrees — logical fields and physical fields
+both. This is the same identity principle
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]]
+applies to requirements, extended to the identifier's larger field set:
+an identifier's logical fields alone being equal is not sufficient for
+two identifiers to be the same identifier (they might still differ in
+source, or convention); it is, however, sufficient for them to share the
+same requirement, since requirement equality is defined purely over the
+logical fields.
 
 *** This repository's own scheme
 
@@ -88,39 +129,19 @@ and converts deterministically to a NATS subject by lowercasing and
 replacing =/= with =.= — see that document for the full mapping and its
 worked examples.
 
-*** ORE's scheme
-
-ORE — the Open Source Risk Engine that this system's own pricing model
-is built to interoperate with — solves the identical problem with its
-own =CurveSpec= class hierarchy, documented in
-[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
-The base class, in =OREData/ored/marketdata/curvespec.hpp=, carries a
-=curveConfigID= field common to every curve type, and each concrete
-subclass — =YieldCurveSpec=, =FXVolatilityCurveSpec=,
-=SwaptionVolatilityCurveSpec=, and so on — adds the type-specific fields
-that particular curve family needs to be uniquely addressed (a currency
-code for a yield curve; a currency pair for an FX volatility curve).
-=CurveSpec= additionally carries an explicit =CurveType= enumeration
-(=FX=, =Yield=, =CapFloorVolatility=, ...) discriminating which concrete
-subclass applies — structurally the same role this system's own
-=series_type= field plays, arrived at independently.
-
-One genuine terminological trap surfaces here, worth flagging explicitly
-rather than silently working around: the file-level documentation
-comment at the top of =curvespec.hpp= reads /"Curve requirements
-specification."/ ORE's own prose calls *this* concept — the physical
-identifier — a "requirement," which is the exact opposite of how this
-document cluster, and OpenGamma Strata (see below), use that word. This
-is not a contradiction to resolve; it is a warning that "requirement"
-is not a safe, field-wide term with one settled meaning, and a reader
-moving between this document cluster and ORE's own source comments
-should not assume the word carries the same meaning in both places.
+This tuple is, honestly, only the *logical* field group formalised so
+far — it says nothing about source or convention, because nothing in
+this repository's own storage or messaging layer has needed those fields
+yet. Whether and how to extend this scheme with an explicit physical
+field group (so that a stored identifier alone is sufficient to drive a
+vendor projection, rather than relying on configuration held elsewhere)
+is an open design question this document flags rather than settles.
 
 *** OpenGamma Strata's scheme
 
 OpenGamma Strata's identifier abstraction,
 =com.opengamma.strata.data.MarketDataId<T>=, is deliberately more
-minimal than either scheme above — an interface, not a concrete tuple of
+minimal than the tuple above — an interface, not a concrete tuple of
 fields, whose Javadoc describes it as "an identifier for a unique item
 of market data... Implementations can identify any piece of market data.
 This includes observable values, such as the quoted market value of a
@@ -128,56 +149,124 @@ security, and derived values, such as a volatility surface or a
 discounting curve." Strata pushes the actual field structure down into
 each concrete implementing class (there is no single canonical field
 list at the interface level, by design — the interface's only contract
-is uniqueness and a declared value type =T=), whereas both this
-repository's scheme and ORE's =CurveSpec= commit to a shared field
-shape at the base-class level. Strata's choice and this repository's/ORE's
-choice are both defensible engineering positions, not a case of one
-being more correct than the other — Strata optimises for extensibility
-across an open-ended set of data kinds a third-party library cannot
-anticipate in advance; this repository and ORE optimise for a smaller,
-closed, well-understood set of curve/surface families where a shared
-field shape (currency, curve family, tenor) genuinely does hold across
-almost every case.
+is uniqueness and a declared value type =T=), whereas this repository's
+scheme commits to a shared field shape at the base level. Both are
+defensible engineering positions, not a case of one being more correct
+than the other — Strata optimises for extensibility across an
+open-ended set of data kinds a third-party library cannot anticipate in
+advance; this repository optimises for a smaller, closed, well-understood
+set of curve/surface families where a shared field shape (currency,
+curve family, tenor) genuinely does hold across almost every case. Like
+this repository's own scheme, Strata's =MarketDataId= is also silent on
+physical fields — an implementing class is free to carry a source or a
+convention, but nothing at the interface level requires or names one.
 
-*** What the three schemes agree on
+These two schemes — independently engineered, and agreeing on the same
+underlying logical shape (an asset-class/type discriminator, a
+qualifying instance within it, and optionally a further coordinate for a
+single point) — are the strongest evidence available that this shape is
+close to the irreducible shape of the *logical* side of the concept, not
+an accident of either system's design history. Neither, on its own,
+says anything about how the physical field group ought to be shaped;
+that question is addressed separately, below.
 
-Despite differing in exactly which fields they commit to at which
-level of the class hierarchy, all three schemes — this repository's,
-ORE's, and Strata's — agree on the same underlying shape of *identity*:
-an asset-class/type discriminator, a qualifying instance within that
-type, and, optionally, a further coordinate for identifiers that name a
-single point on a term structure or surface rather than the structure
-as a whole. This convergence, across three independently engineered
-systems, is the strongest evidence available that this is close to the
-irreducible shape of the concept, not an accident of any one system's
-design history.
+** Vendor projection: from identifier to external notation
 
-** Why an identifier must be more precise than the requirement it satisfies
+An identifier's physical fields exist for one purpose: so that a
+one-directional transform can render the identifier into a specific
+external vendor's own notation — a Bloomberg ticker, a Reuters RIC, an
+ORE quote key — without needing to invent information the identifier
+itself doesn't carry. Call this transform, per vendor, $T_{\text{vendor}}$:
+
+$$T_{\text{vendor}}: \mathrm{Identifier} \to \mathrm{VendorKey}$$
+
+This is deliberately one-directional, and not merely as a scope
+decision — going the other way is a genuinely different, harder problem.
+A vendor's own notation is an independently designed grammar, built for
+that vendor's own purposes, and it routinely collapses or omits
+information our identifier needs: a ticker's suffix conventions, tenor
+rounding, or day-count assumptions may not correspond field-for-field to
+anything in our own scheme, and two different vendors can use two
+different notations for what is, logically, the same point. Recovering
+an identifier from a bare vendor key is therefore not "run $T_{\text{vendor}}$
+backwards"; it is an ingestion/reconciliation problem in its own right —
+deciding, case by case and possibly vendor by vendor, what a given
+external key actually means in our own logical and physical terms. That
+problem is out of scope for this document.
+
+*** ORE's =CurveSpec=: a worked vendor-projection target
+
+ORE — the Open Source Risk Engine this system's own pricing model is
+built to interoperate with — has its own =CurveSpec= class hierarchy,
+documented in
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
+The base class, in =OREData/ored/marketdata/curvespec.hpp=, carries a
+=curveConfigID= field common to every curve type, and each concrete
+subclass — =YieldCurveSpec=, =FXVolatilityCurveSpec=,
+=SwaptionVolatilityCurveSpec=, and so on — adds the type-specific fields
+that particular curve family needs to be uniquely addressed within ORE's
+own engine (a currency code for a yield curve; a currency pair for an FX
+volatility curve). =CurveSpec= additionally carries an explicit
+=CurveType= enumeration (=FX=, =Yield=, =CapFloorVolatility=, ...)
+discriminating which concrete subclass applies.
+
+=CurveSpec= is *ORE's* internal addressing scheme, built for ORE's own
+purposes — from this repository's point of view it is exactly the kind
+of target $T_{\text{ORE}}$ must produce, not a peer scheme our own
+identifier should be judged against. (An earlier version of this
+document treated =CurveSpec= as a third independently-converging
+logical scheme alongside this repository's own and Strata's; on
+reflection that conflated "a well-designed engine-internal addressing
+scheme" with "a vendor's own foreign notation" — =CurveSpec= is the
+latter, from our vantage point, however cleanly it is designed from
+ORE's own.) Whatever fields $T_{\text{ORE}}$ needs that this
+repository's own identifier doesn't yet carry as a physical field —
+=curveConfigID=-equivalent bookkeeping, ORE-specific curve-building
+hints — are exactly the gap the previous section flags as unresolved.
+
+One genuine terminological trap surfaces here, worth flagging explicitly
+rather than silently working around: the file-level documentation
+comment at the top of =curvespec.hpp= reads /"Curve requirements
+specification."/ ORE's own prose calls =CurveSpec= — which, on this
+document's reading, sits on the *identifier* side of the requirement/
+identifier distinction, and squarely on the *vendor* side of the
+identifier/vendor-key distinction — a "requirement." This is not a
+contradiction to resolve; it is a warning that "requirement" is not a
+safe, field-wide term with one settled meaning, and a reader moving
+between this document cluster and ORE's own source comments should not
+assume the word carries the same meaning in both places.
+
+Bloomberg tickers and Reuters RICs are further instances of the same
+kind of target — a vendor's own grammar, independently designed, that
+$T_{\text{vendor}}$ must be able to produce from a fully-specified
+identifier. Working out the concrete field-by-field mapping for those
+(and for ORE's =CurveSpec=) is the subject of this repository's separate
+[[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][survey of ORE, Bloomberg, and
+Reuters notations]]; this document only fixes the *shape* of the
+relationship — a one-directional projection into a foreign namespace —
+not any one vendor's specific grammar.
+
+** Why a requirement is permitted to be coarser than the identifier it's satisfied by
 
 A [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]
-is deliberately allowed to be coarser than the identifier it eventually
-resolves to — "the EUR discount curve" as a requirement says nothing
-about *which* specific instrument set built it, while the identifier
-that requirement resolves to must, by construction, pick out exactly one
-concrete item in the
+is deliberately allowed to omit fields an identifier must carry — "the
+EUR discount curve" as a requirement says nothing about *which* specific
+source or point satisfies it, while the identifier it resolves to must,
+by construction, pick out exactly one concrete item in the
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]]. This
-asymmetry is not a defect to eliminate; it is the entire point of having
-two distinct concepts. A domain name is likewise permitted to be
-under-specified relative to an IP address in exactly the same way: DNS's
-own =A= record type maps one domain name to potentially several IP
-addresses (for load-balancing across multiple servers), and it is only
-at the moment a client actually needs to open a connection that one
-specific address is chosen from among them. The
-[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]]
-document covers the mechanism — resolution — by which that narrowing
-from "coarser, possibly ambiguous requirement" to "exactly one precise
+asymmetry is not a defect to eliminate; it is the entire reason a
+requirement and an identifier are worth naming separately even though
+they are, structurally, one entity viewed at two levels of completeness.
+The [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data
+Configuration]] document covers the mechanism — resolution — by which
+the narrowing from "coarser requirement" to "exactly one precise
 identifier" actually happens.
 
 * See also
 
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; introduces the set-theoretic framing this document assumes.
-- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical need an identifier satisfies.
+- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical-only projection of an identifier.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space of every valid identifier.
-- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the mechanism resolving a requirement to exactly one identifier.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete identifier scheme, worked through above.
-- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, worked through above.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the resolution mechanism picking exactly one identifier for a requirement.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete (logical-field) identifier scheme, worked through above.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — a worked vendor-projection target, worked through above.

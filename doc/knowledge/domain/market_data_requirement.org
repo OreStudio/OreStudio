@@ -2,7 +2,7 @@
 :ID: 41200F4A-BAC1-4C7A-8998-2EDCC8C8787F
 :END:
 #+title: Market Data Requirement
-#+description: A logical, symbolic description of a piece of market data needed for a valuation, independent of any physical instance; the static requirement set (per trade type) and dynamic requirement set (per trade instance and date) that together generate it.
+#+description: A logical, symbolic description of a piece of market data needed for a valuation, independent of any physical instance; the static requirement set (per trade type), instance requirement set (per trade instance), and dynamic requirement set (per trade instance and date) that together generate it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:requirements:
@@ -19,10 +19,18 @@ built from a specific set of quotes on a specific morning is not — that is
 what the requirement resolves *to*, a distinct concept covered in
 [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]. This
 document defines what a requirement is, what identity means for one (when
-are two requirements "the same" requirement?), and the two-level structure
+are two requirements "the same" requirement?), and the three-level structure
 by which requirement sets actually get generated in practice: a *static
-requirement set*, derived once from a trade's type, and a *dynamic
-requirement set*, refined per trade instance and valuation date. Both this
+requirement set*, derived once from a trade's type; an *instance requirement
+set*, refined per trade instance by binding the type's structural slots
+(currency, index, credit name, ...) to that instance's actual attributes,
+independent of any date; and a *dynamic requirement set*, refined further per
+valuation date by localising each curve-level requirement down to the
+specific points a trade's cashflows actually touch on that date. Each level
+narrows the one before it — $\mathrm{static}(\tau(t)) \supseteq
+\mathrm{instance}(t) \supseteq \mathrm{dynamic}(t, d)$ — so the requirement
+set only ever gets smaller as more is known about the trade and the moment
+it is being valued. Both this
 document and its sibling on identifiers assume the mathematical framing
 introduced in
 [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and
@@ -55,8 +63,11 @@ resolves to is not.
 This analogy will recur throughout this document cluster, because the
 DNS system happens to have already solved, in a completely different
 domain, almost every structural problem this cluster is concerned with:
-the logical/physical split (this document and
-[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]), a
+the logical/physical split (this document covers the logical view alone;
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]
+covers the same entity fully specified, logical and physical fields
+together — a requirement is that identifier with its physical fields,
+and often its specific point, left unspecified), a
 global namespace of everything that could possibly be asked for
 ([[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]]), an
 ordered set of authoritative rules that perform the actual translation
@@ -67,6 +78,24 @@ Resolution]]), and a materialised, time-stamped record of what a lookup
 returned, kept around so a later party can trust it without repeating the
 lookup ([[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data
 Snapshot]], DNS's analogue being a cached record with its own TTL).
+
+** Aside, for readers who know IP networking
+
+#+begin_note
+*A CIDR analogy*
+
+The static/instance/dynamic narrowing above has a direct parallel in
+CIDR addressing, if it helps: static is like a broad address block
+reserved for a category (=10.0.0.0/8= for "yield curves"), instance is
+like a subnet carved out for one specific trade's currency
+(=10.1.0.0/16= for "the EUR curve"), and dynamic is like one host address
+within it (=10.1.3.1/32= for "the EUR curve's 3M point"). Each step is a
+longer prefix, and a longer prefix always covers fewer addresses than a
+shorter one — which is exactly why $\mathrm{dynamic}(t,d) \subseteq
+\mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$ holds without
+needing a separate argument. Skip this paragraph entirely if CIDR isn't
+already familiar; nothing later in this document depends on it.
+#+end_note
 
 * Detail
 
@@ -158,34 +187,68 @@ any particular trade instance, currency, or date. This is what makes it
 yields the same set as today, because nothing about the FX Forward
 product definition itself changed overnight.
 
+** The instance requirement set: what a trade *instance* needs, independent of date
+
+The static set says an FX Forward needs "two interest rate curves, one
+for each currency in its pair" — but it cannot say *which* two
+currencies, because it is a function of the type alone, and every FX
+Forward shares the same type regardless of whether it is EUR/USD or
+JPY/GBP. The *instance requirement set* closes that gap: it binds the
+static set's structural slots (currency, currency pair, index name,
+credit name, curve role, ...) to one specific trade's actual attributes.
+"This trade is a EUR/USD forward, so it needs the EUR and USD discount
+curves, specifically" is an instance-level statement.
+
+Formally, given a specific trade $t$ of type $\tau(t) \in \mathcal{T}$,
+
+$$\mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$$
+
+Two properties make this level worth naming on its own rather than
+folding it into either its neighbours. First, it needs no valuation
+date and no analytics to compute: which curves a EUR/USD forward touches
+is fixed the moment the trade is booked, by simply reading its currency
+pair and index fields off the trade — no cashflow generation, no
+schedule, no model. Second, it is stable over the trade's life in a way
+the level below it is not: the *set of curves* a trade instance touches
+does not change from one valuation date to the next, only *which points
+within those curves* it touches does. A EUR/USD forward booked today
+will still need "the EUR and USD discount curves" a year from now, even
+though the specific tenor points it needs will have shifted as it rolls
+towards maturity.
+
 ** The dynamic requirement set: what a trade *instance*, at a *point in time*, needs
 
-The *dynamic requirement set* refines the static set for a specific
-trade instance, at a specific valuation date. Where the static set can
-only say "an FX Forward needs the two currencies' discount curves," the
-dynamic set can say "*this* forward, maturing in 87 days, needs those two
-curves' 3-month tenor points specifically" — a statement that depends on
-facts the static set has no access to: which currency pair this
-particular trade is denominated in, what its maturity actually is, and
-what today's date is (since "87 days from now" is itself a moving
-target).
+The *dynamic requirement set* refines the instance set for a specific
+valuation date. Where the instance set can only say "this forward needs
+the EUR and USD discount curves," the dynamic set can say "*this*
+forward, maturing in 87 days, needs those two curves' 3-month tenor
+points specifically" — a statement that depends on a fact the instance
+set has no access to: what today's date is (since "87 days from now" is
+itself a moving target). Unlike the instance/type binding above, this
+step is not a lookup — for anything beyond the simplest linear products
+it requires running the same cashflow-generation and, where applicable,
+model machinery the valuation itself will eventually use (exercise
+dates for an option, reset and payment schedules for a swap, barrier
+monitoring dates for an exotic), just far enough to know which points
+on a curve or surface those cashflows will read from. This is why the
+dynamic set, not the instance set, is where most of the genuine
+complexity in requirement derivation lives.
 
 Formally, given a specific trade $t$ of type $\tau(t) \in \mathcal{T}$
 and a valuation date $d$,
 
-$$\mathrm{dynamic}(t, d) \subseteq \mathrm{static}(\tau(t))$$
+$$\mathrm{dynamic}(t, d) \subseteq \mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$$
 
 — read literally, the dynamic requirement set for a specific trade
-instance is a *refinement* of, not an addition to, its type's static
-set: it identifies precisely which of the structurally-possible
-requirements are actually needed, and narrows any curve-level
-requirement in the static set down to the specific points that trade
-instance's cashflows actually touch. (In practice a dynamic set is
-usually a proper subset — a static requirement for "the whole EUR
-discount curve" narrows to "the EUR discount curve's 3M and 6M points"
-for one particular short-dated forward — though nothing in the
-definition forbids equality when a trade genuinely needs every point a
-term structure offers, such as a full-curve sensitivity calculation.)
+instance is a *refinement* of, not an addition to, its instance set: it
+narrows any curve-level requirement in the instance set down to the
+specific points that trade instance's cashflows actually touch on date
+$d$. (In practice a dynamic set is usually a proper subset — an instance
+requirement for "the whole EUR discount curve" narrows to "the EUR
+discount curve's 3M and 6M points" for one particular short-dated
+forward — though nothing in the definition forbids equality when a
+trade genuinely needs every point a term structure offers, such as a
+full-curve sensitivity calculation.)
 OpenGamma Strata's =com.opengamma.strata.calc.marketdata.MarketDataFunction=
 interface, method =requirements(I id, MarketDataConfig marketDataConfig)= —
 producing, for one specific market data identifier, the further data
@@ -211,19 +274,32 @@ implying anything about system behaviour that isn't actually there.
 
 ** Why the split matters in practice
 
-Separating static from dynamic requirement derivation is not merely a
-taxonomic nicety — it is what makes large-scale requirement generation
-computationally tractable at all. A trading book with ten thousand FX
+Separating static, instance, and dynamic requirement derivation is not
+merely a taxonomic nicety — it is what makes large-scale requirement
+generation computationally tractable at all, because the three levels
+have sharply different costs. A trading book with ten thousand FX
 Forwards does not need its static requirement set computed ten thousand
 times, once per trade; $\mathrm{static}(\text{FxForward})$ is computed
-once, for the *type*, and every instance of that type shares it. Only the
-dynamic refinement — narrowing "the curve" down to "these specific
-points, for this specific maturity" — genuinely needs to run per trade.
-This mirrors, again, the DNS analogy: a resolver does not re-derive "what
-kind of record type does a web browser typically need" (an A record, by
-convention, for HTTP) on every single lookup; that is fixed by the
-protocol. What varies per lookup is only the specific name being asked
-about.
+once, for the *type*, and every instance of that type shares it. The
+instance refinement — binding "the two currencies' curves" to "the EUR
+and USD curves, specifically" — is cheap: it runs once per trade, but is
+pure attribute lookup, no analytics involved, and stays valid across
+every valuation date until the trade itself changes. The dynamic
+refinement — narrowing "the EUR discount curve" down to "these specific
+points, for this specific maturity, as of this date" — is where the real
+cost sits: it runs once per trade *per valuation date*, and for anything
+beyond a linear product it means re-running enough of the pricing
+model's own cashflow logic to know which points it will read. Knowing a
+book needs EUR and USD curves at all is nearly free; knowing exactly
+which points on those curves a thousand American swaptions and
+barrier options need today is not. This mirrors, again, the DNS
+analogy: a resolver does not re-derive "what kind of record type does a
+web browser typically need" (an A record, by convention, for HTTP) on
+every single lookup; that is fixed by the protocol. What varies per
+lookup is only the specific name being asked about — the DNS equivalent
+of the instance/dynamic distinction is thin (a name is looked up as a
+whole, not resolved into curves-then-points), which is precisely why
+this cluster leans on the DNS analogy less heavily here than elsewhere.
 
 * See also
 

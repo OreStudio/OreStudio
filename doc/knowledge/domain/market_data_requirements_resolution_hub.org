@@ -34,10 +34,16 @@ assume without re-deriving.
 
 * How to read this cluster
 
-Two things are true of every document in this cluster and are worth
-stating once, here, rather than repeating in each one.
+Each linked note is a single focused concept; start here and follow
+the links in whatever order matches the question you have.
 
-** The running analogy: DNS
+* Two lenses on this cluster
+
+Every document below can be read through either of two lenses, used
+together rather than as alternatives: an analogy, for intuition, and
+a notation, for precision.
+
+** Lens 1: analogy — the DNS mapping
 
 Every document below returns to the same worked analogy: the Domain
 Name System. A market data *requirement* plays the role of a *domain
@@ -53,7 +59,16 @@ under two different configurations without the requirement itself
 changing meaning. The *market data universe* plays the role of the
 *entire routable Internet* — everything that could possibly be asked
 for, of which any one valuation touches only a small, requirement-derived
-slice. *Dependency resolution* plays the role of a browser recursively
+slice. One place the analogy stops early rather than being stretched:
+an *identifier* is fully specified in this cluster's own logical/physical
+field scheme, but it is not yet a vendor's own notation (a Bloomberg
+ticker, a Reuters RIC) — that further, one-directional step is a
+vendor projection, covered in
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]], and
+DNS has no real analogue for it (an IP address doesn't need to be
+re-expressed in a second registrar's own addressing scheme the way a
+market data identifier needs to be re-expressed in Bloomberg's or
+Reuters' notation). *Dependency resolution* plays the role of a browser recursively
 fetching a page's stylesheets, fonts, and images before it can finish
 rendering. A *snapshot* plays the role of a cached DNS record with its
 own retention policy, kept around after the fact for a different purpose
@@ -66,16 +81,29 @@ snapshotting, whose *purpose* differs meaningfully from DNS caching's),
 each document says so explicitly rather than stretching the comparison
 past where it still illuminates.
 
-** The mathematical framing: sets, not containers
+** Lens 2: notation — sets, not containers
 
 This cluster deliberately describes its concepts using ordinary
 mathematical set notation and set operations — union, intersection,
-subset, closure — rather than the more container-like, configuration-like
-prose the source material this cluster distils originally used (most
-notably, that material's own word "environment," which this cluster
-does not use at all; see
+subset, closure — rather than container-like, configuration-like prose.
+Several candidate terms were weighed for the collection of quotes a
+valuation actually resolves against. "Environment" was rejected: it
+connotes something ambient and configured once per run (closer to a
+deployment's env vars than to a value that varies per trade, per
+valuation date, and per pricing engine), and it invites confusion with
+unrelated senses of "environment" already in use elsewhere (runtime,
+test, deployment). "ORE's today's market" and similar ORE-flavoured
+names were also considered and rejected: they tie the concept to one
+engine's terminology and don't generalise to Bloomberg- or
+Reuters-sourced data, nor to the static/dynamic split this cluster
+relies on. "Set" was chosen because the concept genuinely is a set —
+closed under union, intersection, and closure, with subset and
+membership tests that matter operationally (does this valuation's
+requirement set fall inside the market data universe?) — so the
+mathematical vocabulary is not a metaphor layered on top but a precise
+description of how these objects behave; see
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
-why). The payoff of this framing is that most of the relationships
+the fuller comparison. The payoff of this framing is that most of the relationships
 between these concepts collapse from paragraphs of prose into a single
 line of notation, checkable the way an algebraic identity is checkable,
 rather than merely plausible the way a prose description is merely
@@ -85,10 +113,18 @@ cluster either builds toward or assumes is:
 $$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho(\,\mathrm{static}(\tau(T)) \,\cup\, \mathrm{dynamic}(T, d)\,)\bigr) \,\cap\, U$$
 
 Read left to right: a trade population $T$'s types $\tau(T)$ generate a
-*static requirement set* (fixed by product type alone), refined per
-instance by a *dynamic requirement set* at valuation date $d$; their
-union is *resolved* ($\rho$) into physical identifiers, one per
-requirement; the result is expanded to its full *dependency closure*;
+*static requirement set* (fixed by product type alone); each trade
+instance in $T$ narrows this to an *instance requirement set* by binding
+currencies, indices, and credit names to that trade's actual attributes
+(no analytics, no date needed); and each instance is narrowed further,
+per valuation date $d$, to a *dynamic requirement set* that localises
+every curve down to the specific points that instance's cashflows
+actually touch on that date — $\mathrm{dynamic}(T, d)$ folds both later
+steps into one symbol for the population-level formula, since the
+formula only needs the final, most-refined set. The union of
+$\mathrm{static}(\tau(T))$ and $\mathrm{dynamic}(T, d)$ is *resolved*
+($\rho$) into physical identifiers, one per requirement; the result is
+expanded to its full *dependency closure*;
 and intersecting that closure with the *market data universe* $U$
 produces $\mathrm{MDS}(T)$ — the concrete market data set the valuation
 of $T$ actually needs, and the only part of $U$ it ever touches.
@@ -103,12 +139,13 @@ documents below.
 
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] —
   the logical, symbolic starting point: what a requirement is, what
-  constitutes its identity, and the static/dynamic two-level structure
-  by which requirement sets are actually generated in practice.
+  constitutes its identity, and the static/instance/dynamic three-level
+  structure by which requirement sets are actually generated in practice.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] —
-  the physical address a requirement resolves to: what constitutes an
-  identifier's identity, worked through this repository's own scheme
-  and ORE's =CurveSpec= scheme side by side.
+  the same entity as a requirement, fully specified: logical fields plus
+  physical fields, the latter existing so a one-directional vendor
+  projection can render the identifier into Bloomberg's, Reuters', or
+  ORE's own =CurveSpec= notation.
 - [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] —
   $\rho$, the resolution function mapping requirements to identifiers,
   and why "configuration" — not "profile" — is the term two independent
@@ -158,6 +195,6 @@ guess as settled prior art.
 * See also
 
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — one of this cluster's two reference systems.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete identifier scheme, a worked example in [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]].
-- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, the second worked example in the same document.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete (logical-field) identifier scheme, a worked example in [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]].
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, worked through in the same document as a vendor-projection target, not a peer identifier scheme.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — an adjacent, distinct concept (how a resolved value is priced, not how it is resolved), explicitly disambiguated in [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]].

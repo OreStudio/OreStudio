@@ -112,7 +112,7 @@ run manually against the Qt client by the developer.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Mustache HTML-escaping bug in C++ tooltip path worked around, not fixed -- use triple-stache | cpp_qt_client_model.cpp.mustache / .org | Accepted | Switched to `{{{tooltip}}}`, regenerated, restored natural apostrophe-containing wording for the three affected tooltips |
+| 1 | Mustache HTML-escaping bug in C++ tooltip path worked around, not fixed -- use triple-stache | cpp_qt_client_model.cpp.mustache / .org | Accepted | Switched to triple-stache mustache syntax, regenerated, restored natural apostrophe-containing wording for the three affected tooltips |
 | 2 | Unreferenced screenshot bloat (two stale scenario PNGs, ~670KB) | scenario_verify_currency_domain_tooltips_step2_*.png | Accepted | Removed both -- neither referenced by the scenario doc or task doc |
 | 3 | Undocumented apostrophe-escaping trap -- add a comment near the tooltip variable in the template | ores.cpp.qt.client_model_impl.org / detail_dialog_ui.org | Declined | Superseded by fix #1 (triple-stache removes the trap entirely, so no workaround remains to document) |
 | 4 | No automated regression coverage for header/detail tooltip role | ClientCurrencyModel.cpp | Declined | Matches existing pattern -- no unit tests exist for any Client*Model class; not introducing new test infra unprompted |

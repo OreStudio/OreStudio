@@ -8,7 +8,7 @@
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/acme-wizard-ux
-#+pr:
+#+pr: 1685
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1685][#1685]] | [qt] ores.qt UX for one-click Acme provisioning |
 
 * Review
 

@@ -36,10 +36,10 @@ of their consuming chapter (e.g. Currency Pair Conventions inside
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-10                               |
+| Now          | Content-complete, image-complete pending. |
+| Waiting on   | Screenshot capture (doc-run-manual-screenshots) and human prose review. |
+| Next         | Capture screenshots for the two placeholders, then hand off for review. |
+| Last touched | 2026-07-24                               |
 
 * Acceptance
 
@@ -58,6 +58,23 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Rescoped mid-task: originally planned as a standalone chapter, but
+purpose_type's only real consumer is portfolio, so it landed as a new
+=** Purpose Types= subsection of =chapter_portfolios.org= instead,
+mirroring how Currency Pair Conventions lives inside
+=chapter_currency_pairs.org=. Also discovered purpose_type has no
+shell or CLI commands at all (a codegen gap shared by every entity)
+while writing the section — filed as two backlog captures
+([[id:897DA8C4-512B-449A-8B66-F93D78E38543][Add CLI commands for purpose_type]],
+[[id:A18F3E59-7E77-4766-A96B-A416D6624C79][Add shell REPL commands for purpose_type]]) rather than blocking on
+them.
+
+Manual PDF builds cleanly with the two =[SCREENSHOT NEEDED]=
+placeholders in place. Per [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]'s scope, this task
+stops at content-complete; screenshot capture
+([[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]]) and human prose/factual review are still
+needed before DONE.
 
 * PRs
 

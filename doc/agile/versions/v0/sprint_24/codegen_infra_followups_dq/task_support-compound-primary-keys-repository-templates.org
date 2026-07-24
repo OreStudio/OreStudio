@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: D5564F8E-D2B5-460A-B636-E88A421B84D5
+:END:
+#+title: Task: Support compound primary keys in repository templates (single-row and batch)
+#+description: The repository .hpp/.cpp templates (cpp_domain_type_repository.{hpp,cpp}.mustache, tangled from ores.cpp.repository.repository_header.org and ores.cpp.repository.repository_impl.org) still assume a single-column {{primary_key.column}} throughout signatures, where() clauses, order_by(), read_latest/read_all/read_at_version/remove, including the batch (vector) variants. subject_area (compound natural key: name, domain_name) cannot round-trip through the repository layer until these are converted to iterate {{#primary_key.columns}}. Single-row ops: AND all key columns in where(). Batch ops: sqlgen has no tuple/composite IN (confirmed via source inspection of sqlgen::transpilation::conditions and upstream issue getml/sqlgen#107) -- implement via per-column .in() over-fetch (cross-product candidate set) followed by exact key-tuple filtering in C++. Regenerate subject_area's repository, verify it builds, then verify subject_area end-to-end through service/messaging/Qt.
+#+type: task
+#+level: s1
+#+filetags: :codegen_infra_followups_dq:sprint_24:v0:
+#+owner: marco
+#+branch: feature/unify-columns-primary-key-model-shape
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-24
+#+updated: 2026-07-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the domain_entity repository templates (=cpp_domain_type_repository.hpp/cpp.mustache=,
+tangled from =ores.cpp.repository.repository_header.org= and
+=ores.cpp.repository.repository_impl.org=) work for entities with a
+compound primary key, so =subject_area= (natural key: name,
+domain_name) round-trips correctly through the repository, service,
+messaging, and Qt layers. Today these templates hard-code a single
+=\{\{primary_key.column\}\}= everywhere: signatures, =where()=
+clauses, =order_by()=, and the batch (vector) overloads of
+=read_latest=/=remove=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-24                               |
+
+* Acceptance
+
+- Repository header/impl org templates iterate =\{\{#primary_key.columns\}\}= for all
+  single-row key-scoped operations (read_latest, read_all,
+  read_at_version, remove), ANDing every key column into the
+  =where()=.
+- Batch (vector) overloads of read_latest/remove use per-column
+  =.in()= to build a candidate superset, then filter to the exact
+  requested key-tuples in C++ (sqlgen has no tuple/composite IN --
+  confirmed against sqlgen source and upstream getml/sqlgen#107).
+- Single-key entities regenerate byte-identical (or semantically
+  equivalent) to today's output -- no behaviour change for the
+  common case.
+- =subject_area_repository.hpp/.cpp= regenerated from the fixed
+  templates and builds.
+- =subject_area= verified end-to-end: repository -> service ->
+  messaging -> Qt.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

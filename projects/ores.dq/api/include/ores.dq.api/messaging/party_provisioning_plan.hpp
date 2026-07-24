@@ -38,13 +38,18 @@ struct party_bundle_publish_step {
  * @brief The party-scoped bundles published, in order, when provisioning a
  * party. Each is published whole -- no dataset-level opted_in_datasets
  * filter -- so a new bundle member (e.g. a new asset class added to
- * synthetic_realistic) never requires a client code change in either
+ * synthetic_realistic_2026) never requires a client code change in either
  * provisioner, only a new row in dq_dataset_bundle_member_populate.sql.
+ * synthetic_realistic_2026 is the default vintage theme published here --
+ * a party also wanting the 2016 ORE Samples or Uniform Volatility Demo
+ * themes publishes synthetic_ore_samples_2016/synthetic_uniform_demo
+ * separately (e.g. via ores.shell); only one theme's feeds should ever run
+ * at a time, so provisioning never defaults to more than one.
  */
 inline const std::vector<party_bundle_publish_step>& party_provisioning_bundle_plan() {
     static const std::vector<party_bundle_publish_step> plan{
         {"risk_management", "organisation structure and risk reporting"},
-        {"synthetic_realistic", "synthetic market data configuration"},
+        {"synthetic_realistic_2026", "synthetic market data configuration"},
         {"marketdata.reference_vintage_2016_02_05", "FX driver rates"},
     };
     return plan;

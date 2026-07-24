@@ -32,17 +32,23 @@
 \echo '--- FX Spot Config Seed Data ---'
 \ir ./synthetic_fx_spot_configs_populate.sql
 
-\echo '--- FX Spot Config Seed Data: Basic ---'
-\ir ./synthetic_fx_spot_configs_basic_populate.sql
+\echo '--- FX Spot Config Seed Data: Uniform Volatility Demo ---'
+\ir ./synthetic_fx_spot_configs_uniform_demo_populate.sql
 
-\echo '--- FX Spot Config Seed Data: Realistic ---'
-\ir ./synthetic_fx_spot_configs_realistic_populate.sql
+\echo '--- FX Spot Config Seed Data: 2016 ORE Samples ---'
+\ir ./synthetic_fx_spot_configs_ore_samples_2016_populate.sql
 
-\echo '--- IR Curve Config Seed Data: Basic ---'
-\ir ./synthetic_ir_curve_configs_basic_populate.sql
+\echo '--- FX Spot Config Seed Data: 2026 Realistic ---'
+\ir ./synthetic_fx_spot_configs_realistic_2026_populate.sql
 
-\echo '--- IR Curve Config Seed Data: Realistic (+ legacy IBOR-era curves) ---'
-\ir ./synthetic_ir_curve_configs_realistic_populate.sql
+\echo '--- IR Curve Config Seed Data: Uniform Volatility Demo ---'
+\ir ./synthetic_ir_curve_configs_uniform_demo_populate.sql
+
+\echo '--- IR Curve Config Seed Data: 2016 ORE Samples (legacy IBOR-era curves) ---'
+\ir ./synthetic_ir_curve_configs_ore_samples_2016_populate.sql
+
+\echo '--- IR Curve Config Seed Data: 2026 Realistic (RFR curves) ---'
+\ir ./synthetic_ir_curve_configs_realistic_2026_populate.sql
 
 \echo ''
 \echo '=== Synthetic Component Population Complete ==='

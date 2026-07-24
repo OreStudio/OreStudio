@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 094075A2-1443-4DE0-B7B4-433C5F10F572
+:END:
+#+title: Task: Publish FX driver rates for every synthetic theme vintage during party provisioning
+#+description: party_provisioning_bundle_plan() only publishes the marketdata.reference_vintage_2016_02_05 FX driver-rates bundle, so the 2026 Realistic synthetic theme (which needs fed.h10.2026-05-05) always shows all-red vintage-invalid badges after a standard party provision until someone manually publishes the missing bundle; publish every vintage bundle a party's synthetic themes actually need.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic theme published to a party during standard
+provisioning should come up with valid vintage data out of the box,
+not just the first/default one. =party_provisioning_bundle_plan()=
+(=projects/ores.dq/api/include/ores.dq.api/messaging/party_provisioning_plan.hpp=)
+publishes exactly one FX driver-rates bundle,
+=marketdata.reference_vintage_2016_02_05=, unconditionally -- but the
+2026 Realistic synthetic theme's FX configs are seeded with
+=vintage_source = 'fed.h10.2026-05-05'=
+(=projects/ores.sql/populate/synthetic/synthetic_fx_spot_configs_realistic_2026_populate.sql=),
+which that bundle never provides. The result: every 2026 Realistic FX
+feed shows a red vintage-invalid badge immediately after a fresh
+=barclays_system_provision.ores= run, discovered while testing the
+"Synthetic data themes" scenario, and only fixable today by knowing
+to separately run =bundles publish synthetic_ore_samples_2016=/
+=synthetic_uniform_demo=-style commands by hand.
+
+Make the provisioning plan (or the synthetic themes' own publish
+step) aware of which vintage bundle each synthetic theme it
+publishes actually needs, and publish all of them -- not just one
+hardcoded default. Keep it data-driven enough that a future theme
+introducing a new vintage doesn't require another hand-edit here
+(see the related "data-driven bundle list" tech-debt story/task
+already tracked for this same publish-phase pattern).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+- A fresh =barclays_system_provision.ores= run (or equivalent Qt
+  wizard flow) against a clean database leaves every synthetic
+  theme's FX (and IR curve, once vintage-gated) feeds showing a
+  valid, not red, vintage badge -- no manual follow-up
+  =bundles publish= commands required.
+- Adding a new synthetic theme with its own vintage requirement
+  doesn't require a hand-edit to
+  =party_provisioning_bundle_plan()=, only new data (dataset/bundle
+  rows).
+- No regression to parties that don't use any vintage-gated
+  synthetic theme -- provisioning stays fast and doesn't publish
+  bundles nothing needs.
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -55,6 +55,9 @@ struct get_{{entity_plural}}_request {
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}
+{{#has_as_of_lookup}}
+    std::string as_of; // empty = current/latest
+{{/has_as_of_lookup}}
 };
 
 struct get_{{entity_plural}}_response {
@@ -197,6 +200,9 @@ struct get_{{entity_plural}}_request {
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}
+{{#has_as_of_lookup}}
+    std::string as_of; // empty = current/latest
+{{/has_as_of_lookup}}
 };
 
 struct get_{{entity_plural}}_response {

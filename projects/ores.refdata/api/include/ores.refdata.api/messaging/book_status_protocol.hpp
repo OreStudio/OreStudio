@@ -32,6 +32,7 @@ struct get_book_statuses_request {
     static constexpr std::string_view nats_subject = "refdata.v1.book_statuses.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    std::string as_of; // empty = current/latest
 };
 
 struct get_book_statuses_response {

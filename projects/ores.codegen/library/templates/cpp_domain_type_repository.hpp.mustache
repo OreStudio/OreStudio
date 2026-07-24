@@ -64,6 +64,22 @@ public:
 {{/has_batch_read}}
     /**@}*/
 
+{{#has_as_of_lookup}}
+    /**
+     * @brief Reads {{entity_plural_words}} as they stood at a specific
+     * timepoint — valid_from <= as_of < valid_to — possibly filtered by
+     * {{primary_key.column}}. Distinct from read_at_version (a specific
+     * version number) and from a parent/child *_as_of query (a validity
+     * window overlap): this resolves what this entity's own row meant at
+     * a single instant in time.
+     */
+    /**@{*/
+    std::vector<domain::{{entity_singular}}> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::{{entity_singular}}>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& {{primary_key.column}});
+    /**@}*/
+{{/has_as_of_lookup}}
+
     /**
      * @brief Reads all {{entity_plural_words}}, possibly filtered by {{primary_key.column}}.
      */

@@ -32,6 +32,7 @@ struct get_regulatory_book_types_request {
     static constexpr std::string_view nats_subject = "refdata.v1.regulatory_book_types.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    std::string as_of; // empty = current/latest
 };
 
 struct get_regulatory_book_types_response {

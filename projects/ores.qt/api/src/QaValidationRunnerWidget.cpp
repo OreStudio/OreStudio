@@ -35,7 +35,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGroupBox>
-#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -47,7 +46,6 @@
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
-#include <QScreen>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QTimer>
@@ -270,11 +268,25 @@ void QaValidationRunnerWidget::captureScreenshot(const QString& baseName,
 
     // Deferred, not an immediate grab: this slot runs synchronously from
     // the button click that triggered it, while the QA Runner (or the
-    // step-detail subwindow) is still the foreground window. A short
-    // delay gives the tester a chance to alt-tab to the window under
-    // test first, same idea as an OS screenshot tool's countdown.
-    QTimer::singleShot(1500, this, [directory, baseName, onDone]() {
-        const QPixmap pixmap = QGuiApplication::primaryScreen()->grabWindow(0);
+    // step-detail subwindow) is still the foreground MDI subwindow. A
+    // short delay gives the tester a chance to switch to the subwindow
+    // under test first, same idea as an OS screenshot tool's countdown.
+    //
+    // Rendered via QWidget::grab() on the app's own top-level window,
+    // not QScreen::grabWindow(0) on the root window -- the latter reads
+    // the X11 root pixmap directly, which is black under a compositing
+    // XWayland setup like WSLg (the composited frame lives in the
+    // Wayland/RDP layer, never written back to the root drawable).
+    // grab() sidesteps the window system entirely by having Qt render
+    // the widget tree itself, and as a side effect only ever captures
+    // this app's own window, never another app's.
+    QPointer<QWidget> topLevel = window();
+    QTimer::singleShot(1500, this, [topLevel, directory, baseName, onDone]() {
+        if (!topLevel) {
+            onDone(QString());
+            return;
+        }
+        const QPixmap pixmap = topLevel->grab();
         const QString filename =
             QStringLiteral("%1_%2.png")
                 .arg(baseName, QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));

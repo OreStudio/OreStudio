@@ -19,19 +19,24 @@
  */
 
 /**
- * Synthetic FX Spot Config Seed Population Script — Basic
+ * Synthetic FX Spot Config Seed Population Script — Uniform Volatility Demo
  *
- * Registers the synthetic.fx_spot_configs.basic dataset: all 8 major +
+ * Registers the synthetic.fx_spot_configs.uniform_demo dataset: all 8 major +
  * 3 EM/exotic FX driver pairs from the marketdata.fx_driver_rates
  * dataset (see marketdata_fx_driver_rates_populate.sql), seeded from
- * the same 2016-02-05 Fed H.10 vintage, each on a single-component geometric
- * (multiplicative) process with a deliberately exaggerated per-tick
- * volatility — the same for every pair, not individually calibrated —
- * so movement is easy to eyeball on a chart and every UI feature
- * (ticking, charting, GMM editing) gets exercised without needing to
- * squint. Contrast with synthetic_fx_spot_configs_realistic_populate.sql,
- * whose per-pair volatility is calibrated to plausible real-world FX
- * behaviour.
+ * the 2016-02-05 Fed H.10 vintage (an arbitrary starting price for this
+ * archetype, not a vintage grounding -- see the note below), each on a
+ * single-component geometric (multiplicative) process with a deliberately
+ * exaggerated per-tick volatility — the same for every pair, not
+ * individually calibrated — so movement is easy to eyeball on a chart and
+ * every UI feature (ticking, charting, GMM editing) gets exercised without
+ * needing to squint.
+ *
+ * This is not a vintage theme -- it doesn't pin to any point in market
+ * history -- it's a deliberately simple demo/exercise archetype. Contrast
+ * with synthetic_fx_spot_configs_ore_samples_2016_populate.sql, whose
+ * per-pair volatility is calibrated to plausible real-world FX behaviour
+ * for the 2016 ORE Samples vintage theme.
  *
  * This script is idempotent.
  */
@@ -56,7 +61,7 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.fx_spot_configs.basic',
+        'synthetic.fx_spot_configs.uniform_demo',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -65,10 +70,10 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic FX Spot Configs: Basic',
+        'Synthetic FX Spot Configs: Uniform Volatility Demo',
         '8 major + 3 EM/exotic FX driver pairs, single-component geometric process, deliberately exaggerated uniform volatility — easy to eyeball, exercises every UI feature.',
         'ORESTUDIO',
-        'Basic archetype for the Synthetic data collections bundle',
+        'Uniform Volatility Demo theme for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
         'synthetic_fx_spot_configs'
@@ -91,22 +96,22 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.fx_spot_configs.basic'
+      and code = 'synthetic.fx_spot_configs.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.fx_spot_configs.basic';
+        raise exception 'Dataset not found: synthetic.fx_spot_configs.uniform_demo';
     end if;
 
     if exists (
         select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        raise debug 'Synthetic FX spot configs (basic) artefact already populated for dataset %', v_dataset_id;
+        raise debug 'Synthetic FX spot configs (uniform demo) artefact already populated for dataset %', v_dataset_id;
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs (basic) for dataset: synthetic.fx_spot_configs.basic';
+    raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.fx_spot_configs.uniform_demo';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -117,8 +122,8 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic FX Spot (Basic): ' || p.base || '/' || p.quote,
-        'Basic-archetype synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
+        'Synthetic FX Spot (Uniform Demo): ' || p.base || '/' || p.quote,
+        'Uniform Volatility Demo synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
         true, p.base, p.quote,
         0, 3600, 'geometric',
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
@@ -134,7 +139,7 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, p.base, p.quote,
-        0, 'Basic single-component GMM: exaggerated uniform volatility for visual demo purposes.',
+        0, 'Uniform Volatility Demo single-component GMM: exaggerated uniform volatility for visual demo purposes.',
         0.0, v_stdev, 1.0
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),

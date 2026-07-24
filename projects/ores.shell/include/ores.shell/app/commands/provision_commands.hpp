@@ -99,7 +99,7 @@ public:
      * <party> is a UUID or exact full name (always explicit; no
      * session party state). Publishes the counterparty dataset, then
      * every party-scoped bundle in party_provisioning_bundle_plan()
-     * (risk_management, synthetic_realistic, the curated FX
+     * (risk_management, synthetic_realistic_2026, the curated FX
      * driver-rate bundle) in full, and activates the party. Activation
      * failure is a hard failure — deliberate divergence from the
      * wizard.

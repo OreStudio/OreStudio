@@ -19,11 +19,11 @@
  */
 
 /**
- * Synthetic IR Curve Config Seed Population Script — Basic
+ * Synthetic IR Curve Config Seed Population Script — Uniform Volatility Demo
  *
- * Registers the synthetic.ir_curve_configs.basic dataset: one curve
+ * Registers the synthetic.ir_curve_configs.uniform_demo dataset: one curve
  * per top-20-by-turnover currency (same currency/index set as
- * synthetic.ir_curve_configs.realistic), each a Vasicek short-rate
+ * synthetic.ir_curve_configs.realistic_2026), each a Vasicek short-rate
  * process with plain, real annualised parameters -- the day-per-tick
  * scaling (ir_curve_template_resolver's "1 tick = 1 day" convention)
  * is handled by process_factory::make_yield_curve_process()'s own dt
@@ -31,30 +31,22 @@
  * (Deposit/FRA/Swap) per curve, so every curve_role pricing
  * derivation gets exercised.
  *
- * Basic vs realistic, by design: basic keeps one uniform kappa/sigma
- * across all 20 curves (only theta/initial_rate vary, by currency)
- * and uses Vasicek -- realistic per-curve-calibrates kappa/sigma and
- * uses CIR (volatility scaling with the level, non-negative by
- * construction). Vasicek's simpler, uniform-vol shape is deliberately
- * the "basic" archetype's point, mirroring the FX basic/realistic
- * split's own single-component-vs-calibrated-mixture distinction.
+ * This is not a vintage theme -- it doesn't pin to any point in market
+ * history -- it's a deliberately simple demo/exercise archetype: one
+ * uniform kappa/sigma across all 20 curves (only theta/initial_rate vary,
+ * by currency) using Vasicek, so every curve's dynamics are easy to
+ * reason about while exercising the tick-batch/pricing pipeline. Contrast
+ * with the vintage themes (2016 ORE Samples, 2026 Realistic), each of
+ * which per-curve-calibrates and (for 2016 ORE Samples) is grounded in a
+ * real historical curve.
  *
- * No vintage grounding yet -- initial_rate/theta are plausible fixed
- * values, not sourced from a real historical curve. Contrast with FX's
- * basic/realistic split, both of which seed from the same real vintage
- * and differ only in volatility calibration; IR's own vintage sourcing
- * and basic/realistic split is tracked separately (see the
- * seed-ir-curve-sample-data follow-on task).
- *
- * auto_start = false: this dataset is the lightweight/uniform-parameter
- * archetype, not the one Barclays provisioning actually publishes as
- * the running default (that is synthetic.ir_curve_configs.realistic,
- * auto_start = true) -- both seed the identical (currency_code,
- * index_name) pairs (e.g. USD/USD-SOFR), so at most one may be
- * auto_start = true or curve_feed_controller's qualifier-collision
- * check would trip at boot for every currency. Still enabled = true
- * (available, manually startable) for direct comparison against
- * realistic's own calibration.
+ * auto_start = false: this dataset shares (currency_code, index_name)
+ * pairs with synthetic.ir_curve_configs.realistic_2026 (e.g. USD/USD-SOFR),
+ * so starting both at once for the same currency would trip
+ * curve_feed_controller's qualifier-collision check. Still enabled = true
+ * (available, manually startable) for direct comparison against a vintage
+ * theme's own calibration; select this collection explicitly (never from
+ * Root, which prompts for a single theme) to start it.
  *
  * This script is idempotent.
  */
@@ -75,7 +67,7 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.ir_curve_configs.basic',
+        'synthetic.ir_curve_configs.uniform_demo',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -84,10 +76,10 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic IR Curve Configs: Basic',
+        'Synthetic IR Curve Configs: Uniform Volatility Demo',
         'One Vasicek short-rate curve per top-20-by-turnover currency, uniform annualised kappa/sigma, three-entry (Deposit/FRA/Swap) Curve Template each.',
         'ORESTUDIO',
-        'Basic archetype for the Synthetic data collections bundle',
+        'Uniform Volatility Demo theme for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
         'synthetic_ir_curve_configs'
@@ -116,22 +108,22 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.ir_curve_configs.basic'
+      and code = 'synthetic.ir_curve_configs.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.ir_curve_configs.basic';
+        raise exception 'Dataset not found: synthetic.ir_curve_configs.uniform_demo';
     end if;
 
     if exists (
         select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        raise debug 'Synthetic IR curve configs (basic) artefact already populated for dataset %', v_dataset_id;
+        raise debug 'Synthetic IR curve configs (uniform demo) artefact already populated for dataset %', v_dataset_id;
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (basic) for dataset: synthetic.ir_curve_configs.basic';
+    raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.ir_curve_configs.uniform_demo';
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -142,22 +134,22 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic IR Curve (Basic): ' || c.currency_code || '/' || c.index_name,
-        'Basic archetype: a single, uniform Vasicek short-rate process (same kappa/sigma '
-        || 'across every currency, only theta/initial_rate vary) applied to '
+        'Synthetic IR Curve (Uniform Demo): ' || c.currency_code || '/' || c.index_name,
+        'Uniform Volatility Demo archetype: a single, uniform Vasicek short-rate process (same '
+        || 'kappa/sigma across every currency, only theta/initial_rate vary) applied to '
         || c.currency_code || '''s current risk-free rate, ' || c.index_name || '. '
         || 'Intended for exercising the tick-batch/pricing pipeline with predictable, '
         || 'easy-to-reason-about dynamics -- not for realistic curve shape or '
-        || 'per-currency calibration (see synthetic.ir_curve_configs.realistic for that). '
-        || 'Not auto-started by default -- both this and realistic seed the same '
+        || 'per-currency calibration (see synthetic.ir_curve_configs.realistic_2026 for that). '
+        || 'Not auto-started by default -- both this and realistic_2026 seed the same '
         || '(currency, index) pairs, so only one may run at a time per currency; enable '
-        || 'and start this one explicitly to compare against realistic''s calibration.',
+        || 'and start this one explicitly to compare against a vintage theme''s calibration.',
         true, false, c.currency_code, c.index_name, 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly'
     from (values
         -- currency, index code, theta (mean/initial level) -- same 20 currencies and levels
-        -- as synthetic.ir_curve_configs.realistic, but uniform kappa/sigma (v_kappa/v_sigma
+        -- as synthetic.ir_curve_configs.realistic_2026, but uniform kappa/sigma (v_kappa/v_sigma
         -- above) rather than per-curve calibration.
         ('USD', 'USD-SOFR',      0.0400),
         ('EUR', 'EUR-ESTR',      0.0300),

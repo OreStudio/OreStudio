@@ -29,8 +29,11 @@
 \echo '=== Market Data Component Population ==='
 \echo ''
 
-\echo '--- FX Driver Rates Seed Data ---'
+\echo '--- FX Driver Rates Seed Data: 2016 Vintages ---'
 \ir ./marketdata_fx_driver_rates_populate.sql
+
+\echo '--- FX Driver Rates Seed Data: 2026-05-05 Vintage ---'
+\ir ./marketdata_fx_driver_rates_2026_populate.sql
 
 \echo ''
 \echo '=== Market Data Component Population Complete ==='

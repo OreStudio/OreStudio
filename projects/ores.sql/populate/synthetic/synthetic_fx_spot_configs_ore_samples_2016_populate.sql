@@ -19,16 +19,17 @@
  */
 
 /**
- * Synthetic FX Spot Config Seed Population Script — Realistic
+ * Synthetic FX Spot Config Seed Population Script — 2016 ORE Samples
  *
- * Registers the synthetic.fx_spot_configs.realistic dataset: all 8 G10
+ * Registers the synthetic.fx_spot_configs.ore_samples_2016 dataset: all 8 G10
  * FX driver pairs, 3 EM/exotic driver pairs (USD/ZAR, USD/MXN,
  * USD/INR -- added for the Cross-Rates Matrix "exotics" tier), and 2
  * more Nordic driver pairs (USD/NOK, USD/DKK -- added for the
  * Cross-Rates Matrix "scandies" tier, alongside the majors' own
- * EUR/USD and USD/SEK), seeded from the same 2016-02-05 Fed H.10
- * vintage as Basic, but calibrated to look like real FX behaviour
- * instead of an exaggerated demo.
+ * EUR/USD and USD/SEK), seeded from the 2016-02-05 Fed H.10 vintage,
+ * calibrated to look like real FX behaviour instead of an exaggerated
+ * demo -- see synthetic_fx_spot_configs_uniform_demo_populate.sql for
+ * that archetype.
  *
  * Process choice — geometric (GBM), not Ornstein-Uhlenbeck: every pair
  * here is freely-floating (or, for INR, RBI-managed but not pegged/
@@ -91,7 +92,7 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.fx_spot_configs.realistic',
+        'synthetic.fx_spot_configs.ore_samples_2016',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -100,10 +101,10 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic FX Spot Configs: Realistic',
+        'Synthetic FX Spot Configs: 2016 ORE Samples',
         '8 major + 3 EM/exotic FX driver pairs, 2-component geometric (GBM) Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.',
         'ORESTUDIO',
-        'Realistic archetype for the Synthetic data collections bundle',
+        '2016 ORE Samples theme for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
         'synthetic_fx_spot_configs'
@@ -122,22 +123,22 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.fx_spot_configs.realistic'
+      and code = 'synthetic.fx_spot_configs.ore_samples_2016'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.fx_spot_configs.realistic';
+        raise exception 'Dataset not found: synthetic.fx_spot_configs.ore_samples_2016';
     end if;
 
     if exists (
         select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        raise debug 'Synthetic FX spot configs (realistic) artefact already populated for dataset %', v_dataset_id;
+        raise debug 'Synthetic FX spot configs (2016 ORE Samples) artefact already populated for dataset %', v_dataset_id;
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs (realistic) for dataset: synthetic.fx_spot_configs.realistic';
+    raise debug 'Populating synthetic FX spot configs (2016 ORE Samples) for dataset: synthetic.fx_spot_configs.ore_samples_2016';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -148,8 +149,8 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic FX Spot (Realistic): ' || p.base || '/' || p.quote,
-        'Realistic-archetype synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
+        'Synthetic FX Spot (2016 ORE Samples): ' || p.base || '/' || p.quote,
+        '2016 ORE Samples synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
         true, p.base, p.quote,
         0, 1800, 'geometric',
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
@@ -167,7 +168,7 @@ begin
         component_index, description, mean, stdev, weight
     )
     select v_dataset_id, v_tenant_id, p.base, p.quote, 0,
-        'Realistic primary component: calibrated to ~' || p.annualised_vol_pct || '% annualised realised vol.',
+        '2016 ORE Samples primary component: calibrated to ~' || p.annualised_vol_pct || '% annualised realised vol.',
         0.0, p.stdev, 0.95
     from (values
         ('EUR', 'USD', 9.5,  0.0000239),
@@ -192,7 +193,7 @@ begin
         component_index, description, mean, stdev, weight
     )
     select v_dataset_id, v_tenant_id, p.base, p.quote, 1,
-        'Realistic tail component: 4x primary stdev, low weight, for fat-tailed jumps.',
+        '2016 ORE Samples tail component: 4x primary stdev, low weight, for fat-tailed jumps.',
         0.0, p.stdev, 0.05
     from (values
         ('EUR', 'USD', 0.0000956),

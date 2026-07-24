@@ -46,7 +46,7 @@
  *
  * Explicit dataset dependencies (ores_dq_dataset_dependencies_upsert_fn)
  * record that this dataset presupposes marketdata.fx_driver_rates (the
- * currencies) and synthetic.fx_spot_configs.realistic (the live feeds
+ * currencies) and synthetic.fx_spot_configs.ore_samples_2016 (the live feeds
  * that give those currencies fresh, not just seeded, rates) -- currently
  * documentation/introspection only (the bundle publish workflow orders
  * by each bundle member's own display_order, not by walking this
@@ -66,9 +66,9 @@ DO $$
 BEGIN
     PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'CRM Topology Curation',
-        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates, and a USD-pivot-star "scandies" tier for the Nordic currencies (SEK/NOK/DKK) plus EUR. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic) -- never a CRM edge with no underlying feed.',
-        'ores.analytics.quant CRM design (see doc/agile/versions/v0/sprint_23/crm_implementation/), cross-referenced against marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic for feed coverage.',
-        'Every driver pair here has a corresponding row in both marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic; derived pairs are a curated subset of pairs triangulable from the majors driver set.'
+        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates, and a USD-pivot-star "scandies" tier for the Nordic currencies (SEK/NOK/DKK) plus EUR. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.fx_spot_configs.ore_samples_2016) -- never a CRM edge with no underlying feed.',
+        'ores.analytics.quant CRM design (see doc/agile/versions/v0/sprint_23/crm_implementation/), cross-referenced against marketdata.fx_driver_rates and synthetic.fx_spot_configs.ore_samples_2016 for feed coverage.',
+        'Every driver pair here has a corresponding row in both marketdata.fx_driver_rates and synthetic.fx_spot_configs.ore_samples_2016; derived pairs are a curated subset of pairs triangulable from the majors driver set.'
     );
 END $$;
 
@@ -125,7 +125,7 @@ BEGIN
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.crm_topology_bundles',
-        'synthetic.fx_spot_configs.realistic',
+        'synthetic.fx_spot_configs.ore_samples_2016',
         'live_feed'
     );
 END $$;
@@ -181,7 +181,7 @@ begin
     )
     values
         -- majors: 8 driver pairs (spanning-tree edges), matching
-        -- marketdata.fx_driver_rates / synthetic.fx_spot_configs.realistic
+        -- marketdata.fx_driver_rates / synthetic.fx_spot_configs.ore_samples_2016
         -- exactly.
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'USD', 'driver'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'USD', 'driver'),
@@ -232,7 +232,7 @@ begin
         (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'INR', 'driver'),
         -- scandies: 4 driver pairs (spanning-tree edges), a USD-pivot
         -- star over the Nordic currencies plus EUR, matching
-        -- marketdata.fx_driver_rates / synthetic.fx_spot_configs.realistic
+        -- marketdata.fx_driver_rates / synthetic.fx_spot_configs.ore_samples_2016
         -- exactly (EUR/USD shared with majors; USD/SEK shared with
         -- majors; USD/NOK, USD/DKK added specifically for this tier).
         (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'USD', 'driver'),

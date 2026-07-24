@@ -370,7 +370,7 @@ void PartyExecutePage::onCounterpartyWorkflowComplete(bool success) {
 // Phase 2+: publish every party-scoped bundle in the shared provisioning
 // plan (ores::dq::messaging::party_provisioning_bundle_plan()), each in
 // full -- no dataset-level filter -- so a new bundle member (e.g. a new
-// asset class under synthetic_realistic) never requires a client code
+// asset class under synthetic_realistic_2026) never requires a client code
 // change, only a new row in dq_dataset_bundle_member_populate.sql.
 void PartyExecutePage::startNextPartyBundle() {
     if (bundleIndex_ >= bundleQueue_.size()) {

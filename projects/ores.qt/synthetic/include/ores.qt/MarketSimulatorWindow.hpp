@@ -224,6 +224,17 @@ private:
     // non-Feed node; empty otherwise (Feed leaf, mixed, or multi-selection --
     // those fall back to the per-feed request via selectedFxPairs()).
     [[nodiscard]] std::string selectedFolderId() const;
+    // Root's direct Collection children (one dataset's worth of feeds each --
+    // e.g. FX and IR curves for the same theme are two sibling Collection
+    // nodes sharing the same display name). Used to offer a bundle/theme
+    // picker instead of starting every collection at once from Root.
+    [[nodiscard]] std::vector<QStandardItem*> rootCollections() const;
+    // Prompts the user to pick one theme (by its Collection display name,
+    // e.g. "2016 ORE Samples") and starts every root Collection sharing that
+    // name -- called instead of a direct folder cascade when Start is
+    // pressed with Root selected, since starting every theme at once would
+    // run mutually-exclusive vintages side by side.
+    void promptThemeAndStart();
 
     void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);

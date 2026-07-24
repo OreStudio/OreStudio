@@ -58,16 +58,28 @@ BEGIN
         'Sample organisational and risk-reporting data for development and testing. Includes business units, portfolios, trading books, and the standard set of risk report definitions (NPV, VaR, CVA, XVA, etc.) -- reports reference the book/portfolio tree, so both live in one bundle.'
     );
 
+    -- Each of the three bundles below is a mutually-exclusive synthetic
+    -- market-data theme: publishing more than one is fine (a party can make
+    -- several available), but only one's feeds should ever run at a time --
+    -- see MarketSimulatorWindow's Start-at-Root theme prompt, which refuses
+    -- to cascade a start across themes for exactly this reason.
+
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic_basic',
-        'Synthetic Data: Basic',
-        'Basic-archetype synthetic FX spot generation for all 8 major + 3 EM/exotic driver pairs: single-component geometric process, deliberately exaggerated uniform volatility, easy to eyeball and exercises every UI feature.'
+        'synthetic_ore_samples_2016',
+        'Synthetic Data: 2016 ORE Samples',
+        'Pre-benchmark-reform theme pinned to the 2016-02-05 Fed H.10 vintage: calibrated FX spot generation for all 8 major + 3 EM/exotic driver pairs, plus four legacy IBOR-era IR curves (USD-LIBOR-3M, EUR-EURIBOR-3M, GBP-LIBOR-6M, JPY-LIBOR-6M). Matches the conventions ORE''s own sample data comes from.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic_realistic',
-        'Synthetic Data: Realistic',
-        'Realistic-archetype synthetic FX spot generation for all 8 major + 3 EM/exotic driver pairs: 2-component geometric Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.'
+        'synthetic_realistic_2026',
+        'Synthetic Data: 2026 Realistic',
+        'Current-regime theme: one per-currency-calibrated overnight-RFR IR curve for each top-20-by-turnover currency, plus calibrated FX spot generation for all 8 major + 3 EM/exotic + 2 Nordic driver pairs, both grounded in the real 2026-05-05 Fed H.10 vintage.'
+    );
+
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic_uniform_demo',
+        'Synthetic Data: Uniform Volatility Demo',
+        'Not a vintage theme -- a deliberately simple demo/exercise archetype: uniform, exaggerated volatility for both FX (single-component geometric process) and IR (one uniform Vasicek kappa/sigma across all 20 currencies), easy to eyeball and exercises every UI feature.'
     );
 END $$;
 

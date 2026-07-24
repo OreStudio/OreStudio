@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 2DD250F6-7B4C-4204-B742-AC24290F7A81
+:END:
+#+title: Task: Fix vintage-validity false negative: find_series never matches an existing series
+#+description: Every FX feed shows vintage-invalid (red) even for themes with genuinely matching, correctly-scoped market_observation and market_series rows (verified directly in Postgres for 2016 ORE Samples/Uniform Volatility Demo); service logs show market_data_client::find_series() (ores.marketdata.client/src/market_data_client.cpp) never leads to a market_observations.list call for any of the 37 feeds checked, meaning it fails to match a series that demonstrably exists in its own NATS response -- investigate and fix the match/response-handling bug.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix a false-negative in the Market Simulator's vintage-validity
+check: every FX feed shows a red (invalid) badge even for themes
+with genuinely correct, matching vintage data. Verified directly in
+Postgres for Barclays Plc's 2016 ORE Samples and Uniform Volatility
+Demo themes -- =ores_marketdata_market_observations_tbl= has all 13
+=fed.h10.2016-02-05= observations, correctly scoped to the party, and
+=ores_marketdata_market_series_tbl= has matching
+=(series_type, metric, qualifier)= rows for every pair (e.g.
+=FX/RATE/EUR/USD=). Despite this, tracing
+=ores.synthetic.service.0.log= during a reload's vintage check (37
+feeds) shows =market_observations.list= is never called even once --
+meaning
+=feed_controller::vintage_data_available()='s call to
+=market_data_client::find_series()=
+(=projects/ores.marketdata/client/src/market_data_client.cpp:111=)
+is failing to match a series that demonstrably exists in its own
+NATS response, for every single feed, and the code returns "no
+vintage data" before ever reaching the observations lookup.
+
+Root-cause the mismatch in =find_series()= (or the
+=get_market_series_request=/=response= round trip it depends on) and
+fix it. This is independent of the "2026 Realistic has no published
+vintage data at all" gap (tracked separately) -- this bug makes
+themes that DO have correct data show as invalid too.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+- With genuinely matching vintage data published (as confirmed for
+  2016 ORE Samples / Uniform Volatility Demo in this investigation),
+  the Market Simulator tree shows a green (valid) vintage badge, not
+  red, for every affected FX feed.
+- Service logs show =market_observations.list= actually being
+  called during a vintage-validity reload, proving =find_series()=
+  is finding its match and the lookup is reaching the observations
+  stage.
+- Add a regression test (or at minimum a documented manual scenario)
+  covering "vintage data exists and matches" as a distinct case from
+  "vintage data genuinely missing", since only the latter was
+  covered before this bug was found.
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

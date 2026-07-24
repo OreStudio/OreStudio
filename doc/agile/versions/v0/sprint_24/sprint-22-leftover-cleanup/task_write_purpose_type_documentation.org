@@ -2,7 +2,7 @@
 :ID: 3E433126-8259-4280-9C89-1801C0C3E8E9
 :END:
 #+title: Task: Write purpose_type user manual chapter
-#+description: Add the purpose_type entity chapter to the user manual documenting all Qt windows, shell commands, and CLI commands.
+#+description: Document purpose_type in the user manual as a new subsection of chapter_portfolios.org (its only real consumer), covering Qt windows, shell commands, and CLI commands.
 #+type: task
 #+level: s1
 #+filetags: :sprint_24:v0:
@@ -20,7 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:
 
 * Goal
 
-Author the purpose_type chapter in the user manual covering Qt list/detail/history/delete windows, shell commands, and CLI commands, with screenshot placeholders as needed.
+Document =purpose_type= in the user manual: not as a standalone
+chapter, but as a new subsection of =chapter_portfolios.org= (its
+only real consumer — the chapter already documents "purpose type" as
+a field on Portfolio Details), covering the Purpose Types Qt
+list/detail/history/delete windows, shell commands, and CLI
+commands, with screenshot placeholders as needed. Mirrors the
+existing pattern of small lookup entities documented as a subsection
+of their consuming chapter (e.g. Currency Pair Conventions inside
+=chapter_currency_pairs.org=) rather than getting their own chapter.
 
 * Status
 
@@ -35,7 +43,13 @@ Author the purpose_type chapter in the user manual covering Qt list/detail/histo
 
 * Acceptance
 
-- Manual chapter documents all Qt windows, shell, and CLI commands for purpose_type. Manual builds cleanly. Site builds cleanly.
+- New subsection in =chapter_portfolios.org= documents the Purpose
+  Types Qt list/detail/history windows for purpose_type. Manual
+  builds cleanly. Site builds cleanly.
+- purpose_type has no shell or CLI commands (a codegen gap shared by
+  every entity, not specific to purpose_type) — documented via two
+  backlog captures rather than blocking this task or hand-coding the
+  layers ahead of their codegen profiles.
 
 * Plan
 

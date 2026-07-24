@@ -59,10 +59,33 @@ approach.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | STARTED | 2026-07-23 | | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
+| [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | DONE | 2026-07-23 | 2026-07-24 | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
 | [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] | BACKLOG | | | Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out. |
 
 * Decisions
+
+- Newton (192.168.1.22, WSL2 Debian 11 "bullseye") is the target
+  host: systemd as PID 1, mirrored networking (no portproxy needed),
+  PostgreSQL 17 + TimescaleDB 2.22 on port 5433 (5432 is blocked by
+  Windows' Hyper-V port-exclusion range, not a real conflict).
+- =compass env configure= now supports a non-default =PGPORT= in
+  =.env= — first-class, not a per-host hack.
+- Packaging: =build/cpack/CMakeLists.txt= gained a =TGZ= generator
+  alongside =DEB= so =compass build package= produces a plain
+  install-tree tarball. A CPack services/qt component split (to drop
+  the desktop client from the deploy artifact) was scoped and found
+  non-trivial — ~97 untagged =install(TARGETS ...)= sites across the
+  codebase — and captured separately rather than done inline.
+- *Reversed the story's initial no-Docker lean*: a live deploy test
+  showed our own C++ service binaries (built on this box's Debian
+  sid/forky) cannot run on Newton's older glibc (Debian 11) when
+  simply copied over — =GLIBC_2.38=/=GLIBCXX_3.4.32= etc. not found.
+  This is unrelated to the DB (separate Postgres install) and to
+  =nats-server= (vendored as a static per-OS binary under
+  =external/nats/=, unaffected since Go binaries carry no libc
+  dependency) — it's specific to binaries we compile. Docker is now
+  the plan for those, via the new
+  [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] task.
 
 * Out of scope
 

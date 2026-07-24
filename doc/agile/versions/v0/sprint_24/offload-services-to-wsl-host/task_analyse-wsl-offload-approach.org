@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-23
 #+updated: 2026-07-23
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ itself.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Researching WSL host provisioning and connectivity options. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Draft the recommended approach in * Plan. |
+| Next         | Nothing. |
 | Last touched | 2026-07-23                               |
 
 * Acceptance
@@ -341,3 +341,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Newton (192.168.1.22, WSL2 Debian 11) confirmed reachable and
+provisioned: systemd as PID 1, mirrored networking, PostgreSQL 17 +
+TimescaleDB 2.22 on port 5433, non-default =PGPORT= support added to
+=compass env configure=, and firewall rules opened for DB + this
+env's service ports. =swift_curie='s DB already runs on Newton
+end-to-end (=compass db recreate= + local build verified against it).
+
+Packaging: added a =TGZ= CPack generator alongside the existing
+=DEB= (one-line change, =build/cpack/CMakeLists.txt=) so
+=compass build package= produces a plain tarball of the install
+tree — reuses the existing =install(TARGETS ...)= plumbing, no new
+scripting. A CPack services/qt component split was investigated and
+found non-trivial (~97 untagged =install(TARGETS ...)= sites); out of
+scope here, captured separately (see =* See also=).
+
+Live deploy test found the original "build locally, scp the
+binaries" recommendation does *not* work as stated: our C++ service
+binaries, built on this box's Debian sid/forky, fail with
+=GLIBC_2.38=/=GLIBCXX_3.4.32=/=CXXABI_1.3.13 not found= on Newton's
+Debian 11 glibc. Vendored a static =nats-server= binary per OS
+(=external/nats/=) as a workaround for NATS specifically — unaffected
+because Go binaries have no libc dependency — but the rest of the
+service fleet needs a different deploy mechanism. Filed a follow-up
+task, [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]], to build
+those binaries inside a glibc-compatible container instead, reversing
+the story's initial no-Docker lean now that the pain point it was
+conditioned on has materialised.

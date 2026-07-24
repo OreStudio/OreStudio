@@ -126,8 +126,30 @@ QVariant ClientCurrencyPairConventionModel::data(const QModelIndex& index, int r
 QVariant ClientCurrencyPairConventionModel::headerData(int section,
                                                        Qt::Orientation orientation,
                                                        int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            case PairCode:
+                return tr("The currency pair these quoting and date conventions apply to.");
+            case PipFactor:
+                return tr("Converts a pip count into an absolute rate move.");
+            case TickSize:
+                return tr("Minimum rate increment allowed when quoting or trading this pair.");
+            case DecimalPlaces:
+                return tr("Number of decimal places used when displaying or rounding rates for "
+                          "this pair.");
+            case BusinessDayConvention:
+                return tr("Rule for adjusting a settlement date that falls on a non-business day.");
+            case SpotRelative:
+                return tr("Whether forward value dates are calculated relative to the spot date.");
+            case EndOfMonth:
+                return tr("Whether this pair follows the end-of-month forward date rule.");
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case PairCode:

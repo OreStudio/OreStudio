@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 58FB9E8A-B7CF-4883-A59A-31D2313E4EE5
+:END:
+#+title: Test Scenario: Verify Currency and Currency Pair Convention tooltips
+#+description: Checks that every Currency and Currency Pair Convention detail-dialog field shows a domain-explanation tooltip, and that the corresponding list-window column headers do too.
+#+type: test_scenario
+#+level: s1
+#+filetags: :sprint-22-leftover-cleanup:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair Convention fields]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It checks that hovering any Currency or Currency Pair Convention detail-dialog field, or any list-window column header, shows a tooltip explaining the underlying domain concept rather than just repeating the field's label. Pass means every field/column below shows non-empty, domain-explanatory tooltip text.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair Convention fields]] |
+| Parent story  | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]   |
+| Target dialog | =CurrencyDetailDialog= and =CurrencyPairConventionDetailDialog= — Menu: Reference Data > Currencies (detail); Reference Data > Conventions > Curve Building > Currency Pair Conventions (detail) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+- Log in against the =jolly_knuth= environment as
+  =tenant_admin@barclays_plc= / =Secure-Password-123= and select
+  *BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Currencies list window
+
+- Menu: Reference Data > Currencies.
+- Confirms: the list window opens and shows currency rows (e.g. USD, EUR).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Hover every Currencies column header
+
+- Hover each column header in the Currencies list: Code, Currency
+  Name, Symbol, Fraction, Per Unit, Rounding Type, Precision, Format,
+  Monetary Nature, Market Tier, Spot Days, Day Basis, Base
+  Precedence.
+- Confirms: each header shows a tooltip explaining the domain concept
+  (not just the header text itself), except Version/Modified
+  By/Recorded At, which have none by design.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a currency's detail dialog
+
+- Double-click any currency row (e.g. USD) to open
+  =CurrencyDetailDialog=.
+- Confirms: the dialog opens on the General tab.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Hover every Currency detail field
+
+- Hover the label and the input widget for each field across the
+  General, Formatting, and Rounding tabs: ISO Code, Name, Numeric
+  Code, Asset Class, Market Tier, Symbol, Fraction Symbol, Fractions
+  Per Unit, Format, Rounding Type, Rounding Precision.
+- Confirms: every field shows a tooltip explaining the domain concept
+  (e.g. Fractions Per Unit explains it drives sub-unit precision, not
+  just "Fractions Per Unit").
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Currency Pair Conventions list
+
+- Menu: Reference Data > Conventions > Curve Building > Currency
+  Pair Conventions.
+- Confirms: the list window opens and shows convention rows (e.g.
+  EUR/USD).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Hover every convention column header
+
+- Hover each column header: Pair, Pip Factor, Tick Size, Decimal
+  Places, Business Day Convention, Spot Relative, End Of Month.
+- Confirms: each header shows a domain-explanation tooltip, except
+  Version/Modified By/Recorded At.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a convention's detail dialog
+
+- Double-click any row (e.g. EUR/USD) to open
+  =CurrencyPairConventionDetailDialog=.
+- Confirms: the dialog opens with the convention's fields populated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Hover every convention detail field
+
+- Hover the label and the input widget for each field: Pair Code,
+  Pip Factor, Tick Size, Decimal Places, Business Day Convention,
+  Spot Relative, End Of Month.
+- Confirms: every field shows a tooltip explaining the domain concept
+  (e.g. Spot Relative explains forward dates are relative to the
+  spot date, End Of Month explains the month-end forward-date rule).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-23T14:37:44Z |
+| Branch        | feature/codegen-fk-combo-flag-icons |
+| Commit        | dff4b1507 |
+| Worktree      | jolly_knuth |
+
+* Notes

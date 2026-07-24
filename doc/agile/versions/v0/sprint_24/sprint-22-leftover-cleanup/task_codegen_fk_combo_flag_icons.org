@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-fk-combo-flag-icons
+#+pr: 1680
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
 #+updated: 2026-07-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
@@ -49,25 +49,25 @@ mustache/org templates.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Design the field-model shape for the flag decorator (e.g. a `flag_source: currency` key on a dynamic_combo field), then wire core.py + templates. |
-| Last touched | 2026-07-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
-- [ ] A =dynamic_combo= field can opt into flag icons via a model
+- [X] A =dynamic_combo= field can opt into flag icons via a model
   key (e.g. =flag_source: currency=), reusing
   =FlagIconHelper::apply_flag_icons= — no new per-entity rendering code.
-- [ ] =currency_pair='s base/quote currency combo fields use this to
+- [X] =currency_pair='s base/quote currency combo fields use this to
   show flags, matching the hand-written =BusinessUnitDetailDialog=
   pattern's visual result.
-- [ ] =FlagIconHelper::apply_flag_icons=/=setup_flag_combo= re-applies
+- [X] =FlagIconHelper::apply_flag_icons=/=setup_flag_combo= re-applies
   icons after =populateDynamicCombo<Entity>= repopulates the combo
   (async load ordering), not just once at setup.
-- [ ] No existing hand-written flag-combo call site (e.g.
+- [X] No existing hand-written flag-combo call site (e.g.
   =BusinessUnitDetailDialog=) needs to change — this only adds a new
   codegen path, it doesn't have to migrate existing hand-written ones
   in this task.
@@ -77,6 +77,18 @@ mustache/org templates.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Investigated before writing any code: =core.py= already has an
+=is_flagged_combo= facet (=type: flagged_combo=, model key
+=flag_source=) generating exactly this — a single-select async combo
+with a per-item flag icon via =FlagIconHelper::apply_flag_icons=/
+=setup_currency_combo=, re-applied after async repopulation. It was
+built in 6dec81357 ("Add currency_pair codegen implementation with
+flagged-combo Qt facet") and reconciled onto main in 6a9251a7e. This
+task pre-dates that work (created 2026-07-06) and was never marked
+done once it landed under a different name (=flagged_combo= rather
+than the =is_dynamic_combo= extension originally envisioned). No
+further implementation required.
 
 * Notes
 
@@ -93,7 +105,7 @@ addressing the flag case.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1680][#1680]] | [refdata,qt] Add domain-explanation tooltips to Currency and Currency Pair Convention detail fields |
 
 * Review
 
@@ -102,3 +114,11 @@ addressing the flag case.
 |   |                 |      |          |       |
 
 * Result
+
+Closed without code changes: the goal was already delivered on main
+by the =flagged_combo= facet (=core.py='s =is_flagged_combo=/
+=flag_source=), built in 6dec81357 and reconciled in 6a9251a7e ahead
+of this task being picked up. =currency_pair='s base/quote fields
+already use it; re-application after async repopulation is wired in
+=FlagIconHelper.cpp=; no hand-written call site needed to change. All
+four acceptance criteria verified against main as-is.

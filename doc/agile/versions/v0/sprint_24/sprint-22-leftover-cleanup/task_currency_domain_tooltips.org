@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-fk-combo-flag-icons
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,21 +32,21 @@ opening a record.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
 
 * Acceptance
 
-- [ ] Every field in the Currency detail dialog has a tooltip
+- [X] Every field in the Currency detail dialog has a tooltip
   explaining the domain concept.
-- [ ] Every field in the Currency Pair Convention detail dialog has a
+- [X] Every field in the Currency Pair Convention detail dialog has a
   tooltip explaining the domain concept (e.g. spot_relative,
   end_of_month, pip_factor vs tick_size).
-- [ ] Column headers in the Currency and Currency Pair Convention list
+- [X] Column headers in the Currency and Currency Pair Convention list
   windows carry the same tooltips, if the Qt table-header widget
   supports it (confirm feasibility as part of this task).
 
@@ -56,18 +56,82 @@ opening a record.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Neither facet existed in codegen: no per-field tooltip in the detail
+dialog =.ui= template, no header-tooltip role in the Qt client
+model's =headerData=. Both are generic, reusable additions (any
+future model gains them for free by adding a =tooltip= column), not
+one-off hand-edits:
+
+- Added a =tooltip= column to the =Detail fields= org table shape
+  (=_detail_fields= in =org_loader.py= already passes any column
+  through generically, so no python change was needed there). Wired
+  =qt_detail_dialog_ui.mustache= (edited via its org source,
+  =ores.cpp.qt.detail_dialog_ui.org=, then re-tangled) to emit a
+  =toolTip= widget property on both the field's =QLabel= and its
+  input widget, for every field type (line_edit, text_edit,
+  static/dynamic/flagged combo, check_box, spin_box), gated on the
+  column being present.
+- Added the same =tooltip= column to the =Columns (Qt model)= table
+  shape and extended =Client<Entity>Model::headerData= (via
+  =ores.cpp.qt.client_model_impl.org=) to answer
+  =Qt::ToolTipRole= for columns that set one — Qt's header view
+  shows this automatically on hover, no extra view-side wiring
+  needed.
+- Filled in the =tooltip= column for every Currency and Currency
+  Pair Convention field (both Detail fields and Columns tables), then
+  regenerated both entities' Qt code via =compass codegen generate
+  --address ores.cpp.qt=.
+- Hit and fixed one bug along the way: mustache's default
+  double-brace escaping HTML-entity-encodes apostrophes
+  (=currency's= → =currency&#x27;s=), which is wrong for both C++
+  string literals and — while not invalid — needlessly ugly for
+  =.ui= XML content. Reworded the three affected tooltips to avoid
+  the apostrophe rather than change the template's escaping
+  convention for every other field (headers/labels already use the
+  same double-brace form without issue, since none happened to
+  contain an apostrophe).
+- Also caught a column-count-off-by-one in the
+  =currency_pair_convention= Detail fields table while filling it in
+  (too few blank placeholder cells before the trailing =tooltip=
+  column shifted the text into the wrong header for five rows) —
+  the generated =.ui= silently had no tooltip for those fields until
+  reviewed and fixed.
+
 * Notes
+
+Verified by [[id:58FB9E8A-B7CF-4883-A59A-31D2313E4EE5][Test Scenario: Verify Currency and Currency Pair Convention tooltips]],
+run manually against the Qt client by the developer.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1680][#1680]] | [refdata,qt] Add domain-explanation tooltips to Currency and Currency Pair Convention detail fields |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Mustache HTML-escaping bug in C++ tooltip path worked around, not fixed -- use triple-stache | cpp_qt_client_model.cpp.mustache / .org | Accepted | Switched to triple-stache mustache syntax, regenerated, restored natural apostrophe-containing wording for the three affected tooltips |
+| 2 | Unreferenced screenshot bloat (two stale scenario PNGs, ~670KB) | scenario_verify_currency_domain_tooltips_step2_*.png | Accepted | Removed both -- neither referenced by the scenario doc or task doc |
+| 3 | Undocumented apostrophe-escaping trap -- add a comment near the tooltip variable in the template | ores.cpp.qt.client_model_impl.org / detail_dialog_ui.org | Declined | Superseded by fix #1 (triple-stache removes the trap entirely, so no workaround remains to document) |
+| 4 | No automated regression coverage for header/detail tooltip role | ClientCurrencyModel.cpp | Declined | Matches existing pattern -- no unit tests exist for any Client*Model class; not introducing new test infra unprompted |
 
 * Result
+
+Added a generic =tooltip= facet to =ores.codegen.entity=: an optional
+per-row =tooltip= column on both the Detail fields and Columns (Qt
+model) tables, rendered as a =QLabel=/input =toolTip= property in the
+generated detail dialog and as =Qt::ToolTipRole= in the generated
+client model's =headerData=. Filled in for every Currency and
+Currency Pair Convention field and regenerated.
+
+Verified live via [[id:58FB9E8A-B7CF-4883-A59A-31D2313E4EE5][Test Scenario: Verify Currency and Currency Pair
+Convention tooltips]] against a rebuilt Qt client — all 8 steps
+PASSED, confirming every detail-dialog field and list-window column
+header shows a domain-explanatory tooltip. The first verification
+run had failed on an unrelated environment issue (the =jolly_knuth=
+tenant's Barclays Plc provisioning was missing badge seed data,
+making every badge render with the shared fallback colour); fixed by
+recreating the database and re-running the full provisioning script,
+which is unrelated to the tooltip work itself.

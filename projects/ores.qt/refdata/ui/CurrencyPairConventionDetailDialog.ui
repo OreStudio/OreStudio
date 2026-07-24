@@ -43,12 +43,18 @@
             <property name="text">
              <string>Pair Code:</string>
             </property>
+            <property name="toolTip">
+             <string>The currency pair these quoting and date conventions apply to (e.g. EUR/USD).</string>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="pairCodeCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
+            </property>
+            <property name="toolTip">
+             <string>The currency pair these quoting and date conventions apply to (e.g. EUR/USD).</string>
             </property>
            </widget>
           </item>
@@ -57,12 +63,18 @@
             <property name="text">
              <string>Pip Factor:</string>
             </property>
+            <property name="toolTip">
+             <string>Converts a pip count into an absolute rate move (0.0001 for most pairs, 0.01 for JPY crosses).</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="pipFactorEdit">
             <property name="placeholderText">
              <string>e.g. 0.0001</string>
+            </property>
+            <property name="toolTip">
+             <string>Converts a pip count into an absolute rate move (0.0001 for most pairs, 0.01 for JPY crosses).</string>
             </property>
            </widget>
           </item>
@@ -71,6 +83,9 @@
             <property name="text">
              <string>Tick Size:</string>
             </property>
+            <property name="toolTip">
+             <string>Minimum rate increment allowed when quoting or trading this pair, expressed in pips.</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
@@ -78,12 +93,18 @@
             <property name="placeholderText">
              <string>e.g. 0.1</string>
             </property>
+            <property name="toolTip">
+             <string>Minimum rate increment allowed when quoting or trading this pair, expressed in pips.</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="labelDecimalPlaces">
             <property name="text">
              <string>Decimal Places:</string>
+            </property>
+            <property name="toolTip">
+             <string>Number of decimal places used when displaying or rounding rates for this pair.</string>
             </property>
            </widget>
           </item>
@@ -95,12 +116,18 @@
             <property name="maximum">
              <number>9999</number>
             </property>
+            <property name="toolTip">
+             <string>Number of decimal places used when displaying or rounding rates for this pair.</string>
+            </property>
            </widget>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="labelBusinessDayConvention">
             <property name="text">
              <string>Business Day Convention:</string>
+            </property>
+            <property name="toolTip">
+             <string>Rule for adjusting a settlement date that falls on a non-business day (e.g. rolling forward to the next good business day).</string>
             </property>
            </widget>
           </item>
@@ -109,12 +136,18 @@
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
+            <property name="toolTip">
+             <string>Rule for adjusting a settlement date that falls on a non-business day (e.g. rolling forward to the next good business day).</string>
+            </property>
            </widget>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="labelSpotRelative">
             <property name="text">
              <string>Spot Relative:</string>
+            </property>
+            <property name="toolTip">
+             <string>Whether forward value dates for this pair are calculated relative to the spot date, rather than directly from the trade date.</string>
             </property>
            </widget>
           </item>
@@ -126,12 +159,18 @@
             <property name="tristate">
              <bool>true</bool>
             </property>
+            <property name="toolTip">
+             <string>Whether forward value dates for this pair are calculated relative to the spot date, rather than directly from the trade date.</string>
+            </property>
            </widget>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="labelEndOfMonth">
             <property name="text">
              <string>End Of Month:</string>
+            </property>
+            <property name="toolTip">
+             <string>Whether this pair follows the end-of-month rule: if the spot date falls on the last business day of a month, forward dates preserve month-end alignment.</string>
             </property>
            </widget>
           </item>
@@ -142,6 +181,9 @@
             </property>
             <property name="tristate">
              <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Whether this pair follows the end-of-month rule: if the spot date falls on the last business day of a month, forward dates preserve month-end alignment.</string>
             </property>
            </widget>
           </item>

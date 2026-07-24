@@ -131,8 +131,52 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
 }
 
 QVariant ClientCurrencyModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            case IsoCode:
+                return tr(
+                    "ISO 4217 alpha-3 code used to reference this currency throughout the system.");
+            case CurrencyName:
+                return tr("Full descriptive name of the currency.");
+            case NumericCode:
+                return tr(
+                    "ISO 4217 numeric code, required by some external interfaces and standards.");
+            case Symbol:
+                return tr("Symbol used when formatting monetary amounts in this currency (e.g. $, "
+                          "€, £).");
+            case FractionSymbol:
+                return tr(
+                    "Symbol for the fractional sub-unit of the currency (e.g. cents, pence).");
+            case FractionsPerUnit:
+                return tr("Number of fractional sub-units per whole unit (0 for zero-decimal "
+                          "currencies like JPY).");
+            case RoundingType:
+                return tr("Rounding method applied to amounts in this currency.");
+            case RoundingPrecision:
+                return tr("Number of decimal places amounts in this currency are rounded to.");
+            case Format:
+                return tr(
+                    "Boost.Format pattern controlling how amounts in this currency are displayed.");
+            case MonetaryNature:
+                return tr(
+                    "Classifies the underlying nature of the currency (e.g. fiat, commodity).");
+            case MarketTier:
+                return tr("Classifies the market liquidity/importance tier of the currency (e.g. "
+                          "G10, emerging).");
+            case SpotDays:
+                return tr("Number of business days to this currency's spot value date.");
+            case DayBasis:
+                return tr("This currency's day-count convention code (e.g. ACT/360, ACT/365).");
+            case BasePrecedence:
+                return tr("This currency's ordinal rank in the base-currency precedence table, "
+                          "used to determine canonical base/quote order for a pair.");
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case IsoCode:

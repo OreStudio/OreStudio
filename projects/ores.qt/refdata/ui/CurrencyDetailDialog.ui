@@ -43,12 +43,18 @@
             <property name="text">
              <string>ISO Code:</string>
             </property>
+            <property name="toolTip">
+             <string>ISO 4217 alpha-3 code used to reference this currency throughout the system.</string>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="isoCodeEdit">
             <property name="placeholderText">
              <string>Enter ISO 4217 code</string>
+            </property>
+            <property name="toolTip">
+             <string>ISO 4217 alpha-3 code used to reference this currency throughout the system.</string>
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -60,12 +66,18 @@
             <property name="text">
              <string>Name:</string>
             </property>
+            <property name="toolTip">
+             <string>Full descriptive name of the currency.</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
              <string>Enter currency name</string>
+            </property>
+            <property name="toolTip">
+             <string>Full descriptive name of the currency.</string>
             </property>
            </widget>
           </item>
@@ -74,12 +86,18 @@
             <property name="text">
              <string>Numeric Code:</string>
             </property>
+            <property name="toolTip">
+             <string>ISO 4217 numeric code, required by some external interfaces and standards.</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="numericCodeEdit">
             <property name="placeholderText">
              <string>Enter numeric code</string>
+            </property>
+            <property name="toolTip">
+             <string>ISO 4217 numeric code, required by some external interfaces and standards.</string>
             </property>
            </widget>
           </item>
@@ -88,12 +106,18 @@
             <property name="text">
              <string>Asset Class:</string>
             </property>
+            <property name="toolTip">
+             <string>Classifies the underlying nature of the currency (e.g. fiat, commodity), driving nature-specific business rules.</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="ores::qt::OreBadgeComboBox" name="monetaryNatureCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
+            </property>
+            <property name="toolTip">
+             <string>Classifies the underlying nature of the currency (e.g. fiat, commodity), driving nature-specific business rules.</string>
             </property>
            </widget>
           </item>
@@ -102,12 +126,18 @@
             <property name="text">
              <string>Market Tier:</string>
             </property>
+            <property name="toolTip">
+             <string>Classifies the market liquidity/importance tier of the currency (e.g. G10, emerging), used for tiering-based rules and reporting.</string>
+            </property>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="ores::qt::OreBadgeComboBox" name="marketTierCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
+            </property>
+            <property name="toolTip">
+             <string>Classifies the market liquidity/importance tier of the currency (e.g. G10, emerging), used for tiering-based rules and reporting.</string>
             </property>
            </widget>
           </item>
@@ -151,12 +181,18 @@
             <property name="text">
              <string>Symbol:</string>
             </property>
+            <property name="toolTip">
+             <string>Symbol used when formatting monetary amounts in this currency (e.g. $, €, £).</string>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="symbolEdit">
             <property name="placeholderText">
              <string>Enter currency symbol</string>
+            </property>
+            <property name="toolTip">
+             <string>Symbol used when formatting monetary amounts in this currency (e.g. $, €, £).</string>
             </property>
            </widget>
           </item>
@@ -165,6 +201,9 @@
             <property name="text">
              <string>Fraction Symbol:</string>
             </property>
+            <property name="toolTip">
+             <string>Symbol for the fractional sub-unit of the currency (e.g. cents, pence).</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -172,12 +211,18 @@
             <property name="placeholderText">
              <string>Enter fraction symbol</string>
             </property>
+            <property name="toolTip">
+             <string>Symbol for the fractional sub-unit of the currency (e.g. cents, pence).</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="labelFractionsPerUnit">
             <property name="text">
              <string>Fractions Per Unit:</string>
+            </property>
+            <property name="toolTip">
+             <string>Number of fractional sub-units per whole unit (e.g. 100 for centesimal currencies, 0 for zero-decimal currencies like JPY).</string>
             </property>
            </widget>
           </item>
@@ -189,6 +234,9 @@
             <property name="maximum">
              <number>10000</number>
             </property>
+            <property name="toolTip">
+             <string>Number of fractional sub-units per whole unit (e.g. 100 for centesimal currencies, 0 for zero-decimal currencies like JPY).</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="0">
@@ -196,12 +244,18 @@
             <property name="text">
              <string>Format:</string>
             </property>
+            <property name="toolTip">
+             <string>Boost.Format pattern controlling how amounts in this currency are displayed.</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="formatEdit">
             <property name="placeholderText">
              <string>Enter display format</string>
+            </property>
+            <property name="toolTip">
+             <string>Boost.Format pattern controlling how amounts in this currency are displayed.</string>
             </property>
            </widget>
           </item>
@@ -237,6 +291,9 @@
             <property name="text">
              <string>Rounding Type:</string>
             </property>
+            <property name="toolTip">
+             <string>Rounding method applied to amounts in this currency (e.g. round to closest).</string>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
@@ -244,12 +301,18 @@
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
+            <property name="toolTip">
+             <string>Rounding method applied to amounts in this currency (e.g. round to closest).</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="labelRoundingPrecision">
             <property name="text">
              <string>Rounding Precision:</string>
+            </property>
+            <property name="toolTip">
+             <string>Number of decimal places amounts in this currency are rounded to.</string>
             </property>
            </widget>
           </item>
@@ -260,6 +323,9 @@
             </property>
             <property name="maximum">
              <number>10</number>
+            </property>
+            <property name="toolTip">
+             <string>Number of decimal places amounts in this currency are rounded to.</string>
             </property>
            </widget>
           </item>

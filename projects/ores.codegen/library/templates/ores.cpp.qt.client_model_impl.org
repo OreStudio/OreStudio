@@ -164,8 +164,21 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 
 QVariant Client{{domain_entity.entity_pascal}}Model::headerData(
     int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+{{#domain_entity.qt.columns}}
+{{#tooltip}}
+        case {{enum_name}}:
+            return tr("{{{tooltip}}}");
+{{/tooltip}}
+{{/domain_entity.qt.columns}}
+        default:
+            return {};
+        }
+    }
 
     switch (section) {
 {{#domain_entity.qt.columns}}

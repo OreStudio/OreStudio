@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/rename-and-split-synthetic-themes-2026-vintage
-#+pr:
+#+pr: 1683
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-23
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1683][#1683]] | [synthetic,qt,sql] Rename synthetic themes and add 2026 Realistic vintage dataset |
 
 * Review
 

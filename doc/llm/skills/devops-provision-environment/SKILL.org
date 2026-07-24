@@ -26,7 +26,7 @@ worktree", "set up a new dev env".
 
 * How to use this skill
 
-1. *Check the genesis environment exists* at =~/Development/OreStudio/OreStudio.genesis=.
+1. *Check the genesis environment exists* at =~/Development/OreStudio/ores_dev_prime_origin=.
    If it is missing, tell the user to clone the repo there first (see the provision recipe).
 
 2. *Provision the worktree* from the current checkout:

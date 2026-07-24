@@ -53,7 +53,7 @@ What it does:
 
 ** Safety notes
 
-- The genesis environment (=OreStudio.genesis=) is a regular worktree; you
+- The genesis environment (=ores_dev_prime_origin=) is a regular worktree; you
   *can* deprovision it, but doing so will prevent provisioning new worktrees
   until you re-clone. Do not deprovision genesis unless decommissioning the
   entire machine.

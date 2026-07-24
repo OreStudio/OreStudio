@@ -53,7 +53,7 @@ environment or worktree — e.g. "deprovision festive-hawking",
    ls ~/Development/OreStudio/
    #+end_src
 
-*Safety*: never deprovision the genesis environment (=OreStudio.genesis=)
+*Safety*: never deprovision the genesis environment (=ores_dev_prime_origin=)
 unless decommissioning the machine — all other worktrees depend on it.
 
 * Recipes

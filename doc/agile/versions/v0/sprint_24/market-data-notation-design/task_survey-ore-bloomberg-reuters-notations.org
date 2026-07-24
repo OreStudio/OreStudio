@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr: 1671
+#+branch: feature/survey-ore-bloomberg-reuters-notations
+#+pr: 1686
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -51,11 +51,11 @@ identifier looks like in all three schemes side by side.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -95,6 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1686][#1686]] | [docs] Fix duplicate heading and restructure DNS/notation lenses in market data cluster |
 | [[https://github.com/OreStudio/OreStudio/pull/1671][#1671]] | [agile] Add story: design ORE Studio market data notation |
 
 * Review
@@ -104,3 +105,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Produced the eight-document knowledge cluster ([[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][hub]] +
+Requirement, Identifier, Universe, Configuration, Dependency
+Resolution, Snapshot, Filtering) formalising how a logical market
+data requirement resolves into a concrete identifier, expressed as
+set operations over a market data universe, with terminology
+confirmed against ORE and OpenGamma Strata source rather than carried
+over unreviewed. This PR closes out the writing pass on that cluster:
+fixed a duplicated "The running analogy: DNS" heading in the hub
+note, and restructured "How to read this cluster" into two named
+lenses (analogy, notation) since both are core content every document
+in the cluster assumes rather than optional asides -- dropping the
+note-box styling that had wrapped them accordingly, while keeping
+note-boxes for the genuinely skippable CIDR digressions in
+Requirement and Identifier.

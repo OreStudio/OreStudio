@@ -28,12 +28,12 @@ canonical first clone of the repo from which all worktrees are created.
 #+begin_src sh
 # One-time, on a fresh machine:
 git clone git@github.com:OreStudio/OreStudio.git \
-    ~/Development/OreStudio/OreStudio.genesis
-cd ~/Development/OreStudio/OreStudio.genesis
+    ~/Development/OreStudio/ores_dev_prime_origin
+cd ~/Development/OreStudio/ores_dev_prime_origin
 ./projects/ores.compass/compass.sh env configure --preset linux-clang-debug-ninja
 #+end_src
 
-Convention: genesis lives at =~/Development/OreStudio/OreStudio.genesis=, is
+Convention: genesis lives at =~/Development/OreStudio/ores_dev_prime_origin=, is
 always a =full= environment, and stays on =main=. All subsequent provisioning
 commands are run from *any* existing worktree (the git repo is shared).
 

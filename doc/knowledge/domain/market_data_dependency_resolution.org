@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: C573A598-52FF-46F7-A1C0-D008F4364601
+:END:
+#+title: Market Data Dependency Resolution
+#+description: How a resolved set of physical market data identifiers is expanded into its full transitive dependency closure, and loaded, before a valuation can proceed.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:dependency:resolution:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+* Summary
+
+A single [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data
+identifier]] rarely stands alone: a curve is typically built from other
+market data (the instrument quotes used to bootstrap it, or, for a
+cross-currency curve, another currency's own discount curve and an FX
+spot rate), and that market data may itself depend on further data,
+recursively. *Dependency resolution* is the process of expanding a set
+of identifiers into its full *transitive closure* under this "depends
+on" relation, so that every item genuinely needed to build every item in
+the original set is accounted for before construction begins, and of
+determining a valid order in which to build them. This document defines
+that closure formally, and grounds it in two independently engineered
+implementations — ORE's =DependencyGraph= and OpenGamma Strata's
+=MarketDataNode= — that agree closely on both the underlying
+graph-theoretic model and the reason it is needed.
+
+* Layperson's mental model
+
+Return to the analogy of a browser loading a web page. The page itself
+is one resource, at one domain name — but the HTML it receives is not
+the whole story: it references a stylesheet at a second domain name, the
+stylesheet references a web font at a third, and an =<img>= tag
+references an image hosted at a fourth. The browser cannot correctly
+render the original page having resolved only its own domain name; it
+must recursively discover and resolve every domain name the page (and
+everything the page itself references) depends on, before rendering can
+be considered complete. Two structural risks are built into this
+picture, and dependency resolution for market data inherits both of
+them exactly:
+
+- *Missing dependencies*: if the font server is down, the browser can
+  still render the page, just without the intended font — a partial,
+  degraded result. If a curve's underlying instrument quote is missing,
+  the analogous outcome is a curve that cannot be bootstrapped at
+  all — a much harder failure than a missing font, because unlike text
+  falling back to a default typeface, there is no safe default value
+  for a missing rate quote.
+- *Cycles*: if page A's stylesheet somehow referenced page A itself as a
+  dependency, naive recursive resolution would loop forever. Real
+  dependency-resolution systems — browsers and market data systems
+  alike — must detect this and fail cleanly rather than hang.
+
+* Detail
+
+** Formal definition: transitive closure under "depends on"
+
+Let $\mathrm{deps}: U \to \mathcal{P}(U)$ be a function giving each
+member of the [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data
+universe]] $U$ the (possibly empty) set of other members of $U$ it
+directly depends on. For a set $S \subseteq U$, the *dependency closure*
+of $S$ is the smallest superset of $S$ that is closed under
+$\mathrm{deps}$ — formally, the smallest $\overline{S} \supseteq S$
+such that
+
+$$x \in \overline{S} \implies \mathrm{deps}(x) \subseteq \overline{S}$$
+
+Read in words: if something is in the closure, then everything it
+directly depends on must also be in the closure — recursively, until
+nothing new is added. This is precisely the =closure(\cdot)= step in
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]]'s
+worked pipeline formula, given its own full treatment here.
+
+** Two independent implementations, converging on the same graph model
+
+*** ORE's =DependencyGraph=
+
+ORE's own implementation, =ore::data::DependencyGraph=
+(=OREData/ored/marketdata/dependencygraph.hpp=), is built directly as a
+graph structure and is used, in =TodaysMarket= construction
+(=OREData/ored/marketdata/todaysmarket.cpp=), exactly as this document
+describes: the code comment at the point of use reads "build the
+dependency graph for all configurations," and the graph is then
+processed with =boost::topological_sort= — the standard graph algorithm
+for producing a build order consistent with a dependency relation,
+provided the graph is acyclic. ORE's own comment at that call site notes
+explicitly that "=topological_sort()= might have produced partial
+results, that we have to discard" when the sort fails, and treats a
+failed topological sort as reportable evidence of a cyclic dependency
+graph — the second structural risk described in the layperson's model
+above, made concrete in real production code.
+
+*** OpenGamma Strata's =MarketDataNode=
+
+OpenGamma Strata's =com.opengamma.strata.calc.marketdata.MarketDataNode=
+class, package-private within Strata's calculation-runner module, is
+documented as "a node in a tree of dependencies of market data required
+by a set of calculations... used to determine the order in which market
+data is built. The leaves of the tree represent market data with no
+dependencies." Strata's own worked example in that Javadoc could be
+transcribed almost unchanged into this cluster's own vocabulary: "if a
+function requests a curve, there will be a node below the root
+representing the curve. The curve's node will have a child node
+representing the curve group containing the curve... It might also have
+a child node representing another curve, or possibly an FX rate" — a
+direct, independent restatement of exactly the cross-currency-curve
+dependency example given in this document's introduction.
+
+*** Why the convergence matters
+
+ORE models the dependency structure as a general graph, processed with
+a standard library topological sort; Strata models it as a tree (a
+graph restricted so that no node has more than one parent), walked to
+determine build order. The difference between "general graph" and
+"tree" is a genuine implementation choice — not every real market data
+dependency structure is guaranteed to be a tree, since two different
+curves can share a common underlying dependency (both a USD swap curve
+and a USD-denominated cross-currency curve might depend on the very same
+USD OIS discount curve, which is a shared dependency, not a
+tree-structured one) — but both systems agree completely on the
+governing abstraction underneath the implementation choice: a directed
+"depends on" relation over market data items, expanded transitively,
+with build order determined by that expansion, and cycles treated as an
+error condition rather than silently tolerated. This is the strongest
+possible confirmation available from two production systems that this
+document's formal closure definition above describes something real,
+not an invented abstraction.
+
+** Two failure modes, made precise by the closure definition
+
+The formal definition above makes both of this document's opening
+failure modes precise, rather than merely descriptive:
+
+- *A missing dependency* is the case where $\mathrm{deps}(x)$, for some
+  $x \in \overline{S}$, contains an element that is not a member of the
+  [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]] $U$
+  at all — exactly the situation the =Universe= document's $\cap\, U$
+  step is designed to surface, rather than silently discard.
+- *A cycle* is the case where $\mathrm{deps}$ contains a chain
+  $x_1 \to x_2 \to \cdots \to x_n \to x_1$ — a case in which the "smallest
+  closed superset" the formal definition asks for is not merely large,
+  but the construction of $\overline{S}$ by naive recursive expansion
+  does not terminate at all. This is exactly why both ORE and Strata
+  compute $\overline{S}$ via an explicit graph algorithm with cycle
+  detection, rather than by naive unbounded recursion — a topological
+  sort is defined if and only if the graph is acyclic, and its failure
+  is precisely a cycle-detection mechanism, not an unrelated add-on.
+
+* See also
+
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where the closure defined here fits into the full valuation-scoped set derivation.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the elements the "depends on" relation is defined over.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the resolution step immediately preceding dependency expansion.

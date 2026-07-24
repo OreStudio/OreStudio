@@ -1,0 +1,311 @@
+:PROPERTIES:
+:ID: 41200F4A-BAC1-4C7A-8998-2EDCC8C8787F
+:END:
+#+title: Market Data Requirement
+#+description: A logical, symbolic description of a piece of market data needed for a valuation, independent of any physical instance; the static requirement set (per trade type), instance requirement set (per trade instance), and dynamic requirement set (per trade instance and date) that together generate it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:requirements:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+
+* Summary
+
+A *market data requirement* is a logical, symbolic description of a piece
+of market data that a valuation needs, stated independently of any
+particular physical instance that might eventually satisfy it. "The EUR
+discount curve" is a requirement; a specific bootstrapped curve object
+built from a specific set of quotes on a specific morning is not — that is
+what the requirement resolves *to*, a distinct concept covered in
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]. This
+document defines what a requirement is, what identity means for one (when
+are two requirements "the same" requirement?), and the three-level structure
+by which requirement sets actually get generated in practice: a *static
+requirement set*, derived once from a trade's type; an *instance requirement
+set*, refined per trade instance by binding the type's structural slots
+(currency, index, credit name, ...) to that instance's actual attributes,
+independent of any date; and a *dynamic requirement set*, refined further per
+valuation date by localising each curve-level requirement down to the
+specific points a trade's cashflows actually touch on that date. Each level
+narrows the one before it — $\mathrm{static}(\tau(t)) \supseteq
+\mathrm{instance}(t) \supseteq \mathrm{dynamic}(t, d)$ — so the requirement
+set only ever gets smaller as more is known about the trade and the moment
+it is being valued. Both this
+document and its sibling on identifiers assume the mathematical framing
+introduced in
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and
+Resolution]] — read that hub first if the set notation below is unfamiliar.
+
+* Layperson's mental model
+
+The clearest everyday analogue of a market data requirement is a *domain
+name* in the Internet's Domain Name System (DNS). When a browser is told
+to fetch =www.example.com=, that string is not itself a location on the
+network — no packet can be addressed to it. It is a *logical* name: a
+human-legible description of "the web server responsible for
+example.com," independent of which physical machine, at which IP address,
+currently answers to that description. DNS resolution is the process that
+turns the logical name into a physical one — an IP address such as
+=93.184.216.34= — and it is only that IP address a network packet can
+actually be routed to.
+
+A market data requirement plays exactly the role of the domain name. "The
+EUR discount curve, for a valuation on 2026-07-23" is a request stated in
+the vocabulary a trader, a risk report, or a pricing engine naturally
+uses — it says *what is needed*, not *which specific object provides it*.
+Just as =www.example.com= might resolve to a different IP address next
+month when the hosting provider changes, "the EUR discount curve" might
+resolve to a curve built from a different instrument set, a different
+bootstrapping methodology, or simply a different day's quotes, without the
+requirement itself changing at all. The requirement is stable; what it
+resolves to is not.
+
+This analogy will recur throughout this document cluster, because the
+DNS system happens to have already solved, in a completely different
+domain, almost every structural problem this cluster is concerned with:
+the logical/physical split (this document covers the logical view alone;
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]
+covers the same entity fully specified, logical and physical fields
+together — a requirement is that identifier with its physical fields,
+and often its specific point, left unspecified), a
+global namespace of everything that could possibly be asked for
+([[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]]), an
+ordered set of authoritative rules that perform the actual translation
+([[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]]),
+a lookup that can itself require further lookups before it completes
+([[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency
+Resolution]]), and a materialised, time-stamped record of what a lookup
+returned, kept around so a later party can trust it without repeating the
+lookup ([[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data
+Snapshot]], DNS's analogue being a cached record with its own TTL).
+
+** Aside, for readers who know IP networking
+
+#+begin_note
+*A CIDR analogy*
+
+The static/instance/dynamic narrowing above has a direct parallel in
+CIDR addressing, if it helps: static is like a broad address block
+reserved for a category (=10.0.0.0/8= for "yield curves"), instance is
+like a subnet carved out for one specific trade's currency
+(=10.1.0.0/16= for "the EUR curve"), and dynamic is like one host address
+within it (=10.1.3.1/32= for "the EUR curve's 3M point"). Each step is a
+longer prefix, and a longer prefix always covers fewer addresses than a
+shorter one — which is exactly why $\mathrm{dynamic}(t,d) \subseteq
+\mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$ holds without
+needing a separate argument. Skip this paragraph entirely if CIDR isn't
+already familiar; nothing later in this document depends on it.
+#+end_note
+
+* Detail
+
+** Requirement identity: what makes two requirements the same?
+
+A requirement is only useful as a concept if two independently-written
+requirements can be compared and recognised as referring to the same
+underlying need — otherwise nothing could ever deduplicate work, cache a
+resolution, or reason about which requirements a given trade population
+collectively generates. This is a question of *identity*: what
+attributes, taken together, constitute a requirement's identity, such
+that two requirement instances with equal attributes are considered the
+same requirement?
+
+Continuing the DNS analogy: two lookups for =www.example.com= are the
+same lookup regardless of which client issued them, what time of day it
+is, or how many times the name has been asked for before — the domain
+name string alone is the identity, in that particular scheme. A market
+data requirement's identity is richer than a single string, because
+"the EUR discount curve" is underspecified in more ways than a domain
+name is: there can be more than one EUR discount curve (an OIS-discounted
+one, a LIBOR-discounted legacy one), and a curve is a *term structure*, so
+a requirement may or may not further specify a particular point on it.
+Based on the field's prior art (see [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][the
+hub note's terminology research]] and this repo's own
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] and
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]
+documents), the attributes that typically compose a market data
+requirement's identity are:
+
+| Attribute | Role | Worked example |
+|-----------+------+-----------------|
+| Asset class / curve family | The broad category of market data being asked for | =Yield=, =FX=, =SWAPTION= |
+| What is being quoted | Distinguishes a rate from a price from a volatility, within the same family | =RATE=, =RATE_LNVOL=, =PRICE= |
+| Qualifier | The instance within the family: a currency, a currency pair, an index name, a credit name | =EUR=, =EUR/USD=, =USD-LIBOR-3M= |
+| Curve role (where applicable) | Discounting vs projection — the same currency can require two structurally different curves for the same valuation | discount vs projection |
+| Point (optional) | A specific tenor, strike, or surface coordinate, when the requirement is for a single point rather than the whole term structure | =5Y=, =2Y/ATM= |
+| As-of / valuation date | When the requirement is being evaluated, since a requirement's resolution can and does change over time | =2026-07-23= |
+
+Two requirements are the same requirement, on this reading, precisely
+when every one of these attributes is equal — this is a straightforward
+extension of the "equal attributes, same domain name" rule DNS uses,
+generalised from a single string to a small structured tuple. Whether the
+*point* and *as-of* attributes belong to the requirement's identity
+itself, or are better modelled as parameters passed alongside a
+coarser, curve-level requirement, is a design decision this document
+does not settle in the abstract — it is precisely the distinction drawn
+in the next section, between the static requirement set (which does not
+yet know the as-of date, or often even the specific point) and the
+dynamic requirement set (which does).
+
+** The static requirement set: what a trade *type* structurally needs
+
+The *static requirement set* for a trade type is the set of market data
+requirements that every instance of that type needs, purely as a
+consequence of what kind of trade it is — before any specific trade, any
+specific currency pair, or any specific valuation date has been named.
+"Every FX Forward requires two interest rate curves, one for each
+currency in its pair" is a static requirement: it is true of the FX
+Forward product type as a category, derivable from the product's
+definition alone, and it does not change from one FX Forward to the next
+FX Forward, nor from one day to the next.
+
+This is not a notion this document had to invent from nothing.
+OpenGamma Strata — an open-source, production-grade market risk
+analytics library — has, in
+=com.opengamma.strata.calc.runner.CalculationFunction=, a method with
+exactly this signature and exactly this purpose:
+=requirements(CalculationTarget target, Set<Measure> measures,
+CalculationParameters parameters, ReferenceData refData)=, whose Javadoc
+documents it as returning "the market data requirements for performing
+the calculation" — keyed on the *target's type*, not on any resolved
+value. That an independently engineered, unrelated production system
+arrived at exactly this per-type/per-instance split is good evidence the
+distinction reflects a genuine structural necessity of building a
+pricing system at scale, rather than a naming choice this document
+happens to prefer.
+
+Formally, if $\mathcal{T}$ is the space of possible trade types, the
+static requirement set is a function
+
+$$\mathrm{static}: \mathcal{T} \to \mathcal{P}(\mathrm{Requirements})$$
+
+mapping each trade type to a *set* of requirements (using
+$\mathcal{P}(\cdot)$ for "power set of," i.e. "the set of all subsets
+of") — deliberately a function of the type alone, with no dependence on
+any particular trade instance, currency, or date. This is what makes it
+*static*: re-evaluating $\mathrm{static}(\text{FxForward})$ tomorrow
+yields the same set as today, because nothing about the FX Forward
+product definition itself changed overnight.
+
+** The instance requirement set: what a trade *instance* needs, independent of date
+
+The static set says an FX Forward needs "two interest rate curves, one
+for each currency in its pair" — but it cannot say *which* two
+currencies, because it is a function of the type alone, and every FX
+Forward shares the same type regardless of whether it is EUR/USD or
+JPY/GBP. The *instance requirement set* closes that gap: it binds the
+static set's structural slots (currency, currency pair, index name,
+credit name, curve role, ...) to one specific trade's actual attributes.
+"This trade is a EUR/USD forward, so it needs the EUR and USD discount
+curves, specifically" is an instance-level statement.
+
+Formally, given a specific trade $t$ of type $\tau(t) \in \mathcal{T}$,
+
+$$\mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$$
+
+Two properties make this level worth naming on its own rather than
+folding it into either its neighbours. First, it needs no valuation
+date and no analytics to compute: which curves a EUR/USD forward touches
+is fixed the moment the trade is booked, by simply reading its currency
+pair and index fields off the trade — no cashflow generation, no
+schedule, no model. Second, it is stable over the trade's life in a way
+the level below it is not: the *set of curves* a trade instance touches
+does not change from one valuation date to the next, only *which points
+within those curves* it touches does. A EUR/USD forward booked today
+will still need "the EUR and USD discount curves" a year from now, even
+though the specific tenor points it needs will have shifted as it rolls
+towards maturity.
+
+** The dynamic requirement set: what a trade *instance*, at a *point in time*, needs
+
+The *dynamic requirement set* refines the instance set for a specific
+valuation date. Where the instance set can only say "this forward needs
+the EUR and USD discount curves," the dynamic set can say "*this*
+forward, maturing in 87 days, needs those two curves' 3-month tenor
+points specifically" — a statement that depends on a fact the instance
+set has no access to: what today's date is (since "87 days from now" is
+itself a moving target). Unlike the instance/type binding above, this
+step is not a lookup — for anything beyond the simplest linear products
+it requires running the same cashflow-generation and, where applicable,
+model machinery the valuation itself will eventually use (exercise
+dates for an option, reset and payment schedules for a swap, barrier
+monitoring dates for an exotic), just far enough to know which points
+on a curve or surface those cashflows will read from. This is why the
+dynamic set, not the instance set, is where most of the genuine
+complexity in requirement derivation lives.
+
+Formally, given a specific trade $t$ of type $\tau(t) \in \mathcal{T}$
+and a valuation date $d$,
+
+$$\mathrm{dynamic}(t, d) \subseteq \mathrm{instance}(t) \subseteq \mathrm{static}(\tau(t))$$
+
+— read literally, the dynamic requirement set for a specific trade
+instance is a *refinement* of, not an addition to, its instance set: it
+narrows any curve-level requirement in the instance set down to the
+specific points that trade instance's cashflows actually touch on date
+$d$. (In practice a dynamic set is usually a proper subset — an instance
+requirement for "the whole EUR discount curve" narrows to "the EUR
+discount curve's 3M and 6M points" for one particular short-dated
+forward — though nothing in the definition forbids equality when a
+trade genuinely needs every point a term structure offers, such as a
+full-curve sensitivity calculation.)
+OpenGamma Strata's =com.opengamma.strata.calc.marketdata.MarketDataFunction=
+interface, method =requirements(I id, MarketDataConfig marketDataConfig)= —
+producing, for one specific market data identifier, the further data
+needed to build *that* identifier — is the closest confirmed analogue,
+operating one level down from =CalculationFunction=: not "what does this
+trade type need" but "what does building this one already-identified
+item further require," which is the same dynamic, instance-specific
+character even though it is phrased from the identifier's side of
+resolution rather than the trade's.
+
+The distinction earns its own name specifically because *behavioural*
+would have been the natural word to pair against *static* — "static
+configuration vs. runtime behaviour" is a familiar contrast in software
+engineering generally — but that pairing was deliberately rejected here.
+"Behavioural" suggests the requirement set changes as a side effect of
+*how the system runs* (caching, retries, feature flags); what actually
+varies between the static and dynamic requirement sets is not runtime
+behaviour but the *arguments available at each stage* — a trade's type
+is known before the trade itself is booked, and a trade's specific
+maturities and the day's date are known only once. "Static" and
+"dynamic" name that temporal/informational distinction directly, without
+implying anything about system behaviour that isn't actually there.
+
+** Why the split matters in practice
+
+Separating static, instance, and dynamic requirement derivation is not
+merely a taxonomic nicety — it is what makes large-scale requirement
+generation computationally tractable at all, because the three levels
+have sharply different costs. A trading book with ten thousand FX
+Forwards does not need its static requirement set computed ten thousand
+times, once per trade; $\mathrm{static}(\text{FxForward})$ is computed
+once, for the *type*, and every instance of that type shares it. The
+instance refinement — binding "the two currencies' curves" to "the EUR
+and USD curves, specifically" — is cheap: it runs once per trade, but is
+pure attribute lookup, no analytics involved, and stays valid across
+every valuation date until the trade itself changes. The dynamic
+refinement — narrowing "the EUR discount curve" down to "these specific
+points, for this specific maturity, as of this date" — is where the real
+cost sits: it runs once per trade *per valuation date*, and for anything
+beyond a linear product it means re-running enough of the pricing
+model's own cashflow logic to know which points it will read. Knowing a
+book needs EUR and USD curves at all is nearly free; knowing exactly
+which points on those curves a thousand American swaptions and
+barrier options need today is not. This mirrors, again, the DNS
+analogy: a resolver does not re-derive "what kind of record type does a
+web browser typically need" (an A record, by convention, for HTTP) on
+every single lookup; that is fixed by the protocol. What varies per
+lookup is only the specific name being asked about — the DNS equivalent
+of the instance/dynamic distinction is thin (a name is looked up as a
+whole, not resolved into curves-then-points), which is precisely why
+this cluster leans on the DNS analogy less heavily here than elsewhere.
+
+* See also
+
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; introduces the set-theoretic framing this document assumes.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — what a requirement resolves *to*.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the mechanism that performs the resolution from requirement to identifier.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space every resolved identifier is drawn from.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repo's own concrete identifier scheme (=series_type/metric/qualifier[/point_id]=), a worked instance of the identity attributes discussed above.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, a second worked instance.

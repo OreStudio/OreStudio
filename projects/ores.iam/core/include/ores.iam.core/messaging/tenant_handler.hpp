@@ -285,14 +285,14 @@ public:
                 }
             }
 
-            BOOST_LOG_SEV(tenant_handler_lg(), info)
-                << "Acme tenant provisioned: " << ids.front() << " (" << resp.steps.size()
-                << " step(s))";
+            BOOST_LOG_SEV(tenant_handler_lg(), info) << "Acme tenant provisioned: " << ids.front()
+                                                     << " (" << resp.steps.size() << " step(s))";
 
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, provision_acme_tenant_response{.success = false, .message = e.what()});
+            reply(
+                nats_, msg, provision_acme_tenant_response{.success = false, .message = e.what()});
         }
     }
 

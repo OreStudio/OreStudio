@@ -1905,7 +1905,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
         curves.erase(std::remove_if(curves.begin(),
                                     curves.end(),
                                     [](const auto& ir) { return !ir.auto_start; }),
-                    curves.end());
+                     curves.end());
         startIrCurvesAsync(std::move(curves));
     } else {
         startPairsAsync(selectedFxPairs());

@@ -1836,7 +1836,15 @@ void MainWindow::showSystemProvisionerWizard(const QString& username, const QStr
     if (!username.isEmpty() || !password.isEmpty()) {
         wizard->setAdminCredentials(username, {}, password);
     }
-    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setWindowModality(Qt::NonModal);
+    // QWizard is a QDialog, so its native window is typed Dialog (transient
+    // for its parent) regardless of Qt::NonModal -- many Wayland compositors
+    // (WSLg included) restrict keyboard focus/input on the owner window
+    // while a transient child is mapped, independent of Qt's own modality.
+    // Qt::Window makes it a genuinely independent top-level window so other
+    // windows (including its own parent) stay fully interactive while it's
+    // open.
+    wizard->setWindowFlags(Qt::Window);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
     // Connect completion signal - on success, proceed with normal flow
@@ -1870,13 +1878,24 @@ void MainWindow::showSystemProvisionerWizard(const QString& username, const QStr
             });
 
     wizard->show();
+    // Deferred: the caller's login MDI subwindow is still closing via
+    // closeRequested(), and QMdiArea reclaims keyboard focus for its
+    // remaining/next subwindow on a posted event once that close completes --
+    // an immediate raise()/activateWindow() here loses that race and the
+    // wizard ends up unable to receive keyboard input.
+    QTimer::singleShot(0, wizard, [wizard]() {
+        wizard->raise();
+        wizard->activateWindow();
+    });
 }
 
 void MainWindow::showTenantProvisioningWizard() {
     BOOST_LOG_SEV(lg(), info) << "Showing Tenant Provisioning Wizard (tenant bootstrap mode)";
 
     auto* wizard = new TenantProvisioningWizard(clientManager_, this);
-    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setWindowModality(Qt::NonModal);
+    // See showSystemProvisionerWizard() for why this is Qt::Window.
+    wizard->setWindowFlags(Qt::Window);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(wizard, &TenantProvisioningWizard::provisioningCompleted, this, [this]() {
@@ -1885,13 +1904,20 @@ void MainWindow::showTenantProvisioningWizard() {
     });
 
     wizard->show();
+    // See showSystemProvisionerWizard() for why this is deferred.
+    QTimer::singleShot(0, wizard, [wizard]() {
+        wizard->raise();
+        wizard->activateWindow();
+    });
 }
 
 void MainWindow::showPartyProvisioningWizard() {
     BOOST_LOG_SEV(lg(), info) << "Showing Party Provisioning Wizard (party setup mode)";
 
     auto* wizard = new PartyProvisioningWizard(clientManager_, this);
-    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setWindowModality(Qt::NonModal);
+    // See showSystemProvisionerWizard() for why this is Qt::Window.
+    wizard->setWindowFlags(Qt::Window);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(wizard, &PartyProvisioningWizard::provisioningCompleted, this, [this]() {
@@ -1900,6 +1926,11 @@ void MainWindow::showPartyProvisioningWizard() {
     });
 
     wizard->show();
+    // See showSystemProvisionerWizard() for why this is deferred.
+    QTimer::singleShot(0, wizard, [wizard]() {
+        wizard->raise();
+        wizard->activateWindow();
+    });
 }
 
 void MainWindow::openScriptEditor(const QString& path, bool library, ShellMdiWindow* shell) {

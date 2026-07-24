@@ -47,14 +47,19 @@ class LeiEntityPicker;
  * @brief Wizard for first-time tenant setup after provisioning.
  *
  * Collect phase (zero backend writes):
- * 1. Welcome              - explains the setup process
- * 2. Bundle Selection     - choose a reference data bundle to publish
- * 3. Data Source          - choose GLEIF registry or synthetic data
- * 4. Party Setup          - (GLEIF only) select root LEI entity and dataset size
+ * 1. Welcome              - explains the setup process; also offers the
+ *                           "Acme Bank (full sample bank)" vs "Manual setup"
+ *                           choice. Acme skips straight to Execute.
+ * 2. Bundle Selection     - (Manual only) choose a reference data bundle to publish
+ * 3. Data Source          - (Manual only) choose GLEIF registry or synthetic data
+ * 4. Party Setup          - (Manual + GLEIF only) select root LEI entity and dataset size
  *
  * Execute phase (single page, all backend work):
- * 5. Execute              - publishes bundle, runs party setup, associates admin,
- *                           clears bootstrap flag; shows live workflow progress
+ * 5. Execute              - Acme: a single server-side orchestrated request
+ *                           (see ores_iam_provision_acme_tenant_fn). Manual:
+ *                           publishes bundle, runs party setup, associates
+ *                           admin, clears bootstrap flag; shows live workflow
+ *                           progress.
  *
  * 6. Summary              - shows results; no further backend calls
  *
@@ -86,7 +91,7 @@ public:
         Page_Summary
     };
 
-    enum class DataSourceMode { gleif, synthetic };
+    enum class DataSourceMode { gleif, synthetic, acme };
 
     explicit TenantProvisioningWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 
@@ -305,10 +310,14 @@ class ProvisioningWelcomePage final : public QWizardPage {
 
 public:
     explicit ProvisioningWelcomePage(TenantProvisioningWizard* wizard);
+    bool validatePage() override;
+    int nextId() const override;
 
 private:
     void setupUI();
     TenantProvisioningWizard* wizard_;
+    QRadioButton* acmeRadio_;
+    QRadioButton* manualRadio_;
 };
 
 /**
@@ -432,6 +441,7 @@ private slots:
     void onWorkflowComplete(bool success);
 
 private:
+    void startAcmeProvisioning();
     void startBundlePublish();
     void startSyntheticGeneration();
     void startPartyAssociation();

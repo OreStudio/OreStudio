@@ -51,6 +51,7 @@ target_link_libraries(${tests_target_name}
         ores.testing.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
+        QuantLib::QuantLib
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

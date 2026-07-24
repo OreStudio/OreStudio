@@ -153,6 +153,321 @@ the start, not bolted on later.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Findings from current-state analysis
+
+- *QuantLib is not actually linked anywhere in this codebase yet.*
+  Not in =vcpkg.json=, no C++ translation unit includes any
+  =ql/time/*.hpp= header, no CMakeLists links a QuantLib target. The
+  task description's premise ("QuantLib ... already linked into
+  ores.ore") is stale — =vcpkg/ports/quantlib= exists as an available
+  port, that's all. This is a hard prerequisite, not a detail: adding
+  the dependency (feature-gated, mirroring the existing =qt=/=wt=
+  optional-feature pattern in =vcpkg.json=) is step zero.
+- =ores_refdata_calendars_tbl= (=calendar= domain type) is already,
+  in effect, a flat *template registry*: 60 rows transcribed by hand
+  from a local QuantLib checkout's =ql/time/calendars= headers
+  (=refdata_calendars_populate.sql=), one row per QuantLib token,
+  classified by =calendar_type= (public_holiday /
+  central_bank_meeting / financial_centre / data_release / other) and
+  =country_code=. There is no column today distinguishing
+  QuantLib-owned rows from anything else, because nothing else has
+  ever been inserted — every row is implicitly QuantLib-sourced and
+  implicitly read-only by convention, not by a modelled flag.
+- =ores::refdata::domain::calendar_adjustment= already exists as a
+  plain domain struct (=calendar_name=, optional =base_calendar=,
+  =additional_holidays=, =additional_business_days=) with a working,
+  round-trip-tested ORE XML mapper
+  (=ores.ore.core/domain/calendar_adjustment_mapper.{hpp,cpp}=,
+  =xml_calendaradjustment_roundtrip_tests.cpp=) — but it is **not**
+  wired as a refdata entity: no SQL table, no repository, no
+  Qt CRUD. It is dead weight sitting in the API layer today, waiting
+  for exactly this task.
+- ORE's own =calendaradjustment.xsd= confirms the mechanism this
+  domain type models: a =<CalendarAdjustments>= file is a sequence of
+  =<Calendar name="..." >= entries, each with an *optional*
+  =BaseCalendar= and optional =AdditionalHolidays=/
+  =AdditionalBusinessDays= date lists. =BaseCalendar= absent + a name
+  that already matches a built-in QuantLib token means "patch this
+  calendar in place". =BaseCalendar= present means "derive a new,
+  separately-named calendar from that base". Nothing in ORE's file
+  format requires a materialised date list to be fed in — it always
+  wants a *rule* (base + delta), because ORE resolves and combines
+  calendars via its own compiled QuantLib at runtime.
+- The existing DQ-publish pattern (artefact table + =publish-from-dq=
+  function + dataset-bundle membership, just exercised end-to-end in
+  PR #1681 for =currency_country=) is the natural mechanism for the
+  new materialised =calendar_dates= dataset — no new plumbing needed
+  there, just another artefact following the established shape.
+- =ores.refdata= already has a self-referential-FK codegen pattern
+  (=has_parent_id=/=parent_id_column=, used by =party= and
+  =counterparty= for their tree structures) that fits
+  =base_calendar_code= directly.
+- =ores.dq='s =dataset_dependency= entity (edge list + existing
+  dependency-respecting publish ordering) is a template for how to
+  order the export of a *chain* of user templates to ORE (see below).
+
+** Integrated data model
+
+Three refdata entities, cleanly separated by concern (definition vs.
+computed result vs. override), plus one reused ORE-export mechanism:
+
+*** 1. =calendar= (existing entity, extended into a template registry)
+
+Add two columns to the existing =ores_refdata_calendars_tbl=:
+
+- =source= : text, not null, default ='quantlib'= — soft-enum
+  (='quantlib'= | ='user'=). Not derived/implied — an explicit column,
+  per the task's own instruction that read-only/editable must be
+  tracked per-template, not hardcoded from source as a special case.
+  This leaves room for a future third source without a schema change.
+- =is_editable= : boolean, not null, default =false=. Independent
+  column from =source= (even though in practice every =quantlib= row
+  is inserted with =false= and every =user= row with =true= — the
+  *rule* enforcing that pairing lives in the insert/update trigger
+  validation, not in application code branching on =source=).
+- =base_calendar_code= : text, nullable, soft FK to
+  =calendars.code= (self-referential, =has_parent_id=-style). Only
+  meaningful for =source = 'user'= rows. Two cases:
+  - Present: this template is a delta on top of another template
+    (QuantLib-sourced or itself user-authored) — the
+    =calendar_adjustment=-style layering case.
+  - Absent: this is a wholly bespoke calendar with no base — the
+    "genuinely new, unrelated calendar" case the task calls out
+    explicitly as *not* belonging under =calendar_adjustment=.
+
+The existing 60 QuantLib rows get =source='quantlib'=,
+=is_editable=false=, =base_calendar_code=null= via a migration
+populate-script update — no other change to that seed data.
+
+*** 2. =calendar_adjustment= (wire up the existing domain type as a real entity)
+
+Codegen a proper refdata entity from the struct that already exists,
+with one change: promote the currently-implicit natural key
+(=calendar_name=) to be the same string as a =user=-sourced
+=calendar.code= row — i.e. every =calendar_adjustment= row is 1:1
+with exactly one =calendar= row where =source='user'=. Rather than a
+free-standing table keyed only by name, =calendar_adjustment= becomes
+the "how do I compute this template's dates" side-table for
+=user=-sourced =calendar= rows:
+
+- =calendar_code= (FK to =calendar.code=, unique — one adjustment per
+  user template)
+- =base_calendar_code= — *this column is redundant with
+  =calendar.base_calendar_code= above and should not be duplicated*;
+  decision needed (see Open Questions) on which entity owns it.
+- =additional_holidays= / =additional_business_days= (unchanged
+  shape, ISO-8601 date arrays)
+
+This is the entity with full Qt CRUD (list, detail dialog,
+history) — the task's third acceptance criterion. QuantLib-sourced
+=calendar= rows never have a corresponding =calendar_adjustment= row
+and the UI must make that pairing obvious (e.g. grey out / hide the
+"Adjustments" action for =source='quantlib'= rows, and route "extend
+this calendar" to "create a new =calendar= + =calendar_adjustment=
+pair with this one as base" rather than an edit-in-place action).
+
+*** 3. =calendar_dates= (new — the materialised/instantiated output)
+
+New DQ-published, read-only refdata entity: one row per
+(=calendar_code=, =date=). Populated by a batch/service operation
+("instantiate"), not user CRUD:
+
+- =calendar_code= (FK to =calendar.code=)
+- =date=
+- =is_business_day= (boolean — both holidays *and* the
+  weekend/business-day distinction are worth capturing so a date
+  picker can shade weekends and QuantLib holidays differently without
+  a second query)
+- =source= : text — ='quantlib_computed'= | ='user_adjustment'= |
+  ='user_defined'=, matching the three instantiation cases below.
+  Always shown in the UI next to any displayed date (the task's
+  "origin must be obvious wherever these dates are shown" acceptance
+  criterion) — never left implicit.
+
+Instantiation logic, over a rolling window (e.g. -2y/+10y from
+today, matching whatever range convention the codebase already uses
+elsewhere for generated schedules — needs confirming, see Open
+Questions):
+
+- *QuantLib-sourced templates*: call
+  =QuantLib::Calendar(code).isBusinessDay()=/=holidayList()= directly
+  once per refresh cycle (a scheduled job, likely
+  =ores.scheduler=-driven given that component already exists for
+  cron-style jobs) and materialise the result. =source =
+  'quantlib_computed'=.
+- *User templates with a base* (=base_calendar_code= set): instantiate
+  = base template's materialised dates ∪ additional_holidays −
+  additional_business_days=, recursively resolving the base chain (a
+  user template's base can itself be another user template). =source
+  = 'user_adjustment'=.
+- *User templates with no base*: the calendar's only holiday
+  information *is* =additional_holidays= from its (base-less)
+  =calendar_adjustment= row — instantiation is just copying that list
+  in directly, no computation. =source = 'user_defined'=.
+
+**** DQ publication
+
+=calendar_dates= is DQ-published like =calendar= itself, in the
+=base= bundle, following the exact =dq_calendars_artefact_*= /
+=publish-from-dq= pattern from PR #1681 — no new plumbing, just
+another artefact table + function + bundle-member row.
+
+*** ORE export ("notify ORE, don't fight it")
+
+This is the piece that directly answers "for quantlib calendars we
+must recognise they are quantlib and not attempt to add them to ORE
+files, instead just notify ORE that it's a QuantLib built-in
+calendar":
+
+- Wherever ORE Studio emits a =<Calendar>= *reference* (a convention's
+  =Calendar=/=FixingCalendar=/etc. attribute value, or a curve
+  config), if the referenced =calendar.code= has =source='quantlib'=,
+  we emit the code verbatim, exactly as today — ORE's own linked
+  QuantLib resolves it natively via =parseCalendar()=. No
+  =CalendarAdjustments= entry is generated for it, ever. This is
+  already what happens today by omission (nothing generates
+  =CalendarAdjustments= entries at all yet); the plan is to keep it
+  that way for =source='quantlib'= and *only* start generating
+  entries for =source='user'= rows.
+- For a =source='user'= calendar reference, we must ensure ORE knows
+  the name: export one =<Calendar name="...">= entry per *user*
+  template actually referenced by the run, using the existing
+  =calendar_adjustment_mapper::reverse()= (already implemented,
+  already round-trip tested) — no new mapper code needed, just a new
+  call site that assembles the =calendaradjustment= XML file as part
+  of the ORE input bundle.
+- *Chained user templates* (a user template based on another user
+  template, not on a QuantLib base) need their whole dependency chain
+  exported, in base-first order, so ORE can resolve each
+  =BaseCalendar= reference against an already-defined earlier
+  =<Calendar>= entry in the same file — the same "respect the
+  dependency graph" problem =ores.dq='s =dataset_dependency= already
+  solves for publish ordering; reuse that shape (or its ordering
+  algorithm) rather than inventing a second topological sort.
+- =calendar_dates= (the materialised table) is *never* fed to ORE.
+  It exists purely for our own UI (holiday-aware date picker,
+  calendar detail screens) — ORE always gets the *rule*
+  (=calendar_adjustment=), because only a rule generalises correctly
+  to dates outside our materialised rolling window. This is a
+  deliberate reading of the task's "live data feeding the engine"
+  language as "the adjustment rule is what's live", not "the
+  materialised list is what's live" — flagged as an assumption to
+  confirm before implementation (see Open Questions).
+
+** Sequencing
+
+1. Add QuantLib as a (feature-gated) vcpkg dependency; confirm it
+   builds and a trivial =Calendar::isHoliday()= smoke-test compiles
+   and passes, before any domain-model work — this de-risks the
+   biggest unknown first.
+2. Extend =calendar= with =source=/=is_editable=/=base_calendar_code=
+   (migration + populate-script update for the 60 existing rows).
+3. Codegen =calendar_adjustment= as a full refdata entity (SQL,
+   repository, Qt CRUD) — the domain struct and ORE mapper already
+   exist, so this is "wire up", not "design from scratch".
+4. Build the QuantLib instantiation service + =calendar_dates=
+   codegen entity + DQ-publish wiring, reusing the just-shipped
+   =currency_countries= DQ pattern directly.
+5. Wire the ORE export path: =source='quantlib'= stays untouched;
+   =source='user'= rows get a =CalendarAdjustments= file assembled
+   from dependency-ordered =calendar_adjustment_mapper::reverse()=
+   calls.
+6. Qt UI: calendar detail screen shows =source= + editability
+   plainly; a "browse holidays" view reads from =calendar_dates=
+   (this is also the =Holiday-aware date picker widget= task's real
+   data source, per the story — that task stays blocked on this one
+   finishing steps 2 and 4).
+
+** Decisions (superseding the four Open Questions above, after discussion)
+
+*** Two concrete consumption scenarios that shape everything below
+
+- *Browsing/tenor setup*: users (and our own date-calculation code —
+  add-tenor, business-day adjustment, schedule generation) need to
+  query "is date D a business day for calendar C" / "what's the next
+  business day after D" *independently of a live QuantLib call*, for
+  both QuantLib-sourced and user-authored calendars alike. This means
+  =calendar_dates= is not merely a UI-browsing convenience — it is an
+  operational data source our own logic depends on for correctness,
+  so its horizon must be genuinely sufficient for real curve/tenor
+  setups (e.g. 30Y+ swap curves reaching decades out), not an
+  arbitrary display window. This pushes towards a small query-service
+  abstraction (see below) rather than ad hoc SQL at every call site.
+- *ORE XML generation*: confirmed — for a =source='quantlib'=
+  calendar reference, the emitted ORE config states, in effect,
+  "calendar X is standard QuantLib" simply by using the bare code
+  verbatim (=Calendar=X=) with *no* =CalendarAdjustments= entry — that
+  bare reference *is* the notification, because ORE's own linked
+  QuantLib resolves it natively. This confirms the original design:
+  only =source='user'= templates get a =<Calendar>= entry in the
+  =CalendarAdjustments= file; QuantLib ones are never patched or
+  restated there.
+
+*** 1. =base_calendar_code= placement — decided: lives on =calendar= only
+
+Normalises the template graph into one place: =calendar= carries
+=source=, =is_editable=, and =base_calendar_code= together (the
+"what kind of template is this and what does it derive from" facts),
+while =calendar_adjustment= is reduced to purely the delta payload
+(=additional_holidays=/=additional_business_days=) keyed 1:1 by
+=calendar_code=. =calendar_adjustment='s domain struct loses its own
+=base_calendar= field — a breaking-but-pre-release change to a type
+that has never shipped wired to a real table, so no migration
+concern.
+
+*** 2. Materialisation horizon — decided: a =system_setting=, not a new config table
+
+Reuses the existing =ores.variability= =system_setting= entity
+(generic name/value/type refdata already used for exactly this kind
+of tunable) rather than inventing bespoke configuration plumbing.
+Two settings:
+- =calendar.materialisation.start_offset_years= (default e.g. =-2=)
+- =calendar.materialisation.end_horizon= (an absolute year, e.g.
+  =2050=, not a rolling offset — see decision 3 below: this is a
+  ratchet that only ever moves forward via explicit regeneration, not
+  a "today + N years" formula recomputed on every run)
+
+*** 3. Refresh/regeneration — decided: on-demand, user-triggered, not a cron job
+
+No =ores.scheduler= involvement. A single command/service operation
+(mirroring the existing =publish-from-dq= NATS-command shape used
+throughout DQ), parameterised by an explicit target end-date —
+*"Regenerate up to 2030"* as a UI button — extends =calendar_dates=
+for one calendar (or all calendars) out to that date without
+recomputing or discarding what is already stored below that
+watermark. Applies uniformly to both cases:
+- *QuantLib-sourced*: rarely needed (QuantLib's compiled holiday
+  rules don't change between regenerations of the same calendar
+  code), but the same button/command covers "extend the horizon" and
+  "pick up a new QuantLib version's rule change after an upgrade".
+- *User-authored*: re-run whenever the calendar's
+  =calendar_adjustment= row changes (natural trigger point — the Qt
+  save action can offer/perform "regenerate now" inline) or whenever
+  its horizon needs extending, same as QuantLib rows.
+
+*** 4. Rules vs. materialisation — decided: explicit two-stage model, confirmed
+
+=calendar= (+ =calendar_adjustment= for =source='user'= rows) is the
+*rule* — what to compute. =calendar_dates= is the *instantiation* —
+the computed result, for both display and actual business-date
+arithmetic. This is now firmly two stages, not a shortcut for either
+purpose:
+- Rule tables are what a human edits and what (for =user= rows only)
+  gets exported to ORE's =CalendarAdjustments= file.
+- =calendar_dates= is what every reader — UI, our own tenor/schedule
+  date-math, the holiday-aware date picker — actually queries. Reads
+  never fall back to a live rule evaluation; if a date is out of the
+  materialised horizon, the answer is "regenerate the horizon", not
+  "silently compute it on the fly", so behaviour stays consistent
+  whether the caller is looking at row 1 or row 10 million.
+- Given =calendar_dates= is now a genuine dependency for our own
+  date-calculation code (not just a browsing nicety), plan for a
+  small dedicated query surface (e.g. a =calendar_service=
+  =is_business_day(code, date)=/=next_business_day(code, date)=
+  API) rather than every call site hand-rolling SQL against
+  =calendar_dates= directly — same rationale as any other
+  repository/service boundary already in the codebase.
+
 * Notes
 
 * Test Scenarios

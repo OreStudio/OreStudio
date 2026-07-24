@@ -443,6 +443,9 @@ find_package(libfort)
 # croncpp: header-only cron expression parser used by ores.scheduler
 find_package(croncpp CONFIG REQUIRED)
 
+# QuantLib: calendar materialisation (ores.ore)
+find_package(QuantLib CONFIG REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

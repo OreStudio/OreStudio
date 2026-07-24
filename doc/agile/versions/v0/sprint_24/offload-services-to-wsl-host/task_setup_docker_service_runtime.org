@@ -42,9 +42,9 @@ unaffected and don't need containerising for this reason.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Basic analysis done: runtime deps are minimal (only libc/libstdc++/libgcc/libm — everything else statically linked), candidate base image is ubuntu:24.04. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Decide build-vs-copy approach, then write the Dockerfile. |
 | Last touched | 2026-07-24                               |
 
 * Acceptance
@@ -67,6 +67,59 @@ unaffected and don't need containerising for this reason.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Basic analysis (done)
+
+- *Runtime dependency footprint is small*: =ldd= on the service
+  binaries (=ores.controller.service=, =ores.http.server=, and their
+  =libores.*.so= libraries) shows only =libc.so.6=, =libstdc++.so.6=,
+  =libgcc_s.so.1=, =libm.so.6=, plus our own =libores.*.so= libraries
+  — Boost, OpenSSL, libpq, nats.c, pugixml, sqlgen etc. are all
+  statically linked in via vcpkg. This means the container image
+  needs *no* apt-installed runtime libraries beyond a compatible
+  libc/libstdc++ — a plain base image is enough, no dependency-closure
+  work.
+- *Exact symbol versions needed*: =objdump -T= on the libraries shows
+  a ceiling of =GLIBC_2.38= and =GLIBCXX_3.4.32= (this box ships
+  glibc 2.42, Debian sid/forky). Any base image with glibc >= 2.38
+  and a matching libstdc++ (GCC >= 13) works.
+- *Candidate base image: =ubuntu:24.04= (Noble)* — ships glibc 2.39
+  and libstdc++6 from GCC 13.2 (covers =GLIBCXX_3.4.32=). This isn't
+  an arbitrary pick: our own CI (=.github/workflows/nightly-linux.yml=,
+  =continuous-linux.yml=) already runs and validates builds on
+  =ubuntu-24.04= runners, so targeting the same OS for the runtime
+  image reuses an already-proven compatibility baseline rather than
+  introducing a new one. Debian 12 "bookworm" (glibc 2.36) is *not*
+  new enough; Debian 13 "trixie" or =ubuntu:24.04=/newer both work.
+- *No existing Docker precedent in-repo* to build on — the only
+  Dockerfiles in the tree are vcpkg's own CI infra
+  (=vcpkg/scripts/azure-pipelines/*/Dockerfile=), unrelated to
+  shipping our services. This will be a new Dockerfile from scratch.
+- *Build-vs-copy choice not yet made*: either (a) copy this box's
+  already-built =cmake --install= tree straight into a
+  =ubuntu:24.04=-based runtime image (fast, reuses the existing CPack
+  TGZ artifact, but ties the image to whatever glibc this box happens
+  to have — fine today since 2.42 > 2.38, but not guaranteed to stay
+  that way as this box's rolling-release glibc advances), or (b) a
+  multi-stage build that compiles inside a pinned =ubuntu:24.04=
+  builder stage (slower, bigger Dockerfile, but the image's glibc
+  ceiling is pinned and reproducible regardless of what this dev box
+  is running). Leaning towards (b) for correctness, but not decided —
+  next step before writing the Dockerfile.
+
+** Open questions
+
+- Confirm (b) is worth the extra build-stage complexity vs. just
+  re-running =compass build package= against a documented "this box
+  must be no newer than X" constraint.
+- Which services actually need to run in the container for the
+  offload use case — the full domain-service fleet spawned by
+  =ores.controller.service=, or a narrower subset for the story's
+  testing goal?
+- How the container reaches Postgres/NATS (both currently native
+  installs on Newton, outside any container) — network mode, and
+  whether the vendored =external/nats/= binary is even still needed
+  once services + NATS could plausibly all move into containers.
 
 * Notes
 

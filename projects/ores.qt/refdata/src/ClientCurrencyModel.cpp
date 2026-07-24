@@ -167,13 +167,12 @@ QVariant ClientCurrencyModel::headerData(int section, Qt::Orientation orientatio
                 return tr("Classifies the market liquidity/importance tier of the currency (e.g. "
                           "G10, emerging).");
             case SpotDays:
-                return tr("Business days to settlement for a spot trade in this currency.");
+                return tr("Number of business days to this currency's spot value date.");
             case DayBasis:
-                return tr(
-                    "Day-count convention code applied to this currency (e.g. ACT/360, ACT/365).");
+                return tr("This currency's day-count convention code (e.g. ACT/360, ACT/365).");
             case BasePrecedence:
-                return tr("Ordinal rank in the base-currency precedence table used to determine "
-                          "canonical base/quote order for a pair.");
+                return tr("This currency's ordinal rank in the base-currency precedence table, "
+                          "used to determine canonical base/quote order for a pair.");
             default:
                 return {};
         }

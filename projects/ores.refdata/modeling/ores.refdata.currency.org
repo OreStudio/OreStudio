@@ -422,9 +422,9 @@ in the UI yet; out of scope for this sync, tracked separately).
 | Format             | format             | Format          | string    | auto  |                |          |                       | true               | Boost.Format pattern controlling how amounts in this currency are displayed. |
 | MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                | true     | monetary_nature       |                    | Classifies the underlying nature of the currency (e.g. fiat, commodity). |
 | MarketTier         | market_tier        | Market Tier     | string    | auto  |                | true     | currency_market_tier  |                    | Classifies the market liquidity/importance tier of the currency (e.g. G10, emerging). |
-| SpotDays           | spot_days          | Spot Days       | int       | 70    |                |          |                       | true               | Business days to settlement for a spot trade in this currency. |
-| DayBasis           | day_basis          | Day Basis       | string    | 80    |                |          |                       |                    | Day-count convention code applied to this currency (e.g. ACT/360, ACT/365). |
-| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       | true               | Ordinal rank in the base-currency precedence table used to determine canonical base/quote order for a pair. |
+| SpotDays           | spot_days          | Spot Days       | int       | 70    |                |          |                       | true               | Number of business days to this currency's spot value date. |
+| DayBasis           | day_basis          | Day Basis       | string    | 80    |                |          |                       |                    | This currency's day-count convention code (e.g. ACT/360, ACT/365). |
+| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       | true               | This currency's ordinal rank in the base-currency precedence table, used to determine canonical base/quote order for a pair. |
 | Version            | version            | Version         | int       | 70    |                |          |                       |                    |
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |
 | RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |                |

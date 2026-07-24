@@ -172,7 +172,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::headerData(
 {{#domain_entity.qt.columns}}
 {{#tooltip}}
         case {{enum_name}}:
-            return tr("{{tooltip}}");
+            return tr("{{{tooltip}}}");
 {{/tooltip}}
 {{/domain_entity.qt.columns}}
         default:

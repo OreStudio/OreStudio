@@ -390,13 +390,12 @@ void BookController::onOpenVersion(const refdata::domain::book& book, int versio
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
-    // setBook()/setReadOnly() must run before setClientManager() here (unlike
-    // the create/edit paths) -- setClientManager() triggers the async
-    // book_status/regulatory_book_type combo fetch, and that fetch needs to
-    // see readOnly_=true and book_ already populated to resolve this
-    // historical version's badges as-of its own recorded_at instead of
-    // against the current (possibly since-renamed/deleted) code list. See
-    // the As-of lookup resolution codegen facet story.
+    // readOnly_=true and this historical book resolve the
+    // book_status/regulatory_book_type combos as-of book's own recorded_at
+    // rather than against the current (possibly since-renamed/deleted) code
+    // list, regardless of call order relative to setClientManager() -- see
+    // BookDetailDialog::setBook()/setReadOnly(). See the As-of lookup
+    // resolution codegen facet story.
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
     detailDialog->setClientManager(clientManager_);

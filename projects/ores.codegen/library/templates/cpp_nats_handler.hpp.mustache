@@ -79,6 +79,13 @@ public:
 {{#list_filter_column}}
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
+                // Note: has_as_of_lookup is not currently supported in
+                // combination with list_filter_column -- the at_timepoint
+                // service method filters by primary key, not by
+                // {{list_filter_column}}, so req->as_of is intentionally
+                // ignored here. Wire this up (with a filter argument that
+                // matches list_filter_column's semantics) if/when this
+                // facet is rolled out to an entity that needs both.
                 resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
                 resp.total_available_count =
                     static_cast<int>(resp.{{entity_plural_short}}.size());

@@ -112,7 +112,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | has_as_of_lookup unwired when combined with list_filter_column | cpp_nats_handler.hpp.mustache / .org | Fixed | Added an explicit comment documenting the unsupported combination instead of half-wiring an untested filter/timepoint interaction. |
+| 2 | as_of requests bypass offset/limit pagination, undocumented | cpp_protocol.hpp.mustache / .org, book_status/regulatory_book_type_protocol.hpp | Fixed | Documented the pagination-bypass behaviour on the as_of field's comment. |
+| 3 | populate*Combo call-order dependency on setBook/setReadOnly running before setClientManager, enforced only by comment | BookDetailDialog.cpp, BookController.cpp | Fixed | setBook()/setReadOnly() now re-invoke the as-of combo populate calls if setClientManager() already ran, so the result is correct regardless of call order. |
+| 4 | read_all order_by drift (pre-existing, unrelated) | book_status_repository.cpp, regulatory_book_type_repository.cpp | Declined | Flagged as FYI only by reviewer, not a defect; no change needed. |
+| 5 | sleep_for(1s) pattern in new tests | repository_*_tests.cpp | Declined | Necessary given second-granularity db_timestamp truncation; reviewer flagged for awareness only. |
+| 6 | list_by_as_of boundary semantics diverge from new facet (>= vs >) | currency_repository.cpp (untouched) | Declined | Pre-existing, out of scope for this PR; tracked by the "Reconcile existing hand-written read_at_timepoint methods" backlog task. |
 
 * Result
 
@@ -138,7 +143,7 @@ two entities that surfaced the gap:
   lookup value — the facet is proven live, not dead code.
 - Verified: full build of =ores.refdata.core=, =ores.refdata.api=,
   =ores.qt.api=, =ores.qt.refdata= and =ores.refdata.core.tests=
-  green — 287 assertions across 163 test cases, no regressions. An
+  green — 288 assertions across 164 test cases, no regressions. An
   unrelated mid-task OOM kill (exit 137) on a build was transient and
   resolved on retry with no code change.
 

@@ -190,6 +190,13 @@ void BookDetailDialog::setUsername(const std::string& username) {
 void BookDetailDialog::setBook(const refdata::domain::book& book) {
     book_ = book;
     updateUiFromBook();
+    // Re-resolve the as-of combos if setClientManager() already ran with a
+    // different (or no) book -- see the call-order note in
+    // populateBookStatusCombo().
+    if (clientManager_ && readOnly_) {
+        populateBookStatusCombo();
+        populateRegulatoryBookTypeCombo();
+    }
 }
 
 void BookDetailDialog::setCreateMode(bool createMode) {
@@ -223,6 +230,13 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->ratesCentreCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+    // Re-resolve the as-of combos if setClientManager() already ran before
+    // this call established readOnly_ -- see the call-order note in
+    // populateBookStatusCombo().
+    if (clientManager_) {
+        populateBookStatusCombo();
+        populateRegulatoryBookTypeCombo();
+    }
 }
 
 void BookDetailDialog::populateBookStatusCombo() {
@@ -234,8 +248,9 @@ void BookDetailDialog::populateBookStatusCombo() {
         // Resolve this historical book version's status badge as-of its own
         // recorded_at, not against the current (possibly since-renamed or
         // deleted) status list -- see the As-of lookup resolution codegen
-        // facet story. Requires setBook()/setReadOnly() to have run before
-        // setClientManager() triggers this fetch; see BookController::onOpenVersion.
+        // facet story. setBook()/setReadOnly() re-invoke this populate call
+        // if they run after setClientManager(), so call order between them
+        // doesn't matter -- see setBook()/setReadOnly().
         const auto as_of = QString::fromStdString(
             ores::platform::time::datetime::to_db_string(book_.recorded_at));
         fetch = [as_of](ClientManager* cm) { return fetch_book_statuses_at_timepoint(cm, as_of); };

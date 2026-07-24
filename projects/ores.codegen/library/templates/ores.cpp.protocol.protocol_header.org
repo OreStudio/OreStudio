@@ -56,7 +56,9 @@ struct get_{{entity_plural}}_request {
     std::string {{list_filter_column}};
 {{/list_filter_column}}
 {{#has_as_of_lookup}}
-    std::string as_of; // empty = current/latest
+    // Empty = current/latest. Note: when as_of is set, results are not
+    // paginated by offset/limit -- all matching rows are returned.
+    std::string as_of;
 {{/has_as_of_lookup}}
 };
 
@@ -201,7 +203,9 @@ struct get_{{entity_plural}}_request {
     std::string {{list_filter_column}};
 {{/list_filter_column}}
 {{#has_as_of_lookup}}
-    std::string as_of; // empty = current/latest
+    // Empty = current/latest. Note: when as_of is set, results are not
+    // paginated by offset/limit -- all matching rows are returned.
+    std::string as_of;
 {{/has_as_of_lookup}}
 };
 

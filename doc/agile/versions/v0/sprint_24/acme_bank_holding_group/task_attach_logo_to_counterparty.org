@@ -7,41 +7,69 @@
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/attach-logo-to-counterparty
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a nullable =image_id= soft-FK on counterparties (to
+=ores_assets_images_tbl=, the format-agnostic image store already
+generalised for accounts), so a counterparty can carry a logo -- e.g.
+the Acme Corp logo asset already supplied for this purpose.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
 
--
+- =ores_refdata_counterparties_tbl= gains a nullable =image_id= uuid
+  column with a soft-FK validation against =ores_assets_images_tbl=
+  (rejects an =image_id= that doesn't reference an active image row).
+- Counterparty domain/repository/mapper/generator round-trip
+  =image_id= (get/save preserve it; synthetic generator leaves it
+  unset).
+- Data layer only -- no Qt upload-button UI in this task (accounts'
+  own upload UI was hand-written outside codegen; a generic
+  upload-widget codegen facet is out of scope here).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Counterparty is a fully =domain_entity=-codegen-driven table (unlike
+  =ores_iam_accounts_tbl=, which is hand-maintained), so the FK is
+  added at the model level (=ores.refdata.counterparty.org=) and
+  regenerated, not hand-edited into the generated SQL.
+- Discovered a codegen gap: the soft-FK validation template
+  (=ores.sql.schema.domain_entity_create.org= /
+  =sql_schema_domain_entity_create.mustache=) hardcoded the target
+  table's PK column name as =id=, which every existing soft-FK target
+  happens to use. =ores_assets_images_tbl='s PK column is =image_id=,
+  not =id=, so extended the template with an optional
+  =:target_column:= FK property (defaulting to =id=, so every existing
+  entity's generated SQL is byte-identical) -- a small, reusable
+  extension rather than a counterparty-only hack.
+- Added the =image_id= column (optional =boost::uuids::uuid=, mirrors
+  =ores.refdata.country='s own =image_id= column) and a
+  =:target_column: image_id= FK block to
+  =ores.refdata.counterparty.org=.
+- Regenerated via =compass codegen entity generate counterparty=
+  (all applicable layers: SQL, domain, mapper, repository, generator,
+  Qt).
 
 * Notes
 
@@ -69,3 +97,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added a nullable =image_id= soft-FK to counterparties, following the
+same generalised =ores_assets_images_tbl= pattern used for accounts.
+Counterparty is fully =domain_entity=-codegen-driven (unlike the
+hand-maintained accounts table), so the change was made at the model
+level (=ores.refdata.counterparty.org=) and regenerated via =compass
+codegen entity generate counterparty=, not hand-edited into generated
+SQL.
+
+Discovered and fixed a codegen gap along the way: the soft-FK
+validation template hardcoded the target table's PK column as =id=,
+which happened to hold for every existing soft-FK target but not for
+=ores_assets_images_tbl= (PK column =image_id=). Extended the
+=domain_entity= FK facet with an optional =:target_column:= property
+(default =id=, so every other entity's generated SQL is
+byte-identical) rather than special-casing counterparty -- a small,
+reusable extension.
+
+Regenerating counterparty also picked up unrelated template drift
+that had accumulated since it was last generated (matching what
+sibling entities like =counterparty_identifier= already reflect):
+generator defaults (=version 0=/="system.test"= instead of =version
+1=/="system.new"=) and the =counterparty_changed_event= field rename
+(=ids= -> =counterparty_ids=). Updated the one stale hand-wired
+subscriber reference in =application.cpp= and the one stale generator
+test assertion to match; no behavioural regression -- verified via
+full local build (clean) and =ctest= (74/74 passed) after a DB
+recreate to pick up the new column.
+
+No Qt upload-button UI in this task (out of scope -- see Acceptance).

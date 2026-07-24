@@ -506,6 +506,11 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     out: dict[str, Any] = {"column": node.title, "referenced_column": "id"}
     for k, v in node.properties.items():
         out[k.lower()] = _parse_typed(v)
+    # Target table's PK column defaults to "id" -- the shape every
+    # existing soft-FK target uses. Override via :target_column: for a
+    # target with a differently-named PK (e.g. ores_assets_images_tbl's
+    # image_id).
+    out.setdefault("target_column", "id")
     return out
 
 

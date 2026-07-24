@@ -40,6 +40,7 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     "parent_counterparty_id" uuid null,
     "business_center_code" text not null,
     "status" text not null default 'Active',
+    "image_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -167,6 +168,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid parent_counterparty_id: %. No active counterparty found with this id.', NEW.parent_counterparty_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate image_id (optional soft FK to ores_assets_images_tbl)
+    if NEW.image_id is not null then
+        if not exists (
+            select 1 from ores_assets_images_tbl
+            where tenant_id = NEW.tenant_id
+              and image_id = NEW.image_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id
                 using errcode = '23503';
         end if;
     end if;

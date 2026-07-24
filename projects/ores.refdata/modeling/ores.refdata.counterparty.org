@@ -151,6 +151,19 @@ References the party_status lookup table.
 std::string("Active")
 #+end_src
 
+** image_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional reference to a logo/branding image in the images table.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -171,6 +184,14 @@ std::string("Active")
 :table:         ores_refdata_counterparties_tbl
 :nullable:      true
 :error_message: Invalid parent_counterparty_id: %. No active counterparty found with this id.
+:END:
+
+** image_id
+:PROPERTIES:
+:table:         ores_assets_images_tbl
+:target_column: image_id
+:nullable:      true
+:error_message: Invalid image_id: %. Image must exist.
 :END:
 
 * Insert trigger

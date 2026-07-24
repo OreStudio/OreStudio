@@ -105,6 +105,11 @@ struct counterparty final {
     std::string status;
 
     /**
+     * @brief Optional reference to a logo/branding image in the images table.
+     */
+    std::optional<boost::uuids::uuid> image_id;
+
+    /**
      * @brief Username of the person who last modified this counterparty.
      */
     std::string modified_by;

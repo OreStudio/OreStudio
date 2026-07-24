@@ -18,17 +18,16 @@
  *
  */
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
-namespace change_reason_codes = ores::dq::domain::change_reason_constants::codes;
 
 domain::counterparty generate_synthetic_counterparty(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
@@ -37,7 +36,7 @@ domain::counterparty generate_synthetic_counterparty(utility::generation::genera
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::counterparty r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
@@ -49,9 +48,10 @@ domain::counterparty generate_synthetic_counterparty(utility::generation::genera
     r.parent_counterparty_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
+    r.image_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = change_reason_codes::synthetic_new;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

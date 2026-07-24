@@ -78,6 +78,7 @@ public:
      */
     std::uint32_t count_counterparties();
 
+
     /**
      * @brief Retrieves a single counterparty as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.

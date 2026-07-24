@@ -8,7 +8,7 @@
 #+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
 #+branch: feature/implement-as-of-lookup-facet
-#+pr:
+#+pr: 1682
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1682][#1682]] | [codegen] Add as-of lookup facet, pilot on book_status/regulatory_book_type |
 
 * Review
 

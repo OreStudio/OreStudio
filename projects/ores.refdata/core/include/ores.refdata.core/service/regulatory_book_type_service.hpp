@@ -77,6 +77,18 @@ public:
     std::uint32_t count_types();
 
     /**
+     * @brief Lists regulatory book types as they stood at a specific
+     * timepoint (valid_from <= as_of < valid_to), possibly filtered by
+     * code.
+     *
+     * @param as_of The timepoint to resolve against.
+     * @param code Optional code filter; empty for all.
+     * @return Vector of matching regulatory book types as of that timepoint.
+     */
+    std::vector<domain::regulatory_book_type> list_types_at_timepoint(const std::string& as_of,
+                                                                      const std::string& code = "");
+
+    /**
      * @brief Retrieves a single regulatory book type as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *

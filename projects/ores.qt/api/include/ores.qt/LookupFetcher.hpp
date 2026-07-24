@@ -291,6 +291,19 @@ ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
 fetch_book_statuses(ClientManager* cm);
 
 /**
+ * @brief Fetches book statuses as they stood at a specific timepoint.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used to resolve a historical book version's status badge correctly
+ * even if the code has since been renamed or deleted -- see the
+ * As-of lookup resolution codegen facet story. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
+fetch_book_statuses_at_timepoint(ClientManager* cm, const QString& as_of);
+
+/**
  * @brief Fetches all business unit types from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
@@ -404,6 +417,19 @@ fetch_crm_topology_configs(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>
 fetch_regulatory_book_types(ClientManager* cm);
+
+/**
+ * @brief Fetches regulatory book types as they stood at a specific timepoint.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used to resolve a historical book version's type badge correctly
+ * even if the code has since been renamed or deleted -- see the
+ * As-of lookup resolution codegen facet story. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>
+fetch_regulatory_book_types_at_timepoint(ClientManager* cm, const QString& as_of);
 
 /**
  * @brief Fetches all tenor kinds from the server.

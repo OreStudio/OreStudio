@@ -113,6 +113,88 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
 }
 
+{{#has_as_of_lookup}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_plural_words}} at timepoint.");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at timepoint. {{primary_key.column}}: " << {{primary_key.column}};
+    const auto ts = make_timestamp(as_of, lg());
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_singular_words}} at timepoint by {{primary_key.column}}.");
+}
+{{/has_as_of_lookup}}
+
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_all(context ctx, const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. {{primary_key.column}}: " << {{primary_key.column}};

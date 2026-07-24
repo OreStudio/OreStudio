@@ -389,10 +389,16 @@ void BookController::onOpenVersion(const refdata::domain::book& book, int versio
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    // readOnly_=true and this historical book resolve the
+    // book_status/regulatory_book_type combos as-of book's own recorded_at
+    // rather than against the current (possibly since-renamed/deleted) code
+    // list, regardless of call order relative to setClientManager() -- see
+    // BookDetailDialog::setBook()/setReadOnly(). See the As-of lookup
+    // resolution codegen facet story.
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
+    detailDialog->setClientManager(clientManager_);
 
     connect(detailDialog,
             &BookDetailDialog::statusMessage,

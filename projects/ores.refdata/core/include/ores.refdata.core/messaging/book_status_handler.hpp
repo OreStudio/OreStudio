@@ -70,8 +70,13 @@ public:
         get_book_statuses_response resp;
         if (auto req = decode<get_book_statuses_request>(msg)) {
             try {
-                resp.statuses = svc.list_statuses(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_statuses());
+                if (!req->as_of.empty()) {
+                    resp.statuses = svc.list_statuses_at_timepoint(req->as_of);
+                    resp.total_available_count = static_cast<int>(resp.statuses.size());
+                } else {
+                    resp.statuses = svc.list_statuses(req->offset, req->limit);
+                    resp.total_available_count = static_cast<int>(svc.count_statuses());
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(book_status_handler_lg(), error)

@@ -33,7 +33,7 @@ approach.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -59,7 +59,8 @@ approach.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | BACKLOG | | | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
+| [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | STARTED | 2026-07-23 | | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
+| [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] | BACKLOG | | | Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out. |
 
 * Decisions
 

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: EE315554-2A5B-4576-B25E-FE282E9B90CF
+:END:
+#+title: Task: Set up Docker for the service runtime deployment
+#+description: Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out.
+#+type: task
+#+level: s1
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-24
+#+updated: 2026-07-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give ORE Studio a proper Docker build (Dockerfile, image build
+script, and a run/compose setup) for the service runtime, so services
+can be deployed to hosts whose glibc doesn't match this dev box's,
+without needing to rebuild the whole toolchain for every target
+distro.
+
+This directly follows from [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][the analysis task]]'s live deploy test: the
+plain "build locally, scp the binaries" approach fails outright on a
+Debian 11 (bullseye, glibc 2.31) host when built on this box's Debian
+sid/forky — =GLIBC_2.38=/=GLIBCXX_3.4.32=/=CXXABI_1.3.13= not found.
+Docker sidesteps this by baking a matching runtime into the image
+itself. Note: this only affects binaries we compile — the DB
+(separate Postgres install) and the vendored =external/nats/=
+=nats-server= binary (statically linked, no libc dependency) are
+unaffected and don't need containerising for this reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-24                               |
+
+* Acceptance
+
+- A Dockerfile builds an image containing the ORE Studio service
+  binaries (controller + domain services) against a base whose
+  glibc/libstdc++ is new enough for what we compile, or the build
+  itself targets an older/matching glibc inside the container.
+- The image runs on Newton (or an equivalent bullseye WSL host)
+  without the =GLIBC_*=/=GLIBCXX_*= errors seen in the analysis
+  task's deploy test.
+- A run/compose script starts the containerised services with the
+  right env (NATS, DB connection) wired in, analogous to what
+  =compass services start= does locally.
+- Documented, repeatable build + deploy steps exist (or a script) for
+  producing and shipping the image to the WSL host.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

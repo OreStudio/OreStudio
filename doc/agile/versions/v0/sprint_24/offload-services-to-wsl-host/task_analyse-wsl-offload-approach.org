@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/offload-services-to-wsl-host
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,16 +32,25 @@ itself.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Researching WSL host provisioning and connectivity options. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Draft the recommended approach in * Plan. |
 | Last touched | 2026-07-23                               |
 
 * Acceptance
 
--
+- Target host confirmed reachable and its capabilities/constraints
+  documented (hardware, OS, init system, sudo posture, existing
+  tooling).
+- A concrete, recommended architecture is written down: how the
+  local dev box deploys build output to the host, how services/DB
+  are started/stopped remotely, and how the local Qt client
+  connects.
+- Latest PostgreSQL install path for the host is identified (Debian
+  11's default repo is too old; PGDG apt repo needed).
+- Open risks/unknowns for implementation tasks are called out.
 
 * Plan
 
@@ -49,7 +58,260 @@ itself.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Host survey (192.168.1.22, hostname "Newton")
+
+- Passwordless SSH as user =marco= now works (RSA key
+  =~/.ssh/id_rsa=, authorized via =ssh-copy-id=).
+- WSL2 instance, Debian 11 (bullseye), kernel
+  6.18.33.2-microsoft-standard-WSL2.
+- Hardware: AMD Ryzen 5 4500 (6c/12t), 15 GiB RAM, 4 GiB swap.
+- Disk: WSL's own ext4 root (=/dev/sdd=) has 956G free — use this for
+  Postgres data and service binaries/state, not the =/mnt/c= or
+  =/mnt/d= 9p-mounted Windows drives (slow I/O, wrong permission
+  model for Postgres).
+- Init: =systemd 247.3-7+deb11u8= is installed but *not* PID 1 (=ps
+  -p1= reports the WSL default init, not systemd) — no
+  =/etc/wsl.conf= =[boot] systemd=true= set. This means
+  =systemctl start postgresql= etc. will not work as-is, and
+  services will not survive a WSL instance restart unless something
+  else supervises them.
+- No passwordless sudo — provisioning steps that need root (apt
+  install, wsl.conf edit, service enablement) require an interactive
+  password once; cannot be scripted headlessly as-is without setting
+  up NOPASSWD sudo for a narrow command set.
+- Nothing pre-installed yet: no =psql=/postgres, no docker, no
+  nats-server, no build toolchain (gcc/cmake/ninja) found on PATH.
+- Only port 22 (SSH) and the WSL-internal DNS stub are listening;
+  nothing else exposed yet — services stood up here will need their
+  ports opened explicitly (and, since this is WSL2 behind Windows'
+  NAT, may also need a Windows-side =netsh interface portproxy= rule
+  or WSL mirrored-networking mode for the local dev machine on the
+  LAN to reach them by 192.168.1.22 rather than only from the
+  Windows host itself — needs verification once a service is
+  actually bound).
+
+** Recommended architecture
+
+- *Provisioning*: enable systemd as WSL's init
+  (=/etc/wsl.conf=: =[boot]\nsystemd=true=, then =wsl --shutdown=
+  from the Windows side and restart) so postgres/services can be
+  managed as normal systemd units and survive restarts. This is a
+  one-time manual step (needs the Windows host, not just SSH).
+- *PostgreSQL*: Debian 11's apt repo tops out around PG13, which is
+  behind. Add the PGDG apt repository
+  (=apt.postgresql.org/pub/repos/apt bullseye-pgdg=) and install the
+  latest stable major version from there, then run it as a normal
+  systemd-managed service. Confirmed 956G of free disk on the WSL
+  root filesystem for the data directory.
+- *Deploying services*: no Docker requirement. Simplest path —
+  build locally (as today), then =rsync=/=scp= the built
+  binaries/artifacts to the host, and use SSH to
+  stop/replace/restart them (a small deploy script, not a new CI
+  system). Revisit Docker only if artifact/dependency drift between
+  the two boxes becomes a real pain point.
+- *Client*: the local Qt client's existing DB/service connection
+  config just needs to point at 192.168.1.22 instead of localhost —
+  no code change expected, just environment/config wiring (likely
+  via .env / compass env configure once a preset targets the remote
+  host).
+- *Day-to-day dev loop*: build and Claude Code stay on the local
+  machine (the box this analysis is about freeing up); a deploy
+  step pushes artifacts to Newton over SSH/rsync; services are
+  (re)started there via SSH; the local client then talks to Newton
+  over the LAN.
+
+** Open risks / unknowns for implementation tasks
+
+- Whether WSL2 NAT vs. mirrored networking is needed for the LAN to
+  reach service ports on 192.168.1.22 (only verified SSH so far).
+- Whether to script the systemd-enable + PGDG-install steps
+  idempotently (compass recipe/script) or document them as one-time
+  manual setup, given the no-passwordless-sudo constraint.
+- Firewall/Windows Defender rules that may need opening per service
+  port.
+- Whether NATS and the other ORE Studio services can simply be
+  copied as built binaries, or need their own systemd unit files
+  authored.
+
+** PostgreSQL install (done)
+
+- Enabled =systemd= as WSL's PID 1 (=/etc/wsl.conf= =[boot]
+  systemd=true=, =wsl --shutdown= + restart from Windows) and
+  switched =.wslconfig= to =networkingMode=mirrored= — both
+  confirmed active (=ps -p1= reports =systemd=; =eth1= carries
+  192.168.1.22 directly, no portproxy needed).
+- PGDG =bullseye-pgdg= repo added, but its key wasn't actually
+  installed — =signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc=
+  pointed at a file that didn't exist yet. Fixed by running the
+  vendored helper: =sh /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh=.
+  A stale/corrupted (0-byte) cached =Packages= file for the repo also
+  needed a forced re-fetch (=rm /var/lib/apt/lists/apt.postgresql.org*=
+  then =apt-get update=) before candidates showed up at all.
+- *PG18 is not viable on this host*: =apt-get install postgresql=
+  without a version pin grabbed Debian bullseye's own ancient PG13
+  from =deb.debian.org= (higher apt priority than a freshly-added,
+  not-yet-fetched pgdg source — a trap for any future re-run).
+  Purged that and installed =postgresql-18= from pgdg explicitly, but
+  TimescaleDB has no PGDG build for PG18 on bullseye yet (only up to
+  PG17) — its sid package needs =libc6 >= 2.38=, three major versions
+  ahead of bullseye's 2.31, so grabbing the single =.deb= isn't
+  viable either. *Settled on PostgreSQL 17 + timescaledb 2.22*
+  (=postgresql-17-timescaledb=, cleanly available on bullseye-pgdg).
+  Confirmed no code in the repo actually requires a PG18-only
+  feature (no =RETURNING OLD/NEW= triggers, no =uuidv7()=, no
+  temporal =PERIOD=/=WITHOUT OVERLAPS=) — the "18+" in
+  =technical_space_sql.org= is a CI-parity baseline, not an enforced
+  dependency.
+- Also hit an unrelated =libllvm16:amd64= dpkg package stuck in
+  =deinstall reinstreq unpacked=, blocking all further =apt-get=
+  operations; fixed with =dpkg --remove --force-remove-reinstreq
+  libllvm16:amd64= then =apt-get -f install=.
+- Dropped =pg_cron= and =pgmq= from scope — only =timescaledb= is
+  needed. =shared_preload_libraries = 'timescaledb'= set in
+  =postgresql.conf=, extension created and confirmed loaded.
+- *Port*: cluster defaulted to 5433 (not 5432) via
+  =pg_createcluster= for reasons never root-caused. Attempted to
+  move it to the conventional 5432, but Windows silently blocks that
+  bind (=could not bind IPv4/IPv6 address ... Address already in
+  use= even with nothing listening per =ss=/=ps= — almost certainly
+  Windows' Hyper-V/WSL dynamic port-exclusion range fencing 5432 off
+  at the host-networking layer, not a real conflict; not chased
+  further). *Settled on 5433* and taught the tooling about it instead
+  (below) rather than fighting Windows' port reservations.
+- Superuser password set to match the other environments' shared
+  =PGPASSWORD= convention (=ALTER ROLE postgres WITH PASSWORD
+  ...=), not a per-host secret.
+
+** Non-default DB port support (done)
+
+Since 5433 (not the libpq default 5432) is now a fact of life for
+this host, added first-class support instead of hacking around it
+per-script:
+
+- =projects/ores.compass/src/env_init.py=: =compass env configure=
+  now reads/writes a =PGPORT= line in =.env= (same
+  read-existing-or-default pattern as =ORES_DB_HOST=), left empty
+  (omitted) for the common case. =PGPORT= is libpq's own env var —
+  every =psql= invocation and every C++ service built on libpq reads
+  it natively, so no call site needed to change.
+- Bumped the =.env= format version (13) via =compass env version
+  new=, recorded in
+  =doc/knowledge/architecture/env_format_version_log.org=.
+- =swift_curie='s =.env= regenerated with =ORES_DB_HOST=192.168.1.22=,
+  =PGPORT=5433=, and =PGPASSWORD= reused from =prime_origin= (shared
+  convention, not a fresh secret per env).
+- Verified end-to-end: =compass db recreate -y= created
+  =ores_dev_swift_curie= directly on Newton (confirmed via
+  =inet_server_addr()=/=inet_server_port()= over =compass sql=, 266
+  tables), and a local =compass build= against it succeeded (100%,
+  including =ores.qt.exe=).
+
+** Firewall (done for DB + this env's service ports)
+
+- Windows Defender Firewall has no visibility of what's listening
+  *inside* WSL — SSH (22) had a pre-existing rule from Windows setup,
+  but new ports (5433, and later the service ports) needed explicit
+  inbound rules or they were unreachable from the LAN despite
+  correctly binding on =0.0.0.0= inside WSL.
+- Went with one =New-NetFirewallRule= per environment (its 5 real
+  ports: http/wt/site/nats/nats_monitor at
+  =base_port + {0,2,4,5,6}=) rather than one giant range rule —
+  matches least-privilege and keeps each worktree's rule independently
+  removable. Base ports per worktree read straight off each
+  =ores_dev_*/.env='s =ORES_BASE_PORT= (see
+  =projects/ores.compass/src/env_init.py= for the offset constants —
+  single source of truth if new worktrees get added later).
+- Captured as a repo-tracked, idempotent-to-review script:
+  =build/scripts/windows/open_wsl_firewall_ports.ps1= (run elevated
+  on the Windows host). Covers Postgres (5433) plus all 9 current
+  worktrees' service-port blocks in one pass.
+
+** Packaging for deployment (done)
+
+- Considered reusing the existing =build/cpack/CMakeLists.txt= CPack
+  setup as-is: rejected. On Linux it only defined a =DEB= generator,
+  =ALL_COMPONENTS_IN_ONE=, and every project's =install(TARGETS ...)=
+  (~97 call sites across =projects/*/CMakeLists.txt=) is untagged, so
+  the package would bundle =ores.qt= (the Qt6 desktop client) with
+  the headless services — unwanted Qt6 runtime bulk/deps on a
+  service-only host, and out of scope to fix now (splitting into
+  =services=/=qt= CPack components needs a manual per-file pass over
+  all 97 sites — captured separately, see =* See also=).
+- Instead, added a =TGZ= generator alongside the existing =DEB= one:
+  =build/cpack/CMakeLists.txt= — one-line change,
+  =set(CPACK_GENERATOR "TGZ;DEB")= in the =elseif(UNIX)= branch.
+  =cmake --install='s existing =install(TARGETS ...)= plumbing is
+  reused unchanged; Qt binaries just ride along in the tarball
+  unfiltered for now.
+- Verified via =compass build package= (which reconfigures cmake and
+  runs =cmake --build --target package=): both
+  =build/output/linux-clang-debug-make/packages/OreStudio-0.0.24-Linux.tar.gz=
+  and =orestudio_0.0.24_amd64.deb= (730M each, tarball has 397
+  entries under =opt/OreStudio/0.0.24/=) generated cleanly in one
+  =cpack= run.
+- This tarball is the deploy artifact: =scp=/=rsync= it to Newton,
+  =tar xzf= under e.g. =/opt/OreStudio/<version>=, point services at
+  the extracted =bin/=. No Debian package management needed on the
+  target — matches the "simplest path" call in
+  =* Recommended architecture= above.
+
+** Deploy test: glibc mismatch blocks copied binaries (done)
+
+Attempted the full test: vendored a static =nats-server= binary (see
+=external/nats/=, unaffected by this problem), copied the CPack TGZ
+package to Newton, and tried running the extracted
+=ores.controller.service= there. It fails outright:
+
+#+begin_example
+./ores.controller.service: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found
+./ores.controller.service: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.32' not found
+./ores.controller.service: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `CXXABI_1.3.13' not found
+#+end_example
+
+*Root cause*: this dev box builds against Debian *sid/forky*'s glibc
+(very new); Newton is Debian *11 bullseye* (glibc 2.31). Our C++
+service binaries are dynamically linked against libc/libstdc++ and
+cannot run on an older glibc than they were built against — no
+copying workaround exists (unlike =nats-server=, a statically-linked
+Go binary with no libc dependency at all, which is unaffected).
+
+*This invalidates the "simplest path" call in the
+=* Recommended architecture= section above* for anything we compile
+ourselves: "build locally, rsync/scp the built binaries" does not
+work as stated once the build host and the deploy host are on
+different glibc generations. DB (separate Postgres install) and NATS
+(vendored static binary) are both unaffected — this is specific to
+our own C++ service/CLI/library binaries.
+
+Options going forward (not decided here — see the follow-up task):
+- Build against a Debian 11 sysroot/container so binaries link
+  against a compatible (older) glibc.
+- Ship a matching runtime alongside the binaries (fragile — glibc
+  isn't designed to be relocated this way) or move to a static/musl
+  build (a much bigger retooling effort).
+- Adopt Docker after all — the =* Recommended architecture= section
+  deferred this "only if artifact/dependency drift becomes a real
+  pain point"; this is exactly that pain point, and it surfaced on
+  the very first live test.
+
 * Notes
+
+- WSL is in classic NAT mode (eth0 =172.24.31.151/20=, default route
+  via =172.24.16.1=) — 192.168.1.22 is the Windows host's own LAN
+  IP. Port 22 already reaches WSL's sshd, meaning a portproxy/
+  firewall rule for 22 pre-exists; any new service port would need
+  the same treatment unless we switch modes.
+- Switched to *mirrored networking* instead of per-port portproxy
+  rules: wrote =C:\Users\isaac\.wslconfig= (via the =/mnt/c= mount,
+  no admin rights needed) with:
+  #+begin_src conf
+  [wsl2]
+  networkingMode=mirrored
+  #+end_src
+  Takes effect after =wsl --shutdown= + restart from the Windows
+  side (pending — user will do this manually). Once active, every
+  port WSL binds is directly reachable at 192.168.1.22 with no
+  per-port proxy rules and no IP drift across reboots.
 
 * Test Scenarios
 
@@ -61,6 +323,10 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 |          |       |       |
+
+* See also
+
+- [[id:BB1390E8-5C6B-4B5D-A789-576B6F83B2F3][CPack COMPONENT split: services vs Qt install targets]] (capture)
 
 * PRs
 

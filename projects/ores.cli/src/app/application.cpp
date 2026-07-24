@@ -126,9 +126,9 @@
 #include <algorithm>
 #include <chrono>
 #include <magic_enum/magic_enum.hpp>
+#include <map>
 #include <optional>
 #include <rfl/json.hpp>
-#include <map>
 #include <set>
 #include <sqlgen/postgres.hpp>
 #include <type_traits>

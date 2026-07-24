@@ -51,8 +51,8 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include <array>
 #include <boost/uuid/uuid_io.hpp>
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>

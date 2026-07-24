@@ -1927,13 +1927,18 @@ void MarketSimulatorWindow::promptThemeAndStart() {
         if (item->text() != chosen)
             continue;
         const auto folderId = item->data(FolderIdRole).toString().toStdString();
-        startFolderAsync(folderId);
-        auto curves = irCurvesUnderIndex(item->index());
-        curves.erase(std::remove_if(curves.begin(),
-                                    curves.end(),
-                                    [](const auto& ir) { return !ir.auto_start; }),
-                    curves.end());
-        startIrCurvesAsync(std::move(curves));
+        if (!folderId.empty()) {
+            startFolderAsync(folderId);
+            auto curves = irCurvesUnderIndex(item->index());
+            curves.erase(std::remove_if(curves.begin(),
+                                        curves.end(),
+                                        [](const auto& ir) { return !ir.auto_start; }),
+                        curves.end());
+            startIrCurvesAsync(std::move(curves));
+        } else {
+            startPairsAsync(pairsUnderIndex(item->index()));
+            startIrCurvesAsync(irCurvesUnderIndex(item->index()));
+        }
     }
 }
 

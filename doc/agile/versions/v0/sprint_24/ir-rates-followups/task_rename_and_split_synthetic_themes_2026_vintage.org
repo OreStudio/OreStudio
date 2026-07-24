@@ -118,7 +118,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ~promptThemeAndStart()~ calls ~startFolderAsync("")~ unconditionally for folder-less collections, unlike ~onStartFeedClicked()~'s guarded fallback | MarketSimulatorWindow.cpp | Fixed | Added the same empty-~folderId~ guard, falling back to ~startPairsAsync(pairsUnderIndex(...))~ + ~startIrCurvesAsync(irCurvesUnderIndex(...))~ |
+| 2 | Both IR themes mark every curve ~auto_start=true~; cross-theme auto-start on the system tenant isn't server-guarded | SQL (both IR populate scripts) | Declined | Not a regression from this PR; the mutual-exclusivity invariant is intentionally client-side today (~promptThemeAndStart()~) per the existing design; flagged as a future hardening concern, not blocking |
+| 3 | ~QaValidationRunnerWidget.cpp~ WSLg screenshot fix | QaValidationRunnerWidget.cpp | Accepted (no change) | Reviewer confirmed no issues |
 
 * Result
 

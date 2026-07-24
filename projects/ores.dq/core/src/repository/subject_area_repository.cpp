@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -36,95 +36,110 @@ std::string subject_area_repository::sql() {
     return generate_create_table_sql<subject_area_entity>(lg());
 }
 
-subject_area_repository::subject_area_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void subject_area_repository::write(const domain::subject_area& subject_area) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing subject_area to database: " << subject_area.name << "/"
-                               << subject_area.domain_name;
-
+void subject_area_repository::write(context ctx, const domain::subject_area& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing subject area: " << v.name;
     execute_write_query(
-        ctx_, subject_area_mapper::map(subject_area), lg(), "writing subject_area to database");
+        ctx, subject_area_mapper::map(v), lg(), "Writing subject area to database.");
 }
 
-void subject_area_repository::write(const std::vector<domain::subject_area>& subject_areas) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing subject_areas to database. Count: "
-                               << subject_areas.size();
-
+void subject_area_repository::write(context ctx, const std::vector<domain::subject_area>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing subject areas. Count: " << v.size();
     execute_write_query(
-        ctx_, subject_area_mapper::map(subject_areas), lg(), "writing subject_areas to database");
+        ctx, subject_area_mapper::map(v), lg(), "Writing subject areas to database.");
 }
 
-std::vector<domain::subject_area> subject_area_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("domain_name"_c, "name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
-        "Reading latest subject_areas");
+        "Reading latest subject areas");
 }
 
-std::vector<domain::subject_area>
-subject_area_repository::read_latest(const std::string& name, const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_area. Name: " << name
-                               << ", Domain: " << domain_name;
+std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx,
+                                                                       const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest subject area. name: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
+                       where("name"_c == name && "valid_to"_c == max.value());
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    return execute_read_query<subject_area_entity, domain::subject_area>(
+        ctx,
+        query,
+        [](const auto& entities) { return subject_area_mapper::map(entities); },
+        lg(),
+        "Reading latest subject area by name.");
+}
+
+std::vector<domain::subject_area> subject_area_repository::read_all(context ctx,
+                                                                    const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all subject area versions. name: " << name;
+    const auto query = sqlgen::read<std::vector<subject_area_entity>> | where("name"_c == name) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<subject_area_entity, domain::subject_area>(
+        ctx,
+        query,
+        [](const auto& entities) { return subject_area_mapper::map(entities); },
+        lg(),
+        "Reading all subject area versions by name.");
+}
+
+std::optional<domain::subject_area> subject_area_repository::read_at_version(
+    context ctx, const std::string& name, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading subject area at version. name: " << name
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
+                       where("name"_c == name && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<subject_area_entity, domain::subject_area>(
+        ctx,
+        query,
+        [](const auto& entities) { return subject_area_mapper::map(entities); },
+        lg(),
+        "Reading subject area at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void subject_area_repository::remove(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing subject area: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<subject_area_entity>> |
-        where("name"_c == name && "domain_name"_c == domain_name && "valid_to"_c == max.value());
+        sqlgen::delete_from<subject_area_entity> |
+        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx_,
-        query,
-        [](const auto& entities) { return subject_area_mapper::map(entities); },
-        lg(),
-        "Reading latest subject_area by composite key.");
+    execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
 }
 
 std::vector<domain::subject_area>
-subject_area_repository::read_latest_by_domain(const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_areas by domain: " << domain_name;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("domain_name"_c == domain_name && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
-
-    return execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx_,
-        query,
-        [](const auto& entities) { return subject_area_mapper::map(entities); },
-        lg(),
-        "Reading latest subject_areas by domain.");
-}
-
-std::vector<domain::subject_area> subject_area_repository::read_latest(std::uint32_t offset,
-                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_areas with offset: " << offset
+subject_area_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest subject areas with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("domain_name"_c, "name"_c) |
+                       where("valid_to"_c == max.value()) | order_by("name"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
-        "Reading latest subject_areas with pagination.");
+        "Reading latest subject areas with pagination.");
 }
 
-std::uint32_t subject_area_repository::get_total_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject_area count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::uint32_t subject_area_repository::get_total_area_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -133,39 +148,22 @@ std::uint32_t subject_area_repository::get_total_count() {
     const auto query = sqlgen::select_from<subject_area_entity>(sqlgen::count().as<"count">()) |
                        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active subject_area count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active subject area count: " << count;
     return count;
 }
 
-std::vector<domain::subject_area>
-subject_area_repository::read_all(const std::string& name, const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all subject_area versions. Name: " << name
-                               << ", Domain: " << domain_name;
-
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("name"_c == name && "domain_name"_c == domain_name) |
-                       order_by("version"_c.desc());
-
-    return execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx_,
-        query,
-        [](const auto& entities) { return subject_area_mapper::map(entities); },
-        lg(),
-        "Reading all subject_area versions by composite key.");
+void subject_area_repository::remove(context ctx, const std::vector<std::string>& names) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<subject_area_entity> |
+        where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing subject areas.");
 }
 
-void subject_area_repository::remove(const std::string& name, const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing subject_area from database: " << name << "/"
-                               << domain_name;
-
-    const auto query = sqlgen::delete_from<subject_area_entity> |
-                       where("name"_c == name && "domain_name"_c == domain_name);
-
-    execute_delete_query(ctx_, query, lg(), "removing subject_area from database");
-}
 
 }

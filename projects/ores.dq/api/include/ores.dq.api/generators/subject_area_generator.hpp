@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -32,13 +32,6 @@ namespace ores::dq::generators {
  */
 ORES_DQ_API_EXPORT domain::subject_area
 generate_synthetic_subject_area(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates a synthetic subject_area with the given domain name.
- */
-ORES_DQ_API_EXPORT domain::subject_area
-generate_synthetic_subject_area(const std::string& domain_name,
-                                utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic subject_areas.

@@ -27,11 +27,13 @@ external source).
 :component: dq
 :END:
 
-* Primary key
+* Columns
+
+** name
 :PROPERTIES:
-:column:   name
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique name identifying this subject area within its data domain.
@@ -42,28 +44,21 @@ Examples: "currencies", "countries", "images".
 std::string(faker::word::noun()) + " Area"
 #+end_src
 
-* Natural keys
-
-* Columns
-
 ** domain_name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:primary_key: true
 :END:
 
 Name of the data domain this subject area belongs to. References
-=ores_dq_data_domains_tbl= (soft FK). The real table's natural key is
-compound (=name= + =domain_name=); domain_entity's primary key/
-exclusion constraint still only support a single column
-([[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][52FE40FA]], BACKLOG), so
-=domain_name= is a plain =Column= plus a compound =Indexes= entry
-below enforcing the pair's uniqueness for current rows -- weaker than
-a true composite primary key/exclusion constraint, but stronger than
-the =lookup_entity= version this replaces (which had no compound
-uniqueness enforcement at all). Do not regenerate/swap this table
-over the hand-written one until 52FE40FA lands.
+=ores_dq_data_domains_tbl= (soft FK). Together with =name= this forms
+a true compound physical primary key, enforced by
+~sql_schema_domain_entity_create.mustache~'s composite primary
+key/GIST exclusion constraint support
+([[id:6C5FADD1-478A-46ED-A266-35A8182B814E][6C5FADD1]]) -- replacing
+the previous plain =Column= + bolt-on unique-index workaround.
 
 #+begin_src cpp :name generator
 std::string("reference_data")
@@ -102,15 +97,6 @@ std::string(faker::lorem::sentence())
 | column      | validation_function          |
 |-------------+-------------------------------|
 | domain_name | ores_dq_validate_data_domain_fn |
-
-* Indexes
-
-** domain_name_pair
-:PROPERTIES:
-:columns:      name, domain_name
-:unique:       true
-:current_only: true
-:END:
 
 * C++
 

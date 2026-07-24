@@ -17,19 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
-#define ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
+#ifndef ORES_DQ_CORE_PRESENTATION_SUBJECT_AREA_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_SUBJECT_AREA_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
+#include "ores.dq.core/export.hpp"
+#include <vector>
 
-namespace ores::dq::domain {
+namespace ores::dq::presentation {
 
 /**
- * @brief Dumps the subject_area to a stream in JSON format.
+ * @brief Renders a subject_area to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const subject_area& v);
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_subject_area_fields(const domain::subject_area& v);
 
 }
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,26 +30,19 @@ namespace ores::dq::eventing {
 /**
  * @brief Domain event indicating that subject area data has changed.
  *
- * This event is published when any subject_area entity is created,
- * updated, or deleted in the database. Subscribers can use the timestamp to
- * query for changes since that point.
+ * Published when any subject area entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct subject_area_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Keys of subject areas that changed.
-     *
-     * Contains the composite keys (name/domain_name) of subject areas that were
-     * created, updated, or deleted. May contain multiple keys for batch operations.
+     * @brief Changed subject area codes.
      */
-    std::vector<std::string> keys;
+    std::vector<std::string> names;
 
     /**
      * @brief The tenant that owns the changed entity.

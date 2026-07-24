@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,20 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
-#define ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
 
-#include "ores.dq.api/domain/subject_area.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
-
-namespace ores::dq::domain {
-
-/**
- * @brief Dumps the subject_area to a stream in JSON format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const subject_area& v);
-
-}
-
-#endif
+drop rule if exists ores_dq_subject_areas_delete_rule on "ores_dq_subject_areas_tbl";
+drop trigger if exists ores_dq_subject_areas_insert_trg on "ores_dq_subject_areas_tbl";
+drop function if exists ores_dq_subject_areas_insert_fn;
+drop table if exists "ores_dq_subject_areas_tbl";

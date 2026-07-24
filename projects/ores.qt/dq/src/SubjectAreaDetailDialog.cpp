@@ -1,0 +1,307 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/SubjectAreaDetailDialog.hpp"
+#include ""
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ui_SubjectAreaDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+SubjectAreaDetailDialog::SubjectAreaDetailDialog(QWidget* parent)
+    : DetailDialogBase(parent)
+    , ui_(new Ui::SubjectAreaDetailDialog)
+    , clientManager_(nullptr) {
+
+    ui_->setupUi(this);
+    setupUi();
+    setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
+}
+
+SubjectAreaDetailDialog::~SubjectAreaDetailDialog() {
+    delete ui_;
+}
+
+QTabWidget* SubjectAreaDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* SubjectAreaDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* SubjectAreaDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
+
+QString SubjectAreaDetailDialog::code() const {
+    return QString::fromStdString(_.);
+}
+
+void SubjectAreaDetailDialog::setupUi() {
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+}
+
+void SubjectAreaDetailDialog::setupConnections() {
+    connect(ui_->saveButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onCloseClicked);
+}
+
+void SubjectAreaDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+}
+
+void SubjectAreaDetailDialog::setUsername(const std::string& username) {
+    username_ = username;
+}
+
+void SubjectAreaDetailDialog::setArea(const&) {
+    _ = ;
+    updateUiFromArea();
+}
+
+void SubjectAreaDetailDialog::setCreateMode(bool createMode) {
+    createMode_ = createMode;
+    ui_->deleteButton->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void SubjectAreaDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void SubjectAreaDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+}
+
+void SubjectAreaDetailDialog::updateUiFromArea() {
+
+    populateProvenance(_.version,
+                       _.modified_by,
+                       _.performed_by,
+                       _.recorded_at,
+                       _.change_reason_code,
+                       _.change_commentary);
+
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void SubjectAreaDetailDialog::updateAreaFromUi() {
+    _.modified_by = username_;
+}
+
+
+void SubjectAreaDetailDialog::onFieldChanged() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void SubjectAreaDetailDialog::updateSaveButtonState() {
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
+    ui_->saveButton->setEnabled(canSave);
+}
+
+bool SubjectAreaDetailDialog::validateInput() {
+
+    return true;
+}
+
+void SubjectAreaDetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save subject area while disconnected from server.");
+        return;
+    }
+
+    if (!validateInput()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
+        return;
+    }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    _.change_reason_code = crSel->reason_code;
+    _.change_commentary = crSel->commentary;
+
+    updateAreaFromUi();
+
+    BOOST_LOG_SEV(lg(), info) << "Saving subject area: " << _.;
+
+    QPointer<SubjectAreaDetailDialog> self = this;
+
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, = _]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        request;
+        request.data = ;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
+
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Subject Area saved successfully";
+                    QString code = QString::fromStdString(self->_.);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->Saved(code);
+                    self->notifySaveSuccess(tr("Subject Area '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void SubjectAreaDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete subject area while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(_.);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Subject Area",
+        QString("Are you sure you want to delete subject area '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting subject area: " << _.;
+
+    QPointer<SubjectAreaDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, code = _.]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        request;
+        request.codes = {code};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Subject Area deleted successfully";
+            emit self->statusMessage(QString("Subject Area '%1' deleted").arg(code));
+            emit self->Deleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+
+}

@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
-#define ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
+#ifndef ORES_DQ_SERVICE_MESSAGING_SUBJECT_AREA_EVENT_REGISTRAR_HPP
+#define ORES_DQ_SERVICE_MESSAGING_SUBJECT_AREA_EVENT_REGISTRAR_HPP
 
-#include "ores.dq.api/domain/subject_area.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::service::messaging {
 
-/**
- * @brief Dumps the subject_area to a stream in JSON format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const subject_area& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_subject_area_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                    ores::eventing::service::event_bus& event_bus,
+                                    ores::nats::service::client& nats);
 
-}
+} // namespace ores::dq::service::messaging
 
 #endif

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,9 @@
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,7 +34,7 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads and writes subject_areas to data storage.
+ * @brief Reads and writes subject areas to data storage.
  */
 class ORES_DQ_CORE_EXPORT subject_area_repository {
 private:
@@ -46,60 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit subject_area_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes subject_areas to database.
+     * @brief Writes subject areas to database.
      */
     /**@{*/
-    void write(const domain::subject_area& subject_area);
-    void write(const std::vector<domain::subject_area>& subject_areas);
+    void write(context ctx, const domain::subject_area& v);
+    void write(context ctx, const std::vector<domain::subject_area>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest subject_areas.
+     * @brief Reads latest subject areas, possibly filtered by name.
      */
-    std::vector<domain::subject_area> read_latest();
+    /**@{*/
+    std::vector<domain::subject_area> read_latest(context ctx);
+    std::vector<domain::subject_area> read_latest(context ctx, const std::string& name);
+    /**@}*/
 
     /**
-     * @brief Reads latest subject_area by composite key.
+     * @brief Reads all subject areas, possibly filtered by name.
      */
-    std::vector<domain::subject_area> read_latest(const std::string& name,
-                                                  const std::string& domain_name);
+    std::vector<domain::subject_area> read_all(context ctx, const std::string& name);
 
     /**
-     * @brief Reads latest subject_areas by domain name.
+     * @brief Reads a single subject area as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param name The name to look up
+     * @param version The version to fetch
      */
-    std::vector<domain::subject_area> read_latest_by_domain(const std::string& domain_name);
+    std::optional<domain::subject_area>
+    read_at_version(context ctx, const std::string& name, std::uint32_t version);
 
     /**
-     * @brief Reads latest subject_areas with pagination support.
+     * @brief Reads latest subject areas with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
-    std::vector<domain::subject_area> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::subject_area>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active subject_areas.
+     * @brief Gets the total count of active subject areas.
+     * @param ctx Repository context with database connection
+     * @return Total number of active subject areas
      */
-    std::uint32_t get_total_count();
+    std::uint32_t get_total_area_count(context ctx);
 
     /**
-     * @brief Reads all historical versions of a subject_area by composite key.
+     * @brief Deletes a subject area by closing its temporal validity.
      */
-    std::vector<domain::subject_area> read_all(const std::string& name,
-                                               const std::string& domain_name);
+    void remove(context ctx, const std::string& name);
 
     /**
-     * @brief Deletes a subject_area by closing its temporal validity.
+     * @brief Deletes subject areas by closing their temporal validity.
      */
-    void remove(const std::string& name, const std::string& domain_name);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::vector<std::string>& names);
 };
 
 }

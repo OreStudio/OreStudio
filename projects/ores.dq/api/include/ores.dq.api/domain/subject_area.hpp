@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,21 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_SUBJECT_AREA_HPP
 #define ORES_DQ_API_DOMAIN_SUBJECT_AREA_HPP
 
-#include <chrono>
-#include <optional>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Represents a subdivision within a data domain.
+ * @brief Sub-classification within a data domain.
  *
- * Subject areas provide finer-grained categorization within a data domain.
- * For example, within "Reference Data" domain, subject areas might include
- * "Currencies", "Countries", "Parties", etc.
- *
- * Subject areas are uniquely identified by the combination of their name
- * and the data domain they belong to (composite key).
+ * Sub-classification within a data domain. Examples: currencies,
+ * countries, images. Rows are authored directly (not mirrored from an
+ * external source).
  */
 struct subject_area final {
     /**
@@ -45,25 +42,17 @@ struct subject_area final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Name of this subject area within its domain.
+     * @brief Unique name identifying this subject area within its data domain.
      *
-     * Part of the composite key (name + domain_name).
-     * Examples: "Currencies", "Countries", "Parties".
+     * Examples: "currencies", "countries", "images".
      */
     std::string name;
 
     /**
-     * @brief Name of the data domain this subject area belongs to.
-     *
-     * Part of the composite key. References data_domain.name (soft FK).
-     */
-    std::string domain_name;
-
-    /**
-     * @brief Human-readable description of the subject area's purpose.
+     * @brief Human-readable description of this subject area.
      */
     std::string description;
 
@@ -73,20 +62,37 @@ struct subject_area final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for subject_area, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const subject_area&) {
+    return "ores.dq.subject_area";
+}
 
 }
 

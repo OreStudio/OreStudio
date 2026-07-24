@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,26 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
 create or replace function ores_dq_subject_areas_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     entity_name text := 'ores.dq.subject_area';
     change_timestamp timestamptz := NOW();
-    changed_key text;
+    changed_name text;
     changed_tenant_id text;
 begin
-    -- Subject areas have a composite key (name, domain_name)
     if TG_OP = 'DELETE' then
-        changed_key := OLD.name || '/' || OLD.domain_name;
+        changed_name := OLD.name;
+        changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_key := NEW.name || '/' || NEW.domain_name;
+        changed_name := NEW.name;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_key),
+        'entity_ids', jsonb_build_array(changed_name),
         'tenant_id', changed_tenant_id
     );
 

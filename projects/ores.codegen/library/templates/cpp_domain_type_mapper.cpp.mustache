@@ -39,12 +39,14 @@ domain::{{entity_singular}}
 {{#has_workspace_id}}
     r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
 {{/has_workspace_id}}
-{{#primary_key.is_text}}
-    r.identity.{{primary_key.column}} = v.{{primary_key.column}}.value();
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-    r.identity.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
-{{/primary_key.is_uuid}}
+{{#primary_key.columns}}
+{{#is_text}}
+    r.identity.{{column}} = v.{{column}}.value();
+{{/is_text}}
+{{#is_uuid}}
+    r.identity.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
+{{/is_uuid}}
+{{/primary_key.columns}}
 {{/has_identity_group}}
 {{^has_identity_group}}
 {{#has_audit_columns}}
@@ -56,12 +58,14 @@ domain::{{entity_singular}}
 {{#has_workspace_id}}
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
 {{/has_workspace_id}}
-{{#primary_key.is_text}}
-    r.{{primary_key.column}} = v.{{primary_key.column}}.value();
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-    r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
-{{/primary_key.is_uuid}}
+{{#primary_key.columns}}
+{{#is_text}}
+    r.{{column}} = v.{{column}}.value();
+{{/is_text}}
+{{#is_uuid}}
+    r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
+{{/is_uuid}}
+{{/primary_key.columns}}
 {{/has_identity_group}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
@@ -163,12 +167,14 @@ domain::{{entity_singular}}
 
     {{entity_singular}}_entity r;
 {{#has_identity_group}}
-{{#primary_key.is_text}}
-    r.{{primary_key.column}} = v.identity.{{primary_key.column}};
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-    r.{{primary_key.column}} = boost::uuids::to_string(v.identity.{{primary_key.column}});
-{{/primary_key.is_uuid}}
+{{#primary_key.columns}}
+{{#is_text}}
+    r.{{column}} = v.identity.{{column}};
+{{/is_text}}
+{{#is_uuid}}
+    r.{{column}} = boost::uuids::to_string(v.identity.{{column}});
+{{/is_uuid}}
+{{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.identity.tenant_id.to_string();
 {{/has_tenant_id}}
@@ -180,12 +186,14 @@ domain::{{entity_singular}}
 {{/has_audit_columns}}
 {{/has_identity_group}}
 {{^has_identity_group}}
-{{#primary_key.is_text}}
-    r.{{primary_key.column}} = v.{{primary_key.column}};
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-    r.{{primary_key.column}} = boost::uuids::to_string(v.{{primary_key.column}});
-{{/primary_key.is_uuid}}
+{{#primary_key.columns}}
+{{#is_text}}
+    r.{{column}} = v.{{column}};
+{{/is_text}}
+{{#is_uuid}}
+    r.{{column}} = boost::uuids::to_string(v.{{column}});
+{{/is_uuid}}
+{{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id.to_string();
 {{/has_tenant_id}}

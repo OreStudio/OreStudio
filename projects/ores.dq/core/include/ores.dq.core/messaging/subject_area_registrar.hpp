@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
-#define ORES_DQ_API_DOMAIN_SUBJECT_AREA_JSON_IO_HPP
+#ifndef ORES_DQ_CORE_MESSAGING_SUBJECT_AREA_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_SUBJECT_AREA_REGISTRAR_HPP
 
-#include "ores.dq.api/domain/subject_area.hpp"
-#include "ores.dq.api/export.hpp"
-#include <iosfwd>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace ores::dq::domain {
+namespace ores::dq::messaging {
 
-/**
- * @brief Dumps the subject_area to a stream in JSON format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const subject_area& v);
+std::vector<ores::nats::service::subscription>
+register_subject_area_handlers(ores::nats::service::client& nats,
+                               ores::database::context ctx,
+                               std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::dq::messaging
 
 #endif

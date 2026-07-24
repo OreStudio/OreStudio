@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
+#include "ores.analytics.quant/service/quantlib_calendar_rulesets.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
@@ -30,41 +31,9 @@ using ores::analytics::quant::domain::calendar_ruleset;
 using ores::analytics::quant::domain::instantiated_holiday;
 using ores::analytics::quant::domain::observance_shift;
 using ores::analytics::quant::service::calendar_rule_engine;
+using ores::analytics::quant::service::quantlib_calendar_rulesets;
 
 namespace {
-
-// TARGET (the Eurosystem's calendar), transcribed rule-for-rule from
-// QuantLib's ql/time/calendars/target.cpp -- the reference this test
-// replicates against QuantLib's own testTARGET golden dataset
-// (test-suite/calendars.cpp).
-calendar_ruleset target_ruleset() {
-    calendar_ruleset cal;
-    cal.rules = {
-        // New Year's Day
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = January, .day = 1u},
-        // Good Friday (Easter Monday - 3 days = Easter Sunday - 2 days), from 2000
-        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = -2,
-                      .effective_from = year{2000}},
-        // Easter Monday (Easter Sunday + 1 day), from 2000
-        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = 1,
-                      .effective_from = year{2000}},
-        // Labour Day, from 2000
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = May, .day = 1u,
-                      .effective_from = year{2000}},
-        // Christmas
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u},
-        // Day of Goodwill, from 2000
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 26u,
-                      .effective_from = year{2000}},
-    };
-    cal.exceptions = {
-        // December 31st, 1998, 1999, and 2001 only
-        calendar_exception{.date = year{1998} / December / 31, .is_business_day = false},
-        calendar_exception{.date = year{1999} / December / 31, .is_business_day = false},
-        calendar_exception{.date = year{2001} / December / 31, .is_business_day = false},
-    };
-    return cal;
-}
 
 std::vector<year_month_day> dates_for(std::size_t calendar_index,
                                       const std::vector<instantiated_holiday>& all) {
@@ -89,7 +58,7 @@ TEST_CASE("easter_sunday matches known reference dates", "[calendar_rule_engine]
 
 TEST_CASE("TARGET holiday list 1999-2006 matches QuantLib's testTARGET dataset",
          "[calendar_rule_engine][target]") {
-    const std::vector<calendar_ruleset> calendars = {target_ruleset()};
+    const std::vector<calendar_ruleset> calendars = {quantlib_calendar_rulesets::target()};
     const auto start = year{1999} / January / 1;
     const auto end = year{2006} / December / 31;
 

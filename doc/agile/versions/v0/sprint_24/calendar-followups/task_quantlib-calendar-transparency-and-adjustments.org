@@ -736,6 +736,34 @@ path.
 
 * Notes
 
+** Step 1/2 progress (=ores.analytics.quant=)
+
+- Step 1 done: =domain::calendar_rule=, =domain::calendar_exception=,
+  =domain::calendar_ruleset=, =service::calendar_rule_engine=
+  (batch instantiation + =easter_sunday=), and
+  =domain::business_day_calendar_set= (CSR storage + batch
+  =is_business_day= queries) are built, pure, and fully unit-tested
+  (21 new test cases) -- including an exact replication of QuantLib's
+  own =testTARGET= golden holiday dataset (1999-2006).
+- Step 2 in progress: =service::quantlib_calendar_rulesets= transcribes
+  TARGET, WeekendsOnly, and =UnitedStates::Settlement= rule-for-rule
+  from the vendored QuantLib source, verified against QuantLib's own
+  =testUSSettlement= dataset (2004-2005 *and* the pre-Uniform-Monday-
+  Holiday-Act 1961 dataset, exercising the disjoint effective_from/
+  effective_to rule-splitting the 1971 Act requires).
+- *Known gap, deliberately deferred*: =UnitedKingdom= is not yet
+  covered. Its Christmas/Boxing Day pair rolls as a unit -- a Saturday
+  Christmas and a Sunday Christmas both resolve to the same observed
+  date (Dec 27th), because Boxing Day claims whichever weekday
+  Christmas didn't take. This is a rule shape the engine's current
+  per-rule, single-date =observance_shift= model cannot express (it
+  shifts one holiday independently of any other). Needs either a new
+  rule kind (a "paired holiday roll") or a post-pass that resolves
+  colliding shifted dates across a calendar's rules together. Flagged
+  here rather than forcing a wrong implementation; the remaining ~55
+  QuantLib calendars beyond the starter set are a separate follow-up
+  capture per the original sequencing.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

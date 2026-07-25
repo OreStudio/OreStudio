@@ -96,7 +96,11 @@ approach:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unused =<QResizeEvent>= include | FlagIconHelper.cpp | Accepted | Removed; only =event->type()= is checked, no cast to =QResizeEvent*=. |
+| 2 | Centring math duplicated in =set_line_edit_flag_icon()= and =KeyFlagLabelPositioner::reposition()= | FlagIconHelper.cpp | Accepted | Exposed =reposition()= publicly and call it from both the initial-placement and resize paths; positioner instance is stashed via a =QLabel= property since it has no =Q_OBJECT= macro to support =findChild()=. |
+| 3 | =setTextMargins()= unconditionally clobbers other margins | FlagIconHelper.cpp | Accepted | Added a comment documenting that this function is the sole owner of the field's text margins. |
+| 4 | Initial label position could be off before the first resize event | FlagIconHelper.cpp | Declined | Theoretical edge case; the QA scenario confirms correct rendering on dialog open in practice, and =.ui=-form widgets already have a laid-out height by the time =updateFlagDisplay()= first runs. |
+| 5 | Discarded =new KeyFlagLabelPositioner(...)= pointer | FlagIconHelper.cpp | Declined | Standard Qt parent/child idiom -- lifetime is owned by the label, no leak. |
 
 * Result
 

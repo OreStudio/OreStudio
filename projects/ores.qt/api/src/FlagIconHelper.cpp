@@ -26,7 +26,6 @@
 #include <QLabel>
 #include <QPainter>
 #include <QPixmap>
-#include <QResizeEvent>
 #include <QtConcurrent>
 #include <algorithm>
 
@@ -44,8 +43,15 @@ constexpr int key_flag_gap = 4; // gap between the overlay icon and the text
 // files as plain QLineEdit.
 class KeyFlagLabelPositioner : public QObject {
 public:
-    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label) : QObject(edit), edit_(edit), label_(label) {
+    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label) : QObject(label), edit_(edit), label_(label) {
         edit_->installEventFilter(this);
+    }
+
+    // Also called directly from set_line_edit_flag_icon() on the initial
+    // placement, so the centring formula lives in exactly one place.
+    void reposition() const {
+        const int y = (edit_->height() - label_->height()) / 2;
+        label_->move(key_flag_left_margin, std::max(0, y));
     }
 
 protected:
@@ -56,11 +62,6 @@ protected:
     }
 
 private:
-    void reposition() const {
-        const int y = (edit_->height() - label_->height()) / 2;
-        label_->move(key_flag_left_margin, std::max(0, y));
-    }
-
     QLineEdit* edit_;
     QLabel* label_;
 };
@@ -111,6 +112,11 @@ void set_line_edit_flag_icon(QLineEdit* edit,
                              const QIcon& icon,
                              QLabel*& label_ptr,
                              QSize iconSize) {
+    // set_line_edit_flag_icon() is the sole owner of this line edit's text
+    // margins (there is no trailing icon/margin use case on these fields
+    // today) — a future caller needing to combine this with another margin
+    // source would need to coordinate here rather than call setTextMargins()
+    // independently.
     if (icon.isNull()) {
         if (label_ptr)
             label_ptr->hide();
@@ -118,18 +124,26 @@ void set_line_edit_flag_icon(QLineEdit* edit,
         return;
     }
 
+    KeyFlagLabelPositioner* positioner = nullptr;
     if (!label_ptr) {
         label_ptr = new QLabel(edit);
         label_ptr->setAttribute(Qt::WA_TransparentForMouseEvents);
         label_ptr->setStyleSheet("background: transparent; border: none;");
-        new KeyFlagLabelPositioner(edit, label_ptr);
+        positioner = new KeyFlagLabelPositioner(edit, label_ptr);
+        // KeyFlagLabelPositioner has no Q_OBJECT macro (no signals/slots
+        // needed beyond the eventFilter override), so it can't be found via
+        // QObject::findChild(); stash it as a property instead for the
+        // "already exists" branch below.
+        label_ptr->setProperty("oresKeyFlagPositioner", QVariant::fromValue<void*>(positioner));
+    } else {
+        positioner =
+            static_cast<KeyFlagLabelPositioner*>(label_ptr->property("oresKeyFlagPositioner").value<void*>());
     }
 
     label_ptr->setFixedSize(iconSize);
     label_ptr->setPixmap(icon.pixmap(iconSize));
     edit->setTextMargins(key_flag_left_margin + iconSize.width() + key_flag_gap, 0, 0, 0);
-    const int y = (edit->height() - iconSize.height()) / 2;
-    label_ptr->move(key_flag_left_margin, std::max(0, y));
+    positioner->reposition();
     label_ptr->show();
     label_ptr->raise();
 }

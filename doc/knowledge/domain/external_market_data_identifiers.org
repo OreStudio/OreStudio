@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: F3010EA7-6A0E-405C-81FA-1EF051749B5E
+:END:
+#+title: External market data identifiers
+#+description: A standalone comparative analysis of three market data identifier schemes — RIC, Bloomberg ticker, and the ORE canonical key — their origin, ownership, formal specification status, and pros, cons, and limitations.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:
+#+created: 2026-06-25
+#+updated: 2026-07-25
+
+* Summary
+
+Market data series are identified differently by different data vendors and
+systems. Reuters/Refinitiv (now LSEG) uses RICs (e.g. =EUR==), Bloomberg uses
+its own ticker syntax (e.g. =EURUSD BGN Curncy=), and the Open Source Risk
+Engine (ORE) uses a slash-delimited canonical key (e.g. =FX/RATE/EUR/USD=).
+This document is a standalone comparative analysis of these three schemes on
+their own terms — what each is, who owns it, whether a formal specification
+exists, and each scheme's pros, cons, and limitations — independent of any
+particular consumer of the schemes.
+
+* Format overviews
+
+** RIC (Reuters Instrument Code)
+
+The Reuters Instrument Code, now called the Refinitiv Identification Code
+but still universally referred to as RIC, is a ticker-like code that
+Reuters — and, through successive acquisitions, Refinitiv and now LSEG
+(London Stock Exchange Group) — has used since the 1980s to identify
+tradeable instruments and indices across its market data terminals and
+feeds. It is the oldest of the three schemes covered in this document and
+carries that history in its design: rather than a single systematic
+grammar, RIC is a loose family of per-asset-class conventions that grew
+organically as new instrument types were added to Reuters' systems over
+decades — an equity RIC appends an exchange suffix (=AAPL.OQ=), an index
+RIC is prefixed with a dot (=.SPX=), an FX spot RIC appends an equals sign
+(=EUR==), and credit/rates RICs often carry a broker-specific suffix
+(=ICAP=, =GFI=) reflecting which inter-dealer broker's screen the quote
+was sourced from. There is no independent standards body governing RIC —
+it is entirely owned and controlled by LSEG as a proprietary asset of its
+data business, and there is no open, publicly published specification: the
+authoritative definition of RIC syntax exists only inside the licensed
+Refinitiv Data Platform / Eikon / Workspace customer documentation,
+accessible to paying subscribers. Using RIC as an identifier therefore
+means depending on a data vendor's proprietary naming scheme rather than an
+open standard, and, mechanically, on characters (== and =.=) that many
+downstream systems — including hierarchical pub/sub subject naming — cannot
+carry unescaped. No dedicated open-source C++ library for parsing or
+generating RIC syntax was found; LSEG's own *Real-Time SDK* (formerly RFA
+/ the Enterprise Message API, written in C++) consumes RIC-tagged
+real-time feeds, but it is itself a proprietary, licence-gated SDK aimed at
+feed consumption, not a general-purpose open parser. See
+[[https://www.lseg.com/en/data-analytics][LSEG Data & Analytics]] for the
+vendor's own (login-gated) documentation portal, and the
+[[https://en.wikipedia.org/wiki/Reuters_Instrument_Code][Reuters Instrument
+Code]] Wikipedia article for a general-audience, non-authoritative summary.
+
+** Bloomberg ticker
+
+The Bloomberg ticker is Bloomberg L.P.'s own instrument-identification
+scheme, used throughout the Bloomberg Terminal and its programmatic
+interfaces since the Terminal's introduction in the early 1980s. Unlike
+RIC, every Bloomberg ticker follows one consistent two-part shape: a
+free-form ticker string followed by a space and a "yellow key" — a short,
+explicit asset-class tag such as =Equity=, =Curncy=, =Index=, =Comdty=, or
+=Corp= (e.g. =AAPL US Equity=, =EURUSD BGN Curncy=). That yellow key gives
+Bloomberg tickers a more systematic feel than RIC — a reader can always
+tell the asset class from the last token — but the internal structure of
+the ticker portion itself still varies by asset class: an equity ticker
+carries an exchange code (=US=, =LN=) as part of the ticker, while an FX
+or rates ticker does not, so there remains no single universal grammar
+that a program could apply uniformly across asset classes. Bloomberg
+ticker syntax is entirely proprietary to Bloomberg L.P.; there is no open
+standards body and no publicly published formal specification — the
+authoritative reference exists only inside the licensed Bloomberg
+Terminal and Bloomberg API (BLPAPI) customer documentation. No dedicated
+open-source C++ library for parsing or generating Bloomberg ticker syntax
+was found. Bloomberg's official *BLPAPI* C++ SDK lets a client query data
+by passing a ticker string, but it is itself a proprietary, licence-gated
+query API rather than an open parsing library, and it does not parse or
+validate ticker syntax on the client side — the string is passed through
+as an opaque key to Bloomberg's own backend for resolution. Bloomberg does
+maintain a large open-source C++ presence (its
+[[https://github.com/bloomberg/bde][BDE]], Basic Development Environment,
+libraries), but these are general-purpose foundational libraries and are
+unrelated to ticker parsing. See
+[[https://www.bloomberg.com/professional][Bloomberg Professional
+Services]] for the vendor's own (login-gated) documentation, and the
+[[https://en.wikipedia.org/wiki/Bloomberg_Terminal][Bloomberg Terminal]]
+Wikipedia article for a general-audience, non-authoritative summary.
+
+** ORE canonical key
+
+The ORE canonical key is the identifier scheme native to the Open Source
+Risk Engine (ORE), an open-source pricing and risk analytics library.
+Unlike RIC and Bloomberg, it was not designed as a market-data vendor's
+product identifier — it was designed purely as ORE's own internal input
+format for the =marketdata.csv= files that feed every ORE pricing run,
+and it is defined and owned entirely by
+the ORE open-source project, currently maintained by Acadia (formerly
+Quaternion Risk Management / AcadiaSoft). Because it exists to serve one
+program's input format rather than to label instruments for human traders
+across a whole industry, it is the most systematic of the three schemes:
+every key follows the exact same slash-delimited shape,
+=<series_type>/<metric>/<qualifier>[/<point_id>]=, regardless of asset
+class — an FX spot rate, an IR discount curve point, and a swaption vol
+surface point are all addressed by the same four logical fields, just
+with different values. There is no external standards body governing it
+either, but — in sharp contrast to RIC and Bloomberg — its specification
+is entirely open: the format is defined by ORE's own open-source code and
+by the example =marketdata.csv= files shipped with every ORE release, all
+of it freely readable without a licence of any kind. A C++ library for
+parsing and generating this format already exists and ships as part of
+ORE itself: the *OREData* library's =CSVLoader= reads =marketdata.csv=
+files into =ore::data::MarketDatum= objects keyed on this exact
+structure, and the same classes serialise back out to CSV — there is no
+separate parsing library to seek out, because parsing and generation are
+first-class, built-in parts of ORE. See
+[[https://www.opensourcerisk.org][Open Source Risk Engine — project
+home]] and [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine
+on GitHub]] (the =Examples/= directory contains the =marketdata.csv= files
+this key format is drawn from; =OREData/ored/marketdata/= contains the
+=CSVLoader=/=MarketDatum= parsing code).
+
+* Identifier scheme comparison
+
+Three schemes address the same instruments differently: RIC (Reuters/Refinitiv,
+now LSEG) is instrument-type-specific and not fully systematic; Bloomberg uses a
+space-separated =<ticker> <yellow-key>= composite; ORE uses a slash-delimited
+=<series_type>/<metric>/<qualifier>[/<point_id>]= key consumed directly by the ORE
+pricing engine (=marketdata.csv=). RIC and Bloomberg cells below are
+compiled from publicly visible instrument examples, not a primary vendor spec — see
+[[*Sources][Sources]]. "—" marks instruments with no worked ORE example in this
+document.
+
+** FX
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| EUR/USD spot | =EUR== | =EURUSD BGN Curncy= | =FX/RATE/EUR/USD= |
+| GBP/USD spot | =GBP== | =GBPUSD BGN Curncy= | =FX/RATE/GBP/USD= |
+| USD/JPY spot | =JPY== | — | — |
+| EUR/GBP cross | =EURGBP== | — | =FX/RATE/EUR/GBP= |
+| EUR/USD 1M forward | =EURUSD1MF== | =EURUSD1M BGN Curncy= | — |
+
+Notes: RIC major pairs use base currency code + ==; crosses use the 6-char pair +
+==; outright forwards append tenor + =F=. Bloomberg =BGN= = Bloomberg Generic
+fixing. FX spot is a scalar ORE series — no =point_id= segment.
+
+** Interest rates
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| USD overnight rate (SOFR) | =USDSOFR== | =SOFRRATE Index= | — |
+| EUR 6M EURIBOR | =EUR6MFSR== | =EUR006M Index= | — |
+| USD 5Y IRS par rate | =USDSB5Y=ICAP= | =USSA5 Curncy= | — |
+| EUR 10Y IRS par rate | =EURABS10Y=ICAP= | =EUSA10 Curncy= | — |
+| 10Y US Treasury yield | =US10YT=RR= | =USGG10YR Index= | — |
+| 10Y German Bund yield | =DE10YT=RR= | =GDBR10 Index= | — |
+| EUR discount curve, 2Y point | — | — | =DISCOUNT/RATE/EUR/2Y= |
+| USD discount curve, 5Y point | — | — | =DISCOUNT/RATE/USD/5Y= |
+
+Notes: RIC =ICAP= / =GFI= suffixes are broker-specific; =RR= = Reuters composite.
+No RIC/Bloomberg row above lines up with an ORE key and vice versa — the RIC/
+Bloomberg rows quote par rates for specific indices/tenors, while the ORE rows are
+term-structure series (=point_id= carries the tenor); yield curves are
+term-structure series, unlike FX spot.
+
+** Swaptions
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| EUR swaption vol, 5Y expiry / 2Y tenor, ATM | — | — | =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= |
+
+Notes: swaption surfaces carry a two-dimensional =point_id= (expiry/tenor/strike).
+No RIC or Bloomberg vol-surface example is documented here.
+
+** Equities and indices
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| Apple (NASDAQ) | =AAPL.OQ= | =AAPL US Equity= | — |
+| Vodafone (LSE) | =VOD.L= | =VOD LN Equity= | — |
+| S&P 500 index | =.SPX= | =SPX Index= | — |
+| FTSE 100 | =.FTSE= | =UKX Index= | — |
+| S&P 500 front-month future | =ESc1= | — | — |
+
+Notes: RIC exchange suffix (=.OQ= = NASDAQ, =.L= = London); indices prefixed with
+=.=; =c1= = continuous front month. No published ORE canonical-key example for
+equities or indices was found for this document.
+
+** Credit
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| iTraxx Europe 5Y CDS index | =ITRAXX-EUROPE-5Y-CDS=GFI= | =ITRX EUR 5Y Corp= | — |
+| Single-name CDS (Vodafone) | =VOD5YEUAM=ICAP= | — | — |
+
+** Commodities
+
+| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+|------------+-----+-------------------+--------------------|
+| WTI crude front-month future | =CLc1= | =CL1 Comdty= | — |
+| Brent crude front-month | =LCOc1= | =CO1 Comdty= | — |
+| Gold spot | =XAU== | =XAU BGN Curncy= | — |
+
+Notes: RIC treats gold spot as FX-like (=XAU==); =c1=/=1= = continuous front
+month.
+
+** ORE canonical key structure
+
+| Segment | Meaning | Example |
+|---------+---------+---------|
+| =series_type= | Asset class and curve family | =FX=, =DISCOUNT=, =SWAPTION=, =CAPFLOOR= |
+| =metric= | What is being quoted | =RATE=, =RATE_LNVOL=, =PRICE=, =SPREAD= |
+| =qualifier= | Series-specific identifier (CCY, CCY pair, index name, credit name) | =EUR/USD=, =EUR=, =CPTY_A/SR/USD= |
+| =point_id= | Tenor or surface coordinate (absent for scalar series) | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
+
+* Pros, cons, and limitations
+
+| Scheme | Pros | Cons / limitations |
+|--------+------+---------------------|
+| RIC | Widely deployed across sell-side systems and data terminals; per-asset-class conventions are well understood in the industry. | Proprietary, licence-gated (no open spec); instrument-type-specific and not fully systematic — conventions differ by asset class; contains characters (==, =.=) that many downstream systems (e.g. hierarchical pub/sub subjects) cannot use unescaped; broker-specific suffixes (=ICAP=, =GFI=) leak vendor/broker identity into the instrument key; no native concept of curve family or discount-vs-projection role. |
+| Bloomberg ticker | Widely deployed in buy-side and sell-side systems; yellow key gives an explicit, human-readable asset-class tag. | Proprietary, licence-gated (no open spec); space-separated composite is awkward for systems that expect a single token or path-like key; mixed case and spaces conflict with many downstream systems; like RIC, no native concept of curve family or discount-vs-projection role. |
+| ORE canonical key | Open source and openly documented; the native format of every ORE pricing-engine input file; slash-delimited structure decomposes cleanly into =series_type=/=metric=/=qualifier=/=point_id=; free of vendor licensing. | No published ORE example covers every instrument class (equities, indices, credit, commodities have no ORE canonical key precedent found for this document); has no structured field for curve family or discount-vs-projection role. |
+
+* Sources
+
+- RIC (Reuters Instrument Code) — proprietary to LSEG/Refinitiv. No open public
+  specification; documented only inside the licensed Refinitiv Data Platform /
+  Eikon customer portal (=lseg.com=, login required). Not linkable here as a primary
+  source — the RIC table above is compiled from publicly visible instrument
+  examples, not a primary LSEG document.
+- Bloomberg ticker / yellow key — proprietary to Bloomberg L.P. No open public
+  specification; documented only inside the licensed Bloomberg Terminal / BLPAPI
+  customer portal (=bloomberg.com/professional=, login required). Not linkable here
+  as a primary source — the Bloomberg table above is compiled from publicly visible
+  instrument examples, not a primary Bloomberg document.
+- ORE canonical key — open source, documented in the Open Source Risk Engine (ORE)
+  user guide and =marketdata.csv= format reference. See
+  [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] below.
+
+* See also
+
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the canonical key format.

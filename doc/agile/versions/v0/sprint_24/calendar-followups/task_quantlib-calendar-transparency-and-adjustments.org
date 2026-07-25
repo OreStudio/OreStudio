@@ -114,9 +114,9 @@ the start, not bolted on later.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Step 4 (calendar_dates materialisation service + on-demand regenerate command) done, minus DQ-publish (deviation, see Notes). |
+| Now          | Steps 4 and 5 done (calendar_dates materialisation + on-demand regenerate; calendar_adjustment export service). Step 5's actual ORE-run consumer split out to a separate task (see Notes). |
 | Waiting on   | Nothing.                               |
-| Next         | Step 5: ORE export path (CalendarAdjustments for source='user'). |
+| Next         | Step 6: Qt UI (source/editability display, browse-holidays view, regenerate button). |
 | Last touched | 2026-07-25                               |
 
 * Acceptance
@@ -890,6 +890,23 @@ path.
   suite from steps 1-2; the service layer wiring above should get
   coverage in a follow-up pass, most naturally alongside step 6's
   manual QA scenario once there's a UI surface to drive it from.
+
+** Step 5 done (ORE export path), consumer split out
+
+- Found =ores::ore::xml::exporter::export_calendar_adjustments()= and
+  =calendar_adjustment_mapper::reverse()= already exist and are
+  already round-trip tested -- the parent task's "no new mapper code
+  needed" assumption held. But there is no existing ORE-run export
+  mechanism anywhere in the codebase (portfolio/trade export is the
+  only export feature built) to call this from -- confirmed with the
+  user and split the actual consumer into its own task,
+  [[id:C8401FBC-8536-4578-9C96-ECF914123E46][Wire ORE export path for user-authored calendar templates]] (DONE), which shipped
+  =calendar_adjustment_export_service= (base-first DTO assembly via a
+  simple recursive DFS over =base_calendar_code=, not
+  =ores.dq='s boost::graph machinery -- a calendar's base chain is a
+  forest, not a general DAG) plus a
+  =refdata.v1.calendar_adjustments.export= NATS command, ready for
+  whichever future ORE-run export feature calls it.
 
 * Test Scenarios
 

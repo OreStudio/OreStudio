@@ -1,0 +1,57 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_REFDATA_API_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
+
+#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::refdata::messaging {
+
+/**
+ * @brief Requests the transient calendar_adjustment DTOs ORE needs for
+ * source='user' calendar templates, assembled server-side from
+ * calendar + calendar_exception rows -- never itself persisted. The
+ * caller (e.g. a future ORE-run export feature) turns the response
+ * into a CalendarAdjustments XML file via
+ * ores::ore::xml::exporter::export_calendar_adjustments().
+ */
+struct get_calendar_adjustments_request {
+    using response_type = struct get_calendar_adjustments_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_adjustments.export";
+
+    /// Calendars to assemble entries for; empty means every active
+    /// source='user' calendar. A source='quantlib' code here is
+    /// silently skipped, not an error.
+    std::vector<std::string> calendar_codes;
+};
+
+struct get_calendar_adjustments_response {
+    /// Base-first (dependency) order -- safe to write out as-is.
+    std::vector<ores::refdata::domain::calendar_adjustment> adjustments;
+    bool success = false;
+    std::string message;
+};
+
+}
+
+#endif

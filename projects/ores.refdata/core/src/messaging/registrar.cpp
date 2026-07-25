@@ -28,6 +28,7 @@
 #include "ores.refdata.core/messaging/book_status_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_adjustment_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_materialisation_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
@@ -284,6 +285,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_business_unit_handlers(nats, ctx, verifier));
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
+    append(register_calendar_adjustment_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));

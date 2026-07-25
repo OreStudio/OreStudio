@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: C8401FBC-8536-4578-9C96-ECF914123E46
+:END:
+#+title: Task: Wire ORE export path for user-authored calendar templates
+#+description: Assemble a CalendarAdjustments XML file for source='user' calendars referenced by an ORE export/run, using the existing calendar_adjustment_mapper::reverse() -- part of the quantlib-calendar-transparency-and-adjustments task's step 5, split out because no ORE-run export mechanism exists yet in the codebase to hang it off.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch: feature/quantlib-calendar-transparency-and-adjustments
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Assemble the transient =calendar_adjustment= DTOs ORE needs for
+=source='user'= calendar templates -- built from
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] +
+[[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows,
+never persisted -- and expose them via a NATS request/response so a
+future ORE-run export feature can turn them into a
+=CalendarAdjustments= XML file via the already-implemented, already
+round-trip-tested =ores::ore::domain::calendar_adjustment_mapper=/
+=ores::ore::xml::exporter::export_calendar_adjustments()=.
+=source='quantlib'= calendars are never exported -- ORE resolves them
+natively via a bare code reference.
+
+Split out of the parent task's step 5 because no ORE-run export
+mechanism (conventions.xml, curve config, etc.) exists yet anywhere in
+the codebase to hang this off of -- portfolio export (trades) is the
+only export feature built so far. This task ships the
+assembly/export-service piece standalone, ready for whichever future
+feature needs it, rather than blocking on that feature existing first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Done.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None -- ready for a future ORE-run export feature to call. |
+| Last touched | 2026-07-25                               |
+
+* Acceptance
+
+- [X] A service assembles =calendar_adjustment= DTOs for a requested
+  set of calendar codes (or every active =source='user'= calendar),
+  in base-first (dependency) order, so a chain of user templates
+  based on other user templates always has its =BaseCalendar=
+  reference already defined earlier in the assembled list.
+- [X] A =source='quantlib'= calendar code passed in the request is
+  silently skipped, not an error.
+- [X] A =base_calendar_code= cycle is detected and rejected rather
+  than looping forever.
+- [X] Reachable via NATS
+  (=refdata.v1.calendar_adjustments.export=), mirroring the existing
+  per-entity handler/registrar shape.
+- [X] No new persisted table or entity -- =calendar_adjustment=
+  remains exactly the existing domain struct/ORE-XML-mapper pair,
+  used only as a transient export-time shape.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Findings
+
+- =ores::ore::xml::exporter::export_calendar_adjustments(vector<calendar_adjustment>)=
+  and =ores::ore::domain::calendar_adjustment_mapper::reverse()=
+  already exist and are already round-trip tested
+  (=xml_calendaradjustment_roundtrip_tests.cpp=) -- confirmed the
+  parent task's "no new mapper code needed" assumption. The actual
+  gap was narrower than first framed: not "no export path exists" but
+  "no assembly-from-refdata function exists yet to feed this
+  already-built exporter."
+- =ores.dq='s =dataset_dependency= + =publication_service='s
+  =boost::graph::topological_sort= is the referenced "respect the
+  dependency graph" precedent, but is overkill here: a calendar's
+  =base_calendar_code= chain is a forest (each node has at most one
+  parent), not a general DAG, so a plain recursive post-order DFS
+  (cycle-guarded via an in-progress set) gives a valid base-first
+  order directly, with no boost::graph dependency needed.
+- Reused the exact same recursive base-chain-walk shape from
+  =calendar_materialisation_service= (step 4) for cycle detection --
+  same problem, different output (an ordered DTO list here, dates
+  there).
+
+** Sequencing
+
+1. =calendar_adjustment_export_service= (=ores.refdata.core=): given
+   a set of calendar codes (or empty = every active =source='user'=
+   calendar), walks each one's =base_calendar_code= chain
+   (skipping/never-emitting =source='quantlib'= links, since ORE
+   resolves those natively), and returns a base-first list of
+   =calendar_adjustment= DTOs assembled from that calendar's own row
+   (=calendar_name=, =base_calendar=) and its
+   =calendar_exception= rows split into
+   =additional_holidays=/=additional_business_days= by
+   =is_business_day=.
+2. NATS protocol (=get_calendar_adjustments_request=/=response=),
+   handler, and registrar wiring, mirroring the existing per-entity
+   shape exactly (no new permission scope -- unguarded like every
+   other list/get endpoint, consistent with e.g. =calendar_handler::list=).
+
+* Notes
+
+- Reuses =system.calendar_materialisation= (the change-reason code
+  added in step 4) for these DTOs' =change_reason_code= -- they are
+  never persisted, so this is purely a placeholder value the mapper
+  never reads (confirmed by inspecting
+  =calendar_adjustment_mapper::reverse()=: only =calendar_name=,
+  =base_calendar=, =additional_holidays=, =additional_business_days=
+  are read).
+- Not yet built: the actual ORE-run export feature (conventions.xml/
+  curve-config assembly, or whatever form it eventually takes) that
+  would call this service and write the resulting XML to disk/bundle
+  it with other files. That's future work with its own task, once
+  that feature's shape is decided -- this task only had to ship the
+  refdata-side assembly piece, which is now ready for it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

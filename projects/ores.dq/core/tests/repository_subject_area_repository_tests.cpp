@@ -58,14 +58,14 @@ TEST_CASE("write_single_subject_area", tags) {
     ores::dq::repository::data_domain_repository dd_repo;
     dd_repo.write(h.context(), dd);
 
-    subject_area_repository repo(h.context());
+    subject_area_repository repo;
     auto subject_area = generate_synthetic_subject_area(ctx);
-    subject_area.tenant_id = h.tenant_id().to_string();
+    subject_area.tenant_id = h.tenant_id();
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
     subject_area.domain_name = dd.name;
 
     BOOST_LOG_SEV(lg, debug) << "Subject area: " << subject_area;
-    CHECK_NOTHROW(repo.write(subject_area));
+    CHECK_NOTHROW(repo.write(h.context(), subject_area));
 }
 
 TEST_CASE("write_multiple_subject_areas", tags) {
@@ -80,16 +80,16 @@ TEST_CASE("write_multiple_subject_areas", tags) {
     ores::dq::repository::data_domain_repository dd_repo;
     dd_repo.write(h.context(), dd);
 
-    subject_area_repository repo(h.context());
+    subject_area_repository repo;
     auto subject_areas = generate_synthetic_subject_areas(3, ctx);
     for (auto& s : subject_areas) {
-        s.tenant_id = h.tenant_id().to_string();
+        s.tenant_id = h.tenant_id();
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
         s.domain_name = dd.name;
     }
     BOOST_LOG_SEV(lg, debug) << "Subject areas: " << subject_areas;
 
-    CHECK_NOTHROW(repo.write(subject_areas));
+    CHECK_NOTHROW(repo.write(h.context(), subject_areas));
 }
 
 TEST_CASE("read_latest_subject_areas", tags) {
@@ -104,25 +104,25 @@ TEST_CASE("read_latest_subject_areas", tags) {
     ores::dq::repository::data_domain_repository dd_repo;
     dd_repo.write(h.context(), dd);
 
-    subject_area_repository repo(h.context());
+    subject_area_repository repo;
     auto written_subject_areas = generate_synthetic_subject_areas(3, ctx);
     for (auto& s : written_subject_areas) {
-        s.tenant_id = h.tenant_id().to_string();
+        s.tenant_id = h.tenant_id();
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
         s.domain_name = dd.name;
     }
     BOOST_LOG_SEV(lg, debug) << "Written subject areas: " << written_subject_areas;
 
-    repo.write(written_subject_areas);
+    repo.write(h.context(), written_subject_areas);
 
-    auto read_subject_areas = repo.read_latest();
+    auto read_subject_areas = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     CHECK(!read_subject_areas.empty());
     CHECK(read_subject_areas.size() >= written_subject_areas.size());
 }
 
-TEST_CASE("read_latest_subject_areas_by_domain", tags) {
+TEST_CASE("read_latest_subject_area_by_compound_key", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -134,16 +134,17 @@ TEST_CASE("read_latest_subject_areas_by_domain", tags) {
     ores::dq::repository::data_domain_repository dd_repo;
     dd_repo.write(h.context(), dd);
 
-    subject_area_repository repo(h.context());
-    auto subject_area = generate_synthetic_subject_area(dd.name, ctx);
-    subject_area.tenant_id = h.tenant_id().to_string();
+    subject_area_repository repo;
+    auto subject_area = generate_synthetic_subject_area(ctx);
+    subject_area.tenant_id = h.tenant_id();
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
+    subject_area.domain_name = dd.name;
     BOOST_LOG_SEV(lg, debug) << "Write subject area: " << subject_area;
-    repo.write(subject_area);
+    repo.write(h.context(), subject_area);
 
     BOOST_LOG_SEV(lg, debug) << "Target domain name: " << dd.name;
 
-    auto read_subject_areas = repo.read_latest_by_domain(dd.name);
+    auto read_subject_areas = repo.read_latest(h.context(), subject_area.name, dd.name);
     BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
     REQUIRE(!read_subject_areas.empty());

@@ -338,21 +338,12 @@ TEST_CASE("subject_area_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_subject_area(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.name.empty());
     CHECK(!sut.domain_name.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
-}
-
-TEST_CASE("subject_area_generator_with_domain_name_uses_provided_name", tags) {
-    auto lg(make_logger(test_suite));
-    generation_context ctx;
-    auto sut = generate_synthetic_subject_area("Test Domain", ctx);
-
-    CHECK(!sut.name.empty());
-    CHECK(sut.domain_name == "Test Domain");
 }
 
 TEST_CASE("subject_area_generator_produces_multiple_instances", tags) {

@@ -38,6 +38,7 @@ struct subject_area_entity {
     constexpr static const char* tablename = "ores_dq_subject_areas_tbl";
 
     sqlgen::PrimaryKey<std::string> name;
+    sqlgen::PrimaryKey<std::string> domain_name;
     std::string tenant_id;
     int version = 0;
     std::string description;

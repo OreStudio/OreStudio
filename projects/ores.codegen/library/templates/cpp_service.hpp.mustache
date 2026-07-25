@@ -126,22 +126,20 @@ public:
      * @brief Retrieves a single {{entity_singular_words}} as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param {{primary_key.column}} The {{primary_key.column}} of the {{entity_singular_words}}.
      * @param version The version to fetch.
      * @return The {{entity_singular_words}} at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}_at_version(const std::string& {{primary_key.column}}, std::uint32_t version);
+    get_{{entity_singular_short}}_at_version({{{primary_key.params}}}, std::uint32_t version);
 {{/has_audit_columns}}
 
     /**
-     * @brief Retrieves a single {{entity_singular_words}} by its {{primary_key.column}}.
+     * @brief Retrieves a single {{entity_singular_words}} by its primary key.
      *
-     * @param {{primary_key.column}} The {{primary_key.column}} of the {{entity_singular_words}}.
      * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+    get_{{entity_singular_short}}({{{primary_key.params}}});
 
     /**
      * @brief Saves a {{entity_singular_words}} (creates or updates).
@@ -161,24 +159,22 @@ public:
         const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
 
     /**
-     * @brief Deletes a {{entity_singular_words}} by its {{primary_key.column}}.
+     * @brief Deletes a {{entity_singular_words}} by its primary key.
      *
-     * @param {{primary_key.column}} The {{primary_key.column}} of the {{entity_singular_words}} to delete.
      * @throws std::exception on failure.
      */
-    void delete_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+    void delete_{{entity_singular_short}}({{{primary_key.params}}});
 
     /**
-     * @brief Deletes {{entity_plural_words}} by their {{primary_key.column}}s.
+     * @brief Deletes {{entity_plural_words}} by their primary keys.
      */
-    void delete_{{entity_plural_short}}(
-        const std::vector<std::string>& {{primary_key.column}}s);
+    void delete_{{entity_plural_short}}({{{primary_key.batch_params}}});
 
     /**
      * @brief Retrieves all historical versions of a {{entity_singular_words}}.
      */
     std::vector<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}});
+    get_{{entity_singular_short}}_history({{{primary_key.params}}});
 {{#has_parent_id}}
 
     /**

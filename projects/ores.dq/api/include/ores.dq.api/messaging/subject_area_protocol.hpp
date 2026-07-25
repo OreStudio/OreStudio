@@ -60,6 +60,7 @@ struct delete_subject_area_request {
     using response_type = struct delete_subject_area_response;
     static constexpr std::string_view nats_subject = "dq.v1.subject_areas.delete";
     std::vector<std::string> names;
+    std::vector<std::string> domain_names;
 };
 
 struct delete_subject_area_response {
@@ -71,6 +72,7 @@ struct get_subject_area_history_request {
     using response_type = struct get_subject_area_history_response;
     static constexpr std::string_view nats_subject = "dq.v1.subject_areas.history";
     std::string name;
+    std::string domain_name;
 };
 
 struct get_subject_area_history_response {

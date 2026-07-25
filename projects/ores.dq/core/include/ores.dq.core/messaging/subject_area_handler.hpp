@@ -129,7 +129,7 @@ public:
         service::subject_area_service svc(req_ctx);
         if (auto req = decode<get_subject_area_history_request>(msg)) {
             try {
-                auto hist = svc.get_area_history(req->name);
+                auto hist = svc.get_area_history(req->name, req->domain_name);
                 BOOST_LOG_SEV(subject_area_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(
                     nats_,
@@ -163,7 +163,7 @@ public:
         service::subject_area_service svc(req_ctx);
         if (auto req = decode<delete_subject_area_request>(msg)) {
             try {
-                svc.delete_areas(req->names);
+                svc.delete_areas(req->names, req->domain_names);
                 BOOST_LOG_SEV(subject_area_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, delete_subject_area_response{.success = true});
             } catch (const std::exception& e) {

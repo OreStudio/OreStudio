@@ -67,18 +67,18 @@ std::vector<domain::{{entity_singular}}>
 {{/foreign_keys}}
 {{#has_audit_columns}}
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}_at_version(const std::string& {{primary_key.column}},
+{{entity_singular}}_service::get_{{entity_singular_short}}_at_version({{{primary_key.params}}},
                                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version: " << {{primary_key.column}}
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, {{primary_key.column}}, version);
+    return repo_.read_at_version(ctx_, {{{primary_key.args}}}, version);
 }
 {{/has_audit_columns}}
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}: " << {{primary_key.column}};
-    auto results = repo_.read_latest(ctx_, {{primary_key.column}});
+{{entity_singular}}_service::get_{{entity_singular_short}}({{{primary_key.params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    auto results = repo_.read_latest(ctx_, {{{primary_key.args}}});
     if (results.empty()) return std::nullopt;
     return results.front();
 }
@@ -86,16 +86,19 @@ std::optional<domain::{{entity_singular}}>
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.is_uuid}}
     if (v.{{primary_key.column}}.is_nil())
+        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
-    if (v.{{primary_key.column}}.empty())
+{{#primary_key.columns}}
+    if (v.{{column}}.empty())
+        throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/primary_key.columns}}
 {{/primary_key.is_uuid}}
-        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
+    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 }
 
 void {{entity_singular}}_service::save_{{entity_plural_short}}(
@@ -103,12 +106,16 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
 {{#primary_key.is_uuid}}
     for (const auto& e : {{entity_plural_short}})
         if (e.{{primary_key.column}}.is_nil())
+            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
-    for (const auto& e : {{entity_plural_short}})
-        if (e.{{primary_key.column}}.empty())
+    for (const auto& e : {{entity_plural_short}}) {
+{{#primary_key.columns}}
+        if (e.{{column}}.empty())
+            throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/primary_key.columns}}
+    }
 {{/primary_key.is_uuid}}
-            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
     auto ts = {{entity_plural_short}};
@@ -117,21 +124,20 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     repo_.write(ctx_, ts);
 }
 
-void {{entity_singular}}_service::delete_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
-    repo_.remove(ctx_, {{primary_key.column}});
-    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << {{primary_key.column}};
+void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_key.params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    repo_.remove(ctx_, {{{primary_key.args}}});
+    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 }
 
-void {{entity_singular}}_service::delete_{{entity_plural_short}}(
-    const std::vector<std::string>& {{primary_key.column}}s) {
-    repo_.remove(ctx_, {{primary_key.column}}s);
+void {{entity_singular}}_service::delete_{{entity_plural_short}}({{{primary_key.batch_params}}}) {
+    repo_.remove(ctx_, {{{primary_key.batch_args}}});
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << {{primary_key.column}};
-    return repo_.read_all(ctx_, {{primary_key.column}});
+{{entity_singular}}_service::get_{{entity_singular_short}}_history({{{primary_key.params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+    return repo_.read_all(ctx_, {{{primary_key.args}}});
 }
 {{#has_parent_id}}
 

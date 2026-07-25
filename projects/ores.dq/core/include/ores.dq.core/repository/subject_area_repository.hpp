@@ -63,17 +63,19 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest subject areas, possibly filtered by name.
+     * @brief Reads latest subject areas, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::subject_area> read_latest(context ctx);
-    std::vector<domain::subject_area> read_latest(context ctx, const std::string& name);
+    std::vector<domain::subject_area>
+    read_latest(context ctx, const std::string& name, const std::string& domain_name);
     /**@}*/
 
     /**
-     * @brief Reads all subject areas, possibly filtered by name.
+     * @brief Reads all subject areas, possibly filtered by primary key.
      */
-    std::vector<domain::subject_area> read_all(context ctx, const std::string& name);
+    std::vector<domain::subject_area>
+    read_all(context ctx, const std::string& name, const std::string& domain_name);
 
     /**
      * @brief Reads a single subject area as it stood at a specific
@@ -82,11 +84,12 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param name The name to look up
      * @param version The version to fetch
      */
-    std::optional<domain::subject_area>
-    read_at_version(context ctx, const std::string& name, std::uint32_t version);
+    std::optional<domain::subject_area> read_at_version(context ctx,
+                                                        const std::string& name,
+                                                        const std::string& domain_name,
+                                                        std::uint32_t version);
 
     /**
      * @brief Reads latest subject areas with pagination support.
@@ -107,12 +110,14 @@ public:
     /**
      * @brief Deletes a subject area by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& name);
+    void remove(context ctx, const std::string& name, const std::string& domain_name);
 
     /**
      * @brief Deletes subject areas by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& names);
+    void remove(context ctx,
+                const std::vector<std::string>& names,
+                const std::vector<std::string>& domain_names);
 };
 
 }

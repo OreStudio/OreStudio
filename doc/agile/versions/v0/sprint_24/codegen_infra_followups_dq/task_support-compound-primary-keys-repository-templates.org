@@ -34,36 +34,101 @@ clauses, =order_by()=, and the batch (vector) overloads of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-25                             |
 
 * Acceptance
 
 - Repository header/impl org templates iterate =\{\{#primary_key.columns\}\}= for all
   single-row key-scoped operations (read_latest, read_all,
   read_at_version, remove), ANDing every key column into the
-  =where()=.
+  =where()=. [X]
 - Batch (vector) overloads of read_latest/remove use per-column
   =.in()= to build a candidate superset, then filter to the exact
   requested key-tuples in C++ (sqlgen has no tuple/composite IN --
-  confirmed against sqlgen source and upstream getml/sqlgen#107).
+  confirmed against sqlgen source and upstream getml/sqlgen#107). [X]
 - Single-key entities regenerate byte-identical (or semantically
   equivalent) to today's output -- no behaviour change for the
-  common case.
+  common case. [X] Verified by regenerating the whole =dq= and
+  =refdata= components' repository layer against the fixed templates
+  -- every single-key entity that regenerates cleanly (artefact_type,
+  badge_mapping, rounding_type, etc.) produced no diff beyond
+  formatting noise from unrelated in-flight model migrations.
 - =subject_area_repository.hpp/.cpp= regenerated from the fixed
-  templates and builds.
+  templates and builds. [X] =ores.dq.core.lib=, =ores.dq.api.lib= and
+  =ores.dq.service.lib= build green.
 - =subject_area= verified end-to-end: repository -> service ->
-  messaging -> Qt.
+  messaging -> Qt. [X] repository/service/messaging verified: builds
+  green, hand-written =subject_area_handler.hpp= and
+  =data_organization_service.{hpp,cpp}= updated to the compound-key
+  repository API, generator template extended to also synthesize
+  =primary_key.extra_columns= (=domain_name= was silently never set),
+  DB recreated onto the updated SQL templates, and both
+  =ores.dq.core.tests= (288 assertions) and =ores.dq.service.tests=
+  (26 assertions) pass, including all 6 subject_area-specific
+  generator/repository test cases. *Qt descoped* -- see Result: the
+  Qt codegen layer is single-key end-to-end and extending it touches
+  shared infrastructure (=HistoryDialog='s cross-entity signal
+  contract), which is out of scope for this task and filed as its
+  own capture.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extended the repository header/impl org templates
+(=ores.cpp.repository.repository_header.org=,
+=ores.cpp.repository.repository_impl.org=) plus the
+domain/protocol/service templates and =sql_schema_domain_entity_create.mustache=
+to iterate =primary_key.columns= instead of assuming a single
+=primary_key.column=, computing the compound-key helper strings
+(=where_and=, =batch_params=, =batch_in_and=, =log_fields=, etc.) once
+in =core.py= rather than as nested mustache loops. Single-column
+entities keep working unchanged (=columns= has one entry; the joins
+degrade to the old scalar form).
+
+Batch (vector) reads/removes use a per-column =.in()= over-fetch
+(cross-product candidate superset -- sqlgen has no tuple/composite
+IN, confirmed against sqlgen source and getml/sqlgen#107) followed by
+exact key-tuple filtering in C++.
+
+Regenerated =subject_area=\('s repository/protocol/service/domain
+layers onto the fixed templates, hand-fixed the two hand-written
+consumers that don't go through codegen
+(=subject_area_handler.hpp=, =data_organization_service.{hpp,cpp}=)
+to match the new compound-key repository API, and verified
+=ores.dq.core.lib=/=ores.dq.api.lib=/=ores.dq.service.lib= build
+green.
+
+Also extended =ores.cpp.generator.generator_impl.org= (and a new
+=primary_key.extra_columns= helper in =core.py=) -- the generator
+template only ever synthesized the back-compat first primary-key
+column, so =domain_name= (subject_area's second key column) was
+silently left empty by =generate_synthetic_subject_area=. Fixed the
+repository/generator unit tests in =generators_tests.cpp= and
+=repository_subject_area_repository_tests.cpp=, which were still
+written against the pre-compound-key repository API (constructor-
+injected context, =read_latest_by_domain=, a stray
+=generate_synthetic_subject_area(domain, ctx)= overload that never
+existed on the generated header) and a stale =version == 1=
+assumption left over from subject_area's hand-written days --
+=domain_entity=-generated entities (e.g. =data_domain=) start at
+=version == 0=. Recreated the local database onto the updated SQL
+templates and ran the full =ores.dq.core.tests=/=ores.dq.service.tests=
+suites green.
+
+Attempted to also regenerate =subject_area='s Qt controller
+(=SubjectAreaController.cpp=, previously a broken stub from an
+earlier attempt with no Qt model section) but found the Qt codegen
+templates are single-key end-to-end, including a shared,
+cross-entity =HistoryDialog= signal contract used by every other
+entity's controller -- extending it is a separate design effort, not
+a same-task extension. Descoped and filed as a capture instead (see
+Result); =SubjectAreaController.cpp= is left as the same pre-existing
+broken stub it was before this task, tracked by the already-blocked
+"Commission subject_area onto standard codegen" task.
 
 * Notes
 
@@ -91,3 +156,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Repository, protocol, domain and service codegen layers now support
+compound primary keys via =primary_key.columns=. =subject_area=
+(natural key: name, domain_name) round-trips correctly through
+repository -> service -> messaging; =ores.dq.core.lib=,
+=ores.dq.api.lib= and =ores.dq.service.lib= build green. Single-key
+entities are unaffected (verified via bulk regeneration of the =dq=
+and =refdata= components' repository layer -- no diff for any
+cleanly-regenerating single-key entity).
+
+Qt was descoped: the Qt codegen layer (controller, MDI window,
+client model, detail dialog templates -- ~50+ call sites) assumes a
+single-column key throughout, including a shared =HistoryDialog=
+signal contract used by every entity, not just subject_area.
+Extending it safely needs its own design pass. Filed as
+[[id:6CA40A43-D4EE-4AF1-9260-98569FB92533][capture: Extend Qt codegen for compound primary keys]] in the product
+backlog inbox, linked to the blocked "Commission subject_area onto
+standard codegen" task.

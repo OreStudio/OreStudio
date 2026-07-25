@@ -79,20 +79,20 @@ public:
      * @brief Retrieves a single subject area as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param name The name of the subject area.
      * @param version The version to fetch.
      * @return The subject area at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::subject_area> get_area_at_version(const std::string& name,
+                                                            const std::string& domain_name,
                                                             std::uint32_t version);
 
     /**
-     * @brief Retrieves a single subject area by its name.
+     * @brief Retrieves a single subject area by its primary key.
      *
-     * @param name The name of the subject area.
      * @return The subject area if found, std::nullopt otherwise.
      */
-    std::optional<domain::subject_area> get_area(const std::string& name);
+    std::optional<domain::subject_area> get_area(const std::string& name,
+                                                 const std::string& domain_name);
 
     /**
      * @brief Saves a subject area (creates or updates).
@@ -111,22 +111,23 @@ public:
     void save_areas(const std::vector<domain::subject_area>& areas);
 
     /**
-     * @brief Deletes a subject area by its name.
+     * @brief Deletes a subject area by its primary key.
      *
-     * @param name The name of the subject area to delete.
      * @throws std::exception on failure.
      */
-    void delete_area(const std::string& name);
+    void delete_area(const std::string& name, const std::string& domain_name);
 
     /**
-     * @brief Deletes subject areas by their names.
+     * @brief Deletes subject areas by their primary keys.
      */
-    void delete_areas(const std::vector<std::string>& names);
+    void delete_areas(const std::vector<std::string>& names,
+                      const std::vector<std::string>& domain_names);
 
     /**
      * @brief Retrieves all historical versions of a subject area.
      */
-    std::vector<domain::subject_area> get_area_history(const std::string& name);
+    std::vector<domain::subject_area> get_area_history(const std::string& name,
+                                                       const std::string& domain_name);
 
 private:
     context ctx_;

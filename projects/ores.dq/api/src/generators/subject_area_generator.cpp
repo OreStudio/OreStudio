@@ -41,6 +41,7 @@ domain::subject_area generate_synthetic_subject_area(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.name = std::string(faker::word::noun()) + " Area" + "-" + std::to_string(idx);
+    r.domain_name = std::string("reference_data");
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

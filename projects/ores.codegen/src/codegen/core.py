@@ -2133,6 +2133,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _enrich_primary_key_field(field)
             _mark_last_item(pk_columns)
             pk['is_compound'] = len(pk_columns) > 1
+            # Every key column beyond the back-compat first (pk itself,
+            # scalar-projected above) -- the generator template needs
+            # these to synthesize a value for each, the same way it
+            # already does for natural_keys.
+            pk['extra_columns'] = pk_columns[1:]
             pk['column_list'] = ', '.join(c['column'] for c in pk_columns)
             pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
             pk['gist_column_clause'] = '\n        '.join(
@@ -2143,6 +2148,67 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             pk['where_old'] = ' and '.join(
                 f"{c['column']} = OLD.{c['column']}" for c in pk_columns
+            )
+            # Repository-layer helpers: a compound key's where()/signature/
+            # log-statement text is built once here as a single token,
+            # rather than as nested mustache loops repeated across every
+            # tenant/workspace-filtered branch in the repository templates.
+            # sqlgen's where() only composes && at compile time over a
+            # fixed set of columns, so this joins cleanly for both the
+            # single-column (back-compat) and compound cases.
+            pk['where_and'] = ' && '.join(
+                f'"{c["column"]}"_c == {c["column"]}' for c in pk_columns
+            )
+            pk['order_by_cols'] = ', '.join(
+                f'"{c["column"]}"_c' for c in pk_columns
+            )
+            pk['params'] = ', '.join(
+                f'const std::string& {c["column"]}' for c in pk_columns
+            )
+            pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # Complete stream expressions (leading string literal, trailing
+            # bare value -- not a string fragment), so templates splice
+            # them in as `<< {{{primary_key.log_fields}}}` with no extra
+            # quoting on either side.
+            pk['log_fields'] = '"' + ' << " '.join(
+                f'{c["column"]}: " << {c["column"]}' for c in pk_columns
+            )
+            pk['value_log_fields'] = '"' + ' << " '.join(
+                f'{c["column"]}: " << v.{c["column"]}' for c in pk_columns
+            )
+            # Batch (vector) overloads: sqlgen has no tuple/composite IN, so
+            # the query fetches a per-column .in() candidate superset (a
+            # cross-product over-fetch for compound keys) and the exact
+            # requested key-tuples are then filtered in C++ -- see
+            # getml/sqlgen#107 and the "Support compound primary keys in
+            # repository templates" task for why.
+            pk['batch_params'] = ', '.join(
+                f'const std::vector<std::string>& {c["column"]}s' for c in pk_columns
+            )
+            pk['batch_args'] = ', '.join(f"{c['column']}s" for c in pk_columns)
+            pk['batch_empty_check'] = ' || '.join(
+                f"{c['column']}s.empty()" for c in pk_columns
+            )
+            pk['batch_in_and'] = ' && '.join(
+                f'"{c["column"]}"_c.in({c["column"]}s)' for c in pk_columns
+            )
+            pk['batch_tuple_type'] = ', '.join('std::string' for _ in pk_columns)
+            pk['batch_requested_insert'] = (
+                'requested.emplace(' +
+                ', '.join(f"{c['column']}s[i]" for c in pk_columns) +
+                ');'
+            )
+            pk['batch_requested_size_check'] = pk_columns[0]['column'] + 's.size()'
+            pk['batch_tuple_from_item'] = ', '.join(
+                f"item.{c['column']}" for c in pk_columns
+            )
+            # Compound-key batch remove cannot use the over-fetch/filter
+            # trick (a DELETE already executed can't be filtered after the
+            # fact, and a per-column cross-product .in() would delete rows
+            # outside the requested tuples) -- it loops single-tuple
+            # removes instead.
+            pk['batch_loop_args'] = ', '.join(
+                f"{c['column']}s[i]" for c in pk_columns
             )
         # Process Qt-specific fields
         if 'qt' in domain_entity:

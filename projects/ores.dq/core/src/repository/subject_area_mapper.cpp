@@ -33,6 +33,7 @@ domain::subject_area subject_area_mapper::map(const subject_area_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.name = v.name.value();
+    r.domain_name = v.domain_name.value();
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -49,6 +50,7 @@ subject_area_entity subject_area_mapper::map(const domain::subject_area& v) {
 
     subject_area_entity r;
     r.name = v.name;
+    r.domain_name = v.domain_name;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description;

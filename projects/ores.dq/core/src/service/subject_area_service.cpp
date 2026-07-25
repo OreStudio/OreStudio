@@ -42,16 +42,18 @@ std::uint32_t subject_area_service::count_areas() {
     return repo_.get_total_area_count(ctx_);
 }
 
-std::optional<domain::subject_area>
-subject_area_service::get_area_at_version(const std::string& name, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subject area at version: " << name
-                               << " version: " << version;
-    return repo_.read_at_version(ctx_, name, version);
+std::optional<domain::subject_area> subject_area_service::get_area_at_version(
+    const std::string& name, const std::string& domain_name, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting subject area at version. " << "name: " << name
+                               << " domain_name: " << domain_name << " version: " << version;
+    return repo_.read_at_version(ctx_, name, domain_name, version);
 }
 
-std::optional<domain::subject_area> subject_area_service::get_area(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting subject area: " << name;
-    auto results = repo_.read_latest(ctx_, name);
+std::optional<domain::subject_area> subject_area_service::get_area(const std::string& name,
+                                                                   const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting subject area. " << "name: " << name
+                               << " domain_name: " << domain_name;
+    auto results = repo_.read_latest(ctx_, name, domain_name);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -60,17 +62,24 @@ std::optional<domain::subject_area> subject_area_service::get_area(const std::st
 void subject_area_service::save_area(const domain::subject_area& v) {
     if (v.name.empty())
         throw std::invalid_argument("Subject Area name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving subject area: " << v.name;
+    if (v.domain_name.empty())
+        throw std::invalid_argument("Subject Area domain_name cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving subject area. " << "name: " << v.name
+                               << " domain_name: " << v.domain_name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved subject area: " << v.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved subject area. " << "name: " << v.name
+                              << " domain_name: " << v.domain_name;
 }
 
 void subject_area_service::save_areas(const std::vector<domain::subject_area>& areas) {
-    for (const auto& e : areas)
+    for (const auto& e : areas) {
         if (e.name.empty())
             throw std::invalid_argument("Subject Area name cannot be empty.");
+        if (e.domain_name.empty())
+            throw std::invalid_argument("Subject Area domain_name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << areas.size() << " subject areas";
     auto ts = areas;
     for (auto& e : ts)
@@ -78,19 +87,24 @@ void subject_area_service::save_areas(const std::vector<domain::subject_area>& a
     repo_.write(ctx_, ts);
 }
 
-void subject_area_service::delete_area(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing subject area: " << name;
-    repo_.remove(ctx_, name);
-    BOOST_LOG_SEV(lg(), info) << "Removed subject area: " << name;
+void subject_area_service::delete_area(const std::string& name, const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing subject area. " << "name: " << name
+                               << " domain_name: " << domain_name;
+    repo_.remove(ctx_, name, domain_name);
+    BOOST_LOG_SEV(lg(), info) << "Removed subject area. " << "name: " << name
+                              << " domain_name: " << domain_name;
 }
 
-void subject_area_service::delete_areas(const std::vector<std::string>& names) {
-    repo_.remove(ctx_, names);
+void subject_area_service::delete_areas(const std::vector<std::string>& names,
+                                        const std::vector<std::string>& domain_names) {
+    repo_.remove(ctx_, names, domain_names);
 }
 
-std::vector<domain::subject_area> subject_area_service::get_area_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for subject area: " << name;
-    return repo_.read_all(ctx_, name);
+std::vector<domain::subject_area>
+subject_area_service::get_area_history(const std::string& name, const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for subject area. " << "name: " << name
+                               << " domain_name: " << domain_name;
+    return repo_.read_all(ctx_, name, domain_name);
 }
 
 }

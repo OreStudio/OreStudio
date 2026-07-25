@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq.core/service/data_organization_service.hpp"
+#include <algorithm>
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -25,8 +26,8 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
-    : dataset_dependency_repo_(ctx)
-    , subject_area_repo_(ctx) {}
+    : ctx_(ctx)
+    , dataset_dependency_repo_(ctx) {}
 
 // ============================================================================
 // Dataset Dependency Management
@@ -49,31 +50,33 @@ data_organization_service::list_dataset_dependencies_by_dataset(const std::strin
 
 std::vector<domain::subject_area> data_organization_service::list_subject_areas() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all subject areas";
-    return subject_area_repo_.read_latest();
+    return subject_area_repo_.read_latest(ctx_);
 }
 
 std::vector<domain::subject_area>
 data_organization_service::list_subject_areas(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing subject areas with pagination: offset=" << offset
                                << ", limit=" << limit;
-    return subject_area_repo_.read_latest(offset, limit);
+    return subject_area_repo_.read_latest(ctx_, offset, limit);
 }
 
 std::vector<domain::subject_area>
 data_organization_service::list_subject_areas_by_domain(const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Listing subject areas for domain: " << domain_name;
-    return subject_area_repo_.read_latest_by_domain(domain_name);
+    auto areas = subject_area_repo_.read_latest(ctx_);
+    std::erase_if(areas, [&](const auto& a) { return a.domain_name != domain_name; });
+    return areas;
 }
 
 std::uint32_t data_organization_service::get_subject_area_count() {
-    return subject_area_repo_.get_total_count();
+    return subject_area_repo_.get_total_area_count(ctx_);
 }
 
 std::optional<domain::subject_area>
 data_organization_service::find_subject_area(const std::string& name,
                                              const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Finding subject area: " << name << " in domain: " << domain_name;
-    auto subject_areas = subject_area_repo_.read_latest(name, domain_name);
+    auto subject_areas = subject_area_repo_.read_latest(ctx_, name, domain_name);
     if (subject_areas.empty()) {
         return std::nullopt;
     }
@@ -89,7 +92,7 @@ void data_organization_service::save_subject_area(const domain::subject_area& su
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving subject area: " << subject_area.name
                                << " in domain: " << subject_area.domain_name;
-    subject_area_repo_.write(subject_area);
+    subject_area_repo_.write(ctx_, subject_area);
     BOOST_LOG_SEV(lg(), info) << "Saved subject area: " << subject_area.name;
 }
 
@@ -104,14 +107,14 @@ void data_organization_service::save_subject_areas(
         }
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << subject_areas.size() << " subject areas";
-    subject_area_repo_.write(subject_areas);
+    subject_area_repo_.write(ctx_, subject_areas);
 }
 
 void data_organization_service::remove_subject_area(const std::string& name,
                                                     const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing subject area: " << name
                                << " from domain: " << domain_name;
-    subject_area_repo_.remove(name, domain_name);
+    subject_area_repo_.remove(ctx_, name, domain_name);
     BOOST_LOG_SEV(lg(), info) << "Removed subject area: " << name;
 }
 
@@ -120,7 +123,7 @@ data_organization_service::get_subject_area_history(const std::string& name,
                                                     const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for subject area: " << name
                                << " in domain: " << domain_name;
-    return subject_area_repo_.read_all(name, domain_name);
+    return subject_area_repo_.read_all(ctx_, name, domain_name);
 }
 
 }

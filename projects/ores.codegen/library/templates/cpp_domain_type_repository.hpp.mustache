@@ -52,15 +52,15 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest {{entity_plural_words}}, possibly filtered by {{primary_key.column}}.
+     * @brief Reads latest {{entity_plural_words}}, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::{{entity_singular}}> read_latest(context ctx);
     std::vector<domain::{{entity_singular}}>
-    read_latest(context ctx, const std::string& {{primary_key.column}});
+    read_latest(context ctx, {{{primary_key.params}}});
 {{#has_batch_read}}
     std::vector<domain::{{entity_singular}}>
-    read_latest(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
+    read_latest(context ctx, {{{primary_key.batch_params}}});
 {{/has_batch_read}}
     /**@}*/
 
@@ -81,10 +81,10 @@ public:
 {{/has_as_of_lookup}}
 
     /**
-     * @brief Reads all {{entity_plural_words}}, possibly filtered by {{primary_key.column}}.
+     * @brief Reads all {{entity_plural_words}}, possibly filtered by primary key.
      */
     std::vector<domain::{{entity_singular}}>
-    read_all(context ctx, const std::string& {{primary_key.column}});
+    read_all(context ctx, {{{primary_key.params}}});
 
 {{#has_audit_columns}}
     /**
@@ -94,11 +94,10 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param {{primary_key.column}} The {{primary_key.column}} to look up
      * @param version The version to fetch
      */
     std::optional<domain::{{entity_singular}}>
-    read_at_version(context ctx, const std::string& {{primary_key.column}}, std::uint32_t version);
+    read_at_version(context ctx, {{{primary_key.params}}}, std::uint32_t version);
 {{/has_audit_columns}}
 
 {{#foreign_keys}}
@@ -158,12 +157,12 @@ public:
     /**
      * @brief Deletes a {{entity_singular_words}} by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& {{primary_key.column}});
+    void remove(context ctx, {{{primary_key.params}}});
 
     /**
      * @brief Deletes {{entity_plural_words}} by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
+    void remove(context ctx, {{{primary_key.batch_params}}});
 {{#has_parent_id}}
 
     /**

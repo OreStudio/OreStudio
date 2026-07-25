@@ -89,11 +89,13 @@ struct delete_{{entity_singular}}_request {
     using response_type = struct delete_{{entity_singular}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.delete";
-{{#primary_key.is_text}}
-    std::vector<std::string> {{primary_key.column}}s;
-{{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     std::vector<std::string> ids;
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+{{#primary_key.columns}}
+    std::vector<std::string> {{column}}s;
+{{/primary_key.columns}}
 {{/primary_key.is_uuid}}
 };
 
@@ -106,11 +108,13 @@ struct get_{{entity_singular}}_history_request {
     using response_type = struct get_{{entity_singular}}_history_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.history";
-{{#primary_key.is_text}}
-    std::string {{primary_key.column}};
-{{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     std::string {{primary_key.column}};
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+{{#primary_key.columns}}
+    std::string {{column}};
+{{/primary_key.columns}}
 {{/primary_key.is_uuid}}
 };
 

@@ -52,6 +52,15 @@ struct subject_area final {
     std::string name;
 
     /**
+     * @brief Name of the data domain this subject area belongs to. References
+     * ores_dq_data_domains_tbl (soft FK). Together with name this forms a true compound physical
+     * primary key, enforced by ~sql_schema_domain_entity_create.mustache~'s composite primary
+     * key/GIST exclusion constraint support ([[id:6C5FADD1-478A-46ED-A266-35A8182B814E][6C5FADD1]])
+     * -- replacing the previous plain Column + bolt-on unique-index workaround.
+     */
+    std::string domain_name;
+
+    /**
      * @brief Human-readable description of this subject area.
      */
     std::string description;

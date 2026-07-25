@@ -77,15 +77,17 @@ struct {{entity_singular}} final {
     boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
 {{/has_workspace_id}}
+{{#primary_key.columns}}
     /**
-     * @brief {{{primary_key.description}}}
-{{#primary_key.detail}}
+     * @brief {{{description}}}
+{{#detail}}
      *
-     * {{{primary_key.detail}}}
-{{/primary_key.detail}}
+     * {{{detail}}}
+{{/detail}}
      */
-    {{{primary_key.cpp_type}}} {{primary_key.column}};
+    {{{cpp_type}}} {{column}};
 
+{{/primary_key.columns}}
 {{#natural_keys}}
     /**
      * @brief {{{description}}}

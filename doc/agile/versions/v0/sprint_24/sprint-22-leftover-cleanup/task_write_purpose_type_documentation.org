@@ -8,7 +8,7 @@
 #+filetags: :sprint_24:v0:
 #+owner: marco
 #+branch: feature/write-purpose-type-documentation
-#+pr:
+#+pr: 1688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -95,7 +95,7 @@ does.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1688][#1688]] | [refdata,doc] Write purpose_type user manual chapter |
 
 * Review
 

@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
@@ -458,33 +459,40 @@ publication_service::list_publishable_datasets(const std::vector<boost::uuids::u
 }
 
 std::vector<bundle_publishable_dataset>
-publication_service::list_bundle_publishable_datasets(const std::string& bundle_code) {
+publication_service::list_bundle_publishable_datasets(const std::string& bundle_code,
+                                                       bool resolve_dependencies) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code;
+    BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code
+                               << ", resolve_dependencies=" << resolve_dependencies;
 
-    const auto sql = "SELECT dataset_id, dataset_code, target_subject "
-                     "FROM ores_dq_bundle_datasets_list_fn($1) "
-                     "WHERE is_publishable = true "
-                     "ORDER BY display_order";
+    // Direct member IDs only -- ores_dq_bundle_datasets_list_fn already does the
+    // dataset_code -> dataset_id lookup (skipping codes with no matching dataset record); the
+    // dependency closure and target_subject/is_publishable filtering both happen in
+    // list_publishable_datasets() below, the same core the ID-based publish path uses.
+    const auto sql = "SELECT dataset_id FROM ores_dq_bundle_datasets_list_fn($1) "
+                     "WHERE dataset_id IS NOT NULL ORDER BY display_order";
 
     auto rows = execute_parameterized_multi_column_query(
-        ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle datasets for {}", bundle_code));
+        ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle members for {}", bundle_code));
 
-    std::vector<bundle_publishable_dataset> result;
-    result.reserve(rows.size());
-
+    std::vector<boost::uuids::uuid> member_ids;
+    member_ids.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() >= 3 && row[0].has_value() && row[1].has_value() && row[2].has_value()) {
-            bundle_publishable_dataset entry;
-            entry.dataset_id = *row[0];
-            entry.dataset_code = *row[1];
-            entry.target_subject = *row[2];
-            result.push_back(std::move(entry));
+        if (row.size() >= 1 && row[0].has_value()) {
+            try {
+                member_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(*row[0]));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Invalid dataset_id in bundle " << bundle_code << ": "
+                                          << e.what();
+            }
         }
     }
 
+    auto result = list_publishable_datasets(member_ids, resolve_dependencies);
+
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " publishable datasets in bundle "
-                               << bundle_code;
+                               << bundle_code << " (" << member_ids.size()
+                               << " direct member(s))";
 
     return result;
 }

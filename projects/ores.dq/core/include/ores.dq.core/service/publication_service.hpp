@@ -101,15 +101,27 @@ public:
     /**
      * @brief Lists publishable datasets in a bundle for workflow dispatch.
      *
-     * Returns datasets in display_order that have both a dataset record and
-     * a target_subject configured. The caller (publication_handler) uses this
-     * list to build the bundle_publish_workflow_request and start the workflow.
+     * A thin adapter, not a second resolution path: resolves the bundle's direct member
+     * dataset codes to IDs, then delegates to list_publishable_datasets() -- the same
+     * dependency-graph-resolving core the ID-based publish path uses. This is what makes a
+     * dependency declared in ores_dq_dataset_dependencies_tbl (see
+     * dataset_dependency_repository) actually take effect for a bundle publish: previously this
+     * method only read direct bundle members (ores_dq_dataset_bundle_members_tbl) and never
+     * consulted the dependency graph at all, so bundles whose members depended on
+     * un-declared-as-members datasets (e.g. a vintage-mode synthetic config depending on the real
+     * market data it resolves against) silently omitted them unless a bundle's own membership
+     * happened to be hand-ordered to include them too.
      *
      * @param bundle_code The bundle to query (e.g., 'base', 'solvaris').
+     * @param resolve_dependencies If true (the default), transitive dependencies of bundle
+     * members are included and ordered before their dependents. Kept as a caller-visible option,
+     * matching list_publishable_datasets(), rather than silently hardcoded, for the (currently
+     * unused) case of previewing bundle membership without its dependency closure.
      * @return Ordered list of publishable dataset entries.
      */
     std::vector<bundle_publishable_dataset>
-    list_bundle_publishable_datasets(const std::string& bundle_code);
+    list_bundle_publishable_datasets(const std::string& bundle_code,
+                                     bool resolve_dependencies = true);
 
     /**
      * @brief Resolves a list of dataset IDs into ordered, publishable entries.

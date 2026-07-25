@@ -50,5 +50,8 @@
 \echo '--- IR Curve Config Seed Data: 2026 Realistic (RFR curves) ---'
 \ir ./synthetic_ir_curve_configs_realistic_2026_populate.sql
 
+\echo '--- Dataset Dependencies (vintage-mode configs -> their real market data) ---'
+\ir ./synthetic_dataset_dependency_populate.sql
+
 \echo ''
 \echo '=== Synthetic Component Population Complete ==='

@@ -101,7 +101,9 @@ does.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale task-row description in story.org ("Qt windows, shell, CLI commands") left over from pre-rescope | story.org | Fixed | Updated to describe the actual subsection/deferral outcome. |
+| 2 | Step 3 checklist still says "Confirm ... Display Order are ... populated" though the dialog doesn't show it | scenario_portfolios-manual-screenshots.org | Fixed | Reworded to note Display Order isn't shown yet, pointing to * Notes. |
+| 3 | task_write_purpose_type_documentation.org missing trailing newline | task_write_purpose_type_documentation.org | Fixed | Added trailing newline. |
 
 * Result
 

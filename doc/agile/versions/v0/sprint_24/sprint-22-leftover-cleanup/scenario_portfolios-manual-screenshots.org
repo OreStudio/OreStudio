@@ -82,8 +82,8 @@ Log in against the =jolly_knuth= environment as
 
 - In the Purpose Types window, double-click the *Risk* row to open
   its Details dialog.
-- Confirm Code, Name, Description, and Display Order are all
-  populated.
+- Confirm Code, Name, and Description are all populated (Display
+  Order is not yet shown in this dialog — see =* Notes= below).
 - Click the Runner's *Screenshot* button, then *Pass*.
 
 *** Result

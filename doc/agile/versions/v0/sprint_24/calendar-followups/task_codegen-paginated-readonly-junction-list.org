@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/quantlib-calendar-transparency-and-adjustments
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -49,7 +49,7 @@ or otherwise) can opt into it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

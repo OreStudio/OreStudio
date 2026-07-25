@@ -114,9 +114,9 @@ the start, not bolted on later.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Step 3 (codegen calendar_rule/calendar_exception as refdata entities + Qt CRUD) done. |
+| Now          | Step 4 (calendar_dates materialisation service + on-demand regenerate command) done, minus DQ-publish (deviation, see Notes). |
 | Waiting on   | Nothing.                               |
-| Next         | Step 4: calendar_dates materialisation service + DQ-publish wiring. |
+| Next         | Step 5: ORE export path (CalendarAdjustments for source='user'). |
 | Last touched | 2026-07-25                               |
 
 * Acceptance
@@ -832,6 +832,64 @@ path.
      =fetch_calendar_types=/=fetch_countries=). Added
      =fetch_calendars()= (returns =vector<domain::calendar>=) as a
      small, precedent-following addition -- not a workaround.
+
+** Step 4 done (=calendar_dates= materialisation service + on-demand regenerate)
+
+- =calendar= extended with =source=/=is_editable=/=base_calendar_code=
+  (deferred from step 3) -- self-referential soft FK to its own
+  =code=, validated in a paste block since it joins the table against
+  itself (doesn't fit the generic soft-FK-validations mechanism).
+- =calendar_dates= codegenerated as a junction (=calendar_code= +
+  =date= composite key, =is_business_day=, =source=) -- see step 3's
+  notes for the =is_date= junction-mapper codegen fix this needed.
+- =calendar_materialisation_service= (=ores.refdata.core=, new,
+  hand-written -- this is genuine orchestration logic, not a codegen
+  shape): resolves a calendar's =base_calendar_code= chain
+  recursively (cycle-guarded), maps =calendar_rule=/=calendar_exception=
+  rows to =ores.analytics.quant='s types, calls
+  =calendar_rule_engine::instantiate_holidays_batch= for base-less
+  calendars, and for based calendars copies the base's already-
+  materialised dates with this calendar's own =calendar_exception=
+  rows overlaid on top. Extend-only: never rewrites a
+  (=calendar_code=, =date=) already materialised below the current
+  watermark. Horizon read from
+  =calendar.materialisation.start_offset_years= /
+  =calendar.materialisation.end_horizon= system settings, falling
+  back to built-in defaults (-2 / 2050) when unconfigured -- no seed
+  data added for these yet, since neither is required for the service
+  to function.
+- On-demand command, no cron:
+  =refdata.v1.calendar_dates.regenerate= NATS request/response
+  (=regenerate_calendar_dates_protocol=) + handler + registrar,
+  mirroring the existing per-entity handler shape (same
+  =refdata::calendars:write= permission as calendar's own save/delete
+  -- regenerating its computed dates is a calendar-write-adjacent
+  operation, not a new permission scope). =calendar_code= absent means
+  regenerate every calendar.
+- Added a =system.calendar_materialisation= change-reason code (DQ
+  seed data) for these system-authored writes -- none of the existing
+  =system.*= reasons fit "computed/derived data" precisely.
+- *Deviation from the plan: no DQ-publish wiring.* The plan's
+  "=calendar_dates= is DQ-published like =calendar= itself, following
+  the =dq_calendars_artefact_*=/=publish-from-dq= pattern" doesn't
+  actually fit: that pattern is DQ→refdata (an artefact table holds
+  externally-sourced snapshot data, synced *into*
+  =ores_refdata_calendars_tbl= via a =publish_..._from_dq= function) --
+  the reverse of what =calendar_dates= needs, since refdata computes
+  it itself and nothing external seeds it. Confirmed with the user;
+  shipping without a DQ artefact table or publish function for
+  =calendar_dates=. It remains purely refdata-internal: written by
+  the materialisation service, read directly by our own UI and
+  date-math.
+- *Not yet built*: a Qt entry point for triggering regeneration (a
+  "Regenerate up to <year>" button) -- that is step 6 (Qt UI), not
+  step 4. The NATS command exists and is reachable, just not wired
+  to any button yet.
+- *No unit tests added for the service itself* (only exercised via
+  the build). =ores.analytics.quant='s own engine has its unit-test
+  suite from steps 1-2; the service layer wiring above should get
+  coverage in a follow-up pass, most naturally alongside step 6's
+  manual QA scenario once there's a UI surface to drive it from.
 
 * Test Scenarios
 

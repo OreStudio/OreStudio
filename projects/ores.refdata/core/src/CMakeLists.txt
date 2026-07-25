@@ -51,6 +51,8 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         pugixml::pugixml
         ores.variability.api.lib
+        ores.variability.core.lib
+        ores.analytics.quant.lib
         ores.platform.lib
         ores.utility.lib
         ores.security.lib

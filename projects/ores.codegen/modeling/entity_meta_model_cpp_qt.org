@@ -149,6 +149,17 @@ recommends as the safer choice.
   set when the entity is only ever listed under a parent window (e.g.
   =book= under =portfolio=) rather than having its own top-level MDI
   entry.
+- =:has_readonly_paginated_list:= (default: false) — strips every
+  add/edit/delete/history affordance from the generated controller
+  and MDI window: no toolbar actions, no detail-dialog wiring, no
+  version navigation, no history dialog. Reload and pagination are
+  untouched (=:has_pagination:= is independent and orthogonal). Use
+  for a junction-backed or materialised dataset with nothing to edit
+  (first consumer: =calendar_dates=, scoped by =calendar_code=) —
+  pair it with disabling this entity's =ores.cpp.qt.detail_dialog_*=
+  archetypes individually via the entity's =:ores.*.enabled:= drawer
+  overrides, since no detail dialog is ever wired to when this knob
+  is set.
 
 * Overrides
 

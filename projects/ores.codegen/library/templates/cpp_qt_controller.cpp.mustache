@@ -95,12 +95,14 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
             this, &{{domain_entity.entity_pascal}}Controller::statusMessage);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::errorOccurred,
             this, &{{domain_entity.entity_pascal}}Controller::errorMessage);
+{{^domain_entity.qt.has_readonly_paginated_list}}
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{domain_entity.entity_pascal_short}}Details,
             this, &{{domain_entity.entity_pascal}}Controller::onShowDetails);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::addNewRequested,
             this, &{{domain_entity.entity_pascal}}Controller::onAddNewRequested);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{domain_entity.entity_pascal_short}}History,
             this, &{{domain_entity.entity_pascal}}Controller::onShowHistory);
+{{/domain_entity.qt.has_readonly_paginated_list}}
 {{#domain_entity.qt.related_entity_shortcuts}}
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{signal}}Requested,
             this, &{{domain_entity.entity_pascal}}Controller::show{{signal}}Requested);
@@ -159,6 +161,7 @@ void {{domain_entity.entity_pascal}}Controller::reloadListWindow() {
     }
 }
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
 void {{domain_entity.entity_pascal}}Controller::onShowDetails(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
@@ -598,7 +601,9 @@ void {{domain_entity.entity_pascal}}Controller::onRevertHistoryVersion(const QSt
         self->onRevertVersion(*it);
     });
 }
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
 void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
     BOOST_LOG_SEV(lg(), info) << "Reverting {{domain_entity.entity_singular_words}} to version: "
@@ -649,6 +654,7 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
 EntityListMdiWindow* {{domain_entity.entity_pascal}}Controller::listWindow() const {
     return listWindow_;

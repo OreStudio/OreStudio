@@ -128,6 +128,45 @@ Next steps: draft the exact knob names/shapes against
 =entity_meta_model_cpp_qt.org=, then prototype the templates against
 =calendar_dates= as the first consumer.
 
+** Implemented
+
+=:has_readonly_paginated_list:= (default false) landed across
+=controller_header=/=controller_impl=/=mdi_window_header=/
+=mdi_window_impl=, gated with =...{{^has_readonly_paginated_list}}=
+sections mirroring the existing =has_csv_xml_io= on/off pattern.
+When set: no detail-dialog wiring (=showAddWindow=/=showDetailWindow=/
+=openAdd=/=openEdit=), no history (=showHistoryWindow=/=openHistory=/
+version navigation/revert), no Add/Edit/Delete/History toolbar actions
+or slots. Reload and =:has_pagination:= pagination are untouched --
+orthogonal knobs. Documented in
+=entity_meta_model_cpp_qt.org='s Behavioural knob group.
+
+*Verification*: retangled, then diffed two structurally different
+existing entities' generated Qt output against HEAD via
+=compass codegen entity generate <entity> --address ores.cpp.qt --diff=
+with the knob left unset (its default): =book= (UUID PK, parent
+relationship, change-reason cache, badges) and =currency= (text PK,
+CSV/XML import/export). Both came back clean of any diff attributable
+to this change -- =book='s diff was pure pre-existing drift in
+=client_model=/=detail_dialog= templates this task didn't touch (a
+stale checked-in generated file vs. current templates, unrelated to
+this task); =currency= diffed byte-identical.
+
+*Not done -- blocked*: the acceptance criterion "generating it for
+=calendar_dates= produces a working paginated list" is blocked.
+=compass codegen entity show calendar_date= shows only
+domain/SQL/repository layers generated so far -- no
+=ores.cpp.protocol=/=ores.cpp.nats-handler= facets have been run, so
+there is no =get_calendar_dates_request=/=response= NATS message pair
+to point the Qt list's =:get_request_class:=/=:get_message_type:= at.
+Wiring the Qt drawer onto =calendar_date.org= needs that messaging
+layer generated first -- out of this task's scope (codegen template
+work only). The parent-scoping wiring
+(=:parent_key_field:=-style knob binding the list's get-request to a
+parent id/code) described in *Direction* above is also still
+undesigned/unimplemented, deferred to whichever task actually wires
+=calendar_dates='s Qt drawer once the messaging layer exists.
+
 * Notes
 
 * Test Scenarios

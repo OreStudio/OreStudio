@@ -8,7 +8,7 @@
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
 #+branch: feature/gap-analysis-ore-studio-identifiers
-#+pr:
+#+pr: 1693
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1693][#1693]] | [knowledge] Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme |
 
 * Review
 

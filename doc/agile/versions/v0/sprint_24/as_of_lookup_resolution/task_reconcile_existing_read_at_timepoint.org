@@ -33,11 +33,11 @@ than the replacement takes to land.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -76,3 +76,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Regenerated =country_repository= and =currency_repository= via the
+codegen facet (from [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]]), replacing
+the hand-written =read_at_timepoint= methods outright. The generated
+code fixes the =valid_to >= t= boundary bug (now =valid_to > t=, per
+the documented as-of convention) and adds ordering to the query.
+Neither entity has a service/NATS/UI caller wired to
+=read_at_timepoint=, so the change was scoped to the repository layer
+only.
+
+Verified: full local rebuild (=compass build=, all targets, exit 0)
+and full test suite (=compass build rat=, all test cases passed)
+after rebasing onto =origin/main=.

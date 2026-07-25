@@ -79,6 +79,42 @@ std::vector<domain::country> country_repository::read_latest(context ctx,
         "Reading latest country by alpha2_code.");
 }
 
+std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
+                                                                   const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading countries at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<country_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("alpha2_code"_c);
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint.");
+}
+
+std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
+                                                                   const std::string& as_of,
+                                                                   const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint. alpha2_code: " << alpha2_code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading country at timepoint by alpha2_code.");
+}
+
 std::vector<domain::country> country_repository::read_all(context ctx,
                                                           const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. alpha2_code: " << alpha2_code;
@@ -177,43 +213,6 @@ void country_repository::remove(context ctx, const std::vector<std::string>& alp
     execute_delete_query(ctx, query, lg(), "Batch removing countries.");
 }
 
-
-std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
-                                                                   const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading countries at timepoint: " << as_of;
-
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query =
-        sqlgen::read<std::vector<country_entity>> |
-        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<country_entity, domain::country>(
-        ctx,
-        query,
-        [](const auto& entities) { return country_mapper::map(entities); },
-        lg(),
-        "Reading countries at timepoint.");
-}
-
-std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
-                                                                   const std::string& as_of,
-                                                                   const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint: " << as_of
-                               << " for: " << alpha2_code;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<country_entity>> |
-                       where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code &&
-                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<country_entity, domain::country>(
-        ctx,
-        query,
-        [](const auto& entities) { return country_mapper::map(entities); },
-        lg(),
-        "Reading countries at timepoint by alpha-2 code.");
-}
 
 std::vector<domain::country> country_repository::read_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";

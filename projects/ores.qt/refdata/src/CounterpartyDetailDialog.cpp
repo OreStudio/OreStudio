@@ -97,6 +97,13 @@ void CounterpartyDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // Logo editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+}
+
+std::optional<boost::uuids::uuid> CounterpartyDetailDialog::entityImageId() const {
+    return counterparty_.image_id;
 }
 
 void CounterpartyDetailDialog::setupCombos() {}
@@ -107,6 +114,7 @@ void CounterpartyDetailDialog::setupConnections() {
         ui_->deleteButton, &QPushButton::clicked, this, &CounterpartyDetailDialog::onDeleteClicked);
     connect(
         ui_->closeButton, &QPushButton::clicked, this, &CounterpartyDetailDialog::onCloseClicked);
+    connect(this, &DetailDialogBase::flagEdited, this, &CounterpartyDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CounterpartyDetailDialog::onCodeChanged);
     connect(
@@ -399,6 +407,8 @@ void CounterpartyDetailDialog::onSaveClicked() {
         return;
     counterparty_.change_reason_code = crSel->reason_code;
     counterparty_.change_commentary = crSel->commentary;
+    if (flagChanged())
+        counterparty_.image_id = selectedImageId();
 
     updateCounterpartyFromUi();
 
@@ -440,6 +450,7 @@ void CounterpartyDetailDialog::onSaveClicked() {
                     BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
                     QString code = QString::fromStdString(self->counterparty_.short_code);
                     self->hasChanges_ = false;
+                    self->resetFlagChanged();
                     self->updateSaveButtonState();
                     emit self->counterpartySaved(code);
                     self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));

@@ -23,10 +23,10 @@
 --
 -- One-click server-side orchestration for --source acme: imports the Acme
 -- LEI party hierarchy (all four legal entities in one shot), then for each
--- of the three operating companies (Acme's holding company has no desks
+-- of the three operating companies (ACME Corporation's holding company has no desks
 -- of its own) publishes that company's business units, portfolios, books,
 -- accounts, and account contact informations, plus a single tenant-wide
--- import of real GLEIF counterparties (small) so every Acme party can
+-- import of real GLEIF counterparties (small) so every ACME Corporation party can
 -- trade against a realistic counterparty set. Called from a single NATS
 -- request/handler (see ores.iam.core/messaging/tenant_handler.hpp)
 -- -- no repeated per-party logins, no orchestration logic client-side.
@@ -67,7 +67,7 @@ begin
         end loop;
     end if;
 
-    -- Step 2: the four-party Acme Bank hierarchy, in one shot.
+    -- Step 2: the four-party ACME Corporation hierarchy, in one shot.
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where code = 'acme.lei_parties'
@@ -85,7 +85,7 @@ begin
     end loop;
 
     -- Step 3: real GLEIF counterparties (small), tenant-wide, so every
-    -- Acme party can trade against a realistic counterparty set.
+    -- ACME Corporation party can trade against a realistic counterparty set.
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where code = 'gleif.lei_counterparties.small'
@@ -105,9 +105,9 @@ begin
     -- desks/staff of its own).
     for v_company in
         select * from (values
-            ('acme_uk', 'Acme Bank UK plc'),
-            ('acme_us', 'Acme Bank US Inc'),
-            ('acme_hk', 'Acme Bank HK Ltd')
+            ('acme_uk', 'ACME Corporation UK plc'),
+            ('acme_us', 'ACME Corporation US Inc'),
+            ('acme_hk', 'ACME Corporation HK Ltd')
         ) as t(code, full_name)
     loop
         select id into v_party_id
@@ -202,7 +202,6 @@ begin
             end loop;
         end if;
     end loop;
-
     return;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;

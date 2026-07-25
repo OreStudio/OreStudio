@@ -26,7 +26,7 @@
 -- =============================================================================
 
 /**
- * Acme Bank ACME_HK Business Units Artefact Population Script
+ * ACME Corporation ACME_HK Business Units Artefact Population Script
  *
  * parent_business_unit_id is the artefact-space id (uuid) of the parent
  * unit's own row in this same dataset -- ores_refdata_publish_business_

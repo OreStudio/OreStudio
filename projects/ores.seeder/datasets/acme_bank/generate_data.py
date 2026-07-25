@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generates the Acme Bank source-data JSON dataset.
+Generates the ACME Corporation source-data JSON dataset.
 
 Produces flat-array JSON files -- one per DQ artefact family (LEI
 entities, LEI relationships, business units, portfolios, books,
@@ -82,7 +82,7 @@ def new_uuid(key: str) -> str:
 OFFICES = [
     {
         "code": "acme_uk",
-        "name": "Acme Bank UK plc",
+        "name": "ACME Corporation UK plc",
         "country": "GB",
         "business_centre_code": "GBLO",
         "locale": "en_GB",
@@ -90,7 +90,7 @@ OFFICES = [
     },
     {
         "code": "acme_us",
-        "name": "Acme Bank US Inc",
+        "name": "ACME Corporation US Inc",
         "country": "US",
         "business_centre_code": "USNY",
         "locale": "en_US",
@@ -98,7 +98,7 @@ OFFICES = [
     },
     {
         "code": "acme_hk",
-        "name": "Acme Bank HK Ltd",
+        "name": "ACME Corporation HK Ltd",
         "country": "HK",
         "business_centre_code": "HKHK",
         "locale": None,  # curated name pool, see HK_GIVEN_NAMES/HK_FAMILY_NAMES
@@ -119,7 +119,7 @@ SUPPORT_FUNCTIONS = [
 
 HOLDING = {
     "code": "acme_group",
-    "name": "Acme Bank Group plc",
+    "name": "ACME Corporation Group plc",
     "country": "GB",
     "city": "London",
 }
@@ -189,7 +189,7 @@ def gen_person(office, faker, index):
     # is unique per (tenant_id, email) -- see accounts_email_uniq_idx in
     # iam_accounts_create.sql.
     username = f"{slug_first}.{slug_last}.{office['code']}.{index}"
-    email = f"{slug_first}.{slug_last}.{index}@{office['code']}.acmebank.example"
+    email = f"{slug_first}.{slug_last}.{index}@{office['code']}.acmecorp.example"
     full_name = f"{first} {last}"
     return username, email, full_name
 

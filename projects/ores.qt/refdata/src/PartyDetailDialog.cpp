@@ -97,6 +97,13 @@ void PartyDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // Logo editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+}
+
+std::optional<boost::uuids::uuid> PartyDetailDialog::entityImageId() const {
+    return party_.image_id;
 }
 
 void PartyDetailDialog::setupCombos() {}
@@ -105,6 +112,7 @@ void PartyDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &PartyDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &PartyDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &PartyDetailDialog::onCloseClicked);
+    connect(this, &DetailDialogBase::flagEdited, this, &PartyDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PartyDetailDialog::onFieldChanged);
@@ -393,6 +401,8 @@ void PartyDetailDialog::onSaveClicked() {
         return;
     party_.change_reason_code = crSel->reason_code;
     party_.change_commentary = crSel->commentary;
+    if (flagChanged())
+        party_.image_id = selectedImageId();
 
     updatePartyFromUi();
 
@@ -423,24 +433,28 @@ void PartyDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Party saved successfully";
-            QString code = QString::fromStdString(self->party_.short_code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->partySaved(code);
-            self->notifySaveSuccess(tr("Party '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Party saved successfully";
+                    QString code = QString::fromStdString(self->party_.short_code);
+                    self->hasChanges_ = false;
+                    self->resetFlagChanged();
+                    self->updateSaveButtonState();
+                    emit self->partySaved(code);
+                    self->notifySaveSuccess(tr("Party '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

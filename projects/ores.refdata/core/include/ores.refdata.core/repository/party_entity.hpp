@@ -48,11 +48,12 @@ struct party_entity {
 
     std::string codename;
     std::optional<std::string> transliterated_name;
-    std::string party_category;
+    std::string party_category = "Operational";
     std::string party_type;
     std::optional<std::string> parent_party_id;
     std::string business_center_code;
     std::string status;
+    std::optional<std::string> image_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

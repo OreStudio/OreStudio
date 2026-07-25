@@ -36,6 +36,19 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =manifest.json=           | Dataset/catalog descriptor, following the =slovaris= convention    |
 | =methodology.txt=         | Full generation approach and how to extend (add an office/desk)    |
 
+* Naming
+
+"Acme" is the archetypal fictional-company name -- from the Acme
+Corporation, the mail-order supplier of absurdly over-engineered
+products in Looney Tunes' /Road Runner/ cartoons, now a byword for
+any generic placeholder business (see [[https://en.wikipedia.org/wiki/Acme_Corporation][Acme Corporation on Wikipedia]]).
+Reusing it here signals plainly, to anyone browsing the data, that
+Acme Bank is a synthetic reference/demo entity, not a real
+institution. The =ores_assets_images_tbl= logo attached to the
+=Acme Corp= counterparty fixture (see [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a
+counterparty]]) is sourced from that same Wikipedia article
+([[https://en.wikipedia.org/wiki/Acme_Corporation#/media/File:Acme-corp.png][File:Acme-corp.png]]).
+
 * Why this dataset
 
 Unlike [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] (a self-contained fictional universe), Acme Bank is

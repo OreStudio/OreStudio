@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: CAA32021-D905-468A-BEB4-B76A9432C218
+:END:
+#+title: Test Scenario: Verify attach logo to counterparty
+#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Bank tenant.
+#+type: test_scenario
+#+level: s1
+#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+target_dialog: CounterpartyDetailDialog
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment: brave_hopper
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This scenario verifies [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]: a counterparty
+can now carry a logo via a nullable =image_id= soft-FK, edited through a
+new logo picker on =CounterpartyDetailDialog= (Menu: Reference Data >
+Counterparties). Runs against the *Acme Bank* tenant (replacing
+Barclays Plc as the system's reference/demo entity -- see
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]), whose
+provisioning now seeds a fixture counterparty, =Acme Corp=, with its
+logo already attached (sourced from Wikipedia's [[https://en.wikipedia.org/wiki/Acme_Corporation][Acme Corporation]]
+article) -- so the first thing a tester sees is a *working example*
+with no manual upload needed. The scenario then covers the full CRUD +
+history + eventing sweep for the field on a second, freshly-created
+counterparty -- create, read-back, update, delete, history, and a NATS
+notification refreshing a second client. Pass means every step below
+completes with the stated outcome and no unexpected error dialog
+appears.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                                                                                     |
+|---------------+-------------------------------------------------------------------------------------------------------------|
+| Verifies task | [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]                                                                    |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]                                             |
+| Target dialog | =CounterpartyDetailDialog= -- Menu: Reference Data > Counterparties                                       |
+| Clients       | blue, red                                                                                                  |
+| State         | PENDING                                                                                                    |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** blue
+
+*** Connect to tenant Acme Bank
+
+- Log in as =tenant_admin@acme_bank= / =Secure-Password-123=.
+- Select party *Acme Bank UK plc*.
+- Open Reference Data > Counterparties.
+
+*** Confirm the pre-populated Acme Corp logo
+
+- In the counterparty list, find the row with short code *ACME* / full
+  name *Acme Corp* -- this row is seeded automatically by Acme tenant
+  provisioning, with its logo already attached.
+- Open its detail dialog and confirm the *Logo* group box already
+  shows an image (the Acme Corp logo, sourced from Wikipedia) without
+  you having picked one -- this is the "already uploaded to database"
+  half of the scenario: no manual upload needed to see a working
+  example.
+- Close the dialog without making changes (do not edit or delete this
+  fixture counterparty -- it is reused by other scenarios and by the
+  eventing step below).
+
+*** Create a counterparty and set its logo
+
+- Click Add to open a new =CounterpartyDetailDialog= in create mode.
+- Fill in a short code (e.g. =ACMETEST=), full name (e.g. =Acme Test
+  Counterparty=), party type, status, and business center; select any
+  parent counterparty.
+- In the *Logo* group box, click the flag/logo button and pick any
+  image from the selector (the pre-populated Acme Corp logo, if
+  offered, or any other available image).
+- Confirm the button now shows the chosen icon and a "Logo changed
+  (unsaved)" style before saving.
+- Click Save, supply a change reason, and confirm the success
+  notification appears and the row shows in the list.
+
+*** Read back the saved logo
+
+- Reopen the detail dialog for the counterparty just created (double
+  click its list row).
+- Confirm the Logo button shows the same image chosen in the previous
+  step -- this is the =image_id= round-trip through save/read.
+
+*** Update to a different logo
+
+- With the dialog still open, click the Logo button again and pick a
+  *different* image.
+- Save with a change reason and confirm success.
+- Close and reopen the dialog; confirm the button now shows the new
+  image, not the original one.
+
+*** Delete the counterparty
+
+- With the counterparty still open (or selected in the list), click
+  Delete.
+- Confirm the deletion prompt and supply a change reason.
+- Confirm the row disappears from the counterparty list.
+
+*** Verify history shows every logo change
+
+- Right-click the (now deleted) counterparty's row -- or reselect it
+  via the list's deleted-record filter, if the list hides deletes by
+  default -- and choose History.
+- In the History dialog, confirm three entries are present -- create,
+  update, delete -- each with its own change reason.
+
+** red
+
+*** Connect to tenant Acme Bank
+
+- Log in as =tenant_admin@acme_bank= / =Secure-Password-123= (this
+  is a second, independent client instance -- log in again here, do
+  not assume it inherits the blue client's session).
+- Select party *Acme Bank UK plc*.
+- Open Reference Data > Counterparties and leave the list visible.
+
+*** Confirm the logo change arrives via NATS
+
+- Wait for the blue client to complete its "Create a counterparty and
+  set its logo" step.
+- Without manually refreshing, confirm the new counterparty appears in
+  this (red) client's list -- this is the LISTEN/NOTIFY-to-NATS relay
+  firing, not just the repository layer ctest already covers.
+- Open the counterparty's detail dialog here and confirm the Logo
+  button shows the same image the blue client set.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

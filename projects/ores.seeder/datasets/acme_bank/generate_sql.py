@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generates populate SQL for the Acme Bank dataset from the JSON files
+Generates populate SQL for the ACME Corporation dataset from the JSON files
 produced by generate_data.py in this same directory.
 
 Mirrors the shape/conventions of hand-written ores.sql populate scripts
@@ -99,7 +99,7 @@ def dataset_upsert(code, subject_area, name, description, artefact_type):
         return v.replace("'", "''")
     return f"""    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         '{q(code)}',
-        'Acme Bank',
+        'ACME Corporation',
         '{q(subject_area)}',
         'Reference Data',
         'NONE',
@@ -110,7 +110,7 @@ def dataset_upsert(code, subject_area, name, description, artefact_type):
         '{q(name)}',
         '{q(description)}',
         'ACMEBANK',
-        'Acme Bank generated data',
+        'ACME Corporation generated data',
         current_date,
         'Internal Use Only',
         '{q(artefact_type)}'
@@ -127,9 +127,9 @@ def generate_catalog_populate():
 -- =============================================================================
 
 /**
- * Acme Bank Catalog Population Script
+ * ACME Corporation Catalog Population Script
  *
- * Creates the Acme Bank catalog for the synthetic four-legal-entity
+ * Creates the ACME Corporation catalog for the synthetic four-legal-entity
  * investment-bank holding group used as ORE Studio's fully-populated
  * reference/demo tenant. This script is idempotent.
  */
@@ -137,8 +137,8 @@ def generate_catalog_populate():
 DO $$
 BEGIN
     PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Acme Bank',
-        'Synthetic four-legal-entity investment-bank holding group (Group/UK/US/HK) used as a fully-populated reference/demo tenant.',
+        'ACME Corporation',
+        'Synthetic four-legal-entity investment-bank holding group (Group/UK/US/HK) used as a fully-populated reference/demo tenant. Named after the archetypal fictional-company placeholder (Acme Corporation, Looney Tunes'' Road Runner cartoons -- https://en.wikipedia.org/wiki/Acme_Corporation), signalling that this is synthetic reference data, not a real institution.',
         'Development Team'
     );
 END $$;
@@ -148,18 +148,18 @@ END $$;
 
 def generate_dataset_populate(companies):
     body = [dataset_upsert(
-        "acme.lei_entities", "Parties", "Acme Bank LEI Entities",
-        "Acme Bank's four legal entities, checksum-valid synthetic LEIs on the 9695 test prefix.",
+        "acme.lei_entities", "Parties", "ACME Corporation LEI Entities",
+        "ACME Corporation's four legal entities, checksum-valid synthetic LEIs on the 9695 test prefix.",
         "lei_entities")]
     body.append(dataset_upsert(
-        "acme.lei_relationships", "Parties", "Acme Bank LEI Relationships",
-        "Parent/subsidiary consolidation relationships for the Acme Bank group.",
+        "acme.lei_relationships", "Parties", "ACME Corporation LEI Relationships",
+        "Parent/subsidiary consolidation relationships for the ACME Corporation group.",
         "lei_relationships"))
     body.append(dataset_upsert(
-        "acme.lei_parties", "Parties", "Acme Bank LEI Parties",
-        "Publish trigger for the Acme Bank party hierarchy -- publishing this "
+        "acme.lei_parties", "Parties", "ACME Corporation LEI Parties",
+        "Publish trigger for the ACME Corporation party hierarchy -- publishing this "
         "dataset (via ores_refdata_publish_lei_parties_from_dq_fn, params.root_lei "
-        "= the Acme Bank Group plc LEI) reads acme.lei_entities/acme.lei_relationships "
+        "= the ACME Corporation Group plc LEI) reads acme.lei_entities/acme.lei_relationships "
         "and creates the four-party hierarchy. Carries no artefact rows of its own, "
         "same convention as the gleif.lei_parties.<size> dataset.",
         "lei_parties"))
@@ -167,33 +167,33 @@ def generate_dataset_populate(companies):
         label = company.replace("acme_", "").upper()
         body.append(dataset_upsert(
             f"acme.{company}.business_units", "Organisation",
-            f"Acme Bank {label} Business Units",
-            f"Trading desks and support functions for Acme Bank {label}.",
+            f"ACME Corporation {label} Business Units",
+            f"Trading desks and support functions for ACME Corporation {label}.",
             "business_units"))
         body.append(dataset_upsert(
             f"acme.{company}.portfolios", "Trading",
-            f"Acme Bank {label} Portfolios",
-            f"Portfolio hierarchy for Acme Bank {label}.",
+            f"ACME Corporation {label} Portfolios",
+            f"Portfolio hierarchy for ACME Corporation {label}.",
             "portfolios"))
         body.append(dataset_upsert(
             f"acme.{company}.books", "Trading",
-            f"Acme Bank {label} Books",
-            f"Trading books for Acme Bank {label}.",
+            f"ACME Corporation {label} Books",
+            f"Trading books for ACME Corporation {label}.",
             "books"))
         body.append(dataset_upsert(
             f"acme.{company}.accounts", "Organisation",
-            f"Acme Bank {label} Accounts",
-            f"Generated staff login accounts for Acme Bank {label}.",
+            f"ACME Corporation {label} Accounts",
+            f"Generated staff login accounts for ACME Corporation {label}.",
             "accounts"))
         body.append(dataset_upsert(
             f"acme.{company}.account_contact_informations", "Organisation",
-            f"Acme Bank {label} Account Contact Informations",
-            f"Generated staff real names/contact details for Acme Bank {label}.",
+            f"ACME Corporation {label} Account Contact Informations",
+            f"Generated staff real names/contact details for ACME Corporation {label}.",
             "account_contact_informations"))
 
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank Dataset Population Script
+ * ACME Corporation Dataset Population Script
  *
  * Registers the datasets consumed by the acme_*_artefact_populate.sql
  * scripts in this same directory. This script is idempotent.
@@ -232,9 +232,9 @@ def generate_lei_entities_populate(entities):
     values = ",\n".join(rows)
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank LEI Entities Artefact Population Script
+ * ACME Corporation LEI Entities Artefact Population Script
  *
- * Populates ores_dq_lei_entities_artefact_tbl with Acme Bank's four legal
+ * Populates ores_dq_lei_entities_artefact_tbl with ACME Corporation's four legal
  * entities. This script is idempotent.
  */
 
@@ -286,10 +286,10 @@ def generate_lei_relationships_populate(relationships):
     values = ",\n".join(rows)
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank LEI Relationships Artefact Population Script
+ * ACME Corporation LEI Relationships Artefact Population Script
  *
  * Populates ores_dq_lei_relationships_artefact_tbl with the parent/
- * subsidiary consolidation relationships linking each Acme Bank office to
+ * subsidiary consolidation relationships linking each ACME Corporation office to
  * the holding company. This script is idempotent.
  */
 
@@ -339,7 +339,7 @@ def generate_business_units_populate(company, units):
     code = f"acme.{company}.business_units"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank {company.upper()} Business Units Artefact Population Script
+ * ACME Corporation {company.upper()} Business Units Artefact Population Script
  *
  * parent_business_unit_id is the artefact-space id (uuid) of the parent
  * unit's own row in this same dataset -- ores_refdata_publish_business_
@@ -394,7 +394,7 @@ def generate_portfolios_populate(company, portfolios, units):
     code = f"acme.{company}.portfolios"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank {company.upper()} Portfolios Artefact Population Script
+ * ACME Corporation {company.upper()} Portfolios Artefact Population Script
  *
  * parent_portfolio_id is the artefact-space id (uuid) of the parent
  * portfolio's own row in this dataset; owner_unit_id is the artefact-
@@ -447,7 +447,7 @@ def generate_books_populate(company, books, portfolios):
     code = f"acme.{company}.books"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank {company.upper()} Books Artefact Population Script
+ * ACME Corporation {company.upper()} Books Artefact Population Script
  *
  * parent_portfolio_id is the artefact-space id (uuid) of the owning row
  * in the matching portfolios dataset, resolved by name at publish time
@@ -497,7 +497,7 @@ def generate_accounts_populate(company, accounts):
     code = f"acme.{company}.accounts"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank {company.upper()} Accounts Artefact Population Script
+ * ACME Corporation {company.upper()} Accounts Artefact Population Script
  *
  * business_unit_code is a natural-key code, resolved to a business unit
  * id by the publish function (see the server-side-orchestration
@@ -546,7 +546,7 @@ def generate_account_contact_informations_populate(company, accounts):
     code = f"acme.{company}.account_contact_informations"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
- * Acme Bank {company.upper()} Account Contact Informations Artefact
+ * ACME Corporation {company.upper()} Account Contact Informations Artefact
  * Population Script
  *
  * account_username identifies the owning account by username, resolved

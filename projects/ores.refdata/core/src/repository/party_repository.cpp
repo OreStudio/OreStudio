@@ -79,11 +79,13 @@ std::vector<domain::party> party_repository::read_latest(context ctx, const std:
         "Reading latest party by id.");
 }
 
+
 std::vector<domain::party> party_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<party_entity, domain::party>(
         ctx,

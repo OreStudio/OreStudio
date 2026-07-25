@@ -1,7 +1,7 @@
 [
   {
     "lei": "9695ACMEGROUP0000030",
-    "entity_legal_name": "Acme Bank Group plc",
+    "entity_legal_name": "ACME Corporation Group plc",
     "entity_entity_category": "GENERAL",
     "entity_entity_status": "ACTIVE",
     "entity_legal_jurisdiction": "GB",
@@ -12,7 +12,7 @@
   },
   {
     "lei": "9695ACMEUK0000000047",
-    "entity_legal_name": "Acme Bank UK plc",
+    "entity_legal_name": "ACME Corporation UK plc",
     "entity_entity_category": "GENERAL",
     "entity_entity_status": "ACTIVE",
     "entity_legal_jurisdiction": "GB",
@@ -25,7 +25,7 @@
   },
   {
     "lei": "9695ACMEUS0000000043",
-    "entity_legal_name": "Acme Bank US Inc",
+    "entity_legal_name": "ACME Corporation US Inc",
     "entity_entity_category": "GENERAL",
     "entity_entity_status": "ACTIVE",
     "entity_legal_jurisdiction": "US",
@@ -38,7 +38,7 @@
   },
   {
     "lei": "9695ACMEHK0000000018",
-    "entity_legal_name": "Acme Bank HK Ltd",
+    "entity_legal_name": "ACME Corporation HK Ltd",
     "entity_entity_category": "GENERAL",
     "entity_entity_status": "ACTIVE",
     "entity_legal_jurisdiction": "HK",

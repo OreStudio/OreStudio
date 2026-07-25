@@ -2,7 +2,7 @@
   {
     "company_code": "acme_uk",
     "id": "93925bc5-1800-5c69-a18b-f683dae17f2e",
-    "name": "Acme Bank UK plc Global Markets",
+    "name": "ACME Corporation UK plc Global Markets",
     "parent_portfolio_code": null,
     "portfolio_code": "acme_uk.global_markets",
     "owner_unit_code": "acme_uk.global_markets",
@@ -38,7 +38,7 @@
   {
     "company_code": "acme_us",
     "id": "8be4b2e1-2c9c-526f-8b01-d23c8456f09e",
-    "name": "Acme Bank US Inc Global Markets",
+    "name": "ACME Corporation US Inc Global Markets",
     "parent_portfolio_code": null,
     "portfolio_code": "acme_us.global_markets",
     "owner_unit_code": "acme_us.global_markets",
@@ -74,7 +74,7 @@
   {
     "company_code": "acme_hk",
     "id": "b47aff75-fda3-5c47-bd47-392914198fdb",
-    "name": "Acme Bank HK Ltd Global Markets",
+    "name": "ACME Corporation HK Ltd Global Markets",
     "parent_portfolio_code": null,
     "portfolio_code": "acme_hk.global_markets",
     "owner_unit_code": "acme_hk.global_markets",

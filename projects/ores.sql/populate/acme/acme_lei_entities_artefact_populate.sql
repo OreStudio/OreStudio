@@ -26,9 +26,9 @@
 -- =============================================================================
 
 /**
- * Acme Bank LEI Entities Artefact Population Script
+ * ACME Corporation LEI Entities Artefact Population Script
  *
- * Populates ores_dq_lei_entities_artefact_tbl with Acme Bank's four legal
+ * Populates ores_dq_lei_entities_artefact_tbl with ACME Corporation's four legal
  * entities. This script is idempotent.
  */
 
@@ -59,8 +59,8 @@ begin
         entity_headquarters_address_country, entity_headquarters_address_postal_code
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEGROUP0000030', 0, 'Acme Bank Group plc', 'GENERAL', null, 'ACTIVE', null, null, 'GB', null, 'London', null, 'GB', null, null, 'London', null, 'GB', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEUK0000000047', 0, 'Acme Bank UK plc', 'GENERAL', null, 'ACTIVE', null, null, 'GB', '886 Deborah Radial', 'London', null, 'GB', null, '886 Deborah Radial', 'London', null, 'GB', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEUS0000000043', 0, 'Acme Bank US Inc', 'GENERAL', null, 'ACTIVE', null, null, 'US', '997 David Way', 'New York', null, 'US', null, '997 David Way', 'New York', null, 'US', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEHK0000000018', 0, 'Acme Bank HK Ltd', 'GENERAL', null, 'ACTIVE', null, null, 'HK', 'Wai Ming Building, Central', 'Hong Kong', null, 'HK', null, 'Wai Ming Building, Central', 'Hong Kong', null, 'HK', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEGROUP0000030', 0, 'ACME Corporation Group plc', 'GENERAL', null, 'ACTIVE', null, null, 'GB', null, 'London', null, 'GB', null, null, 'London', null, 'GB', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEUK0000000047', 0, 'ACME Corporation UK plc', 'GENERAL', null, 'ACTIVE', null, null, 'GB', '886 Deborah Radial', 'London', null, 'GB', null, '886 Deborah Radial', 'London', null, 'GB', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEUS0000000043', 0, 'ACME Corporation US Inc', 'GENERAL', null, 'ACTIVE', null, null, 'US', '997 David Way', 'New York', null, 'US', null, '997 David Way', 'New York', null, 'US', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9695ACMEHK0000000018', 0, 'ACME Corporation HK Ltd', 'GENERAL', null, 'ACTIVE', null, null, 'HK', 'Wai Ming Building, Central', 'Hong Kong', null, 'HK', null, 'Wai Ming Building, Central', 'Hong Kong', null, 'HK', null);
 end $$;

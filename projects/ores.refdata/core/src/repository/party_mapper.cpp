@@ -51,6 +51,9 @@ domain::party party_mapper::map(const party_entity& v) {
             std::nullopt;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
+    r.image_id = v.image_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
+                     std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -83,6 +86,8 @@ party_entity party_mapper::map(const domain::party& v) {
                             std::nullopt;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
+    r.image_id =
+        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

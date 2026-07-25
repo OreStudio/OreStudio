@@ -26,7 +26,7 @@
 -- =============================================================================
 
 /**
- * Acme Bank ACME_HK Books Artefact Population Script
+ * ACME Corporation ACME_HK Books Artefact Population Script
  *
  * parent_portfolio_id is the artefact-space id (uuid) of the owning row
  * in the matching portfolios dataset, resolved by name at publish time

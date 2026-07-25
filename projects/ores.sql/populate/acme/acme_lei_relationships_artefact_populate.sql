@@ -26,10 +26,10 @@
 -- =============================================================================
 
 /**
- * Acme Bank LEI Relationships Artefact Population Script
+ * ACME Corporation LEI Relationships Artefact Population Script
  *
  * Populates ores_dq_lei_relationships_artefact_tbl with the parent/
- * subsidiary consolidation relationships linking each Acme Bank office to
+ * subsidiary consolidation relationships linking each ACME Corporation office to
  * the holding company. This script is idempotent.
  */
 

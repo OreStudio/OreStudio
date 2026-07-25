@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:CAA32021-D905-468A-BEB4-B76A9432C218][Verify attach logo to counterparty]] | PENDING | Adds a Qt logo picker to CounterpartyDetailDialog (out of the original data-layer-only scope) so the field is user-testable. |
 
 * PRs
 

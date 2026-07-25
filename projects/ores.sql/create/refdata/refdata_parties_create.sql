@@ -42,6 +42,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     "parent_party_id" uuid null,
     "business_center_code" text not null,
     "status" text not null default 'Active',
+    "image_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -146,6 +147,19 @@ begin
     end if;
     NEW.business_center_code := ores_refdata_validate_business_centre_fn(
         NEW.tenant_id, NEW.business_center_code);
+
+    -- Validate image_id (optional soft FK to ores_assets_images_tbl)
+    if NEW.image_id is not null then
+        if not exists (
+            select 1 from ores_assets_images_tbl
+            where tenant_id = NEW.tenant_id
+              and image_id = NEW.image_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id
+                using errcode = '23503';
+        end if;
+    end if;
 
     -- Version management
     select version into current_version

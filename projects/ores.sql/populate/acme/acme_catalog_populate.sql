@@ -25,9 +25,9 @@
 -- =============================================================================
 
 /**
- * Acme Bank Catalog Population Script
+ * ACME Corporation Catalog Population Script
  *
- * Creates the Acme Bank catalog for the synthetic four-legal-entity
+ * Creates the ACME Corporation catalog for the synthetic four-legal-entity
  * investment-bank holding group used as ORE Studio's fully-populated
  * reference/demo tenant. This script is idempotent.
  */
@@ -35,8 +35,8 @@
 DO $$
 BEGIN
     PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Acme Bank',
-        'Synthetic four-legal-entity investment-bank holding group (Group/UK/US/HK) used as a fully-populated reference/demo tenant.',
+        'ACME Corporation',
+        'Synthetic four-legal-entity investment-bank holding group (Group/UK/US/HK) used as a fully-populated reference/demo tenant. Named after the archetypal fictional-company placeholder (Acme Corporation, Looney Tunes'' Road Runner cartoons -- https://en.wikipedia.org/wiki/Acme_Corporation), signalling that this is synthetic reference data, not a real institution.',
         'Development Team'
     );
 END $$;

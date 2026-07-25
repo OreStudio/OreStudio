@@ -2,7 +2,7 @@
 :ID: F3010EA7-6A0E-405C-81FA-1EF051749B5E
 :END:
 #+title: External market data identifiers
-#+description: A standalone comparative analysis of three market data identifier schemes — RIC, Bloomberg ticker, and the ORE canonical key — their origin, ownership, formal specification status, and pros, cons, and limitations.
+#+description: A comparative analysis of three market data identifier schemes — RIC, Bloomberg ticker, and the ORE canonical key — their origin, ownership, formal specification status, and pros, cons, and limitations.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:identifiers:
@@ -15,8 +15,8 @@ Market data series are identified differently by different data vendors and
 systems. Reuters/Refinitiv (now LSEG) uses RICs (e.g. =EUR==), Bloomberg uses
 its own ticker syntax (e.g. =EURUSD BGN Curncy=), and the Open Source Risk
 Engine (ORE) uses a slash-delimited canonical key (e.g. =FX/RATE/EUR/USD=).
-This document is a standalone comparative analysis of these three schemes on
-their own terms — what each is, who owns it, whether a formal specification
+This document is a comparative analysis of these three schemes on their
+own terms — what each is, who owns it, whether a formal specification
 exists, and each scheme's pros, cons, and limitations — independent of any
 particular consumer of the schemes.
 
@@ -102,11 +102,12 @@ the ORE open-source project, currently maintained by Acadia (formerly
 Quaternion Risk Management / AcadiaSoft). Because it exists to serve one
 program's input format rather than to label instruments for human traders
 across a whole industry, it is the most systematic of the three schemes:
-every key follows the exact same slash-delimited shape,
-=<series_type>/<metric>/<qualifier>[/<point_id>]=, regardless of asset
-class — an FX spot rate, an IR discount curve point, and a swaption vol
-surface point are all addressed by the same four logical fields, just
-with different values. There is no external standards body governing it
+every key follows the same top-level slash-delimited shape,
+=TYPE/SUBTYPE/dim1/.../dimN=, regardless of asset class — though, unlike
+a flatter scheme, the number and meaning of the dimensions after
+=TYPE/SUBTYPE= is fixed per type rather than universal (see
+[[*ORE quote key structure][ORE quote key structure]] below for the
+detail this simplification glosses over). There is no external standards body governing it
 either, but — in sharp contrast to RIC and Bloomberg — its specification
 is entirely open: the format is defined by ORE's own open-source code and
 by the example =marketdata.csv= files shipped with every ORE release, all
@@ -127,95 +128,177 @@ this key format is drawn from; =OREData/ored/marketdata/= contains the
 
 Three schemes address the same instruments differently: RIC (Reuters/Refinitiv,
 now LSEG) is instrument-type-specific and not fully systematic; Bloomberg uses a
-space-separated =<ticker> <yellow-key>= composite; ORE uses a slash-delimited
-=<series_type>/<metric>/<qualifier>[/<point_id>]= key consumed directly by the ORE
-pricing engine (=marketdata.csv=). RIC and Bloomberg cells below are
-compiled from publicly visible instrument examples, not a primary vendor spec — see
-[[*Sources][Sources]]. "—" marks instruments with no worked ORE example in this
-document.
+space-separated =<ticker> <yellow-key>= composite; ORE uses a slash-delimited,
+per-type =TYPE/SUBTYPE/dim1/.../dimN= key consumed directly by the ORE pricing
+engine (=marketdata.csv=), documented type by type in the
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]. RIC and
+Bloomberg cells below are compiled from publicly visible instrument examples,
+not a primary vendor spec — see [[*Sources][Sources]]. Every cell below is
+filled with either a concrete identifier or an explicit statement of why none
+exists (no standard public convention, no matching ORE quote type, or "not a
+single tradeable instrument") — see each subsection's notes for the reasoning
+behind any such cell.
 
 ** FX
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
 | EUR/USD spot | =EUR== | =EURUSD BGN Curncy= | =FX/RATE/EUR/USD= |
 | GBP/USD spot | =GBP== | =GBPUSD BGN Curncy= | =FX/RATE/GBP/USD= |
-| USD/JPY spot | =JPY== | — | — |
-| EUR/GBP cross | =EURGBP== | — | =FX/RATE/EUR/GBP= |
-| EUR/USD 1M forward | =EURUSD1MF== | =EURUSD1M BGN Curncy= | — |
+| USD/JPY spot | =JPY== | =USDJPY BGN Curncy= | =FX/RATE/USD/JPY= |
+| EUR/GBP cross | =EURGBP== | =EURGBP BGN Curncy= | =FX/RATE/EUR/GBP= |
+| EUR/USD 1M forward | =EURUSD1MF== | =EURUSD1M BGN Curncy= | =FXFWD/RATE/EUR/USD/1M= |
 
-Notes: RIC major pairs use base currency code + ==; crosses use the 6-char pair +
-==; outright forwards append tenor + =F=. Bloomberg =BGN= = Bloomberg Generic
-fixing. FX spot is a scalar ORE series — no =point_id= segment.
+*Comparative analysis*
+
+- *RIC*: major pairs use base currency code + ==; crosses use the 6-char
+  pair + ==; outright forwards append tenor + =F=. Shortcoming: the
+  encoding is inconsistent even within FX itself — a major pair and a
+  cross are different string lengths, and the forward suffix (=F=)
+  changes the *meaning* of the =+== character rather than adding a
+  clean, separate field, so a parser cannot reliably split "currency
+  pair" from "instrument type" without an asset-class-specific rule
+  table.
+- *Bloomberg ticker*: the ticker portion mirrors RIC's currency-pair
+  string, but the yellow key (=Curncy=) and =BGN= fixing tag are always
+  explicit, separate tokens. Shortcoming: still a flat, space-delimited
+  string with no distinction between "the pair" and "the tenor" for a
+  forward (=EURUSD1M= packs both into one token, same weakness as RIC's
+  =F= suffix, just with different characters).
+- *ORE quote key*: FX spot is a scalar series with no =point_id=
+  segment; the FX forward row's =1M= is a genuine =point_id= — forward
+  points form a term structure per currency pair, and ORE's schema has a
+  dedicated dimension for that, unlike RIC or Bloomberg. Shortcoming:
+  this uniformity is bought by having a separate top-level =TYPE=
+  (=FX= vs =FXFWD=) for spot vs. forward rather than one type with a
+  tenor dimension that is merely absent for spot — spot and forward are
+  not, in ORE's own model, the same series with an optional extra field;
+  they are two different series types that happen to share a currency
+  pair.
 
 ** Interest rates
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| USD overnight rate (SOFR) | =USDSOFR== | =SOFRRATE Index= | — |
-| EUR 6M EURIBOR | =EUR6MFSR== | =EUR006M Index= | — |
-| USD 5Y IRS par rate | =USDSB5Y=ICAP= | =USSA5 Curncy= | — |
-| EUR 10Y IRS par rate | =EURABS10Y=ICAP= | =EUSA10 Curncy= | — |
-| 10Y US Treasury yield | =US10YT=RR= | =USGG10YR Index= | — |
-| 10Y German Bund yield | =DE10YT=RR= | =GDBR10 Index= | — |
-| EUR discount curve, 2Y point | — | — | =DISCOUNT/RATE/EUR/2Y= |
-| USD discount curve, 5Y point | — | — | =DISCOUNT/RATE/USD/5Y= |
+| USD overnight rate (SOFR) | =USDSOFR== | =SOFRRATE Index= | No standalone ORE type for a raw overnight fixing (see note); closest concrete ORE representation is the front SOFR future, =OI_FUTURE/PRICE/USD/2025-09/SOFR= |
+| EUR 6M EURIBOR | =EUR6MFSR== | =EUR006M Index= | =MM/RATE/EUR/2D/6M= (money-market deposit rate at the 6M tenor — the closest single-rate analog to a EURIBOR fixing) |
+| USD 5Y IRS par rate | =USDSB5Y=ICAP= | =USSA5 Curncy= | =IR_SWAP/RATE/USD/2D/3M/5Y= |
+| EUR 10Y IRS par rate | =EURABS10Y=ICAP= | =EUSA10 Curncy= | =IR_SWAP/RATE/EUR/2D/6M/10Y= |
+| 10Y US Treasury yield | =US10YT=RR= | =USGG10YR Index= | No sovereign-bond-yield type exists in ORE's quote-key inventory; closest analog is a directly-quoted zero rate, =ZERO/RATE/USD/A365/Continuous/10Y= (see note) |
+| 10Y German Bund yield | =DE10YT=RR= | =GDBR10 Index= | Same limitation; closest analog =ZERO/RATE/EUR/A365/Continuous/10Y= (see note) |
+| EUR discount curve, 2Y point | Not a single tradeable instrument (a curve point, not a quoted security) | Not a single tradeable instrument, same reason | =DISCOUNT/RATE/EUR/EUR-DUMMY/2Y= |
+| USD discount curve, 5Y point | Not a single tradeable instrument, same reason | Not a single tradeable instrument, same reason | =DISCOUNT/RATE/USD/USD-DUMMY/5Y= |
 
 Notes: RIC =ICAP= / =GFI= suffixes are broker-specific; =RR= = Reuters composite.
-No RIC/Bloomberg row above lines up with an ORE key and vice versa — the RIC/
-Bloomberg rows quote par rates for specific indices/tenors, while the ORE rows are
-term-structure series (=point_id= carries the tenor); yield curves are
-term-structure series, unlike FX spot.
+ORE quote keys here are per the
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]'s
+documented =IR_SWAP/RATE/CCY/spot_lag/float_index_tenor/swap_tenor= and
+=DISCOUNT/RATE/CCY/curve_id/tenor= shapes — richer than the simplified
+=series_type/metric/qualifier[/point_id]= shown later in this document (see
+[[*ORE quote key structure][ORE quote key structure]]). ORE does not
+quote a raw overnight fixing or a sovereign bond's own yield-to-maturity as a
+standalone type: SOFR enters ORE only as an index-tenor dimension inside
+=IR_SWAP/RATE= or via =OI_FUTURE/PRICE=, and government yields are represented,
+if at all, via the generic =ZERO/RATE= curve-construction type rather than a
+bond-specific yield quote — treating a =ZERO/RATE= point as equivalent to a
+Treasury or Bund's quoted yield is an approximation, not an identity, since
+=ZERO/RATE= is a curve input, not a specific bond's yield-to-maturity. No RIC/
+Bloomberg row above lines up one-to-one with an ORE key and vice versa — the
+RIC/Bloomberg rows quote par rates or fixings for specific indices/tenors,
+while the ORE rows are term-structure series (a tenor dimension carries the
+point on the curve).
 
 ** Swaptions
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| EUR swaption vol, 5Y expiry / 2Y tenor, ATM | — | — | =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= |
+| EUR swaption vol, 5Y expiry / 2Y tenor, ATM | No standard public RIC convention found — swaption vol is broker-composite data (e.g. ICAP screens), not retail-ticker data | No standard public Bloomberg ticker convention found — same reason | =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= |
 
-Notes: swaption surfaces carry a two-dimensional =point_id= (expiry/tenor/strike).
-No RIC or Bloomberg vol-surface example is documented here.
+Notes: the ORE key follows the catalogue's documented
+=SWAPTION/RATE_LNVOL/CCY/expiry/swap_tenor/strike= shape. Swaption
+volatility is inherently broker-composite, over-the-counter data (sourced
+from inter-dealer brokers such as ICAP or Tullett Prebon) rather than
+data with a standardised single-vendor ticker convention, which is why
+neither RIC nor Bloomberg has a documented public convention to cite here
+— this is a genuine gap in public documentation for both vendors, not an
+omission from this table.
 
 ** Equities and indices
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| Apple (NASDAQ) | =AAPL.OQ= | =AAPL US Equity= | — |
-| Vodafone (LSE) | =VOD.L= | =VOD LN Equity= | — |
-| S&P 500 index | =.SPX= | =SPX Index= | — |
-| FTSE 100 | =.FTSE= | =UKX Index= | — |
-| S&P 500 front-month future | =ESc1= | — | — |
+| Apple (NASDAQ) | =AAPL.OQ= | =AAPL US Equity= | =EQUITY/PRICE/AAPL/USD= |
+| Vodafone (LSE) | =VOD.L= | =VOD LN Equity= | =EQUITY/PRICE/VOD/GBP= |
+| S&P 500 index | =.SPX= | =SPX Index= | =EQUITY/PRICE/SP5/USD= |
+| FTSE 100 | =.FTSE= | =UKX Index= | =EQUITY/PRICE/UKX/GBP= |
+| S&P 500 front-month future | =ESc1= | Not verified (see note) | No equity-future quote type exists in ORE's inventory (see note) |
 
-Notes: RIC exchange suffix (=.OQ= = NASDAQ, =.L= = London); indices prefixed with
-=.=; =c1= = continuous front month. No published ORE canonical-key example for
-equities or indices was found for this document.
+Notes: RIC exchange suffix (=.OQ= = NASDAQ, =.L= = London); indices prefixed
+with =.=; =c1= = continuous front month. ORE keys follow the catalogue's
+documented =EQUITY/PRICE/ENTITY/CCY= shape (=SP5= is the catalogue's own
+documented entity code for the S&P 500; the others are constructed the same
+way, since =ENTITY= is a free-form ticker/index-ID field, not a fixed
+enumeration). ORE's equity asset class covers spot, dividend yield, and
+forward price only (=EQUITY/PRICE=, =EQUITY_DIVIDEND/RATE=,
+=EQUITY_FWD/PRICE=) — no listed-equity-future quote type is documented, so
+"S&P 500 front-month future" (an exchange-traded futures contract, distinct
+from the OTC equity forward ORE does support) has no ORE representation.
+Bloomberg's equivalent future ticker (e.g. =ES1 Index=) was likewise not
+verified, so that cell is left as an acknowledged gap rather than a guess.
 
 ** Credit
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| iTraxx Europe 5Y CDS index | =ITRAXX-EUROPE-5Y-CDS=GFI= | =ITRX EUR 5Y Corp= | — |
-| Single-name CDS (Vodafone) | =VOD5YEUAM=ICAP= | — | — |
+| iTraxx Europe 5Y CDS index | =ITRAXX-EUROPE-5Y-CDS=GFI= | =ITRX EUR 5Y Corp= | =CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y= |
+| Single-name CDS (Vodafone) | =VOD5YEUAM=ICAP= | Not verified (see note) | =CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y= |
+
+Notes: ORE keys follow the catalogue's documented
+=CDS/CREDIT_SPREAD/entity/seniority/CCY/tenor= shape (=entity= is a
+free-form reference-entity name, not a fixed enumeration; =SR= = senior).
+No Bloomberg ticker for the Vodafone single-name CDS was verified, so that
+cell is left as an acknowledged gap rather than a guess. Note that ORE
+separately models CDS *index tranches* (as opposed to the index spread
+itself) via the dedicated =CDS_INDEX/BASE_CORRELATION= /
+=INDEX_CDS_TRANCHE/BASE_CORRELATION= types, not shown here.
 
 ** Commodities
 
-| Instrument | RIC | Bloomberg ticker | ORE canonical key |
+| Instrument | RIC | Bloomberg ticker | ORE quote key |
 |------------+-----+-------------------+--------------------|
-| WTI crude front-month future | =CLc1= | =CL1 Comdty= | — |
-| Brent crude front-month | =LCOc1= | =CO1 Comdty= | — |
-| Gold spot | =XAU== | =XAU BGN Curncy= | — |
+| WTI crude front-month future | =CLc1= | =CL1 Comdty= | =COMMODITY_FWD/PRICE/WTI/USD/1M= |
+| Brent crude front-month | =LCOc1= | =CO1 Comdty= | =COMMODITY_FWD/PRICE/BRENT/USD/1M= |
+| Gold spot | =XAU== | =XAU BGN Curncy= | =COMMODITY/PRICE/GOLD/USD= |
 
 Notes: RIC treats gold spot as FX-like (=XAU==); =c1=/=1= = continuous front
-month.
+month. ORE keys follow the catalogue's documented =COMMODITY/PRICE/entity/CCY=
+(spot) and =COMMODITY_FWD/PRICE/entity/CCY/tenor= (forward strip) shapes —
+=GOLD= is the catalogue's own documented entity code; the front-month WTI/
+Brent rows use =1M= as a representative near-dated tenor on the same forward
+strip, since ORE has no separate "front-month future" type distinct from a
+point on the =COMMODITY_FWD/PRICE= tenor strip.
 
-** ORE canonical key structure
+** ORE quote key structure
+
+Every ORE quote key shares the same top-level shape,
+=TYPE/SUBTYPE/dim1/dim2/.../dimN=, but the *number and meaning* of the
+dimensions after =TYPE/SUBTYPE= is fixed per type, not universal — an
+=IR_SWAP/RATE= key has five dimensions (currency, spot lag, float index
+tenor, swap tenor), an =EQUITY/PRICE= key has two (entity, currency), and
+a =CAPFLOOR/RATE_LNVOL= key has six. The table below shows this shape at
+a simplified, four-field level of abstraction (series/metric/qualifier/
+point), which is a useful mental model but understates the real
+dimension count for most types — see the
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]
+for the authoritative, per-type dimension inventory (49 distinct types)
+that every row in this document's comparison tables above draws from.
 
 | Segment | Meaning | Example |
 |---------+---------+---------|
-| =series_type= | Asset class and curve family | =FX=, =DISCOUNT=, =SWAPTION=, =CAPFLOOR= |
-| =metric= | What is being quoted | =RATE=, =RATE_LNVOL=, =PRICE=, =SPREAD= |
-| =qualifier= | Series-specific identifier (CCY, CCY pair, index name, credit name) | =EUR/USD=, =EUR=, =CPTY_A/SR/USD= |
-| =point_id= | Tenor or surface coordinate (absent for scalar series) | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
+| =series_type= (=TYPE=) | Asset class and curve family | =FX=, =DISCOUNT=, =SWAPTION=, =CAPFLOOR= |
+| =metric= (=SUBTYPE=) | What is being quoted | =RATE=, =RATE_LNVOL=, =PRICE=, =SPREAD= |
+| =qualifier= (=dim1=, =dim2=, ...) | One or more series-specific dimensions (CCY, CCY pair, index tenor, entity, seniority, ...) — the count varies by type | =EUR/USD=, =USD/2D/3M=, =VOD/SR/EUR= |
+| =point_id= (last =dimN=) | Tenor or surface coordinate (absent for scalar series) | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
 
 * Pros, cons, and limitations
 
@@ -223,7 +306,7 @@ month.
 |--------+------+---------------------|
 | RIC | Widely deployed across sell-side systems and data terminals; per-asset-class conventions are well understood in the industry. | Proprietary, licence-gated (no open spec); instrument-type-specific and not fully systematic — conventions differ by asset class; contains characters (==, =.=) that many downstream systems (e.g. hierarchical pub/sub subjects) cannot use unescaped; broker-specific suffixes (=ICAP=, =GFI=) leak vendor/broker identity into the instrument key; no native concept of curve family or discount-vs-projection role. |
 | Bloomberg ticker | Widely deployed in buy-side and sell-side systems; yellow key gives an explicit, human-readable asset-class tag. | Proprietary, licence-gated (no open spec); space-separated composite is awkward for systems that expect a single token or path-like key; mixed case and spaces conflict with many downstream systems; like RIC, no native concept of curve family or discount-vs-projection role. |
-| ORE canonical key | Open source and openly documented; the native format of every ORE pricing-engine input file; slash-delimited structure decomposes cleanly into =series_type=/=metric=/=qualifier=/=point_id=; free of vendor licensing. | No published ORE example covers every instrument class (equities, indices, credit, commodities have no ORE canonical key precedent found for this document); has no structured field for curve family or discount-vs-projection role. |
+| ORE canonical key | Open source and openly documented; the native format of every ORE pricing-engine input file; every type shares the same top-level =TYPE/SUBTYPE/dim1/.../dimN= shape, and the per-type dimension count and meaning is precisely documented for all 49 types; free of vendor licensing. | The per-type dimension count varies (2 to 8+), so — unlike RIC's or Bloomberg's flatter shapes — a consumer must know each type's specific dimension schema rather than applying one universal rule; several common real-world instruments (sovereign bond yields, listed equity/index futures) have no direct quote type at all; has no structured field for curve family or discount-vs-projection role. |
 
 * Sources
 
@@ -244,3 +327,4 @@ month.
 * See also
 
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the canonical key format.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative, per-type quote-key dimension inventory (49 types) that every ORE quote key in this document's comparison tables is drawn from.

@@ -21,7 +21,6 @@
 #define ORES_QT_FLAG_ICON_HELPER_HPP
 
 #include "ores.qt/export.hpp"
-#include <QAction>
 #include <QComboBox>
 #include <QIcon>
 #include <QLineEdit>
@@ -30,11 +29,12 @@
 #include <QSignalBlocker>
 #include <QSize>
 #include <QString>
-#include <QToolButton>
 #include <functional>
 #include <optional>
 #include <string>
 #include <vector>
+
+class QLabel;
 
 namespace ores::qt {
 
@@ -252,34 +252,26 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
  *
  * Used for plain text-entry fields (e.g. the ISO code field in
  * CurrencyDetailDialog) where the field itself is not a combo box.
- * Manages the QAction lifecycle via @p action_ptr: the previous action
- * is removed and deleted before the new one is inserted.
  *
- * @param edit        The line edit to decorate
- * @param icon        The icon to display (empty icon removes the action)
- * @param action_ptr  Reference to the caller-owned QAction pointer
+ * Painted as an overlay QLabel rather than via QLineEdit::addAction(): the
+ * action approach renders through an internal QLineEditIconButton whose
+ * displayed icon size is clamped by layout metrics computed once when the
+ * action is added and never revisited, so a later setIconSize() on its
+ * QToolButton has no visible effect (see task
+ * B4526411-7FDC-48E8-A346-DA69B5F66BDD). The overlay sidesteps that by
+ * painting the icon itself and reserving space for it via
+ * QLineEdit::setTextMargins(), which QLineEdit does relayout correctly.
+ *
+ * @param edit       The line edit to decorate
+ * @param icon       The icon to display (empty icon hides the overlay)
+ * @param label_ptr  Reference to the caller-owned QLabel pointer, created
+ * on first use and reused thereafter
+ * @param iconSize   Size to render the icon at
  */
-inline void set_line_edit_flag_icon(QLineEdit* edit,
-                                    const QIcon& icon,
-                                    QAction*& action_ptr,
-                                    QSize iconSize = single_flag_icon_size()) {
-    if (action_ptr) {
-        edit->removeAction(action_ptr);
-        delete action_ptr;
-        action_ptr = nullptr;
-    }
-    if (!icon.isNull()) {
-        action_ptr = edit->addAction(icon, QLineEdit::LeadingPosition);
-        // QLineEdit renders an action via an internal QToolButton, which
-        // has its own default icon size unrelated to the QIcon's actual
-        // pixmap sizes. setIconSize() is the documented way to influence
-        // it; attempts to force the button's frame size directly on top
-        // of that didn't move the rendered size in practice — parked,
-        // see task B4526411-7FDC-48E8-A346-DA69B5F66BDD.
-        if (auto* button = edit->findChild<QToolButton*>())
-            button->setIconSize(iconSize);
-    }
-}
+ORES_QT_API void set_line_edit_flag_icon(QLineEdit* edit,
+                                         const QIcon& icon,
+                                         QLabel*& label_ptr,
+                                         QSize iconSize = single_flag_icon_size());
 
 /**
  * @brief Populate a combo box with ISO currency codes and flag icons.

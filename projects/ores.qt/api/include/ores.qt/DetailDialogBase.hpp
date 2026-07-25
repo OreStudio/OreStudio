@@ -35,7 +35,7 @@ class QTabWidget;
 class QPushButton;
 class QLayout;
 class QLineEdit;
-class QAction;
+class QLabel;
 
 namespace ores::qt {
 
@@ -407,7 +407,7 @@ private:
     BadgeCache* badgeCache_ = nullptr;
     ImageCache* imageCache_ = nullptr;
     QPushButton* flagButton_ = nullptr;
-    QAction* keyFlagAction_ = nullptr;
+    QLabel* keyFlagIconLabel_ = nullptr;
     QString pendingImageId_;
     bool flagChanged_ = false;
 };

@@ -21,9 +21,12 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include <QEvent>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QPainter>
 #include <QPixmap>
+#include <QResizeEvent>
 #include <QtConcurrent>
 #include <algorithm>
 
@@ -31,6 +34,36 @@ namespace ores::qt {
 
 namespace {
 constexpr int flag_spacing = 2; // small gap so the two flags read as distinct, not overlapping
+constexpr int key_flag_left_margin = 4; // left inset for the overlay icon
+constexpr int key_flag_gap = 4; // gap between the overlay icon and the text
+
+// Keeps the overlay flag label vertically centred and repositioned to the
+// line edit's left inset whenever the line edit itself is resized (e.g. the
+// dialog is resized). Installed once per QLineEdit, as an event filter
+// rather than a QLineEdit subclass since the field widgets come from .ui
+// files as plain QLineEdit.
+class KeyFlagLabelPositioner : public QObject {
+public:
+    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label) : QObject(edit), edit_(edit), label_(label) {
+        edit_->installEventFilter(this);
+    }
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (watched == edit_ && event->type() == QEvent::Resize)
+            reposition();
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    void reposition() const {
+        const int y = (edit_->height() - label_->height()) / 2;
+        label_->move(key_flag_left_margin, std::max(0, y));
+    }
+
+    QLineEdit* edit_;
+    QLabel* label_;
+};
 }
 
 QIcon currency_flag_icon(ImageCache& imageCache,
@@ -72,6 +105,33 @@ QSize single_flag_icon_size(int flagHeight) {
 
 QSize currency_pair_icon_size(int flagHeight) {
     return {flagHeight * 2 + flag_spacing, flagHeight};
+}
+
+void set_line_edit_flag_icon(QLineEdit* edit,
+                             const QIcon& icon,
+                             QLabel*& label_ptr,
+                             QSize iconSize) {
+    if (icon.isNull()) {
+        if (label_ptr)
+            label_ptr->hide();
+        edit->setTextMargins(0, 0, 0, 0);
+        return;
+    }
+
+    if (!label_ptr) {
+        label_ptr = new QLabel(edit);
+        label_ptr->setAttribute(Qt::WA_TransparentForMouseEvents);
+        label_ptr->setStyleSheet("background: transparent; border: none;");
+        new KeyFlagLabelPositioner(edit, label_ptr);
+    }
+
+    label_ptr->setFixedSize(iconSize);
+    label_ptr->setPixmap(icon.pixmap(iconSize));
+    edit->setTextMargins(key_flag_left_margin + iconSize.width() + key_flag_gap, 0, 0, 0);
+    const int y = (edit->height() - iconSize.height()) / 2;
+    label_ptr->move(key_flag_left_margin, std::max(0, y));
+    label_ptr->show();
+    label_ptr->raise();
 }
 
 QIcon currency_flag_icon(ImageCache& imageCache, const std::optional<std::string>& isoCode) {

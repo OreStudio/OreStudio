@@ -727,7 +727,7 @@ void TenantExecutePage::startAcmeProvisioning() {
         // authenticated session, not the request.
         iam::messaging::provision_acme_tenant_command request;
         auto resp = clientManager->process_authenticated_request(std::move(request),
-                                                                  std::chrono::minutes(5));
+                                                                 std::chrono::minutes(5));
         if (!resp) {
             result.error_message = "Failed to communicate with server (Acme provisioning)";
             return result;

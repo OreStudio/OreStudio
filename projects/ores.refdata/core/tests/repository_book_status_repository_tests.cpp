@@ -153,7 +153,7 @@ TEST_CASE("read_book_status_at_timepoint_before_creation_is_empty", tags) {
 
     auto read_book_statuses = repo.read_at_timepoint(h.context(), as_of_before, bs.code);
     BOOST_LOG_SEV(lg, debug) << "Read book statuses at timepoint before creation: "
-                              << read_book_statuses;
+                             << read_book_statuses;
 
     CHECK(read_book_statuses.size() == 0);
 }
@@ -211,7 +211,7 @@ TEST_CASE("read_book_status_at_timepoint_without_code_filter", tags) {
     auto read_book_statuses = repo.read_at_timepoint(h.context(), as_of);
     BOOST_LOG_SEV(lg, debug) << "Read book statuses at timepoint: " << read_book_statuses;
 
-    const auto found = std::ranges::any_of(
-        read_book_statuses, [&](const auto& v) { return v.code == bs.code; });
+    const auto found =
+        std::ranges::any_of(read_book_statuses, [&](const auto& v) { return v.code == bs.code; });
     CHECK(found);
 }

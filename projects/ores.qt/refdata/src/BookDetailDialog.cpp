@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/BookDetailDialog.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
@@ -26,7 +27,6 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookDetailDialog.h"
 #include <QComboBox>
@@ -241,8 +241,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
 
 void BookDetailDialog::populateBookStatusCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating book_status combo";
-    std::function<std::expected<std::vector<refdata::domain::book_status>, QString>(
-        ClientManager*)>
+    std::function<std::expected<std::vector<refdata::domain::book_status>, QString>(ClientManager*)>
         fetch = &fetch_book_statuses;
     if (readOnly_) {
         // Resolve this historical book version's status badge as-of its own
@@ -251,9 +250,11 @@ void BookDetailDialog::populateBookStatusCombo() {
         // facet story. setBook()/setReadOnly() re-invoke this populate call
         // if they run after setClientManager(), so call order between them
         // doesn't matter -- see setBook()/setReadOnly().
-        const auto as_of = QString::fromStdString(
-            ores::platform::time::datetime::to_db_string(book_.recorded_at));
-        fetch = [as_of](ClientManager* cm) { return fetch_book_statuses_at_timepoint(cm, as_of); };
+        const auto as_of =
+            QString::fromStdString(ores::platform::time::datetime::to_db_string(book_.recorded_at));
+        fetch = [as_of](ClientManager* cm) {
+            return fetch_book_statuses_at_timepoint(cm, as_of);
+        };
     }
     populateDynamicCombo<refdata::domain::book_status>(
         ui_->bookStatusCombo,
@@ -282,8 +283,8 @@ void BookDetailDialog::populateRegulatoryBookTypeCombo() {
         fetch = &fetch_regulatory_book_types;
     if (readOnly_) {
         // See the matching comment in populateBookStatusCombo().
-        const auto as_of = QString::fromStdString(
-            ores::platform::time::datetime::to_db_string(book_.recorded_at));
+        const auto as_of =
+            QString::fromStdString(ores::platform::time::datetime::to_db_string(book_.recorded_at));
         fetch = [as_of](ClientManager* cm) {
             return fetch_regulatory_book_types_at_timepoint(cm, as_of);
         };

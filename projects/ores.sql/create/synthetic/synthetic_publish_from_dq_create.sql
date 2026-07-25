@@ -701,6 +701,7 @@ begin
             kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
             auto_start, description,
             fixed_leg_payment_frequency_code, source_name,
+            price_source, vintage_source, vintage_date,
             modified_by, performed_by, change_reason_code, change_commentary
         )
         select
@@ -723,6 +724,7 @@ begin
                 lower(case when r.index_name like r.currency_code || '-%'
                            then substring(r.index_name from length(r.currency_code) + 2)
                            else r.index_name end),
+            'fixed', '', '',
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         from (select 1) as _dummy

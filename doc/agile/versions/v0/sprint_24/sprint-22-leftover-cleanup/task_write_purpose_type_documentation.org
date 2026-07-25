@@ -2,40 +2,54 @@
 :ID: 3E433126-8259-4280-9C89-1801C0C3E8E9
 :END:
 #+title: Task: Write purpose_type user manual chapter
-#+description: Add the purpose_type entity chapter to the user manual documenting all Qt windows, shell commands, and CLI commands.
+#+description: Document purpose_type in the user manual as a new subsection of chapter_portfolios.org (its only real consumer), covering Qt windows, shell commands, and CLI commands.
 #+type: task
 #+level: s1
 #+filetags: :sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-purpose-type-documentation
+#+pr: 1688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Author the purpose_type chapter in the user manual covering Qt list/detail/history/delete windows, shell commands, and CLI commands, with screenshot placeholders as needed.
+Document =purpose_type= in the user manual: not as a standalone
+chapter, but as a new subsection of =chapter_portfolios.org= (its
+only real consumer — the chapter already documents "purpose type" as
+a field on Portfolio Details), covering the Purpose Types Qt
+list/detail/history/delete windows, shell commands, and CLI
+commands, with screenshot placeholders as needed. Mirrors the
+existing pattern of small lookup entities documented as a subsection
+of their consuming chapter (e.g. Currency Pair Conventions inside
+=chapter_currency_pairs.org=) rather than getting their own chapter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-10                               |
+| Now          | Chapter complete: content, screenshots, PDF and Qt help rebuilt, test scenario PASSED. |
+| Waiting on   | Human review.                          |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-25                               |
 
 * Acceptance
 
-- Manual chapter documents all Qt windows, shell, and CLI commands for purpose_type. Manual builds cleanly. Site builds cleanly.
+- New subsection in =chapter_portfolios.org= documents the Purpose
+  Types Qt list/detail/history windows for purpose_type. Manual
+  builds cleanly. Site builds cleanly.
+- purpose_type has no shell or CLI commands (a codegen gap shared by
+  every entity, not specific to purpose_type) — documented via two
+  backlog captures rather than blocking this task or hand-coding the
+  layers ahead of their codegen profiles.
 
 * Plan
 
@@ -45,16 +59,66 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Rescoped mid-task: originally planned as a standalone chapter, but
+purpose_type's only real consumer is portfolio, so it landed as a new
+=** Purpose Types= subsection of =chapter_portfolios.org= instead,
+mirroring how Currency Pair Conventions lives inside
+=chapter_currency_pairs.org=. Also discovered purpose_type has no
+shell or CLI commands at all (a codegen gap shared by every entity)
+while writing the section — filed as two backlog captures
+([[id:897DA8C4-512B-449A-8B66-F93D78E38543][Add CLI commands for purpose_type]],
+[[id:A18F3E59-7E77-4766-A96B-A416D6624C79][Add shell REPL commands for purpose_type]]) rather than blocking on
+them.
+
+Manual PDF builds cleanly with the two =[SCREENSHOT NEEDED]=
+placeholders in place. Per [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]'s scope, this task
+stops at content-complete; screenshot capture
+([[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]]) and human prose/factual review are still
+needed before DONE.
+
+Screenshots captured via [[id:AAD9755F-88E1-4A1C-B927-DA94A2492438][the test scenario]] (PASSED); while working the
+Details-dialog capture step, discovered =PurposeTypeDetailDialog= is
+missing a Display Order field even though =display_order= is
+populated in the DB and shown in the list window's grid. This looked
+like a codegen-template gap rather than something specific to
+purpose_type (=has_display_order= is already a recognised spec flag
+wired into the SQL table-create template's ordering CTE, but not into
+the Qt detail-dialog templates), so it was filed as its own story,
+[[id:AA7F8C14-9634-40BA-989D-1FA4FB44C860][Audit and standardize the display_order field across lookup/code-table
+entities]], rather than expanding this task's scope. The chapter's
+caption and prose were adjusted to describe the Details dialog as it
+actually is today (Code/Name/Description only); that story will fix
+the dialog and cover recapturing =purpose_type_details.png= once it
+does.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1688][#1688]] | [refdata,doc] Write purpose_type user manual chapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale task-row description in story.org ("Qt windows, shell, CLI commands") left over from pre-rescope | story.org | Fixed | Updated to describe the actual subsection/deferral outcome. |
+| 2 | Step 3 checklist still says "Confirm ... Display Order are ... populated" though the dialog doesn't show it | scenario_portfolios-manual-screenshots.org | Fixed | Reworded to note Display Order isn't shown yet, pointing to * Notes. |
+| 3 | task_write_purpose_type_documentation.org missing trailing newline | task_write_purpose_type_documentation.org | Fixed | Added trailing newline. |
 
 * Result
+
+Added a new =** Purpose Types= subsection to =chapter_portfolios.org=
+documenting the Purpose Types Qt list window, Details dialog, and
+delete/history behaviour, with both screenshots captured, cropped,
+and wired in (=purpose_types_main_window.png=,
+=purpose_type_details.png=). Manual PDF and Qt-embedded help both
+rebuilt and reviewed (figures 12.5/12.6 appear correctly with
+captions in the List of Figures; read top to bottom in the Qt
+client's Help viewer). Test scenario [[id:AAD9755F-88E1-4A1C-B927-DA94A2492438][Capture screenshots for the
+Purpose Types manual subsection]] PASSED.
+
+purpose_type's lack of shell/CLI commands filed as two backlog
+captures rather than blocking. A pre-existing gap in
+=PurposeTypeDetailDialog= (missing Display Order field) surfaced
+during capture; filed as its own story rather than expanding scope —
+see =* Notes= above.

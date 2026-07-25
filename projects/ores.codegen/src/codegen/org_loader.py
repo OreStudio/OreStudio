@@ -1080,21 +1080,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     columns: list[dict[str, Any]] = []
     if cols_section:
         for node in cols_section.children:
-            entry: dict[str, Any] = {"name": node.title}
-            for k, v in node.properties.items():
-                key = k.lower()
-                if key in ("default", "default_value"):
-                    entry[key] = v  # keep raw string; Mustache 0-falsy
-                else:
-                    entry[key] = _parse_typed(v)
-            description, detail = _description_and_detail(node)
-            if description:
-                entry["description"] = description
-            if detail:
-                entry["detail"] = detail
-            if "generator" in node.src_blocks:
-                entry["generator_expr"] = node.src_blocks["generator"]
-            columns.append(entry)
+            columns.append(_column_node_to_dict(node))
     j["columns"] = columns
 
     sql_section = _section(doc.root, "SQL")

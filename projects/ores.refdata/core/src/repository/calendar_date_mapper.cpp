@@ -17,35 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/calendar_mapper.hpp"
+#include "ores.refdata.core/repository/calendar_date_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.refdata.api/domain/calendar_json_io.hpp" // IWYU pragma: keep.
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/calendar_date_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::calendar calendar_mapper::map(const calendar_entity& v) {
+domain::calendar_date calendar_date_mapper::map(const calendar_date_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::calendar r;
+    domain::calendar_date r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
-
-    r.name = v.name;
-
-    r.calendar_type = v.calendar_type;
-    r.country_code = v.country_code;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
+    r.tenant_id = v.tenant_id;
+    r.calendar_code = v.calendar_code.value();
+    r.date = ores::platform::time::datetime::from_iso8601_date(v.date);
+    r.is_business_day = v.is_business_day;
     r.source = v.source;
-    r.is_editable = v.is_editable;
-    r.base_calendar_code = v.base_calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -56,23 +47,16 @@ domain::calendar calendar_mapper::map(const calendar_entity& v) {
     return r;
 }
 
-calendar_entity calendar_mapper::map(const domain::calendar& v) {
+calendar_date_entity calendar_date_mapper::map(const domain::calendar_date& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    calendar_entity r;
-    r.code = v.code;
-    r.tenant_id = v.tenant_id.to_string();
+    calendar_date_entity r;
+    r.calendar_code = v.calendar_code;
+    r.tenant_id = v.tenant_id;
+    r.date = ores::platform::time::datetime::to_iso8601_date(v.date);
     r.version = v.version;
-
-    r.name = v.name;
-
-    r.calendar_type = v.calendar_type;
-    r.country_code = v.country_code;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.is_business_day = v.is_business_day;
     r.source = v.source;
-    r.is_editable = v.is_editable;
-    r.base_calendar_code = v.base_calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -82,13 +66,15 @@ calendar_entity calendar_mapper::map(const domain::calendar& v) {
     return r;
 }
 
-std::vector<domain::calendar> calendar_mapper::map(const std::vector<calendar_entity>& v) {
-    return map_vector<calendar_entity, domain::calendar>(
+std::vector<domain::calendar_date>
+calendar_date_mapper::map(const std::vector<calendar_date_entity>& v) {
+    return map_vector<calendar_date_entity, domain::calendar_date>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<calendar_entity> calendar_mapper::map(const std::vector<domain::calendar>& v) {
-    return map_vector<domain::calendar, calendar_entity>(
+std::vector<calendar_date_entity>
+calendar_date_mapper::map(const std::vector<domain::calendar_date>& v) {
+    return map_vector<domain::calendar_date, calendar_date_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

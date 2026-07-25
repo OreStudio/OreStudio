@@ -334,6 +334,9 @@ std::vector<{{entity_singular}}_entity>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 {{/has_uuid_left_or_right}}
+{{#has_date_left_or_right_or_column}}
+#include "ores.platform/time/datetime.hpp"
+{{/has_date_left_or_right_or_column}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -355,16 +358,31 @@ domain::{{name_singular}}
     r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}}.value());
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+{{#left.is_date}}
+    r.{{left.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{left.column}}.value());
+{{/left.is_date}}
+{{^left.is_date}}
     r.{{left.column}} = v.{{left.column}}.value();
+{{/left.is_date}}
 {{/left.is_uuid}}
 {{#right.is_uuid}}
     r.{{right.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{right.column}});
 {{/right.is_uuid}}
 {{^right.is_uuid}}
+{{#right.is_date}}
+    r.{{right.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{right.column}});
+{{/right.is_date}}
+{{^right.is_date}}
     r.{{right.column}} = v.{{right.column}};
+{{/right.is_date}}
 {{/right.is_uuid}}
 {{#columns}}
+{{#is_date}}
+    r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
+{{/is_date}}
+{{^is_date}}
     r.{{name}} = v.{{name}};
+{{/is_date}}
 {{/columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -385,7 +403,12 @@ domain::{{name_singular}}
     r.{{left.column}} = boost::uuids::to_string(v.{{left.column}});
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+{{#left.is_date}}
+    r.{{left.column}} = ores::platform::time::datetime::to_iso8601_date(v.{{left.column}});
+{{/left.is_date}}
+{{^left.is_date}}
     r.{{left.column}} = v.{{left.column}};
+{{/left.is_date}}
 {{/left.is_uuid}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id;
@@ -394,11 +417,21 @@ domain::{{name_singular}}
     r.{{right.column}} = boost::uuids::to_string(v.{{right.column}});
 {{/right.is_uuid}}
 {{^right.is_uuid}}
+{{#right.is_date}}
+    r.{{right.column}} = ores::platform::time::datetime::to_iso8601_date(v.{{right.column}});
+{{/right.is_date}}
+{{^right.is_date}}
     r.{{right.column}} = v.{{right.column}};
+{{/right.is_date}}
 {{/right.is_uuid}}
     r.version = v.version;
 {{#columns}}
+{{#is_date}}
+    r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
+{{/is_date}}
+{{^is_date}}
     r.{{name}} = v.{{name}};
+{{/is_date}}
 {{/columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

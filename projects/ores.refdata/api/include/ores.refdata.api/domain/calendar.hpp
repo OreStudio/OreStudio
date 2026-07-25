@@ -90,6 +90,33 @@ struct calendar final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
+     * @brief Soft-enum: quantlib | user. quantlib means this template's rule set was transcribed
+     * from QuantLib's published rules and matches one of ORE's recognised built-in calendar names
+     * -- a taxonomic fact driving read-only enforcement and the ORE-export skip logic, *not* an
+     * instruction to call the QuantLib library (QuantLib is not linked at runtime; see this task's
+     * * Revision section). user means a calendar template authored in ORE Studio, fully editable.
+     */
+    std::string source;
+
+    /**
+     * @brief Whether users can edit this template's own row (name, calendar_type, country_code,
+     * ...) directly. Independent column from source -- every quantlib row is inserted with false
+     * and every user row with true, but that pairing is enforced by the insert trigger's
+     * validation, not hardcoded from source in application code, per this task's instruction that
+     * read-only/editable be tracked per-template rather than assumed from source.
+     */
+    bool is_editable = false;
+
+    /**
+     * @brief Soft FK to this same table's own code column (self-referential). Only meaningful for
+     * source  'user'= rows: present means this template is a delta on top of another template
+     * (QuantLib-sourced or itself user-authored) via that template's own
+     * [[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows; absent means a wholly
+     * bespoke calendar with no base. Always null for source  'quantlib'= rows.
+     */
+    std::optional<std::string> base_calendar_code;
+
+    /**
      * @brief Username of the person who last modified this calendar.
      */
     std::string modified_by;

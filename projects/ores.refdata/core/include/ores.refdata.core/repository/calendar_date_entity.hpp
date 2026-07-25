@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_CALENDAR_ENTITY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_CALENDAR_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CALENDAR_DATE_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CALENDAR_DATE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -31,24 +31,20 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a calendar in the database.
+ * @brief Represents a calendar date in the database.
+ *
+ * Junction table with composite primary key (calendar_code, date, valid_from).
  */
-struct calendar_entity {
+struct calendar_date_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_refdata_calendars_tbl";
+    constexpr static const char* tablename = "ores_refdata_calendar_dates_tbl";
 
-    sqlgen::PrimaryKey<std::string> code;
+    sqlgen::PrimaryKey<std::string> calendar_code;
     std::string tenant_id;
+    std::string date;
     int version = 0;
-
-    std::string name;
-
-    std::string calendar_type;
-    std::string country_code;
-    std::optional<std::string> image_id;
+    bool is_business_day;
     std::string source;
-    bool is_editable = false;
-    std::optional<std::string> base_calendar_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -57,7 +53,7 @@ struct calendar_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const calendar_entity& v);
+std::ostream& operator<<(std::ostream& s, const calendar_date_entity& v);
 
 }
 

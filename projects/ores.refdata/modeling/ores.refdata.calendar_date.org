@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 1DC67FAD-7543-4E63-A91D-9EE878A2EE8D
+:END:
+#+title: ores.refdata.calendar_date
+#+description: Codegen junction model for calendar_dates -- the materialised, DQ-published output of instantiating a calendar template's rules/exceptions over a date range.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: calendar_dates
+#+name_singular: calendar_date
+#+name_title: Calendar Date
+#+name_singular_words: calendar date
+#+brief: One materialised (calendar, date) holiday/business-day fact, computed from a calendar template's rules and exceptions.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-07-25
+#+updated: 2026-07-25
+
+One row per (=calendar_code=, =date=), produced by the calendar
+materialisation service instantiating a
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] template's
+[[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_rule]] /
+[[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows
+over a rolling date range, never edited by hand. Read by every
+consumer that needs "is date D a business day for calendar C" --
+the UI (calendar detail screens, the holiday-aware date picker) and
+ORE Studio's own tenor/schedule date-math -- so the answer is
+consistent and never requires a live rule evaluation.
+
+* Left
+:PROPERTIES:
+:column:        calendar_code
+:column_short:  calendar
+:column_title:  Calendar
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up dates for a calendar
+:END:
+
+QuantLib/ORE calendar token (e.g. TARGET, UnitedStates).
+
+References ores_refdata_calendars_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        date
+:column_short:  date
+:column_title:  Date
+:type:          date
+:cpp_type:      std::chrono::year_month_day
+:index_comment: Index for finding calendars active on a date
+:END:
+
+The calendar date this row describes.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+* Columns
+
+** is_business_day
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether =date= is a business day for =calendar_code= -- =false= for
+both weekends and holidays; the two are not distinguished here. A
+reader that needs to shade "weekend vs. holiday" differently gets
+that from re-deriving the weekend mask itself (see
+=ores.analytics.quant='s =business_day_calendar_set=), not from this
+column.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** source
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:default:             quantlib_computed
+:no_generator_suffix: true
+:END:
+
+How this row was instantiated. Soft-enum: =quantlib_computed=
+(base-less =source='quantlib'= calendar, instantiated by
+=ores.analytics.quant='s batch engine) | =user_adjustment=
+(base-having =source='user'= calendar: base template's materialised
+dates overlaid with this calendar's own
+[[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows) |
+=user_defined= (base-less =source='user'= calendar: its
+=calendar_exception= rows copied in directly, no computation). Always
+shown next to any displayed date -- the origin must never be
+implicit.
+
+#+begin_src cpp :name generator
+std::string("quantlib_computed")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_dates_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: calendar_date
+:name_short:          calendar_dates
+:name_singular_words: calendar date
+:name_words:          calendar dates
+:order_column:        date
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cd
+:END:
+
+** Table display
+
+| column           | header       |
+|------------------+--------------|
+| calendar_code    | Calendar     |
+| date             | Date         |
+| is_business_day  | Business Day |
+| source           | Source       |
+| modified_by      | Modified By  |
+| version          | Version      |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] — the template this materialises.
+- [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] — parent task.

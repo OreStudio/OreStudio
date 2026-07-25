@@ -46,6 +46,9 @@ domain::calendar generate_synthetic_calendar(utility::generation::generation_con
     r.calendar_type = std::string("public_holiday");
     r.country_code = std::string("ZZ");
     r.image_id = std::nullopt;
+    r.source = std::string("quantlib");
+    r.is_editable = false;
+    r.base_calendar_code = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -2680,19 +2680,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
+                col['is_date'] = (col.get('type') == 'date' or
+                                  col.get('cpp_type') == 'std::chrono::year_month_day')
                 col['iter_var'] = iter_var
-        # Add lowercase versions and UUID flags for left/right columns
+        # Add lowercase versions and UUID/date flags for left/right columns
         if 'left' in junction:
             if 'column_title' in junction['left']:
                 junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
             junction['left']['is_uuid'] = junction['left'].get('type') == 'uuid'
+            junction['left']['is_date'] = (
+                junction['left'].get('type') == 'date' or
+                junction['left'].get('cpp_type') == 'std::chrono::year_month_day'
+            )
         if 'right' in junction:
             if 'column_title' in junction['right']:
                 junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
             junction['right']['is_uuid'] = junction['right'].get('type') == 'uuid'
+            junction['right']['is_date'] = (
+                junction['right'].get('type') == 'date' or
+                junction['right'].get('cpp_type') == 'std::chrono::year_month_day'
+            )
         junction['has_uuid_left_or_right'] = (
             junction.get('left', {}).get('is_uuid', False) or
             junction.get('right', {}).get('is_uuid', False)
+        )
+        junction['has_date_left_or_right_or_column'] = (
+            junction.get('left', {}).get('is_date', False) or
+            junction.get('right', {}).get('is_date', False) or
+            any(c.get('is_date') for c in junction.get('columns', []))
         )
         # Format description as comment block lines (for SQL)
         if 'description' in junction:

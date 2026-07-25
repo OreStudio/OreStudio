@@ -78,6 +78,7 @@ std::vector<domain::calendar> calendar_repository::read_latest(context ctx,
         "Reading latest calendar by code.");
 }
 
+
 std::vector<domain::calendar> calendar_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all calendar versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();

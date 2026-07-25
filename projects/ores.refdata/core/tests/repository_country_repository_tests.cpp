@@ -24,14 +24,22 @@
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
+
+std::string now_as_of() {
+    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+}
 
 }
 
@@ -122,4 +130,80 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
     CHECK(read_countries.size() == 0);
+}
+
+TEST_CASE("read_country_at_timepoint_before_creation_is_empty", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto as_of_before = now_as_of();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cntry = generate_synthetic_country(ctx);
+    BOOST_LOG_SEV(lg, debug) << "Country: " << cntry;
+
+    country_repository repo;
+    repo.write(h.context(), cntry);
+
+    auto read_countries = repo.read_at_timepoint(h.context(), as_of_before, cntry.alpha2_code);
+    BOOST_LOG_SEV(lg, debug) << "Read countries at timepoint before creation: " << read_countries;
+
+    CHECK(read_countries.size() == 0);
+}
+
+TEST_CASE("read_country_at_timepoint_resolves_prior_version", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cntry = generate_synthetic_country(ctx);
+    const auto original_name = cntry.name;
+    BOOST_LOG_SEV(lg, debug) << "Country v1: " << cntry;
+
+    country_repository repo;
+    repo.write(h.context(), cntry);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of_mid = now_as_of();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    cntry.name = original_name + " v2";
+    BOOST_LOG_SEV(lg, debug) << "Country v2: " << cntry;
+    repo.write(h.context(), cntry);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of_after = now_as_of();
+
+    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, cntry.alpha2_code);
+    BOOST_LOG_SEV(lg, debug) << "Read country at mid timepoint: " << read_at_mid;
+    REQUIRE(read_at_mid.size() == 1);
+    CHECK(read_at_mid[0].name == original_name);
+
+    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, cntry.alpha2_code);
+    BOOST_LOG_SEV(lg, debug) << "Read country at after timepoint: " << read_at_after;
+    REQUIRE(read_at_after.size() == 1);
+    CHECK(read_at_after[0].name == original_name + " v2");
+}
+
+TEST_CASE("read_country_at_timepoint_without_alpha2_code_filter", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cntry = generate_synthetic_country(ctx);
+    BOOST_LOG_SEV(lg, debug) << "Country: " << cntry;
+
+    country_repository repo;
+    repo.write(h.context(), cntry);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of = now_as_of();
+
+    auto read_countries = repo.read_at_timepoint(h.context(), as_of);
+    BOOST_LOG_SEV(lg, debug) << "Read countries at timepoint: " << read_countries;
+
+    const auto found = std::ranges::any_of(
+        read_countries, [&](const auto& v) { return v.alpha2_code == cntry.alpha2_code; });
+    CHECK(found);
 }

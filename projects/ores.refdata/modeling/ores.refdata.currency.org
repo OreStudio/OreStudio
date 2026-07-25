@@ -282,7 +282,8 @@ drop function if exists ores_refdata_validate_currency_fn;
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:      api
+:has_as_of_lookup:  true
 :END:
 
 ** Repository
@@ -1501,47 +1502,13 @@ and =helpers.hpp= are already in the standard template output.
 *** Repository implementations
 
 Note: pagination (=read_latest= with offset/limit), =get_total_currency_count=,
-filtered =read_all=, and batch =remove= are now generated natively by the base
-=repository= template (tenant-aware). =read_at_timepoint=, and the unfiltered
-overloads of =read_all= and =read_at_timepoint= (used by the CLI's
-=export --all-versions= / =export --as-of= without =--key=), have no native
-equivalent and remain custom pastes.
+filtered =read_all=, batch =remove=, and =read_at_timepoint= (both overloads)
+are now generated natively by the base =repository= template
+(=has_as_of_lookup: true=, tenant-aware). Only the unfiltered =read_all=
+(used by the CLI's =export --all-versions= without =--key=) has no native
+equivalent and remains a custom paste.
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
-                                                                     const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("tenant_id"_c == tid && "valid_from"_c <= ts.value() &&
-                             "valid_to"_c >= ts.value());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currencies at timepoint.");
-}
-
-std::vector<domain::currency>
-currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
-                                      const std::string& iso_code) {
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
-                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currencies at timepoint by ISO code.");
-}
-
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
@@ -1554,20 +1521,6 @@ std::vector<domain::currency> currency_repository::read_all(context ctx) {
         lg(),
         "Reading all currencies.");
 }
-#+end_src
-
-*** read_at_timepoint (unfiltered and filtered by iso_code)
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    /**
-     * @brief Reads currencies at the supplied time point, possibly filtered
-     * by iso_code.
-     */
-    /**@{*/
-    std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::currency>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
-    /**@}*/
 #+end_src
 
 *** read_all (unfiltered)

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:sprint_24:v0:as_of_lookup_resolution:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/reconcile-existing-read-at-timepoint
+#+pr: 1689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-23
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ than the replacement takes to land.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -67,12 +67,32 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1689][#1689]] | [refdata] Reconcile hand-written read_at_timepoint with codegen facet |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "unwired to any caller" claim is inaccurate -- ores.cli export --as-of calls read_at_timepoint directly | task/PR description | Accepted | Corrected Result section; boundary fix is a real CLI behaviour change |
+| 2 | No test coverage for read_at_timepoint boundary on country/currency repositories | repository_country_repository_tests.cpp, repository_currency_repository_tests.cpp | Accepted | Added before/mid/after boundary tests mirroring book_status pilot |
 
 * Result
+
+Regenerated =country_repository= and =currency_repository= via the
+codegen facet (from [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of lookup codegen facet]]), replacing
+the hand-written =read_at_timepoint= methods outright. The generated
+code fixes the =valid_to >= t= boundary bug (now =valid_to > t=, per
+the documented as-of convention) and adds ordering to the query.
+Neither entity has a service or NATS caller, but both *are* called
+directly from =ores.cli='s =application::export_countries=/
+=export_currencies= (=refdata export countries=/=currencies
+--as-of=), so the boundary fix is a real, user-visible behaviour
+change for that CLI path, not a dead-code cleanup -- corrected here
+per review feedback on the PR. Added repository-level
+=read_at_timepoint= boundary tests for both entities (before/mid/after
+cases, mirroring the =book_status_repository= pilot), which were
+previously untested.
+
+Verified: full local rebuild (=compass build=, all targets, exit 0)
+and full test suite (=compass build rat=, all test cases passed)
+after rebasing onto =origin/main=.

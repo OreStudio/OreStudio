@@ -79,6 +79,42 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx,
         "Reading latest currency by iso_code.");
 }
 
+std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
+                                                                     const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<currency_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("iso_code"_c);
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading currencies at timepoint.");
+}
+
+std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
+                                                                     const std::string& as_of,
+                                                                     const std::string& iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency at timepoint. iso_code: " << iso_code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading currency at timepoint by iso_code.");
+}
+
 std::vector<domain::currency> currency_repository::read_all(context ctx,
                                                             const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency versions. iso_code: " << iso_code;
@@ -177,40 +213,6 @@ void currency_repository::remove(context ctx, const std::vector<std::string>& is
     execute_delete_query(ctx, query, lg(), "Batch removing currencies.");
 }
 
-
-std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
-                                                                     const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query =
-        sqlgen::read<std::vector<currency_entity>> |
-        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currencies at timepoint.");
-}
-
-std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
-                                                                     const std::string& as_of,
-                                                                     const std::string& iso_code) {
-    const auto tid = ctx.tenant_id().to_string();
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
-                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currencies at timepoint by ISO code.");
-}
 
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
     const auto tid = ctx.tenant_id().to_string();

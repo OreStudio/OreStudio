@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -28,12 +29,18 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
+
+std::string now_as_of() {
+    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+}
 
 }
 
@@ -253,4 +260,81 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     CHECK(read_currencies[0].iso_code == no_fractions_currency.iso_code);
     CHECK(read_currencies[0].fractions_per_unit == 0);
     CHECK(read_currencies[0].rounding_precision == 0);
+}
+
+TEST_CASE("read_currency_at_timepoint_before_creation_is_empty", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto as_of_before = now_as_of();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currency = generate_synthetic_currency(ctx);
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+
+    currency_repository repo;
+    repo.write(h.context(), currency);
+
+    auto read_currencies = repo.read_at_timepoint(h.context(), as_of_before, currency.iso_code);
+    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint before creation: "
+                             << read_currencies;
+
+    CHECK(read_currencies.size() == 0);
+}
+
+TEST_CASE("read_currency_at_timepoint_resolves_prior_version", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currency = generate_synthetic_currency(ctx);
+    const auto original_name = currency.name;
+    BOOST_LOG_SEV(lg, debug) << "Currency v1: " << currency;
+
+    currency_repository repo;
+    repo.write(h.context(), currency);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of_mid = now_as_of();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    currency.name = original_name + " v2";
+    BOOST_LOG_SEV(lg, debug) << "Currency v2: " << currency;
+    repo.write(h.context(), currency);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of_after = now_as_of();
+
+    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, currency.iso_code);
+    BOOST_LOG_SEV(lg, debug) << "Read currency at mid timepoint: " << read_at_mid;
+    REQUIRE(read_at_mid.size() == 1);
+    CHECK(read_at_mid[0].name == original_name);
+
+    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, currency.iso_code);
+    BOOST_LOG_SEV(lg, debug) << "Read currency at after timepoint: " << read_at_after;
+    REQUIRE(read_at_after.size() == 1);
+    CHECK(read_at_after[0].name == original_name + " v2");
+}
+
+TEST_CASE("read_currency_at_timepoint_without_iso_code_filter", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currency = generate_synthetic_currency(ctx);
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+
+    currency_repository repo;
+    repo.write(h.context(), currency);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto as_of = now_as_of();
+
+    auto read_currencies = repo.read_at_timepoint(h.context(), as_of);
+    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint: " << read_currencies;
+
+    const auto found = std::ranges::any_of(
+        read_currencies, [&](const auto& v) { return v.iso_code == currency.iso_code; });
+    CHECK(found);
 }

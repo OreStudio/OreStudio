@@ -71,6 +71,20 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads currencies as they stood at a specific
+     * timepoint — valid_from <= as_of < valid_to — possibly filtered by
+     * iso_code. Distinct from read_at_version (a specific
+     * version number) and from a parent/child *_as_of query (a validity
+     * window overlap): this resolves what this entity's own row meant at
+     * a single instant in time.
+     */
+    /**@{*/
+    std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::currency>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
+    /**@}*/
+
+    /**
      * @brief Reads all currencies, possibly filtered by iso_code.
      */
     std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
@@ -113,16 +127,6 @@ public:
      * @brief Deletes currencies by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& iso_codes);
-
-    /**
-     * @brief Reads currencies at the supplied time point, possibly filtered
-     * by iso_code.
-     */
-    /**@{*/
-    std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::currency>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
-    /**@}*/
 
     /**
      * @brief Reads all currencies (all versions), unfiltered.

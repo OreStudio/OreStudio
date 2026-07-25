@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -62,10 +63,12 @@ using namespace ores::logging;
 class ir_curve_feed_config_handler {
 public:
     ir_curve_feed_config_handler(ores::nats::service::client& nats,
+                                 ores::nats::service::nats_client& auth_nats,
                                  std::shared_ptr<curve_feed_controller> ctrl,
                                  ores::database::context ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
+        , auth_nats_(auth_nats)
         , ctrl_(std::move(ctrl))
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -127,7 +130,8 @@ public:
                 return;
             }
 
-            auto feed = make_ir_curve_feed(nats_, cfg, entries, *refctx);
+            const auto bearer = ores::nats::service::extract_bearer(msg);
+            auto feed = make_ir_curve_feed(nats_, auth_nats_, cfg, entries, *refctx, bearer);
             const auto source_name = feed->source_name();
             const auto qualifier = feed->qualifier();
             const auto result = ctrl_->start(std::move(feed));
@@ -151,6 +155,11 @@ public:
             }
             BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.message;
+        } catch (const vintage_data_missing_error& e) {
+            resp.success = false;
+            resp.message = e.what();
+            BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), warn)
+                << msg.subject << " — feed rejected: " << resp.message;
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = std::string("Failed to start IR curve feed: ") + e.what();
@@ -218,6 +227,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& auth_nats_;
     std::shared_ptr<curve_feed_controller> ctrl_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

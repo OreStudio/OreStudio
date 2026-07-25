@@ -128,6 +128,10 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->ticksPerHourEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->fixedLegPaymentFrequencyEdit,
             &QLineEdit::textChanged,
             this,
@@ -138,6 +142,18 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->autoStartCheck,
             &QCheckBox::toggled,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->priceSourceEdit,
+            &QLineEdit::textChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->vintageSourceEdit,
+            &QLineEdit::textChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->vintageDateEdit,
+            &QLineEdit::textChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
@@ -188,6 +204,9 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->sigmaEdit->setReadOnly(readOnly);
     ui_->initialRateEdit->setReadOnly(readOnly);
     ui_->fixedLegPaymentFrequencyEdit->setReadOnly(readOnly);
+    ui_->priceSourceEdit->setReadOnly(readOnly);
+    ui_->vintageSourceEdit->setReadOnly(readOnly);
+    ui_->vintageDateEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -206,6 +225,10 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
         QString::fromStdString(ir_curve_generation_config_.fixed_leg_payment_frequency_code));
     ui_->enabledCheck->setChecked(ir_curve_generation_config_.enabled);
     ui_->autoStartCheck->setChecked(ir_curve_generation_config_.auto_start);
+    ui_->priceSourceEdit->setText(QString::fromStdString(ir_curve_generation_config_.price_source));
+    ui_->vintageSourceEdit->setText(
+        QString::fromStdString(ir_curve_generation_config_.vintage_source));
+    ui_->vintageDateEdit->setText(QString::fromStdString(ir_curve_generation_config_.vintage_date));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(ir_curve_generation_config_.description));
 
@@ -233,6 +256,10 @@ void IrCurveGenerationConfigDetailDialog::updateConfigFromUi() {
         ui_->fixedLegPaymentFrequencyEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.enabled = ui_->enabledCheck->isChecked();
     ir_curve_generation_config_.auto_start = ui_->autoStartCheck->isChecked();
+    ir_curve_generation_config_.price_source = ui_->priceSourceEdit->text().trimmed().toStdString();
+    ir_curve_generation_config_.vintage_source =
+        ui_->vintageSourceEdit->text().trimmed().toStdString();
+    ir_curve_generation_config_.vintage_date = ui_->vintageDateEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     ir_curve_generation_config_.modified_by = username_;
@@ -259,11 +286,12 @@ bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const QString initial_rate_val = ui_->initialRateEdit->text().trimmed();
     const QString fixed_leg_payment_frequency_code_val =
         ui_->fixedLegPaymentFrequencyEdit->text().trimmed();
+    const QString price_source_val = ui_->priceSourceEdit->text().trimmed();
 
     return true && !currency_code_val.isEmpty() && !index_name_val.isEmpty() &&
            !process_type_val.isEmpty() && !kappa_val.isEmpty() && !theta_val.isEmpty() &&
            !sigma_val.isEmpty() && !initial_rate_val.isEmpty() &&
-           !fixed_leg_payment_frequency_code_val.isEmpty();
+           !fixed_leg_payment_frequency_code_val.isEmpty() && !price_source_val.isEmpty();
 }
 
 void IrCurveGenerationConfigDetailDialog::onSaveClicked() {

@@ -49,11 +49,11 @@ property.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -62,9 +62,27 @@ property.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Confirmed via a live repro (test scenario below) that the icon
+rendered by =QLineEdit::addAction()= + =findChild<QToolButton*>()=
+stayed tiny no matter what =iconSize= was requested — the internal
+=QLineEditIconButton='s displayed icon size is bound by layout
+metrics =QLineEdit= computes once when the action is added and never
+revisits, so a later =setIconSize()= on the button has no visible
+effect. Rather than continue fighting that internal, undocumented
+behaviour, replaced the whole action-button mechanism with an overlay
+approach:
+
+- =set_line_edit_flag_icon()= (=FlagIconHelper.hpp=/=.cpp=) now
+  paints the icon on a plain =QLabel= parented to the =QLineEdit=,
+  sized exactly to the requested =iconSize=, with
+  =QLineEdit::setTextMargins()= reserving room for it (a call
+  =QLineEdit= *does* relayout correctly).
+- A small =KeyFlagLabelPositioner= event filter keeps the label
+  vertically centred and left-anchored whenever the line edit
+  resizes.
+- =DetailDialogBase::keyFlagAction_= (=QAction*=) became
+  =keyFlagIconLabel_= (=QLabel*=) — the only caller of
+  =set_line_edit_flag_icon()=.
 
 * Notes
 
@@ -81,3 +99,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Fixed by replacing the =QLineEdit::addAction()=/=QToolButton=
+mechanism with an overlay =QLabel= in =set_line_edit_flag_icon()=
+(see =* Plan=). Verified with
+[[id:E1B1F121-ECAA-4C67-9D6E-AFBA1DA709F0][Test Scenario: pair_code inline flag icon renders at full size]]:
+FAILED against the pre-fix build (icon visibly tiny, screenshot
+attached to the scenario), PASSED after the fix (icon renders at the
+full requested size, matching the Base/Quote currency combo flags).

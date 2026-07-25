@@ -25,12 +25,12 @@ intact.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. All four leftover tasks are DONE. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-11                               |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-25                               |
 
 * Acceptance
 
@@ -44,7 +44,7 @@ intact.
 | [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] | DONE | 2026-07-24 | 2026-07-25 | purpose_type as a Purpose Types subsection of chapter_portfolios.org; shell/CLI deferred to backlog. |
 | [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]] | DONE | 2026-07-22 | 2026-07-22 | Generate flag-decorated soft-FK combos instead of hand-writing them. |
 | [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair Convention fields]] | DONE | 2026-07-22 | 2026-07-23 | Tooltips explaining domain concepts, not just restating labels. |
-| [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of keyFlagIconSize()]] | STARTED | 2026-07-25 | | Needs proper investigation; a prior attempted fix was reverted. |
+| [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of keyFlagIconSize()]] | DONE | 2026-07-25 | 2026-07-25 | Needs proper investigation; a prior attempted fix was reverted. |
 
 * Decisions
 

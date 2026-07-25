@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: B2C15EED-4064-47F0-9E7D-F9CDA6F0E564
+:END:
+#+title: Test Scenario: Verify vintage-aware seeding for ir_curve_feed
+#+description: Confirms an ir_curve_generation_config in vintage mode resolves initial_rate from a real imported observation on start, and that fixed mode and a missing-observation error path both behave correctly.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FC800706-1673-4E48-84C2-22569E836DF5][Vintage-aware seeding for ir_curve_feed]] in [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FC800706-1673-4E48-84C2-22569E836DF5][Vintage-aware seeding for ir_curve_feed]] |
+| Parent story  | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]   |
+| Target dialog | =IrCurveGenerationConfigDetailDialog= — Menu: Market Data > Synthetic > Configuration > IR Curve Generation Configs |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC*.
+
+** Open IR Curve Generation Configs
+
+- Menu: Market Data > Synthetic > Configuration > IR Curve Generation
+  Configs.
+- Confirm a list window opens showing the configs seeded by
+  provisioning (=price_source= = fixed, since these came through the
+  DQ-publish path).
+
+** Add a fixed-price-source config
+
+- Click *Add* to open =IrCurveGenerationConfigDetailDialog=.
+- Fill currency/index/process type as usual; set *Price Source* to
+  =fixed=, leave *Vintage Source*/*Vintage Date* blank, set an
+  arbitrary *Initial Rate* (e.g. 0.03).
+- Save.
+- Confirm the row appears in the list and the detail dialog reopens
+  with the saved =fixed= price source and the exact initial rate
+  entered — nothing is resolved from a real observation for this
+  config.
+
+** Add a vintage-price-source config
+
+- Click *Add* again.
+- Set *Currency* = =USD=, *Index* = =USD-LIBOR-3M=, *Process Type* =
+  =VASICEK= (mirrors the seeded =synthetic.ir_curve_configs.ore_samples_2016=
+  USD-LIBOR-3M config, whose real DEPOSIT-tenor observation is seeded
+  by the =marketdata.ir_deposit_rates= dataset).
+- Set *Price Source* to =vintage=, *Vintage Source* to
+  =ore.samples.2016-02-05=, *Vintage Date* to =2016-02-05=. Leave
+  *Initial Rate* as any placeholder value (e.g. 0.05) — it is not used
+  when =price_source= is =vintage=.
+- Save. Confirm the row appears in the list with =price_source= =
+  =vintage=.
+
+** Start the vintage-mode feed and verify resolution
+
+- Select the vintage config row and start its feed (auto-start toggle,
+  or the feed control action used for on-demand start — whichever the
+  UI exposes).
+- Confirm the feed starts successfully and its resolved =initial_rate=
+  is *0.007961* (0.7961%, the real 3-month USD LIBOR rate on
+  2016-02-05 from ORE's own bundled Legacy/Example_56 sample data) —
+  not the placeholder value entered in the dialog. Check the feed's
+  status/detail view or the service log for the resolved starting
+  rate.
+
+** Start a vintage config with a missing observation
+
+- Add (or edit) a config with *Price Source* = =vintage= but a
+  *Vintage Source*/*Vintage Date* combination that has no matching
+  imported observation (e.g. a currency/index not in the seeded
+  dataset, or a nonsense date).
+- Attempt to start its feed.
+- Confirm the start fails with a =vintage_data_missing_error= (or its
+  surfaced error message) that names the missing
+  currency/index/source/date, rather than silently falling back to a
+  default rate or crashing.
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

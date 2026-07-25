@@ -39,12 +39,12 @@ value correctly is a common need, not a book-specific one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Design done; implement/pilot next.     |
+| Now           | All three required tasks done; rollout to remaining refdata entities deferred as a follow-on per Acceptance. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement and pilot on book_status/regulatory_book_type. |
-| Last touched  | 2026-07-23                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-25                               |
 
 * Acceptance
 

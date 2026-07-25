@@ -153,7 +153,7 @@ TEST_CASE("read_regulatory_book_type_at_timepoint_before_creation_is_empty", tag
 
     auto read_regulatory_book_types = repo.read_at_timepoint(h.context(), as_of_before, rbt.code);
     BOOST_LOG_SEV(lg, debug) << "Read regulatory book types at timepoint before creation: "
-                              << read_regulatory_book_types;
+                             << read_regulatory_book_types;
 
     CHECK(read_regulatory_book_types.size() == 0);
 }
@@ -209,9 +209,10 @@ TEST_CASE("read_regulatory_book_type_at_timepoint_without_code_filter", tags) {
     const auto as_of = now_as_of();
 
     auto read_regulatory_book_types = repo.read_at_timepoint(h.context(), as_of);
-    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types at timepoint: " << read_regulatory_book_types;
+    BOOST_LOG_SEV(lg, debug) << "Read regulatory book types at timepoint: "
+                             << read_regulatory_book_types;
 
-    const auto found = std::ranges::any_of(
-        read_regulatory_book_types, [&](const auto& v) { return v.code == rbt.code; });
+    const auto found = std::ranges::any_of(read_regulatory_book_types,
+                                           [&](const auto& v) { return v.code == rbt.code; });
     CHECK(found);
 }

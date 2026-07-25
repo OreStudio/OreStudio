@@ -131,7 +131,8 @@ begin
         name, description, enabled, auto_start,
         currency_code, index_name, process_type,
         kappa, theta, sigma, initial_rate,
-        ticks_per_hour, fixed_leg_payment_frequency_code
+        ticks_per_hour, fixed_leg_payment_frequency_code,
+        price_source, vintage_source, vintage_date
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -145,7 +146,8 @@ begin
         || 'primary, currently-live curve for this currency.',
         true, true, c.currency_code, c.index_name, 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
-        60, 'Quarterly'
+        60, 'Quarterly',
+        'fixed', '', ''
     from (values
         -- currency, index code, annual kappa, annual sigma, theta (mean/initial level)
         ('USD', 'USD-SOFR',      0.55, 0.008, 0.0400),

@@ -675,7 +675,10 @@ begin
             a.fixed_leg_payment_frequency_code,
             a.enabled,
             a.auto_start,
-            a.description
+            a.description,
+            a.price_source,
+            coalesce(a.vintage_source, '') as vintage_source,
+            coalesce(a.vintage_date, '') as vintage_date
         from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
         where a.dataset_id = p_dataset_id
         order by a.currency_code, a.index_name
@@ -724,7 +727,7 @@ begin
                 lower(case when r.index_name like r.currency_code || '-%'
                            then substring(r.index_name from length(r.currency_code) + 2)
                            else r.index_name end),
-            'fixed', '', '',
+            r.price_source, r.vintage_source, r.vintage_date,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         from (select 1) as _dummy

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calendar-qt-source-editability-and-holidays-browse
 #+pr:
 #+blocked_on:
 #+blocked_since:

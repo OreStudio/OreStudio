@@ -8,7 +8,7 @@
 #+filetags: :codegen_infra_followups_dq:sprint_24:v0:
 #+owner: marco
 #+branch: feature/unify-columns-primary-key-model-shape
-#+pr:
+#+pr: 1691
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-24
@@ -147,7 +147,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1691][#1691]] | [codegen] Support compound primary keys in repository templates |
 
 * Review
 

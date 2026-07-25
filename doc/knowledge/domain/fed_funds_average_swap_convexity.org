@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 6FD5CD8D-16C3-401E-B0E4-97D9E298B03F
+:END:
+#+title: Fed Funds Average Swap Convexity
+#+description: Why Fed Funds Average Swaps (arithmetic-average floating leg) inject a convexity bias relative to compounded OIS (geometric), per Jensen's inequality, and why naive bootstrapping mis-prices the long end of the Fed Funds curve.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:convexity:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+
+* Summary
+
+At the long end, the Fed Funds curve is conventionally built from Fed Funds
+Average Swaps (FFAS), whose floating leg pays the *arithmetic* mean of
+realised daily Fed Funds rates, in contrast to the belly of the curve
+(standard Fed Funds OIS), whose floating leg compounds *geometrically*
+(daily interest-on-interest). By Jensen's inequality, the expected value of
+an arithmetic average of a fluctuating rate is not equal to its geometric
+compound: E[avg(r)] > avg(E[r]) for a positive-variance rate process. This
+structural mismatch injects a real convexity bias — a "bow" lifting the
+implied long-end rate above the pure OIS base curve — that a bootstrapper
+must explicitly adjust for. Calibrating an FFAS as if it were a compounded
+swap silently ignores this bias, producing distorted forward rates,
+mispriced long-end derivatives, and flawed DV01 sensitivities.
+
+* Detail
+
+** Where FFAS sits in the Fed Funds curve
+
+Per [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]],
+the Fed Funds curve itself is a *dependent node* discounted off the SOFR
+curve, not off itself (see that document's Fed Funds/SOFR discounting
+note). Within the Fed Funds curve's own construction, three instrument
+families are stitched together tenor by tenor:
+
+1. *Short end — FOMC-dated instruments*: flat-forward step functions
+   anchored to discrete Federal Open Market Committee meeting dates (the
+   same FOMC-dated short-end technique documented for SOFR in
+   [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]]).
+2. *Belly — Fed Funds OIS (compounded)*: the floating leg compounds daily
+   realised Fed Funds fixings geometrically:
+   $\prod_i (1 + r_i \cdot \Delta t_i)$.
+3. *Long end — Fed Funds Average Swaps (arithmetic)*: the floating leg is
+   the simple arithmetic mean of daily realised fixings:
+   $\frac{1}{N}\sum_i r_i$.
+
+** The convexity bias
+
+Because the belly and the long end use two different floating-leg
+paradigms — geometric compounding vs. arithmetic averaging — forcing a
+single continuous curve through both introduces a bias. For a fluctuating
+rate process, Jensen's inequality guarantees the expectation of the
+arithmetic average diverges from the expectation of the geometric
+compound: $E[\text{avg}(r)] > \text{avg}(E[r])$ when the rate has positive
+variance. Plotted against a "base curve" built purely from OIS/compounded
+instruments, the FFAS-implied curve bows upward — a convexity premium that
+grows with rate volatility and increases with tenor.
+
+Naively bootstrapping an FFAS pillar as though it were a compounded OIS
+pillar ignores this bias entirely. The concrete failure modes are:
+
+- Distorted forward rates at the long end.
+- Mispriced long-end Fed Funds derivatives.
+- Flawed bucketed DV01 sensitivities for any portfolio with long-dated Fed
+  Funds exposure.
+
+** What fixing it requires
+
+A correct bootstrap injects a dynamic convexity adjustment directly into
+the curve's root solver, translating the arithmetic FFAS cash flows onto
+the same footing as the compounded instruments before solving for discount
+factors. Per the source material, addressing this properly is not a
+one-line deterministic fix:
+
+- A purely deterministic model (discount forwards with no convexity term)
+  fails outright — it cannot capture the bias at all.
+- Capturing the *distribution* of future rate paths (needed because the
+  bias scales with realised rate volatility, not just the rate level)
+  requires a stochastic short-rate model — Hull-White is the model named
+  in the source material.
+- Calibration is two-dimensional: the model must fit both the OIS base
+  level and the FFAS "bow" (the convexity spread) simultaneously.
+
+This document records the *existence and shape* of the gap, not a chosen
+remedy for ORE Studio; no FFAS generation or convexity-adjustment
+implementation exists in ORE Studio today. Whether and how to model this is
+open should Fed Funds Average Swaps ever need to be primary pillar
+instruments here (see [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic
+market data generation: approach]], which does not currently generate Fed
+Funds curves or their long end).
+
+* Sources
+
+- André Luiz Rodrigues (https://www.linkedin.com/in/andre-luiz-df-rodrigues/),
+  LinkedIn posts on Fed Funds curve construction and the FFAS convexity
+  trap (2026), including the whiteboard diagram "Adding FedFund Average
+  Swaps (FFAS) to the FedFund Curve & Convexity". Original posts filed at
+  =tmp/luiz_rodgirgues_posts.org= (not part of the published
+  documentation); this note captures the technical content with
+  attribution, not a copy of the LinkedIn material itself.
+
+* See also
+
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the build-order dependency that makes the Fed Funds curve a dependent node.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — OIS and general bootstrapping mechanics this convexity adjustment sits on top of.
+- [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] — the short-end technique shared with the SOFR curve.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the step-function-to-continuous transition this curve also needs, independent of the convexity issue.

@@ -269,6 +269,29 @@ the ORE canonical key, for future real-data feed integration:
 These fields are stored for traceability and future feed wiring but are not part of
 any current subscription or generation logic.
 
+* Gap analysis: current identifiers vs ORE's real addressing scheme
+
+Descriptive only — no fixes proposed here; that is the follow-up
+"Design a canonical ORE Studio market data URN" task's job. Each row
+below cites the concrete struct/column and a real collision it cannot
+express today.
+
+| Scheme | Current field(s) | What ORE's scheme requires that's missing | Concrete failure |
+|--------+-------------------+--------------------------------------------+-------------------|
+| =ir_curve_generation_config= | =(currency_code, index_name)=, =index_name= a free-text ISDA/ORE code (e.g. =USD-SOFR=, =USD-LIBOR-3M=) | A structured tenor field, distinct from the index code itself, and a discount-vs-projection role distinct from ORE's own =curve_role= field (see below) | Two configs for =USD-LIBOR-3M= and a hypothetical =USD-LIBOR-6M= differ only inside the free-text =index_name= string — nothing structured lets a query or a uniqueness constraint distinguish them by tenor |
+| =curve_feed_controller= / =ir_curve_feed::qualifier()= | =qualifier = currency_code + "/" + strip_currency_prefix(index_name)=, e.g. =USD/SOFR= | A curve-family concept (the set of tenor curves that together make up one currency's multi-curve framework) and a discount-vs-projection role, so two legitimately coexisting curves for the same currency don't collide on this key | =USD/SOFR= is the qualifier for *any* config built from =USD-SOFR=, discount or projection alike — the collision check that stops two feeds racing on the same series cannot tell a real discount-vs-projection pair apart from a genuine duplicate; both would collide on this key today |
+| =ir_curve_template_entry.instrument_code= carries a field already named =curve_role= | Values are =DEPOSIT=/=FRA=/=SWAP= — the *pricing instrument type* for one tenor point, not a discounting-role concept at all | Naming collision: any new discount-vs-projection field cannot reuse the name =curve_role=, since that name is already taken by an unrelated concept one layer down (=ir_curve_template_resolver.hpp:70=, =ir_curve_feed.cpp:48=) | A reviewer skimming for "does this scheme have a curve role field?" finds one (=curve_role=) and could easily mistake DEPOSIT/FRA/SWAP for the discount/projection distinction it is not |
+| =ir_curve_feed= / =market_series.series_type,metric= | =make_ir_curve_feed()= hardcodes literal =series_type="RATES"=, =metric="YIELD"= for every IR curve regardless of role (=ir_curve_feed.cpp:199-202=) | =series_type= values that distinguish a discount curve from a projection curve, per this same document's own =DISCOUNT/RATE/<CCY>/<tenor>= worked example above | The published =market_series= key for a =USD-SOFR= discount curve and a =USD-LIBOR-3M= projection curve are both =RATES/YIELD/USD/...=-shaped in practice, never the =DISCOUNT/RATE/USD/...= shape this document's own IR discount curve examples show — the documented canonical-key scheme and the code that actually publishes IR curves have already diverged |
+| =market_series= =series_type/metric/qualifier[/point_id]= (this document, [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][cluster hub]]) | Same four logical fields as above, predates =ir_curve_generation_config= | Whether =qualifier= alone is meant to carry curve-family + role, or whether that needs its own segment, is unresolved — this document's only worked IR example (=DISCOUNT/RATE/EUR/2Y=) has no projection-curve counterpart to check the scheme against | No real EURIBOR-, SOFR-, or SONIA-projection example exists anywhere in this document to confirm =series_type= alone (rather than =qualifier=) is where the role belongs |
+| =fx_spot_generation_config.ore_key= | =ore_key= stored directly as =FX/RATE/<CCY1>/<CCY2>=, matching this document's own ORE canonical key scheme exactly | Nothing — this is the pattern to generalise, not a gap | =EUR/USD= spot resolves to =FX/RATE/EUR/USD= with no ambiguity, because the field *is* the canonical key rather than something a canonical key must be reconstructed from |
+
+The discount-vs-projection gap above is the same gap the still-BACKLOG
+[[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve (discount + projection) short-rate model]]
+task will need a data-model answer for; whatever field the URN design
+task proposes for curve role should be the same field that task's
+discount/projection model consumes, not two independently-invented
+answers to the same question.
+
 * See also
 
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — =market_series= schema, existing NATS request-reply subjects.

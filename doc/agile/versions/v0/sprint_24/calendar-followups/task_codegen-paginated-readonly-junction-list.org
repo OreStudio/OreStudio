@@ -77,6 +77,57 @@ or otherwise) can opt into it.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Investigation findings
+
+The =ores.cpp.qt= facet has six mustache templates:
+=cpp_qt_client_model.{hpp,cpp}=, =cpp_qt_controller.{hpp,cpp}=,
+=cpp_qt_detail_dialog.{hpp,cpp,ui}=, =cpp_qt_mdi_window.{hpp,cpp}=.
+None of them has a way to omit CRUD:
+
+- =cpp_qt_controller.hpp.mustache= declares =openEdit=/=openHistory=
+  unconditionally (only the =override= keyword is gated, by
+  =has_explorer_interface=) -- there is no knob that removes them.
+- =cpp_qt_mdi_window.cpp.mustache= wires up Add/Edit/Delete/History
+  toolbar actions and their slots unconditionally. By contrast,
+  Import XML/Export CSV/Export XML *are* already optional, gated by
+  the existing =has_csv_xml_io= knob -- proof the template style
+  supports this kind of on/off toggle when someone adds one.
+- Pagination itself is already fully generic and reusable as-is:
+  =cpp_qt_client_model.cpp.mustache= gates =request.offset=/=limit=
+  and the =total_available_count= plumbing behind the existing
+  =has_pagination= knob (implemented for the truncation-fix task,
+  914B206F). Nothing new needed there.
+- =:parent_entity_singular:=/=:parent_entity_pascal:= are documented
+  in the meta-model page and used by the doc-generation facet, but
+  are *not* currently read by any =cpp.qt= template -- parent-scoping
+  a list window (e.g. by =calendar_code=) is itself new wiring, not
+  an existing knob this task can just flip on.
+- No detail dialog is needed for this shape at all: the
+  =cpp_qt_detail_dialog.*= templates are full-CRUD-only (create/edit
+  form + save/delete). A read-only list has nothing to edit, so
+  those three templates simply aren't invoked for this shape.
+
+** Direction
+
+Add a new boolean knob, tentatively =:has_readonly_paginated_list:=,
+that when true:
+- suppresses generation of the detail dialog trio entirely;
+- in the controller, drops =openEdit=/=openHistory=/openNew/openDelete
+  wiring (mirrors the =has_csv_xml_io= on/off pattern already proven
+  in =cpp_qt_mdi_window.cpp.mustache=);
+- in the mdi_window, drops the Add/Edit/Delete/History toolbar
+  actions and their slots, keeping only Reload (and CSV/XML export,
+  if separately requested) plus the parent-scoping wiring below;
+- wires a new =:parent_key_field:=/=:parent_key_param:=-style knob so
+  the list's get-request is scoped by a parent id/code (first real
+  use of parent-scoping in this facet -- =calendar_dates= scoped by
+  =calendar_code=), reusing the already-generic pagination knob for
+  the server round trip.
+
+Next steps: draft the exact knob names/shapes against
+=entity_meta_model_cpp_qt.org=, then prototype the templates against
+=calendar_dates= as the first consumer.
+
 * Notes
 
 * Test Scenarios

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: AAD9755F-88E1-4A1C-B927-DA94A2492438
+:END:
+#+title: Test Scenario: Capture screenshots for the Purpose Types manual subsection
+#+description: Set up UI state and capture the 2 screenshot placeholders in chapter_portfolios.org's new Purpose Types subsection.
+#+type: test_scenario
+#+level: s1
+#+filetags: :sprint-22-leftover-cleanup:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-24
+#+updated: 2026-07-24
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] |
+| Parent story  | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]   |
+| Target dialog | PurposeTypeMdiWindow, PurposeTypeDetailDialog |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =jolly_knuth= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+** Capture purpose_types_main_window.png
+
+- Open the /Reference Data/ menu and click *Purpose Types*.
+- Confirm all four seeded rows are visible: Risk, Regulatory, Client
+  Reporting, Internal, each with its description and display order.
+- Click the Runner's *Screenshot* button, then *Pass*.
+
+** Capture purpose_type_details.png
+
+- In the Purpose Types window, double-click the *Risk* row to open
+  its Details dialog.
+- Confirm Code, Name, Description, and Display Order are all
+  populated.
+- Click the Runner's *Screenshot* button, then *Pass*.
+
+** Read the manual in the Qt client
+
+- After the chapter is wired in and both images are captured, rebuild
+  the Qt-embedded HTML help (=compass build --direct help= then
+  =compass build deploy_help_qch --preset <preset>=) and restart the
+  client.
+- Open /Help → User Manual/, navigate to the Portfolios chapter's new
+  Purpose Types section, and read it top to bottom: confirm the prose
+  reads correctly, the segues from "What is a Portfolio?" and into
+  "Conclusion" work, and both screenshots appear where expected and
+  actually show what their captions claim.
+
+** Check the built PDF
+
+- Open the rebuilt =doc/manual/user_guide/user_manual.pdf= (e.g. via
+  =zathura= or =evince=) at the Portfolios chapter's pages.
+- Confirm layout, figure numbering, and captions look correct in the
+  PDF's own rendering, and that both new figures appear in the List
+  of Figures.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

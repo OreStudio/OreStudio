@@ -219,18 +219,14 @@ reasons, than any individual portfolio that references one.
 
 Open the Purpose Types window from the /Reference Data/ menu.
 
-#+caption: [SCREENSHOT NEEDED] The Purpose Types window, listing the four seeded values (Risk, Regulatory, Client Reporting, Internal) with their display order.
-# Capture: open the Purpose Types window from the Reference Data menu and
-# screenshot the full list.
+#+caption[Purpose Types window]: The Purpose Types window, listing the four seeded values (Risk, Regulatory, Client Reporting, Internal) with their display order.
 [[proj:assets/images/purpose_types_main_window.png]]
 
 Each row shows the code, name, description, display order, version,
 and the usual provenance columns. Double-clicking a row opens the
 *Purpose Type Details* dialog.
 
-#+caption: [SCREENSHOT NEEDED] The Purpose Type Details dialog for the Risk purpose type, showing its code, name, description, and display order fields.
-# Capture: double-click a row (e.g. Risk) in the Purpose Types window
-# and screenshot the Details dialog.
+#+caption[Purpose Type Details dialog]: The Purpose Type Details dialog for the Risk purpose type, showing its code, name, and description.
 [[proj:assets/images/purpose_type_details.png]]
 
 *Code* is the purpose type's unique identifier and, like a
@@ -240,7 +236,10 @@ combo. *Description* is free-text, explaining what the classification
 means in practice — the four seeded values' descriptions are the
 source for the meanings given in [[*What is a Portfolio?][What is a Portfolio?]] above.
 *Display Order* is an integer controlling the combo box's ordering,
-lowest first.
+lowest first — shown in the list window's Display Order column; the
+Details dialog does not yet expose it (tracked in [[id:AA7F8C14-9634-40BA-989D-1FA4FB44C860][Audit and
+standardize the display_order field across lookup/code-table
+entities]]).
 
 Editing, deleting, and history follow the same pattern as every
 other reference-data entity in ORE Studio and are not repeated here

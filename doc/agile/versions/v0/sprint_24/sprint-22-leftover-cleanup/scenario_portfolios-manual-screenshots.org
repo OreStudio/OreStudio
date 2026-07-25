@@ -58,12 +58,25 @@ Log in against the =jolly_knuth= environment as
 =tenant_admin@barclays_plc= / =Secure-Password-123= and select
 *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Capture purpose_types_main_window.png
 
 - Open the /Reference Data/ menu and click *Purpose Types*.
 - Confirm all four seeded rows are visible: Risk, Regulatory, Client
   Reporting, Internal, each with its description and display order.
 - Click the Runner's *Screenshot* button, then *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step2_20260725_142306.png]] |
 
 ** Capture purpose_type_details.png
 
@@ -72,6 +85,13 @@ Log in against the =jolly_knuth= environment as
 - Confirm Code, Name, Description, and Display Order are all
   populated.
 - Click the Runner's *Screenshot* button, then *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_portfolios-manual-screenshots_step3_20260725_142334.png]] |
 
 ** Read the manual in the Qt client
 
@@ -85,6 +105,12 @@ Log in against the =jolly_knuth= environment as
   "Conclusion" work, and both screenshots appear where expected and
   actually show what their captions claim.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Check the built PDF
 
 - Open the rebuilt =doc/manual/user_guide/user_manual.pdf= (e.g. via
@@ -93,14 +119,31 @@ Log in against the =jolly_knuth= environment as
   PDF's own rendering, and that both new figures appear in the List
   of Figures.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-25T18:15:27Z |
+| Branch        | feature/write-purpose-type-documentation |
+| Commit        | 0d172c852 |
+| Worktree      | jolly_knuth |
 
 * Notes
+
+Step 3's checklist ("Confirm Code, Name, Description, and Display
+Order are all populated") does not fully match what
+=PurposeTypeDetailDialog= actually shows: Display Order is missing
+from the dialog, though it is populated in the DB and shown in the
+list window. This is a genuine product gap, not a capture mistake —
+tracked in [[id:AA7F8C14-9634-40BA-989D-1FA4FB44C860][Audit and standardize the display_order field across
+lookup/code-table entities]], which will also cover recapturing this
+scenario's =purpose_type_details.png= once the dialog is fixed. The
+chapter's caption and prose were adjusted to describe the dialog as
+it actually is today rather than claim a field it doesn't show.

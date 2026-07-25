@@ -73,7 +73,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "unwired to any caller" claim is inaccurate -- ores.cli export --as-of calls read_at_timepoint directly | task/PR description | Accepted | Corrected Result section; boundary fix is a real CLI behaviour change |
+| 2 | No test coverage for read_at_timepoint boundary on country/currency repositories | repository_country_repository_tests.cpp, repository_currency_repository_tests.cpp | Accepted | Added before/mid/after boundary tests mirroring book_status pilot |
 
 * Result
 
@@ -82,9 +83,15 @@ codegen facet (from [[id:002A916C-2D83-4408-8B74-05CEA44CCB06][Design the as-of 
 the hand-written =read_at_timepoint= methods outright. The generated
 code fixes the =valid_to >= t= boundary bug (now =valid_to > t=, per
 the documented as-of convention) and adds ordering to the query.
-Neither entity has a service/NATS/UI caller wired to
-=read_at_timepoint=, so the change was scoped to the repository layer
-only.
+Neither entity has a service or NATS caller, but both *are* called
+directly from =ores.cli='s =application::export_countries=/
+=export_currencies= (=refdata export countries=/=currencies
+--as-of=), so the boundary fix is a real, user-visible behaviour
+change for that CLI path, not a dead-code cleanup -- corrected here
+per review feedback on the PR. Added repository-level
+=read_at_timepoint= boundary tests for both entities (before/mid/after
+cases, mirroring the =book_status_repository= pilot), which were
+previously untested.
 
 Verified: full local rebuild (=compass build=, all targets, exit 0)
 and full test suite (=compass build rat=, all test cases passed)

@@ -2,11 +2,11 @@
 :ID: CAA32021-D905-468A-BEB4-B76A9432C218
 :END:
 #+title: Test Scenario: Verify attach logo to counterparty
-#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Bank tenant.
+#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Bank tenant. Also covers the mirrored logo picker on PartyDetailDialog.
 #+type: test_scenario
 #+level: s1
 #+filetags: :acme_bank_holding_group:sprint_24:v0:
-#+target_dialog: CounterpartyDetailDialog
+#+target_dialog: CounterpartyDetailDialog, PartyDetailDialog
 #+created: 2026-07-25
 #+updated: 2026-07-25
 #+environment: brave_hopper
@@ -25,9 +25,11 @@ article) -- so the first thing a tester sees is a *working example*
 with no manual upload needed. The scenario then covers the full CRUD +
 history + eventing sweep for the field on a second, freshly-created
 counterparty -- create, read-back, update, delete, history, and a NATS
-notification refreshing a second client. Pass means every step below
-completes with the stated outcome and no unexpected error dialog
-appears.
+notification refreshing a second client. It then repeats a shorter
+create/read-back/update round trip on =PartyDetailDialog=, whose logo
+picker was added as a follow-on so the field is testable on both
+dialogs. Pass means every step below completes with the stated
+outcome and no unexpected error dialog appears.
 
 * Scenario Info
 
@@ -49,7 +51,7 @@ appears.
 |---------------+-------------------------------------------------------------------------------------------------------------|
 | Verifies task | [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]                                                                    |
 | Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]                                             |
-| Target dialog | =CounterpartyDetailDialog= -- Menu: Reference Data > Counterparties                                       |
+| Target dialog | =CounterpartyDetailDialog= / =PartyDetailDialog= -- Menu: Reference Data > Counterparties / Parties      |
 | Clients       | blue, red                                                                                                  |
 | State         | PENDING                                                                                                    |
 
@@ -131,6 +133,32 @@ notes back as a =*** Result= child heading directly under it.
   default -- and choose History.
 - In the History dialog, confirm three entries are present -- create,
   update, delete -- each with its own change reason.
+
+*** Create a party and set its logo
+
+- Open Reference Data > Parties.
+- Click Add to open a new =PartyDetailDialog= in create mode.
+- Fill in a short code (e.g. =PARTYTEST=), full name (e.g. =Party Test
+  Entity=), party type, status, and business center; select any
+  parent party.
+- In the *Logo* group box, click the flag/logo button and pick any
+  image from the selector.
+- Confirm the button now shows the chosen icon and a "Logo changed
+  (unsaved)" style before saving.
+- Click Save, supply a change reason, and confirm the success
+  notification appears and the row shows in the list.
+
+*** Read back and update the party logo
+
+- Reopen the detail dialog for the party just created (double click
+  its list row); confirm the Logo button shows the same image chosen
+  in the previous step.
+- Click the Logo button again and pick a *different* image; save with
+  a change reason and confirm success.
+- Close and reopen the dialog; confirm the button now shows the new
+  image, not the original one.
+- Delete the party, confirm the deletion prompt and supply a change
+  reason, and confirm the row disappears from the parties list.
 
 ** red
 

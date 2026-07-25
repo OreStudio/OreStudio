@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: B2888D7D-9D16-48DE-AE4C-48FF610841AA
+:END:
+#+title: Task: Calendar Qt UI: source/editability display, regenerate button, browse-holidays view
+#+description: Remaining step 6 pieces: Calendar detail dialog shows source/is_editable/base_calendar_code and locks the form for source=quantlib rows; a Regenerate-up-to-year button wired to the calendar_dates regenerate NATS command; a Browse Holidays view backed by the paginated read-only junction-list codegen facet (blocked on that facet existing).
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The remaining Qt pieces of the parent task's step 6, in two
+independent halves:
+
+- *Not blocked*: Calendar's detail dialog currently lets a user edit
+  any calendar row, including the 60 seeded QuantLib-transcribed ones
+  -- =source=/=is_editable=/=base_calendar_code= exist on the domain
+  type and in the database (since step 4) but are not shown anywhere
+  in the UI, and nothing stops editing a =source='quantlib'= row's
+  own fields. Add the three fields to the detail dialog and lock the
+  whole form (not just the usual locked-after-create fields) whenever
+  the opened row has =is_editable=false=. Also add a "Regenerate up to
+  <year>" action wired to the
+  =refdata.v1.calendar_dates.regenerate= NATS command from step 4.
+- *Blocked*: a "Browse Holidays" view opened from Calendar's detail
+  dialog, showing that calendar's materialised
+  [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_dates]] rows --
+  needs [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] to exist
+  first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started -- the source/editability/regenerate half can start immediately; the browse-holidays half is blocked. |
+| Waiting on   | [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] (browse-holidays half only). |
+| Next         | Begin the unblocked half.                  |
+| Last touched | 2026-07-25                               |
+
+* Acceptance
+
+- [ ] Calendar's detail dialog shows =source=, =is_editable=, and
+  =base_calendar_code= (the last as a dynamic combo over other
+  calendars, matching =calendar_rule=/=calendar_exception='s existing
+  =calendar_code= combo pattern).
+- [ ] Opening a =source='quantlib'= calendar locks every field in the
+  dialog, not just the fields already locked-after-create -- users
+  cannot edit a QuantLib-sourced calendar's own name/type/country via
+  the UI, full stop.
+- [ ] A "Regenerate up to <year>" action exists (calendar detail
+  dialog or list-window toolbar) that calls
+  =refdata.v1.calendar_dates.regenerate= for the open calendar and
+  surfaces success/failure and rows-written to the user.
+- [ ] A "Browse Holidays" action opens a read-only, paginated view of
+  the calendar's =calendar_dates= rows, each showing date,
+  is-business-day, and source -- built on the facet from
+  [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]].
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

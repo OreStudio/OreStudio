@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 35F743BF-F513-4976-B294-D4E8DB975906
+:END:
+#+title: Task: Add codegen Qt facet for paginated read-only junction-scoped lists
+#+description: Extend ores.codegen's Qt facet with a new shape for junction-backed, read-only, server-paginated lists scoped to a parent key -- a client model + list dialog (no detail dialog, nothing to edit), reusable for calendar_dates and future large materialised/derived datasets. Closer to the existing History dialog shape (read-only, parent-scoped) than to the relationship-assignment-widget pattern (CalendarAssignmentWidget) used by every existing small many-to-many junction today.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every existing junction entity in this codebase (currency_calendar,
+currency_pair_convention_calendar, currency_country, ...) has zero Qt
+files: the established pattern for a many-to-many *relationship*
+junction is a hand-written widget embedded as a tab in the owning
+entity's own detail dialog (e.g. Currency's =CalendarAssignmentWidget=
+tab), not a standalone list window. That pattern is correct for small,
+user-assigned relationships and is not what this task changes.
+
+=calendar_dates=
+([[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][ores.refdata.calendar_dates]]) doesn't fit that mould: it is a large
+(potentially thousands of rows per calendar, spanning a decade-plus),
+read-only, server-paginated materialised fact table, not a relationship
+a user assigns. Its shape is closer to the existing History dialog
+facet (read-only, scoped/filtered by a parent key) than to the
+assignment-widget pattern -- except History dialogs load everything at
+once (a version history is small), while this shape genuinely needs
+server-side pagination.
+
+This task adds that missing shape to =ores.codegen='s Qt facet: a
+client model + list dialog for a junction-backed, read-only,
+paginated, parent-scoped dataset -- no detail dialog, since there is
+nothing to edit. Generated for =calendar_dates= as the first consumer,
+but written generically so any future entity in this shape (junction
+or otherwise) can opt into it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-25                               |
+
+* Acceptance
+
+- [ ] A new Qt codegen knob/shape exists for a read-only,
+  server-paginated, parent-scoped list (client model + list dialog),
+  distinct from the existing full-CRUD domain_entity shape and from
+  the read-only-but-unpaginated History dialog shape.
+- [ ] Generating it for =calendar_dates=, scoped by =calendar_code=,
+  produces a working paginated list (offset/limit sent to the server,
+  accurate total count -- respecting the fix from
+  [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]]) with no
+  add/edit/delete affordances anywhere in the generated UI.
+- [ ] Documented in the Qt facet's meta-model page
+  (=entity_meta_model_cpp_qt.org=) alongside the existing knobs, so
+  the next entity in this shape doesn't have to rediscover it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

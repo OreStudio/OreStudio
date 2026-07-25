@@ -41,6 +41,9 @@ The full template source. Edit here and re-tangle with
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 {{/has_parent_id}}
+{{#primary_key.is_compound}}
+#include <stdexcept>
+{{/primary_key.is_compound}}
 {{#has_batch_read}}
 {{#primary_key.is_compound}}
 #include <set>
@@ -585,6 +588,9 @@ std::vector<domain::{{entity_singular}}>
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
     // exact requested key-tuples here.
+    if ({{{primary_key.batch_size_mismatch_check}}})
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<{{{primary_key.batch_tuple_type}}}>> requested;
     for (std::size_t i = 0; i < {{primary_key.batch_requested_size_check}}; ++i)
         {{{primary_key.batch_requested_insert}}}
@@ -608,6 +614,9 @@ void {{entity_singular}}_repository::remove(
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
+    if ({{{primary_key.batch_size_mismatch_check}}})
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::remove: key column vectors must be the same length");
     for (std::size_t i = 0; i < {{primary_key.batch_requested_size_check}}; ++i)
         remove(ctx, {{{primary_key.batch_loop_args}}});
 {{/primary_key.is_compound}}

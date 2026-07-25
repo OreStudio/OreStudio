@@ -39,7 +39,9 @@ The full template source. Edit here and re-tangle with
  */
 
 create table if not exists "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
-    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+{{#domain_entity.primary_key.columns}}
+    "{{column}}" {{type}} not null,
+{{/domain_entity.primary_key.columns}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.sql.system_scope}}
     "tenant_id" uuid not null default ores_utility_system_tenant_id_fn(),
@@ -90,32 +92,32 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
 {{#domain_entity.has_tenant_in_pk}}
-    primary key (tenant_id, {{domain_entity.primary_key.column}}, valid_from, valid_to),
+    primary key (tenant_id, {{domain_entity.primary_key.column_list}}, valid_from, valid_to),
 {{#domain_entity.has_gist_exclusion}}
     exclude using gist (
         tenant_id WITH =,
-        {{domain_entity.primary_key.column}} WITH =,
+        {{{domain_entity.primary_key.gist_column_clause}}}
         tstzrange(valid_from, valid_to) WITH &&
     ),
 {{/domain_entity.has_gist_exclusion}}
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 {{#domain_entity.sql.hypertable}}
-    primary key ({{domain_entity.primary_key.column}}, {{domain_entity.sql.hypertable_partition_column}}),
+    primary key ({{domain_entity.primary_key.column_list}}, {{domain_entity.sql.hypertable_partition_column}}),
 {{/domain_entity.sql.hypertable}}
 {{^domain_entity.sql.hypertable}}
-    primary key ({{domain_entity.primary_key.column}}, valid_from, valid_to),
+    primary key ({{domain_entity.primary_key.column_list}}, valid_from, valid_to),
 {{#domain_entity.has_gist_exclusion}}
     exclude using gist (
-        {{domain_entity.primary_key.column}} WITH =,
+        {{{domain_entity.primary_key.gist_column_clause}}}
         tstzrange(valid_from, valid_to) WITH &&
     ),
 {{/domain_entity.has_gist_exclusion}}
 {{/domain_entity.sql.hypertable}}
 {{/domain_entity.has_tenant_in_pk}}
-    check ("valid_from" < "valid_to"){{#domain_entity.primary_key.is_uuid}}{{^domain_entity.primary_key.skip_uuid_check}},
-    check ("{{domain_entity.primary_key.column}}" <> {{domain_entity.primary_key.uuid_check_fn}}){{/domain_entity.primary_key.skip_uuid_check}}{{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
-    check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}{{#domain_entity.sql.extra_checks}},
+    check ("valid_from" < "valid_to"){{#domain_entity.primary_key.columns}}{{#is_uuid}}{{^skip_uuid_check}},
+    check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}},
+    check ("{{column}}" <> ''){{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}
 );
 {{#domain_entity.has_multiple_natural_keys}}
@@ -157,18 +159,18 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_tenant_in_pk}}
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}}, version)
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.primary_key.is_uuid}}
 {{^domain_entity.primary_key.is_uuid}}
-create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.primary_key.column}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.primary_key.index_suffix}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.primary_key.is_uuid}}
 
@@ -179,13 +181,13 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{^domain_entity.has_tenant_in_pk}}
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column_list}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}})
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
@@ -618,7 +620,7 @@ begin
     from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
-      and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+      and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_new}}}
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -639,7 +641,7 @@ begin
         set valid_to = clock_timestamp()
         where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
           and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
-          and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+          and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_new}}}
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -650,7 +652,7 @@ begin
     -- Close the current active row before inserting the new one
     update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     set valid_to = clock_timestamp()
-    where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+    where {{{domain_entity.primary_key.where_new}}}
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < clock_timestamp();
 {{/domain_entity.has_audit_columns}}
@@ -677,7 +679,7 @@ on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_ent
         {{{.}}}{{/domain_entity.sql.extra_delete_sets}}
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = OLD.tenant_id
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
-      and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
+      and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_old}}}
       and valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.foreign_keys}}
 {{#bump_parent_version}}
@@ -698,6 +700,7 @@ on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_ent
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.validation_fn}}
+{{^domain_entity.primary_key.is_compound}}
 
 -- =============================================================================
 -- Validation function for {{domain_entity.entity_singular}}
@@ -814,6 +817,7 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+{{/domain_entity.primary_key.is_compound}}
 {{/domain_entity.validation_fn}}
 {{/domain_entity.has_tenant_id}}
 {{#domain_entity.has_parent_id}}

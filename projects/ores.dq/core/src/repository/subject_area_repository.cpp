@@ -24,6 +24,7 @@
 #include "ores.dq.core/repository/subject_area_entity.hpp"
 #include "ores.dq.core/repository/subject_area_mapper.hpp"
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
 
 namespace ores::dq::repository {
 
@@ -78,6 +79,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
         lg(),
         "Reading latest subject area by name.");
 }
+
 
 std::vector<domain::subject_area> subject_area_repository::read_all(
     context ctx, const std::string& name, const std::string& domain_name) {
@@ -172,6 +174,9 @@ void subject_area_repository::remove(context ctx,
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
+    if (domain_names.size() != names.size())
+        throw std::invalid_argument(
+            "subject_area_repository::remove: key column vectors must be the same length");
     for (std::size_t i = 0; i < names.size(); ++i)
         remove(ctx, names[i], domain_names[i]);
 }

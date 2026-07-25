@@ -30,20 +30,23 @@ declare
     entity_name text := 'ores.dq.subject_area';
     change_timestamp timestamptz := NOW();
     changed_name text;
+    changed_domain_name text;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_name := OLD.name;
+        changed_domain_name := OLD.domain_name;
         changed_tenant_id := OLD.tenant_id::text;
     else
         changed_name := NEW.name;
+        changed_domain_name := NEW.domain_name;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_name),
+        'entity_ids', jsonb_build_array(changed_name, changed_domain_name),
         'tenant_id', changed_tenant_id
     );
 

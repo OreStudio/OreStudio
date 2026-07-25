@@ -71,6 +71,7 @@ public:
     read_latest(context ctx, const std::string& name, const std::string& domain_name);
     /**@}*/
 
+
     /**
      * @brief Reads all subject areas, possibly filtered by primary key.
      */

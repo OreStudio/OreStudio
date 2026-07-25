@@ -2202,6 +2202,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['batch_tuple_from_item'] = ', '.join(
                 f"item.{c['column']}" for c in pk_columns
             )
+            # Every batch loop is bounded by the first column's vector size
+            # alone and indexes the rest unchecked -- guard against a caller
+            # (e.g. a NATS request decoded with independently-sized vector
+            # fields) passing mismatched lengths, which would otherwise be
+            # an out-of-bounds read/UB rather than a caught error.
+            pk['batch_size_mismatch_check'] = ' || '.join(
+                f"{c['column']}s.size() != {pk_columns[0]['column']}s.size()"
+                for c in pk_columns[1:]
+            )
             # Compound-key batch remove cannot use the over-fetch/filter
             # trick (a DELETE already executed can't be filtered after the
             # fact, and a per-column cross-product .in() would delete rows
@@ -2209,6 +2218,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # removes instead.
             pk['batch_loop_args'] = ', '.join(
                 f"{c['column']}s[i]" for c in pk_columns
+            )
+            # Notify-trigger helpers: emit one changed_<column> variable per
+            # key column (not just the first) so a compound key's change
+            # notification can distinguish two rows that share only their
+            # leading key column (e.g. subject_area's name across domains).
+            pk['notify_declarations'] = '\n    '.join(
+                f"changed_{c['column']} {c['type']};" for c in pk_columns
+            )
+            pk['notify_assign_old'] = '\n        '.join(
+                f"changed_{c['column']} := OLD.{c['column']};" for c in pk_columns
+            )
+            pk['notify_assign_new'] = '\n        '.join(
+                f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
+            )
+            pk['notify_id_array'] = ', '.join(
+                f"changed_{c['column']}" for c in pk_columns
             )
         # Process Qt-specific fields
         if 'qt' in domain_entity:

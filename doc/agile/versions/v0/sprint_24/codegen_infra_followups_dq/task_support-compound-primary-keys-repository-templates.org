@@ -153,7 +153,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SQL schema template's compound-key support was reverted (accidental) | sql_schema_domain_entity_create.mustache | Fixed | Restored from the =.org= source and re-tangled; ~test_compound_primary_key_sql.py~ now passes (6/6). |
+| 2 | Notify trigger only identified changes by the first key column | sql_schema_notify_trigger.mustache | Fixed | Added ~notify_declarations~/~notify_assign_*~/~notify_id_array~ helpers in core.py; regenerated =subject_area='s trigger SQL to include ~domain_name~. |
+| 3 | Batch remove/read indexes extra key-column vectors with no length check (OOB) | cpp_domain_type_repository.cpp.mustache | Fixed | Added a size-equality guard (throws ~std::invalid_argument~) before the compound-key batch loop; regenerated =subject_area_repository=. |
+| 4 | =is_uuid= gating in protocol/service templates only reflects the first key column | cpp_protocol.hpp.mustache, cpp_service.cpp.mustache | Declined (deferred) | Latent, not exercised by any current entity (=subject_area='s key is two text columns). Filed as a follow-up capture rather than expanding this round's scope. |
+| 5 | No test for cross-product filtering in batch read/remove | repository_subject_area_repository_tests.cpp | Declined (deferred) | Valid gap; tracked as a follow-up rather than blocking this round. |
 
 * Result
 

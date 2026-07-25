@@ -114,10 +114,10 @@ the start, not bolted on later.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Step 3 (codegen calendar_rule/calendar_exception as refdata entities + Qt CRUD) done. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-19                               |
+| Next         | Step 4: calendar_dates materialisation service + DQ-publish wiring. |
+| Last touched | 2026-07-25                               |
 
 * Acceptance
 
@@ -763,6 +763,75 @@ path.
   here rather than forcing a wrong implementation; the remaining ~55
   QuantLib calendars beyond the starter set are a separate follow-up
   capture per the original sequencing.
+
+** Step 3 done (=calendar_rule=/=calendar_exception= as refdata entities + Qt CRUD)
+
+- =calendar= extended with =source=/=is_editable=/=base_calendar_code=
+  is *not yet done* -- deferred to when step 4's materialisation
+  service needs it; step 3 only covers the two new side-table
+  entities.
+- =calendar_rule= and =calendar_exception= codegenerated end-to-end
+  (SQL, domain, repository, messaging, eventing, Qt CRUD) via
+  =compass codegen entity generate <entity> --address ores.cpp.qt=
+  (and the equivalent server-side facets, generated in a prior
+  session and found uncommitted at pickup). Both wired into
+  =refdata_create.sql=/=refdata_drop.sql= (dependency-ordered:
+  rules/exceptions drop before, create after, =calendars=) and into
+  =RefdataPlugin='s menu/controller wiring (=Calendar &Rules=/=Calendar
+  &Exceptions= actions).
+- *Two codegen facet gaps found and fixed while wiring this up* (not
+  hand-patches to the generated =.cpp= files -- both entities are
+  regenerated clean from the templates now):
+  1. *Qt detail-dialog codegen assumed every entity has a =code=
+     natural key.* Neither =calendar_rule= nor =calendar_exception=
+     has one (surrogate UUID =id= only, no per-column uniqueness --
+     see each entity's own =* Natural keys= section) -- the template's
+     =key_field= default of ='code'= silently produced empty
+     substitutions (literal =_.=, =const&= tokens) in the generated
+     =.cpp=, because the org models had never had a =** Qt= section
+     added (the previous session's codegen run predates that step).
+     Fixed by adding proper =** Qt= sections to both entities' org
+     models, keyed on =id= with =has_uuid_primary_key: true= -- the
+     UUID-key path already worked correctly (as confirmed against
+     =crm_driver_pair=, the existing UUID-only-key precedent); this
+     was a missing-config issue, not a UUID-support gap.
+  2. *No date-widget support in the Qt facet at all.*
+     =calendar_exception.exception_date= is a
+     =std::chrono::year_month_day=, and the codegen's =line_edit=
+     widget unconditionally treated every field as =std::string=
+     (=.toStdString()= both directions). Added minimal, reusable
+     support rather than a one-off hack:
+     - =ores::platform::time::datetime::to_iso8601_date()=/
+       =from_iso8601_date()= (new, mirrors the existing
+       =to_iso8601_utc()=/=from_iso8601_utc()= pair) -- also used to
+       de-duplicate =calendar_exception_mapper='s hand-rolled
+       ISO-8601 parse/format, which had a hidden copy of the same
+       logic.
+     - Codegen: a field is =is_date= when its column's
+       =cpp_type == 'std::chrono::year_month_day'= (detail fields) or
+       its Qt-model column =type: date= (list columns) --
+       =ores.cpp.qt.detail_dialog_impl.org= and
+       =ores.cpp.qt.client_model_impl.org= gained an =is_date= branch
+       everywhere =is_double= already had one (populate-from-entity,
+       update-from-ui incl. the =createMode_=-gated immutable-field
+       path, and the list column's =DisplayRole=), each calling the
+       new datetime helpers instead of raw =toStdString()=. Both
+       *_.org= sources re-tangled via
+       =compass build --direct tangle_codegen_templates= before
+       regenerating the two entities -- never hand-edit the
+       =.mustache= files directly, they are themselves tangled output.
+     - Any future date-typed detail/list field gets this for free by
+       setting =type: date= in its org model's Detail/Columns tables --
+       no per-entity special-casing needed.
+  3. *=calendar_code='s dynamic-combo fetch function didn't exist.*
+     =LookupFetcher= only had =fetch_calendar_codes()= (a plain
+     =vector<string>=, used by the hand-written
+     =CalendarAssignmentWidget=), not a struct-returning fetch the
+     standard =dynamic_combo= codegen shape needs (display name +
+     code + tooltip + sort key from a real row, mirroring
+     =fetch_calendar_types=/=fetch_countries=). Added
+     =fetch_calendars()= (returns =vector<domain::calendar>=) as a
+     small, precedent-following addition -- not a workaround.
 
 * Test Scenarios
 

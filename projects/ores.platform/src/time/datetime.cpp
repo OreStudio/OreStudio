@@ -20,6 +20,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <ctime>
+#include <format>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
@@ -95,6 +96,24 @@ std::string datetime::to_local_display_string(const std::chrono::system_clock::t
     std::ostringstream oss;
     oss << std::put_time(&tm_buf, format.c_str());
     return oss.str();
+}
+
+std::string datetime::to_iso8601_date(const std::chrono::year_month_day& date) {
+    return std::format("{:%Y-%m-%d}", date);
+}
+
+std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) {
+
+    int yy{}, mm{}, dd{};
+    char s1{}, s2{};
+    std::istringstream ss(str);
+    ss >> yy >> s1 >> mm >> s2 >> dd;
+
+    if (ss.fail() || s1 != '-' || s2 != '-')
+        throw std::invalid_argument("from_iso8601_date: failed to parse: " + str);
+
+    return std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
+        std::chrono::day{static_cast<unsigned>(dd)};
 }
 
 }

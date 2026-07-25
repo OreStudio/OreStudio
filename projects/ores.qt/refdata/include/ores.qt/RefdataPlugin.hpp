@@ -51,6 +51,8 @@ class CurrencyPairController;
 class CurrencyPairConventionController;
 class CurrencyGroupController;
 class CalendarController;
+class CalendarRuleController;
+class CalendarExceptionController;
 class CdsConventionController;
 class PartyTypeController;
 class BusinessCentreController;
@@ -153,6 +155,8 @@ private:
     QAction* act_portfolios_{nullptr};
     QAction* act_business_centres_{nullptr};
     QAction* act_calendars_{nullptr};
+    QAction* act_calendar_rules_{nullptr};
+    QAction* act_calendar_exceptions_{nullptr};
     QAction* act_currency_groups_{nullptr};
     QAction* act_counterparties_{nullptr};
     QAction* act_parties_{nullptr};
@@ -182,6 +186,8 @@ private:
     std::unique_ptr<CurrencyPairController> currencyPairController_;
     std::unique_ptr<CurrencyGroupController> currencyGroupController_;
     std::unique_ptr<CalendarController> calendarController_;
+    std::unique_ptr<CalendarRuleController> calendarRuleController_;
+    std::unique_ptr<CalendarExceptionController> calendarExceptionController_;
     std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;
     std::unique_ptr<CdsConventionController> cdsConventionController_;
     std::unique_ptr<BookController> bookController_;

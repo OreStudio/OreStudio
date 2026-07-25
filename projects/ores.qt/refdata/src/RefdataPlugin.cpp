@@ -27,6 +27,8 @@
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/CalendarController.hpp"
+#include "ores.qt/CalendarExceptionController.hpp"
+#include "ores.qt/CalendarRuleController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
 #include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
@@ -459,6 +461,23 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                this);
     connectControllerSignals(calendarController_.get());
 
+    calendarRuleController_ = std::make_unique<CalendarRuleController>(ctx_.main_window,
+                                                                        ctx_.mdi_area,
+                                                                        ctx_.client_manager,
+                                                                        ctx_.change_reason_cache,
+                                                                        ctx_.username,
+                                                                        this);
+    connectControllerSignals(calendarRuleController_.get());
+
+    calendarExceptionController_ =
+        std::make_unique<CalendarExceptionController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
+    connectControllerSignals(calendarExceptionController_.get());
+
     zeroConventionController_ = std::make_unique<ZeroConventionController>(ctx_.main_window,
                                                                            ctx_.mdi_area,
                                                                            ctx_.client_manager,
@@ -711,6 +730,17 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(act_calendars_, &QAction::triggered, this, [this]() {
             if (calendarController_)
                 calendarController_->showListWindow();
+        });
+        act_calendar_rules_ = ref->addAction(ico(Icon::CalendarClock), tr("Calendar &Rules"));
+        connect(act_calendar_rules_, &QAction::triggered, this, [this]() {
+            if (calendarRuleController_)
+                calendarRuleController_->showListWindow();
+        });
+        act_calendar_exceptions_ =
+            ref->addAction(ico(Icon::CalendarClock), tr("Calendar &Exceptions"));
+        connect(act_calendar_exceptions_, &QAction::triggered, this, [this]() {
+            if (calendarExceptionController_)
+                calendarExceptionController_->showListWindow();
         });
 
         ref->addSeparator();

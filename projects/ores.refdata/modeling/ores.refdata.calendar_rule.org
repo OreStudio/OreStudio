@@ -1,0 +1,373 @@
+:PROPERTIES:
+:ID: 875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F
+:END:
+#+title: ores.refdata.calendar_rule
+#+description: One indefinite recurring rule for a calendar template (fixed-date, nth/last-weekday-of-month, or Easter-offset), with an optional observance shift and effective year range.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: calendar_rule
+#+entity_plural: calendar_rules
+#+entity_title: Calendar Rule
+#+brief: An indefinite recurring rule for a base-less calendar template.
+#+has_tenant_id: true
+#+created: 2026-07-24
+#+updated: 2026-07-24
+
+One row per indefinite, timeless recurring holiday rule for a
+base-less [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]
+template -- the QuantLib-transcribed calendars and any base-less
+user-authored template alike. Mirrors
+=ores::analytics::quant::domain::calendar_rule= plus the usual
+refdata plumbing; a calendar's full rule set is the batch input to
+that pure engine at materialisation time (see the parent task's
+=* Revision= section for the two-stage rule/materialisation design).
+One-off irregular dates (jubilees, special closings) are *not*
+modelled here -- they belong in
+[[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] instead, so a rule
+stays a timeless, indefinitely-repeating pattern.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this rule row.
+
+Surrogate key -- a calendar can have many rules, so there is no
+single natural key column.
+
+* Natural keys
+
+TODO -- no natural key: a calendar can have many rules with no
+per-column uniqueness, so =calendar_code= lives under Columns/Foreign
+keys instead (mirrors =book.parent_portfolio_id=, a mandatory
+non-unique parent reference).
+
+* Columns
+
+** calendar_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The calendar this rule belongs to.
+
+References [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores_refdata_calendars_tbl.code]] (soft FK) -- only
+meaningful for base-less calendars (=calendar.base_calendar_code is
+null=).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:default:             fixed_date
+:no_generator_suffix: true
+:END:
+
+Which of the four rule shapes this row is.
+
+Soft-enum: =fixed_date= | =nth_weekday_of_month= |
+=last_weekday_of_month= | =easter_offset=, matching
+=ores::analytics::quant::domain::calendar_rule_kind= exactly, mapped
+1:1 at the refdata/quant boundary.
+
+#+begin_src cpp :name generator
+std::string("fixed_date")
+#+end_src
+
+** month
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Month number (1-12), for =fixed_date=, =nth_weekday_of_month=, and
+=last_weekday_of_month= rules.
+
+Null for =easter_offset= rules, whose month varies by year.
+
+#+begin_src cpp :name generator
+12
+#+end_src
+
+** day
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Day of month (1-31), for =fixed_date= rules only.
+
+Null for every other rule kind.
+
+#+begin_src cpp :name generator
+25
+#+end_src
+
+** weekday
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Weekday (0=Sunday..6=Saturday, std::chrono::weekday's c_encoding), for
+=nth_weekday_of_month= and =last_weekday_of_month= rules.
+
+Null for =fixed_date= and =easter_offset= rules.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** occurrence
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Which occurrence of the weekday in the month (1-4), for
+=nth_weekday_of_month= rules only.
+
+Null for every other rule kind (=last_weekday_of_month= always means
+the last one, no count needed).
+
+#+begin_src cpp :name generator
+3
+#+end_src
+
+** day_offset
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Signed day offset from Easter Sunday, for =easter_offset= rules only
+(e.g. -2 = Good Friday, +1 = Easter Monday).
+
+Null for every other rule kind.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** shift
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:default:             none
+:no_generator_suffix: true
+:END:
+
+How this holiday is re-observed when it falls on a weekend, if at
+all.
+
+Soft-enum: =none= | =nearest_weekday= | =roll_forward_to_monday=,
+matching =ores::analytics::quant::domain::observance_shift=.
+
+#+begin_src cpp :name generator
+std::string("none")
+#+end_src
+
+** effective_from
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+First year this rule is active (inclusive).
+
+Null means active for every year up to =effective_to= (or
+indefinitely, if that is also null).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** effective_to
+:PROPERTIES:
+:type:     int
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Last year this rule is active (inclusive).
+
+Null means active for every year from =effective_from= (or
+indefinitely, if that is also null).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_rules_tbl
+:END:
+
+* Foreign keys
+
+** calendar_code
+:PROPERTIES:
+:table:         ores_refdata_calendars_tbl
+:nullable:      false
+:error_message: Invalid calendar_code: %. No active calendar found with this code.
+:list_by:       true
+:list_by_as_of: true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calendar_rule
+:entity_plural_short:   calendar_rules
+:entity_singular_words: calendar rule
+:entity_plural_words:   calendar rules
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rule
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/calendar_rule.hpp
+:domain_class:                refdata::domain::calendar_rule
+:protocol_include:            ores.refdata.api/messaging/calendar_rule_protocol.hpp
+:collection_name:             calendar_rules
+:item_var:                    rule
+:key_field:                   id
+:has_uuid_primary_key:        true
+:has_pagination:              true
+:has_change_reason_cache:     true
+:has_export_macro:            true
+:get_request_class:           refdata::messaging::get_calendar_rules_request
+:get_response_class:          refdata::messaging::get_calendar_rules_response
+:get_message_type:            get_calendar_rules_request
+:save_request_class:          refdata::messaging::save_calendar_rule_request
+:save_response_class:         refdata::messaging::save_calendar_rule_response
+:save_message_type:           save_calendar_rule_request
+:save_request_item_field:     data
+:delete_request_class:        refdata::messaging::delete_calendar_rule_request
+:delete_response_class:       refdata::messaging::delete_calendar_rule_response
+:delete_message_type:         delete_calendar_rule_request
+:history_request_class:       refdata::messaging::get_calendar_rule_history_request
+:history_response_class:      refdata::messaging::get_calendar_rule_history_response
+:history_message_type:        get_calendar_rule_history_request
+:settings_group:               CalendarRuleListWindow
+:window_title:                Calendar Rules
+:icon:                         CalendarClock
+:changed_event_class:         refdata::eventing::calendar_rule_changed_event
+:changed_event_include:       ores.refdata.api/eventing/calendar_rule_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field           | label         | widget            | type      | is_key | is_required | immutable | placeholder                | combo_fetch_fn        | combo_fetch_include        | combo_allow_blank | combo_domain_type                | combo_display_field | combo_code_field | combo_tooltip_field | combo_sort_field | combo_watcher_name  | combo_label     |
+|-----------------+---------------+--------------------+-----------+--------+-------------+-----------+-----------------------------+------------------------+-----------------------------+--------------------+------------------------------------+-----------------------+--------------------+------------------------+--------------------+----------------------+-------------------|
+| id              | Id            | idEdit             | line_edit | true   | true        |           | Calendar rule id           |                        |                             |                    |                                    |                       |                    |                        |                    |                      |                   |
+| calendar_code   | Calendar      | calendarCombo      | dynamic_combo |    | true        | true      |                             | fetch_calendars        | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::calendar         | name                  | code               | code                   | version            | calendarRuleCalendarWatcher | calendars   |
+| kind            | Kind          | kindEdit           | line_edit |        | true        |           | fixed_date/nth_weekday_of_month/last_weekday_of_month/easter_offset |    |          |                    |                                    |                       |                    |                      |                   |
+| month           | Month         | monthSpin          | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| day             | Day           | daySpin            | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| weekday         | Weekday       | weekdaySpin        | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| occurrence      | Occurrence    | occurrenceSpin     | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| day_offset      | Day Offset    | dayOffsetSpin      | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| shift           | Shift         | shiftEdit          | line_edit |        | true        |           | none/nearest_weekday/roll_forward_to_monday |          |                             |                    |                                    |                       |                    |                      |                   |
+| effective_from  | Eff. From     | effectiveFromSpin  | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| effective_to    | Eff. To       | effectiveToSpin    | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+
+*** Columns (Qt model)
+
+| enum_name      | field          | header      | type   | width | hidden_by_default |
+|----------------+----------------+-------------+--------+-------+--------------------|
+| CalendarCode   | calendar_code  | Calendar    | string | 100   |                    |
+| Kind           | kind           | Kind        | string | 140   |                    |
+| Month          | month          | Month       | int    | 70    | true               |
+| Day            | day            | Day         | int    | 60    | true               |
+| Weekday        | weekday        | Weekday     | int    | 70    | true               |
+| Occurrence     | occurrence     | Occurrence  | int    | 90    | true               |
+| DayOffset      | day_offset     | Day Offset  | int    | 90    | true               |
+| Shift          | shift          | Shift       | string | 140   |                    |
+| EffectiveFrom  | effective_from | From        | int    | 70    |                    |
+| EffectiveTo    | effective_to   | To          | int    | 70    |                    |
+| Version        | version        | Version     | int    | 70    |                    |
+| ModifiedBy     | modified_by    | Modified By | string | auto  |                    |
+
+** Table display
+
+| column         | header       |
+|----------------+--------------|
+| calendar_code  | Calendar     |
+| kind           | Kind         |
+| month          | Month        |
+| day            | Day          |
+| shift          | Shift        |
+| effective_from | From         |
+| effective_to   | To           |
+| modified_by    | Modified By  |
+| version        | Version      |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] — the parent calendar template this rule belongs to.
+- [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] — parent task.

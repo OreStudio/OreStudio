@@ -13,6 +13,9 @@
 {{#domain_entity.qt.has_icon_columns}}
 #include "ores.qt/FlagIconHelper.hpp"
 {{/domain_entity.qt.has_icon_columns}}
+{{#domain_entity.qt.has_date_columns}}
+#include "ores.platform/time/datetime.hpp"
+{{/domain_entity.qt.has_date_columns}}
 {{#domain_entity.qt.columns}}
 {{#formatter_include}}
 #include "{{formatter_include}}"
@@ -82,6 +85,10 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_string}}
+{{#is_date}}
+            return QString::fromStdString(ores::platform::time::datetime::to_iso8601_date(
+                {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_date}}
 {{#is_optional_string}}
             return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
                 ? QString::fromStdString(*{{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})

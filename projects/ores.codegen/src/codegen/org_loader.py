@@ -494,6 +494,8 @@ def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
                     entry["is_timestamp"] = True
                 elif low == "uuid":
                     entry["is_uuid"] = True
+                elif low == "date":
+                    entry["is_date"] = True
                 continue
             entry[k] = _parse_typed(v)
         out.append(entry)

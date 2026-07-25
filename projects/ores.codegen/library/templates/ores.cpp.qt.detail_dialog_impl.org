@@ -107,6 +107,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.has_uuid_detail_fields}}
 #include <boost/uuid/string_generator.hpp>
 {{/domain_entity.qt.has_uuid_detail_fields}}
+{{#domain_entity.qt.has_date_detail_fields}}
+#include "ores.platform/time/datetime.hpp"
+{{/domain_entity.qt.has_date_detail_fields}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 {{#domain_entity.qt.has_flag_icon}}
@@ -939,7 +942,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
     ui_->{{widget}}->setText(QString::number({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_double}}
 {{^is_double}}
+{{#is_date}}
+    ui_->{{widget}}->setText(QString::fromStdString(ores::platform::time::datetime::to_iso8601_date(
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})));
+{{/is_date}}
+{{^is_date}}
     ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_date}}
 {{/is_double}}
 {{/is_optional_string}}
 {{/is_uuid}}
@@ -1053,7 +1062,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{^is_uuid}}
     if (createMode_) {
 {{#is_line_edit}}
+{{#is_date}}
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+            ores::platform::time::datetime::from_iso8601_date(ui_->{{widget}}->text().trimmed().toStdString());
+{{/is_date}}
+{{^is_date}}
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_date}}
 {{/is_line_edit}}
 {{#is_static_combo}}
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
@@ -1099,7 +1114,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toDouble();
 {{/is_double}}
 {{^is_double}}
+{{#is_date}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+        ores::platform::time::datetime::from_iso8601_date(ui_->{{widget}}->text().trimmed().toStdString());
+{{/is_date}}
+{{^is_date}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_date}}
 {{/is_double}}
 {{/is_optional_string}}
 {{/is_optional_uuid}}

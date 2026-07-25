@@ -48,6 +48,10 @@
 \ir ./refdata_countries_notify_trigger_create.sql
 \ir ./refdata_calendars_create.sql
 \ir ./refdata_calendars_notify_trigger_create.sql
+\ir ./refdata_calendar_rules_create.sql
+\ir ./refdata_calendar_rules_notify_trigger_create.sql
+\ir ./refdata_calendar_exceptions_create.sql
+\ir ./refdata_calendar_exceptions_notify_trigger_create.sql
 
 -- Currency-country issuing junction
 \ir ./refdata_currency_country_create.sql

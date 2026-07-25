@@ -2234,6 +2234,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     any(c.get('is_badge') for c in qt['columns'])
                     or qt.get('has_combo_badge_source', False)
                 )
+                qt['has_date_columns'] = any(c.get('is_date') for c in qt['columns'])
                 # EntityItemDelegate (icon_centered/icon_text_left sizing,
                 # badge_centered rendering) is needed whenever the list view
                 # has ANY icon or badge column — not just badge columns.
@@ -2408,6 +2409,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_line_edit']
                     and field_cpp in ('double', 'float')
                 )
+                # A plain QLineEdit editing an ISO-8601 date
+                # ("YYYY-MM-DD"), converted to/from
+                # std::chrono::year_month_day via ores.platform's
+                # datetime helpers -- no dedicated QDateEdit widget, to
+                # keep this facet's widget vocabulary small; add one if
+                # a future entity needs a real date picker.
+                f['is_date'] = (
+                    f['is_line_edit']
+                    and field_cpp == 'std::chrono::year_month_day'
+                )
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -2553,6 +2564,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )
+            qt['has_date_detail_fields'] = any(f.get('is_date') for f in detail_fields)
             # A `party_id` natural key that is *not* exposed as a Detail
             # field is implicit-from-session by convention (see book/
             # portfolio) -- setCreateMode must still populate it from the

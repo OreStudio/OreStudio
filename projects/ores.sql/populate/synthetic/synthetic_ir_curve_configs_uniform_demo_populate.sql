@@ -135,7 +135,9 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic IR Curve (Uniform Demo): ' || c.currency_code || '/' || c.index_name,
+        -- Name prefix mirrors price_source (see the 2016 ORE Samples populate script's own
+        -- comment on this convention) -- every row here is 'fixed' today.
+        'Fixed Synthetic IR Curve (Uniform Demo): ' || c.currency_code || '/' || c.index_name,
         'Uniform Volatility Demo archetype: a single, uniform Vasicek short-rate process (same '
         || 'kappa/sigma across every currency, only theta/initial_rate vary) applied to '
         || c.currency_code || '''s current risk-free rate, ' || c.index_name || '. '

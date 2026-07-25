@@ -121,7 +121,11 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic IR Curve (2016 ORE Samples): ' || c.currency_code || '/' || c.index_name,
+        -- Name prefix mirrors price_source so Fixed/Vintage configs read apart at a glance in
+        -- the Simulator tree and list windows -- same convention applied across every synthetic
+        -- FX spot config populate script (see synthetic_fx_spot_configs_*_populate.sql).
+        initcap(c.price_source) || ' Synthetic IR Curve (2016 ORE Samples): '
+            || c.currency_code || '/' || c.index_name,
         '2016 ORE Samples archetype: a Vasicek short-rate process for ' || c.currency_code
         || '''s discontinued IBOR-era benchmark, ' || c.index_name || ' -- '
         || c.retirement_note

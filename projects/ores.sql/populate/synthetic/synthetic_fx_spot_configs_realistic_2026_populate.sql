@@ -134,7 +134,9 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic FX Spot (2026 Realistic): ' || p.base || '/' || p.quote,
+        -- Name prefix mirrors price_source, same convention as the synthetic IR curve config
+        -- populate scripts -- every row here is 'vintage' today.
+        'Vintage Synthetic FX Spot (2026 Realistic): ' || p.base || '/' || p.quote,
         '2026 Realistic synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible current FX volatility.',
         true, p.base, p.quote,
         0, 1800, 'geometric',

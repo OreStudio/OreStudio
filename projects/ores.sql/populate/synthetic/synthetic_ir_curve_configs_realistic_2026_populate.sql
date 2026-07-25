@@ -136,7 +136,9 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.index_name,
+        -- Name prefix mirrors price_source (see the 2016 ORE Samples populate script's own
+        -- comment on this convention) -- every row here is 'fixed' today.
+        'Fixed Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.index_name,
         '2026 Realistic archetype: a per-currency-calibrated Cox-Ingersoll-Ross short-rate process for '
         || c.currency_code || '''s current overnight risk-free rate, ' || c.index_name || '. '
         || 'Cox-Ingersoll-Ross''s volatility-scales-with-level, non-negative-by-construction dynamics are a '

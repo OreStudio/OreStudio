@@ -122,7 +122,9 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic FX Spot (Uniform Demo): ' || p.base || '/' || p.quote,
+        -- Name prefix mirrors price_source, same convention as the synthetic IR curve config
+        -- populate scripts -- every row here is 'vintage' today.
+        'Vintage Synthetic FX Spot (Uniform Demo): ' || p.base || '/' || p.quote,
         'Uniform Volatility Demo synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
         true, p.base, p.quote,
         0, 3600, 'geometric',

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6CA40A43-D4EE-4AF1-9260-98569FB92533
+:END:
+#+title: Extend Qt codegen for compound primary keys
+#+description: The Qt codegen layer (controller, MDI window, client model, detail dialog templates) assumes a single-column primary key end-to-end and cannot yet generate a working controller for a compound-key entity such as subject_area.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:dq:compound-key:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Qt codegen templates (~50+ call sites across
+=ores.cpp.qt.controller_impl.org=, =ores.cpp.qt.controller_header.org=,
+=ores.cpp.qt.mdi_window_impl.org=, =ores.cpp.qt.client_model_impl.org=
+and =ores.cpp.qt.detail_dialog_impl.org=) assume a single-column
+primary key end-to-end: =key_field=, =delete_request_id_field= and
+=history_request_id_field= are scalars, and =entityId= is threaded
+through the whole controller as a bare =QString= — including the
+shared, cross-entity =HistoryDialog= signals
+=onOpenHistoryVersion(entityType, entityId, version)= /
+=onRevertHistoryVersion(...)=, which every entity's controller
+connects to. Extending this for a compound key (e.g. subject_area's
+=(name, domain_name)=) means deciding how a composite key is
+represented across that shared signal contract without regressing
+every existing single-key entity — a design question in its own
+right, not a mechanical template change.
+
+As things stand, =subject_area= has no =** Qt= section in its model
+([[file:../../../../projects/ores.dq/modeling/ores.dq.subject_area.org][ores.dq.subject_area.org]])
+and
+=projects/ores.qt/dq/src/SubjectAreaController.cpp= /
+=SubjectAreaController.hpp= are broken stubs (unresolved template
+placeholders — empty includes, bare =const&=, =std::vector<>= with no
+element type) left over from an earlier attempt to regenerate them
+without a Qt model section. The =ores.qt= target does not currently
+build subject_area cleanly as a result; this is tracked separately.
+
+* Why
+
+Compound primary keys (=(name, domain_name)= for subject_area) were
+added to the repository/service/protocol codegen layers on
+=feature/unify-columns-primary-key-model-shape=, but the Qt layer was
+never extended to match, so subject_area's Qt UI cannot be generated
+at all yet. Task 4E9D57E6 ("Commission subject_area onto standard
+codegen") is blocked pending exactly this work.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.cpp.qt.controller_impl.org=
+- =projects/ores.codegen/library/templates/ores.cpp.qt.controller_header.org=
+- =projects/ores.codegen/library/templates/ores.cpp.qt.mdi_window_impl.org=
+- =projects/ores.codegen/library/templates/ores.cpp.qt.client_model_impl.org=
+- =projects/ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org=
+- =projects/ores.qt/dq/src/SubjectAreaController.cpp= (broken stub)
+
+* See also
+
+- [[id:4E9D57E6-A4CB-4243-8335-D39D63650A3A][Task: Commission subject_area onto standard codegen]] — blocked on this
+- [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Story: Codegen infrastructure follow-ups from DQ commissioning]] — where the repository-layer compound-key work landed

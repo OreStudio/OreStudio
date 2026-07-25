@@ -8,7 +8,7 @@
 #+filetags: :sprint_24:v0:
 #+owner: marco
 #+branch: feature/currency-pair-code-flag-icon-size-unfixed
-#+pr:
+#+pr: 1692
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
@@ -90,7 +90,7 @@ approach:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1692][#1692]] | [ores.qt] Fix pair_code inline flag icon rendering tiny |
 
 * Review
 

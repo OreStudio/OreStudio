@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-25
 #+updated: 2026-07-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -49,16 +49,16 @@ or otherwise) can opt into it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-25                               |
 
 * Acceptance
 
-- [ ] A new Qt codegen knob/shape exists for a read-only,
+- [X] A new Qt codegen knob/shape exists for a read-only,
   server-paginated, parent-scoped list (client model + list dialog),
   distinct from the existing full-CRUD domain_entity shape and from
   the read-only-but-unpaginated History dialog shape.
@@ -66,8 +66,12 @@ or otherwise) can opt into it.
   produces a working paginated list (offset/limit sent to the server,
   accurate total count -- respecting the fix from
   [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]]) with no
-  add/edit/delete affordances anywhere in the generated UI.
-- [ ] Documented in the Qt facet's meta-model page
+  add/edit/delete affordances anywhere in the generated UI. *Not met
+  -- blocked*, see Result: =calendar_dates= has no messaging/NATS
+  layer generated yet, so there is nothing to point the Qt list at.
+  Deferred to whichever task wires =calendar_dates='s Qt drawer once
+  that layer exists (parent-scoping wiring is also still undesigned).
+- [X] Documented in the Qt facet's meta-model page
   (=entity_meta_model_cpp_qt.org=) alongside the existing knobs, so
   the next entity in this shape doesn't have to rediscover it.
 
@@ -193,3 +197,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =:has_readonly_paginated_list:= to =ores.codegen='s
+=ores.cpp.qt= facet: a boolean knob that strips every add/edit/
+delete/history affordance (toolbar actions and slots, detail-dialog
+wiring, version navigation, revert) from a generated controller and
+MDI window, leaving Reload and the existing =:has_pagination:=
+plumbing untouched. Landed across
+=controller_header=/=controller_impl=/=mdi_window_header=/
+=mdi_window_impl.org=, following the on/off section pattern already
+proven by =:has_csv_xml_io:=. Documented in
+=entity_meta_model_cpp_qt.org=. Verified by regenerating =book= and
+=currency= (with the knob at its default, unset) via
+=--address ores.cpp.qt --diff= and confirming zero drift attributable
+to this change.
+
+Two of three acceptance items met; the third (generating a working
+paginated list for =calendar_dates= itself) is blocked on
+=calendar_dates= not yet having a messaging/NATS layer generated, and
+on the still-undesigned parent-scoping knob -- see *Plan > Implemented*
+for the full account. Closing this task as the codegen-template piece
+is complete and self-contained; the remaining wiring work belongs to
+a follow-on task once the messaging layer for =calendar_dates= exists.

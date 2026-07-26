@@ -159,7 +159,7 @@ void ProvisioningWelcomePage::setupUI() {
     manualRadio_->setChecked(true);
     modeLayout->addWidget(manualRadio_);
     acmeRadio_ = new QRadioButton(
-        tr("Acme Bank (full sample holding group) - one-click setup with a realistic "
+        tr("Acme Corporation (full sample holding group) - one-click setup with a realistic "
            "four-entity banking group, ready to use"),
         this);
     modeLayout->addWidget(acmeRadio_);
@@ -664,7 +664,7 @@ void TenantExecutePage::initializePage() {
     statusLabel_->setStyleSheet("font-weight: bold;");
 
     if (wizard_->dataSourceMode() == TenantProvisioningWizard::DataSourceMode::acme) {
-        statusLabel_->setText(tr("Provisioning Acme Bank holding group..."));
+        statusLabel_->setText(tr("Provisioning Acme Corporation holding group..."));
         startAcmeProvisioning();
         return;
     }
@@ -683,7 +683,7 @@ void TenantExecutePage::startAcmeProvisioning() {
     ClientManager* clientManager = wizard_->clientManager();
 
     BOOST_LOG_SEV(lg(), info) << "Acme mode: provisioning holding group";
-    appendLog(tr("Provisioning the Acme Bank holding group..."));
+    appendLog(tr("Provisioning the Acme Corporation holding group..."));
 
     struct AcmeResult {
         bool success = false;
@@ -715,7 +715,7 @@ void TenantExecutePage::startAcmeProvisioning() {
         }
         BOOST_LOG_SEV(lg(), info) << "Acme provisioning complete: " << result.steps.size()
                                   << " step(s)";
-        appendLog(tr("Acme Bank holding group provisioned."));
+        appendLog(tr("Acme Corporation holding group provisioned."));
 
         statusLabel_->setText(tr("Finalizing tenant setup..."));
         startFinalize();
@@ -1185,7 +1185,7 @@ void TenantApplyAndSummaryPage::initializePage() {
     QString summary = tr("<p>Your organisation has been onboarded successfully.</p>");
 
     if (wizard_->dataSourceMode() == TenantProvisioningWizard::DataSourceMode::acme) {
-        summary += tr("<p><b>Acme Bank holding group provisioned:</b> four-party LEI hierarchy, "
+        summary += tr("<p><b>Acme Corporation holding group provisioned:</b> four-party LEI hierarchy, "
                       "GLEIF counterparties, and per-company business units/portfolios/books/"
                       "accounts.</p>");
     } else if (!wizard_->selectedBundleCode().isEmpty()) {

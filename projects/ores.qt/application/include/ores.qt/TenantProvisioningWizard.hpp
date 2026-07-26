@@ -48,7 +48,7 @@ class LeiEntityPicker;
  *
  * Collect phase (zero backend writes):
  * 1. Welcome              - explains the setup process; also offers the
- *                           "Acme Bank (full sample bank)" vs "Manual setup"
+ *                           "Acme Corporation (full sample bank)" vs "Manual setup"
  *                           choice. Acme skips straight to Execute.
  * 2. Bundle Selection     - (Manual only) choose a reference data bundle to publish
  * 3. Data Source          - (Manual only) choose GLEIF registry or synthetic data

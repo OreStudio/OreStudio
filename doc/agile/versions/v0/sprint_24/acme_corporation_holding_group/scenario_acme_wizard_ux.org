@@ -5,7 +5,7 @@
 #+description: Walk through the entire Acme Corporation onboarding journey in ores.qt from a genuinely fresh, un-bootstrapped database -- system provisioning, tenant provisioning via the Acme one-click path, and the connections.db saved-connection setup -- with a checkpoint and screenshot at every step.
 #+type: test_scenario
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+target_dialog:
 #+created: 2026-07-23
 #+updated: 2026-07-24
@@ -41,7 +41,7 @@ This page documents a test scenario verifying [[id:F9D8112C-CA73-43E1-9CAD-3578E
   from a cold, bootstrap-mode system, not a pre-seeded one.
 - Launch the client fresh (not reused from an earlier session):
   =compass client start --colour <colour> --open-scenario
-  doc/agile/versions/v0/sprint_24/acme_bank_holding_group/scenario_acme_wizard_ux.org=
+  doc/agile/versions/v0/sprint_24/acme_corporation_holding_group/scenario_acme_wizard_ux.org=
 - Take a screenshot at the end of every step, and use the Notes field
   in the step-detail panel to record anything that doesn't match what
   the checklist says to expect -- exact wording, an extra/missing

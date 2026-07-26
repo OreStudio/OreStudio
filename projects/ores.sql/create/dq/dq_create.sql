@@ -116,7 +116,7 @@
 \ir ./dq_portfolios_artefact_create.sql
 \ir ./dq_books_artefact_create.sql
 
--- Generated staff account artefact tables (e.g. Acme Bank)
+-- Generated staff account artefact tables (e.g. Acme Corporation)
 \ir ./dq_accounts_artefact_create.sql
 \ir ./dq_account_contact_informations_artefact_create.sql
 

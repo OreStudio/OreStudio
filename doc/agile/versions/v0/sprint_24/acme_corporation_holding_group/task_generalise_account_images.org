@@ -5,7 +5,7 @@
 #+description: Generalise ores_assets_images_tbl beyond SVG-only storage to a binary-agnostic asset blob, and add an image_id FK on ores_iam_accounts_tbl, so accounts can carry a profile picture (e.g. from external/facestudio/faces).
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generalise-account-images
 #+pr: 1665

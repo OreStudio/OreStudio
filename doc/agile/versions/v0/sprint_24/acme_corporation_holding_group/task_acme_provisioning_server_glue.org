@@ -5,7 +5,7 @@
 #+description: New tenant-provisioning source (alongside --source gleif/synthetic) that server-side orchestrates creating the tenant, importing the Acme LEI hierarchy (all 4 parties in one shot), and publishing each party's business units/portfolios/books plus the group-wide accounts dataset -- no repeated per-party logins, no client-side orchestration logic, callable identically from ores.shell and ores.qt. Includes the new accounts DQ artefact table, publish-from-dq function, and NATS handler (the actual missing piece -- parties/business-units/portfolios/books already have artefact tables and publish functions).
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/acme-provisioning-server-glue
 #+pr: 1678

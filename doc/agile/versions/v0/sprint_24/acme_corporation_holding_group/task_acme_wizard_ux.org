@@ -5,7 +5,7 @@
 #+description: Wire the new tenant-provisioning source into ores.shell (provision tenant --source acme) and the ores.qt tenant-creation wizard, offering a simple 'ACME (full sample bank) vs Manual' choice; no orchestration logic client-side, just invoking the server-side command from task: server-side orchestration for one-click Acme provisioning.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/acme-wizard-ux
 #+pr: 1685

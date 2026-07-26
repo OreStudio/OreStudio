@@ -5,7 +5,7 @@
 #+description: Python script generating a versioned, extensible JSON dataset (parties/LEIs, business units, portfolios, books, staff) for Acme Bank's four legal entities, following the ores.seeder manifest/methodology convention (internal, not external/) -- the source-of-truth that later codegen turns into SQL.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/build-acme-party-staff-generator
 #+pr: 1667
@@ -41,7 +41,7 @@ adding e.g. a Singapore office later is a config change, not new
 code — the dataset is meant to grow as the system grows, to keep
 exercising new functionality.
 
-Output lands under =projects/ores.seeder/datasets/acme_bank/=
+Output lands under =projects/ores.seeder/datasets/acme_corporation/=
 (manifest.json + methodology.txt + the generated data JSON),
 mirroring the =external/facestudio=/=slovaris= convention but
 internal, since this isn't third-party sourced data.
@@ -86,7 +86,7 @@ sibling tasks on the parent story.
   to its correct party.
 - Output follows the =ores.seeder= dataset convention: =manifest.json=,
   =methodology.txt=, the data JSON, under
-  =projects/ores.seeder/datasets/acme_bank/= — registered/discoverable
+  =projects/ores.seeder/datasets/acme_corporation/= — registered/discoverable
   the same way as =slovaris=/=external/facestudio=.
 - No SQL, no server-side/service code, no shell/Qt changes in this
   task — those are tasks 2-4.
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 * Result
 
-Landed under [[proj:projects/ores.seeder/datasets/acme_bank/][projects/ores.seeder/datasets/acme_bank/]]:
+Landed under [[proj:projects/ores.seeder/datasets/acme_corporation/][projects/ores.seeder/datasets/acme_corporation/]]:
 
 - =generate_data.py= — the config-driven generator (4 offices incl.
   the holding company; 3 desks + 2 support functions per operating

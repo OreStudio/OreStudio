@@ -119,7 +119,7 @@ SUPPORT_FUNCTIONS = [
 
 HOLDING = {
     "code": "acme_group",
-    "name": "ACME Corporation Group plc",
+    "name": "Acme Corporation Plc",
     "country": "GB",
     "city": "London",
 }

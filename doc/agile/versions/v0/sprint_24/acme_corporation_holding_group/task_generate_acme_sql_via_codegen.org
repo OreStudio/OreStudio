@@ -5,7 +5,7 @@
 #+description: Extend ores.codegen as needed to turn the acme_bank JSON dataset into populate SQL matching hand-written ores.sql conventions -- new DQ artefact rows for LEI entities/relationships, business units, portfolios, books, and accounts, one dataset per legal entity. Bundled in the same pass: proper account contact-information support (a new ores_iam_account_contact_informations_tbl junction, mirroring the existing party/counterparty contact-information pattern, including a real name field), Acme's contact data generated and included in the same JSON/SQL/codegen pass, and an ores.qt notebook contact-info page for accounts matching the existing party/counterparty pages -- so this doesn't need a second, separate round of end-to-end retesting later.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generate-acme-sql-via-codegen
 #+pr: 1672

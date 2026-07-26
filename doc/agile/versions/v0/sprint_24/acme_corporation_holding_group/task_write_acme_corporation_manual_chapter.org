@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 3630BEB2-A5CE-42FD-85ED-22496B3DBCA7
 :END:
-#+title: Task: Write user manual chapter: Acme Bank as the system's test/demo entity
-#+description: Author a user-manual chapter describing Acme Bank as the realistic test/demo company used to exercise all functionality within ORE Studio -- its holding-group structure, business units, portfolios, books, staff, and counterparty logo -- analogous to how Barclays Plc has served as the system's demo entity to date.
+#+title: Task: Write user manual chapter: Acme Corporation as the system's test/demo entity
+#+description: Author a user-manual chapter describing Acme Corporation as the realistic test/demo company used to exercise all functionality within ORE Studio -- its holding-group structure, business units, portfolios, books, staff, and counterparty logo -- analogous to how Barclays Plc has served as the system's demo entity to date.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -21,16 +21,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Barclays Plc has served, until now, as ORE Studio's realistic
-demo/test entity for manual walkthroughs and screenshots. Acme Bank --
-a synthetic four-legal-entity holding group (Group/UK/US/HK) -- is
-replacing it. Write a user-manual chapter that introduces Acme Bank as
-the system's reference entity: its holding-group structure (parent
-plc plus three operating companies), the business units, portfolios,
-and books seeded under each operating company, its staff/accounts,
-and the Acme Corp counterparty fixture (including its pre-populated
-logo -- see [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]). The chapter should
-let a new user provision Acme Bank (=provision tenant --source acme=)
-and understand what they are looking at once it is up.
+demo/test entity for manual walkthroughs and screenshots. Acme
+Corporation -- a synthetic four-legal-entity holding group
+(Group/UK/US/HK) -- is replacing it. Write a user-manual chapter that
+introduces Acme Corporation as the system's reference entity: its
+holding-group structure (parent plc plus three operating companies),
+the business units, portfolios, and books seeded under each operating
+company, its staff/accounts, and the Acme Corp counterparty fixture
+(including its pre-populated logo -- see [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a
+counterparty]]). The chapter should let a new user provision Acme
+Corporation (=provision tenant --source acme=) and understand what
+they are looking at once it is up.
 
 * Status
 

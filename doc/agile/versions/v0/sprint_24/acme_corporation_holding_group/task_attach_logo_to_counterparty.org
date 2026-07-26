@@ -5,7 +5,7 @@
 #+description: Add a nullable image_id FK on counterparties (same generalised ores_assets_images_tbl / soft-FK pattern used for accounts), so a counterparty can carry a logo -- e.g. the Acme Corp logo asset already supplied for this purpose.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/attach-logo-to-counterparty
 #+pr:

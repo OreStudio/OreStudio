@@ -27,7 +27,8 @@
 -- of its own) publishes that company's business units, portfolios, books,
 -- accounts, and account contact informations, plus a single tenant-wide
 -- import of real GLEIF counterparties (small) so every ACME Corporation party can
--- trade against a realistic counterparty set. Called from a single NATS
+-- trade against a realistic counterparty set, and the Acme Corp counterparty
+-- fixture with its logo already attached. Called from a single NATS
 -- request/handler (see ores.iam.core/messaging/tenant_handler.hpp)
 -- -- no repeated per-party logins, no orchestration logic client-side.
 --
@@ -51,6 +52,9 @@ declare
     v_party_id uuid;
     v_dataset_id uuid;
     v_row record;
+    v_template_image record;
+    v_logo_image_id uuid;
+    v_existing_counterparty_id uuid;
 begin
     -- Step 1: business centres (required for party creation).
     select id into v_dataset_id
@@ -202,6 +206,70 @@ begin
             end loop;
         end if;
     end loop;
+
+    -- Step 5: the Acme Corp counterparty fixture, with its logo already
+    -- attached -- so a tester sees a working example with no manual upload
+    -- needed. The logo is a raster PNG (see acme_corp_logo_populate.sql's
+    -- header for why it bypasses the SVG-only DQ staging pipeline): copy
+    -- the system-tenant template row into the target tenant, then
+    -- upsert the counterparty referencing it.
+    select image_id, key, description, mime_type, data into v_template_image
+    from ores_assets_images_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and key = 'acme_corp_logo'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_template_image.image_id is null then
+        step := 'corp_logo.skipped';
+        action := 'template_not_found'; record_count := 0;
+        return next;
+    else
+        select image_id into v_logo_image_id
+        from ores_assets_images_tbl
+        where tenant_id = p_target_tenant_id
+          and key = v_template_image.key
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_logo_image_id is null then
+            v_logo_image_id := gen_random_uuid();
+            insert into ores_assets_images_tbl (
+                image_id, tenant_id, version, key, description, mime_type, data,
+                modified_by, performed_by, change_reason_code, change_commentary
+            ) values (
+                v_logo_image_id, p_target_tenant_id, 0,
+                v_template_image.key, v_template_image.description,
+                v_template_image.mime_type, v_template_image.data,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import',
+                'Copied from system-tenant template: ' || v_template_image.key
+            );
+            step := 'corp_logo'; action := 'inserted'; record_count := 1;
+            return next;
+        end if;
+
+        select id into v_existing_counterparty_id
+        from ores_refdata_counterparties_tbl
+        where tenant_id = p_target_tenant_id
+          and short_code = 'ACME'
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_existing_counterparty_id is null then
+            insert into ores_refdata_counterparties_tbl (
+                id, tenant_id, version, short_code, full_name, party_type,
+                business_center_code, status, image_id,
+                modified_by, performed_by, change_reason_code, change_commentary
+            ) values (
+                gen_random_uuid(), p_target_tenant_id, 0, 'ACME', 'Acme Corp', 'Corporate',
+                'WRLD', 'Active', v_logo_image_id,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import',
+                'Acme Corp counterparty fixture, with its logo already attached'
+            );
+            step := 'corp_counterparty'; action := 'inserted'; record_count := 1;
+            return next;
+        end if;
+    end if;
+
     return;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;

@@ -5,7 +5,7 @@
 #+description: In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow.
 #+type: task
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/analyse-acme-bank-structure
 #+pr: 1660
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 * Result
 
-Landed the analysis as [[proj:projects/ores.seeder/datasets/acme_bank_structure_analysis/dataset_overview.org][acme_bank_structure_analysis]], a first-class
+Landed the analysis as [[proj:projects/ores.seeder/datasets/acme_corporation_structure_analysis/dataset_overview.org][acme_corporation_structure_analysis]], a first-class
 =ores.seeder= dataset:
 
 - Barclays' real corporate structure researched and cited (CIB

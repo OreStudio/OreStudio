@@ -2,10 +2,10 @@
 :ID: CAA32021-D905-468A-BEB4-B76A9432C218
 :END:
 #+title: Test Scenario: Verify attach logo to counterparty
-#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Bank tenant. Also covers the mirrored logo picker on PartyDetailDialog.
+#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Corporation tenant. Also covers the mirrored logo picker on PartyDetailDialog.
 #+type: test_scenario
 #+level: s1
-#+filetags: :acme_bank_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+target_dialog: CounterpartyDetailDialog, PartyDetailDialog
 #+created: 2026-07-25
 #+updated: 2026-07-25
@@ -16,7 +16,7 @@
 This scenario verifies [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]: a counterparty
 can now carry a logo via a nullable =image_id= soft-FK, edited through a
 new logo picker on =CounterpartyDetailDialog= (Menu: Reference Data >
-Counterparties). Runs against the *Acme Bank* tenant (replacing
+Counterparties). Runs against the *Acme Corporation* tenant (replacing
 Barclays Plc as the system's reference/demo entity -- see
 [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]), whose
 provisioning now seeds a fixture counterparty, =Acme Corp=, with its
@@ -70,10 +70,10 @@ notes back as a =*** Result= child heading directly under it.
 
 ** blue
 
-*** Connect to tenant Acme Bank
+*** Connect to tenant Acme Corporation
 
 - Log in as =tenant_admin@acme_corporation= / =Secure-Password-123=.
-- Select party *Acme Bank UK plc*.
+- Select party *ACME Corporation UK plc*.
 - Open Reference Data > Counterparties.
 
 *** Confirm the pre-populated Acme Corp logo
@@ -162,12 +162,12 @@ notes back as a =*** Result= child heading directly under it.
 
 ** red
 
-*** Connect to tenant Acme Bank
+*** Connect to tenant Acme Corporation
 
 - Log in as =tenant_admin@acme_corporation= / =Secure-Password-123=
   (this is a second, independent client instance -- log in again here,
   do not assume it inherits the blue client's session).
-- Select party *Acme Bank UK plc*.
+- Select party *ACME Corporation UK plc*.
 - Open Reference Data > Counterparties and leave the list visible.
 
 *** Confirm the logo change arrives via NATS

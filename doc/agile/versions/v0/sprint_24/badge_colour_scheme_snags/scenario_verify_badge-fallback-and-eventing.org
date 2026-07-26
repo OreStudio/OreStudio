@@ -65,7 +65,7 @@ documented, expected result of the step it appears in.
 | Parent story  | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]]   |
 | Target dialog | PartyMdiWindow (fallback badge) / BadgeDefinitionDetailDialog (eventing) -- Menu: Reference Data > Parties; Data Quality > Badges > Badge Definitions |
 | Clients       | blue, red                                |
-| State         | PENDING                               |
+| State         | PASSED                                |
 
 * Steps
 
@@ -91,7 +91,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Open Party list and confirm the real Active badge
 
@@ -103,7 +103,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -120,7 +120,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** blue
 
@@ -128,16 +128,19 @@ notes back as a =*** Result= child heading directly under it.
 
 - In a terminal, run (the =delete= is rewritten by a table rule into a
   soft-close of the current row, not a literal row removal -- =DELETE
-  0= in the command output is expected):
+  0= in the command output is expected). Scoped to Barclays' own
+  tenant_id -- badge data is duplicated per-tenant (see the restore
+  step below), and the running client only ever reads its own
+  tenant's copy:
   #+begin_src sh
-  ./compass.sh sql -- -c "delete from ores_dq_badge_mappings_tbl where code_domain_code='party_status' and entity_code='Active';"
+  ./compass.sh sql -- -c "delete from ores_dq_badge_mappings_tbl where tenant_id = ores_iam_tenant_by_code_fn('barclays') and code_domain_code='party_status' and entity_code='Active';"
   #+end_src
 
 **** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -155,7 +158,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** blue
 
@@ -173,7 +176,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -190,7 +193,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** blue
 
@@ -200,9 +203,15 @@ notes back as a =*** Result= child heading directly under it.
   =current_user=, which only passes validation *before* the tenant
   has any accounts (bootstrap); against an already-provisioned
   tenant it must be set explicitly, so restore via a direct insert
-  instead:
+  instead. Badge data is duplicated per-tenant (the "provision tenant"
+  bundle-publish step copies the system-tenant seed rows into
+  Barclays' own tenant_id), and =badge_service= reads scoped to the
+  *caller's* tenant -- so the insert must target Barclays' tenant_id
+  via =ores_iam_tenant_by_code_fn('barclays')=, not the system tenant,
+  or the running client (logged in as Barclays) will keep seeing the
+  fallback badge despite the row existing under the wrong tenant:
   #+begin_src sh
-  ./compass.sh sql -- -c "insert into ores_dq_badge_mappings_tbl (tenant_id, code_domain_code, entity_code, version, badge_code, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to) values (ores_utility_system_tenant_id_fn(), 'party_status', 'Active', 0, 'active', 'super_admin', 'super_admin', 'system.new_record', 'Restored after manual QA test', current_timestamp, ores_utility_infinity_timestamp_fn()) on conflict (tenant_id, code_domain_code, entity_code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;"
+  ./compass.sh sql -- -c "insert into ores_dq_badge_mappings_tbl (tenant_id, code_domain_code, entity_code, version, badge_code, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to) values (ores_iam_tenant_by_code_fn('barclays'), 'party_status', 'Active', 0, 'active', 'super_admin', 'super_admin', 'system.new_record', 'Restored after manual QA test', current_timestamp, ores_utility_infinity_timestamp_fn()) on conflict (tenant_id, code_domain_code, entity_code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;"
   #+end_src
 - Log out and back in again, then reopen the Party list (same reason
   as the removal step -- no live event for a mapping change).
@@ -213,7 +222,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -228,7 +237,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** blue
 
@@ -242,7 +251,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -258,7 +267,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** blue
 
@@ -275,7 +284,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -287,6 +296,12 @@ notes back as a =*** Result= child heading directly under it.
   LISTEN/NOTIFY-to-NATS relay actually firing, not just the
   repository layer ctest already covers.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** blue
 
 *** Revert the active badge colour
@@ -297,14 +312,20 @@ notes back as a =*** Result= child heading directly under it.
 - Confirm the =red= instance's list also reverts live, for the same
   reason as the previous step.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-26T10:55:10Z |
+| Branch        | feature/badge-palette-swatch-and-fallback |
+| Commit        | 0c002494c |
+| Worktree      | eager_maxwell |
 
 * Notes

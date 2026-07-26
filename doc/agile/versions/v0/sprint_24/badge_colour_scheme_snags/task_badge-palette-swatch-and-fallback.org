@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -135,6 +135,17 @@ client reconnect to be picked up. Closing this properly is tracked in
 [[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]],
 filed as its own sprint 24 story rather than folded into this task.
 
+Also discovered while manually testing the fallback: badge data
+(=badge_severity=/=badge_definition=/=code_domain=/=badge_mapping=)
+is duplicated per-tenant -- the system-tenant seed rows created by
+=dq_badge_system_populate.sql= get copied into each tenant's own
+=tenant_id= by the "provision tenant" bundle-publish step, and
+=badge_service= reads scoped to the *caller's* tenant. Any manual
+SQL edit/restore against badge data must target the tenant under
+test (e.g. via =ores_iam_tenant_by_code_fn('barclays')=), not the
+system tenant -- an easy mistake to make since the seed script itself
+only ever writes system-tenant rows.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -145,7 +156,7 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:5410A1A8-5601-4A32-B507-7C69C9F6DFE7][Badge Definition: swatch rendering, colour picker, and related-entity shortcuts]] | PASSED | Eventing not exercised by this scenario -- see the fallback/eventing scenario below |
-| [[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][Verify data-driven fallback badge and badge eventing]] | PENDING | Covers step 6 (fallback badge) and the eventing gap noted above |
+| [[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][Verify data-driven fallback badge and badge eventing]] | PASSED | Covers step 6 (fallback badge) and the eventing gap noted above; badge_mapping's per-tenant-duplicate + no-live-event limitation confirmed and tracked separately |
 
 * PRs
 
@@ -160,3 +171,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met:
+
+- =BadgeDefinitionMdiWindow='s Background/Text columns render as real
+  coloured badges via =EntityItemDelegate=/=badge_centered=, the same
+  mechanism task 1 established -- not a second rendering approach.
+- =BadgeDefinitionDetailDialog= gained a full Detail fields set
+  (colour-picker swatches for background/text, severity dynamic_combo,
+  display_order spin_box) via a new =colour= codegen detail-field type
+  and a new self-colour list-column style -- codegen extensions, not a
+  one-off hand-wire.
+- =BadgeSeverityMdiWindow= shows its reverse-FK link to referencing
+  badge_definitions (hand-added; no codegen facet exists for this yet).
+- =BadgeDefinitionMdiWindow= gained the "Related entity shortcuts"
+  toolbar (Severities, Mappings), matching the pattern used elsewhere
+  (e.g. Book).
+- Fallback: reserved =badge_definition= row (=code='__unmapped__'=)
+  replaces =ColorConstants::badge_fallback= at every badge-rendering
+  call site; =BadgeCache::fallback()= resolves it the same way
+  =resolve()= resolves any other badge. Dashed-border treatment in
+  =DelegatePaintUtils= makes it visibly distinct from any real
+  grey/inactive badge.
+- =BadgeCache= now subscribes to =badge_definition_changed= and
+  reloads on receipt (mirroring =ChangeReasonCache=), so a colour edit
+  propagates live to every running client, not just the definitions
+  list window that made the edit.
+- Manual QA scenario executed end-to-end (removed the =party_status=/
+  =Active= mapping via SQL, confirmed the fallback badge rendered with
+  the correct dashed/orange treatment, confirmed a =badge_definition=
+  colour edit propagates live between two client instances, restored
+  seed data) -- both test scenarios PASSED.
+
+Two gaps surfaced during manual QA and deliberately scoped out rather
+than folded into this task, each filed as its own backlog item (see
+* Notes above for detail): junctions (including =badge_mapping=) have
+no live NATS eventing at all in codegen today
+([[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing story]]); and a general FK-like/lookup-entity
+badge-vs-image-vs-plain-text rendering policy doesn't exist yet
+([[id:5FD778C7-574A-49C5-A85B-9146AE7FA868][FK-like/lookup entity rendering policy story]]).

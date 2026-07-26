@@ -69,35 +69,57 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // Start all services in the background (dependency-ordered: IAM first,
     // then dependents). Runs concurrently with our own NATS connect and JWKS
-    // fetch so the controller does not block on IAM startup.
-    boost::asio::co_spawn(io_ctx, supervisor.start_all(), boost::asio::detached);
+    // fetch so the controller does not block on IAM startup. Kept joinable
+    // (not detached) so any exception below can wait for it to wind down
+    // before `supervisor` is destroyed — destroying it while start_all() is
+    // still running races its internal thread pool teardown against the
+    // still-executing coroutine.
+    auto start_all_task =
+        boost::asio::co_spawn(io_ctx, supervisor.start_all(), boost::asio::use_awaitable);
 
-    ores::nats::service::client nats(cfg.nats);
-    nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
-                              << (cfg.nats.subject_prefix.empty() ? "(none)" :
-                                                                    cfg.nats.subject_prefix)
-                              << "')";
+    std::exception_ptr failure;
+    try {
+        ores::nats::service::client nats(cfg.nats);
+        nats.connect();
+        BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
+                                  << (cfg.nats.subject_prefix.empty() ? "(none)" :
+                                                                        cfg.nats.subject_prefix)
+                                  << "')";
 
-    co_await ores::service::service::run(
-        io_ctx,
-        nats,
-        db_ctx,
-        "ores.controller.service",
-        [&nats, &supervisor](auto& n, auto c, auto v) {
-            return ores::controller::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), &supervisor);
-        },
-        [&nats](boost::asio::io_context& ioc) {
-            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
-                std::string(service_name), std::string(service_version), nats);
-            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
-        });
+        co_await ores::service::service::run(
+            io_ctx,
+            nats,
+            db_ctx,
+            "ores.controller.service",
+            [&nats, &supervisor](auto& n, auto c, auto v) {
+                return ores::controller::messaging::registrar::register_handlers(
+                    n, std::move(c), std::move(v), &supervisor);
+            },
+            [&nats](boost::asio::io_context& ioc) {
+                auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                    std::string(service_name), std::string(service_version), nats);
+                boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+            });
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "ores.controller.service failed to start: " << e.what();
+        failure = std::current_exception();
+    }
 
-    // Controller received shutdown signal — gracefully stop all child processes
-    // before we exit. Without this, children never receive SIGTERM and keep
-    // running as orphans.
+    // Whether we got here via normal shutdown or the catch above, start_all()
+    // may still be in flight — always join it before touching `supervisor`
+    // again (stop_all(), then its destructor) to avoid the use-after-free
+    // race described above.
+    co_await std::move(start_all_task);
+
+    // Gracefully stop all child processes before we exit. Without this,
+    // children never receive SIGTERM and keep running as orphans.
     co_await supervisor.stop_all();
+
+    // Rethrow after teardown so main()'s existing exception handling still
+    // reports the failure and exits non-zero — we only needed to defer this
+    // past the graceful-shutdown steps above, not swallow it.
+    if (failure)
+        std::rethrow_exception(failure);
 
     co_return;
 }

@@ -476,10 +476,13 @@ def run(argv, project_root: Path) -> int:
     nats_certs.generate(checkout_root)
 
     nats_tls_ca = nats_tls_cert = nats_tls_key = ""
+    controller_nats_tls_cert = controller_nats_tls_key = ""
     if (nats_certs_dir / "ca.crt").is_file():
         nats_tls_ca = str(nats_certs_dir / "ca.crt")
         nats_tls_cert = str(nats_certs_dir / "ores.qt.client.crt")
         nats_tls_key = str(nats_certs_dir / "ores.qt.client.key")
+        controller_nats_tls_cert = str(nats_certs_dir / "ores.controller.service.crt")
+        controller_nats_tls_key = str(nats_certs_dir / "ores.controller.service.key")
 
     # IAM RSA signing key (preset-independent).
     keys_dir = checkout_root / "build" / "keys"
@@ -542,6 +545,17 @@ def run(argv, project_root: Path) -> int:
     test_dml_user = f"ores_{label_lower}_test_dml_user"
 
     db_host = existing.get("ORES_DB_HOST") or "localhost"
+    # PGPORT is libpq's own env var (psql and every libpq-based service read
+    # it natively) — only written when the DB lives on a non-default port
+    # (e.g. a remote host), so local setups keep relying on 5432 implicitly.
+    db_port = existing.get("PGPORT") or existing.get("ORES_DB_PORT") or ""
+    db_port_line = f"PGPORT={db_port}\n" if db_port else ""
+    # Every service/client reads its own ORES_<APP>_DB_HOST/PORT (C++
+    # make_mapper convention) and otherwise silently defaults to
+    # localhost:5432 — so each one is stamped from this single source of
+    # truth, keeping local and remote (e.g. WSL-hosted) Postgres switchable
+    # by editing ORES_DB_HOST/PGPORT alone.
+    db_port_effective = db_port or "5432"
 
     # sccache config: dir and size are shared across all worktrees (one
     # server, one cache), so every checkout should agree on the same values.
@@ -676,11 +690,23 @@ ORES_NATS_TLS_CERT={nats_tls_cert}
 ORES_NATS_TLS_KEY={nats_tls_key}
 
 # ---------------------------------------------------------------------------
+# Controller service NATS config (read by C++ make_mapper("CONTROLLER_SERVICE")).
+# Only the controller needs this: it launches every other service directly
+# with these same values as CLI args (see process_supervisor.cpp), so they
+# never read NATS_* from the environment themselves.
+# ---------------------------------------------------------------------------
+ORES_CONTROLLER_SERVICE_NATS_URL={nats_url}
+ORES_CONTROLLER_SERVICE_NATS_SUBJECT_PREFIX={nats_prefix}
+ORES_CONTROLLER_SERVICE_NATS_TLS_CA={nats_tls_ca}
+ORES_CONTROLLER_SERVICE_NATS_TLS_CERT={controller_nats_tls_cert}
+ORES_CONTROLLER_SERVICE_NATS_TLS_KEY={controller_nats_tls_key}
+
+# ---------------------------------------------------------------------------
 # Database admin (postgres superuser — for compass db recreate and psql)
 # ---------------------------------------------------------------------------
 PGPASSWORD={pgpassword}
 ORES_DB_HOST={db_host}
-ORES_TEST_DB_DATABASE={db_name}
+{db_port_line}ORES_TEST_DB_DATABASE={db_name}
 ORES_TEST_DB_HOST={db_host}
 
 # ---------------------------------------------------------------------------
@@ -727,6 +753,8 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_USER=ores_{label_lower}_{c}_service\n")
         out.append(f"ORES_{up}_SERVICE_DB_PASSWORD={service_pw[c]}\n")
         out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
+        out.append(f"ORES_{up}_SERVICE_DB_HOST={db_host}\n")
+        out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
     # Front-end client apps that read their config from the environment via the
     # C++ make_mapper("<APP>") convention. `uses_db` marks whether the app opens
     # a direct database connection. NATS-only clients (the shell, like the
@@ -751,7 +779,9 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
             "# ---------------------------------------------------------------------------\n"
             f"ORES_{m}_DB_USER={app['user']}\n"
             f"ORES_{m}_DB_PASSWORD={app['pw']}\n"
-            f"ORES_{m}_DB_DATABASE={db_name}\n")
+            f"ORES_{m}_DB_DATABASE={db_name}\n"
+            f"ORES_{m}_DB_HOST={db_host}\n"
+            f"ORES_{m}_DB_PORT={db_port_effective}\n")
 
     out.append(f"""
 # ---------------------------------------------------------------------------

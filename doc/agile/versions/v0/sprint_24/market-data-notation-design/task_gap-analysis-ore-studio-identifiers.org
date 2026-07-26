@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/gap-analysis-ore-studio-identifiers
+#+pr: 1693
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -52,11 +52,11 @@ ORE's real addressing scheme:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -95,12 +95,54 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1693][#1693]] | [knowledge] Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task/story acceptance criteria not satisfied by delivered content | task_gap-analysis-ore-studio-identifiers.org | Accepted | Added the concrete ORE-Studio-internal gap table (=ir_curve_generation_config=, =curve_feed_controller=, =market_series=, =fx_spot_generation_config=) to =* Result= |
+| 2 | Stale link descriptions pointing at renamed/restructured F3010EA7 doc | knowledge.org, market_data_architecture.org, polymorphic_types_over_nats.org, synthetic_market_data_generators.org, fx_spot_synthetic_poc_architecture.org, market_data_requirement.org, market_data_requirements_resolution_hub.org, story.org, task_scaffold_synthetic_market_data_poc.org | Accepted | Repointed NATS/logical-field mentions to =market_data_identifier.org= (3D56DB59); updated remaining F3010EA7 descriptions to match its new RIC/Bloomberg/ORE comparative-analysis scope |
+| 3 | Typo "rodgirgues" -> "rodrigues" | fed_funds_average_swap_convexity.org, multi_curve_construction.org | Accepted | Fixed both occurrences |
+| 4 | Unrelated screenshot hitchhiked into this PR's diff | scenario_market-observation-list-by-series-id_step3_20260722_223937.png | Declined | Reviewers confirmed it's a real, pre-existing scenario missing its evidence image; harmless to keep |
 
 * Result
+
+** ORE Studio internal identifier gap table
+
+Per-field gap analysis of ORE Studio's own schema against ORE's real
+addressing scheme (index name / curve key / quote key), as required by
+this task's Acceptance. This is separate from the external
+RIC/Bloomberg/ORE vendor-notation comparison delivered in
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]]
+(that doc answers "how do RIC, Bloomberg, and ORE differ from each
+other", not "where does ORE Studio's own schema fail to project onto
+ORE's scheme" — the two are complementary, not the same analysis).
+
+| Field | Current shape | What ORE's scheme requires that's missing | Concrete failure example |
+|-------+----------------+--------------------------------------------+---------------------------|
+| =ir_curve_generation_config= (=currency_code=, =index_name=) | =index_name= is free text (=synthetic_ir_curve_generation_configs_create.sql=); no structured tenor field, no curve-role field | ORE's index-name layer expects tenor to be a distinct, structured token (e.g. QuantLib's =Libor(3M)= vs =Libor(6M)=), and its curve-key layer (=Yield/<CCY>/<CURVE_ID>=) expects an explicit discount-vs-projection role | Two configs sharing =currency_code= = =USD= can only be told apart if their free-text =index_name= strings happen to differ (=USD-LIBOR-3M= vs a hypothetical =USD-LIBOR-6M=) — nothing stops a typo'd =index_name= from silently colliding, and nothing records that a =USD-LIBOR-3M= curve is a *projection* curve, not the *discount* curve for the same currency |
+| =curve_feed_controller='s =qualifier= (=currency_code= + =index_name=, per =ir_curve_feed::qualifier()=) | A flat concatenation used only for the "one running feed per qualifier" collision check | Same gap as above, one level up: the qualifier has no concept of curve family (the set of tenor curves making up one currency's multi-curve framework) or curve role, so it cannot express "these two curves legitimately coexist because one discounts and one projects" | A real 3M LIBOR projection curve and a same-currency discount curve would collide under this qualifier scheme if they ever shared a currency+index-name pair — the controller has no field to say "these are different roles, allow both" |
+| =market_series= =series_type/metric/qualifier[/point_id]= (=marketdata_market_series_create.sql=) | Same three-column shape as ORE's real quote key, but =qualifier= is a single free-text column, not a per-type fixed-dimension tuple like the catalogue's =IR_SWAP/RATE/CCY/spot_lag/float_index_tenor/swap_tenor= | Pre-dates =ir_curve_generation_config=; its =qualifier= column has room for *anything* (it is untyped text), so it never had to solve the tenor/curve-role problem explicitly — the gap is latent, not yet hit, because nothing today writes a curve-role-bearing qualifier into it | Two rows with =series_type='DISCOUNT'=, =metric='RATE'= and the same =qualifier= text but different intended curve roles would be indistinguishable by the unique index on (tenant, party, series_type, metric, qualifier) — the schema would silently overwrite one with the other |
+| =fx_spot_generation_config.ore_key= (=synthetic_fx_spot_generation_configs_create.sql=, populated in =synthetic_publish_from_dq_create.sql=) | Explicit =FX/RATE/<BASE>/<QUOTE>= string, generated directly in the pattern ORE's own quote-key catalogue documents | Nothing — this is the one place ORE Studio already does it correctly. Recorded here as the pattern to generalise to the IR side, not a gap | N/A — this row is the target shape, not a failure |
+
+** Discount-vs-projection curve-role gap
+
+Stated explicitly per Acceptance: neither =ir_curve_generation_config=
+nor =curve_feed_controller='s =qualifier= has a curve-role field, so
+there is no schema-level way today to mark a curve as discount vs.
+projection for the same currency. This is the same gap the still-BACKLOG
+[[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]]
+task will need to close — that task's data model and this task's URN
+curve-role field should agree on one representation rather than
+independently inventing two.
+
+** Scope note
+
+This task's PR (#1693) primarily delivered the external RIC/Bloomberg/ORE
+vendor-notation survey (originally the sibling task
+[[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]]'s
+scope, closed via PR #1686) rather than this task's own ORE-Studio-internal
+gap table. The table above was added during PR review to close that gap
+and satisfy this task's Acceptance criteria directly, rather than
+retitling/re-scoping the task.

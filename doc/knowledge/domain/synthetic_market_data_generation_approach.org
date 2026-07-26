@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :market_data:synthetic:approach:sprint_21:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-07-25
 
 * 1. Purpose and scope
 
@@ -439,6 +439,41 @@ Stressed scenario conditioning is a direct use of GMM's closed-form
 conditional distribution.  No re-fitting is required: select the component
 index k with the highest unconditional variance and fix the latent component
 draw to k throughout the scenario.
+
+** Known limitation: descriptive vs generative regime modelling
+
+Every technique in this document (GMM, frozen-pool interpolation, GJR-GARCH
+MDN) is *descriptive*: each is fitted to historical distributions and
+reproduces their statistical shape, including the multi-component GMM's
+distinct "regimes" (steep/inverted curve, risk-on/risk-off). Fratini
+(2026) draws a sharp distinction between a descriptive model — one that
+organises past observations — and a generative model, which captures *why*
+a relationship holds and the conditions under which it breaks; a model can
+be "perfectly calibrated to the data and completely blind to the process
+generating it." His worked example is a risk-parity strategy that
+backtested well across equities, bonds, and commodities but never modelled
+the simultaneous-deleveraging feedback loop that inverted those
+correlations in March 2020 — the correlation matrix used to size the
+strategy was descriptively accurate for every regime seen in training, and
+still wrong for the regime that mattered.
+
+The same caveat applies directly to *stressed scenario conditioning*
+above: pinning the GMM draw to its highest-variance component only
+reproduces stress episodes that already exist, in that shape, in the
+training window. It does not model the mechanism that produces a stress
+event (forced deleveraging, correlation flips, liquidity feedback), so a
+stress scenario outside the training distribution's component structure —
+or a correlation breakdown between asset classes that were never jointly
+stressed in history — will not be represented, however well each
+individual asset class's marginal distribution is calibrated. This is a
+known gap, not a defect to fix in this sprint: the mitigation (a true
+generative, mechanism-level stress model) is out of scope here and would
+need its own design work if higher-fidelity tail scenarios become a
+requirement.
+
+Source: Alessio Fratini, "Have You Modeled the Market, or Only What It Has
+Shown?", LinkedIn Pulse, 2026 —
+https://www.linkedin.com/pulse/have-you-modeled-market-only-what-has-shown-alessio-fratini--su5ye
 
 * 7. User interface requirements
 

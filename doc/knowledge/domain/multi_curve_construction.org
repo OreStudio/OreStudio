@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-25
 
 * Summary
 
@@ -87,6 +87,56 @@ mutually independent bootstraps. The pillar *instrument selection and
 interpolation choices* for each curve remain independent per curve; only
 the discounting step couples them.
 
+** Concrete example: Fed Funds discounted by SOFR
+
+USD Fed Funds is a concrete instance of the Funding/Projection split, and
+a sharper one than the generic IBOR-vs-RFR case: the Fed Funds curve is
+built (projected) from Fed Funds OIS instruments, but every one of those
+instruments' cash flows is *discounted using the SOFR curve*, not the Fed
+Funds curve itself —
+
+$$PV(\text{Fed Funds instrument}) = \sum_t \frac{\text{Fed Funds } CF_t}{(1+SOFR_t)^t}$$
+
+SOFR, as the market's standard secured risk-free rate, is
+self-calibrating — it discounts its own instruments (step 1 above). Fed
+Funds is unsecured and is a dependent node on SOFR for discounting (step 2
+above): the curve is *projected* off unsecured Fed Funds fixings but
+*discounted* off the secured, risk-free SOFR curve. Getting this
+directional mapping backwards — discounting Fed Funds cash flows off the
+Fed Funds curve itself — breaks the calibration.
+
+The long end of the Fed Funds curve carries a further, separate
+complication once Fed Funds Average Swaps enter the pillar set — see
+[[id:6FD5CD8D-16C3-401E-B0E4-97D9E298B03F][Fed Funds Average Swap
+Convexity]].
+
+** Caveat: basis-linked Projection Curves can be cyclic
+
+The claim above — that Projection Curves are mutually independent once the
+Funding Curve exists — holds for the ordinary case where each Projection
+Curve's pillar instruments are priced purely against the Funding Curve.
+It does not automatically hold once *basis swaps between Projection Curve
+tenors* (e.g. a 3M/6M basis swap, a 6M/1Y basis swap, and a 1Y/3M basis
+swap for the same currency) are themselves used as pillar instruments:
+each such instrument's value depends on two Projection Curves at once, and
+if enough of these interlock, the tenors form a genuinely circular
+dependency rather than the simple sequential chain shown above — solving
+for one requires the others, which require the first. That case cannot be
+bootstrapped sequentially at all; it requires an iterative or simultaneous
+solver over the whole interdependent system, not the "build Funding, then
+each Projection independently" order this document otherwise describes.
+ORE Studio's current curve family model assumes the sequential case; the
+cyclic case is a known modelling gap, not something currently handled.
+
+Source: André Luiz Rodrigues
+(https://www.linkedin.com/in/andre-luiz-df-rodrigues/), LinkedIn posts on
+interest rate curve dependency graphs (2026), including the whiteboard
+diagrams "Interest Rate Curve Calibration: Dependency Graph Approach"
+(self-calibrating node, sequential chain, and cyclic multicalibration) and
+"SOFR vs. FedFund Curves & Discounting Relationship". Original posts
+filed at =tmp/luiz_rodrigues_posts.org= (not part of the published
+documentation).
+
 #+BEGIN_EXAMPLE
  Pre-2008: one curve, two jobs
  ──────────────────────────────
@@ -109,3 +159,4 @@ the discounting step couples them.
 - [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]] — the risk difference between the two curve roles.
 - [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family structure this build order applies to.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — single-curve bootstrapping mechanics (day-count, pillars, interpolation) that each curve in the family uses individually.
+- [[id:6FD5CD8D-16C3-401E-B0E4-97D9E298B03F][Fed Funds Average Swap Convexity]] — the additional long-end complication once FFAS pillars are used on a Fed Funds curve.

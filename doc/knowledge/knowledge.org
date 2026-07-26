@@ -46,11 +46,14 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting (ATM/RR/STR), delta
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — how market data series are identified across
-  external schemes (RIC, Bloomberg) and internally: the ORE canonical key
-  format (=FX/RATE/EUR/USD=), its decomposition into =series_type/metric/qualifier=,
-  the two-level subscription model (generation config vs client subscription),
-  and the mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — a comparative analysis of
+  RIC, Bloomberg ticker, and the ORE canonical/quote key: origin, ownership,
+  formal specification status, and pros/cons/limitations, independent of any
+  particular consumer of the schemes.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — ORE Studio's own concrete identifier
+  scheme (=series_type/metric/qualifier[/point_id]=), the two-level
+  subscription model (generation config vs client subscription), and the
+  mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
   e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — hub note for how a
   logical need for market data (a requirement) resolves into a concrete
@@ -84,6 +87,9 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — hub note for scalar/tenor/term-structure
   concepts: tenor labels, horizon date, date rolling, IMM dates, and
   broken dates/turn points.
+- [[id:6FD5CD8D-16C3-401E-B0E4-97D9E298B03F][Fed Funds Average Swap Convexity]] — why arithmetic-average FFAS
+  pillars inject a convexity bias relative to compounded OIS at the
+  long end of a Fed Funds curve, and why naive bootstrapping mis-prices it.
 - [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the FpML business centre: a 4-character code
   identifying a financial trading location's holiday calendar,
   coding-scheme scoping, and its use as a book's rates centre.

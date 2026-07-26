@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/asset_class_code.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/calendar_type.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
@@ -279,6 +280,19 @@ fetch_calendar_types(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::country>, QString>
 fetch_countries(ClientManager* cm);
+
+/**
+ * @brief Fetches all calendars from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate a calendar-code combo with the
+ * full calendar row (name/type shown alongside the code), as opposed to
+ * fetch_calendar_codes()'s plain code list.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::calendar>, QString>
+fetch_calendars(ClientManager* cm);
 
 /**
  * @brief Fetches all book statuses from the server.

@@ -133,6 +133,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.calendar_materialisation',
+        'Calendar dates (re)computed by the calendar materialisation service',
+        'system',
+        true,   -- applies to new
+        true,   -- applies to amend (extending the materialised horizon)
+        false,  -- not for delete
+        false,  -- no commentary required
+        45      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.tenant_terminated',
         'Tenant marked as terminated',
         'system',

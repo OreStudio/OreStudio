@@ -498,9 +498,12 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
 
     The heading title becomes ``column``; the PROPERTIES drawer supplies
     ``table``, ``error_message``, and optional boolean flags
-    ``nullable``, ``use_no_tenant``, ``use_system_tenant``.
+    ``nullable``, ``use_no_tenant``, ``use_system_tenant``. ``referenced_column``
+    defaults to ``id`` (every UUID-keyed entity's PK) -- set it explicitly
+    when the referenced table's key is not ``id`` (e.g. a code-keyed lookup
+    entity like ``calendar``, whose PK column is ``code``).
     """
-    out: dict[str, Any] = {"column": node.title}
+    out: dict[str, Any] = {"column": node.title, "referenced_column": "id"}
     for k, v in node.properties.items():
         out[k.lower()] = _parse_typed(v)
     return out
@@ -522,6 +525,15 @@ def _detail_fields(node: OrgNode) -> list[dict[str, Any]]:
     for row in node.tables[0]:
         entry: dict[str, Any] = {}
         for k, v in row.items():
+            # A blank cell means "use the default", not "explicitly empty
+            # string" -- drop it rather than keying it in with '', so
+            # core.py's f.setdefault(...) calls still fire for this field.
+            # Table columns are per-*entity* (every row shares the same
+            # header), so a column relevant to only one field (e.g.
+            # spin_min override) still works fine left blank on every
+            # other row.
+            if v == "":
+                continue
             entry[k] = _parse_typed(v)
         out.append(entry)
     return out
@@ -550,6 +562,8 @@ def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
                     entry["is_timestamp"] = True
                 elif low == "uuid":
                     entry["is_uuid"] = True
+                elif low == "date":
+                    entry["is_date"] = True
                 continue
             entry[k] = _parse_typed(v)
         out.append(entry)
@@ -1124,21 +1138,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     columns: list[dict[str, Any]] = []
     if cols_section:
         for node in cols_section.children:
-            entry: dict[str, Any] = {"name": node.title}
-            for k, v in node.properties.items():
-                key = k.lower()
-                if key in ("default", "default_value"):
-                    entry[key] = v  # keep raw string; Mustache 0-falsy
-                else:
-                    entry[key] = _parse_typed(v)
-            description, detail = _description_and_detail(node)
-            if description:
-                entry["description"] = description
-            if detail:
-                entry["detail"] = detail
-            if "generator" in node.src_blocks:
-                entry["generator_expr"] = node.src_blocks["generator"]
-            columns.append(entry)
+            columns.append(_column_node_to_dict(node))
     j["columns"] = columns
 
     sql_section = _section(doc.root, "SQL")

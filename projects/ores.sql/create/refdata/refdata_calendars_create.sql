@@ -47,6 +47,9 @@ create table if not exists "ores_refdata_calendars_tbl" (
     "calendar_type" text not null default 'public_holiday',
     "country_code" text not null default 'ZZ',
     "image_id" uuid null,
+    "source" text not null default 'quantlib',
+    "is_editable" boolean not null default false,
+    "base_calendar_code" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -107,6 +110,20 @@ begin
     ) then
         raise exception 'Invalid country_code: %. Must be a valid ISO 3166-1 alpha-2 code (or the ZZ sentinel).',
             NEW.country_code;
+    end if;
+
+    -- Paste block: self-referential soft FK (joins the same table
+    -- against itself), doesn't fit soft_fk_validations. Only checked
+    -- when present -- a null base_calendar_code is always valid (a
+    -- base-less template, QuantLib or user-authored).
+    if NEW.base_calendar_code is not null and not exists (
+        select 1 from ores_refdata_calendars_tbl
+        where tenant_id = NEW.tenant_id
+          and code = NEW.base_calendar_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid base_calendar_code: %. No active calendar found with this code.',
+            NEW.base_calendar_code;
     end if;
     -- Version management
     select version into current_version

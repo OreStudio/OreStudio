@@ -33,6 +33,10 @@ std::vector<ores::diff::domain::field_value> render_calendar_fields(const domain
     fields.push_back({.name = "Country Code", .value = v.country_code});
     fields.push_back({.name = "Image ID",
                       .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
+    fields.push_back({.name = "Source", .value = v.source});
+    fields.push_back({.name = "Is Editable", .value = v.is_editable ? "true" : "false"});
+    fields.push_back(
+        {.name = "Base Calendar Code", .value = v.base_calendar_code.value_or(std::string{})});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

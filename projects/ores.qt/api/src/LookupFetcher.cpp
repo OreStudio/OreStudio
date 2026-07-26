@@ -613,4 +613,15 @@ std::expected<std::vector<refdata::domain::country>, QString> fetch_countries(Cl
     return std::move(response->countries);
 }
 
+std::expected<std::vector<refdata::domain::calendar>, QString> fetch_calendars(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_calendars_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->calendars);
+}
+
 }

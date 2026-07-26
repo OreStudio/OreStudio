@@ -42,6 +42,7 @@ std::uint32_t calendar_service::count_calendars() {
     return repo_.get_total_calendar_count(ctx_);
 }
 
+
 std::optional<domain::calendar> calendar_service::get_calendar_at_version(const std::string& code,
                                                                           std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting calendar at version: " << code

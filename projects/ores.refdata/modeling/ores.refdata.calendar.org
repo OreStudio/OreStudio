@@ -134,6 +134,81 @@ calendar).
 std::nullopt
 #+end_src
 
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  quantlib
+:END:
+
+Soft-enum: =quantlib= | =user=. =quantlib= means this template's rule
+set was transcribed from QuantLib's published rules and matches one
+of ORE's recognised built-in calendar names -- a taxonomic fact
+driving read-only enforcement and the ORE-export skip logic, *not* an
+instruction to call the QuantLib library (QuantLib is not linked at
+runtime; see this task's =* Revision= section). =user= means a
+calendar template authored in ORE Studio, fully editable.
+
+#+begin_src cpp :name generator
+std::string("quantlib")
+#+end_src
+
+** is_editable
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether users can edit this template's own row (name,
+=calendar_type=, =country_code=, ...) directly. Independent column
+from =source= -- every =quantlib= row is inserted with =false= and
+every =user= row with =true=, but that pairing is enforced by the
+insert trigger's validation, not hardcoded from =source= in
+application code, per this task's instruction that read-only/editable
+be tracked per-template rather than assumed from source.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** base_calendar_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Soft FK to this same table's own =code= column (self-referential).
+Only meaningful for =source = 'user'= rows: present means this
+template is a delta on top of another template (QuantLib-sourced or
+itself user-authored) via that template's own
+[[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows; absent
+means a wholly bespoke calendar with no base. Always null for
+=source = 'quantlib'= rows.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+#+begin_src sql :name base_calendar_code_validation :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- Paste block: self-referential soft FK (joins the same table
+    -- against itself), doesn't fit soft_fk_validations. Only checked
+    -- when present -- a null base_calendar_code is always valid (a
+    -- base-less template, QuantLib or user-authored).
+    if NEW.base_calendar_code is not null and not exists (
+        select 1 from ores_refdata_calendars_tbl
+        where tenant_id = NEW.tenant_id
+          and code = NEW.base_calendar_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid base_calendar_code: %. No active calendar found with this code.',
+            NEW.base_calendar_code;
+    end if;
+#+end_src
+
 * SQL
 
 ** Flags

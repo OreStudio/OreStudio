@@ -1,0 +1,250 @@
+:PROPERTIES:
+:ID: 8B6E1C53-871E-4B6D-BD20-CB3F551B5C46
+:END:
+#+title: ores.refdata.calendar_exception
+#+description: One-off override for a single calendar day -- an additional holiday or a business-day override -- applying uniformly to any calendar, transcribed or user-authored, based or base-less.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: calendar_exception
+#+entity_plural: calendar_exceptions
+#+entity_title: Calendar Exception
+#+brief: A one-off holiday/business-day override for a single calendar day.
+#+has_tenant_id: true
+#+created: 2026-07-24
+#+updated: 2026-07-24
+
+One row per one-off override for a single
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+=ores::analytics::quant::domain::calendar_exception= plus the usual
+refdata plumbing. Applies uniformly to *any* calendar -- transcribed
+or user-authored, based or base-less: a based calendar's full override
+story is entirely =calendar.base_calendar_code= (which base) plus its
+own exception rows (what's different), no separate "adjustment"
+concept needed. QuantLib's own irregular, year-gated special dates
+(the UK's Jubilee bank holidays, the NYSE's special closings) are
+transcribed here, not folded into a
+[[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_rule]] row, so a
+rule stays a timeless, indefinitely-repeating pattern and the
+genuinely irregular part of a calendar stays flat, no-logic-at-all
+data.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this exception row.
+
+Surrogate key -- a calendar can have many exceptions, so there is no
+single natural key column.
+
+* Natural keys
+
+** calendar_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The calendar this exception belongs to.
+
+References [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores_refdata_calendars_tbl.code]] (soft FK).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** exception_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:END:
+
+The specific calendar date this exception applies to.
+
+One exception per (calendar, date) pair.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+* Columns
+
+** is_business_day
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether =exception_date= is overridden to a business day.
+
+=true= overrides a rule-generated holiday back to open; =false= adds
+an additional holiday not covered by any rule.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Free-text note explaining the exception (e.g. "Queen's Platinum
+Jubilee", "Hurricane Sandy").
+
+Purely informational; never interpreted by the instantiation engine.
+
+#+begin_src cpp :name generator
+std::string("Test exception")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_exceptions_tbl
+:END:
+
+* Foreign keys
+
+** calendar_code
+:PROPERTIES:
+:table:              ores_refdata_calendars_tbl
+:referenced_column:  code
+:nullable:           false
+:error_message:      Invalid calendar_code: %. No active calendar found with this code.
+:list_by:            true
+:list_by_as_of:      true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calendar_exception
+:entity_plural_short:   calendar_exceptions
+:entity_singular_words: calendar exception
+:entity_plural_words:   calendar exceptions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: exc
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/calendar_exception.hpp
+:domain_class:                refdata::domain::calendar_exception
+:protocol_include:            ores.refdata.api/messaging/calendar_exception_protocol.hpp
+:collection_name:             calendar_exceptions
+:item_var:                    exc
+:key_field:                   id
+:has_uuid_primary_key:        true
+:has_pagination:              true
+:has_change_reason_cache:     true
+:has_export_macro:            true
+:get_request_class:           refdata::messaging::get_calendar_exceptions_request
+:get_response_class:          refdata::messaging::get_calendar_exceptions_response
+:get_message_type:            get_calendar_exceptions_request
+:save_request_class:          refdata::messaging::save_calendar_exception_request
+:save_response_class:         refdata::messaging::save_calendar_exception_response
+:save_message_type:           save_calendar_exception_request
+:save_request_item_field:     data
+:delete_request_class:        refdata::messaging::delete_calendar_exception_request
+:delete_response_class:       refdata::messaging::delete_calendar_exception_response
+:delete_message_type:         delete_calendar_exception_request
+:history_request_class:       refdata::messaging::get_calendar_exception_history_request
+:history_response_class:      refdata::messaging::get_calendar_exception_history_response
+:history_message_type:        get_calendar_exception_history_request
+:settings_group:               CalendarExceptionListWindow
+:window_title:                Calendar Exceptions
+:icon:                         CalendarClock
+:changed_event_class:         refdata::eventing::calendar_exception_changed_event
+:changed_event_include:       ores.refdata.api/eventing/calendar_exception_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field            | label         | widget            | type      | is_key | is_required | immutable | placeholder                    | combo_fetch_fn        | combo_fetch_include        | combo_allow_blank | combo_domain_type          | combo_display_field | combo_code_field | combo_tooltip_field | combo_sort_field | combo_watcher_name             | combo_label |
+|------------------+---------------+--------------------+-----------+--------+-------------+-----------+----------------------------------+------------------------+-----------------------------+--------------------+------------------------------+-----------------------+--------------------+------------------------+--------------------+-----------------------------------+---------------|
+| id               | Id            | idEdit             | line_edit | true   | true        |           | Calendar exception id           |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
+| calendar_code    | Calendar      | calendarCombo      | dynamic_combo |    | true        | true      |                                  | fetch_calendars        | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::calendar   | name                  | code               | code                   | version            | calendarExceptionCalendarWatcher | calendars     |
+| exception_date   | Date          | exceptionDateEdit  | line_edit |        | true        | true      | YYYY-MM-DD                      |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
+| is_business_day  | Business Day  | isBusinessDayCheckBox | check_box |     |             |           |                                  |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
+| description      | Description   | descriptionEdit    | line_edit |        |             |           | Optional note                   |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
+
+*** Columns (Qt model)
+
+| enum_name       | field            | header       | type   | width | hidden_by_default |
+|-----------------+------------------+--------------+--------+-------+--------------------|
+| CalendarCode    | calendar_code    | Calendar     | string | 100   |                    |
+| ExceptionDate   | exception_date   | Date         | date   | 100   |                    |
+| IsBusinessDay   | is_business_day  | Business Day | bool   | 100   |                    |
+| Description     | description      | Description  | string | auto  |                    |
+| Version         | version          | Version      | int    | 70    |                    |
+| ModifiedBy       | modified_by      | Modified By  | string | auto  |                    |
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| calendar_code   | Calendar     |
+| exception_date  | Date         |
+| is_business_day | Business Day |
+| description     | Description  |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] — the parent calendar template this exception belongs to.
+- [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][ores.refdata.calendar_rule]] — the timeless recurring-rule counterpart to this one-off override.
+- [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] — parent task.

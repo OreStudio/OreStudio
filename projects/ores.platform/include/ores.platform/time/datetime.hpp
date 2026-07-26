@@ -94,6 +94,39 @@ public:
      */
     static std::string to_local_display_string(const std::chrono::system_clock::time_point& tp,
                                                const std::string& format = k_timestamp_format);
+
+    /**
+     * @brief Formats a calendar date as an ISO 8601 date string.
+     *
+     * Output format: "YYYY-MM-DD".
+     *
+     * @param date Date to format.
+     * @return ISO 8601 date string.
+     */
+    static std::string to_iso8601_date(const std::chrono::year_month_day& date);
+
+    /**
+     * @brief Parses an ISO 8601 date string ("YYYY-MM-DD") to a calendar date.
+     *
+     * @param str String to parse.
+     * @return Parsed date.
+     * @throws std::invalid_argument if the string cannot be parsed, or does
+     *         not form a valid calendar date (e.g. "2024-02-30").
+     */
+    static std::chrono::year_month_day from_iso8601_date(const std::string& str);
+
+    /**
+     * @brief Non-throwing check for whether @p str is a valid ISO 8601 date
+     * string, i.e. whether from_iso8601_date(str) would succeed.
+     *
+     * Intended for UI input validation, where a throwing parse would need
+     * try/catch at every call site -- see the generated Qt detail dialogs'
+     * validateInput().
+     *
+     * @param str String to check.
+     * @return true if str parses to a valid calendar date.
+     */
+    static bool is_valid_iso8601_date(const std::string& str) noexcept;
 };
 
 }

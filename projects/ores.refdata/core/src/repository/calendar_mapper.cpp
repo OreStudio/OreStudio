@@ -43,6 +43,9 @@ domain::calendar calendar_mapper::map(const calendar_entity& v) {
     r.image_id = v.image_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
                      std::nullopt;
+    r.source = v.source;
+    r.is_editable = v.is_editable;
+    r.base_calendar_code = v.base_calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,6 +70,9 @@ calendar_entity calendar_mapper::map(const domain::calendar& v) {
     r.country_code = v.country_code;
     r.image_id =
         v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.source = v.source;
+    r.is_editable = v.is_editable;
+    r.base_calendar_code = v.base_calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

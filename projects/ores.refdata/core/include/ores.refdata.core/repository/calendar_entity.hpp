@@ -46,6 +46,9 @@ struct calendar_entity {
     std::string calendar_type;
     std::string country_code;
     std::optional<std::string> image_id;
+    std::string source;
+    bool is_editable = false;
+    std::optional<std::string> base_calendar_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -417,7 +417,7 @@ begin
         select 1 from {{table}}
         where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
           and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
-          and {{/use_system_tenant}}{{/use_no_tenant}}id = NEW.{{column}}
+          and {{/use_system_tenant}}{{/use_no_tenant}}{{referenced_column}} = NEW.{{column}}
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception '{{error_message}}', NEW.{{column}}
@@ -432,7 +432,7 @@ begin
             select 1 from {{table}}
             where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
               and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
-              and {{/use_system_tenant}}{{/use_no_tenant}}id = NEW.{{column}}
+              and {{/use_system_tenant}}{{/use_no_tenant}}{{referenced_column}} = NEW.{{column}}
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception '{{error_message}}', NEW.{{column}}

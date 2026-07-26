@@ -2349,6 +2349,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     any(c.get('is_badge') for c in qt['columns'])
                     or qt.get('has_combo_badge_source', False)
                 )
+                qt['has_date_columns'] = any(c.get('is_date') for c in qt['columns'])
                 # EntityItemDelegate (icon_centered/icon_text_left sizing,
                 # badge_centered rendering) is needed whenever the list view
                 # has ANY icon or badge column — not just badge columns.
@@ -2418,6 +2419,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             detail_fields = qt['detail_fields']
             required_fields = []
             required_dynamic_combo_fields = []
+            date_fields = []
             domain_col_types = {
                 c.get('name'): c.get('cpp_type', '')
                 for c in domain_entity.get('columns', [])
@@ -2523,6 +2525,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_line_edit']
                     and field_cpp in ('double', 'float')
                 )
+                # A plain QLineEdit editing an ISO-8601 date
+                # ("YYYY-MM-DD"), converted to/from
+                # std::chrono::year_month_day via ores.platform's
+                # datetime helpers -- no dedicated QDateEdit widget, to
+                # keep this facet's widget vocabulary small; add one if
+                # a future entity needs a real date picker.
+                f['is_date'] = (
+                    f['is_line_edit']
+                    and field_cpp == 'std::chrono::year_month_day'
+                )
+                if f['is_date']:
+                    date_fields.append({'field': f['field'], 'widget': f['widget']})
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -2567,6 +2581,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 required_dynamic_combo_fields[-1]['_is_last'] = True
             qt['required_fields'] = required_fields
             qt['required_dynamic_combo_fields'] = required_dynamic_combo_fields
+            qt['date_fields'] = date_fields
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
@@ -2618,6 +2633,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_locked_fields'] = bool(locked_fields)
             # Default has_pagination to False if not set
             qt['has_pagination'] = qt.get('has_pagination', False)
+            # Default has_readonly_paginated_list to False if not set
+            qt['has_readonly_paginated_list'] = qt.get('has_readonly_paginated_list', False)
             qt['has_text_edit_fields'] = any(
                 f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )
@@ -2668,6 +2685,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )
+            qt['has_date_detail_fields'] = any(f.get('is_date') for f in detail_fields)
             # A `party_id` natural key that is *not* exposed as a Detail
             # field is implicit-from-session by convention (see book/
             # portfolio) -- setCreateMode must still populate it from the
@@ -2783,19 +2801,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
+                col['is_date'] = (col.get('type') == 'date' or
+                                  col.get('cpp_type') == 'std::chrono::year_month_day')
                 col['iter_var'] = iter_var
-        # Add lowercase versions and UUID flags for left/right columns
+        # Add lowercase versions and UUID/date flags for left/right columns
         if 'left' in junction:
             if 'column_title' in junction['left']:
                 junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
             junction['left']['is_uuid'] = junction['left'].get('type') == 'uuid'
+            junction['left']['is_date'] = (
+                junction['left'].get('type') == 'date' or
+                junction['left'].get('cpp_type') == 'std::chrono::year_month_day'
+            )
         if 'right' in junction:
             if 'column_title' in junction['right']:
                 junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
             junction['right']['is_uuid'] = junction['right'].get('type') == 'uuid'
+            junction['right']['is_date'] = (
+                junction['right'].get('type') == 'date' or
+                junction['right'].get('cpp_type') == 'std::chrono::year_month_day'
+            )
         junction['has_uuid_left_or_right'] = (
             junction.get('left', {}).get('is_uuid', False) or
             junction.get('right', {}).get('is_uuid', False)
+        )
+        junction['has_date_left_or_right_or_column'] = (
+            junction.get('left', {}).get('is_date', False) or
+            junction.get('right', {}).get('is_date', False) or
+            any(c.get('is_date') for c in junction.get('columns', []))
         )
         # Format description as comment block lines (for SQL)
         if 'description' in junction:

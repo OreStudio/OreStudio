@@ -174,6 +174,15 @@
 \ir ./refdata_rounding_types_notify_trigger_drop.sql
 \ir ./refdata_rounding_types_drop.sql
 
+-- Calendar-date materialisation (depends on calendars; drop before it)
+\ir ./refdata_calendar_date_drop.sql
+
+-- Calendar rules/exceptions (depend on calendars; drop before it)
+\ir ./refdata_calendar_exceptions_notify_trigger_drop.sql
+\ir ./refdata_calendar_exceptions_drop.sql
+\ir ./refdata_calendar_rules_notify_trigger_drop.sql
+\ir ./refdata_calendar_rules_drop.sql
+
 -- Calendars (depends on calendar_types and countries; drop before both)
 \ir ./refdata_calendars_notify_trigger_drop.sql
 \ir ./refdata_calendars_drop.sql

@@ -68,16 +68,14 @@ using namespace ores::logging;
       model_(nullptr),
       proxyModel_(nullptr),
       paginationWidget_(nullptr),
-      reloadAction_(nullptr),
+      reloadAction_(nullptr){{^domain_entity.qt.has_readonly_paginated_list}},
       addAction_(nullptr),
       editAction_(nullptr),
-      deleteAction_(nullptr),
-{{#domain_entity.qt.has_csv_xml_io}}
+      deleteAction_(nullptr){{/domain_entity.qt.has_readonly_paginated_list}}{{#domain_entity.qt.has_csv_xml_io}},
       importXMLAction_(nullptr),
       exportCSVAction_(nullptr),
-      exportXMLAction_(nullptr),
-{{/domain_entity.qt.has_csv_xml_io}}
-      historyAction_(nullptr){{#domain_entity.qt.has_setting_gated_actions}},
+      exportXMLAction_(nullptr){{/domain_entity.qt.has_csv_xml_io}}{{^domain_entity.qt.has_readonly_paginated_list}},
+      historyAction_(nullptr){{/domain_entity.qt.has_readonly_paginated_list}}{{#domain_entity.qt.has_setting_gated_actions}},
 {{#domain_entity.qt.setting_gated_actions}}
       {{action}}_(nullptr),
 {{/domain_entity.qt.setting_gated_actions}}
@@ -124,6 +122,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
@@ -160,6 +159,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected);
+{{/domain_entity.qt.has_readonly_paginated_list}}
 {{! see * Extension points above }}
 <<paste:18B9ED63-78C2-4259-93AC-CCDFBC88EFBD>>
 
@@ -335,9 +335,12 @@ void {{domain_entity.entity_pascal}}MdiWindow::onLoadError(const QString& error_
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::onSelectionChanged() {
+{{^domain_entity.qt.has_readonly_paginated_list}}
     updateActionStates();
+{{/domain_entity.qt.has_readonly_paginated_list}}
 }
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
 void {{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked(const QModelIndex& index) {
     if (!index.isValid())
         return;
@@ -347,7 +350,13 @@ void {{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked(const QModelIndex
         emit show{{domain_entity.entity_pascal_short}}Details(*{{domain_entity.qt.item_var}});
     }
 }
+{{/domain_entity.qt.has_readonly_paginated_list}}
+{{#domain_entity.qt.has_readonly_paginated_list}}
+void {{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked(const QModelIndex&) {
+}
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
 void {{domain_entity.entity_pascal}}MdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
@@ -387,7 +396,9 @@ void {{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected() {
         emit show{{domain_entity.entity_pascal_short}}History(*{{domain_entity.qt.item_var}});
     }
 }
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
+{{^domain_entity.qt.has_readonly_paginated_list}}
 void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
@@ -678,6 +689,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
 {{#domain_entity.qt.has_csv_xml_io}}
 void {{domain_entity.entity_pascal}}MdiWindow::exportToCSV() {

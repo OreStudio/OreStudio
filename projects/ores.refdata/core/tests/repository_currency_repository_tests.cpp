@@ -277,8 +277,7 @@ TEST_CASE("read_currency_at_timepoint_before_creation_is_empty", tags) {
     repo.write(h.context(), currency);
 
     auto read_currencies = repo.read_at_timepoint(h.context(), as_of_before, currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint before creation: "
-                             << read_currencies;
+    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint before creation: " << read_currencies;
 
     CHECK(read_currencies.size() == 0);
 }

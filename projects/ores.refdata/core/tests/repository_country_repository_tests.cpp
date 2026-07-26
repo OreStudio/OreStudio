@@ -18,13 +18,13 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/country.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>

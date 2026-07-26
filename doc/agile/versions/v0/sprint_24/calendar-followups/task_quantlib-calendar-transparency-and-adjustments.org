@@ -929,6 +929,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Year-boundary bug drops shifted holidays at range edges | calendar_rule_engine.cpp | Fixed | Widened the year loop by one on each side; per-date filters still clip to [start,end]. Regression test added. |
+| 2 | Unbounded materialisation loop from user-controlled end_year | calendar_materialisation_service.cpp | Fixed | Clamped horizon_year to current_year+100 before the day-by-day loop runs. |
+| 3 | has_readonly_paginated_list untested on its positive path; updateActionStates() declared-but-undefined when set; no explicit default | mdi_window_header.org, core.py | Fixed | Smoke-tested the positive path against currency (temporarily flipped, regenerated, compiled ores.qt.refdata.lib clean, reverted) since calendar_dates has no messaging layer yet to exercise it for real -- documented as a known follow-on blocker on the closed codegen task. Gated updateActionStates() declaration to match its definition; added explicit default matching has_pagination's pattern. |
+| 4 | Minor items: unenforced CSR grouping precondition, missing .ok() validation on parsed dates, untested hand-transcribed ruleset boundary years, hardcoded 100000 read limits with no count check, silent business-day fallback on out-of-range calendar_index | business_day_calendar_set.cpp, datetime.cpp, quantlib_calendar_rulesets.cpp, calendar_materialisation_service.cpp, calendar_adjustment_export_service.cpp | Declined (for now) | Reviewer flagged these as low-priority/non-blocking. Left as-is to keep this round scoped to the two near-blocking items and the codegen finding; worth a follow-up capture if not picked up before the parent story closes. |
 
 * Result

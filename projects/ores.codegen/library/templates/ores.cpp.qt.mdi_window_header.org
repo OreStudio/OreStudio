@@ -149,7 +149,9 @@ private:
     void setupToolbar();
     void setupTable();
     void setupConnections();
+{{^domain_entity.qt.has_readonly_paginated_list}}
     void updateActionStates();
+{{/domain_entity.qt.has_readonly_paginated_list}}
 
     ClientManager* clientManager_;
     QString username_;

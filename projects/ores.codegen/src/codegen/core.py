@@ -2514,6 +2514,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_locked_fields'] = bool(locked_fields)
             # Default has_pagination to False if not set
             qt['has_pagination'] = qt.get('has_pagination', False)
+            # Default has_readonly_paginated_list to False if not set
+            qt['has_readonly_paginated_list'] = qt.get('has_readonly_paginated_list', False)
             qt['has_text_edit_fields'] = any(
                 f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )

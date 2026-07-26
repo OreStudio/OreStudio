@@ -203,6 +203,31 @@ TEST_CASE("nearest_weekday shift rolls Saturday back and Sunday forward",
     CHECK(actual[1] == year{2021} / July / 5);
 }
 
+TEST_CASE("nearest_weekday shift observes a rule across a year boundary into a query range whose "
+         "own year would not otherwise fire the rule",
+         "[calendar_rule_engine]") {
+    calendar_ruleset cal;
+    // effective_from 2028 isolates the boundary case: the rule's *natural*
+    // date never falls inside the query range [2027-01-01, 2027-12-31], so
+    // absent the fix nothing at all would be observed for this rule.
+    cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                               .month = January,
+                               .day = 1u,
+                               .shift = observance_shift::nearest_weekday,
+                               .effective_from = year{2028}}};
+
+    // January 1st 2028 is a Saturday, so New Year's Day observes on
+    // December 31st 2027 -- a rule whose *natural* date (2028-01-01) falls
+    // outside a query range of just year 2027, but whose *observed* date
+    // falls inside it.
+    const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
+        std::vector<calendar_ruleset>{cal}, year{2027} / January / 1, year{2027} / December / 31);
+
+    const auto actual = dates_for(0, holidays);
+    REQUIRE(actual.size() == 1);
+    CHECK(actual[0] == year{2027} / December / 31);
+}
+
 TEST_CASE("roll_forward_to_monday shift moves both Saturday and Sunday to the following Monday",
          "[calendar_rule_engine]") {
     calendar_ruleset cal;

@@ -94,6 +94,20 @@ quant_domain::calendar_exception to_quant_exception(const domain::calendar_excep
 // tenant -- keeps this service usable before that seed data exists.
 constexpr int k_default_start_offset_years = -2;
 constexpr int k_default_end_horizon_year = 2050;
+// Ceiling on how far out a caller-supplied end_year (from the NATS
+// regenerate_calendar_dates_request, or the system-setting fallback) may
+// push the materialisation horizon -- without it, an unbounded end_year
+// forces the day-by-day loop below to synthesise and write an unbounded
+// number of calendar_date rows.
+constexpr int k_max_horizon_years_ahead = 100;
+
+int clamp_horizon_year(int horizon_year) {
+    const auto today_y = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())}
+                              .year();
+    const int max_year = static_cast<int>(today_y) + k_max_horizon_years_ahead;
+    return std::min(horizon_year, max_year);
+}
 
 int read_int_setting(ores::variability::repository::system_settings_repository& repo,
                      ores::database::context ctx,
@@ -138,10 +152,11 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
     const auto start_offset = read_int_setting(
         settings_repo, ctx_, "calendar.materialisation.start_offset_years",
         k_default_start_offset_years);
-    const auto horizon_year = end_year
-        ? static_cast<int>(*end_year)
-        : read_int_setting(settings_repo, ctx_, "calendar.materialisation.end_horizon",
-                           k_default_end_horizon_year);
+    const auto horizon_year = clamp_horizon_year(
+        end_year
+            ? static_cast<int>(*end_year)
+            : read_int_setting(settings_repo, ctx_, "calendar.materialisation.end_horizon",
+                               k_default_end_horizon_year));
 
     // Cycle guard: a chain of base_calendar_code references must terminate
     // in a base-less calendar. Each recursive call below visits one more

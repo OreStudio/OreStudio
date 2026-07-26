@@ -145,7 +145,14 @@ calendar_rule_engine::instantiate_holidays_batch(std::span<const calendar_rulese
         return e;
     };
 
-    for (year y = start.year(); y <= end.year(); ++y) {
+    // Evaluate one extra year on each side: observance_shift (e.g.
+    // nearest_weekday) can move a rule's observed date across a year
+    // boundary -- e.g. a Saturday New Year's Day observes on the prior
+    // Dec 31 -- so a rule whose *natural* date falls just outside
+    // [start.year(), end.year()] can still land its *observed* date
+    // inside [start, end]. The per-date filters below still clip the
+    // final result to the requested window.
+    for (year y = start.year() - years{1}; y <= end.year() + years{1}; ++y) {
         const auto easter = easter_for(y);
 
         for (std::size_t idx = 0; idx < calendars.size(); ++idx) {

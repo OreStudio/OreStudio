@@ -2,7 +2,7 @@
 :ID: 39C32F26-7D95-4F42-948A-1171464E0FFF
 :END:
 #+title: Arithmetic Brownian Motion
-#+description: The additive price process behind arithmetic_gmm_process — its SDE, why it can go negative unlike its geometric counterpart, and when that is actually the right trade-off.
+#+description: The additive price process behind arithmetic_gaussian_mixture_model_process — its SDE, why it can go negative unlike its geometric counterpart, and when that is actually the right trade-off.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
@@ -16,8 +16,8 @@ model of stock price movement, predating
 [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] by
 73 years — models a price that moves *additively*: the absolute change
 per tick, not the percentage change, is normally distributed.
-=ores::analytics::quant::service::arithmetic_gmm_process= implements it
-as the direct counterpart to =gmm_process=, generalised the same way to a
+=ores::analytics::quant::service::arithmetic_gaussian_mixture_model_process= implements it
+as the direct counterpart to =gaussian_mixture_model_process=, generalised the same way to a
 K-component Gaussian mixture rather than a single Normal shock.
 
 * Layperson's mental model
@@ -55,14 +55,14 @@ nor the diffusion scales with the current level $S$ — a wiggle of a given
 size is exactly as likely whether $S$ is currently 10 or 10,000. This SDE
 is already exact (no Ito correction is needed, since $S$ itself, not
 $\log S$, is the variable of interest), so the per-tick update
-=arithmetic_gmm_process= implements is a direct discretisation:
+=arithmetic_gaussian_mixture_model_process= implements is a direct discretisation:
 
 \begin{equation}
 S_{t+1} = S_t + \text{increment}, \quad
 \text{increment} \sim N(\mu\, dt,\, \sigma^2 dt)
 \end{equation}
 
-generalised the same way as =gmm_process= to a K-component Gaussian
+generalised the same way as =gaussian_mixture_model_process= to a K-component Gaussian
 mixture for the increment, rather than a single Normal draw.
 
 ** The trade-off: can go negative

@@ -66,13 +66,16 @@ user-visible, so the rename genuinely propagates up to the UI:
   single-component case stays as-is).
 
 Scope this task to identifier/type renames the codebase controls
-directly; whether any *stored* =process_type= string value (=cir=/=ou=
-today; =gmm=/=arithmetic_gmm= don't apply, since those stored values
-are already =\"geometric\"=/=\"arithmetic\"=, not the class-name
-acronym) also changes, or stays as a stable wire/DB identifier while
-only the C++ symbol changes, is a decision to make explicit in the Plan
-for each — changing a stored enum value is a data-compatibility concern
-the class rename alone is not.
+directly. *Decision*: the stored =process_type= string values also
+change to their full spelled-out form — =cir= → =cox_ingersoll_ross=,
+=ou= → =ornstein_uhlenbeck= (=gmm=/=arithmetic_gmm= don't apply, since
+those stored values are already =\"geometric\"=/=\"arithmetic\"=, not
+the class-name acronym). This includes the reference-data catalogue
+code (=CIR= → =COX_INGERSOLL_ROSS= in
+=ores_synthetic_yield_curve_process_types_tbl=), the SQL check
+constraints referencing =cir=/=ou=/=CIR=, and every C++/UI string
+literal and comment that names the short code — a genuine data/wire
+migration, not just an internal symbol rename.
 
 * Status
 
@@ -80,10 +83,10 @@ the class rename alone is not.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Rename implemented; build and tests green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-22                               |
+| Next         | Close task, raise PR.                  |
+| Last touched | 2026-07-26                               |
 
 * Acceptance
 
@@ -101,20 +104,57 @@ the class rename alone is not.
   CIR entry (e.g. "Cox-Ingersoll-Ross"), not the raw =\"CIR\"= code —
   mirroring the pattern =ProcessTypeLabel=/=FxSpotRateEditor= already
   use for FX's engine combo.
-- A documented decision, for each of =cir= and =ou= (=gmm=/
-  =arithmetic_gmm= don't apply — see Goal), on whether the stored
-  =process_type= enum value/DB check constraint changes or stays
-  as-is for wire/DB stability, with any resulting SQL migration if
-  either changes.
+- Stored =process_type= values also renamed to their full form:
+  =cir= → =cox_ingersoll_ross=, =ou= → =ornstein_uhlenbeck=
+  (=gmm=/=arithmetic_gmm= don't apply — see Goal). Covers the
+  =ores_synthetic_yield_curve_process_types_tbl= catalogue row code
+  (=CIR= → =COX_INGERSOLL_ROSS=), SQL check constraints
+  (=synthetic_yield_curve_process_types_create.sql=,
+  =synthetic_fx_spot_generation_configs_create.sql=,
+  =synthetic_ir_curve_generation_configs_create.sql=), populate
+  scripts, and every C++/Qt string literal comparing against these
+  codes (=process_factory=, =process_parameter_validation=,
+  =ProcessTypeLabel=, =FxSpotRateEditor=, =IrCurveEditor=).
 - Full build and test suite green after the rename (this is a rename,
   not a behaviour change — no test assertions should need updating
-  beyond identifier names).
+  beyond identifier/value names).
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Renamed the four process files (header/source/tests) in
+   =ores.analytics.quant= via =git mv=, then renamed the class,
+   include-guard, and every in-repo reference (=process_factory=,
+   =process_parameter_validation=, =hull_white_process='s
+   cross-reference, tests) via targeted sed passes.
+2. Decision (superseding the original "keep stored value as-is"
+   framing in the Goal): stored =process_type= values also become the
+   full spelled-out form — =cir=/=CIR= → =cox_ingersoll_ross=/
+   =COX_INGERSOLL_ROSS=, =ou= → =ornstein_uhlenbeck=. Updated the SQL
+   check constraints and populate scripts (dev DB rebuilt from
+   scratch via =db recreate=, so no migration script needed) and every
+   C++/Qt string literal comparing against these codes.
+3. =IrCurveEditor='s engine combo previously stored the raw code as
+   both display text and value (=addItem(code)= / =currentText()=).
+   Refactored to the code/label split =FxSpotRateEditor= already
+   uses (=EngineInfo{code, label}=, =addItem(tr(label), code)=,
+   =currentData()= for the underlying value) so the combo shows
+   "Cox-Ingersoll-Ross" while =process_type= still stores
+   =COX_INGERSOLL_ROSS=.
+4. Updated the live knowledge docs (=doc/knowledge/domain/*.org=,
+   renaming =cir_process.org= → =cox_ingersoll_ross_process.org=) and
+   the component model (=component_overview.org=,
+   =ores.analytics.quant.puml=) to match. Left closed sprint
+   story/task docs (historical record) and not-yet-scheduled backlog
+   captures referencing the old names untouched — out of this task's
+   scope.
+5. Full =compass build= and the =ores.analytics.quant=,
+   =ores.synthetic.api/core/service=, and =ores.qt= test suites all
+   green. =db recreate= confirms the renamed catalogue row
+   (=COX_INGERSOLL_ROSS=) and constraints apply cleanly.
 
 * Notes
 

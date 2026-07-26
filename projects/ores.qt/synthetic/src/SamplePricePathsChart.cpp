@@ -271,7 +271,7 @@ void SamplePricePathsChart::doRefresh() {
             }
 
             // The axis range may need to stretch to fit the reference line (e.g.
-            // "ou"'s θ can sit outside the realised path range for a short/calm
+            // "ornstein_uhlenbeck"'s θ can sit outside the realised path range for a short/calm
             // run) — done on a separate pair so the status text below still
             // reports the *realised* range, not one padded out for the line.
             double axisMin = yMin;

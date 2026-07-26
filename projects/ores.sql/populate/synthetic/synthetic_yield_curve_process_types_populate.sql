@@ -22,7 +22,7 @@
  * Yield Curve Process Types Population Script
  *
  * Populates the short-rate process engines an ir_curve_generation_config
- * can select (VASICEK, CIR, HULL_WHITE), matching the IYieldCurveProcess
+ * can select (VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE), matching the IYieldCurveProcess
  * engines process_factory::make_yield_curve_process() can construct.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
@@ -38,7 +38,7 @@ values
     (ores_utility_system_tenant_id_fn(), 'VASICEK', 0, 'Vasicek',
      'Mean-reverting Gaussian short-rate model with a constant volatility, admitting a closed-form affine zero-coupon bond price.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
-    (ores_utility_system_tenant_id_fn(), 'CIR', 0, 'Cox-Ingersoll-Ross',
+    (ores_utility_system_tenant_id_fn(), 'COX_INGERSOLL_ROSS', 0, 'Cox-Ingersoll-Ross',
      'Mean-reverting short-rate model with state-dependent (square-root) volatility, keeping the simulated rate non-negative, and admitting a closed-form affine zero-coupon bond price.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
     (ores_utility_system_tenant_id_fn(), 'HULL_WHITE', 0, 'Hull-White',

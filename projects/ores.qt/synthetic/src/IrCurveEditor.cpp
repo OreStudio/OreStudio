@@ -69,7 +69,15 @@ constexpr int ColStart = 0;
 constexpr int ColEnd = 1;
 constexpr int ColInstrument = 2;
 
-const char* kEngines[] = {"VASICEK", "CIR", "HULL_WHITE"};
+struct EngineInfo {
+    const char* code;  // matches process_type / process_factory's dispatch key
+    const char* label; // combo box display text (wrapped in tr() at use site)
+};
+constexpr EngineInfo kEngines[] = {
+    {"VASICEK", QT_TR_NOOP("Vasicek")},
+    {"COX_INGERSOLL_ROSS", QT_TR_NOOP("Cox-Ingersoll-Ross")},
+    {"HULL_WHITE", QT_TR_NOOP("Hull-White")},
+};
 
 } // namespace
 
@@ -292,28 +300,31 @@ void IrCurveEditor::buildProcessTab() {
     headerRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
     engineCombo_->setInsertPolicy(QComboBox::NoInsert);
-    for (const auto* e : kEngines)
-        engineCombo_->addItem(QString::fromUtf8(e));
-    engineCombo_->setCurrentText(QString::fromStdString(ir_.process_type));
+    for (const auto& e : kEngines)
+        engineCombo_->addItem(tr(e.label), QString::fromLatin1(e.code));
+    {
+        const int idx = engineCombo_->findData(QString::fromStdString(ir_.process_type));
+        engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
+    }
     // Tooltip describes only the currently-selected engine, not all three at once -- refreshed on
     // every selection change instead of one static blurb covering the whole combo.
-    auto updateEngineTooltip = [this](const QString& engine) {
+    auto updateEngineTooltip = [this](int) {
         static const std::map<QString, QString> descriptions = {
             {QStringLiteral("VASICEK"),
              tr("Vasicek: dr = κ(θ−r)dt + σ dW. Constant volatility, mean-reverting; the rate can "
                 "go negative.")},
-            {QStringLiteral("CIR"),
+            {QStringLiteral("COX_INGERSOLL_ROSS"),
              tr("Cox-Ingersoll-Ross: dr = κ(θ−r)dt + σ√r dW. Volatility scales with √r, so the "
                 "rate stays non-negative (unlike Vasicek).")},
             {QStringLiteral("HULL_WHITE"),
              tr("Hull-White: like Vasicek, but supports a piecewise-constant mean level over "
                 "time (a single constant level θ here, same as Vasicek's).")},
         };
-        auto it = descriptions.find(engine);
+        auto it = descriptions.find(engineCombo_->currentData().toString());
         engineCombo_->setToolTip(it != descriptions.end() ? it->second : QString());
     };
-    updateEngineTooltip(engineCombo_->currentText());
-    connect(engineCombo_, &QComboBox::currentTextChanged, this, updateEngineTooltip);
+    updateEngineTooltip(engineCombo_->currentIndex());
+    connect(engineCombo_, &QComboBox::currentIndexChanged, this, updateEngineTooltip);
     headerRow->addWidget(engineCombo_);
     headerRow->addStretch(1);
 
@@ -520,7 +531,7 @@ void IrCurveEditor::buildProcessTab() {
     layout->addWidget(pathsBox, 1);
 
     connect(
-        engineCombo_, &QComboBox::currentTextChanged, this, &IrCurveEditor::onProcessFieldChanged);
+        engineCombo_, &QComboBox::currentIndexChanged, this, &IrCurveEditor::onProcessFieldChanged);
 
     tabWidget_->addTab(tab, tr("Process"));
 }
@@ -841,7 +852,7 @@ void IrCurveEditor::onTemplateChanged() {
 void IrCurveEditor::refreshCharts() {
     if (syncing_)
         return;
-    const auto engine = engineCombo_->currentText().toStdString();
+    const auto engine = engineCombo_->currentData().toString().toStdString();
     const auto kappa = kappaSpin_->value();
     const auto theta = thetaSpin_->value();
     const auto sigma = sigmaSpin_->value();
@@ -997,7 +1008,7 @@ void IrCurveEditor::onSaveClicked() {
     // Stored as the full floating_index_type code (see the field's own doc comment) --
     // indexNameCombo_ shows just the suffix, so re-prefix it here.
     ir.index_name = ccy + "-" + idx;
-    ir.process_type = engineCombo_->currentText().toStdString();
+    ir.process_type = engineCombo_->currentData().toString().toStdString();
     ir.kappa = kappaSpin_->value();
     ir.theta = thetaSpin_->value();
     ir.sigma = sigmaSpin_->value();

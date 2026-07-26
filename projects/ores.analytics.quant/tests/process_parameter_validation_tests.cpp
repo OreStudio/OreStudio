@@ -35,8 +35,8 @@ TEST_CASE("valid arithmetic parameters pass", "[process_parameter_validation]") 
     CHECK(r.valid);
 }
 
-TEST_CASE("valid ou parameters pass", "[process_parameter_validation]") {
-    const auto r = validate_process_parameters("ou", {}, {1.0}, {0.3}, 100.0);
+TEST_CASE("valid ornstein_uhlenbeck parameters pass", "[process_parameter_validation]") {
+    const auto r = validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {0.3}, 100.0);
     CHECK(r.valid);
 }
 
@@ -50,7 +50,7 @@ TEST_CASE("non-positive initial price is rejected for every engine",
           "[process_parameter_validation]") {
     CHECK_FALSE(validate_process_parameters("geometric", {0.0}, {0.01}, {1.0}, 0.0).valid);
     CHECK_FALSE(validate_process_parameters("arithmetic", {0.0}, {0.01}, {1.0}, -1.0).valid);
-    CHECK_FALSE(validate_process_parameters("ou", {}, {1.0}, {0.3}, 0.0).valid);
+    CHECK_FALSE(validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {0.3}, 0.0).valid);
 }
 
 TEST_CASE("mixing engines reject empty component vectors", "[process_parameter_validation]") {
@@ -85,20 +85,20 @@ TEST_CASE("mixing engines accept a single negative weight as long as the sum is 
     CHECK(r.valid);
 }
 
-TEST_CASE("ou rejects missing kappa/sigma channels", "[process_parameter_validation]") {
-    CHECK_FALSE(validate_process_parameters("ou", {}, {}, {0.3}, 100.0).valid);
-    CHECK_FALSE(validate_process_parameters("ou", {}, {1.0}, {}, 100.0).valid);
+TEST_CASE("ornstein_uhlenbeck rejects missing kappa/sigma channels", "[process_parameter_validation]") {
+    CHECK_FALSE(validate_process_parameters("ornstein_uhlenbeck", {}, {}, {0.3}, 100.0).valid);
+    CHECK_FALSE(validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {}, 100.0).valid);
 }
 
-TEST_CASE("ou rejects a negative sigma", "[process_parameter_validation]") {
-    const auto r = validate_process_parameters("ou", {}, {-1.0}, {0.3}, 100.0);
+TEST_CASE("ornstein_uhlenbeck rejects a negative sigma", "[process_parameter_validation]") {
+    const auto r = validate_process_parameters("ornstein_uhlenbeck", {}, {-1.0}, {0.3}, 100.0);
     CHECK_FALSE(r.valid);
 }
 
-TEST_CASE("ou accepts a non-positive kappa (degenerate driftless walk is valid)",
+TEST_CASE("ornstein_uhlenbeck accepts a non-positive kappa (degenerate driftless walk is valid)",
           "[process_parameter_validation]") {
-    CHECK(validate_process_parameters("ou", {}, {1.0}, {0.0}, 100.0).valid);
-    CHECK(validate_process_parameters("ou", {}, {1.0}, {-0.5}, 100.0).valid);
+    CHECK(validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {0.0}, 100.0).valid);
+    CHECK(validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {-0.5}, 100.0).valid);
 }
 
 TEST_CASE("valid vasicek/hull_white parameters pass", "[process_parameter_validation]") {
@@ -122,25 +122,25 @@ TEST_CASE("vasicek/hull_white accept a negative initial or mean-reversion rate",
 TEST_CASE("yield curve engines reject an empty theta_path", "[process_parameter_validation]") {
     CHECK_FALSE(validate_yield_curve_process_parameters("vasicek", 0.3, {}, 0.01, 0.03).valid);
     CHECK_FALSE(validate_yield_curve_process_parameters("hull_white", 0.3, {}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.3, {}, 0.01, 0.03).valid);
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {}, 0.01, 0.03).valid);
 }
 
 TEST_CASE("yield curve engines reject a negative sigma", "[process_parameter_validation]") {
     CHECK_FALSE(validate_yield_curve_process_parameters("vasicek", 0.3, {0.03}, -0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.3, {0.03}, -0.01, 0.03).valid);
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, -0.01, 0.03).valid);
 }
 
-TEST_CASE("cir requires strictly positive kappa and theta", "[process_parameter_validation]") {
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.0, {0.03}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", -0.1, {0.03}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.3, {0.0}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.3, {-0.01}, 0.01, 0.03).valid);
+TEST_CASE("cox_ingersoll_ross requires strictly positive kappa and theta", "[process_parameter_validation]") {
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.0, {0.03}, 0.01, 0.03).valid);
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", -0.1, {0.03}, 0.01, 0.03).valid);
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.0}, 0.01, 0.03).valid);
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {-0.01}, 0.01, 0.03).valid);
 }
 
-TEST_CASE("cir rejects a negative initial rate", "[process_parameter_validation]") {
-    CHECK_FALSE(validate_yield_curve_process_parameters("cir", 0.3, {0.03}, 0.01, -0.001).valid);
+TEST_CASE("cox_ingersoll_ross rejects a negative initial rate", "[process_parameter_validation]") {
+    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, -0.001).valid);
 }
 
-TEST_CASE("cir accepts a zero initial rate", "[process_parameter_validation]") {
-    CHECK(validate_yield_curve_process_parameters("cir", 0.3, {0.03}, 0.01, 0.0).valid);
+TEST_CASE("cox_ingersoll_ross accepts a zero initial rate", "[process_parameter_validation]") {
+    CHECK(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, 0.0).valid);
 }

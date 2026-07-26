@@ -94,7 +94,7 @@ constexpr double kJumpMax = 0.5;     // up to 50% mixture share
  * process / Simple mode / weight normalisation / the all-zero-weight guard)
  * behaves per engine — the UI asks "does this engine support mixing?"
  * rather than hardcoding "is this the ou engine?" throughout. More single-
- * regime engines (e.g. Vasicek/CIR/Hull-White for rates) are expected to
+ * regime engines (e.g. Vasicek/Cox-Ingersoll-Ross/Hull-White for rates) are expected to
  * follow the same shape: add a row here, not new special-cases in the UI.
  */
 struct EngineInfo {
@@ -112,7 +112,7 @@ struct EngineInfo {
 constexpr EngineInfo kEngines[] = {
     {"geometric", QT_TR_NOOP("Geometric Brownian Motion"), true},
     {"arithmetic", QT_TR_NOOP("Arithmetic Brownian Motion"), true},
-    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck"), false},
+    {"ornstein_uhlenbeck", QT_TR_NOOP("Ornstein-Uhlenbeck"), false},
 };
 
 const EngineInfo* find_engine(const std::string& code) {
@@ -370,12 +370,12 @@ void FxSpotRateEditor::buildInstrumentTab() {
     priceSpin_->setDecimals(4);
     priceSpin_->setValue(fx_.gmm_initial_price > 0 ? fx_.gmm_initial_price : 1.0);
     priceSpin_->setToolTip(tr("The spot rate the simulation starts from."));
-    // "ou" echoes this as θ on its Simple page — keep that (and both charts,
+    // "ornstein_uhlenbeck" echoes this as θ on its Simple page — keep that (and both charts,
     // which also read this as the OU level / GBM starting price) live.
     connect(priceSpin_, &QDoubleSpinBox::valueChanged, this, [this](double) {
         if (syncing_)
             return;
-        if (currentEngine() == "ou" && ouThetaLabel_)
+        if (currentEngine() == "ornstein_uhlenbeck" && ouThetaLabel_)
             ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
         refreshCharts();
     });
@@ -548,7 +548,7 @@ void FxSpotRateEditor::buildBehaviourTab() {
     middleRow->addWidget(modeStack_, 1);
 
     // RIGHT: compact PDF chart group, top-aligned. For single-regime engines
-    // (e.g. "ou") the increment PDF doesn't apply, but the *steady-state price*
+    // (e.g. "ornstein_uhlenbeck") the increment PDF doesn't apply, but the *steady-state price*
     // distribution does (closed-form: N(θ, σ/√(2κ))) — updateEngineUi() switches
     // the chart's domain rather than disabling it.
     auto* distBox = new QGroupBox(tr("Return distribution"), tab);
@@ -581,7 +581,7 @@ void FxSpotRateEditor::buildBehaviourTab() {
 }
 
 QWidget* FxSpotRateEditor::buildSimpleControls() {
-    // "ou"'s Simple page has nothing in common with the GBM/arithmetic sliders
+    // "ornstein_uhlenbeck"'s Simple page has nothing in common with the GBM/arithmetic sliders
     // (single scalar params, not a drift/vol/jump mixture) — switch between two
     // independent pages rather than trying to make one widget cover both.
     simpleModeStack_ = new QStackedWidget(this);
@@ -1155,7 +1155,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     meanSpin->setFrame(false);
     meanSpin->setStyleSheet(flatEdit);
     // Explanation lives on the column header tooltip (ColMean), which updates per
-    // engine — a per-row static tooltip here would go stale for e.g. "ou".
+    // engine — a per-row static tooltip here would go stale for e.g. "ornstein_uhlenbeck".
 
     auto* stdevSpin = new QDoubleSpinBox(componentTable_);
     stdevSpin->setRange(0.0, 100.0);
@@ -1280,13 +1280,13 @@ void FxSpotRateEditor::onEngineChanged() {
         fx_.process_type = currentEngine();
     updateEngineUi();
     // Engine also determines which distribution the Return Distribution chart
-    // plots (increment PDF, or "ou"'s steady-state price distribution).
+    // plots (increment PDF, or "ornstein_uhlenbeck"'s steady-state price distribution).
     refreshCharts();
 }
 
 void FxSpotRateEditor::updateEngineUi() {
     // Generic, capability-driven gating (any engine with supportsMixing = false
-    // behaves this way, not just "ou" specifically). Called both on every engine
+    // behaves this way, not just "ornstein_uhlenbeck" specifically). Called both on every engine
     // change AND once at the end of buildBehaviourTab() during construction.
     const bool mixing = currentEngineSupportsMixing();
     if (!mixing && components_.size() > 1) {
@@ -1298,18 +1298,18 @@ void FxSpotRateEditor::updateEngineUi() {
     // can't express *how* a single-regime engine's fields are repurposed, so
     // this part stays keyed on the engine code, unlike the gating above.
     const auto engine = currentEngine();
-    const bool ou = engine == "ou";
+    const bool ou = engine == "ornstein_uhlenbeck";
     const bool arithmetic = engine == "arithmetic";
 
     // κ = 1.0 is the generic single-row default weight (a full mixture share),
     // but reused as OU's reversion speed it reverts within ~1 tick — the price
     // sits in a band so tight it looks "stuck" rather than visibly mean-
     // reverting. Rescale it to a slower, more legible default the first time a
-    // *new* config switches to "ou", without touching a loaded record's real κ.
+    // *new* config switches to "ornstein_uhlenbeck", without touching a loaded record's real κ.
     if (ou && isNew_ && !components_.empty() && components_.front().weight == 1.0)
         components_.front().weight = kappaFromHalfLifeMinutes(15.0);
 
-    // Always resync both the table and "ou"'s dedicated Simple page from the
+    // Always resync both the table and "ornstein_uhlenbeck"'s dedicated Simple page from the
     // model — cheap, and guarantees whichever page becomes visible (either via
     // this engine change or a later Simple/Advanced click) is never stale.
     if (componentTable_) {
@@ -1578,7 +1578,7 @@ void FxSpotRateEditor::updateWeightSumLabel() {
 }
 
 void FxSpotRateEditor::syncSimpleFromModel() {
-    if (currentEngine() == "ou") {
+    if (currentEngine() == "ornstein_uhlenbeck") {
         syncOuSimpleFromModel();
         return;
     }
@@ -1618,7 +1618,7 @@ void FxSpotRateEditor::syncSimpleFromModel() {
 }
 
 void FxSpotRateEditor::rebuildModelFromSimple() {
-    if (currentEngine() == "ou") {
+    if (currentEngine() == "ornstein_uhlenbeck") {
         rebuildOuModelFromSimple();
         return;
     }
@@ -1667,7 +1667,7 @@ void FxSpotRateEditor::refreshCharts() {
     const std::string engine = currentEngine();
     const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
 
-    const bool ou = engine == "ou";
+    const bool ou = engine == "ornstein_uhlenbeck";
     if (distChart_)
         distChart_->setDomain(ou ? ReturnDistributionChart::Domain::Price :
                                    ReturnDistributionChart::Domain::Return);
@@ -1698,7 +1698,7 @@ void FxSpotRateEditor::refreshCharts() {
     }
 
     if (distChart_)
-        distChart_->setComponents(distComps); // empty for κ=0 "ou" — no stationary distribution
+        distChart_->setComponents(distComps); // empty for κ=0 "ornstein_uhlenbeck" — no stationary distribution
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);
@@ -1826,7 +1826,7 @@ void FxSpotRateEditor::onSaveClicked() {
     fx.version = 0;
 
     // Build the component stack, normalising weights to sum 1. Skipped for
-    // single-regime engines (e.g. "ou"): their one row's Weight field is a
+    // single-regime engines (e.g. "ornstein_uhlenbeck"): their one row's Weight field is a
     // scalar parameter (κ), not a mixture share.
     const bool mixing = currentEngineSupportsMixing();
     double total = 0.0;

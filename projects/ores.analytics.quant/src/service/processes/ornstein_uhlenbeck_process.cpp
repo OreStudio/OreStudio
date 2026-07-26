@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/processes/ou_process.hpp"
+#include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -30,7 +30,7 @@ namespace {
 const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
 }
 
-ou_process::ou_process(
+ornstein_uhlenbeck_process::ornstein_uhlenbeck_process(
     double kappa, double theta, double sigma, double initial_price, std::uint32_t seed, double dt)
     : kappa_(kappa)
     , theta_(theta)
@@ -41,14 +41,14 @@ ou_process::ou_process(
     , normal_(0.0, 1.0) {
 
     if (sigma_ < 0.0)
-        throw std::invalid_argument("ou_process: sigma must be non-negative");
+        throw std::invalid_argument("ornstein_uhlenbeck_process: sigma must be non-negative");
     if (initial_price <= 0.0)
-        throw std::invalid_argument("ou_process: initial_price must be positive");
+        throw std::invalid_argument("ornstein_uhlenbeck_process: initial_price must be positive");
     if (dt_ <= 0.0)
-        throw std::invalid_argument("ou_process: dt must be strictly positive");
+        throw std::invalid_argument("ornstein_uhlenbeck_process: dt must be strictly positive");
 }
 
-double ou_process::next() {
+double ornstein_uhlenbeck_process::next() {
     const double z = normal_(rng_);
     if (kappa_ > small_kappa_threshold) {
         const double decay = std::exp(-kappa_ * dt_);
@@ -63,7 +63,7 @@ double ou_process::next() {
     return price_;
 }
 
-double ou_process::current() const {
+double ornstein_uhlenbeck_process::current() const {
     return price_;
 }
 

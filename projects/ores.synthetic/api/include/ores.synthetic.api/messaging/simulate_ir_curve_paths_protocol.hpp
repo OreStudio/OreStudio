@@ -42,7 +42,7 @@ struct simulate_ir_curve_paths_request {
     static constexpr int max_num_ticks = 5000;
     static constexpr int max_num_paths = 50;
 
-    /** @brief Short-rate process engine: "vasicek", "cir", or "hull_white". */
+    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", or "hull_white". */
     std::string process_type = "vasicek";
 
     /** @brief Mean-reversion speed. */

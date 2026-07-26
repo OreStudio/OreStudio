@@ -47,7 +47,7 @@ public:
      * @param ticks_ahead Number of ticks from now to the bond's maturity;
      *        0 returns exactly 1.0 (a bond maturing now is worth its
      *        notional). Ticks are this codebase's unit of simulation
-     *        time throughout (see ou_process, gmm_process) -- mapping a
+     *        time throughout (see ornstein_uhlenbeck_process, gaussian_mixture_model_process) -- mapping a
      *        calendar tenor (e.g. "3M") to a tick count is the caller's
      *        responsibility.
      */

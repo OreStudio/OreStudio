@@ -34,7 +34,7 @@ In code, this shows up as a =next()= method that only ever reads the
 process's *current* stored state, never a history buffer:
 
 #+begin_src cpp
-double ou_process::next() {
+double ornstein_uhlenbeck_process::next() {
     const double z = normal_(rng_);
     // Only price_ (the current state) and z (a fresh random draw) are
     // used below -- no earlier value of price_ is read or needed.

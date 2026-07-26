@@ -35,11 +35,11 @@ namespace ores::analytics::quant::service {
  * dr = kappa * (theta(t) - r) * dt + sigma * dW
  *
  * Written in "target level" form -- kappa*(theta(t)-r), the same shape as
- * ou_process -- rather than Hull & White's original "drift intercept" form
+ * ornstein_uhlenbeck_process -- rather than Hull & White's original "drift intercept" form
  * (dr = [phi(t) - a*r]dt + sigma*dW, phi(t) = kappa*theta(t)); the two are
  * equivalent up to relabelling theta(t). This form is chosen deliberately:
  * it makes the degenerate kappa <= 0 case and the Vasicek special case
- * (theta(t) held constant) reduce to *exactly* ou_process's formula, not an
+ * (theta(t) held constant) reduce to *exactly* ornstein_uhlenbeck_process's formula, not an
  * approximation of it.
  *
  * theta(t) is supplied as theta_path, a piecewise-constant function of

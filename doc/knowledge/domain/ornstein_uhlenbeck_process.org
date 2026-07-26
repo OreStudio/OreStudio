@@ -2,7 +2,7 @@
 :ID: 4F7C0348-3C53-44E2-8C95-B3B26852FB94
 :END:
 #+title: Ornstein-Uhlenbeck Process
-#+description: The general mean-reverting building block behind ou_process — its SDE, exact per-tick discretisation, and why Vasicek/Hull-White/CIR are all specialisations of it.
+#+description: The general mean-reverting building block behind ornstein_uhlenbeck_process — its SDE, exact per-tick discretisation, and why Vasicek/Hull-White/CIR are all specialisations of it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
@@ -21,7 +21,7 @@ cluster specialises:
 [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White]], and
 [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][CIR]] are all OU with some
 variation on a constant mean-reversion target or the volatility term.
-=ores::analytics::quant::service::ou_process= implements it directly, and
+=ores::analytics::quant::service::ornstein_uhlenbeck_process= implements it directly, and
 the exact per-tick discretisation it uses is the same one the Vasicek and
 Hull-White processes reduce to.
 
@@ -35,7 +35,7 @@ tick. How stiff the band is (how fast it snaps back) is =kappa= (κ); how
 much random jitter is added on top is =sigma= (σ).
 
 #+begin_src cpp
-double ou_process::next() {
+double ornstein_uhlenbeck_process::next() {
     const double z = normal_(rng_);
     const double decay = std::exp(-kappa_);
     const double var = (1.0 - decay * decay) / (2.0 * kappa_);
@@ -76,7 +76,7 @@ X_{t+1} = \theta + (X_t - \theta) e^{-\kappa}
 (with a unit tick, $dt = 1$, matching the per-update convention the
 [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]]/
 [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic]] processes use for
-their increments). This is why =ou_process= never needs to fall back on
+their increments). This is why =ornstein_uhlenbeck_process= never needs to fall back on
 an approximate discretisation the way a nonlinear SDE would: the whole
 transition — mean, variance, and all — is known in closed form for any
 tick size, not just in the limit of small ticks.

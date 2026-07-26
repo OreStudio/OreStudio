@@ -105,7 +105,7 @@ A process $W_t$ is a standard Wiener process if:
 Property 3 is the one every discretisation in this codebase reduces to: a
 single tick's increment $dW$ over a unit time step is simply
 $Z \sim N(0, 1)$, a draw from the standard Normal distribution. This is
-exactly why =ou_process=, =vasicek_process=, and the other processes in
+exactly why =ornstein_uhlenbeck_process=, =vasicek_process=, and the other processes in
 this cluster all update state with a term of the form $\sigma Z$: it *is*
 $\sigma \, dW$ for a unit-length tick.
 

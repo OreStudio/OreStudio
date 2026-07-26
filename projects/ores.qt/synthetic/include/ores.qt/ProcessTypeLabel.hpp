@@ -39,7 +39,7 @@ inline QString processTypeLabel(const std::string& processType) {
         return QCoreApplication::translate("ProcessTypeLabel", "Geometric Brownian Motion");
     if (processType == "arithmetic")
         return QCoreApplication::translate("ProcessTypeLabel", "Arithmetic Brownian Motion");
-    if (processType == "ou")
+    if (processType == "ornstein_uhlenbeck")
         return QCoreApplication::translate("ProcessTypeLabel", "Ornstein-Uhlenbeck");
     return QString::fromStdString(processType); // unknown code: show it verbatim
 }

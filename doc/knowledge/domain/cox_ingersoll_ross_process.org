@@ -2,7 +2,7 @@
 :ID: 2350DE1D-00F7-4909-8308-D91831F4C0EA
 :END:
 #+title: Cox-Ingersoll-Ross (CIR) Process
-#+description: The non-negative short-rate model behind cir_process — its sqrt(r) volatility term, the Feller condition, and why its exact transition is a Poisson mixture of chi-squared draws rather than a Gaussian update.
+#+description: The non-negative short-rate model behind cox_ingersoll_ross_process — its sqrt(r) volatility term, the Feller condition, and why its exact transition is a Poisson mixture of chi-squared draws rather than a Gaussian update.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
@@ -21,7 +21,7 @@ approaches zero and rules out the negative rates
 same volatility term is also what breaks the closed-form Gaussian
 transition the other two share: a CIR rate's next value follows a
 non-central chi-squared distribution, not a Normal one, requiring a
-genuinely different simulation technique. =ores::analytics::quant::service::cir_process=
+genuinely different simulation technique. =ores::analytics::quant::service::cox_ingersoll_ross_process=
 implements the *exact* (non-approximated) transition via the standard
 Poisson-mixture-of-central-chi-squared construction, not an Euler
 discretisation.
@@ -39,7 +39,7 @@ distribution Vasicek uses — it becomes a different, more intricate
 distribution that itself has to be sampled correctly, not approximated.
 
 #+begin_src cpp
-double cir_process::next_stochastic() {
+double cox_ingersoll_ross_process::next_stochastic() {
     const double decay = std::exp(-kappa_);
     const double c = sigma_ * sigma_ * (1.0 - decay) / (4.0 * kappa_);
     const double d = 4.0 * kappa_ * theta_ / (sigma_ * sigma_);
@@ -97,7 +97,7 @@ N &\sim \mathrm{Poisson}(\lambda/2) \\
 r_{t+1} &= c X, \quad X \sim \chi^2(d + 2N)
 \end{align}
 
-=cir_process= draws this transition exactly, tick by tick, rather than
+=cox_ingersoll_ross_process= draws this transition exactly, tick by tick, rather than
 approximating it via an Euler scheme (which for CIR specifically can
 produce negative simulated rates — the very defect the model was
 designed to avoid — unless a more careful discretisation is used; drawing
@@ -170,5 +170,5 @@ convention.
   and applied to the CIR process above.
 - Glasserman, P. (2003). /Monte Carlo Methods in Financial Engineering/.
   Springer. Section 3.4 gives the Poisson-mixture-of-chi-squared exact
-  simulation scheme =cir_process= implements directly.
+  simulation scheme =cox_ingersoll_ross_process= implements directly.
 - Wikipedia: [[https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model][Cox-Ingersoll-Ross model]].

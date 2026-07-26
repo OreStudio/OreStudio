@@ -53,10 +53,10 @@ cluster is fundamentally about.
 
 - [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic Brownian Motion]] —
   additive increments (=price += increment=); implemented by
-  =arithmetic_gmm_process=.
+  =arithmetic_gaussian_mixture_model_process=.
 - [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] —
   multiplicative, log-normal increments (=price *= exp(log_return)=);
-  implemented by =gmm_process=. Both generalise their single-Gaussian
+  implemented by =gaussian_mixture_model_process=. Both generalise their single-Gaussian
   textbook form to a K-component Gaussian mixture, reproducing fat tails
   and volatility clustering a single Normal shock cannot — see
   [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and
@@ -83,7 +83,7 @@ anchor at all.
 
 - [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] —
   the general mean-reverting building block, $dX = \kappa(\theta-X)\,dt +
-  \sigma\, dW$; implemented by =ou_process=.
+  \sigma\, dW$; implemented by =ornstein_uhlenbeck_process=.
 - [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] — the OU
   process applied to a short rate with a constant long-run level;
   implemented by =vasicek_process=, a thin wrapper composing
@@ -95,7 +95,7 @@ anchor at all.
 - [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR)
   Process]] — Vasicek with a $\sigma\sqrt{r}$ volatility term that keeps
   the rate non-negative, at the cost of a non-Gaussian (non-central
-  chi-squared) transition density; implemented by =cir_process=.
+  chi-squared) transition density; implemented by =cox_ingersoll_ross_process=.
 
 Currently all four are consumed as short-rate models; the underlying
 maths applies to any quantity that reverts to a long-run level, not just

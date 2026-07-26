@@ -19,11 +19,11 @@
  */
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
-#include "ores.analytics.quant/service/processes/arithmetic_gmm_process.hpp"
-#include "ores.analytics.quant/service/processes/cir_process.hpp"
-#include "ores.analytics.quant/service/processes/gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
+#include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
+#include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
-#include "ores.analytics.quant/service/processes/ou_process.hpp"
+#include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
 #include <stdexcept>
 
@@ -46,18 +46,18 @@ process_factory::make_process(const std::string& process_type,
         throw std::invalid_argument(validation.message);
 
     if (process_type == "arithmetic")
-        return std::make_unique<arithmetic_gmm_process>(
+        return std::make_unique<arithmetic_gaussian_mixture_model_process>(
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
-    if (process_type == "ou") {
+    if (process_type == "ornstein_uhlenbeck") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
-        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed, dt);
+        return std::make_unique<ornstein_uhlenbeck_process>(kappa, initial_price, sigma, initial_price, seed, dt);
     }
     // Default to the geometric engine for "geometric" and any unknown value.
     // ores.analytics.quant deliberately carries no logging dependency (it stays
     // consumable standalone); callers that care about diagnosing an unknown
     // process_type should log around this call.
-    return std::make_unique<gmm_process>(
+    return std::make_unique<gaussian_mixture_model_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
 }
 
@@ -77,8 +77,8 @@ process_factory::make_yield_curve_process(const std::string& process_type,
     if (process_type == "vasicek")
         return std::make_unique<vasicek_process>(
             kappa, theta_path.front(), sigma, initial_rate, seed, dt);
-    if (process_type == "cir")
-        return std::make_unique<cir_process>(
+    if (process_type == "cox_ingersoll_ross")
+        return std::make_unique<cox_ingersoll_ross_process>(
             kappa, theta_path.front(), sigma, initial_rate, seed, dt);
     if (process_type == "hull_white")
         return std::make_unique<hull_white_process>(

@@ -2,7 +2,7 @@
 :ID: 3AD7973A-57ED-43EB-9504-825719F601A8
 :END:
 #+title: Geometric Brownian Motion
-#+description: The multiplicative, log-normal price process behind gmm_process — its SDE, why it never goes negative, its Gaussian-mixture generalisation, and the Black-Scholes-Merton lineage.
+#+description: The multiplicative, log-normal price process behind gaussian_mixture_model_process — its SDE, why it never goes negative, its Gaussian-mixture generalisation, and the Black-Scholes-Merton lineage.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
@@ -17,7 +17,7 @@ change, is normally distributed. This is what keeps a GBM price strictly
 positive no matter how far it evolves — a crucial property an asset price
 must have that plain (additive) Brownian motion, its
 [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][arithmetic]] counterpart, does
-not. =ores::analytics::quant::service::gmm_process= implements GBM,
+not. =ores::analytics::quant::service::gaussian_mixture_model_process= implements GBM,
 generalised from a single Gaussian shock to a K-component Gaussian
 mixture, for FX spot and equity price generation.
 
@@ -56,7 +56,7 @@ absolute wiggle of a price at 10, for the same percentage volatility
 $\sigma$. Applying
 [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's lemma]] to $\log S$
 removes the state-dependence and yields the exact, non-approximated
-per-tick update =gmm_process= actually implements:
+per-tick update =gaussian_mixture_model_process= actually implements:
 
 \begin{equation}
 S_{t+1} = S_t \exp(\text{log\_return}), \quad
@@ -82,7 +82,7 @@ is the standard choice for modelling a traded asset price.
 
 A single Gaussian shock per tick produces returns with thinner tails and
 less clustering than real market data exhibits.
-=gmm_process= draws each tick's =log_return= from a K-component Gaussian
+=gaussian_mixture_model_process= draws each tick's =log_return= from a K-component Gaussian
 mixture instead of one Normal distribution — a weighted combination of
 several Normal distributions with different means and variances — which
 reproduces the fat tails and volatility clustering real FX and equity

@@ -80,9 +80,9 @@ unit-testable without pulling in a service binary.
   point-in-time star-shaping around an aggregation currency for risk,
   preserving every current rate's value.
 - =service::process_factory::make_process(process_type, means, stdevs,
-  weights, initial_price, seed)= -- builds a =gmm_process=
-  (geometric/multiplicative), =arithmetic_gmm_process=
-  (additive/Bachelier), or =ou_process= (mean-reverting) depending on
+  weights, initial_price, seed)= -- builds a =gaussian_mixture_model_process=
+  (geometric/multiplicative), =arithmetic_gaussian_mixture_model_process=
+  (additive/Bachelier), or =ornstein_uhlenbeck_process= (mean-reverting) depending on
   =process_type=; unrecognised values fall back to geometric.
 - =domain::validate_process_parameters(process_type, means, stdevs,
   weights, initial_price)=

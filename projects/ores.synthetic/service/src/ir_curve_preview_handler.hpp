@@ -49,7 +49,7 @@ inline auto& ir_curve_preview_handler_lg() {
 }
 
 // process_factory::make_yield_curve_process() dispatches on lowercase engine names ("vasicek",
-// "cir", "hull_white"); ir_curve_generation_config.process_type and this protocol's wire value
+// "cox_ingersoll_ross", "hull_white"); ir_curve_generation_config.process_type and this protocol's wire value
 // both carry the catalog's uppercase code (VASICEK/CIR/HULL_WHITE) -- same lowercasing
 // ir_curve_feed's make_ir_curve_feed() does before calling the factory.
 inline std::string preview_lowercase(std::string s) {

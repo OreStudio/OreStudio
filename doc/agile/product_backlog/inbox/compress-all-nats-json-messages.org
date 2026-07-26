@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4BD63D23-5BB1-455A-92F1-83B6D74EFBD1
+:END:
+#+title: Consider compressing all NATS JSON messages, not just images
+#+description: Raised while scoping the image-batch payload/compression story: every NATS message in this app goes through rfl::json::write/read (ores.service/messaging/handler_helpers.hpp) uncompressed. Images need special-case handling regardless (raw bytes instead of base64-in-JSON, since round-tripping SVGs through JSON encoding just to decode them again is wasted work), but the broader question of whether to add generic compression to the JSON transport layer for all other messages (large list responses, bulk history payloads, etc.) is separate and worth evaluating independently -- likely lower priority since most non-image payloads are far smaller, but worth a look if payload-size complaints recur elsewhere.
+#+type: capture
+#+level: cross
+#+filetags: :nats:messaging:performance:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

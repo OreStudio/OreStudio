@@ -36,12 +36,21 @@ void BadgeLabelUtils::apply(QLabel* label,
     // which is reserved for inactive/negative states.
     QColor bg = color_constants::badge_fallback;
     QColor fg = color_constants::badge_fallback_text;
+    bool is_fallback = true;
     if (cache) {
         if (const auto* def = cache->resolve(domain, value)) {
             // An unparseable colour in the definition is treated the same
             // as a missing definition: keep the orange fallback.
             const QColor def_bg(QString::fromStdString(def->background_colour));
             const QColor def_fg(QString::fromStdString(def->text_colour));
+            if (def_bg.isValid() && def_fg.isValid()) {
+                bg = def_bg;
+                fg = def_fg;
+                is_fallback = false;
+            }
+        } else if (const auto* reserved = cache->fallback()) {
+            const QColor def_bg(QString::fromStdString(reserved->background_colour));
+            const QColor def_fg(QString::fromStdString(reserved->text_colour));
             if (def_bg.isValid() && def_fg.isValid()) {
                 bg = def_bg;
                 fg = def_fg;
@@ -58,8 +67,12 @@ void BadgeLabelUtils::apply(QLabel* label,
                                  "  padding: 1px 6px;"
                                  "  font-size: 10px;"
                                  "  font-weight: bold;"
+                                 "  border: %3 %4;"
                                  "}")
-                             .arg(bg.name(), fg.name()));
+                             .arg(bg.name(),
+                                  fg.name(),
+                                  is_fallback ? "1px dashed" : "0px none",
+                                  fg.name()));
 }
 
 void BadgeLabelUtils::clear(QLabel* label) {

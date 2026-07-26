@@ -73,8 +73,10 @@ void HistoryDialog::loadHistory() {
     request.entity_type = entityType_;
     request.entity_id = entityId_;
 
+    const auto subject = ores::history::messaging::history_subject_for(entityType_);
+
     QPointer<HistoryDialog> self = this;
-    runHistoryRequest(clientManager_, std::move(request), [self](auto response) {
+    runHistoryRequest(clientManager_, subject, std::move(request), [self](auto response) {
         if (!self)
             return;
         if (!response.success) {

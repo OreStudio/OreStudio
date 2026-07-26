@@ -31,6 +31,7 @@
 namespace ores::qt {
 
 class BadgeSeverityMdiWindow;
+class ChangeReasonCache;
 class DetachableMdiSubWindow;
 
 /**
@@ -55,6 +56,7 @@ public:
     BadgeSeverityController(QMainWindow* mainWindow,
                             QMdiArea* mdiArea,
                             ClientManager* clientManager,
+                            ChangeReasonCache* changeReasonCache,
                             const QString& username,
                             QObject* parent = nullptr);
 
@@ -83,6 +85,7 @@ private:
 
     BadgeSeverityMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

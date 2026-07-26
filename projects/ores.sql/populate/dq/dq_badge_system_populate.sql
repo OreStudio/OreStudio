@@ -147,6 +147,19 @@ BEGIN
 
     -- --- Badge Definitions ---
 
+    -- Reserved fallback: rendered by BadgeCache::fallback() whenever a
+    -- badge_key/entity_code pair has no matching badge_mapping row, so the
+    -- fallback is data-driven and shared by every client instead of each one
+    -- hardcoding ColorConstants::badge_fallback. Same orange used by that
+    -- former constant for visual continuity; display_order 0 keeps it first
+    -- in any listing. Deliberately not reused by any real domain mapping
+    -- below -- __unmapped__ must stay reserved so it never gets a
+    -- legitimate meaning that would collide with the "no mapping found"
+    -- signal.
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '__unmapped__', 'Unmapped', 'Reserved fallback for a code with no matching badge_mapping row.',
+        '#f97316', '#ffffff', 'warning', 'badge bg-warning', 0);
+
     -- Status: Active
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'active', 'Active', 'Record is active and operational.',

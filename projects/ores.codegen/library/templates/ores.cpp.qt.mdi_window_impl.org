@@ -287,6 +287,14 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
                 QColor(QString::fromStdString(def->text_colour))};
     });
 {{/is_badge}}
+{{#self_colour}}
+    delegate->set_badge_color_resolver({{column_index}}, [](const QString& value) -> badge_color_pair {
+        QColor bg(value);
+        if (!bg.isValid()) bg = color_constants::badge_fallback;
+        const QColor fg = bg.lightnessF() > 0.5 ? QColor(Qt::black) : QColor(Qt::white);
+        return {bg, fg};
+    });
+{{/self_colour}}
 {{/domain_entity.qt.columns}}
     tableView_->setItemDelegate(delegate);
 {{#domain_entity.qt.has_badge_columns}}

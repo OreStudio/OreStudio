@@ -309,16 +309,36 @@ protected:
      */
     template <typename Request, typename OnSuccess>
     void runHistoryRequest(ClientManager* client_manager, Request request, OnSuccess on_success) {
+        runHistoryRequest(client_manager,
+                          Request::nats_subject,
+                          std::move(request),
+                          std::move(on_success));
+    }
+
+    /**
+     * @brief Like runHistoryRequest(client_manager, request, on_success),
+     * but sends to an explicit @p subject instead of Request::nats_subject
+     * — for request types whose real subject can't be a compile-time
+     * constant (see ClientManager::process_authenticated_request's
+     * subject-taking overload).
+     */
+    template <typename Request, typename OnSuccess>
+    void runHistoryRequest(ClientManager* client_manager,
+                          std::string_view subject,
+                          Request request,
+                          OnSuccess on_success) {
         using Response = typename decltype(client_manager->process_authenticated_request(
-            std::move(request)))::value_type;
+            subject, std::move(request)))::value_type;
         using Result = std::expected<Response, std::string>;
 
         QPointer<HistoryDialogBase> self = this;
         QFuture<Result> future = QtConcurrent::run(
-            [self, client_manager, request = std::move(request)]() mutable -> Result {
+            [self, client_manager, subject = std::string(subject), request = std::move(request)]() mutable
+                -> Result {
                 if (!client_manager || !client_manager->isConnected())
                     return std::unexpected("Disconnected from server");
-                auto result = client_manager->process_authenticated_request(std::move(request));
+                auto result =
+                    client_manager->process_authenticated_request(subject, std::move(request));
                 if (!result)
                     return std::unexpected(result.error());
                 return std::move(*result);

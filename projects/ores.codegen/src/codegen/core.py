@@ -2331,9 +2331,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         qt_col['is_int'] = False
                     # Auto-assign column index for badge resolver calls
                     qt_col.setdefault('column_index', idx)
-                    # Default column_style when not specified
+                    # Default column_style when not specified. self_colour
+                    # (e.g. badge_definition's own background_colour/
+                    # text_colour columns) shares badge_centered's pill
+                    # rendering but not is_badge's BadgeCache-lookup
+                    # resolver — see has_self_colour_columns below.
                     if 'column_style' not in qt_col:
-                        if qt_col.get('is_badge'):
+                        if qt_col.get('is_badge') or qt_col.get('self_colour'):
                             qt_col['column_style'] = 'cs::badge_centered'
                         elif qt_col.get('enum_name') in icon_column_names:
                             qt_col['column_style'] = 'cs::icon_text_left'
@@ -2350,13 +2354,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     or qt.get('has_combo_badge_source', False)
                 )
                 qt['has_date_columns'] = any(c.get('is_date') for c in qt['columns'])
+                # self_colour columns (e.g. badge_definition's own
+                # background_colour/text_colour) render badge_centered too,
+                # but the column's own value IS the colour — no
+                # BadgeCache lookup needed, so this stays separate from
+                # has_badge_columns (which gates BadgeCache wiring).
+                qt['has_self_colour_columns'] = any(
+                    c.get('self_colour') for c in qt['columns']
+                )
                 # EntityItemDelegate (icon_centered/icon_text_left sizing,
                 # badge_centered rendering) is needed whenever the list view
-                # has ANY icon or badge column — not just badge columns.
-                # Gating it on has_badge_columns alone left icon-only
-                # entities (e.g. country, with just its own flag column)
-                # rendering that icon through Qt's default item-view path,
-                # which uses decorationSize directly instead of the
+                # has ANY icon, badge, or self-colour column — not just
+                # badge columns. Gating it on has_badge_columns alone left
+                # icon-only entities (e.g. country, with just its own flag
+                # column) rendering that icon through Qt's default item-view
+                # path, which uses decorationSize directly instead of the
                 # aspect-correct, height-constrained sizing the delegate
                 # provides — the same class of bug fixed for currency_pair's
                 # mixed icon/text columns, just not yet visibly wrong for a
@@ -2366,6 +2378,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # has_badge_columns, since only badge columns need it).
                 qt['needs_item_delegate'] = (
                     qt['has_badge_columns'] or qt.get('has_any_flag_icon', False)
+                    or qt['has_self_colour_columns']
                 )
             # has_explorer_api opts a controller into the public
             # openAdd()/openEdit()/openHistory() surface a sibling explorer

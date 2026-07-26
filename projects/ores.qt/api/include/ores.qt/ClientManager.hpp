@@ -471,10 +471,28 @@ public:
     auto process_authenticated_request(RequestType request,
                                        std::chrono::milliseconds timeout = std::chrono::seconds(30))
         -> std::expected<typename RequestType::response_type, std::string> {
+        return process_authenticated_request(
+            RequestType::nats_subject, std::move(request), timeout);
+    }
+
+    /**
+     * @brief Like process_authenticated_request(request), but sends to an
+     * explicit @p subject instead of RequestType::nats_subject.
+     *
+     * For request types whose real subject can't be a compile-time
+     * constant — e.g. get_entity_history_request, whose subject must be
+     * scoped to the entity's owning component (see
+     * ores::history::messaging::history_subject_for) rather than a
+     * single subject shared by every service.
+     */
+    template <nats_request RequestType>
+    auto process_authenticated_request(std::string_view subject,
+                                       RequestType request,
+                                       std::chrono::milliseconds timeout = std::chrono::seconds(30))
+        -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto raw = send_authenticated_request(
-                RequestType::nats_subject, rfl::json::write(request), timeout);
+            const auto raw = send_authenticated_request(subject, rfl::json::write(request), timeout);
             auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
                 return std::unexpected(std::string("Failed to deserialize response: ") +

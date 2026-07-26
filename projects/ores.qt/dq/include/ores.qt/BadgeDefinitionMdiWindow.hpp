@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing badge definitions.
  *
@@ -64,11 +65,29 @@ signals:
     void definitionDeleted(const QString& code);
     void showDefinitionHistory(const dq::domain::badge_definition& definition);
 
+    /**
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
+     */
+    void showBadgeSeveritiesRequested();
+    void showBadgeMappingsRequested();
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
+
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -77,8 +96,6 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
-    void doReload() override;
-
     QString normalRefreshTooltip() const override {
         return tr("Refresh badge definitions");
     }

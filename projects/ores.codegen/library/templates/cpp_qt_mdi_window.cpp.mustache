@@ -243,15 +243,30 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
 {{#domain_entity.qt.columns}}
 {{#is_badge}}
     delegate->set_badge_color_resolver({{column_index}}, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-                                               color_constants::badge_fallback_text};
-        if (!cache) return fallback;
+        static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
+                                                         color_constants::badge_fallback_text,
+                                                         true};
+        if (!cache) return hardcoded_fallback;
         auto* def = cache->resolve("{{badge_key}}", value.toStdString());
-        if (!def) return fallback;
+        if (!def) {
+            auto* reserved = cache->fallback();
+            if (!reserved) return hardcoded_fallback;
+            return {QColor(QString::fromStdString(reserved->background_colour)),
+                    QColor(QString::fromStdString(reserved->text_colour)),
+                    true};
+        }
         return {QColor(QString::fromStdString(def->background_colour)),
                 QColor(QString::fromStdString(def->text_colour))};
     });
 {{/is_badge}}
+{{#self_colour}}
+    delegate->set_badge_color_resolver({{column_index}}, [](const QString& value) -> badge_color_pair {
+        QColor bg(value);
+        if (!bg.isValid()) bg = color_constants::badge_fallback;
+        const QColor fg = bg.lightnessF() > 0.5 ? QColor(Qt::black) : QColor(Qt::white);
+        return {bg, fg};
+    });
+{{/self_colour}}
 {{/domain_entity.qt.columns}}
     tableView_->setItemDelegate(delegate);
 {{#domain_entity.qt.has_badge_columns}}

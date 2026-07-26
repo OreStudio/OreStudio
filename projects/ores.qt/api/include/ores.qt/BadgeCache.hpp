@@ -25,8 +25,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/export.hpp"
+#include <QDateTime>
 #include <QFutureWatcher>
 #include <QObject>
+#include <QStringList>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -98,6 +100,17 @@ public:
                                                 const std::string& entity_code) const;
 
     /**
+     * @brief Returns the reserved fallback badge definition (code
+     * '__unmapped__'), or nullptr if the cache is not loaded or the seed row
+     * is missing.
+     *
+     * Callers should still fall back to a hardcoded colour pair when this
+     * returns nullptr (e.g. before the cache has loaded), the same way
+     * resolve() callers already do.
+     */
+    const dq::domain::badge_definition* fallback() const;
+
+    /**
      * @brief List all (entity_code, badge_definition*) pairs for a domain.
      *
      * Returns empty if the cache is not yet loaded or the domain has no mappings.
@@ -116,14 +129,30 @@ signals:
      */
     void loadError(const QString& error_message);
 
+    /**
+     * @brief Emitted when the cache is refreshed due to a server event.
+     *
+     * Views holding a stale badge_definition* from before the refresh (e.g.
+     * a resolve() result cached in a lambda capture) must not dereference it
+     * after this fires -- re-resolve instead. Existing badge delegates
+     * already do this since they call resolve() at paint time, not once at
+     * setup time.
+     */
+    void refreshed();
+
 private slots:
     void onDefinitionsLoaded();
     void onMappingsLoaded();
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void loadDefinitions();
     void loadMappings();
     void buildIndex();
+    void subscribeToEvents();
 
     struct DefinitionsResult {
         bool success;

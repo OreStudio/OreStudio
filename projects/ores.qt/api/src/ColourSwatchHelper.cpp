@@ -20,6 +20,7 @@
 #include "ores.qt/ColourSwatchHelper.hpp"
 #include <QColor>
 #include <QColorDialog>
+#include <QSizePolicy>
 
 namespace ores::qt {
 
@@ -35,9 +36,16 @@ void set_colour_swatch(QPushButton* button, const QString& hex) {
     const QColor label = colour.lightnessF() > 0.5 ? QColor(Qt::black) : QColor(Qt::white);
 
     button->setText(normalised);
-    button->setStyleSheet(QString("background-color: %1; color: %2;")
+    button->setStyleSheet(QString("background-color: %1; color: %2; border: none; "
+                                   "border-radius: 10px; padding: 2px 10px; font-weight: bold;")
                               .arg(normalised, label.name()));
     button->setProperty("hexColour", normalised);
+
+    // QPushButton's default horizontal size policy is Minimum, so it
+    // stretches to fill the form column like the QLineEdits beside it.
+    // The badge should stay pill-sized, matching how it renders in lists.
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    button->adjustSize();
 }
 
 QString colour_swatch_value(const QPushButton* button) {

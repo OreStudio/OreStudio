@@ -60,8 +60,8 @@ void render_history_diff(std::ostream& out,
     req.entity_type = std::string(entity_type);
     req.entity_id = std::move(entity_id);
 
-    auto reply = session.authenticated_request(get_entity_history_request::nats_subject,
-                                               rfl::json::write(req));
+    const auto subject = ores::history::messaging::history_subject_for(req.entity_type);
+    auto reply = session.authenticated_request(subject, rfl::json::write(req));
     auto data_str =
         std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
     auto result = rfl::json::read<get_entity_history_response>(data_str);

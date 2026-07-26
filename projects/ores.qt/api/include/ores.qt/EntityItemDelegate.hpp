@@ -34,6 +34,12 @@ namespace ores::qt {
 struct badge_color_pair {
     QColor background;
     QColor foreground;
+
+    // True when this pair is the reserved __unmapped__ fallback badge, so
+    // paint() can give it a dashed border -- visually distinct from a
+    // legitimate grey/inactive badge, per the fallback's own acceptance
+    // criteria (a solid border reads as just another real badge colour).
+    bool is_fallback{false};
 };
 
 /**

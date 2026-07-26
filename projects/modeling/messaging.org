@@ -32,6 +32,34 @@ Each domain service owns a subject namespace.
 | [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | =synthetic.v1.>= | [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] |
 | [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | =reporting.v1.>= | [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] |
 
+* Cross-cutting / generic subjects
+
+Every subject must live inside its owning component's namespace, even
+a generic subject shared conceptually by every entity across every
+service. There is no bare, ownerless top-level namespace.
+
+The concrete failure mode this rule guards against: =ores.history.core=
+originally exposed one shared subject, =history.v1.get=, for every
+entity's generic history lookup, dispatched by an =entity_type= field
+in the request body rather than the subject itself. Because every
+service subscribes under its *own* queue group, and multiple queue
+groups on the *same* subject each receive their own copy of the
+message, this fanned every history request out to every service at
+once. Only the service that actually owned the requested entity_type
+had a matching provider; every other service replied "not found"
+almost instantly (no DB round trip), which usually *won* the
+request/reply race against the owning service's slower, correct reply
+— so the client saw the wrong service's error essentially every time,
+regardless of how correct the owning service's own logic was.
+
+The fix: the subject is scoped per owning component,
+=<component>.v1.history.get= (e.g. =dq.v1.history.get=), computed from
+the request's =entity_type= via
+=ores::history::messaging::history_subject_for()=. Only the owning
+component's registrar subscribes to its own subject, so a request is
+delivered to exactly one recipient — no fan-out, no race. Any future
+generic/cross-entity subject must follow the same shape.
+
 * See also
 
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport library: request/reply, subject naming, queue

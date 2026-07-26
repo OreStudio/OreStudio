@@ -20,6 +20,7 @@
 #ifndef ORES_QT_LOOKUP_FETCHER_HPP
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
+#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/asset_class_code.hpp"
@@ -496,6 +497,16 @@ fetch_tenor_anchors(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<dq::domain::coding_scheme>, QString>
 fetch_coding_schemes(ClientManager* cm);
+
+/**
+ * @brief Fetches all badge severities from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Badge Definition's severity_code combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<dq::domain::badge_severity>, QString>
+fetch_badge_severities(ClientManager* cm);
 
 /**
  * @brief Fetches all asset class codes from the server.

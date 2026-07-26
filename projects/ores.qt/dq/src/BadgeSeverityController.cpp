@@ -21,6 +21,7 @@
 #include "ores.qt/BadgeSeverityDetailDialog.hpp"
 #include "ores.qt/BadgeSeverityHistoryDialog.hpp"
 #include "ores.qt/BadgeSeverityMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
@@ -34,11 +35,13 @@ using namespace ores::logging;
 BadgeSeverityController::BadgeSeverityController(QMainWindow* mainWindow,
                                                  QMdiArea* mdiArea,
                                                  ClientManager* clientManager,
+                                                 ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+    , listMdiSubWindow_(nullptr)
+    , changeReasonCache_(changeReasonCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "BadgeSeverityController created";
 }
@@ -150,6 +153,7 @@ void BadgeSeverityController::showAddWindow() {
 
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -198,6 +202,7 @@ void BadgeSeverityController::showDetailWindow(const dq::domain::badge_severity&
 
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setSeverity(severity);
@@ -333,6 +338,7 @@ void BadgeSeverityController::onOpenVersion(const dq::domain::badge_severity& se
 
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSeverity(severity);
     detailDialog->setReadOnly(true);
@@ -382,6 +388,7 @@ void BadgeSeverityController::onRevertVersion(const dq::domain::badge_severity& 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSeverity(severity);
     detailDialog->setCreateMode(false);

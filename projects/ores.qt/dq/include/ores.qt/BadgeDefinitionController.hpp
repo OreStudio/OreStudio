@@ -27,11 +27,15 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class BadgeDefinitionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing badge definition windows and operations.
@@ -55,6 +59,7 @@ public:
     BadgeDefinitionController(QMainWindow* mainWindow,
                               QMdiArea* mdiArea,
                               ClientManager* clientManager,
+                              ChangeReasonCache* changeReasonCache,
                               const QString& username,
                               QObject* parent = nullptr);
 
@@ -62,12 +67,21 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
+    /**
+     * @brief Relayed from BadgeDefinitionMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
+    void showBadgeSeveritiesRequested();
+    void showBadgeMappingsRequested();
+
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const dq::domain::badge_definition& definition);
@@ -75,12 +89,29 @@ private slots:
     void onShowHistory(const dq::domain::badge_definition& definition);
     void onRevertVersion(const dq::domain::badge_definition& definition);
     void onOpenVersion(const dq::domain::badge_definition& definition, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::badge_definition& definition);
     void showHistoryWindow(const QString& code);
 
+    /**
+     * @brief Fetches the full typed badge definition history (the
+     * existing per-entity dq::messaging::get_badge_definition_history_request/
+     * dq::messaging::get_badge_definition_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed badge definition, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchBadgeDefinitionHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<dq::domain::badge_definition>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     BadgeDefinitionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -907,7 +907,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(
-            nats, hist_registry, queue_group, ctx, verifier));
+            nats, hist_registry, "refdata", queue_group, ctx, verifier));
     }
 
     return subs;

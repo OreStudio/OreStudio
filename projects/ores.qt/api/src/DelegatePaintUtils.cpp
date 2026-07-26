@@ -121,7 +121,8 @@ void DelegatePaintUtils::draw_centered_badge(QPainter* painter,
                                              const QString& text,
                                              const QColor& bg,
                                              const QColor& fg,
-                                             const QFont& font) {
+                                             const QFont& font,
+                                             bool dashed) {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
@@ -137,7 +138,14 @@ void DelegatePaintUtils::draw_centered_badge(QPainter* painter,
 
     int radius = badgeHeight / 2;
     painter->setBrush(bg);
-    painter->setPen(Qt::NoPen);
+    if (dashed) {
+        QPen pen(fg, 1, Qt::DashLine);
+        painter->setPen(pen);
+        // Inset so the dashed stroke doesn't get clipped at the cell edge.
+        badgeRect.adjust(1, 1, -1, -1);
+    } else {
+        painter->setPen(Qt::NoPen);
+    }
     painter->drawRoundedRect(badgeRect, radius, radius);
 
     painter->setFont(font);
@@ -154,7 +162,8 @@ void DelegatePaintUtils::draw_inline_badge(QPainter* painter,
                                            const QColor& fg,
                                            const QFont& font,
                                            int padding,
-                                           int spacing) {
+                                           int spacing,
+                                           bool dashed) {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
@@ -168,7 +177,13 @@ void DelegatePaintUtils::draw_inline_badge(QPainter* painter,
 
     int radius = badgeHeight / 2;
     painter->setBrush(bg);
-    painter->setPen(Qt::NoPen);
+    if (dashed) {
+        QPen pen(fg, 1, Qt::DashLine);
+        painter->setPen(pen);
+        badgeRect.adjust(1, 1, -1, -1);
+    } else {
+        painter->setPen(Qt::NoPen);
+    }
     painter->drawRoundedRect(badgeRect, radius, radius);
 
     painter->setFont(font);

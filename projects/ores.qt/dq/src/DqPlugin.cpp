@@ -55,12 +55,20 @@ void DqPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(ctx_.main_window,
+                                                                             ctx_.mdi_area,
+                                                                             ctx_.client_manager,
+                                                                             ctx_.change_reason_cache,
+                                                                             ctx_.username,
+                                                                             this);
     connectControllerSignals(badgeDefinitionController_.get());
 
-    badgeSeverityController_ = std::make_unique<BadgeSeverityController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    badgeSeverityController_ = std::make_unique<BadgeSeverityController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(badgeSeverityController_.get());
 
     codeDomainController_ = std::make_unique<CodeDomainController>(ctx_.main_window,
@@ -70,6 +78,26 @@ void DqPlugin::on_login(const plugin_context& ctx) {
                                                                    ctx_.badge_cache,
                                                                    this);
     connectControllerSignals(codeDomainController_.get());
+
+    // BadgeDefinitionController cross-domain relays: toolbar buttons on
+    // BadgeDefinitionMdiWindow open the related badge catalogue windows,
+    // mirroring RefdataPlugin's BookController relay pattern. Mappings are
+    // browsed via the Code Domains list (see BadgeMappingsTab) since
+    // badge_mapping has no standalone list window of its own.
+    connect(badgeDefinitionController_.get(),
+            &BadgeDefinitionController::showBadgeSeveritiesRequested,
+            this,
+            [this]() {
+                if (badgeSeverityController_)
+                    badgeSeverityController_->showListWindow();
+            });
+    connect(badgeDefinitionController_.get(),
+            &BadgeDefinitionController::showBadgeMappingsRequested,
+            this,
+            [this]() {
+                if (codeDomainController_)
+                    codeDomainController_->showListWindow();
+            });
 }
 
 void DqPlugin::setup_menus(const shared_menus_context& smc) {
@@ -99,7 +127,13 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
 
     // Badge Mappings: browsable as a "Badge Mappings" tab on each Code
     // Domain's detail dialog (see BadgeMappingsTab), not a standalone
-    // window here.
+    // window of its own — this entry opens Code Domains, same as the
+    // "Mappings" toolbar button on BadgeDefinitionMdiWindow.
+    auto* actBadgeMappings = badges->addAction(tr("Badge &Mappings"));
+    connect(actBadgeMappings, &QAction::triggered, this, [this]() {
+        if (codeDomainController_)
+            codeDomainController_->showListWindow();
+    });
 
     // Code Domains lives in the shared Classifications submenu alongside
     // Coding Schemes and Coding Scheme Authority Types (contributed by

@@ -31,6 +31,7 @@
 #include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/TenantTypeController.hpp"
 #include <QAction>
+#include <QFileInfo>
 #include <QFutureWatcher>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -41,6 +42,7 @@
 #include <QPointer>
 #include <QStatusBar>
 #include <QtConcurrent>
+#include <cstdlib>
 
 namespace ores::qt {
 
@@ -293,8 +295,26 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         // doesn't have to click through File > System and Open every
         // time they restart the client to pick up a rebuild.
         if (!smc.open_scenario_path.isEmpty()) {
+            // Fail loudly through the regular logger (console + log file)
+            // and abort rather than leaving the tester to discover a
+            // silently-empty runner window behind the main window:
+            // --open-scenario is a headless/CI-facing startup flag, and
+            // loadScenario()'s errorOccurred signal would otherwise just
+            // pop a QMessageBox once the window below is wired up.
+            if (!QFileInfo::exists(smc.open_scenario_path)) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "--open-scenario: file not found: '"
+                    << smc.open_scenario_path.toStdString()
+                    << "'. Try passing a full path.";
+                std::exit(1);
+            }
             ensure_qa_runner_window();
-            qaValidationRunnerWidget_->loadScenario(smc.open_scenario_path);
+            if (!qaValidationRunnerWidget_->loadScenario(smc.open_scenario_path)) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "--open-scenario: could not load '"
+                    << smc.open_scenario_path.toStdString() << "'";
+                std::exit(1);
+            }
             qaValidationRunnerWindow_->setVisible(true);
             smc.mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
             qaValidationRunnerWindow_->show();

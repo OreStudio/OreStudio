@@ -51,11 +51,25 @@ void AccountItemDelegate::paint(QPainter* painter,
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
         QString text = index.data(Qt::DisplayRole).toString();
-        // Fallback for unresolved badge definitions — deliberately not
-        // gray, which is reserved for inactive/negative states.
+        // Hardcoded last resort for a not-yet-loaded cache — deliberately
+        // not gray, which is reserved for inactive/negative states.
         QColor bgColor = color_constants::badge_fallback;
         QColor textColor = color_constants::badge_fallback_text;
+        bool isFallback = true;
         QString badgeText;
+
+        auto apply_resolved = [&](const char* domain) {
+            if (!badgeCache_)
+                return;
+            if (auto* def = badgeCache_->resolve(domain, text.toStdString())) {
+                bgColor = QColor(QString::fromStdString(def->background_colour));
+                textColor = QColor(QString::fromStdString(def->text_colour));
+                isFallback = false;
+            } else if (auto* reserved = badgeCache_->fallback()) {
+                bgColor = QColor(QString::fromStdString(reserved->background_colour));
+                textColor = QColor(QString::fromStdString(reserved->text_colour));
+            }
+        };
 
         if (index.column() == Column::Status) {
             if (text == "Online")
@@ -66,22 +80,10 @@ void AccountItemDelegate::paint(QPainter* painter,
                 badgeText = tr("Old");
             else
                 badgeText = tr("Never");
-            if (badgeCache_) {
-                auto* def = badgeCache_->resolve("login_status", text.toStdString());
-                if (def) {
-                    bgColor = QColor(QString::fromStdString(def->background_colour));
-                    textColor = QColor(QString::fromStdString(def->text_colour));
-                }
-            }
+            apply_resolved("login_status");
         } else if (index.column() == Column::Locked) {
             badgeText = (text == "Locked") ? tr("Yes") : tr("No");
-            if (badgeCache_) {
-                auto* def = badgeCache_->resolve("account_locked", text.toStdString());
-                if (def) {
-                    bgColor = QColor(QString::fromStdString(def->background_colour));
-                    textColor = QColor(QString::fromStdString(def->text_colour));
-                }
-            }
+            apply_resolved("account_locked");
         } else if (index.column() == Column::AccountType) {
             if (text == "user")
                 badgeText = tr("User");
@@ -93,13 +95,7 @@ void AccountItemDelegate::paint(QPainter* painter,
                 badgeText = tr("LLM");
             else
                 badgeText = text;
-            if (badgeCache_) {
-                auto* def = badgeCache_->resolve("account_type", text.toStdString());
-                if (def) {
-                    bgColor = QColor(QString::fromStdString(def->background_colour));
-                    textColor = QColor(QString::fromStdString(def->text_colour));
-                }
-            }
+            apply_resolved("account_type");
         }
 
         // Derive badge font from view font for proper high-DPI scaling
@@ -108,7 +104,7 @@ void AccountItemDelegate::paint(QPainter* painter,
         badgeFont.setBold(true);
 
         DelegatePaintUtils::draw_centered_badge(
-            painter, opt.rect, badgeText, bgColor, textColor, badgeFont);
+            painter, opt.rect, badgeText, bgColor, textColor, badgeFont, isFallback);
         return;
     }
 

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 22055006-D8BE-4E85-8E04-3D9D1B77A6ED
+:END:
+#+title: Task: Downgrade address/model-type incompatibility to skip in --component mode
+#+description: In generator.py, detect model-type/address incompatibility in --component mode and skip silently (DEBUG log) rather than emitting ERROR and incrementing the error counter. Keep ERROR for explicit single-entity invocations.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_24:v0:
+#+owner: marco
+#+branch: feature/downgrade-component-mode-type-incompatibility-to-skip
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Running an address against a =--component= that contains entity types
+the address does not support (e.g. =ores.cpp.qt= against
+=refdata-cpp=, which mixes =domain_entity=, =table=, and =junction=
+models) currently emits one ERROR per incompatible entity and
+inflates the run's final error count, even though these are expected,
+harmless skips rather than genuine failures.
+
+In =projects/ores.codegen/src/codegen/core.py=, detect model-type/
+address incompatibility when running in =--component= mode and skip
+those entities silently (DEBUG-level log line, not counted as an
+error) instead of emitting ERROR and incrementing the error counter.
+Explicit single-entity invocations (=--entity <name> --address <addr>=
+naming a type the address doesn't support) must still raise an ERROR
+— that is a caller mistake, not automatic-discovery noise.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+- Running =codegen.sh regenerate --component refdata-cpp --address ores.cpp.qt=
+  produces *zero* ERROR or WARNING lines for models whose type
+  (=table=, =junction=) is not supported by that address; those models
+  are silently skipped (DEBUG log only), and the run's error count is
+  unaffected by them.
+- An explicit single-entity invocation naming an entity whose type is
+  incompatible with the requested address (e.g. =--entity
+  rounding_type --address ores.cpp.qt= against a =table= model) still
+  raises an ERROR and a non-zero exit code — this task only changes
+  the automatic-discovery (=--component=) path.
+- All other existing codegen runs are unaffected and produce identical
+  output to today.
+- CI passes; no production source files (only =ores.codegen= tooling)
+  are changed by this task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

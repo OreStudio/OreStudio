@@ -96,16 +96,23 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Story task-list row stale (STARTED, no end date) after task closed DONE | story.org | Accepted | Fixed in 0aa289ac1 — synced the row to DONE / 2026-07-26 |
+| 2 | "Eight domains" prose contradicts the 9-row table below it | market_data_definition_language.org | Accepted | Fixed — corrected to "Nine domains" |
+| 3 | knowledge.org index entry still describes the doc as 3-scheme (RIC/Bloomberg/ORE) after this PR extended it to 5 | knowledge.org | Accepted | Fixed — updated to describe all five schemes |
+| 4 | No `* Decisions` entry added for this task | story.org | Declined | Nothing from this survey-and-extend task rose to a story-level design decision; the story's Decisions section already correctly reflects only the prior design-bearing tasks |
+| 5 | FIX examples' BodyLength/CheckSum look like real computed values | external_market_data_identifiers.org | Accepted | Fixed — added an explicit note that both are illustrative placeholders, not computed from message bytes |
+| 6 | Apple-adapted MDDL example caveat understates that a code scheme URI also changed, not just values | external_market_data_identifiers.org | Accepted | Fixed — caveat now explains the ticker-vs-local-exchange-code scheme substitution explicitly |
 
 * Result
 
 Shipped:
 
 - Archived MDDL 3.0-beta (schemas, technical spec PDF, license PDF,
-  changelog, a real worked equity example, plus an Apple-adapted
-  variant for like-for-like comparison) under =external/mddl/= with a
-  manifest recording source URL, sha256, and size per file. Located via
-  a Wayback Machine capture since mddl.org itself is now defunct.
+  changelog, a real worked equity example) under =external/mddl/= with a
+  manifest recording source URL, sha256, and size per file — plus an
+  Apple-adapted variant of that worked example, inline in the
+  comparative-analysis doc (not a separate archived file), for
+  like-for-like comparison with the doc's Apple row. Located via a
+  Wayback Machine capture since mddl.org itself is now defunct.
 - Archived FIX 4.4 and FIX 5.0 SP2 XML data dictionaries under
   =external/fix/=, sourced from a pinned commit of the QuickFIX
   open-source engine project, with the same manifest/methodology

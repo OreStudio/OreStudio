@@ -314,7 +314,9 @@ the retrieved release's =Examples/= set.)
 (Field-per-line for readability; =|= stands in for the real =SOH=
 delimiter. Constructed by hand from the retrieved FIX 4.4 dictionary —
 see [[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] — not
-copied from a live feed.)
+copied from a live feed; =BodyLength= (tag =9=) and =CheckSum= (tag
+=10=) are illustrative placeholder values, not computed from the
+actual message bytes.)
 
 ** Interest rates
 
@@ -525,9 +527,14 @@ copied from a live feed.)
 (Trimmed for brevity — namespace/schema-location attributes and
 comments elided. Adapted from the real retrieved example at
 [[proj:external/mddl/mddl-equity-example1.xml][=external/mddl/mddl-equity-example1.xml=]];
-=instrumentType=, code scheme URIs, and element shapes are unchanged
-from that authentic file, only instrument values are substituted for
-comparability with this table's Apple row.)
+=instrumentType= and element shapes are unchanged from that authentic
+file. Instrument values are substituted for comparability with this
+table's Apple row, and one code =scheme= URI is swapped from the
+original's local-exchange-code scheme
+(=.../symbol?SRC=ISO6166=-style) to a ticker-symbol scheme
+(=.../symbol?SRC=TICKER=), since =AAPL= is a US ticker rather than a
+local exchange code the way the original file's =LG= was — the ISIN
+code's scheme URI is unchanged.)
 
 - *FIX*: like MDDL, has no short-string row above — instrument identity
   travels inside a =MarketDataSnapshotFullRefresh= (=35=W=) message's
@@ -567,7 +574,9 @@ comparability with this table's Apple row.)
 Constructed by hand from the dictionary for illustration, not copied
 from a live feed — see
 [[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] for the
-authoritative field/message definitions this example is built from.)
+authoritative field/message definitions this example is built from;
+=BodyLength= (tag =9=) and =CheckSum= (tag =10=) are illustrative
+placeholder values, not computed from the actual message bytes.)
 
 ** Credit
 
@@ -716,7 +725,9 @@ in the retrieved release's =Examples/= set.)
 delimiter. =269=2= is =TRADE= per the retrieved FIX 4.4 dictionary's
 =MDEntryType= enum. Constructed by hand — see
 [[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] — not copied
-from a live feed.)
+from a live feed; =BodyLength= (tag =9=) and =CheckSum= (tag =10=) are
+illustrative placeholder values, not computed from the actual message
+bytes.)
 
 ** ORE quote key structure
 

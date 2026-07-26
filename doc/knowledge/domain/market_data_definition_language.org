@@ -94,7 +94,7 @@ constructs — the two shapes every payload is built from:
   fixed time period.
 
 Every =snap=/=timeseries= is ultimately built from *domains* — the
-top-level entity groupings MDDL organises its vocabulary around. Eight
+top-level entity groupings MDDL organises its vocabulary around. Nine
 domains exist in the 3.0-beta schema, each a distinct XML element
 (=<xDomain>=) with its own complex type:
 

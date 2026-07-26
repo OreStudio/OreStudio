@@ -47,9 +47,10 @@ Finance concepts the codebase relies on, grouped by topic.
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — a comparative analysis of
-  RIC, Bloomberg ticker, and the ORE canonical/quote key: origin, ownership,
-  formal specification status, and pros/cons/limitations, independent of any
-  particular consumer of the schemes.
+  five schemes: RIC, Bloomberg ticker, the ORE canonical/quote key, MDDL, and
+  FIX — origin, ownership, formal specification status, and
+  pros/cons/limitations, independent of any particular consumer of the
+  schemes.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — ORE Studio's own concrete identifier
   scheme (=series_type/metric/qualifier[/point_id]=), the two-level
   subscription model (generation config vs client subscription), and the

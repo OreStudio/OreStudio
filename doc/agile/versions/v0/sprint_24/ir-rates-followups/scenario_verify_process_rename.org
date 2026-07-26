@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 293F4585-9A59-4649-83A7-11729E6430C7
+:END:
+#+title: Test Scenario: Verify CIR/OU/GMM process rename
+#+description: Confirms the IR Curve editor's engine combo shows the spelled-out Cox-Ingersoll-Ross label (not the raw CIR code) and that CRUD/history on an IR curve generation config using it still round-trips correctly after the rename.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:390E6886-6A04-4840-A53D-9873FC491ABB][Rename CIR, OU, and GMM processes to their proper names]] in [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:390E6886-6A04-4840-A53D-9873FC491ABB][Rename CIR, OU, and GMM processes to their proper names]] |
+| Parent story  | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]   |
+| Target dialog | =IrCurveEditor= — Menu: Market Data > Synthetic > Configuration > IR Curve Generation Configs |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+  select *BARCLAYS PLC*.
+
+** Open IR Curve Generation Configs list
+
+- Menu: Market Data > Synthetic > Configuration > IR Curve Generation
+  Configs.
+- Verify the list opens and shows the seeded Barclays curves (the
+  =2026 Realistic= archetype rows), each currently using the
+  Cox-Ingersoll-Ross engine.
+
+** Reopen a seeded CIR curve config
+
+- Double-click any row (or select + Edit) to reopen its
+  =IrCurveEditor= detail dialog.
+- On the *Process* tab, verify the *Engine* combo displays
+  "Cox-Ingersoll-Ross" (a spelled-out label), not the raw code
+  =COX_INGERSOLL_ROSS= or the old =CIR=.
+- Hover the combo and verify its tooltip reads the Cox-Ingersoll-Ross
+  formula description (dr = κ(θ−r)dt + σ√r dW ...).
+- Verify the Sample short-rate paths chart renders without error.
+
+** Create a new curve with Cox-Ingersoll-Ross
+
+- Click Add to open a blank =IrCurveEditor=.
+- Fill in currency, index, source, and a valid tenor template; on the
+  *Process* tab select "Cox-Ingersoll-Ross" from the Engine combo.
+- Save. Verify the new row appears in the list.
+
+** Read the created record back
+
+- Reopen the just-created record's detail dialog.
+- Verify every field round-trips, including the Engine combo still
+  showing "Cox-Ingersoll-Ross" selected.
+
+** Update the record's engine
+
+- In the reopened dialog, change the Engine combo to "Vasicek", adjust
+  kappa/theta/sigma to valid values for that engine, and save.
+- Verify the list refreshes showing the new engine and a change
+  reason was recorded.
+
+** Delete the created record
+
+- Select the record created above and delete it.
+- Verify it disappears from the list.
+
+** Verify history shows all changes
+
+- Open the History dialog for the deleted record (via the list's
+  History action, or the record's audit trail if still addressable).
+- Verify Create (Cox-Ingersoll-Ross), Update (Vasicek), and Delete are
+  all present with correct change reasons and no raw =CIR=/=OU= codes
+  leaking into any displayed field.
+
+** Verify FX engine combo shows Ornstein-Uhlenbeck
+
+- Menu: Market Data > Synthetic > Configuration > FX Spot Generation
+  Configs.
+- Reopen any seeded FX config, or Add a new one; on the Behaviour tab
+  select the Ornstein-Uhlenbeck engine from the combo.
+- Verify the combo shows "Ornstein-Uhlenbeck" (not the raw =ou= code)
+  and the field relabelling (κ/σ tooltips mentioning
+  Ornstein-Uhlenbeck) behaves as before the rename.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

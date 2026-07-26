@@ -167,7 +167,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:293F4585-9A59-4649-83A7-11729E6430C7][Verify CIR/OU/GMM process rename]] | PENDING | |
 
 * PRs
 

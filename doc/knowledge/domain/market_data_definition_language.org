@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925
+:END:
+#+title: Market Data Definition Language (MDDL)
+#+description: MDDL: FISD/SIIA's XML-based market data description language, its version history (1.0 through 3.0-beta), and how it compares to ORE Studio's own identifier schemes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:standards:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+* Summary
+
+MDDL (Market Data Definition Language) is an XML-based market data
+description language originally developed by the Financial Information
+Services Division (FISD) of the Software & Information Industry
+Association (SIIA), first published in the early 2000s. The latest
+major generation of the specification published by FISD is *MDDL
+Version 3.0* (released as 3.0-beta, 2007-03-01) — no later beta or
+final release was ever issued. Following the Version 3 cycle, FISD
+pivoted away from maintaining MDDL as a standalone XML dialect and
+contributed its vocabulary and relationship maps toward broader,
+unified global standards (ISO 20022, the FIX Protocol) instead. The
+specification files retrieved for this document are archived at
+[[proj:external/mddl][=external/mddl/=]] (source: the Internet
+Archive's capture of the now-defunct mddl.org; see that directory's
+=manifest.json= for per-file provenance).
+
+* Detail
+
+** What MDDL is
+
+MDDL provides a generic XML message format and a glossary/data
+dictionary of fields for describing financial instruments, corporate
+events, and market-related indicators, intended to standardise how
+market data is represented, stored, and exchanged across vendor
+systems. It is unrelated in origin to RIC or the Bloomberg ticker (both
+proprietary vendor notations) — MDDL was designed from the outset as an
+open, committee-governed XML vocabulary, closer in spirit to FpML than
+to either vendor scheme. See
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+identifiers]] for how MDDL relates to RIC, Bloomberg, and the ORE
+canonical/quote key as identifier schemes.
+
+** Key evolutionary milestones
+
+The structural progression of the language across its lifecycle
+highlights the expanded scope of each release:
+
+- *MDDL 1.0*: established the fundamental data dictionary, primarily
+  mapping basic properties for common equities, mutual funds, and
+  standard exchange indices.
+- *MDDL 2.0*: significantly broadened the schema's vocabulary by adding
+  specialised lexical information and complex formatting criteria to
+  support corporate bonds and fixed-income assets.
+- *MDDL 3.0*: introduced a major structural redesign built around a
+  "central instrument" data model (the prior per-asset-class domains —
+  =civDomain=, =debtDomain=, =derivativeDomain=, =equityDomain= — were
+  combined into a single =instrumentDomain=, per the 3.0-beta
+  changelog). This shift harmonised the XML schema directly with global
+  frameworks like the ISO Securities Data Model, enabling superior
+  enterprise-wide integration for security master files.
+
+** Current industry status
+
+Following the Version 3 development cycle, FISD pivoted its focus
+toward working collaboratively with international standards
+committees rather than continuing to release separate, standalone XML
+dialects under the MDDL banner. The core vocabulary, definitions, and
+relationship maps developed for MDDL were largely contributed to
+broader, unified global standards like ISO 20022 and the
+[[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][FIX Protocol]] — see that
+document for FIX's own symbology (=SecurityIDSource=), which explicitly
+names =RIC_CODE= and =BLOOMBERG_SYMBOL= the same way MDDL's =codeType=
+does. No successor MDDL release was ever published — 3.0-beta (2007-03-01)
+remains the final artefact, aside from a narrower 2009 supplementary
+schema (=mddl4db.xsd=) mapping MDDL to a relational database model,
+which is not a new version of the core language.
+
+** Content model
+
+MDDL documents are XML instances of a single root element, =<mddl>=
+(fixed =version="3.0-beta"= for this release), containing an optional
+=<header>= followed by a repeating choice of =<snap>= or =<timeseries>=
+constructs — the two shapes every payload is built from:
+
+- *=header=*: the document preamble — identifying marks of the data
+  provider and general reference material for the document as a whole.
+- *=snap=*: holds the basic products for a single-time (at-an-instant)
+  or end-of-day quote — the analog of a single tick or EOD record.
+- *=timeseries=*: holds multiple similar "event"s differentiated by
+  =dateTime=; typically a =timeseries= wraps a collection of =snap=
+  constructs about the same instrument (or related instruments) over a
+  fixed time period.
+
+Every =snap=/=timeseries= is ultimately built from *domains* — the
+top-level entity groupings MDDL organises its vocabulary around. Eight
+domains exist in the 3.0-beta schema, each a distinct XML element
+(=<xDomain>=) with its own complex type:
+
+| Domain | Role |
+|--------+------|
+| =instrumentDomain= | Generic domain for all instruments and securities — the "central instrument" model that 3.0 restructured around, replacing the four separate 2.0-era domains (=civDomain=, =debtDomain=, =derivativeDomain=, =equityDomain=). |
+| =entityDomain= | Clarifying information about institutions or organisations (issuers, counterparties, general businesses); the =party= element is used to identify entities. |
+| =caeDomain= | Corporate Actions and Events — dividends, splits, calls, and other lifecycle events on an instrument. |
+| =cashDomain= | Placeholder domain for basic tender and monetary instruments. |
+| =commodityDomain= | Physical commodities, often referenced by a derivative (future/option) elsewhere in the document. |
+| =foreignExchangeDomain= | FX instruments including actionable conversion rates; may be referenced by a derivative or other related instrument. |
+| =indexDomain= | Statistical or calculated composites indicating relative change in a market or collection of instruments. |
+| =indicatorDomain= | Non-index indicators that are *not* instruments in their own right (may be referenced by an exchange-traded indicator that is). |
+| =portfolioDomain= | Client portfolios and holdings — explicitly excludes Collective Investment Vehicles or funds, which are modelled as instruments instead. |
+
+Within any domain, instrument identity is carried by the
+=instrumentIdentifier= container element, not by a short string key:
+"it may contain many codes from many schemes with multiple names
+(including multiple languages) [...] the intent is that enough
+information be given to uniquely identify the instrument" (per the
+schema's own annotation). An =instrumentIdentifier= pairs a =code= with
+a =codeType= controlled vocabulary — =codeType= is where an ISIN, a
+RIC, a ticker, or any other existing scheme's value actually lives;
+MDDL does not mint a competing short-string notation, it wraps
+whichever identifier a source system already publishes. The schema
+also allows an instrument to carry *several* identifiers of differing
+scope simultaneously (e.g. a market-specific code alongside an
+international one) attached to the same record.
+
+Two structural mechanisms recur throughout the schema, per its own
+terminology reference: *inheritance* (a domain's =inheritable-properties=
+list, seen throughout the XSD's =xsd:appinfo= annotations, are
+properties a container makes available to its children without
+re-declaring them) and *shorthand* (compact forms for common property
+combinations). Both exist to keep the otherwise very large property
+vocabulary (see =* Key evolutionary milestones= above) tractable inside
+any one instrument or event record.
+
+** Where the specification lives
+
+mddl.org, MDDL's original home, is defunct as of 2026 (it now redirects
+to an unrelated content-marketing site with no connection to FISD/SIIA
+or the original standard). The specification, schemas, and supporting
+documents were located via the Internet Archive's Wayback Machine
+capture of mddl.org's downloads page and retrieved from there — see
+[[proj:external/mddl/methodology.txt][=external/mddl/methodology.txt=]]
+for the exact retrieval steps and
+[[proj:external/mddl/manifest.json][=external/mddl/manifest.json=]] for
+per-file source URLs and checksums. Files retrieved:
+
+- [[proj:external/mddl/mddl-3.0-beta-full.xsd][=mddl-3.0-beta-full.xsd=]] — the full XML Schema (all asset domains combined into =instrumentDomain=).
+- [[proj:external/mddl/mddl-3.0-beta-lite.xsd][=mddl-3.0-beta-lite.xsd=]] — a reduced-scope variant of the schema.
+- [[proj:external/mddl/mddl-3.0-beta-link.xsd][=mddl-3.0-beta-link.xsd=]] — linking/reference schema fragment.
+- [[proj:external/mddl/mddl-3.0-beta-technical-specification.pdf][=mddl-3.0-beta-technical-specification.pdf=]] — the narrative technical specification (50 pages).
+- [[proj:external/mddl/mddl-license.pdf][=mddl-license.pdf=]] — MDDL's own license terms as published by FISD/SIIA.
+- [[proj:external/mddl/mddl-3.0-beta.txt][=mddl-3.0-beta.txt=]] — index of every file in the full 3.0-beta release.
+- [[proj:external/mddl/mddl-3.0-beta-changes.txt][=mddl-3.0-beta-changes.txt=]] — changelog vs. the prior 2.0-beta release.
+
+* See also
+
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC, Bloomberg, and ORE quote key comparison; MDDL as a fourth, standards-body-governed scheme.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the ORE canonical/quote key MDDL is compared against.

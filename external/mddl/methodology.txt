@@ -1,0 +1,38 @@
+Data Sourcing Steps:
+
+1. SOURCE DISCOVERY
+   MDDL's original home, mddl.org, is defunct (redirects to an unrelated
+   content-marketing site as of 2026). The real specification and schema
+   files were located via the Internet Archive's Wayback Machine capture
+   of the site's downloads page:
+     https://web.archive.org/web/20140407001327/http://www.mddl.org/page/resources/Downloads.asp
+
+   That page confirms MDDL 3.0-beta (dated 2007-03-01) is the last
+   full specification release FISD/SIIA ever published — there is no
+   later beta or final 3.0 release. A supplementary "MDDL for
+   databases" schema (mddl4db.xsd) was published in 2009 as a separate,
+   narrower artefact (a relational mapping of MDDL, not a new version
+   of the core language) and is not part of this download.
+
+2. DOWNLOAD
+   Files were fetched directly from the Wayback Machine's stored copy of
+   each mddl.org download link, using the `if_` (iframe/raw) rendering
+   mode to get the raw file rather than Wayback's UI chrome, e.g.:
+
+     curl -sL "https://web.archive.org/web/20140407001327if_/http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\mddl-3.0-beta-full.xsd" \
+       -o mddl-3.0-beta-full.xsd
+
+   Each downloaded file's sha256 and size are recorded in manifest.json
+   for data lineage.
+
+3. SCOPE OF THIS DOWNLOAD
+   Only the core specification artefacts needed to document and compare
+   MDDL against ORE Studio's own market data identifier schemes were
+   downloaded: the full/lite/link XML Schemas, the Technical
+   Specification PDF, the release's own license PDF, and the release
+   index/changelog text files. The full 3.0-beta release zip also
+   contains worked examples (per-asset-class sample XML instances),
+   data-model/diagram PDFs, and an XMI export — not downloaded here, as
+   they are not needed for the identifier-scheme comparison this
+   material supports; see the Wayback snapshot above if deeper coverage
+   is ever needed.

@@ -55,6 +55,14 @@ Finance concepts the codebase relies on, grouped by topic.
   subscription model (generation config vs client subscription), and the
   mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
   e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
+- [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — FISD/SIIA's XML-based
+  market data description language, version history (1.0 through the final
+  3.0-beta), and current status (contributed into ISO 20022/FIX rather than
+  continued as a standalone dialect).
+- [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — the FIX Trading
+  Community's actively-maintained wire protocol and message dictionary,
+  its Market Data message family, and =SecurityIDSource= symbology
+  (which explicitly names RIC and Bloomberg as member schemes).
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — hub note for how a
   logical need for market data (a requirement) resolves into a concrete
   item drawn from the market data universe: requirements, identifiers,

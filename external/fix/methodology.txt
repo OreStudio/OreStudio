@@ -1,0 +1,46 @@
+Data Sourcing Steps:
+
+1. SOURCE IDENTIFICATION
+   FIX (Financial Information eXchange) is maintained and published by the
+   FIX Trading Community (formerly FIX Protocol Ltd.) at fixtrading.org.
+   The authoritative, browsable specification is at
+   https://fiximate.fixtrading.org/ (the "FIX Repository"); since 2019 the
+   protocol is "FIX Latest", upgraded incrementally via extension packs
+   rather than numbered releases. The last numbered release before that
+   shift was FIX 5.0 Service Pack 2 (SP2); FIX 4.4 remains the most widely
+   deployed version historically for market data and order flow.
+
+   The FIX Trading Community's own site does not offer a single
+   machine-readable data-dictionary file download in the way mddl.org did
+   -- its content is served through the fiximate browsing UI. Instead, the
+   XML data dictionaries used here were sourced from the QuickFIX
+   open-source FIX engine project (quickfixengine.org /
+   github.com/quickfix/quickfix), which redistributes the same field,
+   component, and message definitions as machine-readable XML under a
+   permissive BSD-style license (see LICENSE). This is a standard,
+   widely-used route to a FIX data dictionary -- QuickFIX's spec/ files are
+   the de facto reference implementation dictionaries used across the
+   industry's open-source FIX tooling.
+
+2. DOWNLOAD
+   Files were fetched directly from a pinned commit of the quickfix/quickfix
+   GitHub repository (see manifest.json's redistribution_commit) via
+   raw.githubusercontent.com, e.g.:
+
+     curl -sL "https://raw.githubusercontent.com/quickfix/quickfix/<commit>/spec/FIX44.xml" \
+       -o FIX44.xml
+
+   Each downloaded file's sha256 and size are recorded in manifest.json for
+   data lineage. Pinning to a commit (rather than "master") makes this
+   download reproducible even if the upstream repository changes later.
+
+3. SCOPE OF THIS DOWNLOAD
+   Only the two data dictionaries needed to document and compare FIX's
+   Market Data message family against ORE Studio's own identifier schemes
+   were downloaded: FIX 4.4 (historically dominant for market data) and
+   FIX 5.0 SP2 (the last numbered release, adding the MarketDataStatistics*
+   and MarketDataReport messages). "FIX Latest" (the current, continuously
+   updated Orchestra-based specification) was not downloaded, since it is
+   not published as a single static XML file the way the numbered releases
+   are -- see https://fiximate.fixtrading.org/en/FIX.Latest/ if deeper,
+   current-day coverage is ever needed.

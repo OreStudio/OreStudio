@@ -111,6 +111,7 @@ agreed.
 | [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] | DONE | 2026-07-23 | 2026-07-24 | Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data. |
 | [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] | DONE | 2026-07-24 | 2026-07-24 | Enumerate every place ore_key/index_name/qualifier/market_series keys fail to project onto ORE's index name / curve key / quote key model, including the tenor-index and curve-role gaps. |
 | [[id:4ACFF837-A9A4-4F17-9246-8E58993E469B][Design a canonical ORE Studio market data URN]] | BACKLOG | | | Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC. |
+| [[id:7422E41C-41FA-4106-A88D-74E142454773][Survey MDDL and FIX as additional market data notations]] | STARTED | 2026-07-26 | | Extend the external market data identifiers comparative analysis with MDDL and FIX: download/archive their specifications with data lineage, add knowledge docs, and add comparative-analysis coverage across every instrument section. |
 
 * Decisions
 

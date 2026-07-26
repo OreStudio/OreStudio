@@ -57,6 +57,12 @@ notes back as a =*** Result= child heading directly under it.
 - Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
   select *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open IR Curve Generation Configs list
 
 - Menu: Market Data > Synthetic > Configuration > IR Curve Generation
@@ -64,6 +70,12 @@ notes back as a =*** Result= child heading directly under it.
 - Verify the list opens and shows the seeded Barclays curves (the
   =2026 Realistic= archetype rows), each currently using the
   Cox-Ingersoll-Ross engine.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Reopen a seeded CIR curve config
 
@@ -76,6 +88,12 @@ notes back as a =*** Result= child heading directly under it.
   formula description (dr = κ(θ−r)dt + σ√r dW ...).
 - Verify the Sample short-rate paths chart renders without error.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Create a new curve with Cox-Ingersoll-Ross
 
 - Click Add to open a blank =IrCurveEditor=.
@@ -83,11 +101,23 @@ notes back as a =*** Result= child heading directly under it.
   *Process* tab select "Cox-Ingersoll-Ross" from the Engine combo.
 - Save. Verify the new row appears in the list.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Read the created record back
 
 - Reopen the just-created record's detail dialog.
 - Verify every field round-trips, including the Engine combo still
   showing "Cox-Ingersoll-Ross" selected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Update the record's engine
 
@@ -96,10 +126,22 @@ notes back as a =*** Result= child heading directly under it.
 - Verify the list refreshes showing the new engine and a change
   reason was recorded.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Delete the created record
 
 - Select the record created above and delete it.
 - Verify it disappears from the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Verify history shows all changes
 
@@ -108,6 +150,12 @@ notes back as a =*** Result= child heading directly under it.
 - Verify Create (Cox-Ingersoll-Ross), Update (Vasicek), and Delete are
   all present with correct change reasons and no raw =CIR=/=OU= codes
   leaking into any displayed field.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Verify FX engine combo shows Ornstein-Uhlenbeck
 
@@ -119,14 +167,20 @@ notes back as a =*** Result= child heading directly under it.
   and the field relabelling (κ/σ tooltips mentioning
   Ornstein-Uhlenbeck) behaves as before the rename.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-26T11:14:10Z |
+| Branch        | feature/rename-cir-to-cox-ingersoll-ross |
+| Commit        | bf7795117 |
+| Worktree      | merry_newton |
 
 * Notes

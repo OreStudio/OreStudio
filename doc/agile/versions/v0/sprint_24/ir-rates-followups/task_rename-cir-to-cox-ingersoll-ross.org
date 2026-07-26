@@ -81,11 +81,11 @@ migration, not just an internal symbol rename.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Rename implemented; build and tests green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close task, raise PR.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
@@ -182,3 +182,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four processes renamed throughout =ores.analytics.quant=
+(=cir_process= → =cox_ingersoll_ross_process=, =ou_process= →
+=ornstein_uhlenbeck_process=, =gmm_process= →
+=gaussian_mixture_model_process=, =arithmetic_gmm_process= →
+=arithmetic_gaussian_mixture_model_process=), including every
+downstream reference in =ores.synthetic=, =ores.qt=, and =ores.sql=.
+Stored =process_type= values renamed to match (=cir=/=CIR= →
+=cox_ingersoll_ross=/=COX_INGERSOLL_ROSS=, =ou= →
+=ornstein_uhlenbeck=), covering the yield-curve-process-types
+catalogue, SQL check constraints, and populate scripts.
+=IrCurveEditor='s engine combo now shows "Cox-Ingersoll-Ross" instead
+of the raw code, via the same code/label =EngineInfo= split
+=FxSpotRateEditor= already used. Live knowledge docs and the component
+model updated to match; closed sprint history and unscheduled backlog
+captures referencing the old names were left untouched (out of scope).
+
+Full =compass build rat= (whole-repo build + test suite) green, SQL
+schema validation passed, and a fresh =db recreate= +
+Barclays-provisioning cycle confirmed the renamed catalogue row and
+constraints apply cleanly to real data. Manual QA scenario
+[[id:293F4585-9A59-4649-83A7-11729E6430C7][Verify CIR/OU/GMM process rename]] — CRUD, history, and both engine
+combos (IR curve's Cox-Ingersoll-Ross, FX's Ornstein-Uhlenbeck) — all
+steps PASSED.

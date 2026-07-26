@@ -125,11 +125,12 @@ std::string("Test exception")
 
 ** calendar_code
 :PROPERTIES:
-:table:         ores_refdata_calendars_tbl
-:nullable:      false
-:error_message: Invalid calendar_code: %. No active calendar found with this code.
-:list_by:       true
-:list_by_as_of: true
+:table:              ores_refdata_calendars_tbl
+:referenced_column:  code
+:nullable:           false
+:error_message:      Invalid calendar_code: %. No active calendar found with this code.
+:list_by:            true
+:list_by_as_of:      true
 :END:
 
 * Insert trigger

@@ -255,8 +255,17 @@ bool CalendarExceptionDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
     const QString exception_date_val = ui_->exceptionDateEdit->text().trimmed();
     const bool calendar_code_selected = ui_->calendarCombo->currentIndex() >= 0;
+    const QString exception_date_date_val = ui_->exceptionDateEdit->text().trimmed();
 
-    return true && !id_val.isEmpty() && !exception_date_val.isEmpty() && calendar_code_selected;
+    return true && !id_val.isEmpty() && !exception_date_val.isEmpty() &&
+           calendar_code_selected
+           // A blank optional date field is valid (nothing to parse); a
+           // non-blank one must be a real ISO-8601 date, or the unchecked
+           // from_iso8601_date() parse in updateXFromUi() would throw and
+           // crash the app on Save.
+           && (exception_date_date_val.isEmpty() ||
+               ores::platform::time::datetime::is_valid_iso8601_date(
+                   exception_date_date_val.toStdString()));
 }
 
 void CalendarExceptionDetailDialog::onSaveClicked() {

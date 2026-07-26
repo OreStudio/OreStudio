@@ -173,7 +173,7 @@
           <item row="7" column="1">
            <widget class="QSpinBox" name="dayOffsetSpin">
             <property name="minimum">
-             <number>-1</number>
+             <number>-9999</number>
             </property>
             <property name="maximum">
              <number>9999</number>

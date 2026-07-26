@@ -112,8 +112,21 @@ std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) 
     if (ss.fail() || s1 != '-' || s2 != '-')
         throw std::invalid_argument("from_iso8601_date: failed to parse: " + str);
 
-    return std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
+    const auto date = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
         std::chrono::day{static_cast<unsigned>(dd)};
+    if (!date.ok())
+        throw std::invalid_argument("from_iso8601_date: not a valid calendar date: " + str);
+
+    return date;
+}
+
+bool datetime::is_valid_iso8601_date(const std::string& str) noexcept {
+    try {
+        from_iso8601_date(str);
+        return true;
+    } catch (const std::invalid_argument&) {
+        return false;
+    }
 }
 
 }

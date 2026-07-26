@@ -2304,6 +2304,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             detail_fields = qt['detail_fields']
             required_fields = []
             required_dynamic_combo_fields = []
+            date_fields = []
             domain_col_types = {
                 c.get('name'): c.get('cpp_type', '')
                 for c in domain_entity.get('columns', [])
@@ -2419,6 +2420,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_line_edit']
                     and field_cpp == 'std::chrono::year_month_day'
                 )
+                if f['is_date']:
+                    date_fields.append({'field': f['field'], 'widget': f['widget']})
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -2463,6 +2466,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 required_dynamic_combo_fields[-1]['_is_last'] = True
             qt['required_fields'] = required_fields
             qt['required_dynamic_combo_fields'] = required_dynamic_combo_fields
+            qt['date_fields'] = date_fields
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'

@@ -235,11 +235,12 @@ std::nullopt
 
 ** calendar_code
 :PROPERTIES:
-:table:         ores_refdata_calendars_tbl
-:nullable:      false
-:error_message: Invalid calendar_code: %. No active calendar found with this code.
-:list_by:       true
-:list_by_as_of: true
+:table:              ores_refdata_calendars_tbl
+:referenced_column:  code
+:nullable:           false
+:error_message:      Invalid calendar_code: %. No active calendar found with this code.
+:list_by:            true
+:list_by_as_of:      true
 :END:
 
 * Insert trigger
@@ -321,19 +322,19 @@ std::nullopt
 
 *** Detail fields
 
-| field           | label         | widget            | type      | is_key | is_required | immutable | placeholder                | combo_fetch_fn        | combo_fetch_include        | combo_allow_blank | combo_domain_type                | combo_display_field | combo_code_field | combo_tooltip_field | combo_sort_field | combo_watcher_name  | combo_label     |
-|-----------------+---------------+--------------------+-----------+--------+-------------+-----------+-----------------------------+------------------------+-----------------------------+--------------------+------------------------------------+-----------------------+--------------------+------------------------+--------------------+----------------------+-------------------|
-| id              | Id            | idEdit             | line_edit | true   | true        |           | Calendar rule id           |                        |                             |                    |                                    |                       |                    |                        |                    |                      |                   |
-| calendar_code   | Calendar      | calendarCombo      | dynamic_combo |    | true        | true      |                             | fetch_calendars        | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::calendar         | name                  | code               | code                   | version            | calendarRuleCalendarWatcher | calendars   |
-| kind            | Kind          | kindEdit           | line_edit |        | true        |           | fixed_date/nth_weekday_of_month/last_weekday_of_month/easter_offset |    |          |                    |                                    |                       |                    |                      |                   |
-| month           | Month         | monthSpin          | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| day             | Day           | daySpin            | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| weekday         | Weekday       | weekdaySpin        | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| occurrence      | Occurrence    | occurrenceSpin     | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| day_offset      | Day Offset    | dayOffsetSpin      | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| shift           | Shift         | shiftEdit          | line_edit |        | true        |           | none/nearest_weekday/roll_forward_to_monday |          |                             |                    |                                    |                       |                    |                      |                   |
-| effective_from  | Eff. From     | effectiveFromSpin  | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
-| effective_to    | Eff. To       | effectiveToSpin    | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |
+| field           | label         | widget            | type      | is_key | is_required | immutable | placeholder                | combo_fetch_fn        | combo_fetch_include        | combo_allow_blank | combo_domain_type                | combo_display_field | combo_code_field | combo_tooltip_field | combo_sort_field | combo_watcher_name  | combo_label     | spin_min |
+|-----------------+---------------+--------------------+-----------+--------+-------------+-----------+-----------------------------+------------------------+-----------------------------+--------------------+------------------------------------+-----------------------+--------------------+------------------------+--------------------+----------------------+-------------------+----------|
+| id              | Id            | idEdit             | line_edit | true   | true        |           | Calendar rule id           |                        |                             |                    |                                    |                       |                    |                        |                    |                      |                   |          |
+| calendar_code   | Calendar      | calendarCombo      | dynamic_combo |    | true        | true      |                             | fetch_calendars        | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::calendar         | name                  | code               | code                   | version            | calendarRuleCalendarWatcher | calendars   |          |
+| kind            | Kind          | kindEdit           | line_edit |        | true        |           | fixed_date/nth_weekday_of_month/last_weekday_of_month/easter_offset |    |          |                    |                                    |                       |                    |                      |                   |          |
+| month           | Month         | monthSpin          | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
+| day             | Day           | daySpin            | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
+| weekday         | Weekday       | weekdaySpin        | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
+| occurrence      | Occurrence    | occurrenceSpin     | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
+| day_offset      | Day Offset    | dayOffsetSpin      | spin_box  |        |        |        |        |        |        |        |        |        |        |        |        |        |        | -9999    |
+| shift           | Shift         | shiftEdit          | line_edit |        | true        |           | none/nearest_weekday/roll_forward_to_monday |          |                             |                    |                                    |                       |                    |                      |                   |          |
+| effective_from  | Eff. From     | effectiveFromSpin  | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
+| effective_to    | Eff. To       | effectiveToSpin    | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
 
 *** Columns (Qt model)
 

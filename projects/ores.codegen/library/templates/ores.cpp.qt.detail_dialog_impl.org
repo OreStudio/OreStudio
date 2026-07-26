@@ -1256,6 +1256,9 @@ bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
 {{#domain_entity.qt.required_dynamic_combo_fields}}
     const bool {{field}}_selected = ui_->{{widget}}->currentIndex() >= 0;
 {{/domain_entity.qt.required_dynamic_combo_fields}}
+{{#domain_entity.qt.date_fields}}
+    const QString {{field}}_date_val = ui_->{{widget}}->text().trimmed();
+{{/domain_entity.qt.date_fields}}
 
     return true
 {{#domain_entity.qt.required_fields}}
@@ -1264,6 +1267,14 @@ bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
 {{#domain_entity.qt.required_dynamic_combo_fields}}
         && {{field}}_selected
 {{/domain_entity.qt.required_dynamic_combo_fields}}
+{{#domain_entity.qt.date_fields}}
+        // A blank optional date field is valid (nothing to parse); a
+        // non-blank one must be a real ISO-8601 date, or the unchecked
+        // from_iso8601_date() parse in updateXFromUi() would throw and
+        // crash the app on Save.
+        && ({{field}}_date_val.isEmpty() ||
+            ores::platform::time::datetime::is_valid_iso8601_date({{field}}_date_val.toStdString()))
+{{/domain_entity.qt.date_fields}}
 {{! see * Extension points above }}
 <<paste:69F22F14-6701-4E73-AFCC-78AC1B1FDDDF>>
     ;

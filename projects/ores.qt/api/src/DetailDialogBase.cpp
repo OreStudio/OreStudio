@@ -137,6 +137,14 @@ void DetailDialogBase::setImageCache(ImageCache* cache) {
         return;
     connect(imageCache_, &ImageCache::imagesLoaded, this, &DetailDialogBase::updateFlagDisplay);
     connect(imageCache_, &ImageCache::allLoaded, this, &DetailDialogBase::updateFlagDisplay);
+    // getIcon() on a cache miss (the counterparty/party logo path -- a
+    // single on-demand image_id, not one of the bulk-preloaded currency/
+    // country/business-centre/calendar flag sets loadAll() walks) returns
+    // a placeholder immediately and loads the real image asynchronously,
+    // signalling completion via imageLoaded(id) rather than imagesLoaded()/
+    // allLoaded(). Without this connection the flag button never repaints
+    // once that fetch completes.
+    connect(imageCache_, &ImageCache::imageLoaded, this, &DetailDialogBase::updateFlagDisplay);
 }
 
 void DetailDialogBase::initFlagButton(QLayout* container) {

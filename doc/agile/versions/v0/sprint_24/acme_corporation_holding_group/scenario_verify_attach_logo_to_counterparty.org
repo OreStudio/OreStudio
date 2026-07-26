@@ -102,7 +102,7 @@ notes back as a =*** Result= child heading directly under it.
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | - the window is constantly receiving events but nothing is changing.; - no logo visible; - badges not working, all seem to be defaulting.;  |
+| Notes  | - the window is constantly receiving events but nothing is changing.; - no logo visible; - badges not working, all seem to be defaulting.; |
 
 *** Create a counterparty and set its logo
 
@@ -253,9 +253,9 @@ notes back as a =*** Result= child heading directly under it.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-26T10:33:57Z |
+| Completed at  | 2026-07-26T11:03:29Z |
 | Branch        | feature/attach-logo-to-counterparty |
-| Commit        | a10fa4515 |
+| Commit        | deb1dc70a |
 | Worktree      | brave_hopper |
 
 * Notes

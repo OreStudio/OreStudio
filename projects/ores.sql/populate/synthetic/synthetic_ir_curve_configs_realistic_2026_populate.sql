@@ -138,7 +138,7 @@ begin
         'Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.index_name,
         '2026 Realistic archetype: a per-currency-calibrated Cox-Ingersoll-Ross short-rate process for '
         || c.currency_code || '''s current overnight risk-free rate, ' || c.index_name || '. '
-        || 'COX_INGERSOLL_ROSS''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
+        || 'Cox-Ingersoll-Ross''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
         || 'better fit for short rates than Vasicek''s constant-vol Gaussian, without needing '
         || 'a real reference curve to calibrate Hull-White against. This is the dataset '
         || 'Barclays'' own provisioning flow publishes and auto-starts by default -- the '

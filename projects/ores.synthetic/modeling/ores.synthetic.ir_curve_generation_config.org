@@ -15,7 +15,7 @@
 
 A typed sub-configuration owned by a =market_data_generation_config=. Describes
 how to synthesise a single currency+index interest-rate curve: which
-short-rate process drives it (=vasicek=/=cir=/=hull_white=, per
+short-rate process drives it (=vasicek=/=cox_ingersoll_ross=/=hull_white=, per
 =ores.analytics.quant='s =IYieldCurveProcess= engines) and that process's
 parameters. The actual instrument grid (which tenors to publish at which
 role) is held separately as ordered =ir_curve_template_entry= rows, the
@@ -112,7 +112,7 @@ std::string("USD-SOFR")
 :END:
 
 Short-rate process engine driving this curve (references
-=yield_curve_process_type.code=: =VASICEK=, =CIR=, or =HULL_WHITE=) --
+=yield_curve_process_type.code=: =VASICEK=, =COX_INGERSOLL_ROSS=, or =HULL_WHITE=) --
 selects among =ores.analytics.quant='s =IYieldCurveProcess= engines via
 =process_factory::make_yield_curve_process()=.
 
@@ -325,7 +325,7 @@ std::nullopt
 | "source_name" <> ''                                       |
 | "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
-| "process_type" <> 'CIR' or "initial_rate" >= 0             |
+| "process_type" <> 'COX_INGERSOLL_ROSS' or "initial_rate" >= 0             |
 
 * Foreign keys
 
@@ -429,7 +429,7 @@ std::nullopt
 |-----------------------------------+-------------------------------+-------------------------------+-----------+--------+-------------+--------------------------------------------|
 | currency_code                     | Currency                     | currencyEdit                 | line_edit |        | true        | Enter currency code                      |
 | index_name                        | Index                        | indexNameEdit                 | line_edit |        | true        | Enter floating-rate index (e.g. SOFR)    |
-| process_type                      | Process Type                  | processTypeEdit                | line_edit |        | true        | VASICEK, CIR, or HULL_WHITE               |
+| process_type                      | Process Type                  | processTypeEdit                | line_edit |        | true        | VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE               |
 | kappa                              | Kappa                         | kappaEdit                     | line_edit |        | true        | Mean-reversion speed                     |
 | theta                              | Theta                          | thetaEdit                     | line_edit |        | true        | Mean-reversion target level               |
 | sigma                              | Sigma                          | sigmaEdit                     | line_edit |        | true        | Volatility                                |

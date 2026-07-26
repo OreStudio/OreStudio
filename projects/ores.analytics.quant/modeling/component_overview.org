@@ -52,7 +52,7 @@ unit-testable without pulling in a service binary.
 - =domain::staleness_policy= -- caller-supplied max age for a derived rate
   to be considered fresh.
 - Raw process parameters (means, stdevs, weights, initial_price) plus a
-  =process_type= string ("geometric" / "arithmetic" / "ou"), fed to
+  =process_type= string ("geometric" / "arithmetic" / "ornstein_uhlenbeck"), fed to
   =service::process_factory::make_process= and
   =domain::validate_process_parameters=.
 

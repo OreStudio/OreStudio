@@ -175,7 +175,7 @@ faker::number::integer(1, 3600)
 :END:
 
 Price-process engine: "geometric" (multiplicative), "arithmetic"
-(additive), or "ou" (Ornstein-Uhlenbeck, mean-reverting).
+(additive), or "ornstein_uhlenbeck" (Ornstein-Uhlenbeck, mean-reverting).
 
 #+begin_src cpp :name generator
 std::string("geometric")
@@ -374,7 +374,7 @@ std::nullopt
 
 =formatter= is optional: a free function =formatter(field) -> QString=
 called instead of the type's built-in renderer — for a column whose raw
-value needs a friendly label (e.g. ProcessType's "geometric"/"ou" code
+value needs a friendly label (e.g. ProcessType's "geometric"/"ornstein_uhlenbeck" code
 becoming "Geometric Brownian Motion"/"Ornstein-Uhlenbeck"). Leave blank
 to use the plain type renderer. =formatter_include= names the header
 the formatter function needs, if any.

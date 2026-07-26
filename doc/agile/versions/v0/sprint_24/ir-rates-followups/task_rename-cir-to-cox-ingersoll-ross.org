@@ -179,7 +179,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =CIR=/=cir= doc-comments left in files this PR otherwise touched line-by-line | yield_curve_process_type.hpp, ir_curve_preview_handler.hpp, simulate_ir_curve_paths_protocol.hpp | Accepted | Fixed the 3 flagged in-scope files |
+| 2 | Same stale pattern in files not touched by this PR at all | ir_curve_generation_config.hpp, IrCurveEditor.hpp | Accepted | Fixed for consistency, since the rename's own stated scope is "every C++/Qt string literal comparing against these codes" |
+| 3 | Generated =ores_schema.puml= inherits stale =CIR= text from the un-fixed source comment | ores.sql/modeling/ores_schema.puml | Accepted | Hand-patched the two stale lines rather than regenerating (a full regen pulled in unrelated schema growth from main); =.png=/=.cmapx= left untouched since the source text is what mattered |
+| 4 | Human-readable description prose reads the raw enum code instead of the display name | synthetic_ir_curve_configs_realistic_2026_populate.sql:141 | Accepted | Fixed to "Cox-Ingersoll-Ross's" matching the surrounding sentence's style |
+| 5 | =ou=/=Ou= abbreviation kept in local identifiers (=buildOuSimpleControls=, =ouThetaLabel_=, local =bool ou=) while surrounding comments say =ornstein_uhlenbeck= | FxSpotRateEditor.hpp/.cpp | Declined | Deliberate scope boundary: renaming the wire-level string literal and class/file names, not every internal identifier abbreviation; applied consistently |
+| 6 | (self-review, following the same pattern) live component-model docs still said =ou=/=cir= for the stored wire value | component_overview.org, ores.synthetic.fx_spot_generation_config.org, ores.synthetic.ir_curve_generation_config.org, ores.synthetic.yield_curve_process_type.org, IrCurveGenerationConfigDetailDialog.ui | Accepted | Same stored-value rename scope as the reviewed files; fixed for consistency |
 
 * Result
 

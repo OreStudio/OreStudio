@@ -56,11 +56,23 @@ addressable by key) is arguably a better fit for that same pattern than
 for NATS request-reply: no payload-size ceiling to chunk around at all,
 standard HTTP caching/range-request semantics apply for free, and it
 sidesteps the batching problem entirely rather than tuning around it.
-Whether images should move to =ores_assets_images_tbl= id being S3-object-
-addressable (or reuse the existing storage bucket mechanism directly) vs.
-staying NATS-delivered-but-fixed is a design choice the first task should
-make explicitly, not assume -- weigh against the two other options above
-before committing to an approach.
+
+Leaning towards staying on NATS unless the decision task turns up a good
+reason not to: NATS itself has no issue with binary payloads (a NATS
+message is just an opaque byte array), so there's no inherent transport
+ceiling being fought here. The actual cost stack today is self-inflicted
+by this app's own wire format, not by NATS or by using request-reply:
+every message (including image responses) goes through
+=rfl::json::write=/=read= (=ores.service/messaging/handler_helpers.hpp=),
+so binary SVG data is base64-encoded into a JSON string field -- ~33%
+inflation -- on top of being sent fully uncompressed. Sending raw
+(optionally gzip'd) bytes directly as the NATS payload for image-
+carrying messages, bypassing JSON/base64 for that field, plausibly
+removes most of the overflow risk on its own. The decision task should
+verify this against the synthetic worst case before treating the HTTP-
+transport migration as necessary -- it's a materially bigger change
+(new storage-addressing scheme for images) that should only be taken on
+if NATS-with-compression genuinely can't be made to fit.
 
 * Status
 
@@ -68,10 +80,10 @@ before committing to an approach.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Split into tasks; none started yet.    |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-22                               |
+| Next          | Start the decision task.               |
+| Last touched  | 2026-07-26                               |
 
 * Acceptance
 
@@ -95,10 +107,16 @@ before committing to an approach.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA][Make ImageCache batching byte-size aware, add SVG compression]] | BACKLOG | | | Track cumulative payload size while building each image-fetch batch, not just count; add gzip compression to the image transfer pipeline. |
+| [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][Decide: NATS binary+compression vs. HTTP storage-endpoint transport for image delivery]] | BACKLOG | | | Confirm that sending images as raw (non-base64) compressed bytes over NATS resolves the payload-overflow problem on its own, before considering a move to the existing HTTP storage-endpoint transport. Record the decision and rationale. |
+| [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][Add gzip compression to the image NATS pipeline, send raw bytes instead of base64]] | BACKLOG | | | Server compresses SVG image data before sending; client decompresses on receive. Stop routing binary image data through the JSON/base64 encoding used for the rest of the messaging protocol -- send it as raw bytes on the wire for image-carrying messages, eliminating both the base64 inflation and the missing compression in one pass. |
+| [[id:DF92CC86-8A91-44FE-AA34-5CC78D1B2F12][Make ImageCache batching byte-size aware]] | BACKLOG | | | Track cumulative estimated payload size (post-compression) while building each image-fetch batch, not just image count, so a batch is cut short before it would risk exceeding the NATS payload limit. Backstop for whatever pathological cases remain after compression; revisit MAX_IMAGES_PER_REQUEST once this and the compression task both land. |
+| [[id:DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA][Make ImageCache batching byte-size aware, add SVG compression]] (ABANDONED -- split above) | ABANDONED | | | Superseded: bundled a design decision with two independent implementation concerns under one task. |
 
 * Decisions
 
 * Out of scope
 
--
+- Compressing NATS messages generically (the =rfl::json= transport used
+  by every other message type, not just images) -- separate, broader
+  question, filed as a backlog capture:
+  [[id:4BD63D23-5BB1-455A-92F1-83B6D74EFBD1][Consider compressing all NATS JSON messages, not just images]].

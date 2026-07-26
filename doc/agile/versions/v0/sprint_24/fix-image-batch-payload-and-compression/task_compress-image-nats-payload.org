@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: BB6947FC-EE92-44E9-984A-BDFFC25A9BCA
+:END:
+#+title: Task: Add gzip compression to the image NATS pipeline, send raw bytes instead of base64
+#+description: Server compresses SVG image data before sending; client decompresses on receive. Stop routing binary image data through the JSON/base64 encoding used for the rest of the messaging protocol -- send it as raw bytes on the wire for image-carrying messages, eliminating both the base64 inflation and the missing compression in one pass.
+#+type: task
+#+level: s1
+#+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two distinct mechanisms, both scoped to image-carrying messages only
+(the rest of the messaging protocol's JSON/=rfl::json= transport is out
+of scope for this task -- see the "Consider compressing all NATS JSON
+messages" backlog capture for that broader, separate question):
+
+1. Stop round-tripping SVG bytes through base64-inside-JSON just to
+   decode them straight back out again on the other end. Image data
+   should travel as raw bytes on the wire, not as a base64 string field
+   the receiver immediately decodes -- that encode/decode step is pure
+   overhead with no benefit for this payload.
+2. Compress those raw bytes (gzip) before sending; decompress on
+   receive. This is what actually shrinks the payload -- the base64
+   removal alone only recovers the ~33% encoding inflation, whereas
+   gzip on SVG text typically saves 70-80% on top of that.
+
+Together these should make image responses small enough that
+=MAX_IMAGES_PER_REQUEST= is no longer the binding constraint (see the
+sibling byte-size-aware-batching task for the remaining backstop).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

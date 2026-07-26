@@ -37,12 +37,12 @@ regardless of how many or how large the images in a given request are.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded -- split into three tasks.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-22                               |
+| Next         | See the three replacement tasks below. |
+| Last touched | 2026-07-26                               |
 
 * Acceptance
 
@@ -65,6 +65,17 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+This task bundled a design decision (batching vs. compression vs.
+HTTP transport) with two independent implementation concerns
+(byte-aware batching, compression) under one heading. Split on
+2026-07-26 into:
+
+- [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][Decide: NATS binary+compression vs. HTTP storage-endpoint transport
+  for image delivery]]
+- [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][Add gzip compression to the image NATS pipeline, send raw bytes
+  instead of base64]]
+- [[id:DF92CC86-8A91-44FE-AA34-5CC78D1B2F12][Make ImageCache batching byte-size aware]]
 
 * Test Scenarios
 

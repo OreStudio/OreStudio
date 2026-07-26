@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-pair-code-flag-icon-size-unfixed
+#+pr: 1692
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
 #+updated: 2026-07-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
@@ -49,11 +49,11 @@ property.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -62,9 +62,27 @@ property.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Confirmed via a live repro (test scenario below) that the icon
+rendered by =QLineEdit::addAction()= + =findChild<QToolButton*>()=
+stayed tiny no matter what =iconSize= was requested — the internal
+=QLineEditIconButton='s displayed icon size is bound by layout
+metrics =QLineEdit= computes once when the action is added and never
+revisits, so a later =setIconSize()= on the button has no visible
+effect. Rather than continue fighting that internal, undocumented
+behaviour, replaced the whole action-button mechanism with an overlay
+approach:
+
+- =set_line_edit_flag_icon()= (=FlagIconHelper.hpp=/=.cpp=) now
+  paints the icon on a plain =QLabel= parented to the =QLineEdit=,
+  sized exactly to the requested =iconSize=, with
+  =QLineEdit::setTextMargins()= reserving room for it (a call
+  =QLineEdit= *does* relayout correctly).
+- A small =KeyFlagLabelPositioner= event filter keeps the label
+  vertically centred and left-anchored whenever the line edit
+  resizes.
+- =DetailDialogBase::keyFlagAction_= (=QAction*=) became
+  =keyFlagIconLabel_= (=QLabel*=) — the only caller of
+  =set_line_edit_flag_icon()=.
 
 * Notes
 
@@ -72,12 +90,24 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1692][#1692]] | [ores.qt] Fix pair_code inline flag icon rendering tiny |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unused =<QResizeEvent>= include | FlagIconHelper.cpp | Accepted | Removed; only =event->type()= is checked, no cast to =QResizeEvent*=. |
+| 2 | Centring math duplicated in =set_line_edit_flag_icon()= and =KeyFlagLabelPositioner::reposition()= | FlagIconHelper.cpp | Accepted | Exposed =reposition()= publicly and call it from both the initial-placement and resize paths; positioner instance is stashed via a =QLabel= property since it has no =Q_OBJECT= macro to support =findChild()=. |
+| 3 | =setTextMargins()= unconditionally clobbers other margins | FlagIconHelper.cpp | Accepted | Added a comment documenting that this function is the sole owner of the field's text margins. |
+| 4 | Initial label position could be off before the first resize event | FlagIconHelper.cpp | Declined | Theoretical edge case; the QA scenario confirms correct rendering on dialog open in practice, and =.ui=-form widgets already have a laid-out height by the time =updateFlagDisplay()= first runs. |
+| 5 | Discarded =new KeyFlagLabelPositioner(...)= pointer | FlagIconHelper.cpp | Declined | Standard Qt parent/child idiom -- lifetime is owned by the label, no leak. |
 
 * Result
+
+Fixed by replacing the =QLineEdit::addAction()=/=QToolButton=
+mechanism with an overlay =QLabel= in =set_line_edit_flag_icon()=
+(see =* Plan=). Verified with
+[[id:E1B1F121-ECAA-4C67-9D6E-AFBA1DA709F0][Test Scenario: pair_code inline flag icon renders at full size]]:
+FAILED against the pre-fix build (icon visibly tiny, screenshot
+attached to the scenario), PASSED after the fix (icon renders at the
+full requested size, matching the Base/Quote currency combo flags).

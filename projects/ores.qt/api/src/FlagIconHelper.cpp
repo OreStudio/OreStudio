@@ -21,7 +21,9 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include <QEvent>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QPainter>
 #include <QPixmap>
 #include <QtConcurrent>
@@ -31,6 +33,38 @@ namespace ores::qt {
 
 namespace {
 constexpr int flag_spacing = 2; // small gap so the two flags read as distinct, not overlapping
+constexpr int key_flag_left_margin = 4; // left inset for the overlay icon
+constexpr int key_flag_gap = 4; // gap between the overlay icon and the text
+
+// Keeps the overlay flag label vertically centred and repositioned to the
+// line edit's left inset whenever the line edit itself is resized (e.g. the
+// dialog is resized). Installed once per QLineEdit, as an event filter
+// rather than a QLineEdit subclass since the field widgets come from .ui
+// files as plain QLineEdit.
+class KeyFlagLabelPositioner : public QObject {
+public:
+    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label) : QObject(label), edit_(edit), label_(label) {
+        edit_->installEventFilter(this);
+    }
+
+    // Also called directly from set_line_edit_flag_icon() on the initial
+    // placement, so the centring formula lives in exactly one place.
+    void reposition() const {
+        const int y = (edit_->height() - label_->height()) / 2;
+        label_->move(key_flag_left_margin, std::max(0, y));
+    }
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (watched == edit_ && event->type() == QEvent::Resize)
+            reposition();
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    QLineEdit* edit_;
+    QLabel* label_;
+};
 }
 
 QIcon currency_flag_icon(ImageCache& imageCache,
@@ -72,6 +106,46 @@ QSize single_flag_icon_size(int flagHeight) {
 
 QSize currency_pair_icon_size(int flagHeight) {
     return {flagHeight * 2 + flag_spacing, flagHeight};
+}
+
+void set_line_edit_flag_icon(QLineEdit* edit,
+                             const QIcon& icon,
+                             QLabel*& label_ptr,
+                             QSize iconSize) {
+    // set_line_edit_flag_icon() is the sole owner of this line edit's text
+    // margins (there is no trailing icon/margin use case on these fields
+    // today) — a future caller needing to combine this with another margin
+    // source would need to coordinate here rather than call setTextMargins()
+    // independently.
+    if (icon.isNull()) {
+        if (label_ptr)
+            label_ptr->hide();
+        edit->setTextMargins(0, 0, 0, 0);
+        return;
+    }
+
+    KeyFlagLabelPositioner* positioner = nullptr;
+    if (!label_ptr) {
+        label_ptr = new QLabel(edit);
+        label_ptr->setAttribute(Qt::WA_TransparentForMouseEvents);
+        label_ptr->setStyleSheet("background: transparent; border: none;");
+        positioner = new KeyFlagLabelPositioner(edit, label_ptr);
+        // KeyFlagLabelPositioner has no Q_OBJECT macro (no signals/slots
+        // needed beyond the eventFilter override), so it can't be found via
+        // QObject::findChild(); stash it as a property instead for the
+        // "already exists" branch below.
+        label_ptr->setProperty("oresKeyFlagPositioner", QVariant::fromValue<void*>(positioner));
+    } else {
+        positioner =
+            static_cast<KeyFlagLabelPositioner*>(label_ptr->property("oresKeyFlagPositioner").value<void*>());
+    }
+
+    label_ptr->setFixedSize(iconSize);
+    label_ptr->setPixmap(icon.pixmap(iconSize));
+    edit->setTextMargins(key_flag_left_margin + iconSize.width() + key_flag_gap, 0, 0, 0);
+    positioner->reposition();
+    label_ptr->show();
+    label_ptr->raise();
 }
 
 QIcon currency_flag_icon(ImageCache& imageCache, const std::optional<std::string>& isoCode) {

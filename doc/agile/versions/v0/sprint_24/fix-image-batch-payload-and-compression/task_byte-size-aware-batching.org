@@ -20,7 +20,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make =ImageCache='s batch-fetch logic track cumulative estimated
+payload size while building each batch, not just image count, so a
+batch is cut short before adding an image that would risk exceeding
+NATS's max payload -- rather than relying solely on
+=MAX_IMAGES_PER_REQUEST= as a count-based proxy for size. This is the
+remaining backstop after the compression task lands: compression
+removes most of the overflow risk, but a byte-size-aware cap makes the
+guarantee hold regardless of how images happen to cluster in a given
+request. Depends on the decision task confirming NATS (not HTTP
+transport) is the chosen path, and should land after (or alongside)
+the compression task, since the safe-size threshold is computed
+against post-compression payload size.
+
+Revisit =MAX_IMAGES_PER_REQUEST= once this lands: raise it back up,
+remove it, or reinterpret it as a soft cap now that byte size is the
+real constraint being enforced.
 
 * Status
 

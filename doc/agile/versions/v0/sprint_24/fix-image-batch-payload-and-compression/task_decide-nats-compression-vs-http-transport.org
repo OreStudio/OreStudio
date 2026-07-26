@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-nats-compression-vs-http-transport
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
 #+updated: 2026-07-26
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,7 +40,7 @@ compression alone isn't enough.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

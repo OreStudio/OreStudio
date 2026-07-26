@@ -39,6 +39,95 @@
 -- nothing to thread it through to yet.
 -- =============================================================================
 
+-- =============================================================================
+-- Activates a party and marks its onboarding wizard complete -- the two
+-- effects normally produced by the shell/wizard "provision party" flow's
+-- final phase (see ores.shell/provision_commands.cpp), needed here because
+-- --source acme publishes party-scoped data directly in SQL rather than via
+-- that generic per-party flow. LEI-imported parties land Inactive with no
+-- onboarding.party setting, which would otherwise re-launch the Party
+-- Provisioning Wizard on every login (see auth_is_party_onboarding_complete
+-- in ores.iam.core/messaging/auth_handler.hpp).
+--
+-- Uses the same select-rowtype/mutate/reinsert idiom as
+-- ores_refdata_parties_touch_version_fn: the parties table only has an
+-- INSERT trigger (append-only temporal versioning), so a raw UPDATE would
+-- bypass it and silently skip the version bump / history trail.
+-- =============================================================================
+create or replace function ores_iam_acme_activate_party_fn(
+    p_tenant_id uuid,
+    p_party_id uuid
+) returns void as $$
+declare
+    rec ores_refdata_parties_tbl%rowtype;
+    v_actor text;
+begin
+    select * into rec
+    from "ores_refdata_parties_tbl"
+    where tenant_id = p_tenant_id
+      and id = p_party_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    v_actor := coalesce(ores_iam_current_service_fn(), current_user);
+
+    if found and rec.status != 'Active' then
+        rec.version := 0;
+        rec.status := 'Active';
+        rec.modified_by := v_actor;
+        rec.performed_by := current_user;
+        rec.change_reason_code := 'system.external_data_import';
+        rec.change_commentary := 'Activated during Acme provisioning';
+
+        insert into "ores_refdata_parties_tbl"
+        select (rec).*;
+    end if;
+
+    if not exists (
+        select 1 from ores_variability_system_settings_tbl
+        where tenant_id = p_tenant_id
+          and party_id = p_party_id
+          and name = 'onboarding.party'
+          and value = 'true'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_variability_system_settings_tbl (
+            name, tenant_id, party_id, version, value, data_type,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            'onboarding.party', p_tenant_id, p_party_id, 0, 'true', 'boolean',
+            v_actor, current_user,
+            'system.external_data_import', 'Set during Acme provisioning'
+        );
+    end if;
+
+    -- Associate every existing tenant account with this party -- the
+    -- generic "provision party" flow does this as part of activation
+    -- (see accounts_commands.cpp's account_party_repository usage);
+    -- without it, the tenant admin has no party membership beyond the
+    -- auto-created System Party and cannot select or default to any
+    -- Acme Corporation party.
+    insert into ores_iam_account_parties_tbl (
+        account_id, tenant_id, party_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select a.id, p_tenant_id, p_party_id, 0,
+        v_actor, current_user, 'system.external_data_import',
+        'Associated during Acme provisioning'
+    from ores_iam_accounts_tbl a
+    where a.tenant_id = p_tenant_id
+      and a.account_type != 'service'
+      and a.valid_to = ores_utility_infinity_timestamp_fn()
+      and not exists (
+          select 1 from ores_iam_account_parties_tbl ap
+          where ap.tenant_id = p_tenant_id
+            and ap.account_id = a.id
+            and ap.party_id = p_party_id
+            and ap.valid_to = ores_utility_infinity_timestamp_fn()
+      );
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace function ores_iam_provision_acme_tenant_fn(
     p_target_tenant_id uuid
 )
@@ -55,6 +144,7 @@ declare
     v_template_image record;
     v_logo_image_id uuid;
     v_existing_counterparty_id uuid;
+    v_account_rec ores_iam_accounts_tbl%rowtype;
 begin
     -- Step 1: business centres (required for party creation).
     select id into v_dataset_id
@@ -87,6 +177,53 @@ begin
         step := 'lei_parties'; action := v_row.action; record_count := v_row.record_count;
         return next;
     end loop;
+
+    -- The holding company has no desks/staff (skipped by Step 4's loop
+    -- below), but still needs activating and its onboarding wizard
+    -- suppressed -- LEI-imported parties land Inactive, and the
+    -- per-party onboarding flag defaults to unset (see
+    -- auth_is_party_onboarding_complete), which would otherwise
+    -- re-launch the Party Provisioning Wizard on every login.
+    select id into v_party_id
+    from ores_refdata_parties_tbl
+    where tenant_id = p_target_tenant_id
+      and full_name = 'Acme Corporation Plc'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_party_id is not null then
+        perform ores_iam_acme_activate_party_fn(p_target_tenant_id, v_party_id);
+        step := 'acme_group.onboarding'; action := 'completed'; record_count := 1;
+        return next;
+
+        -- Default every tenant account to the holding party (mirrors
+        -- barclays_system_provision.ores's "accounts set-default-party") so
+        -- login lands on Acme Corporation Plc instead of the auto-created,
+        -- inactive System Party -- without this, real users of --source
+        -- acme still see the Party Provisioning Wizard on first login.
+        -- Accounts is append-only temporal (INSERT trigger only, same as
+        -- parties) -- a raw UPDATE would bypass versioning/history.
+        for v_account_rec in
+            select * from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and account_type != 'service'
+              and (default_party_id is distinct from v_party_id)
+              and valid_to = ores_utility_infinity_timestamp_fn()
+            for update
+        loop
+            v_account_rec.version := 0;
+            v_account_rec.default_party_id := v_party_id;
+            v_account_rec.modified_by := coalesce(ores_iam_current_service_fn(), current_user);
+            v_account_rec.performed_by := current_user;
+            v_account_rec.change_reason_code := 'system.external_data_import';
+            v_account_rec.change_commentary := 'Defaulted to holding party during Acme provisioning';
+
+            insert into ores_iam_accounts_tbl
+            select (v_account_rec).*;
+
+            step := 'acme_group.default_party'; action := 'set'; record_count := 1;
+            return next;
+        end loop;
+    end if;
 
     -- Step 3: real GLEIF counterparties (small), tenant-wide, so every
     -- ACME Corporation party can trade against a realistic counterparty set.
@@ -205,6 +342,10 @@ begin
                 return next;
             end loop;
         end if;
+
+        perform ores_iam_acme_activate_party_fn(p_target_tenant_id, v_party_id);
+        step := v_company.code || '.onboarding'; action := 'completed'; record_count := 1;
+        return next;
     end loop;
 
     -- Step 5: the Acme Corp counterparty fixture, with its logo already

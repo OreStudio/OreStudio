@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 8BDE7AD8-04AF-45FA-A54B-4E841FDCFF08
+:END:
+#+title: Task: Fix remaining --source acme provisioning gaps (party activation, onboarding, membership, default party)
+#+description: --source acme's hand-written SQL orchestration was found, while testing the counterparty logo feature, to skip several things the generic per-party provisioning flow does: party activation (LEI-imported parties land Inactive), onboarding.party completion (re-launches the Party Provisioning Wizard on every login), tenant-admin party membership (ores_iam_account_parties_tbl), and a sane default party (login lands on the auto-created System Party). Partial fixes for these landed directly in ores_iam_provision_acme_tenant_fn as a stopgap, but this is exactly the hand-rolled-SQL-duplicating-the-service-layer pattern the internal-impersonation rework exists to eliminate -- so this task is blocked on that rework rather than receiving further SQL patches.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]]
+#+blocked_since: 2026-07-26
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Get --source acme to fully match the one-click UX its own task description promises (no wizard re-appearing, correct default party, correct party memberships) without adding more hand-written SQL that duplicates C++ service/repository logic. Blocked on the internal-impersonation rework landing a proper mechanism first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Blocked. Left as a partial stopgap fix, tested by direct SQL/shell verification only (no full Qt click-through). |
+| Waiting on   | [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] |
+| Next         | Resume once the internal-impersonation rework lands.  |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+- Logging in as the tenant admin of an --source acme-provisioned tenant lands directly on an active, correctly-defaulted party with no Party/Tenant Provisioning Wizard appearing.
+- Every provisioned party has correct account membership (ores_iam_account_parties_tbl) for the tenant admin, matching what the generic provision party flow would produce.
+- No remaining hand-written SQL in ores_iam_provision_acme_tenant_fn duplicates activation/onboarding/membership logic already correct in the C++ service/repository layer -- it is superseded by the internal-impersonation mechanism.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Discovered while manually walking [[id:CAA32021-D905-468A-BEB4-B76A9432C218][Verify attach logo to counterparty]] against
+a freshly --source acme-provisioned tenant. In order found:
+
+1. LEI-imported parties land =status = 'Inactive'= -- the generic
+   =provision party= flow activates them, =--source acme= never did.
+2. =onboarding.party= was never set true per party -- login re-launches
+   the Party Provisioning Wizard even for an Active party.
+3. The tenant admin had no =ores_iam_account_parties_tbl= row for any
+   Acme party beyond the auto-created System Party -- =accounts
+   set-default-party= failed with "User is not a member of requested
+   party".
+4. No default party was set on the tenant admin account at all --
+   login lands on the inactive System Party by default (Barclays'
+   =accounts set-default-party "BARCLAYS PLC"= step has no Acme
+   equivalent).
+
+=ores_iam_acme_activate_party_fn= (new helper in
+=iam_acme_provisioner_create.sql=) addresses 1-3, and a default-party
+step addresses 4, using the same select-rowtype/mutate/reinsert idiom
+as =ores_refdata_parties_touch_version_fn= (both parties and accounts
+are append-only temporal -- a raw UPDATE would bypass versioning).
+Landed as a stopgap and verified via direct SQL/shell checks (not a
+full Qt login/click-through) -- decided against continuing to chase
+further gaps interactively, since every fix here is exactly the
+hand-rolled-SQL-duplicating-the-service-layer pattern the
+internal-impersonation rework replaces wholesale. Blocking further
+work on that task rather than iterating further on SQL patches.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

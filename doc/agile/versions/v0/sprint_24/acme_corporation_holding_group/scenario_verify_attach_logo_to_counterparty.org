@@ -76,6 +76,13 @@ notes back as a =*** Result= child heading directly under it.
 - Select party *ACME Corporation UK plc*.
 - Open Reference Data > Counterparties.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | party setup wizard still shows up but ignoring since we will refactor this code |
+
 *** Confirm the pre-populated Acme Corp logo
 
 - In the counterparty list, find the row with short code *ACME* / full
@@ -89,6 +96,13 @@ notes back as a =*** Result= child heading directly under it.
 - Close the dialog without making changes (do not edit or delete this
   fixture counterparty -- it is reused by other scenarios and by the
   eventing step below).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | - the window is constantly receiving events but nothing is changing.; - no logo visible; - badges not working, all seem to be defaulting.;  |
 
 *** Create a counterparty and set its logo
 
@@ -104,12 +118,24 @@ notes back as a =*** Result= child heading directly under it.
 - Click Save, supply a change reason, and confirm the success
   notification appears and the row shows in the list.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Read back the saved logo
 
 - Reopen the detail dialog for the counterparty just created (double
   click its list row).
 - Confirm the Logo button shows the same image chosen in the previous
   step -- this is the =image_id= round-trip through save/read.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Update to a different logo
 
@@ -119,12 +145,24 @@ notes back as a =*** Result= child heading directly under it.
 - Close and reopen the dialog; confirm the button now shows the new
   image, not the original one.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Delete the counterparty
 
 - With the counterparty still open (or selected in the list), click
   Delete.
 - Confirm the deletion prompt and supply a change reason.
 - Confirm the row disappears from the counterparty list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Verify history shows every logo change
 
@@ -133,6 +171,12 @@ notes back as a =*** Result= child heading directly under it.
   default -- and choose History.
 - In the History dialog, confirm three entries are present -- create,
   update, delete -- each with its own change reason.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Create a party and set its logo
 
@@ -148,6 +192,12 @@ notes back as a =*** Result= child heading directly under it.
 - Click Save, supply a change reason, and confirm the success
   notification appears and the row shows in the list.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Read back and update the party logo
 
 - Reopen the detail dialog for the party just created (double click
@@ -160,6 +210,12 @@ notes back as a =*** Result= child heading directly under it.
 - Delete the party, confirm the deletion prompt and supply a change
   reason, and confirm the row disappears from the parties list.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** red
 
 *** Connect to tenant Acme Corporation
@@ -169,6 +225,12 @@ notes back as a =*** Result= child heading directly under it.
   do not assume it inherits the blue client's session).
 - Select party *ACME Corporation UK plc*.
 - Open Reference Data > Counterparties and leave the list visible.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Confirm the logo change arrives via NATS
 
@@ -180,14 +242,20 @@ notes back as a =*** Result= child heading directly under it.
 - Open the counterparty's detail dialog here and confirm the Logo
   button shows the same image the blue client set.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-26T10:33:57Z |
+| Branch        | feature/attach-logo-to-counterparty |
+| Commit        | a10fa4515 |
+| Worktree      | brave_hopper |
 
 * Notes

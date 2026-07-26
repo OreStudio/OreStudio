@@ -183,6 +183,12 @@ How the codebase is put together.
   component (party_cache in ores.iam.core), multiple UI-layer consumers share
   a thin *.client component instead of duplicating. Covers cached_by's
   component.subcomponent dotted form for targeting a non-=.core= consumer.
+- [[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]] — the GUI-tier counterpart
+  to the entity-mirror cache above: ChangeReasonCache/BadgeCache subscribe to
+  NATS change events via ClientManager and reload on receipt, re-subscribing
+  on every login/reconnect. Contrasts the two tiers (concurrency model, auth,
+  partitioning, protocol) and explains why the server-side facet is the
+  wrong tool for a Qt-side cache.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern of a top-level transport
   registrar delegating to per-entity sub-registrars, with a per-transport
   instance section (NATS, HTTP) linking to the codegen archetypes.

@@ -77,3 +77,6 @@ every other =_upper=/=_dir= variable the facet exposes.
 - [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache + codegen facet]] -- the story that
   built =partitioned_cache= and the =nats-event-cache= facet, with
   =party_cache= as the worked single-consumer exemplar.
+- [[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]] -- the analogous
+  subscribe-and-reload pattern for GUI-tier caches (=ChangeReasonCache=,
+  =BadgeCache=), and why this facet is the wrong tool for that tier.

@@ -721,7 +721,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         [this]() { return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}_.{{field}})); },
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_optional_string}}
+        [this]() {
+            const auto& _opt = {{domain_entity.qt.item_var}}_.{{field}};
+            return _opt ? QString::fromStdString(*_opt) : QString{};
+        },
+{{/is_optional_string}}
+{{^is_optional_string}}
         [this]() { return QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}); },
+{{/is_optional_string}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
         [this](const QString& error) {
@@ -747,7 +755,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
 {{/is_optional_uuid}}
 {{/is_uuid}}
 {{#is_self_referencing_combo}}
-        [this](const auto& t) { return t.id == {{domain_entity.qt.item_var}}_.id; },
+        [this](const auto& t) { return t.{{domain_entity.qt.key_field}} == {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}}; },
 {{/is_self_referencing_combo}}
 {{^is_self_referencing_combo}}
         [](const auto&) { return false; },
@@ -935,8 +943,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
             {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_optional_string}}
+        const auto val = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+            ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
+            : QString{};
+{{/is_optional_string}}
+{{^is_optional_string}}
         const auto val = QString::fromStdString(
             {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
         const int idx = ui_->{{widget}}->findData(val);

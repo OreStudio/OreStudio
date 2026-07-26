@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-25
 #+updated: 2026-07-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,7 +43,7 @@ independent halves:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
 | Now          | Not yet started -- the source/editability/regenerate half can start immediately; the browse-holidays half is blocked. |
 | Waiting on   | [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] (browse-holidays half only). |

@@ -108,11 +108,18 @@ void CalendarDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CalendarDetailDialog::onFieldChanged);
+    connect(ui_->sourceEdit, &QLineEdit::textChanged, this, &CalendarDetailDialog::onFieldChanged);
+    connect(ui_->isEditableCheck, &QCheckBox::toggled, this, &CalendarDetailDialog::onFieldChanged);
+    connect(ui_->baseCalendarCodeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CalendarDetailDialog::onFieldChanged);
 }
 
 void CalendarDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCalendarTypeCombo();
+    populateBaseCalendarCodeCombo();
     populateCountryCodeCombo();
 }
 
@@ -164,11 +171,13 @@ void CalendarDetailDialog::setUsername(const std::string& username) {
 void CalendarDetailDialog::setCalendar(const refdata::domain::calendar& calendar) {
     calendar_ = calendar;
     updateUiFromCalendar();
+    setReadOnly(!calendar_.is_editable);
 }
 
 void CalendarDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
+    ui_->sourceEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -186,6 +195,8 @@ void CalendarDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->calendarTypeCombo->setEnabled(!readOnly);
     ui_->countryCodeCombo->setEnabled(!readOnly);
+    ui_->sourceEdit->setReadOnly(true);
+    ui_->baseCalendarCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -212,6 +223,31 @@ void CalendarDetailDialog::populateCalendarTypeCombo() {
         [](const auto&) { return false; },
         QString{});
 }
+void CalendarDetailDialog::populateBaseCalendarCodeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating base_calendar_code combo";
+    populateDynamicCombo<refdata::domain::calendar>(
+        ui_->baseCalendarCodeCombo,
+        this,
+        clientManager_,
+        &fetch_calendars,
+        "calendarBaseCalendarWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return t.version; },
+        [this]() {
+            const auto& _opt = calendar_.base_calendar_code;
+            return _opt ? QString::fromStdString(*_opt) : QString{};
+        },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load calendars: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [this](const auto& t) { return t.code == calendar_.code; },
+        QString{});
+}
 void CalendarDetailDialog::updateUiFromCalendar() {
     ui_->codeEdit->setText(QString::fromStdString(calendar_.code));
     ui_->nameEdit->setText(QString::fromStdString(calendar_.name));
@@ -225,6 +261,16 @@ void CalendarDetailDialog::updateUiFromCalendar() {
         const auto val = QString::fromStdString(calendar_.country_code);
         const int idx = ui_->countryCodeCombo->findText(val);
         ui_->countryCodeCombo->setCurrentIndex(idx);
+    }
+    ui_->sourceEdit->setText(QString::fromStdString(calendar_.source));
+    ui_->isEditableCheck->setChecked(calendar_.is_editable);
+    {
+        const auto val = calendar_.base_calendar_code ?
+                             QString::fromStdString(*calendar_.base_calendar_code) :
+                             QString{};
+        const int idx = ui_->baseCalendarCodeCombo->findData(val);
+        if (idx >= 0)
+            ui_->baseCalendarCodeCombo->setCurrentIndex(idx);
     }
 
     populateProvenance(calendar_.version,
@@ -245,6 +291,12 @@ void CalendarDetailDialog::updateCalendarFromUi() {
     calendar_.name = ui_->nameEdit->text().trimmed().toStdString();
     calendar_.calendar_type = ui_->calendarTypeCombo->currentText().toStdString();
     calendar_.country_code = ui_->countryCodeCombo->currentText().toStdString();
+    if (createMode_) {
+        calendar_.source = ui_->sourceEdit->text().trimmed().toStdString();
+    }
+    if (createMode_) {
+    }
+    calendar_.base_calendar_code = ui_->baseCalendarCodeCombo->currentText().toStdString();
     calendar_.modified_by = username_;
 }
 
@@ -266,8 +318,9 @@ void CalendarDetailDialog::updateSaveButtonState() {
 bool CalendarDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString source_val = ui_->sourceEdit->text().trimmed();
 
-    return true && !code_val.isEmpty() && !name_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty() && !source_val.isEmpty();
 }
 
 void CalendarDetailDialog::onSaveClicked() {
@@ -320,24 +373,27 @@ void CalendarDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Calendar saved successfully";
-            QString code = QString::fromStdString(self->calendar_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->calendarSaved(code);
-            self->notifySaveSuccess(tr("Calendar '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Calendar saved successfully";
+                    QString code = QString::fromStdString(self->calendar_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->calendarSaved(code);
+                    self->notifySaveSuccess(tr("Calendar '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

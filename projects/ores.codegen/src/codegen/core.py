@@ -2491,7 +2491,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_optional_string'] = (
                     field_cpp.startswith('std::optional<std::string>')
                     and (f['is_line_edit'] or f['is_text_edit'] or f['is_flagged_combo']
-                         or f['is_static_combo'])
+                         or f['is_static_combo'] or f['is_dynamic_combo'])
                 )
                 # UUID type detection — needed for boost::uuids::to_string() conversions
                 _is_any_uuid = 'boost::uuids::uuid' in field_cpp

@@ -58,6 +58,19 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{/has_text_natural_keys}}
 {{/primary_key.is_uuid}}
+{{#primary_key.extra_columns}}
+{{#is_uuid}}
+    r.{{column}} = ctx.generate_uuid();
+{{/is_uuid}}
+{{^is_uuid}}
+{{#generator_expr}}
+    r.{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{column}} = std::string(faker::word::noun());
+{{/generator_expr}}
+{{/is_uuid}}
+{{/primary_key.extra_columns}}
 {{#natural_keys}}
 {{#is_uuid}}
     r.{{column}} = ctx.generate_uuid();

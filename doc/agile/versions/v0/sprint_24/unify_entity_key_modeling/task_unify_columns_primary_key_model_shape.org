@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: D230B754-3456-445A-812C-6854E8F63AE3
+:END:
+#+title: Task: Design and implement the unified Columns/:primary_key: model shape in org_loader.py
+#+description: Supersedes task 52FE40FA. Replace the * Primary key / * Natural keys / * Columns three-way split with one * Columns section whose ** sub-headings may carry :primary_key: true. org_loader.py derives primary_key (list, declaration order, plus back-compat scalars) as a filter over Columns for both the surrogate (domain_entity) and surrogate-less (table/lookup_entity) archetypes -- no dual-syntax fallback.
+#+type: task
+#+level: s1
+#+filetags: :codegen:infrastructure:tooling:sprint_24:v0:unify_entity_key_modeling:
+#+owner: marco
+#+branch: feature/unify-columns-primary-key-model-shape
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Change how ~org_loader.py~ *parses* an entity's fields and key(s),
+without changing the canonical dict *shape* it hands to
+~core.py~/the templates — that shape's stability is what keeps this
+task's blast radius to one file.
+
+- Replace the =* Primary key= (single properties drawer) + =* Natural
+  keys= (compound-capable sub-headings) + =* Columns= (plain
+  sub-headings) three-way split, in both ~org_document_to_model~
+  (used by both archetypes) and ~load_org_lookup_entity_model~ (the
+  legacy =lookup_entity= loader), with one =* Columns= section. Every
+  field is a =**= sub-heading with today's =* Columns= property shape
+  (=:type:=, =:cpp_type:=, =:nullable:=, =:default:=, description/
+  detail body, optional =generator= babel block), plus at most one of
+  two new boolean flags:
+  - =:primary_key: true= — this field is (part of) the physical
+    primary key.
+  - =:natural_key: true= — this field is part of the secondary,
+    compound-capable natural-key uniqueness set (today's
+    =* Natural keys=, unchanged in purpose — only in *where* it's
+    declared).
+- Derive, purely by filtering =Columns= in declaration order:
+  - =primary_key= — for backward compatibility with every existing
+    downstream consumer (~core.py~'s C++/Qt/protocol derivations,
+    both SQL templates), keep emitting the single-column scalar shape
+    (=column=, =type=, =cpp_type=, =is_text=, ...) mirroring the
+    first (and, until task 2 lands, only expected) flagged field.
+    *Additionally* emit =primary_key.columns=: the full ordered list
+    of flagged fields, always present (a one-element list in the
+    single-key case) — this is the new capability task 2's unified
+    template will consume for a compound key; existing single-key
+    consumers simply never read this key, so nothing breaks.
+  - =natural_keys= — the existing list shape, unchanged, now sourced
+    from =:natural_key:=-flagged =Columns= children instead of a
+    separate =* Natural keys= section's own children.
+  - =columns= — every field flagged with neither, unchanged shape.
+- Update ~validate_model~: require at least one field in =Columns=
+  flagged =:primary_key: true=; drop the old "=Primary key= section
+  present, has a =column= property" check entirely.
+- No dual-syntax fallback: ~org_document_to_model~/
+  ~load_org_lookup_entity_model~ no longer recognise =* Primary key=
+  or =* Natural keys= as sections at all. Any =.org= model not yet
+  migrated (i.e. everything until task 3 runs) will fail
+  ~load_org_model~'s validation — expected and acceptable, since nothing
+  regenerates non-=ores.dq= output until task 3/4 land regardless.
+- Prove the compound case end-to-end at the *loader* level (not
+  full-stack — that's tasks 2/4): a unit test modeling
+  =ores.dq.subject_area='s real shape (=name= + =domain_name= both
+  =:primary_key: true=) produces
+  ~primary_key == {"columns": [{"column": "name", ...}, {"column":
+  "domain_name", ...}], "column": "name", "type": "text", ...}~.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- =org_document_to_model= and =load_org_lookup_entity_model= parse a
+  single =* Columns= section only; =* Primary key=/=* Natural keys=
+  are no longer recognised sections anywhere in ~org_loader.py~.
+- A field joins the primary key via =:primary_key: true= and the
+  secondary natural-key set via =:natural_key: true=; both are
+  derived (filtered, declaration order), never separately authored.
+- =primary_key= keeps its back-compat single-column scalar shape
+  (=column=/=type=/=cpp_type=/=is_text=/...) for every existing
+  downstream consumer, plus a new =primary_key.columns= ordered list
+  for compound keys.
+- =validate_model= requires at least one =:primary_key:=-flagged
+  field; the old "Primary key section present" check is gone.
+- =domain_entity_to_table_context= needs no changes (verified by its
+  existing behaviour plus a new golden-shape test).
+- Unit tests cover: single-column key (regression), compound key
+  (subject_area's real shape), surrogate =id= + =:natural_key:=
+  fields, a field flagged both ways (rejected), and no field flagged
+  =:primary_key:= (rejected at ~load_org_model~ validation).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. *Locate every call site touching the three old sections* in
+   ~org_loader.py~:
+   - ~org_document_to_model~ (~line 648): parses =* Primary key= into
+     =de["primary_key"]=; (~line 662): parses =* Natural keys= into
+     =de["natural_keys"]= via ~_natural_key_node_to_dict~.
+   - ~load_org_lookup_entity_model~ (~line 1320): parses =* Primary
+     key= into =e["primary_key"]=; (~line 1331 on): parses =* Columns=
+     into plain columns (this loader has no =* Natural keys= handling
+     today — confirm during implementation whether any current
+     =lookup_entity= model actually needs one before deciding whether
+     to add =:natural_key:= support there too, or defer it since no
+     current lookup_entity model uses natural keys).
+   - ~validate_model~ (~line 986): the =primary_key=/=column=
+     presence check.
+   - ~domain_entity_to_table_context~ (~line 1229): already just
+     copies =de.get("primary_key", {})=/=de.get("natural_keys", [])=
+     through — should need zero changes if the derived shape stays
+     compatible; confirm by running its existing tests unchanged.
+
+2. *Write the new =* Columns= parser* — a single pass over =* Columns=
+   children producing three buckets (primary-key-flagged,
+   natural-key-flagged, plain) in declaration order, reusing whatever
+   helper already turns an org sub-heading into a column dict (the
+   existing =* Columns=/=* Natural keys= child parsing is almost
+   identical already — likely a shared helper function once
+   unified, rather than three near-duplicate loops).
+
+3. *Build the derived =primary_key= dict* from the primary-key-flagged
+   bucket: back-compat scalars from bucket[0], plus the full
+   =columns= list. Raise a clear ~ValueError~ at load time (not deep
+   in template rendering) if the bucket is empty.
+
+4. *Wire =natural_keys=/=columns=* from the other two buckets,
+   preserving today's exact per-field dict shape (so
+   ~_natural_key_node_to_dict~'s special-casing, if any beyond the
+   plain column shape, is preserved or folded in).
+
+5. *Remove* the old =_section(doc.root, "Primary key")=/
+   =_section(doc.root, "Natural keys")= parsing blocks and the
+   =service_find_by_code_column= special-case's neighbours if
+   affected — grep for any other =_section(..., "Primary key"|"Natural
+   keys")= call before considering this done.
+
+6. *Tests* — extend ~ores.codegen~'s unit tests (find the existing
+   ~org_loader~ test module) with: a single-primary-key entity
+   (regression), a compound-primary-key entity (new, modeled on
+   =subject_area='s real shape), a surrogate =id= + compound
+   =natural_keys= entity (regression for the archetype task 2 will
+   later fold in), an entity with neither natural nor primary flags
+   set on any field (expect the new validation error), and a
+   golden-shape assertion that =domain_entity_to_table_context= output
+   for an existing single-key model is byte-identical before/after
+   this change.
+
+7. *Do not* touch any =.org= model file in this task — that is task 3
+   (Migrate every entity .org model to the new syntax). This task
+   only changes the parser; every existing model will fail to load
+   until task 3 runs, which is expected (nothing regenerates in the
+   meantime).
+
+* Notes
+
+- Both ~ores.codegen/venv~ and ~ores.compass/venv~ were stale: created
+  when =/usr/bin/python3= pointed at 3.13, they hold =site-packages=
+  under =lib/python3.13/=, but the host's =/usr/bin/python3= symlink
+  was later repointed at 3.14 (2026-06-27) and =venv/bin/python3=
+  followed it live — so every ~pytest~ run against the old venv hit
+  =ModuleNotFoundError: No module named 'pystache'= even though it
+  was installed (just under the wrong interpreter's path). Fixed by
+  deleting both venvs and letting =codegen.sh=/=compass.sh='s existing
+  bootstrap recreate them fresh. No script changes were needed — the
+  bootstrap-then-delegate pattern already handles this; it just
+  hadn't been re-triggered since the host's Python upgrade.
+- =load_org_lookup_entity_model= previously hand-rolled its own
+  primary-key/column parsing (slightly different from
+  =org_document_to_model='s: no SQL-quoting of text defaults, no
+  description/detail, no generator_expr). Routed it through the same
+  =_split_columns_section=/=_primary_key_dict= helpers as the
+  =domain_entity= pathway for a genuinely single parser — this is a
+  net improvement (defaults now get quoted, descriptions/generators
+  now available) with no lookup_entity model currently relying on the
+  old behaviour's gaps.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped exactly as planned. ~org_document_to_model~ and
+~load_org_lookup_entity_model~ now share one =* Columns= parser
+(~_split_columns_section~) that buckets fields by their
+=:primary_key:=/=:natural_key:= flag, in declaration order; the
+derived =primary_key= dict (~_primary_key_dict~) keeps its back-compat
+single-column scalars plus a new =primary_key.columns= ordered list.
+=validate_model= now requires at least one primary-key-flagged field
+instead of a =Primary key= section. No dual-syntax fallback — the old
+sections are unrecognised. ~domain_entity_to_table_context~ needed no
+changes, confirmed by a golden-shape test. 6 new unit tests added
+(=test_org_loader_keys.py=), all passing alongside the existing 55.
+
+Also fixed, out of band but necessary to verify any of this: both
+~ores.codegen/venv~ and ~ores.compass/venv~ were stale from a host
+Python 3.13→3.14 upgrade (see =* Notes=) — recreated via each
+project's own bootstrap script.
+
+No =.org= model migrated (task 3's job); every existing model now
+fails ~load_org_model~'s validation until then, which is expected.

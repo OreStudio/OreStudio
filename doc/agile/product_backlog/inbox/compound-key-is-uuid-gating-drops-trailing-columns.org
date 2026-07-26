@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 453FA225-F6FF-4095-AFB7-4D59E3FDB357
+:END:
+#+title: Compound-key is_uuid gating drops trailing columns in Qt/service templates
+#+description: cpp_protocol.hpp.mustache and cpp_service.cpp.mustache gate their delete/history/save is_uuid branch on primary_key.is_uuid alone, which reflects only the first key column. A future compound key whose leading column is UUID would silently drop every subsequent key column from these structs/validations. Not exercised today (subject_area's key is two text columns). Raised in PR #1691 review round 1. Fix: make the is_uuid branches loop primary_key.columns like cpp_domain_type_mapper.cpp.mustache already does.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

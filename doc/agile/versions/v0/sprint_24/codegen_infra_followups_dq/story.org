@@ -8,7 +8,7 @@
 #+filetags: :codegen:infrastructure:tooling:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -42,11 +42,11 @@ be lumped in with finishing DQ's own remaining entities (see
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Pick up the compound natural-key support first — it unblocks the sibling DQ story's subject_area task. |
+| Waiting on    | [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling]] — its compound natural-key task was abandoned here and moved there. |
+| Next          | Pick up the entity lint or NATS facet consolidation tasks; compound-key work continues on the other story. |
 | Last touched  | 2026-07-21                               |
 
 * Acceptance
@@ -65,12 +65,33 @@ be lumped in with finishing DQ's own remaining entities (see
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][Support compound natural keys in lookup_entity/table SQL templates]] | BACKLOG | | | Extend org_loader.py's primary_key parsing and sql_schema_table_create.mustache to support a compound natural key (more than one column), so entities like subject_area can be modeled accurately. |
+| [[id:52FE40FA-C696-4C77-8A3F-65FB00196EAD][Support compound natural keys in lookup_entity/table SQL templates]] | ABANDONED | 2026-07-22 | 2026-07-22 | Superseded by [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling]] — the narrower plan would have been discarded once that story's unified template/syntax landed. |
 | [[id:7B59588B-5BC5-4206-935C-1AFEF7C25E96][Add compass codegen entity lint — flag missing variability knobs on a model]] | BACKLOG | | | A static sanity-check command that parses an entity .org model, classifies its stereotype, and warns about knobs it expects for that stereotype but doesn't find. |
 | [[id:DA3C5B05-1214-44D5-A5A9-E92344EA0680][Consolidate the five ores.cpp.nats-* facets into one facet with five archetypes]] | BACKLOG | | | A single ores.cpp.nats facet with five archetypes underneath would model the NATS command/event pipeline more accurately than five independent facets. |
 | [[id:AEFAE247-7FBC-4F0D-9146-4E4561DF2DFD][Migrate the remaining 10 lookup_entity models to domain_entity; retire ores.codegen.lookup_entity]] | BACKLOG | | | Migrate each of the 10 remaining lookup_entity models the same way 464B5EC6 migrated DQ's 5, then retire ores.codegen.lookup_entity's #+type:, loader, and dispatch. |
+| [[id:D5564F8E-D2B5-460A-B636-E88A421B84D5][Support compound primary keys in repository templates (single-row and batch)]] | DONE | 2026-07-24 | 2026-07-25 | The repository .hpp/.cpp templates (cpp_domain_type_repository.{hpp,cpp}.mustache, tangled from ores.cpp.repository.repository_header.org and ores.cpp.repository.repository_impl.org) still assume a single-column {{primary_key.column}} throughout signatures, where() clauses, order_by(), read_latest/read_all/read_at_version/remove, including the batch (vector) variants. subject_area (compound natural key: name, domain_name) cannot round-trip through the repository layer until these are converted to iterate {{#primary_key.columns}}. Single-row ops: AND all key columns in where(). Batch ops: sqlgen has no tuple/composite IN (confirmed via source inspection of sqlgen::transpilation::conditions and upstream issue getml/sqlgen#107) -- implement via per-column .in() over-fetch (cross-product candidate set) followed by exact key-tuple filtering in C++. Regenerate subject_area's repository, verify it builds, then verify subject_area end-to-end through service/messaging/Qt. |
 
 * Decisions
+
+- Compound primary keys are modeled as =primary_key.columns= (an
+  ordered list), computed once in =core.py= into ready-made join
+  strings (=where_and=, =order_by_cols=, =batch_params=,
+  =batch_in_and=, =log_fields=, etc.) that templates splice in
+  directly, rather than repeating nested mustache loops across every
+  repository/service/protocol template. Single-column entities are
+  the =len(columns) == 1= degenerate case — no separate code path.
+- Batch (vector) reads/removes for a compound key use a per-column
+  =.in()= over-fetch (cross-product candidate superset) followed by
+  exact key-tuple filtering in C++, since sqlgen has no tuple/
+  composite IN support (confirmed against sqlgen source and upstream
+  getml/sqlgen#107).
+- Qt codegen (controller, MDI window, client model, detail dialog
+  templates) was explicitly *not* extended for compound keys as part
+  of this work — it assumes a single-column key end-to-end, including
+  a shared, cross-entity =HistoryDialog= signal contract used by
+  every entity's controller, not just subject_area's. Extending it
+  safely needs its own design pass; filed as
+  [[id:6CA40A43-D4EE-4AF1-9260-98569FB92533][capture: Extend Qt codegen for compound primary keys]].
 
 * Out of scope
 

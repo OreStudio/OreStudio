@@ -437,6 +437,62 @@ def _natural_key_node_to_dict(node: OrgNode) -> dict[str, Any]:
     return d
 
 
+# Per-field flags in a unified ``* Columns`` section that route a field into
+# ``primary_key``/``natural_keys`` instead of the plain ``columns`` list.
+# Metadata, not schema — stripped from the rendered field dict.
+_KEY_ROLE_FLAGS = ("primary_key", "natural_key")
+
+
+def _split_columns_section(cols: OrgNode) -> tuple[
+    list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]
+]:
+    """Split a unified ``* Columns`` section's children into three ordered
+    buckets by their ``:primary_key:``/``:natural_key:`` flag: primary-key
+    fields, natural-key fields, and plain fields.
+
+    A field carries at most one of the two flags. Order within each bucket
+    is declaration order — the sole mechanism for compound-key column
+    order (no separate ordinal)."""
+    primary_key_fields: list[dict[str, Any]] = []
+    natural_key_fields: list[dict[str, Any]] = []
+    plain_fields: list[dict[str, Any]] = []
+    for child in cols.children:
+        is_primary_key = _parse_typed(child.properties.get("primary_key", "false")) is True
+        is_natural_key = _parse_typed(child.properties.get("natural_key", "false")) is True
+        if is_primary_key and is_natural_key:
+            raise ValueError(
+                f"Column '{child.title}' cannot be both :primary_key: and "
+                ":natural_key:"
+            )
+        if is_primary_key:
+            d = _natural_key_node_to_dict(child)
+            for flag in _KEY_ROLE_FLAGS:
+                d.pop(flag, None)
+            primary_key_fields.append(d)
+        elif is_natural_key:
+            d = _natural_key_node_to_dict(child)
+            for flag in _KEY_ROLE_FLAGS:
+                d.pop(flag, None)
+            natural_key_fields.append(d)
+        else:
+            d = _column_node_to_dict(child)
+            for flag in _KEY_ROLE_FLAGS:
+                d.pop(flag, None)
+            plain_fields.append(d)
+    return primary_key_fields, natural_key_fields, plain_fields
+
+
+def _primary_key_dict(fields: list[dict[str, Any]]) -> dict[str, Any]:
+    """Project a non-empty, ordered list of primary-key fields into the
+    canonical ``primary_key`` dict: back-compat single-column scalars
+    (mirroring the first field, for every existing consumer that only
+    knows about a single-column key) plus the full ordered ``columns``
+    list (the new shape a compound-key-aware consumer reads)."""
+    out = dict(fields[0])
+    out["columns"] = fields
+    return out
+
+
 def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     """Convert a soft FK validation heading into a template-ready dict.
 
@@ -645,27 +701,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             col = de.pop("service_find_by_code_column")
             de["service_find_by_code"] = {"column": col}
 
-    pk = _section(doc.root, "Primary key")
-    if pk:
-        out_pk: dict[str, Any] = {}
-        for k, v in pk.properties.items():
-            out_pk[k.lower()] = _parse_typed(v)
-        description, detail = _description_and_detail(pk)
-        if description:
-            out_pk["description"] = description
-        if detail:
-            out_pk["detail"] = detail
-        if "generator" in pk.src_blocks:
-            out_pk["generator_expr"] = pk.src_blocks["generator"]
-        de["primary_key"] = out_pk
-
-    nks = _section(doc.root, "Natural keys")
-    if nks:
-        de["natural_keys"] = [_natural_key_node_to_dict(c) for c in nks.children]
-
     cols = _section(doc.root, "Columns")
     if cols:
-        de["columns"] = [_column_node_to_dict(c) for c in cols.children]
+        pk_fields, nk_fields, plain_fields = _split_columns_section(cols)
+        if pk_fields:
+            de["primary_key"] = _primary_key_dict(pk_fields)
+        if nk_fields:
+            de["natural_keys"] = nk_fields
+        de["columns"] = plain_fields
 
     sql = _section(doc.root, "SQL")
     if sql:
@@ -996,7 +1039,10 @@ def validate_model(model: dict[str, Any]) -> list[str]:
             errors.append(f"Missing required flag: {k}")
 
     if "primary_key" not in de:
-        errors.append("Missing required section: Primary key")
+        errors.append(
+            "Missing primary key: no field in 'Columns' is flagged "
+            ":primary_key: true"
+        )
     elif "column" not in de["primary_key"]:
         errors.append("Primary key missing required property: column")
 
@@ -1317,30 +1363,16 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
     if body:
         e["description"] = body
 
-    pk_section = _section(doc.root, "Primary key")
-    if pk_section:
-        pk: dict[str, Any] = {}
-        for k, v in pk_section.properties.items():
-            key = k.lower()
-            if key == "cpp_type":
-                pk[key] = v  # raw string
-            else:
-                pk[key] = _parse_typed(v)
-        e["primary_key"] = pk
-
     cols_section = _section(doc.root, "Columns")
-    columns: list[dict[str, Any]] = []
     if cols_section:
-        for node in cols_section.children:
-            entry: dict[str, Any] = {"name": node.title}
-            for k, v in node.properties.items():
-                key = k.lower()
-                if key in ("default", "default_value"):
-                    entry[key] = v  # raw string; Mustache 0-falsy guard
-                else:
-                    entry[key] = _parse_typed(v)
-            columns.append(entry)
-    e["columns"] = columns
+        pk_fields, nk_fields, plain_fields = _split_columns_section(cols_section)
+        if pk_fields:
+            e["primary_key"] = _primary_key_dict(pk_fields)
+        if nk_fields:
+            e["natural_keys"] = nk_fields
+        e["columns"] = plain_fields
+    else:
+        e["columns"] = []
 
     validations_section = _section(doc.root, "Validations")
     if validations_section:

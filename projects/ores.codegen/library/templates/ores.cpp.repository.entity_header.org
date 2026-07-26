@@ -46,7 +46,9 @@ struct {{entity_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
-    sqlgen::PrimaryKey<std::string> {{primary_key.column}};
+{{#primary_key.columns}}
+    sqlgen::PrimaryKey<std::string> {{column}};
+{{/primary_key.columns}}
 {{#has_tenant_id}}
     std::string tenant_id;
 {{/has_tenant_id}}

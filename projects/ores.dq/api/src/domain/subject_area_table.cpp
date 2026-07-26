@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,20 +18,20 @@
  *
  */
 #include "ores.dq.api/domain/subject_area_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::dq::domain {
+
 
 std::string convert_to_table(const std::vector<subject_area>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Domain" << "Description" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Name" << "Domain" << "Description" << "Modified By" << fort::endr;
 
-    for (const auto& s : v) {
-        table << s.name << s.domain_name << s.description << s.modified_by << s.version
-              << fort::endr;
+    for (const auto& sa : v) {
+        table << sa.name << sa.domain_name << sa.description << sa.modified_by << fort::endr;
     }
     return table.to_string();
 }

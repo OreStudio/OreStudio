@@ -142,6 +142,7 @@ public:
                                                                const std::string& domain_name);
 
 private:
+    context ctx_;
     repository::dataset_dependency_repository dataset_dependency_repo_;
     repository::subject_area_repository subject_area_repo_;
 };

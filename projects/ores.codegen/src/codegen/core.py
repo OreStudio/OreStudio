@@ -2081,6 +2081,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             col.get('name', col.get('column')): bool(col.get('nullable', False))
             for col in (domain_entity.get('columns', []) or [])
             + (domain_entity.get('natural_keys', []) or [])
+            + (domain_entity.get('primary_key', {}).get('columns', []) or [])
         }
         for v in domain_entity.get('insert_trigger', {}).get('validations', []):
             v['nullable'] = _nullable_by_column.get(v.get('column'), False)
@@ -2098,27 +2099,141 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:
             _mark_last_item(sql_section['extra_delete_sets'])
-        # Add computed properties for primary key type detection
-        if 'primary_key' in domain_entity:
-            pk = domain_entity['primary_key']
-            pk_type = pk.get('type', 'uuid')
-            pk['is_uuid'] = pk_type == 'uuid'
-            pk['is_text'] = pk_type == 'text'
-            if pk['is_uuid'] and 'uuid_check_fn' not in pk:
-                pk['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
-            # Ensure cpp_type is set with sensible defaults
-            if 'cpp_type' not in pk:
-                if pk['is_uuid']:
-                    pk['cpp_type'] = 'boost::uuids::uuid'
-                else:
-                    pk['cpp_type'] = 'std::string'
+        # Add computed properties for primary key type detection. Applied to
+        # both the top-level (back-compat, first-flagged-column) scalar dict
+        # and, identically, to each entry of primary_key['columns'] -- a
+        # compound key's SQL template rendering (sql_schema_domain_entity_
+        # create.mustache) loops that list, so every column needs the same
+        # is_uuid/is_text/uuid_check_fn/cpp_type/render_label flags the
+        # single-column case already relied on as scalars.
+        def _enrich_primary_key_field(field):
+            field_type = field.get('type', 'uuid')
+            field['is_uuid'] = field_type == 'uuid'
+            field['is_text'] = field_type == 'text'
+            if field['is_uuid'] and 'uuid_check_fn' not in field:
+                field['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
+            if 'cpp_type' not in field:
+                field['cpp_type'] = (
+                    'boost::uuids::uuid' if field['is_uuid'] else 'std::string'
+                )
             # Mechanical title-case label — see the identical column-level
             # 'render_label' computation below for why this doesn't reuse
             # 'description' (long prose, not a UI-sized label).
-            pk['render_label'] = ' '.join(
+            field['render_label'] = ' '.join(
                 word.upper() if word.lower() in ('id', 'iso', 'fx')
                 else word.capitalize()
-                for word in pk.get('column', '').split('_')
+                for word in field.get('column', '').split('_')
+            )
+
+        if 'primary_key' in domain_entity:
+            pk = domain_entity['primary_key']
+            _enrich_primary_key_field(pk)
+            pk_columns = pk.get('columns', [])
+            for field in pk_columns:
+                _enrich_primary_key_field(field)
+            _mark_last_item(pk_columns)
+            pk['is_compound'] = len(pk_columns) > 1
+            # Every key column beyond the back-compat first (pk itself,
+            # scalar-projected above) -- the generator template needs
+            # these to synthesize a value for each, the same way it
+            # already does for natural_keys.
+            pk['extra_columns'] = pk_columns[1:]
+            pk['column_list'] = ', '.join(c['column'] for c in pk_columns)
+            pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
+            pk['gist_column_clause'] = '\n        '.join(
+                f"{c['column']} WITH =," for c in pk_columns
+            )
+            pk['where_new'] = ' and '.join(
+                f"{c['column']} = NEW.{c['column']}" for c in pk_columns
+            )
+            pk['where_old'] = ' and '.join(
+                f"{c['column']} = OLD.{c['column']}" for c in pk_columns
+            )
+            # Repository-layer helpers: a compound key's where()/signature/
+            # log-statement text is built once here as a single token,
+            # rather than as nested mustache loops repeated across every
+            # tenant/workspace-filtered branch in the repository templates.
+            # sqlgen's where() only composes && at compile time over a
+            # fixed set of columns, so this joins cleanly for both the
+            # single-column (back-compat) and compound cases.
+            pk['where_and'] = ' && '.join(
+                f'"{c["column"]}"_c == {c["column"]}' for c in pk_columns
+            )
+            pk['order_by_cols'] = ', '.join(
+                f'"{c["column"]}"_c' for c in pk_columns
+            )
+            pk['params'] = ', '.join(
+                f'const std::string& {c["column"]}' for c in pk_columns
+            )
+            pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # Complete stream expressions (leading string literal, trailing
+            # bare value -- not a string fragment), so templates splice
+            # them in as `<< {{{primary_key.log_fields}}}` with no extra
+            # quoting on either side.
+            pk['log_fields'] = '"' + ' << " '.join(
+                f'{c["column"]}: " << {c["column"]}' for c in pk_columns
+            )
+            pk['value_log_fields'] = '"' + ' << " '.join(
+                f'{c["column"]}: " << v.{c["column"]}' for c in pk_columns
+            )
+            # Batch (vector) overloads: sqlgen has no tuple/composite IN, so
+            # the query fetches a per-column .in() candidate superset (a
+            # cross-product over-fetch for compound keys) and the exact
+            # requested key-tuples are then filtered in C++ -- see
+            # getml/sqlgen#107 and the "Support compound primary keys in
+            # repository templates" task for why.
+            pk['batch_params'] = ', '.join(
+                f'const std::vector<std::string>& {c["column"]}s' for c in pk_columns
+            )
+            pk['batch_args'] = ', '.join(f"{c['column']}s" for c in pk_columns)
+            pk['batch_empty_check'] = ' || '.join(
+                f"{c['column']}s.empty()" for c in pk_columns
+            )
+            pk['batch_in_and'] = ' && '.join(
+                f'"{c["column"]}"_c.in({c["column"]}s)' for c in pk_columns
+            )
+            pk['batch_tuple_type'] = ', '.join('std::string' for _ in pk_columns)
+            pk['batch_requested_insert'] = (
+                'requested.emplace(' +
+                ', '.join(f"{c['column']}s[i]" for c in pk_columns) +
+                ');'
+            )
+            pk['batch_requested_size_check'] = pk_columns[0]['column'] + 's.size()'
+            pk['batch_tuple_from_item'] = ', '.join(
+                f"item.{c['column']}" for c in pk_columns
+            )
+            # Every batch loop is bounded by the first column's vector size
+            # alone and indexes the rest unchecked -- guard against a caller
+            # (e.g. a NATS request decoded with independently-sized vector
+            # fields) passing mismatched lengths, which would otherwise be
+            # an out-of-bounds read/UB rather than a caught error.
+            pk['batch_size_mismatch_check'] = ' || '.join(
+                f"{c['column']}s.size() != {pk_columns[0]['column']}s.size()"
+                for c in pk_columns[1:]
+            )
+            # Compound-key batch remove cannot use the over-fetch/filter
+            # trick (a DELETE already executed can't be filtered after the
+            # fact, and a per-column cross-product .in() would delete rows
+            # outside the requested tuples) -- it loops single-tuple
+            # removes instead.
+            pk['batch_loop_args'] = ', '.join(
+                f"{c['column']}s[i]" for c in pk_columns
+            )
+            # Notify-trigger helpers: emit one changed_<column> variable per
+            # key column (not just the first) so a compound key's change
+            # notification can distinguish two rows that share only their
+            # leading key column (e.g. subject_area's name across domains).
+            pk['notify_declarations'] = '\n    '.join(
+                f"changed_{c['column']} {c['type']};" for c in pk_columns
+            )
+            pk['notify_assign_old'] = '\n        '.join(
+                f"changed_{c['column']} := OLD.{c['column']};" for c in pk_columns
+            )
+            pk['notify_assign_new'] = '\n        '.join(
+                f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
+            )
+            pk['notify_id_array'] = ', '.join(
+                f"changed_{c['column']}" for c in pk_columns
             )
         # Process Qt-specific fields
         if 'qt' in domain_entity:

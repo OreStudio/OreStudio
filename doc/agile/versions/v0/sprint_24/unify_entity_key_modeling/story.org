@@ -1,0 +1,347 @@
+:PROPERTIES:
+:ID: 36A25C95-F3D8-4999-ABB7-42DEC9C95A09
+:END:
+#+title: Story: Unify entity key modeling: one way to declare primary/natural keys, with compound-key support
+#+description: The surrogate-less table/lookup_entity codegen archetype (~75 entity models keyed by a natural code, not a uuid id) has a Primary key section limited to a single column, forcing compound-natural-key entities like subject_area into a weaker Column+Indexes workaround. Unify Primary key + Natural keys + Columns into one Columns section with a per-field :primary_key: flag -- exactly one way to declare fields, with the key set derived as a filter -- and migrate all affected models to it. The separate surrogate-id domain_entity archetype (56 models) already supports compound natural keys correctly and is out of scope.
+#+type: story
+#+level: s2
+#+filetags: :codegen:infrastructure:tooling:sprint_24:v0:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+*Superseded framing (kept for history):* the original goal below
+talked about "unifying two templates in parallel active use for two
+key shapes." That premise was wrong — see the =* Findings= correction
+dated 2026-07-22. The corrected goal:
+
+- Every entity model has exactly one way to declare its fields and
+  which of them form the primary key: a single =* Columns= section
+  whose =**= sub-headings are fields, each optionally flagged
+  =:primary_key: true= (and, independently, =:natural_key: true= for
+  the secondary uniqueness set). The primary key — surrogate =id=,
+  single natural code, or compound natural key — is always just the
+  filtered subset of =Columns= flagged that way, in declaration
+  order. *Shipped in task 1.*
+- ~sql_schema_domain_entity_create.mustache~ (the one template
+  actually in active use for every =#+type: ores.codegen.entity=
+  model, uuid-keyed or not) renders a correct composite primary key +
+  GIST exclusion constraint, version/uniqueness indexes,
+  insert-trigger current-version lookup, and delete rule for *any*
+  primary-key cardinality (1..N columns) — not just the single-column
+  case it supports today. =sql_schema_table_create.mustache= (the
+  legacy =ores.codegen.lookup_entity= pathway) is untouched here; it
+  is already being retired by task =AEFAE247= in the sibling story.
+- Every =#+type: ores.codegen.entity= model across every component is
+  migrated to the new =* Columns= + =:primary_key:=/=:natural_key:=
+  syntax (task 1's syntax was designed for this from the start — no
+  further loader change needed). No dual-syntax support — one way in,
+  one way only.
+- Regenerate and verify only the =ores.dq= component's entities in
+  this story (the ones already being commissioned this sprint). A
+  follow-up task/PR regenerates the remaining components
+  (=ores.iam=, =ores.trading=, =ores.analytics=, =ores.refdata=,
+  =ores.compute=, =ores.controller=, =ores.marketdata=,
+  =ores.reporting=, =ores.scheduler=, =ores.synthetic=,
+  =ores.workflow=, =ores.workspace=, =ores.database=, =ores.sql=)
+  once this story's models have settled.
+
+* Findings
+
+** CORRECTION (2026-07-22): the real discriminator is =#+type:=, not surrogate-vs-natural key
+
+The initial version of this section split entity models into two
+"archetypes" by primary-key *column name* (=id= vs everything else)
+and concluded there were two templates in parallel active use for
+two different key shapes. That was wrong, disproved by checking what
+each entity's *generated SQL actually says* — both
+=sql_schema_table_create.mustache= and
+=sql_schema_domain_entity_create.mustache= stamp their own filename
+into a =Template:= comment, so the generated output is unambiguous
+ground truth, not a naming-convention guess.
+
+The real discriminator is an entity model's =#+type:= frontmatter:
+
+| =#+type:=                    | SQL template                              | Notes |
+|--------------------------------+----------------------------------------------+-------|
+| =ores.codegen.entity= (the unified, current model style) | ~sql_schema_domain_entity_create.mustache~ (878 lines) | Used regardless of whether the primary key is a uuid surrogate or a natural text/code column — confirmed on =ores.dq.data_domain= (naturally keyed by =name=, no surrogate) and =ores.dq.code_domain=/=change_reason=/=badge_definition=/=badge_severity= (all natural-code-keyed), every one of which already renders a correct single-column, non-uuid physical primary key through this template today. |
+| =ores.codegen.lookup_entity= (legacy) | ~sql_schema_table_create.mustache~ (284 lines) | Confirmed on =ores.dq.artefact_type_lookup_entity.org= (=#+type: ores.codegen.lookup_entity=) — the *only* dq entity actually rendering through the small template. |
+
+=ores.dq.subject_area= is =#+type: ores.codegen.entity=, so once
+regenerated it renders through the *big* template — not the small
+one this story originally targeted. Its current hand-written
+=dq_subject_area_create.sql= has no =Template:= line at all (it
+predates codegen regeneration entirely, per the modeling doc's own
+note), which is what let the wrong archetype theory stand
+unchallenged for as long as it did.
+
+This means:
+- ~sql_schema_domain_entity_create.mustache~ already handles a
+  *single*-column primary key of any type correctly, uuid or not. Its
+  only real gap is a *compound* primary key: =natural_keys= is already
+  compound-capable, but only ever wired to a *secondary* unique
+  index, never to the physical =primary key (...)=/GIST exclusion
+  constraint itself.
+- ~sql_schema_table_create.mustache~ is legacy, and only reachable via
+  the =ores.codegen.lookup_entity= model type — which task =AEFAE247=
+  (in the sibling story, "Codegen infrastructure follow-ups from DQ
+  commissioning") is already migrating away from entirely. Retiring
+  that template is a natural *consequence* of AEFAE247 landing, not
+  something this story needs to do.
+- The =* Goal='s "merge two templates" framing is retired. The actual
+  fix is narrower: extend
+  ~sql_schema_domain_entity_create.mustache~ (and its
+  ~core.py~/~org_loader.py~ context-building) so a compound
+  =natural_keys= set can serve as the entity's *physical* primary key
+  when the entity has no separate surrogate =id= — using task 1's
+  =primary_key.columns= list — rather than reconciling it against a
+  template that is already on its own retirement path.
+
+** Proposed layout — the one way to declare fields
+
+Replace this shape (today, split three ways):
+
+#+begin_src org
+,* Primary key
+,:PROPERTIES:
+,:column:   name
+,:type:     text
+,:cpp_type: std::string
+,:END:
+
+Unique name identifying this subject area within its data domain.
+
+#+begin_src cpp :name generator
+,std::string(faker::word::noun()) + " Area"
+,#+end_src
+
+,* Natural keys
+
+,* Columns
+
+,** domain_name
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::string
+,:nullable: false
+,:END:
+
+Name of the data domain this subject area belongs to. [...weaker
+workaround prose about the compound key not being enforceable...]
+
+,** description
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::string
+,:nullable: false
+,:END:
+
+Human-readable description of this subject area.
+#+end_src
+
+...with this shape (one section, every field a sub-heading, key
+membership a flag on the field itself):
+
+#+begin_src org
+,* Columns
+
+,** name
+,:PROPERTIES:
+,:type:        text
+,:cpp_type:    std::string
+,:primary_key: true
+,:END:
+
+Unique name identifying this subject area within its data domain.
+
+Examples: "currencies", "countries", "images".
+
+#+begin_src cpp :name generator
+,std::string(faker::word::noun()) + " Area"
+,#+end_src
+
+,** domain_name
+,:PROPERTIES:
+,:type:        text
+,:cpp_type:    std::string
+,:nullable:    false
+,:primary_key: true
+,:END:
+
+Name of the data domain this subject area belongs to. References
+=ores_dq_data_domains_tbl= (soft FK).
+
+#+begin_src cpp :name generator
+,std::string("reference_data")
+,#+end_src
+
+,** description
+,:PROPERTIES:
+,:type:     text
+,:cpp_type: std::string
+,:nullable: false
+,:END:
+
+Human-readable description of this subject area.
+
+#+begin_src cpp :name generator
+,std::string(faker::lorem::sentence())
+,#+end_src
+#+end_src
+
+Rules of the new layout:
+
+- =* Columns= is the *only* container for fields — no more
+  =* Primary key=/=* Natural keys= split.
+- Every =**= sub-heading is a field with the exact property set it
+  has today (=:type:=, =:cpp_type:=, =:nullable:=, =:default:=,
+  plus a =generator= babel block and description/detail body).
+- =:primary_key: true= marks a field as part of the primary key.
+  Zero, one, or many fields may carry it (the surrogate-=id=
+  archetype: exactly one, always =id=, always first; the
+  surrogate-less archetype: one or more natural fields).
+- *Key order = declaration order* among flagged fields. No separate
+  ordinal — the author controls key order the same way they control
+  physical column order, by where they place the field.
+- =org_loader.py= derives =primary_key= as
+  ~{"columns": [<flagged fields, in order>], ...}~ (plus back-compat
+  scalar projections — =column=/=type=/=cpp_type=/=is_text= mirroring
+  the first flagged field — for any downstream consumer not yet
+  updated to iterate the list) purely from filtering =Columns=. There
+  is no second place where "is this a key field" is decided.
+- No dual-syntax fallback in the loader for the old =* Primary key=/
+  =* Natural keys= sections — every model is migrated in this story
+  (regeneration of non-=ores.dq= components deferred to a follow-up,
+  per Goal).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-22                               |
+
+* Acceptance
+
+- =* Columns= is the only section an entity model uses to declare
+  fields; =* Primary key= and =* Natural keys= no longer exist as
+  parseable sections anywhere in the codebase (grep-clean).
+- A field joins the primary key via =:primary_key: true=; the key
+  column set is always derived (filtered, in declaration order),
+  never separately authored.
+- ~sql_schema_domain_entity_create.mustache~ renders correct DDL for
+  both a single-column key (surrogate =id= or natural code) and a
+  compound natural key used as the physical primary key, across every
+  existing per-entity knob combination (=has_tenant_id=,
+  =has_coding_scheme=, =has_image_id=, =has_workspace_id=,
+  =has_audit_columns=, GIST on/off, system-scope tenant).
+  ~sql_schema_table_create.mustache~ is untouched — its retirement is
+  task AEFAE247's job, not this story's.
+- Every =#+type: ores.codegen.entity= model across every component is
+  migrated to the new =* Columns= + =:primary_key:=/=:natural_key:=
+  syntax; ~org_loader.py~ has no fallback path for the old syntax.
+- =ores.dq.subject_area= is remodelled with a true compound primary
+  key (=name= + =domain_name=) and regenerates DDL that enforces
+  real compound-key uniqueness, replacing the current Column +
+  bolt-on Indexes workaround.
+- All =ores.dq= entities are regenerated and their generated code
+  (SQL, C++ domain/repository/service, Qt where applicable) verified
+  — build green, tests green, =ores.dq='s tables round-trip through
+  the QA validation runner.
+- Entities outside =ores.dq= have their =.org= models migrated to the
+  new syntax but their *generated* code is deliberately left
+  unregenerated in this story — a follow-up task/PR regenerates them
+  once these models have settled (see Out of scope).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D230B754-3456-445A-812C-6854E8F63AE3][Design and implement the unified Columns/:primary_key: model shape in org_loader.py]] | DONE | 2026-07-22 | 2026-07-22 | Supersedes task 52FE40FA. Replace the * Primary key / * Natural keys / * Columns three-way split with one * Columns section whose ** sub-headings may carry :primary_key: true. org_loader.py derives primary_key (list, declaration order, plus back-compat scalars) as a filter over Columns for both the surrogate (domain_entity) and surrogate-less (table/lookup_entity) archetypes -- no dual-syntax fallback. |
+| [[id:6C5FADD1-478A-46ED-A266-35A8182B814E][Extend sql_schema_domain_entity_create.mustache to support a compound primary key]] | DONE | 2026-07-22 | 2026-07-23 | Rescoped from an initial "merge two templates" plan once Findings showed only one template (sql_schema_domain_entity_create.mustache) is in active use for #+type: ores.codegen.entity models, uuid-keyed or not; the other (sql_schema_table_create.mustache) is legacy ores.codegen.lookup_entity-only and already being retired by task AEFAE247. Extend the ~20 primary_key.column references to support the primary_key.columns list (1..N) from task 1, so a compound natural_keys set can serve as the physical primary key when there's no separate surrogate id. |
+
+Never scaffolded as compass tasks (planned in the original Goal but
+not started): migrate every entity =.org= model to the new syntax
+project-wide, regenerate/verify =ores.dq=, update the codegen
+meta-model documentation. See =* Result= — closed with the
+mechanism shipped and unproven at the entity-migration/regeneration
+scale; that work is left for a follow-up story.
+
+* Decisions
+
+- Chose "migrate all models now, no dual-syntax support" over a
+  transitional dual-syntax loader — a single unambiguous authoring
+  path is worth a larger one-time diff, and org_loader.py never
+  carries permanent legacy-parsing weight.
+- Chose declaration order (not an explicit =:primary_key: 1/2=
+  ordinal) for compound-key column order — the author already
+  controls physical column order this way; a second ordering
+  property would be redundant and another thing to get wrong.
+- Widened scope mid-design from "fix the surrogate-less archetype
+  only" to "unify both SQL table-creation templates" once the
+  ~90%-duplicated DDL between ~sql_schema_table_create.mustache~ and
+  ~sql_schema_domain_entity_create.mustache~ was found — patching
+  only one archetype would have left the codebase with two
+  templates and two key-modeling shapes instead of the two
+  templates/three-section split it started with; a smaller
+  improvement, not a fix of the underlying duplication.
+- Task 52FE40FA (Codegen infrastructure follow-ups from DQ
+  commissioning story) is superseded by this story's first task —
+  its narrower plan (extend =primary_key.column= to a list within
+  the old three-section syntax) would be discarded work once this
+  story's unified shape lands.
+
+* Out of scope
+
+- Regenerating generated code (SQL/C++/Qt) for any component other
+  than =ores.dq= — deferred to a follow-up task/PR once this story's
+  model migration has settled and proven itself on =ores.dq=.
+- Any change to the C++/Qt/JSON-I/O facet templates' *output* shape
+  — this story only changes how fields/keys are *declared* and how
+  SQL table creation is unified; it does not change what C++ code is
+  generated for a given field (a =primary_key=-flagged field still
+  becomes an =sqlgen::PrimaryKey<T>=-wrapped repository field, exactly
+  as today).
+
+* Result
+
+Closed with the *mechanism* shipped, not the full original scope:
+
+- =org_loader.py= (task 1) derives =primary_key= as a filtered,
+  declaration-ordered list over a single =* Columns= section — the
+  =* Primary key=/=* Natural keys= three-way split is gone from the
+  loader, no dual-syntax fallback.
+- =sql_schema_domain_entity_create.mustache= + its =core.py= render
+  context (task 2) renders correct DDL — composite primary key,
+  GIST exclusion, indexes, AND-joined where-clauses — for any
+  primary-key cardinality (1..N), not just the single-column case.
+  Regression-covered; full =ores.codegen= suite (67 tests) green.
+
+Not done — the Goal/Acceptance items below were never scaffolded as
+tasks and remain open work, left for a follow-up story rather than
+blocking this one:
+
+- No entity =.org= model (=ores.dq.subject_area= included) has
+  actually been migrated to the new =* Columns=/=:primary_key:=
+  syntax yet, and no =ores.dq= regeneration has been run against it
+  — the loader and template changes are unproven end-to-end on a
+  real compound-key entity.
+- The codegen meta-model knowledge doc still describes the old
+  =Primary key=/=Natural keys= sections.
+
+Rationale for closing anyway: the two completed tasks deliver the
+hard, reusable mechanism (parsing + rendering); migrating ~131
+models and regenerating =ores.dq= is comparatively mechanical
+follow-through better scoped as its own story against a fresh sprint
+slot, rather than left half-open here.
+
+-

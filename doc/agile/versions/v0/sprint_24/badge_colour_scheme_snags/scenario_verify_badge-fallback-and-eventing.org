@@ -1,0 +1,310 @@
+:PROPERTIES:
+:ID: FCDEA23C-D507-4F15-9A8D-4156F6A69739
+:END:
+#+title: Test Scenario: Verify data-driven fallback badge and badge eventing
+#+description: Verify the reserved __unmapped__ fallback badge renders (dashed border, orange colours) when a badge_mapping row is missing, and that badge_definition colour changes propagate live to a second client via NATS.
+#+type: test_scenario
+#+level: s1
+#+filetags: :badge_colour_scheme_snags:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] in [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+This scenario covers the two aspects of the task NOT already verified by
+[[id:5410A1A8-5601-4A32-B507-7C69C9F6DFE7][the earlier swatch/colour-picker/shortcuts scenario]]: (1) the reserved
+=__unmapped__= fallback badge_definition row now renders (dashed border,
+orange colours) whenever a badge_key/entity_code pair has no matching
+=badge_mapping= row, replacing the old hardcoded
+=ColorConstants::badge_fallback= constant; and (2) a badge_definition
+colour change made in one client instance propagates live, via the
+LISTEN/NOTIFY-to-NATS relay, to a second running instance without a
+manual reload -- the eventing gap flagged as a note on the earlier
+scenario's "Open a badge for edit" step. Pass means both the fallback
+rendering and the live colour-change propagation are confirmed; fail
+means either one isn't.
+
+*Known, tracked limitation, not a bug to chase here:* =badge_mapping=
+is a junction row with no generated entity handler, so editing it
+(even via a hypothetical future UI, not just the SQL used below)
+publishes no NATS change-event today -- =BadgeCache= only reloads on
+=badge_definition_changed= or on next login/reconnect. The fallback
+part of this scenario therefore uses *both* running clients
+deliberately: =red= is left untouched after the mapping edit to
+demonstrate, on screen, that it keeps showing stale data with no live
+push (the expected behaviour given the gap), while =blue= relogs in to
+show that a reconnect *does* pick up the change. Closing this gap
+properly (so both instances would update live) is tracked in
+[[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]] --
+do not fail this scenario over =red= staying stale; that is the
+documented, expected result of the step it appears in.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] |
+| Parent story  | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]]   |
+| Target dialog | PartyMdiWindow (fallback badge) / BadgeDefinitionDetailDialog (eventing) -- Menu: Reference Data > Parties; Data Quality > Badges > Badge Definitions |
+| Clients       | blue, red                                |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** blue
+
+*** Connect to tenant Barclays Plc
+
+- Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+  select *BARCLAYS PLC*.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+*** Open Party list and confirm the real Active badge
+
+- Reference Data -> Parties.
+- Confirm active parties show the green *Active* status badge (solid
+  pill, no dashed border).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Connect to tenant Barclays Plc
+
+- In a second, differently-coloured client instance, log in as
+  =tenant_admin@barclays_plc= / =Secure-Password-123= and select
+  *BARCLAYS PLC*.
+- Reference Data -> Parties here too. Confirm it also shows the green
+  *Active* badge -- this window is the *control*: it is deliberately
+  left untouched through the next few steps.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** blue
+
+*** Remove the Active badge mapping via SQL
+
+- In a terminal, run (the =delete= is rewritten by a table rule into a
+  soft-close of the current row, not a literal row removal -- =DELETE
+  0= in the command output is expected):
+  #+begin_src sh
+  ./compass.sh sql -- -c "delete from ores_dq_badge_mappings_tbl where code_domain_code='party_status' and entity_code='Active';"
+  #+end_src
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Confirm no live update without reconnecting
+
+- Without touching or reloading anything in =red=, reopen (or bring
+  to front) its Party list.
+- Confirm active parties *still* show the solid green Active badge --
+  this is the expected, documented behaviour: a =badge_mapping= edit
+  has no NATS change-event to push (tracked in
+  [[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]]),
+  so nothing should have changed here yet.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** blue
+
+*** Reconnect and confirm the fallback badge
+
+- Log out and back in as =tenant_admin@barclays_plc= (this forces
+  =BadgeCache= to reload from a cold start), then reopen the Party
+  list.
+- Confirm active parties now render the reserved fallback badge
+  instead: orange background, white text, *dashed border*, text
+  "Unmapped" -- visibly different from both the green Active badge
+  and the grey Inactive badge (not just another solid colour).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Reconnect and confirm the fallback badge too
+
+- Now log out and back in on =red= as well, then reopen its Party
+  list.
+- Confirm it now shows the same fallback badge as =blue= -- proving
+  the earlier "no live update" step was specifically about the
+  missing mapping event, not a =red=-specific problem: a reconnect
+  picks the change up on *either* instance, just not automatically.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** blue
+
+*** Restore the Active badge mapping via SQL
+
+- =ores_dq_badge_mappings_upsert_fn= defaults =modified_by= to
+  =current_user=, which only passes validation *before* the tenant
+  has any accounts (bootstrap); against an already-provisioned
+  tenant it must be set explicitly, so restore via a direct insert
+  instead:
+  #+begin_src sh
+  ./compass.sh sql -- -c "insert into ores_dq_badge_mappings_tbl (tenant_id, code_domain_code, entity_code, version, badge_code, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to) values (ores_utility_system_tenant_id_fn(), 'party_status', 'Active', 0, 'active', 'super_admin', 'super_admin', 'system.new_record', 'Restored after manual QA test', current_timestamp, ores_utility_infinity_timestamp_fn()) on conflict (tenant_id, code_domain_code, entity_code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;"
+  #+end_src
+- Log out and back in again, then reopen the Party list (same reason
+  as the removal step -- no live event for a mapping change).
+- Confirm active parties render the solid green Active badge again,
+  not the fallback -- the seed data is left as it was found.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Reconnect and confirm the badge is restored
+
+- Log out and back in on =red= too, reopen the Party list, and
+  confirm it also shows the solid green Active badge again -- both
+  instances end this part of the scenario back in their original
+  state.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** blue
+
+*** Open Badge Definitions and note the active colour
+
+- Data Quality -> Badges -> Badge Definitions.
+- Double-click the =active= row; note its current Background swatch
+  colour (green, =#22c55e=) before changing it.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Open Badge Definitions here too
+
+- Data Quality -> Badges -> Badge Definitions in =red= as well, so its
+  list is visible and idle, ready to observe a live update -- unlike
+  the mapping steps above, =badge_definition= itself *does* publish a
+  real change-event, so this next part should update live with no
+  reconnect needed.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** blue
+
+*** Change the active badge colour and save
+
+- Back in the =blue= instance's =active= detail dialog, click the
+  *Background* swatch button and pick a clearly different colour
+  (e.g. a blue).
+- Click *Save*; fill in the change-reason dialog and confirm.
+- Confirm the =blue= instance's own Badge Definitions list updates to
+  the new colour immediately.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Confirm the colour change arrives live
+
+- Without touching or reloading anything in the =red= instance,
+  confirm its Badge Definitions list's =active= row swatch updates to
+  the same new colour within a few seconds -- this is the
+  LISTEN/NOTIFY-to-NATS relay actually firing, not just the
+  repository layer ctest already covers.
+
+** blue
+
+*** Revert the active badge colour
+
+- Re-open the =active= row, set the Background colour back to
+  =#22c55e=, save with a change reason, so the seed data is left
+  unmodified.
+- Confirm the =red= instance's list also reverts live, for the same
+  reason as the previous step.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

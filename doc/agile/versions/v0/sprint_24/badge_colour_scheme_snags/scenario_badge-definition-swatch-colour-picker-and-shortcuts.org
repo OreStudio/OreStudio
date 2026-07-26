@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 5410A1A8-5601-4A32-B507-7C69C9F6DFE7
+:END:
+#+title: Test Scenario: Badge Definition: swatch rendering, colour picker, and related-entity shortcuts
+#+description: Verify badge_definition list swatches, colour-picker detail dialog, and related-entity toolbar shortcuts
+#+type: test_scenario
+#+level: s1
+#+filetags: :badge_colour_scheme_snags:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] in [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] |
+| Parent story  | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]]   |
+| Target dialog | BadgeDefinitionMdiWindow / BadgeDefinitionDetailDialog |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Connect to tenant Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select *BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Badge Definitions list
+
+- Data Quality -> Badges -> Badge Definitions.
+- Confirm the *Background* and *Text* columns render as coloured
+  pill/badge swatches (using each row's own colour), not raw hex
+  text.
+- Confirm the badges are legible: dark background rows show white
+  text, light background rows show black text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a badge for edit
+
+- Double-click any row (e.g. =active=) to open its detail dialog.
+- Confirm *Background* and *Text* fields are swatch buttons showing
+  the current colour, not hex text fields.
+- Confirm an *Order* spin box and a *Severity* field are also
+  present.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | all looks good except eventing. |
+
+** Change colour via picker
+
+- Click the *Background* swatch button; a colour dialog should open.
+- Pick a new colour and confirm the button's fill updates
+  immediately.
+- Click *Save*; confirm the change-reason dialog appears, fill it in
+  and confirm.
+- Confirm the list's swatch for that row updates to the new colour
+  after save.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Revert the colour change
+
+- Re-open the same row and set the background colour back to its
+  original value; save again, so the seed data is left unmodified.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Use the related-entity shortcuts
+
+- On the Badge Definitions toolbar, confirm two new buttons:
+  *Severities* and *Mappings*.
+- Click *Severities*; confirm the Badge Severities list window
+  opens.
+- Click *Mappings*; confirm the Code Domains list window opens
+  (badge mappings are managed per code domain via its Mappings tab,
+  not a standalone window).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-25T12:46:37Z |
+| Branch        | feature/badge-palette-swatch-and-fallback |
+| Commit        | 1f7fad1cd |
+| Worktree      | eager_maxwell |
+
+* Notes

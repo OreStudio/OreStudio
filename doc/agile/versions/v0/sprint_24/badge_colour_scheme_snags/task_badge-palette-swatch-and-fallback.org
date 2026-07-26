@@ -120,6 +120,21 @@ Steps:
 
 * Notes
 
+Manual QA against the fallback badge (removing a =badge_mapping= row
+via SQL) surfaced that =BadgeCache= never subscribed to any
+change-notification event -- only loaded once at login. Fixed by
+mirroring =ChangeReasonCache='s subscribe-and-reload pattern (see
+[[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]); =badge_definition= edits
+(e.g. a colour change) now propagate live to every client.
+
+=badge_mapping= itself still has no live propagation -- it is a
+junction row with no generated entity handler, so it publishes no
+NATS change-event at all (confirmed true of every junction in the
+codebase, not just this one). Removing/restoring a mapping requires a
+client reconnect to be picked up. Closing this properly is tracked in
+[[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]],
+filed as its own sprint 24 story rather than folded into this task.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -129,7 +144,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:5410A1A8-5601-4A32-B507-7C69C9F6DFE7][Badge Definition: swatch rendering, colour picker, and related-entity shortcuts]] | PASSED | Eventing not exercised by this scenario -- see the fallback/eventing scenario below |
+| [[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][Verify data-driven fallback badge and badge eventing]] | PENDING | Covers step 6 (fallback badge) and the eventing gap noted above |
 
 * PRs
 

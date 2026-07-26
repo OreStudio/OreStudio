@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/attach-logo-to-counterparty
-#+pr:
+#+pr: 1698
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1698][#1698]] | [refdata,qt,iam,sql,agile] Attach a logo/image to a counterparty; rename Acme Bank to Acme Corporation |
 
 * Review
 

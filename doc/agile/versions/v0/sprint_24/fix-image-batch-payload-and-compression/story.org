@@ -80,9 +80,9 @@ if NATS-with-compression genuinely can't be made to fit.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Split into tasks; none started yet.    |
+| Now           | Decision made (NATS + compression); two implementation tasks remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the decision task.               |
+| Next          | Start the compression task.            |
 | Last touched  | 2026-07-26                               |
 
 * Acceptance
@@ -107,12 +107,38 @@ if NATS-with-compression genuinely can't be made to fit.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][Decide: NATS binary+compression vs. HTTP storage-endpoint transport for image delivery]] | STARTED | 2026-07-26 | | Confirm that sending images as raw (non-base64) compressed bytes over NATS resolves the payload-overflow problem on its own, before considering a move to the existing HTTP storage-endpoint transport. Record the decision and rationale. |
+| [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][Decide: NATS binary+compression vs. HTTP storage-endpoint transport for image delivery]] | DONE | 2026-07-26 | 2026-07-26 | Confirm that sending images as raw (non-base64) compressed bytes over NATS resolves the payload-overflow problem on its own, before considering a move to the existing HTTP storage-endpoint transport. Record the decision and rationale. |
 | [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][Add gzip compression to the image NATS pipeline, send raw bytes instead of base64]] | BACKLOG | | | Server compresses SVG image data before sending; client decompresses on receive. Stop routing binary image data through the JSON/base64 encoding used for the rest of the messaging protocol -- send it as raw bytes on the wire for image-carrying messages, eliminating both the base64 inflation and the missing compression in one pass. |
 | [[id:DF92CC86-8A91-44FE-AA34-5CC78D1B2F12][Make ImageCache batching byte-size aware]] | BACKLOG | | | Track cumulative estimated payload size (post-compression) while building each image-fetch batch, not just image count, so a batch is cut short before it would risk exceeding the NATS payload limit. Backstop for whatever pathological cases remain after compression; revisit MAX_IMAGES_PER_REQUEST once this and the compression task both land. |
 | [[id:DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA][Make ImageCache batching byte-size aware, add SVG compression]] (ABANDONED -- split above) | ABANDONED | | | Superseded: bundled a design decision with two independent implementation concerns under one task. |
 
 * Decisions
+
+** Stay on NATS request-reply; do not migrate to HTTP storage-endpoint transport
+
+Decided in the [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][decision task]]. Measured (not estimated) the actual
+worst-case batch -- the 15 largest SVGs in
+=external/flags/flag-icons/= (the real worst offenders turned out to
+be Serbia and Ascension Island, not the story's original examples of
+Norfolk Island/CEFTA, which are both small) -- against NATS's actual
+1 MiB default max payload (no override configured anywhere in this
+repo):
+
+| Encoding                             |     Bytes | vs. 1 MiB limit |
+|---------------------------------------+-----------+------------------|
+| Raw, base64'd (today's wire format)    | 1,348,864 | 132% -- overflows |
+| Raw bytes, no base64, uncompressed     | 1,011,648 | 96% -- no margin |
+| Gzip, still base64'd                   |   415,601 | 40%              |
+| Gzip, raw bytes (no base64)            |   311,701 | 30%              |
+
+The worst case already overflows today, confirming the bug. Gzip
+compression alone (independent of the base64 question) fixes it with
+a ~2.5x margin; adding raw-byte encoding on top gets ~3.4x. Neither
+number comes close to justifying the bigger, riskier HTTP-transport
+migration (new storage-addressing scheme for images). Both remaining
+tasks proceed as scoped: compression + raw-byte wire encoding (the
+load-bearing fix), and byte-size-aware batching (defense-in-depth
+backstop, not load-bearing given the margin above).
 
 * Out of scope
 

@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/rename-cir-to-cox-ingersoll-ross
-#+pr:
+#+pr: 1697
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -173,7 +173,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1697][#1697]] | [analytics.quant,synthetic,qt,sql] Rename CIR/OU/GMM processes to their full names |
 
 * Review
 

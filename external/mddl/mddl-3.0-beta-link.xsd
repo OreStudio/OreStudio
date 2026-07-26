@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    MDDL - Market Data Definition Language
+    Version 3.0-beta 01 March 2007
+    Copyright © 2001-2007, The Software and Information Industry Association.
+    See http://www.mddl.org/ or http://www.fisd.net/
+-->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" targetNamespace="http://www.w3.org/1999/xlink" elementFormDefault="unqualified" attributeFormDefault="unqualified">
+	<attribute name="type" type="string" fixed="simple"/>
+	<attribute name="href" type="anyURI"/>
+	<attribute name="role" type="anyURI"/>
+</schema>

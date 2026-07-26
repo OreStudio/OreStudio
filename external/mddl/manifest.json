@@ -1,0 +1,70 @@
+{
+  "name": "MDDL (Market Data Definition Language) 3.0-beta specification",
+  "description": "The last full specification release of MDDL, an XML-based market data description language originally developed by the Financial Information Services Division (FISD) of the Software & Information Industry Association (SIIA). MDDL 3.0-beta (2007-03-01) is the final version FISD/SIIA published before winding the standard down; no later beta or final release was ever issued. The original mddl.org site is defunct, so these files were retrieved from the Internet Archive's Wayback Machine capture of mddl.org.",
+  "retrieved_at": "2026-07-26T10:48:00Z",
+  "primary_source": "http://www.mddl.org/ (defunct, retrieved via Wayback Machine)",
+  "wayback_snapshot": "https://web.archive.org/web/20140407001327/http://www.mddl.org/page/resources/Downloads.asp",
+  "version": "3.0-beta",
+  "version_date": "2007-03-01",
+  "standards_body": "Financial Information Services Division (FISD) of the Software & Information Industry Association (SIIA)",
+  "license_note": "See mddl-license.pdf (downloaded alongside the spec) for MDDL's own licensing terms; not independently re-licensed by this repository.",
+  "files": [
+    {
+      "file": "mddl-3.0-beta-full.xsd",
+      "description": "Full MDDL 3.0-beta XML Schema (all asset domains combined into instrumentDomain).",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\\mddl-3.0-beta-full.xsd",
+      "sha256": "f5e71f6f1e108cc646937041ece7d909ce56777b774c99d07ec5c8164635cbe3",
+      "size_bytes": 2963257
+    },
+    {
+      "file": "mddl-3.0-beta-lite.xsd",
+      "description": "Lite (reduced) variant of the MDDL 3.0-beta XML Schema.",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\\mddl-3.0-beta-lite.xsd",
+      "sha256": "f059ad9f5eaa0bbb363ff3e68af22c3e1d121e318cd7694bc005198ccfd740d4",
+      "size_bytes": 1542180
+    },
+    {
+      "file": "mddl-3.0-beta-link.xsd",
+      "description": "Linking/reference schema fragment for MDDL 3.0-beta.",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\\mddl-3.0-beta-link.xsd",
+      "sha256": "47e10d5401ac90f2471220b9646d51d4e6f9d2532fc98f31b286ca52ea932535",
+      "size_bytes": 668
+    },
+    {
+      "file": "mddl-3.0-beta-technical-specification.pdf",
+      "description": "MDDL Technical Specification document (50 pages) — the primary narrative spec.",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=mddlDoc_Technical_Specification.pdf",
+      "sha256": "8e20cb9990e5e907d9c566b5e9e0026316ae73773ea4a0628a30a1ef60ac370e",
+      "size_bytes": 352560
+    },
+    {
+      "file": "mddl-license.pdf",
+      "description": "MDDL's own license terms (2 pages), as published by FISD/SIIA.",
+      "source_url": "http://www.mddl.org/license/MDDL License FINAL.pdf",
+      "sha256": "2b25027032821a7e6f458d204afdb38e37e681869003874d91ef60d18e08b671",
+      "size_bytes": 175654
+    },
+    {
+      "file": "mddl-3.0-beta.txt",
+      "description": "Downloads-page index listing every file in the 3.0-beta release and its description.",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\\mddl-3.0-beta.txt",
+      "sha256": "583bc86db4db34866fa81c0f67b8d469d36426205a6243b464885007e9ff5775",
+      "size_bytes": 2228
+    },
+    {
+      "file": "mddl-3.0-beta-changes.txt",
+      "description": "Changelog: what changed in 3.0-beta relative to the prior 2.0-beta release.",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?file=3.0-beta\\mddl-3.0-beta-changes.txt",
+      "sha256": "3577dc5656bcc21a845fa5939d3425fad0aed0513fd0d4427b4a83be595251fd",
+      "size_bytes": 931
+    },
+    {
+      "file": "mddl-equity-example1.xml",
+      "description": "Worked example instance document: an EOD equity snap for Lafarge SA (instrumentDomain, ISIN + local exchange code, undiluted/diluted earnings).",
+      "source_url": "http://www.mddl.org/mddlFileDownload.asp?open=yes&file=Examples/MDDL_Equity_Example1.xml",
+      "wayback_capture": "https://web.archive.org/web/20120329203315/http://www.mddl.org/mddlFileDownload.asp?file=Examples/MDDL_Equity_Example1.xml",
+      "sha256": "b604fa35b81ca4b7bdb0560105aa72d2d182e733b37def0e796ab340af2f2781",
+      "size_bytes": 1751
+    }
+  ]
+}

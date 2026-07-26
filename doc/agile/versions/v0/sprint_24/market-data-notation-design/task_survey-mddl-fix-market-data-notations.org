@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 7422E41C-41FA-4106-A88D-74E142454773
+:END:
+#+title: Task: Survey MDDL and FIX as additional market data notations
+#+description: Extend the external market data identifiers comparative analysis with MDDL and FIX: download/archive their specifications with data lineage, add knowledge docs, and add comparative-analysis coverage across every instrument section.
+#+type: task
+#+level: s1
+#+filetags: :market-data-notation-design:sprint_24:v0:
+#+owner: marco
+#+branch: feature/survey-mddl-fix-market-data-notations
+#+pr: 1699
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+identifiers]] with two more schemes beyond RIC/Bloomberg/ORE: MDDL
+(Market Data Definition Language, FISD/SIIA) and FIX (Financial
+Information eXchange, FIX Trading Community). For each: locate and
+download the authoritative specification with full data lineage, add a
+knowledge doc covering what it is, its version history, and its content
+model, and extend the comparative-analysis document's per-instrument
+sections (FX, rates, swaptions, equities, credit, commodities) to cover
+both schemes using the same representative instrument as each section's
+existing RIC/Bloomberg/ORE row.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+- MDDL's authoritative specification is located (mddl.org is defunct;
+  retrieved via the Internet Archive's Wayback Machine capture) and its
+  last full release (3.0-beta, 2007-03-01) is downloaded with full data
+  lineage (=manifest.json= with per-file source URL/sha256/size,
+  =methodology.txt=, =README.md=) under =external/mddl/=.
+- FIX's Market Data data dictionaries (FIX 4.4, FIX 5.0 SP2) are
+  downloaded with the same data-lineage treatment under =external/fix/=,
+  sourced from a pinned commit of the QuickFIX open-source engine
+  project (redistributing the FIX Trading Community's own definitions).
+- A knowledge doc exists for each scheme (=market_data_definition_language.org=,
+  =financial_information_exchange_protocol.org=), covering what it is,
+  version history, content model (domains/entities for MDDL; message
+  family/symbology for FIX), and current industry status, cross-linked
+  bidirectionally with =external_market_data_identifiers.org= and wired
+  into =knowledge.org=.
+- Every instrument section of the comparative-analysis document (FX,
+  Interest rates, Swaptions, Equities and indices, Credit, Commodities)
+  has MDDL and FIX comparative-analysis bullets using the *same*
+  instrument as that section's existing RIC/Bloomberg/ORE row, with
+  worked XML (MDDL) and tag=value (FIX) org-mode source-block examples
+  where a table cell cannot convey a full record.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1699][#1699]] | [knowledge] Survey MDDL and FIX as additional market data notations |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story task-list row stale (STARTED, no end date) after task closed DONE | story.org | Accepted | Fixed in 0aa289ac1 — synced the row to DONE / 2026-07-26 |
+| 2 | "Eight domains" prose contradicts the 9-row table below it | market_data_definition_language.org | Accepted | Fixed — corrected to "Nine domains" |
+| 3 | knowledge.org index entry still describes the doc as 3-scheme (RIC/Bloomberg/ORE) after this PR extended it to 5 | knowledge.org | Accepted | Fixed — updated to describe all five schemes |
+| 4 | No `* Decisions` entry added for this task | story.org | Declined | Nothing from this survey-and-extend task rose to a story-level design decision; the story's Decisions section already correctly reflects only the prior design-bearing tasks |
+| 5 | FIX examples' BodyLength/CheckSum look like real computed values | external_market_data_identifiers.org | Accepted | Fixed — added an explicit note that both are illustrative placeholders, not computed from message bytes |
+| 6 | Apple-adapted MDDL example caveat understates that a code scheme URI also changed, not just values | external_market_data_identifiers.org | Accepted | Fixed — caveat now explains the ticker-vs-local-exchange-code scheme substitution explicitly |
+
+* Result
+
+Shipped:
+
+- Archived MDDL 3.0-beta (schemas, technical spec PDF, license PDF,
+  changelog, a real worked equity example) under =external/mddl/= with a
+  manifest recording source URL, sha256, and size per file — plus an
+  Apple-adapted variant of that worked example, inline in the
+  comparative-analysis doc (not a separate archived file), for
+  like-for-like comparison with the doc's Apple row. Located via a
+  Wayback Machine capture since mddl.org itself is now defunct.
+- Archived FIX 4.4 and FIX 5.0 SP2 XML data dictionaries under
+  =external/fix/=, sourced from a pinned commit of the QuickFIX
+  open-source engine project, with the same manifest/methodology
+  treatment.
+- Added [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]]
+  and [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information
+  eXchange (FIX) Protocol]] knowledge docs, each with a detailed content
+  model section (MDDL's eight domains and =instrumentIdentifier=
+  wrapping; FIX's Market Data message family and =SecurityIDSource=
+  symbology), cross-linked with each other and with
+  =external_market_data_identifiers.org=, and wired into =knowledge.org=.
+- Extended every instrument section of
+  [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]]
+  with MDDL and FIX comparative-analysis bullets, matched to each
+  section's existing representative instrument (EUR/USD spot, USD 5Y
+  IRS, EUR swaption vol, Apple, iTraxx Europe 5Y CDS, gold spot), with
+  worked XML/FIX-message examples in org-mode source blocks for the
+  cases where a compact table cell can't convey a full record — and an
+  honest "no documented convention found" statement for swaptions and
+  credit, where neither MDDL nor FIX has one.
+- Fixed a related site-serving issue found during review (single-threaded
+  =http.server= queuing concurrent viewers) by switching =compass site
+  serve= to =ThreadingHTTPServer= — committed separately since it is
+  unrelated to this task's content.
+
+All acceptance criteria met.

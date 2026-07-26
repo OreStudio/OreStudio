@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1
+:END:
+#+title: Financial Information eXchange (FIX) Protocol
+#+description: FIX Trading Community's wire protocol and message dictionary: version history, the Market Data message family, symbology, and how it compares to ORE Studio's own identifier schemes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:standards:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+* Summary
+
+FIX (Financial Information eXchange) is a wire message protocol and
+field/message dictionary maintained by the FIX Trading Community
+(formerly FIX Protocol Ltd.), first published in 1992 and now the
+dominant open messaging standard for pre-trade, trade, and post-trade
+communication across the industry. Unlike MDDL, FIX was never wound
+down — it is actively maintained, and since 2019 the protocol has moved
+to "FIX Latest", upgraded incrementally through extension packs rather
+than numbered releases (FIX 5.0 Service Pack 2, released 2011, is the
+last numbered release before that shift). FIX has a dedicated *Market
+Data* message family (=MarketDataRequest=,
+=MarketDataSnapshotFullRefresh=, =MarketDataIncrementalRefresh=,
+=MarketDataRequestReject=, plus =MarketDataStatisticsRequest/Report=
+and =MarketDataReport= added in 5.0 SP2) and its own symbology field,
+=SecurityIDSource=, whose controlled vocabulary explicitly includes
+=RIC_CODE= and =BLOOMBERG_SYMBOL= alongside ISIN/CUSIP/SEDOL — FIX
+wraps external identifiers the same way MDDL's =codeType= does, rather
+than minting a single competing notation. The data dictionaries
+retrieved for this document are archived at
+[[proj:external/fix][=external/fix/=]] (see that directory's
+=manifest.json= for per-file provenance).
+
+* Detail
+
+** What FIX is
+
+FIX defines a session layer (message framing, sequencing, resend
+handling) and an application layer (a large, versioned dictionary of
+tagged fields, e.g. =55=Symbol=, and messages built from ordered
+fields/repeating groups/components). It was originally exchanged as a
+tag=value wire format (=8=FIX.4.4|9=...|35=W|...|10=...=, pipe/SOH
+delimited); later versions can also be carried over FIXML (an XML
+encoding of the same fields) or the newer Simple Binary Encoding (SBE)
+for low-latency use. Governance is committee-based (the FIX Trading
+Community, a not-for-profit industry body), and the specification is
+open and free to implement without a license fee — in this respect FIX
+resembles MDDL far more than it resembles RIC or the Bloomberg ticker.
+
+** Version history
+
+- *FIX 2.7–4.2* (1992–2000): early releases, incrementally adding
+  message coverage; 4.2 became a long-lived baseline for order/exec
+  flow.
+- *FIX 4.3* introduced the dedicated Market Data message family
+  (=MarketDataRequest=/=MarketDataSnapshotFullRefresh=/
+  =MarketDataIncrementalRefresh=/=MarketDataRequestReject=) as a
+  first-class part of the dictionary.
+- *FIX 4.4* (2003) is, per the retrieved dictionary, the version that
+  remained most widely deployed for market data and order flow for many
+  years; it is the baseline most third-party FIX engines (including
+  QuickFIX, this document's source for the retrieved dictionaries)
+  ship as their default.
+- *FIX 5.0* (2006) and *FIX 5.0 Service Pack 1/2* (2009/2011) split the
+  session and application layers apart (allowing FIX's application
+  messages to run over transports other than the classic FIX session
+  protocol) and added =MarketDataStatisticsRequest/Report= and
+  =MarketDataReport= to the Market Data family.
+- *FIX Latest* (from 2019): the dictionary is no longer released as a
+  single numbered version; instead it is maintained continuously and
+  extended via versioned "extension packs" documented through the
+  Orchestra machine-readable format and browsable at
+  [[https://fiximate.fixtrading.org/en/FIX.Latest/][fiximate.fixtrading.org]].
+
+** The Market Data message family
+
+- *=MarketDataRequest= (35=V)*: a subscriber's request for a snapshot
+  and/or ongoing updates for one or more instruments, specifying which
+  =MDEntryType=s it wants (bid, offer, trade, ...) via a repeating
+  group.
+- *=MarketDataSnapshotFullRefresh= (35=W)*: a full snapshot of the
+  requested market data for one instrument — the =Instrument=
+  component (symbology) plus an =MDFullGrp= repeating group of
+  =NoMDEntries= entries, each an =MDEntryType=/=MDEntryPx=/
+  =MDEntrySize=/=MDEntryTime=+ tuple.
+- *=MarketDataIncrementalRefresh= (35=X)*: incremental updates to a
+  previously established view, via an =MDIncGrp= repeating group whose
+  entries carry an =MDUpdateAction= (=NEW=/=CHANGE=/=DELETE=) alongside
+  the same entry fields as the full refresh.
+- *=MarketDataRequestReject= (35=Y)*: rejects a =MarketDataRequest=
+  (e.g. unknown symbol, unsupported =MDEntryType=), with a
+  =MDReqRejReason= code.
+- *=MarketDataStatisticsRequest=/=Report= and =MarketDataReport=* (FIX
+  5.0 SP2+): later additions covering statistical market data and a
+  more general market data reporting message.
+
+=MDEntryType= (tag 269) is itself a controlled vocabulary spanning far
+more than a simple bid/offer: =BID=, =OFFER=, =TRADE=, =INDEX_VALUE=,
+=OPENING_PRICE=, =CLOSING_PRICE=, =SETTLEMENT_PRICE=,
+=TRADING_SESSION_HIGH/LOW_PRICE=, =TRADING_SESSION_VWAP_PRICE=,
+=IMBALANCE=, =TRADE_VOLUME=, =OPEN_INTEREST=, and others — a single
+field distinguishing many of the same "what kind of market data point
+is this" cases MDDL's per-domain properties and ORE's =metric= segment
+each handle differently.
+
+** Symbology: SecurityIDSource
+
+Rather than defining its own competing short-string notation, FIX
+identifies an instrument via the =Instrument= component's =Symbol=/
+=SecurityID= fields tagged with a =SecurityIDSource= (tag 22) enum
+naming *which* external scheme the accompanying code belongs to. Per
+the retrieved FIX 4.4 dictionary, the enum includes (among others):
+=CUSIP=, =SEDOL=, =ISIN_NUMBER=, =RIC_CODE=, =ISO_CURRENCY_CODE=,
+=ISO_COUNTRY_CODE=, =EXCHANGE_SYMBOL=, =BLOOMBERG_SYMBOL=, and
+=ISDA_FP_ML_SPECIFICATION=. This is architecturally the same move MDDL
+makes with its =instrumentIdentifier/codeType= — RIC and the Bloomberg
+symbol are both explicitly named, first-class members of FIX's own
+symbology vocabulary, not competitors to it.
+
+** Current industry status
+
+FIX remains the dominant open standard for pre-trade, trade, and
+post-trade messaging across the industry and continues to be actively
+maintained by the FIX Trading Community as "FIX Latest" — unlike MDDL,
+it was never wound down or contributed elsewhere; if anything, per
+[[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition
+Language (MDDL)]], MDDL's own vocabulary was reportedly folded into FIX
+(and ISO 20022) after FISD stopped releasing new MDDL versions.
+
+** Where the specification lives
+
+The authoritative, browsable specification is published by the FIX
+Trading Community at
+[[https://fiximate.fixtrading.org/][fiximate.fixtrading.org]] (the "FIX
+Repository"). Unlike mddl.org, this is a live, actively maintained site,
+but it does not offer a single downloadable machine-readable dictionary
+file the way mddl.org's Downloads page did — its content is served
+through a browsing UI. The XML data dictionaries retrieved for this
+document were instead sourced from the QuickFIX open-source FIX engine
+project, which redistributes the same field/message definitions as
+machine-readable XML under a permissive license; see
+[[proj:external/fix/methodology.txt][=external/fix/methodology.txt=]]
+for the exact retrieval steps and
+[[proj:external/fix/manifest.json][=external/fix/manifest.json=]] for
+per-file source URLs and checksums. Files retrieved:
+
+- [[proj:external/fix/FIX44.xml][=FIX44.xml=]] — the FIX 4.4 data dictionary (historically dominant for market data and order flow).
+- [[proj:external/fix/FIX50SP2.xml][=FIX50SP2.xml=]] — the FIX 5.0 Service Pack 2 data dictionary (the last numbered release before "FIX Latest").
+- [[proj:external/fix/LICENSE][=LICENSE=]] — the QuickFIX Software License governing this redistributed copy.
+
+* See also
+
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC, Bloomberg, ORE quote key, and MDDL comparison; FIX as a fifth scheme.
+- [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — the standard whose vocabulary was reportedly folded into FIX after MDDL's own development ceased.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the ORE canonical/quote key FIX is compared against.

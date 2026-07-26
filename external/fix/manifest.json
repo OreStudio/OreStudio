@@ -1,0 +1,33 @@
+{
+  "name": "FIX Protocol data dictionaries (FIX 4.4, FIX 5.0 SP2)",
+  "description": "Machine-readable XML data dictionaries for the FIX (Financial Information eXchange) Protocol's Market Data message family (MarketDataRequest, MarketDataSnapshotFullRefresh, MarketDataIncrementalRefresh, MarketDataRequestReject) and the SecurityIDSource symbology field. The FIX Trading Community publishes the authoritative specification at fixtrading.org/fiximate.fixtrading.org; these XML dictionaries are the same field/message definitions redistributed by the QuickFIX open-source engine project under a permissive BSD-style license.",
+  "retrieved_at": "2026-07-26T11:04:00Z",
+  "primary_source": "https://www.fixtrading.org/standards/fix-repository/ (authoritative specification; FIX Trading Community)",
+  "redistribution_source": "https://github.com/quickfix/quickfix (spec/ directory) — QuickFIX Software License, Version 1.0 (BSD-style, permissive)",
+  "redistribution_commit": "386ce46e917ae494ab6e90b1be90fd421cdbe3f9",
+  "standards_body": "FIX Trading Community (formerly FIX Protocol Ltd.)",
+  "license_note": "See LICENSE (QuickFIX Software License) for terms governing this redistributed copy of the data dictionaries; the FIX specification itself is open and freely usable, published under FIX Trading Community's own royalty-free terms.",
+  "files": [
+    {
+      "file": "FIX44.xml",
+      "description": "FIX 4.4 data dictionary — the most widely deployed FIX version historically for market data and order flow; includes MarketDataRequest/SnapshotFullRefresh/IncrementalRefresh/RequestReject and the SecurityIDSource enum (CUSIP, SEDOL, ISIN, RIC_CODE, BLOOMBERG_SYMBOL, ...).",
+      "source_url": "https://raw.githubusercontent.com/quickfix/quickfix/386ce46e917ae494ab6e90b1be90fd421cdbe3f9/spec/FIX44.xml",
+      "sha256": "a82655b54363aa9c6d1b2f21f294f1198c0d7125d7b44c26d93d3179f3358425",
+      "size_bytes": 315399
+    },
+    {
+      "file": "FIX50SP2.xml",
+      "description": "FIX 5.0 Service Pack 2 data dictionary — the last version-numbered FIX release before the protocol moved to continuous 'FIX Latest' extension packs (2019); adds MarketDataStatisticsRequest/Report and MarketDataReport to the message family.",
+      "source_url": "https://raw.githubusercontent.com/quickfix/quickfix/386ce46e917ae494ab6e90b1be90fd421cdbe3f9/spec/FIX50SP2.xml",
+      "sha256": "7d34e565586dd4096a08691d10e415b5a2fd531a8dadfcfc831daea419d3c3f3",
+      "size_bytes": 1471310
+    },
+    {
+      "file": "LICENSE",
+      "description": "QuickFIX Software License, Version 1.0 — governs this redistributed copy of the FIX data dictionaries.",
+      "source_url": "https://raw.githubusercontent.com/quickfix/quickfix/386ce46e917ae494ab6e90b1be90fd421cdbe3f9/LICENSE",
+      "sha256": "04719eefe7adf383d7970d7654caec6f7e542e6427f25d068e7177495fc9b379",
+      "size_bytes": 2073
+    }
+  ]
+}

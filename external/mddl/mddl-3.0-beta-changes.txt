@@ -1,0 +1,6 @@
+MDDL 3.0-beta Changes|This is the first MDDL release that contains all content defined during the initial planning for MDDL.|2007/03/01|
+MDDL 3.0-beta Changes|The previous asset domains - civDomain, debtDomain, derivativeDomain, equityDomain - and all of their classes and subclasses are now combined in the single <b>instrumentDomain</b>.|2007/03/01|
+MDDL 3.0-beta Changes|Some properties have been changed from mdDecimal to the new <b>mdNonNegativeDecimal</b> to reflect their true nature and permit schema validation of this content.|2007/03/01|
+MDDL 3.0-beta Changes|Significant changes - and some subtle - have been made throughout the schema so backwards compatability is not assured.|2007/03/01|
+MDDL 3.0-beta Changes|The properties of "instrumentData" have been elevated to a peer of "instrumentIdentifier".|2007/03/01|
+MDDL 3.0-beta Changes|The glossary and a number of the web pages have been redesigned.|2007/03/01|

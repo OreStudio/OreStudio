@@ -1,0 +1,62 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+<!--
+	Date: 2007-03-01T12:00:00-07:00
+	File: MDDL_Equity_Example1.xml
+-->
+<mddl
+	version="3.0-beta"
+	xmlns="http://www.mddl.org/mddl/3.0-beta" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mddl.org/mddl/3.0-beta mddl-3.0-beta-full.xsd"
+	>
+
+	<!-- A brief header - see MDDL_Basic_Example.xml for more details -->
+	<header>
+		<dateTime>2006-07-21</dateTime>
+		<source>Euronext</source>
+	</header>
+
+	<snap>
+		<dateTime>2006-05-16</dateTime>
+		<snapType>EOD</snapType>
+
+		<instrumentDomain>
+
+		<instrumentIdentifier>
+			<name>Lafarge SA</name>
+			<code scheme="http://www.mddl.org/ext/scheme/iso6166.xml">
+				<mdString>LG</mdString>
+			</code>
+			<code scheme="http://www.mddl.org/ext/scheme/symbol?SRC=ISIN">
+				<mdString>FR0000120537</mdString>
+			</code>
+
+			<instrumentData>
+				<instrumentType>equityCommon</instrumentType>
+			</instrumentData>
+
+			<marketIdentifier>
+				 <code scheme="http://mddl.org/ext/scheme/iso10383.xml">
+					 <mdString>XEUE</mdString>					     
+				</code>
+			</marketIdentifier>
+	
+		</instrumentIdentifier>
+	
+		<currency>EUR</currency>	
+	
+		<earnings>  <!--  Earnings contain the net income reported for an instrument, which is a numeric value hence contained by the base type mdDecimal. This value is reported by the issuer. -->
+			<mdDecimal>6.39</mdDecimal>
+			<earningsType>undiluted</earningsType>  <!--  earningsType is the controlled vocabulary holding the method by which the earnings are calculated.-->
+		</earnings>
+	
+		<earnings>							
+			<mdDecimal>6.34</mdDecimal>	
+			<earningsType>diluted</earningsType>
+		</earnings>
+
+		</instrumentDomain>
+
+	</snap>
+
+</mddl>

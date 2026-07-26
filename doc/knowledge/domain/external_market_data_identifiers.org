@@ -2,7 +2,7 @@
 :ID: F3010EA7-6A0E-405C-81FA-1EF051749B5E
 :END:
 #+title: External market data identifiers
-#+description: A comparative analysis of three market data identifier schemes — RIC, Bloomberg ticker, and the ORE canonical key — their origin, ownership, formal specification status, and pros, cons, and limitations.
+#+description: A comparative analysis of five market data identifier schemes — RIC, Bloomberg ticker, the ORE canonical key, MDDL, and FIX — their origin, ownership, formal specification status, and pros, cons, and limitations.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:identifiers:
@@ -13,12 +13,24 @@
 
 Market data series are identified differently by different data vendors and
 systems. Reuters/Refinitiv (now LSEG) uses RICs (e.g. ~EUR=~), Bloomberg uses
-its own ticker syntax (e.g. =EURUSD BGN Curncy=), and the Open Source Risk
-Engine (ORE) uses a slash-delimited canonical key (e.g. =FX/RATE/EUR/USD=).
-This document is a comparative analysis of these three schemes on their
-own terms — what each is, who owns it, whether a formal specification
-exists, and each scheme's pros, cons, and limitations — independent of any
-particular consumer of the schemes.
+its own ticker syntax (e.g. =EURUSD BGN Curncy=), the Open Source Risk
+Engine (ORE) uses a slash-delimited canonical key (e.g. =FX/RATE/EUR/USD=),
+and MDDL (Market Data Definition Language, FISD/SIIA's XML-based standard —
+see [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition
+Language (MDDL)]]) wraps an =instrumentIdentifier= container element
+(code + codeType) around whichever identifier a source system already uses
+(ISIN, RIC, ticker, ...) rather than minting its own short-string
+notation. FIX (Financial Information eXchange — see
+[[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange
+(FIX) Protocol]]) takes the same wrapping approach for symbology via its
+=SecurityIDSource= field, which names =RIC_CODE= and =BLOOMBERG_SYMBOL= as
+explicit member schemes, but adds a dedicated wire-message family for
+market data itself (=MarketDataSnapshotFullRefresh=,
+=MarketDataIncrementalRefresh=, ...) that neither MDDL nor the other
+schemes have. This document is a comparative analysis of these five
+schemes on their own terms — what each is, who owns it, whether a formal
+specification exists, and each scheme's pros, cons, and limitations —
+independent of any particular consumer of the schemes.
 
 * Format overviews
 
@@ -124,20 +136,79 @@ on GitHub]] (the =Examples/= directory contains the =marketdata.csv= files
 this key format is drawn from; =OREData/ored/marketdata/= contains the
 =CSVLoader=/=MarketDatum= parsing code).
 
+** MDDL (Market Data Definition Language)
+
+MDDL is an XML-based market data description language originally
+developed by the Financial Information Services Division (FISD) of the
+Software & Information Industry Association (SIIA), first published in
+the early 2000s; see
+[[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition
+Language (MDDL)]] for its full version history and current status.
+Structurally it is the odd one out among the four schemes covered here:
+RIC, Bloomberg, and the ORE canonical key are each a short single
+string that *is* the identifier, whereas MDDL is a full XML instrument
+record, and instrument identity is carried by an =instrumentIdentifier=
+container element (a =code= plus a =codeType= controlled vocabulary)
+nested inside that record — MDDL does not mint a competing short-string
+notation of its own, it wraps whichever identifier the source system
+already uses (ISIN, RIC, a vendor ticker, ...). Its specification is
+open and committee-governed rather than proprietary to a single vendor,
+in contrast to RIC and Bloomberg, but unlike ORE's canonical key it was
+never adopted as any single pricing engine's native input format. The
+last full specification release is MDDL 3.0-beta (2007-03-01); FISD
+never published a later version, instead contributing MDDL's vocabulary
+toward ISO 20022 and the FIX Protocol. Files retrieved from the (now
+defunct) mddl.org are archived at
+[[proj:external/mddl][=external/mddl/=]].
+
+** FIX (Financial Information eXchange) Protocol
+
+FIX is a wire message protocol and field/message dictionary maintained
+by the FIX Trading Community (formerly FIX Protocol Ltd.), first
+published in 1992; see
+[[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information
+eXchange (FIX) Protocol]] for its full version history and content
+model. Unlike MDDL, FIX was never wound down — it remains the dominant
+open standard for pre-trade, trade, and post-trade messaging and, since
+2019, is continuously extended as "FIX Latest" rather than released in
+numbered versions. It is the only one of the five schemes here with a
+dedicated *market data message family*: =MarketDataRequest=,
+=MarketDataSnapshotFullRefresh=, =MarketDataIncrementalRefresh=, and
+=MarketDataRequestReject= (plus =MarketDataStatisticsRequest/Report= and
+=MarketDataReport= added in FIX 5.0 SP2) — RIC, Bloomberg, the ORE key,
+and MDDL each define an identifier or record shape, but none defines the
+wire messages that move a live tick from producer to consumer the way
+FIX does. Instrument identity is carried by the =Instrument= component's
+=Symbol=/=SecurityID= fields tagged with a =SecurityIDSource= (tag 22)
+enum — the same wrapping approach MDDL's =codeType= takes, and the enum
+explicitly includes =RIC_CODE= and =BLOOMBERG_SYMBOL= as named member
+schemes, alongside =CUSIP=, =SEDOL=, =ISIN_NUMBER=, and others. Its
+specification is open, committee-governed, and free of vendor licensing,
+much like MDDL and ORE's canonical key, in contrast to RIC and Bloomberg.
+Files retrieved from the QuickFIX open-source engine project (which
+redistributes the FIX Trading Community's own data dictionaries) are
+archived at [[proj:external/fix][=external/fix/=]].
+
 * Identifier scheme comparison
 
-Three schemes address the same instruments differently: RIC (Reuters/Refinitiv,
-now LSEG) is instrument-type-specific and not fully systematic; Bloomberg uses a
-space-separated =<ticker> <yellow-key>= composite; ORE uses a slash-delimited,
-per-type =TYPE/SUBTYPE/dim1/.../dimN= key consumed directly by the ORE pricing
+Three of the five schemes address the same instruments with a short
+string: RIC (Reuters/Refinitiv, now LSEG) is instrument-type-specific and
+not fully systematic; Bloomberg uses a space-separated =<ticker>
+<yellow-key>= composite; ORE uses a slash-delimited, per-type
+=TYPE/SUBTYPE/dim1/.../dimN= key consumed directly by the ORE pricing
 engine (=marketdata.csv=), documented type by type in the
-[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]. RIC and
-Bloomberg cells below are compiled from publicly visible instrument examples,
-not a primary vendor spec — see [[*Sources][Sources]]. Every cell below is
-filled with either a concrete identifier or an explicit statement of why none
-exists (no standard public convention, no matching ORE quote type, or "not a
-single tradeable instrument") — see each subsection's notes for the reasoning
-behind any such cell.
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
+The other two, MDDL and FIX, do not — both wrap whichever short-string
+identifier a source system already publishes (MDDL's
+=instrumentIdentifier/codeType=, FIX's =SecurityIDSource=) rather than
+minting a competing one, so their comparison tables below carry a worked
+XML/message example instead of a short-string cell. RIC and Bloomberg
+cells below are compiled from publicly visible instrument examples, not a
+primary vendor spec — see [[*Sources][Sources]]. Every cell below is
+filled with either a concrete identifier or an explicit statement of why
+none exists (no standard public convention, no matching ORE quote type, or
+"not a single tradeable instrument") — see each subsection's notes for the
+reasoning behind any such cell.
 
 ** FX
 
@@ -175,6 +246,77 @@ behind any such cell.
   not, in ORE's own model, the same series with an optional extra field;
   they are two different series types that happen to share a currency
   pair.
+- *MDDL*: no short-string row — a =foreignExchangeDomain= record
+  identifies the pair via =instrumentIdentifier= and carries the rate
+  itself as =bid=/=ask=/=mid= container elements (each an =mdDecimal=
+  plus inheritable =currency=/=crossrate= properties), rather than a
+  single scalar the way ORE's =FX/RATE/EUR/USD= is. Shortcoming: three
+  separate elements (=bid=/=ask=/=mid=) for what RIC, Bloomberg, and ORE
+  each treat as a single quoted rate means a consumer must know which
+  of the three fields a given feed actually populates — the schema
+  does not mandate all three be present together.
+- *FIX*: no short-string row either — a
+  =MarketDataSnapshotFullRefresh= identifies the pair via the
+  =Instrument= component's =Symbol= (free text, e.g. =EUR/USD=) and
+  carries bid/offer as =MDEntryType= =0=/=1= entries in =MDFullGrp=,
+  the same shape used for every other asset class in this document.
+  Shortcoming: FIX has no FX-specific =SecurityIDSource= value — a
+  currency pair is just a =Symbol= string with no controlled-vocabulary
+  backing the way RIC's ~+=~ suffix or MDDL's =foreignExchangeDomain=
+  at least signal "this is FX" structurally.
+
+#+begin_src xml
+<mddl version="3.0-beta" xmlns="http://www.mddl.org/mddl/3.0-beta">
+  <header>
+    <dateTime>2026-07-26</dateTime>
+    <source>EBS</source>
+  </header>
+
+  <snap>
+    <dateTime>2026-07-26T12:00:00</dateTime>
+    <snapType>tick</snapType>
+
+    <foreignExchangeDomain>
+      <instrumentIdentifier>
+        <name>EUR/USD spot</name>
+      </instrumentIdentifier>
+
+      <currency>USD</currency>
+      <crossrate>EUR</crossrate>
+
+      <bid>
+        <mdDecimal>1.0842</mdDecimal>
+      </bid>
+      <ask>
+        <mdDecimal>1.0844</mdDecimal>
+      </ask>
+    </foreignExchangeDomain>
+  </snap>
+</mddl>
+#+end_src
+
+(Constructed for illustration from the retrieved schema's
+=foreignExchangeDomain= element structure — see
+[[proj:external/mddl/mddl-3.0-beta-full.xsd][=external/mddl/mddl-3.0-beta-full.xsd=]]
+— not copied from a real feed; no worked FX example was included in
+the retrieved release's =Examples/= set.)
+
+#+begin_src text
+8=FIX.4.4|9=140|35=W|49=SENDER|56=TARGET|34=1|52=20260726-12:00:00.000|
+262=MDREQ002|
+55=EUR/USD|
+268=2|
+269=0|270=1.0842|271=1000000|273=12:00:00.000|
+269=1|270=1.0844|271=1000000|273=12:00:00.000|
+10=044|
+#+end_src
+
+(Field-per-line for readability; =|= stands in for the real =SOH=
+delimiter. Constructed by hand from the retrieved FIX 4.4 dictionary —
+see [[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] — not
+copied from a live feed; =BodyLength= (tag =9=) and =CheckSum= (tag
+=10=) are illustrative placeholder values, not computed from the
+actual message bytes.)
 
 ** Interest rates
 
@@ -223,6 +365,27 @@ behind any such cell.
   versa — the RIC/Bloomberg rows quote par rates or fixings for specific
   indices/tenors, while the ORE rows are term-structure series (a tenor
   dimension carries the point on the curve).
+- *MDDL*: for the USD 5Y IRS par rate row, a generic =instrumentDomain=
+  record's =interestRateContainer= sub-container (=rate=, =period=,
+  =compounding=, =accrual=, ...) can carry a swap's fixed-rate terms,
+  with =instrumentIdentifier= naming the instrument and =instrumentType=
+  an open, source-defined value (no fixed enumeration of instrument
+  types ships in the schema itself, unlike =MDEntryType= in FIX or
+  ORE's =TYPE/SUBTYPE=). Shortcoming: because =instrumentType= is
+  open-vocabulary, two MDDL producers could each publish a 5Y USD swap
+  under different =instrumentType= strings with no schema-level way to
+  detect they mean the same thing — a structural gap none of RIC,
+  Bloomberg, or ORE's fixed vocabularies have.
+- *FIX*: has no standard, widely-documented Market Data convention for
+  publishing an OTC swap's par rate as a tick — swap rates are
+  typically negotiated/executed via FIX's order and trade-capture
+  messages (multi-leg =Instrument=/=InstrmtLegGrp= structures) rather
+  than streamed through =MarketDataSnapshotFullRefresh=. Shortcoming:
+  this is the same broker-composite, not-retail-ticker gap RIC and
+  Bloomberg both have for this row — none of the five schemes here has
+  a clean, publicly documented tick-level convention for an IRS par
+  rate, only ORE's =IR_SWAP/RATE= key (a pricing-engine input, not a
+  market feed convention) comes close.
 
 ** Swaptions
 
@@ -251,6 +414,17 @@ behind any such cell.
   dimension count to parse the key; the same top-level shape gives no
   hint that a swaption key has three trailing dimensions where an FX key
   has none.
+- *MDDL* and *FIX*: neither has any documented representation for a
+  swaption volatility surface point in the retrieved specification
+  material — no dedicated instrument type, message, or property was
+  found for expiry/tenor/strike-keyed implied vol in either the 3.0-beta
+  schema or the FIX 4.4/5.0 SP2 dictionaries. Shortcoming: this is a
+  genuine gap for all four of the non-ORE schemes here, not just RIC and
+  Bloomberg — swaption vol is broker-composite, over-the-counter data
+  that none of RIC, Bloomberg, MDDL, or FIX has a standardised public
+  convention for; ORE's =SWAPTION/RATE_LNVOL= key remains the only
+  openly documented structure for this instrument among the five
+  schemes compared in this document.
 
 ** Equities and indices
 
@@ -290,6 +464,119 @@ behind any such cell.
   future" (an exchange-traded futures contract, distinct from the OTC
   equity forward ORE does support) has no ORE representation at all,
   a gap neither RIC nor Bloomberg has for this instrument.
+- *MDDL*: has no equivalent row above, because it does not identify an
+  equity with a short string at all — it wraps a full
+  =instrumentDomain= record around whichever codes the source already
+  publishes. The example below is adapted, for like-for-like comparison
+  with this table's Apple row, from the retrieved real worked example
+  [[proj:external/mddl/mddl-equity-example1.xml][=mddl-equity-example1.xml=]]
+  (Lafarge SA, an EOD equity snap — see that file for the authentic,
+  unmodified vendor example); the shape is unchanged, only the
+  instrument-specific values (name, codes, currency, market) are
+  substituted. It shows an =instrumentIdentifier= carrying *two* codes
+  at once (an exchange/ticker code and an ISIN, each tagged with its
+  own =scheme= URI) plus a nested =marketIdentifier= (an ISO 10383 MIC)
+  and =instrumentData/instrumentType=. Shortcoming: this is far richer
+  than any RIC, Bloomberg, or ORE row above, but it is also not a
+  compact key — there is no single short string a consumer could use as
+  a map/dictionary key or a pub/sub subject the way =AAPL.OQ=, =AAPL US
+  Equity=, or =EQUITY/PRICE/AAPL/USD= can be used directly.
+
+#+begin_src xml
+<mddl version="3.0-beta" xmlns="http://www.mddl.org/mddl/3.0-beta">
+  <header>
+    <dateTime>2026-07-26</dateTime>
+    <source>NASDAQ</source>
+  </header>
+
+  <snap>
+    <dateTime>2026-07-26</dateTime>
+    <snapType>EOD</snapType>
+
+    <instrumentDomain>
+      <instrumentIdentifier>
+        <name>Apple Inc</name>
+        <code scheme="http://www.mddl.org/ext/scheme/symbol?SRC=TICKER">
+          <mdString>AAPL</mdString>
+        </code>
+        <code scheme="http://www.mddl.org/ext/scheme/symbol?SRC=ISIN">
+          <mdString>US0378331005</mdString>
+        </code>
+
+        <instrumentData>
+          <instrumentType>equityCommon</instrumentType>
+        </instrumentData>
+
+        <marketIdentifier>
+          <code scheme="http://mddl.org/ext/scheme/iso10383.xml">
+            <mdString>XNAS</mdString>
+          </code>
+        </marketIdentifier>
+      </instrumentIdentifier>
+
+      <currency>USD</currency>
+
+      <last>
+        <mdDecimal>229.10</mdDecimal>
+      </last>
+    </instrumentDomain>
+  </snap>
+</mddl>
+#+end_src
+
+(Trimmed for brevity — namespace/schema-location attributes and
+comments elided. Adapted from the real retrieved example at
+[[proj:external/mddl/mddl-equity-example1.xml][=external/mddl/mddl-equity-example1.xml=]];
+=instrumentType= and element shapes are unchanged from that authentic
+file. Instrument values are substituted for comparability with this
+table's Apple row, and one code =scheme= URI is swapped from the
+original's local-exchange-code scheme
+(=.../symbol?SRC=ISO6166=-style) to a ticker-symbol scheme
+(=.../symbol?SRC=TICKER=), since =AAPL= is a US ticker rather than a
+local exchange code the way the original file's =LG= was — the ISIN
+code's scheme URI is unchanged.)
+
+- *FIX*: like MDDL, has no short-string row above — instrument identity
+  travels inside a =MarketDataSnapshotFullRefresh= (=35=W=) message's
+  =Instrument= component, tagged with a =SecurityIDSource= (tag =22=)
+  naming which external scheme the accompanying code belongs to; the
+  same message's =MDFullGrp= repeating group carries the actual price
+  points (bid/offer/trade/...). Unlike MDDL's rich but message-less XML
+  record, FIX pairs a comparably rich instrument description with a
+  dedicated wire-level delivery mechanism — the =MarketDataRequest=/
+  =MarketDataSnapshotFullRefresh=/=MarketDataIncrementalRefresh= message
+  family — that none of the other four schemes define. Shortcoming: FIX
+  messages are typically consumed and generated through a FIX engine
+  rather than read as a standalone document the way an MDDL or ORE
+  =marketdata.csv= file can be; correctly parsing tag=value framing
+  (session header, checksum, repeating groups) requires that engine or
+  an equivalent decoder, whereas RIC, Bloomberg, ORE, and MDDL are all
+  readable with generic string/XML tooling alone.
+
+#+begin_src text
+8=FIX.4.4|9=185|35=W|49=SENDER|56=TARGET|34=1|52=20260726-10:15:00.000|
+262=MDREQ001|
+55=AAPL|48=US0378331005|22=4|
+268=2|
+269=0|270=229.10|271=500|273=10:14:59.500|
+269=1|270=229.15|271=300|273=10:14:59.500|
+10=087|
+#+end_src
+
+(Field-per-line for readability; a real FIX message is a single
+=SOH=-delimited (=\x01=) string, shown here with =|= standing in for
+=SOH= and line breaks added only for display. =55=Symbol=AAPL=,
+=48=SecurityID=US0378331005= (a CUSIP), =22=SecurityIDSource=4=
+[[https://fiximate.fixtrading.org/en/FIX.5.0SP2/tag22.html][=ISIN_NUMBER=]];
+=268=NoMDEntries=2=, each entry an =MDEntryType=/=MDEntryPx=/
+=MDEntrySize=/=MDEntryTime= tuple — =269=0= is =BID=, =269=1= is
+=OFFER=, per the retrieved FIX 4.4 dictionary's =MDEntryType= enum.
+Constructed by hand from the dictionary for illustration, not copied
+from a live feed — see
+[[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] for the
+authoritative field/message definitions this example is built from;
+=BodyLength= (tag =9=) and =CheckSum= (tag =10=) are illustrative
+placeholder values, not computed from the actual message bytes.)
 
 ** Credit
 
@@ -320,6 +607,25 @@ behind any such cell.
   =CDS_INDEX/BASE_CORRELATION= / =INDEX_CDS_TRANCHE/BASE_CORRELATION=
   types, not shown here, so the same "credit" asset class is split
   across quote types that a consumer must know to look for separately.
+- *MDDL*: has no dedicated credit-derivative domain (there is no
+  =creditDomain= among the schema's eight top-level domains) — a CDS
+  index or single-name CDS would have to be modelled as a generic
+  =instrumentDomain= record with an open, source-defined
+  =instrumentType= value, the same open-vocabulary gap noted for
+  interest-rate swaps above. Shortcoming: no worked example for a CDS
+  instrument was found in the retrieved 3.0-beta release, so unlike the
+  equity and FX cases, this is not just "no compact key" but "no
+  documented convention at all" for this instrument class.
+- *FIX*: later FIX versions add trade-capture support for credit
+  default swaps (e.g. a =CDSInstrument= product qualifier), but no
+  standard, widely-documented Market Data tick convention was found in
+  the retrieved FIX 4.4/5.0 SP2 dictionaries for a CDS index or
+  single-name spread — as with IRS par rates above, CDS spreads are
+  broker-composite OTC data, not something =MarketDataSnapshotFullRefresh=
+  is commonly used to stream. Shortcoming: same gap as RIC/Bloomberg's
+  single-name row — none of RIC, Bloomberg, MDDL, or FIX documents a
+  public tick-level convention for credit spreads with the confidence
+  ORE's =CDS/CREDIT_SPREAD= key has as a pricing-engine input.
 
 ** Commodities
 
@@ -354,6 +660,74 @@ behind any such cell.
   as a representative near-dated tenor rather than a dedicated
   front-month construct — the same spot/forward type-split seen in the
   FX section recurs here.
+- *MDDL*: a =commodityDomain= record's applicable properties are just
+  =description=, =instrumentIdentifier=, and =last= — deliberately
+  narrow, since the schema's own annotation says this domain is "often
+  used with a derivative like future or option" (i.e. commodity futures
+  are expected to be modelled via =instrumentDomain= referencing the
+  commodity, not entirely inside =commodityDomain= itself). Shortcoming:
+  unlike RIC's FX-borrowing or Bloomberg's =Curncy= exception, MDDL at
+  least gives gold its own domain distinct from FX — but that domain's
+  three-property scope is noticeably thinner than =foreignExchangeDomain='s
+  =bid=/=ask=/=mid= or =instrumentDomain='s much larger property set.
+- *FIX*: commodities and commodity futures use the same generic
+  =Instrument=/=MarketDataSnapshotFullRefresh= shape as every other
+  asset class — =SecurityType= (a separate, general field) rather than
+  a commodity-specific message family distinguishes a commodity future
+  from an equity or FX instrument. Shortcoming: this genericity is a
+  double-edged sword — it means FIX never needs a new message for a new
+  asset class, but, unlike MDDL's dedicated (if narrow)
+  =commodityDomain=, nothing in the message shape itself signals
+  "this is gold" beyond the =Symbol= string and =SecurityType= value.
+
+#+begin_src xml
+<mddl version="3.0-beta" xmlns="http://www.mddl.org/mddl/3.0-beta">
+  <header>
+    <dateTime>2026-07-26</dateTime>
+    <source>LBMA</source>
+  </header>
+
+  <snap>
+    <dateTime>2026-07-26</dateTime>
+    <snapType>EOD</snapType>
+
+    <commodityDomain>
+      <instrumentIdentifier>
+        <name>Gold spot</name>
+      </instrumentIdentifier>
+
+      <currency>USD</currency>
+
+      <last>
+        <mdDecimal>2412.50</mdDecimal>
+      </last>
+    </commodityDomain>
+  </snap>
+</mddl>
+#+end_src
+
+(Constructed for illustration from the retrieved schema's
+=commodityDomain= element structure — see
+[[proj:external/mddl/mddl-3.0-beta-full.xsd][=external/mddl/mddl-3.0-beta-full.xsd=]]
+— not copied from a real feed; no worked commodity example was included
+in the retrieved release's =Examples/= set.)
+
+#+begin_src text
+8=FIX.4.4|9=132|35=W|49=SENDER|56=TARGET|34=1|52=20260726-17:00:00.000|
+262=MDREQ003|
+55=XAUUSD|
+268=1|
+269=2|270=2412.50|271=100|273=17:00:00.000|
+10=118|
+#+end_src
+
+(Field-per-line for readability; =|= stands in for the real =SOH=
+delimiter. =269=2= is =TRADE= per the retrieved FIX 4.4 dictionary's
+=MDEntryType= enum. Constructed by hand — see
+[[proj:external/fix/FIX44.xml][=external/fix/FIX44.xml=]] — not copied
+from a live feed; =BodyLength= (tag =9=) and =CheckSum= (tag =10=) are
+illustrative placeholder values, not computed from the actual message
+bytes.)
 
 ** ORE quote key structure
 
@@ -384,6 +758,8 @@ that every row in this document's comparison tables above draws from.
 | RIC | Widely deployed across sell-side systems and data terminals; per-asset-class conventions are well understood in the industry. | Proprietary, licence-gated (no open spec); instrument-type-specific and not fully systematic — conventions differ by asset class; contains characters (~=~, =.=) that many downstream systems (e.g. hierarchical pub/sub subjects) cannot use unescaped; broker-specific suffixes (=ICAP=, =GFI=) leak vendor/broker identity into the instrument key; no native concept of curve family or discount-vs-projection role. |
 | Bloomberg ticker | Widely deployed in buy-side and sell-side systems; yellow key gives an explicit, human-readable asset-class tag. | Proprietary, licence-gated (no open spec); space-separated composite is awkward for systems that expect a single token or path-like key; mixed case and spaces conflict with many downstream systems; like RIC, no native concept of curve family or discount-vs-projection role. |
 | ORE canonical key | Open source and openly documented; the native format of every ORE pricing-engine input file; every type shares the same top-level =TYPE/SUBTYPE/dim1/.../dimN= shape, and the per-type dimension count and meaning is precisely documented for all 49 types; free of vendor licensing. | The per-type dimension count varies (2 to 8+), so — unlike RIC's or Bloomberg's flatter shapes — a consumer must know each type's specific dimension schema rather than applying one universal rule; several common real-world instruments (sovereign bond yields, listed equity/index futures) have no direct quote type at all; has no structured field for curve family or discount-vs-projection role. |
+| MDDL | Open, committee-governed specification (FISD/SIIA) rather than proprietary to one vendor; a full instrument-record XML schema, not just a key, so it carries far richer instrument/event data than a short identifier string; =instrumentIdentifier='s =codeType= controlled vocabulary can wrap ISIN, RIC, or any other existing scheme rather than forcing a migration. | Never adopted as any pricing engine's native input format (unlike ORE's key); last full release was 3.0-beta (2007) and the project was never finalised or continued — FISD instead contributed its vocabulary into ISO 20022/FIX; being a full XML record rather than a short string, it cannot serve as a compact pub/sub key or a natural map/dictionary key the way the other three schemes can. |
+| FIX | Open, committee-governed specification (FIX Trading Community), actively maintained (unlike MDDL) as "FIX Latest" since 2019; =SecurityIDSource= symbology explicitly names RIC and Bloomberg as member schemes rather than competing with them; the only scheme here with a dedicated market-data wire-message family (request/snapshot/incremental refresh/reject), not just an identifier or record shape; free of vendor licensing. | Not a compact string identifier any more than MDDL is — instrument identity plus market data both live inside multi-field messages, not a short key; correctly parsing tag=value framing (session header, checksum, repeating groups) generally requires a FIX engine rather than generic string/XML tooling; no native concept of curve family or discount-vs-projection role, same gap as the other four. |
 
 * Sources
 
@@ -400,8 +776,15 @@ that every row in this document's comparison tables above draws from.
 - ORE canonical key — open source, documented in the Open Source Risk Engine (ORE)
   user guide and =marketdata.csv= format reference. See
   [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] below.
+- MDDL — open source, documented in the retrieved 3.0-beta specification. See
+  [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] below.
+- FIX — open, committee-governed specification published by the FIX Trading
+  Community. See [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial
+  Information eXchange (FIX) Protocol]] below.
 
 * See also
 
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the canonical key format.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative, per-type quote-key dimension inventory (49 types) that every ORE quote key in this document's comparison tables is drawn from.
+- [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — the fourth scheme compared above: version history, content model, and where its retrieved specification files live.
+- [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — the fifth scheme compared above: version history, the Market Data message family, symbology, and where its retrieved data dictionaries live.

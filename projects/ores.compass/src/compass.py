@@ -5793,7 +5793,7 @@ def cmd_site(argv):
     print(f"🌐 Serving {build_dir} on http://localhost:{port}/OreStudio/")
     handler = functools.partial(http.server.SimpleHTTPRequestHandler,
                                 directory=str(build_dir))
-    with http.server.HTTPServer(("", port), handler) as httpd:
+    with http.server.ThreadingHTTPServer(("", port), handler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

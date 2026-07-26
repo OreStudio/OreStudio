@@ -96,7 +96,7 @@ Funds curves or their long end).
   LinkedIn posts on Fed Funds curve construction and the FFAS convexity
   trap (2026), including the whiteboard diagram "Adding FedFund Average
   Swaps (FFAS) to the FedFund Curve & Convexity". Original posts filed at
-  =tmp/luiz_rodgirgues_posts.org= (not part of the published
+  =tmp/luiz_rodrigues_posts.org= (not part of the published
   documentation); this note captures the technical content with
   attribution, not a copy of the LinkedIn material itself.
 

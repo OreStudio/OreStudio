@@ -266,7 +266,7 @@ factory) is a post-PoC concern — see open design question 8.
 ** New NATS subjects
 
 Tick fan-out subjects follow the ORE canonical key mapping defined in
-[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]: lowercase the ORE key and replace =/= with =.=,
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]: lowercase the ORE key and replace =/= with =.=,
 then prefix with =marketdata.v1.tick.=.
 
 | Subject | Direction | Owner | Notes |
@@ -578,7 +578,8 @@ The recommended order of implementation tasks (one story task per item):
 
 * See also
 
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, ORE canonical key, NATS subject mapping, two-level subscription model.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC, Bloomberg, ORE canonical key comparative analysis.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — NATS subject mapping, two-level subscription model.
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — detailed inventory of the existing stack this architecture builds on.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the algorithm choices (GMM, tick clock modes) this architecture implements.
 - [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full taxonomy and mathematical specification of all 12 process types; =IStochasticProcess= interface; =FxSpotFeed= wrapper; ring-buffer pre-generation; QuantLib vs standalone analysis.

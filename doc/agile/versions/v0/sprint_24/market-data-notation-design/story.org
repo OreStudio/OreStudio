@@ -37,10 +37,9 @@ components:
   =TYPE/SUBTYPE/dim1/dim2/...=). The literal string "LIBOR" never appears
   in any of the three -- the index identity is carried by the =CURVE_ID=
   or by convention lookups, not by the key itself.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][The existing market data identifiers doc]] already documents ORE Studio's
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][The existing Market Data Identifier doc]] already documents ORE Studio's
   own =<series_type>/<metric>/<qualifier>[/<point_id>]= canonical key (used
-  for =market_series=/NATS routing) plus RIC and Bloomberg ticker
-  reference-only fields -- but this scheme predates, and was not
+  for =market_series=/NATS routing) -- but this scheme predates, and was not
   reconciled against, the three-key ORE addressing model above, nor does
   =ir_curve_generation_config= participate in it at all.
 
@@ -77,7 +76,7 @@ agreed.
 - A state-of-the-art survey exists covering how ORE, Bloomberg, and
   Reuters/Refinitiv each address interest-rate market data (index
   fixings, curve/market keys, and raw quotes), building on and
-  reconciling the existing [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][market data identifiers]] and
+  reconciling the existing [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] and
   [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] docs rather than duplicating them.
 - The survey documents ORE's three-key model precisely (index name,
   =Yield/<CCY>/<CURVE_ID>= curve key, =TYPE/SUBTYPE/dim...= quote key)

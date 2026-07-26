@@ -134,7 +134,7 @@ interest rate curve dependency graphs (2026), including the whiteboard
 diagrams "Interest Rate Curve Calibration: Dependency Graph Approach"
 (self-calibrating node, sequential chain, and cyclic multicalibration) and
 "SOFR vs. FedFund Curves & Discounting Relationship". Original posts
-filed at =tmp/luiz_rodgirgues_posts.org= (not part of the published
+filed at =tmp/luiz_rodrigues_posts.org= (not part of the published
 documentation).
 
 #+BEGIN_EXAMPLE

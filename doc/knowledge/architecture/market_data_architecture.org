@@ -142,7 +142,7 @@ Two distinct, separately-owned configs:
 
 ** Subjects and naming
 
-Built on the ORE key (see [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]:
+Built on the ORE key (see [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]:
 =<series_type>/<metric>/<qualifier>[/<point_id>]= → lowercase, ='/'→'.'=):
 - Producer (raw source) stream: =<producer>.v1.tick.<ore-key-dots>=.
 - Official (authoritative) stream: =marketdata.v1.tick.<tenant>.<ore-key-dots>=
@@ -213,7 +213,7 @@ vertical-slice that seeded this and [[id:8A65240D-C7A2-4F66-860F-97137B03B482][t
 
 - [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — the NATS contract (the interface).
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — typed per-variant configs/instruments.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — ORE keys and subject naming.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — ORE keys and subject naming.
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — the vertical slice.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — how a producer/marketdata service is built.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant/party scoping of data and subjects.

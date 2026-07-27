@@ -200,6 +200,8 @@ void CalendarDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
     updateSaveButtonState();
+    if (regenerateAction_)
+        regenerateAction_->setEnabled(!createMode);
 }
 
 void CalendarDetailDialog::markDirty() {

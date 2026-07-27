@@ -508,7 +508,18 @@ user-prompted end year. Available regardless of =is_editable= --
 regenerating derived =calendar_dates= rows is not the same as editing
 the template's own fields, so it isn't gated by the whole-form lock
 above. Disabled in create mode (nothing to regenerate for a row that
-doesn't exist on the server yet).
+doesn't exist on the server yet) -- its initial state is set once in
+=setupConnections()= (below) while =createMode_= still holds its
+constructor default, but the real caller-driven state only lands
+later via =setCreateMode()=, so that seam must also re-sync the
+action's enabled state, or it stays permanently disabled for every
+existing calendar opened through the normal view/edit flow (the one
+path this feature exists for).
+
+#+begin_src cpp :name set_create_mode_extra :implements 9A719585-3AB1-47DE-B0B0-99AFDFE7180E
+    if (regenerateAction_)
+        regenerateAction_->setEnabled(!createMode);
+#+end_src
 
 #+begin_src cpp :name impl_includes :implements 3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"

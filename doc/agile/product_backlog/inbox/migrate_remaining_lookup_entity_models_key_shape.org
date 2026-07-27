@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 28F6B7B2-37D0-4C46-9BBB-8F836ACB7E14
+:END:
+#+title: Migrate remaining lookup_entity/table models to unified Columns key shape
+#+description: ~75 lookup_entity/table-shaped models outside ores.refdata (dq, iam, trading, analytics, etc.) still use the old * Primary key/* Natural keys sections; story 36A25C95 (Unify entity key modeling, closed) rewrote org_loader.py's parser but explicitly deferred migrating these models.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tooling:migration:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Task [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Downgrade address/model-type incompatibility to skip in --component mode]] migrated all 56 =#+type: ores.codegen.entity= (=domain_entity=)
+models under =projects/ores.refdata/modeling/= from the old
+=* Primary key=/=* Natural keys=/=* Columns= three-way split to the
+unified =* Columns= section with per-field =:primary_key:=/
+=:natural_key:= flags (mechanically, via a one-off migration script —
+see that task's =* Plan= for the transform). The same root-cause
+parser change (commit =1e0775417=) also broke every
+=#+type: ores.codegen.lookup_entity= model project-wide — roughly 75
+more models across =ores.dq=, =ores.iam=, =ores.trading=,
+=ores.analytics=, and others, all still on the old shape and
+therefore currently failing =load_org_lookup_entity_model= validation
+for any address. Apply the same migration to those.
+
+* Why
+
+Story [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] shipped the parser/template mechanism but is
+*closed*, with its own =* Result= explicitly noting the model
+migration "remain[s] open work, left for a follow-up story" — no
+task currently owns it. Every affected model is unloadable
+(=--component=/=--entity=/single-model =generate=, any address) until
+migrated, which silently blocks regeneration for the components that
+still carry =lookup_entity= models.
+
+* References
+
+- [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Task: Downgrade address/model-type incompatibility to skip in --component mode]] — did the equivalent migration for =ores.refdata=; reuse its script/approach.
+- [[id:AEFAE247-7FBC-4F0D-9146-4E4561DF2DFD][Task: Migrate the remaining 10 lookup_entity models to domain_entity; retire ores.codegen.lookup_entity]] — a related, narrower effort (metatype migration, not key-shape); check for overlap before starting.
+
+* See also
+
+- [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Story: Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]]

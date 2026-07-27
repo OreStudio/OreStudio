@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 47134F35-6BC0-4FC6-993A-AAA45F0E2D8E
+:END:
+#+title: ores.refdata generated SQL/C++ is stale vs current codegen templates
+#+description: Regenerating rounding_type/party (real, non-dry-run) produces large diffs vs checked-in generated code -- predates the sql_schema_domain_entity_create.mustache rewrite (clock_timestamp vs current_timestamp, NEW/OLD casing, an added unique index), independent of any key-shape migration.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:tech-debt:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Sanity-checking a =.org= model migration by actually regenerating (not
+=--dry-run=) =ores.refdata.rounding_type= and =ores.refdata.party=
+against =ores.sql.schema=/=ores.cpp.domain=/=ores.cpp.repository=
+produced large diffs against the checked-in generated files —
+=refdata_rounding_types_create.sql= is still stamped
+=Template: sql_schema_create.mustache= while the current template is
+=sql_schema_domain_entity_create.mustache=, which renders
+=clock_timestamp()= instead of =current_timestamp=, uppercase
+=NEW=/=OLD= record references, an added
+=rounding_types_name_uniq_idx= unique index, and richer header
+comments. Do a dedicated regenerate-and-review pass across all of
+=ores.refdata='s domain_entity models (SQL + C++ domain/repository/
+service/Qt), verifying behavioural diffs (the unique index in
+particular looks like a real correctness improvement, not just
+formatting) before committing.
+
+* Why
+
+Discovered while doing task [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Downgrade address/model-type incompatibility to skip in --component mode]]: the checked-in generated code no longer
+matches what the current templates would produce, independent of any
+key-shape migration. Left un-actioned there deliberately — it's a
+much larger, separate change (potential behavioural SQL diffs across
+every refdata entity) than that task's scope.
+
+* References
+
+- [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Task: Downgrade address/model-type incompatibility to skip in --component mode]] — where this was found.
+
+* See also
+
+-

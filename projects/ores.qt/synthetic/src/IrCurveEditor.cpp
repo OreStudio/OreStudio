@@ -326,6 +326,9 @@ void IrCurveEditor::buildInstrumentTab() {
     (vintageMode ? vintageRadio_ : fixedRadio_)->setChecked(true);
     const auto updatePriceSourceEnablement = [this]() {
         const bool vintage = priceSourceGroup_->checkedId() == 1;
+        BOOST_LOG_SEV(lg(), debug)
+            << "updatePriceSourceEnablement: checkedId=" << priceSourceGroup_->checkedId()
+            << ", vintage=" << vintage;
         vintageSourceEdit_->setEnabled(vintage);
         vintageDateEdit_->setEnabled(vintage);
         browseVintageButton_->setEnabled(vintage);
@@ -339,7 +342,8 @@ void IrCurveEditor::buildInstrumentTab() {
         if (initialRateSpin_)
             initialRateSpin_->setEnabled(!vintage);
     };
-    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [updatePriceSourceEnablement](int) {
+    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [this, updatePriceSourceEnablement](int id) {
+        BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
         updatePriceSourceEnablement();
     });
     // buildProcessTab() runs after this method returns, so initialRateSlider_/Spin_/advancedTable_
@@ -1053,7 +1057,10 @@ void IrCurveEditor::onMoveTemplateRowDown() {
 }
 
 void IrCurveEditor::onBrowseVintageClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Browse available vintages clicked.";
+
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: not connected.";
         QMessageBox::warning(
             this, tr("Disconnected"), tr("Cannot browse vintages while disconnected."));
         return;
@@ -1062,12 +1069,15 @@ void IrCurveEditor::onBrowseVintageClicked() {
     const auto ccy = currencyCombo_->currentText().toStdString();
     const auto idx = indexNameCombo_->currentText().toStdString();
     if (ccy.empty() || idx.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: currency='" << ccy
+                                  << "', index='" << idx << "' (one or both empty).";
         QMessageBox::warning(this, tr("Incomplete"), tr("Pick currency and index name first."));
         return;
     }
     // Mirrors ir_curve_feed.cpp's own strip_currency_prefix(): idx already excludes the
     // "<CCY>-" prefix (see indexNameCombo_'s own population), so no stripping needed here.
     const std::string qualifier = ccy + "/" + idx;
+    BOOST_LOG_SEV(lg(), info) << "Fetching vintages for qualifier '" << qualifier << "'.";
 
     QPointer<IrCurveEditor> self = this;
     auto* cm = clientManager_;
@@ -1091,10 +1101,15 @@ void IrCurveEditor::onBrowseVintageClicked() {
         m::get_market_series_request series_req;
         series_req.limit = 10000;
         auto series_resp = cm->process_authenticated_request(series_req);
-        if (!series_resp)
+        if (!series_resp) {
+            BOOST_LOG_SEV(lg(), error)
+                << "get_market_series_request failed: " << series_resp.error();
             return {.success = false,
                     .vintages = {},
                     .error = QString::fromStdString(series_resp.error())};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "get_market_series_request returned "
+                                   << series_resp->market_series.size() << " series.";
 
         std::string series_id;
         for (const auto& s : series_resp->market_series) {
@@ -1103,17 +1118,27 @@ void IrCurveEditor::onBrowseVintageClicked() {
                 break;
             }
         }
-        if (series_id.empty())
+        if (series_id.empty()) {
+            BOOST_LOG_SEV(lg(), info)
+                << "No RATES/YIELD series found for qualifier '" << qualifier << "'.";
             return {.success = true, .vintages = {}, .error = {}};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "Matched series_id=" << series_id << " for qualifier '"
+                                   << qualifier << "'.";
 
         m::get_market_observations_by_series_id_request obs_req;
         obs_req.series_id = series_id;
         obs_req.limit = 10000;
         auto obs_resp = cm->process_authenticated_request(obs_req);
-        if (!obs_resp)
+        if (!obs_resp) {
+            BOOST_LOG_SEV(lg(), error) << "get_market_observations_by_series_id_request failed: "
+                                       << obs_resp.error();
             return {.success = false,
                     .vintages = {},
                     .error = QString::fromStdString(obs_resp.error())};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "get_market_observations_by_series_id_request returned "
+                                   << obs_resp->market_observations.size() << " observations.";
 
         std::set<std::tuple<std::string, std::string, std::string>> seen;
         std::vector<Vintage> vintages;
@@ -1126,6 +1151,8 @@ void IrCurveEditor::onBrowseVintageClicked() {
         std::sort(vintages.begin(), vintages.end(), [](const auto& a, const auto& b) {
             return std::tie(a.source, a.date) > std::tie(b.source, b.date); // newest first
         });
+        BOOST_LOG_SEV(lg(), info) << "Resolved " << vintages.size()
+                                  << " distinct vintage(s) for qualifier '" << qualifier << "'.";
         return {.success = true, .vintages = std::move(vintages), .error = {}};
     };
 
@@ -1133,6 +1160,9 @@ void IrCurveEditor::onBrowseVintageClicked() {
     connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, ccy, idx]() {
         auto result = watcher->result();
         watcher->deleteLater();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Browse vintages fetch finished: success=" << result.success
+            << ", count=" << result.vintages.size() << ", self-alive=" << (self != nullptr);
         if (!self)
             return;
         if (!result.success) {

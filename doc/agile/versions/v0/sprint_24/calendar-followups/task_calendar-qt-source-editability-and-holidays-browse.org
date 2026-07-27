@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/calendar-qt-source-editability-and-holidays-browse
-#+pr: 1700
+#+pr: 1707
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
@@ -52,15 +52,15 @@ independent halves:
 
 * Acceptance
 
-- [ ] Calendar's detail dialog shows =source=, =is_editable=, and
+- [X] Calendar's detail dialog shows =source=, =is_editable=, and
   =base_calendar_code= (the last as a dynamic combo over other
   calendars, matching =calendar_rule=/=calendar_exception='s existing
   =calendar_code= combo pattern).
-- [ ] Opening a =source='quantlib'= calendar locks every field in the
+- [X] Opening a =source='quantlib'= calendar locks every field in the
   dialog, not just the fields already locked-after-create -- users
   cannot edit a QuantLib-sourced calendar's own name/type/country via
   the UI, full stop.
-- [ ] A "Regenerate up to <year>" action exists (calendar detail
+- [X] A "Regenerate up to <year>" action exists (calendar detail
   dialog or list-window toolbar) that calls
   =refdata.v1.calendar_dates.regenerate= for the open calendar and
   surfaces success/failure and rows-written to the user.
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1707][#1707]] | [ores.refdata,ores.codegen] Calendar Regenerate-up-to-year action |
 | [[https://github.com/OreStudio/OreStudio/pull/1700][#1700]] | [ores.refdata,ores.codegen] Calendar detail dialog: source/editability/base template |
 
 * Review

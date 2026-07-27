@@ -8,7 +8,7 @@
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
 #+branch: feature/compress-image-nats-payload
-#+pr:
+#+pr: 1706
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
@@ -139,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1706][#1706]] | [nats] Add transparent transport-level gzip compression for image-batch payloads |
 
 * Review
 

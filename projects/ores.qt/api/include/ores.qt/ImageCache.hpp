@@ -357,6 +357,12 @@ private:
         std::vector<std::string> image_ids;
         // Code -> image_id mappings populated during fetch
         std::unordered_map<std::string, std::string> code_to_image_id;
+        // Full metadata (incl. size_bytes) for the fetched ids, so callers
+        // that know sizes can merge them into available_images_ for
+        // byte-size-aware batching later. Only populated by
+        // loadIncrementalChanges(); other ImageIdsResult producers
+        // (currency/country id loads) leave this empty.
+        std::vector<assets::messaging::image_info> image_infos;
     };
 
     struct BusinessCentreMappingResult {
@@ -377,14 +383,28 @@ private:
     };
 
     /**
-     * @brief Fetch images in batches from the server.
+     * @brief Fetch images in batches from the server, sized by cumulative
+     * estimated payload rather than image count alone.
+     *
+     * Each batch is closed -- and a get_images_request issued for it --
+     * before adding an image whose size_bytes would push the batch's
+     * running estimated-encoded-size total past safe_batch_bytes, so no
+     * batch risks exceeding NATS's max payload regardless of how the
+     * requested images happen to cluster by size. images_to_fetch entries
+     * with size_bytes == 0 (unknown -- e.g. a single-id lookup issued
+     * before any image list was ever loaded) are treated as
+     * safe_batch_bytes-sized on their own, so an unknown-size image
+     * always gets its own batch rather than silently defeating the cap.
+     * batch_size (MAX_IMAGES_PER_REQUEST) still applies as a generous
+     * sanity bound on top.
      *
      * @param clientManager The client manager to use for requests
-     * @param image_ids The list of image IDs to fetch
+     * @param images_to_fetch The images to fetch, with known sizes
      * @return ImagesResult containing fetched images
      */
-    static ImagesResult fetchImagesInBatches(ClientManager* clientManager,
-                                             const std::vector<std::string>& image_ids);
+    static ImagesResult
+    fetchImagesInBatches(ClientManager* clientManager,
+                         const std::vector<assets::messaging::image_info>& images_to_fetch);
 
     struct ImageListResult {
         bool success;

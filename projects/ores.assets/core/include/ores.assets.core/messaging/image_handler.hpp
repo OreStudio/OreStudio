@@ -112,6 +112,7 @@ public:
                 info.image_id = boost::uuids::to_string(img.image_id);
                 info.key = img.key;
                 info.description = img.description;
+                info.size_bytes = img.data.size();
                 resp.images.push_back(std::move(info));
             }
             BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;

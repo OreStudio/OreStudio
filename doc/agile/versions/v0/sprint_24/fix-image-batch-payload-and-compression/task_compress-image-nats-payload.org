@@ -145,7 +145,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | on_msg() calls extract_message() (can now throw) before its try block -- crash/DoS via a malformed gzip-flagged message | client.cpp | Fixed | Moved the call inside try, with single-destroy handling of the natsMsg* across success/exception paths; added a test pinning that decompress_if_flagged throws on invalid gzip. |
+| 2 | No test for decompress_if_flagged with the gzip header set on a non-gzip payload | domain_compression_tests.cpp | Fixed | Same commit as #1. |
 
 * Result
 

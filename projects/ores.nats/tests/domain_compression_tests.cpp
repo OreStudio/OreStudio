@@ -20,6 +20,7 @@
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -94,6 +95,24 @@ TEST_CASE("decompress_if_flagged is a no-op without the header", tags) {
     const auto out = ores::nats::decompress_if_flagged(as_bytes(data), headers);
 
     REQUIRE(std::string(reinterpret_cast<const char*>(out.data()), out.size()) == data);
+}
+
+TEST_CASE("decompress_if_flagged throws on the gzip header with a non-gzip payload",
+         tags) {
+    // Pins the contract callers must handle: a message that claims gzip
+    // encoding but isn't valid gzip (corrupted in transit, or a malformed
+    // sender) throws rather than silently returning garbage. Every inbound
+    // message path (extract_message()'s callers, e.g. on_msg()) must catch
+    // this rather than let it escape -- see on_msg()'s try block in
+    // client.cpp, which exists specifically to turn this into a dropped
+    // message plus a log line instead of a process crash.
+    const std::string not_gzip = "this is definitely not gzip data";
+    std::unordered_map<std::string, std::string> headers{
+        {std::string(ores::nats::headers::x_content_encoding),
+         std::string(ores::nats::headers::content_encoding_gzip)}};
+
+    REQUIRE_THROWS_AS(ores::nats::decompress_if_flagged(as_bytes(not_gzip), headers),
+                      std::runtime_error);
 }
 
 TEST_CASE("compress then decompress round-trips to the original bytes", tags) {

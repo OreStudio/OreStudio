@@ -185,15 +185,30 @@ message extract_message(natsMsg* msg) {
 // and call std::terminate(), killing the service without any shutdown log.
 void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     auto* cl = static_cast<sub_closure*>(ud);
-    message m = extract_message(msg);
-    natsMsg_Destroy(msg);
-    const auto subject = m.subject; // save before move
+    // Read the subject directly off msg (cheap, non-throwing) so it's
+    // available for the catch blocks below even if extract_message()
+    // itself throws -- e.g. decompress_if_flagged() on a message that
+    // claims gzip encoding but isn't valid gzip (corrupted in transit,
+    // or a malformed/malicious sender on a shared bus). That call must
+    // stay inside this try: it used to run before it, and an uncaught
+    // exception here crosses a C frame boundary into std::terminate(),
+    // killing the whole process with no log line for what would
+    // otherwise be a single droppable bad message.
+    const char* s = natsMsg_GetSubject(msg);
+    const std::string subject = s ? s : std::string();
     try {
+        message m = extract_message(msg);
+        natsMsg_Destroy(msg);
+        msg = nullptr;
         cl->handler(std::move(m));
     } catch (const std::exception& e) {
+        if (msg)
+            natsMsg_Destroy(msg);
         BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
                                    << subject << "': " << e.what();
     } catch (...) {
+        if (msg)
+            natsMsg_Destroy(msg);
         BOOST_LOG_SEV(lg(), error)
             << "Unknown exception in NATS message handler for subject '" << subject << "'";
     }

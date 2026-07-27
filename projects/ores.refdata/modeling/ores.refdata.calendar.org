@@ -327,7 +327,7 @@ drop function if exists ores_refdata_validate_calendar_fn;
 | country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  | General |  |  |
 | source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
 | is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
-| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  | true | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  | No Base Calendar |
+| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  | No Base Calendar |
 
 *** Columns (Qt model)
 

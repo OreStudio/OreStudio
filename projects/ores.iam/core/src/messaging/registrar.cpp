@@ -46,6 +46,7 @@
 #include "ores.iam.core/messaging/tenant_type_handler.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
+#include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/cache/party_cache_registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -255,7 +256,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Tenants ---
-    auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
+    service::internal_impersonation_service impersonation(
+        signer, [pc](const std::string& tenant_id, const boost::uuids::uuid& party_id) {
+            return pc->compute_visible_party_ids(tenant_id, party_id);
+        });
+    auto th = std::make_shared<tenant_handler>(nats, ctx, signer, std::move(impersonation));
     subs.push_back(
         nats.queue_subscribe(get_tenants_request::nats_subject, qg, [th](ores::nats::message msg) {
             th->list(std::move(msg));

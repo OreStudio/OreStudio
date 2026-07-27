@@ -20,15 +20,23 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_HANDLER_HPP
 
+#include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/service/internal_impersonation_service.hpp"
+#include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -36,6 +44,7 @@
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
 #include <stdexcept>
 
@@ -60,16 +69,20 @@ using ores::database::service::tenant_context;
 using ores::database::repository::execute_parameterized_string_query;
 using ores::database::repository::execute_parameterized_command;
 using ores::database::repository::execute_parameterized_multi_column_query;
+using ores::iam::service::internal_impersonation_service;
+using ores::iam::service::internal_request_client;
 using namespace ores::logging;
 
 class tenant_handler {
 public:
     tenant_handler(ores::nats::service::client& nats,
                    ores::database::context ctx,
-                   ores::security::jwt::jwt_authenticator signer)
+                   ores::security::jwt::jwt_authenticator signer,
+                   ores::iam::service::internal_impersonation_service impersonation)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , signer_(std::move(signer))
+        , impersonation_(std::move(impersonation)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
@@ -241,8 +254,35 @@ public:
         }
     }
 
+    // Data-driven holding-group spec: which office maps to which bundle and
+    // full_name, in publish order. Adding an office is a new row here plus
+    // the bundle/dataset registrations in acme_bundle_populate.sql /
+    // acme_dataset_populate.sql -- not a code change to the loop below.
+    struct acme_office {
+        std::string code;
+        std::string bundle_code;
+        std::string full_name;
+    };
+
+    static const std::vector<acme_office>& acme_offices() {
+        static const std::vector<acme_office> offices{
+            {"acme_uk", "acme_uk", "ACME Corporation UK plc"},
+            {"acme_us", "acme_us", "ACME Corporation US Inc"},
+            {"acme_hk", "acme_hk", "ACME Corporation HK Ltd"},
+        };
+        return offices;
+    }
+
     void provision_acme(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
+        provision_acme_tenant_response resp;
+        resp.success = true;
+        auto add_step = [&](std::string step, std::string action, std::uint64_t count = 1) {
+            BOOST_LOG_SEV(tenant_handler_lg(), info) << "provision_acme: " << step << ": " << action;
+            resp.steps.push_back(provision_acme_tenant_step{
+                .step = std::move(step), .action = std::move(action), .record_count = count});
+        };
+
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -251,13 +291,18 @@ public:
                 return;
             }
 
-            auto ids =
-                execute_parameterized_string_query(*ctx_expected,
-                                                   "SELECT ores_iam_current_tenant_id_fn()::text",
-                                                   {},
-                                                   tenant_handler_lg(),
-                                                   "provision_acme");
-            if (ids.empty()) {
+            const auto bearer = extract_bearer(msg);
+            auto claims = signer_.validate(bearer);
+            if (!claims) {
+                reply(nats_,
+                      msg,
+                      provision_acme_tenant_response{.success = false,
+                                                     .message = "Invalid or expired token"});
+                return;
+            }
+
+            const auto tenant_id_str = claims->tenant_id.value_or("");
+            if (tenant_id_str.empty()) {
                 reply(nats_,
                       msg,
                       provision_acme_tenant_response{.success = false,
@@ -265,29 +310,101 @@ public:
                 return;
             }
 
-            auto rows = execute_parameterized_multi_column_query(
-                *ctx_expected,
-                "SELECT step, action, record_count FROM "
-                "ores_iam_provision_acme_tenant_fn($1::uuid)",
-                {ids.front()},
-                tenant_handler_lg(),
-                "provision_acme");
+            boost::uuids::string_generator sg;
+            const auto account_id = sg(claims->subject);
+            const auto caller_party_id = (claims->party_id && !claims->party_id->empty())
+                ? sg(*claims->party_id)
+                : boost::uuids::nil_uuid();
+            const auto username = claims->username.value_or("");
 
-            provision_acme_tenant_response resp;
-            resp.success = true;
-            for (const auto& row : rows) {
-                if (row.size() >= 3 && row[0] && row[1] && row[2]) {
-                    provision_acme_tenant_step step;
-                    step.step = *row[0];
-                    step.action = *row[1];
-                    step.record_count = static_cast<std::uint64_t>(std::stoll(*row[2]));
-                    resp.steps.push_back(std::move(step));
+            auto mint = [&](const boost::uuids::uuid& party_id) {
+                return impersonation_.mint_token(*ctx_expected, tenant_id_str, account_id, party_id,
+                                                 username);
+            };
+            auto progress = [&](const std::string& step) {
+                return [&, step](const std::string& line) { add_step(step, line, 0); };
+            };
+
+            // Step 1: business centres + the four-party LEI hierarchy, in
+            // one bundle -- tenant-wide, so scoped to the caller's own
+            // (already-active) party rather than a not-yet-created one.
+            {
+                internal_request_client client(nats_, mint(caller_party_id));
+                add_step("Step 1: Importing Acme Corporation LEI hierarchy", "starting", 0);
+                if (!publish_bundle(client,
+                                    "acme_lei_import",
+                                    username,
+                                    lei_import_params(),
+                                    add_step,
+                                    progress("acme_lei_import")))
+                    { reply(nats_, msg, resp); return; }
+            }
+
+            // Step 2: real GLEIF counterparties (small), tenant-wide.
+            {
+                internal_request_client client(nats_, mint(caller_party_id));
+                add_step("Step 2: Importing GLEIF counterparties", "starting", 0);
+                if (!publish_bundle(client,
+                                    "acme_gleif_counterparties",
+                                    username,
+                                    "{}",
+                                    add_step,
+                                    progress("acme_gleif_counterparties")))
+                    { reply(nats_, msg, resp); return; }
+            }
+
+            // Step 3: the holding company -- no desks/staff of its own, so
+            // just activation, logo, onboarding, and the tenant admin's
+            // default party.
+            {
+                internal_request_client discover(nats_, mint(caller_party_id));
+                auto holding = find_party(discover, "Acme Corporation Plc");
+                if (!holding) {
+                    add_step("acme_group.skipped", "party_not_found", 0);
+                } else {
+                    internal_request_client client(nats_, mint(holding->id));
+                    add_step("Step 3: Activating Acme Corporation Plc", "starting", 0);
+                    finish_party(client, *ctx_expected, tenant_id_str, account_id, username,
+                                *holding, /*set_default=*/true);
+                    add_step("Step 3: Activating Acme Corporation Plc", "completed");
+
+                    attach_demo_counterparty_logo(client, *ctx_expected, tenant_id_str, username);
                 }
             }
 
-            BOOST_LOG_SEV(tenant_handler_lg(), info) << "Acme tenant provisioned: " << ids.front()
-                                                     << " (" << resp.steps.size() << " step(s))";
+            // Step 4+: per-office business units/portfolios/books/accounts,
+            // then activation/logo/onboarding/membership for that party.
+            int step_num = 4;
+            for (const auto& office : acme_offices()) {
+                internal_request_client discover(nats_, mint(caller_party_id));
+                auto party = find_party(discover, office.full_name);
+                if (!party) {
+                    add_step(office.code + ".skipped", "party_not_found", 0);
+                    continue;
+                }
 
+                internal_request_client client(nats_, mint(party->id));
+                const auto label =
+                    "Step " + std::to_string(step_num++) + ": Publishing " + office.full_name;
+                add_step(label, "starting", 0);
+                dq::messaging::publish_bundle_params params;
+                params.party_id = boost::uuids::to_string(party->id);
+                if (!publish_bundle(client,
+                                    office.bundle_code,
+                                    username,
+                                    dq::messaging::build_params_json(params),
+                                    add_step,
+                                    progress(label)))
+                    continue;
+                add_step(label, "completed");
+
+                finish_party(client, *ctx_expected, tenant_id_str, account_id, username, *party,
+                            /*set_default=*/false);
+                add_step(office.code + ".onboarding", "completed");
+            }
+
+            BOOST_LOG_SEV(tenant_handler_lg(), info) << "Acme tenant provisioned: " << tenant_id_str
+                                                     << " (" << resp.steps.size() << " step(s))";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
@@ -309,9 +426,211 @@ private:
         return {};
     }
 
+    static std::string lei_import_params() {
+        dq::messaging::publish_bundle_params params;
+        params.lei_parties = dq::messaging::lei_parties_params{.root_lei = "9695ACMEGROUP0000030"};
+        return dq::messaging::build_params_json(params);
+    }
+
+    // Publishes one bundle and waits for it to complete, reporting
+    // human-readable step progress via add_step/on_progress rather than raw
+    // internal step/action codes. Returns false (already recorded via
+    // add_step) on a dispatch failure or an incomplete/failed workflow.
+    static bool
+    publish_bundle(internal_request_client& client,
+                   const std::string& bundle_code,
+                   const std::string& username,
+                   const std::string& params_json,
+                   const std::function<void(std::string, std::string, std::uint64_t)>& add_step,
+                   const std::function<void(const std::string&)>& on_progress) {
+        dq::messaging::publish_bundle_request req;
+        req.bundle_code = bundle_code;
+        req.published_by = username;
+        req.atomic = true;
+        req.params_json = params_json;
+
+        auto pub = client.request(req);
+        if (!pub.success) {
+            add_step(bundle_code + ".failed", pub.error_message, 0);
+            return false;
+        }
+        add_step(bundle_code, "dispatched", static_cast<std::uint64_t>(pub.datasets_dispatched));
+
+        if (!client.wait_for_workflow_instance(pub.instance_id,
+                                               std::chrono::seconds{120},
+                                               static_cast<std::size_t>(pub.datasets_dispatched),
+                                               on_progress)) {
+            add_step(bundle_code + ".failed", "workflow did not complete", 0);
+            return false;
+        }
+        return true;
+    }
+
+    // Finds a party by full_name via the real refdata.v1.parties.list
+    // request (paginated up to 1000, matching accounts_commands.cpp's
+    // process_set_default_party -- there is no server-side filter-by-name).
+    static std::optional<ores::refdata::domain::party>
+    find_party(internal_request_client& client, const std::string& full_name) {
+        ores::refdata::messaging::get_parties_request req;
+        req.limit = 1000;
+        auto resp = client.request(req);
+        for (auto& p : resp.parties)
+            if (p.full_name == full_name)
+                return p;
+        return std::nullopt;
+    }
+
+    // Copies the system-tenant "key" template image into p_tenant_id (if not
+    // already copied) via the real assets.v1.images.save path, returning
+    // the per-tenant image_id. The template read itself stays a direct SQL
+    // read (not a NATS round-trip): unlike the write-side activation logic
+    // this rework replaces, a read has no versioning/validation behaviour
+    // to duplicate incorrectly, and reading the system tenant's own data
+    // needs no impersonation of an unrelated identity.
+    std::optional<boost::uuids::uuid> copy_template_image(internal_request_client& client,
+                                                          ores::database::context& ctx,
+                                                          const std::string& tenant_id,
+                                                          const std::string& key,
+                                                          const std::string& username) {
+        auto existing = execute_parameterized_string_query(
+            ctx,
+            "SELECT image_id::text FROM ores_assets_images_tbl WHERE tenant_id = $1::uuid AND "
+            "key = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
+            {tenant_id, key},
+            tenant_handler_lg(),
+            "copy_template_image");
+        if (!existing.empty())
+            return boost::uuids::string_generator{}(existing.front());
+
+        auto rows = execute_parameterized_multi_column_query(
+            ctx,
+            "SELECT description, mime_type, data FROM ores_assets_images_tbl WHERE tenant_id = "
+            "ores_utility_system_tenant_id_fn() AND key = $1 AND valid_to = "
+            "ores_utility_infinity_timestamp_fn()",
+            {key},
+            tenant_handler_lg(),
+            "copy_template_image");
+        if (rows.empty() || rows.front().size() < 3 || !rows.front()[0] || !rows.front()[1] ||
+            !rows.front()[2]) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn) << "No system-tenant template image: " << key;
+            return std::nullopt;
+        }
+
+        ores::assets::domain::image img;
+        img.tenant_id =
+            ores::utility::uuid::tenant_id::from_string(tenant_id).value_or(img.tenant_id);
+        img.image_id = boost::uuids::random_generator{}();
+        img.key = key;
+        img.description = *rows.front()[0];
+        img.mime_type = *rows.front()[1];
+        const auto& base64_data = *rows.front()[2];
+        img.data = std::vector<std::uint8_t>(base64_data.begin(), base64_data.end());
+        img.modified_by = username;
+        img.performed_by = username;
+        img.change_reason_code = "system.external_data_import";
+        img.change_commentary = "Copied from system-tenant template: " + key;
+
+        ores::assets::messaging::save_image_request req{.data = std::move(img)};
+        auto resp = client.request(req);
+        if (!resp.success) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "Failed to copy template image " << key << ": " << resp.message;
+            return std::nullopt;
+        }
+        return img.image_id;
+    }
+
+    // Activates the party (if Inactive), attaches its logo (if unset),
+    // marks its onboarding wizard complete, and associates the tenant
+    // admin with it -- the same effects the generic shell/wizard
+    // "provision party" flow's final phase produces, driven here via the
+    // real save_party/complete_party_onboarding/save_account_party
+    // requests instead of hand-written SQL.
+    void finish_party(internal_request_client& client,
+                      ores::database::context& ctx,
+                      const std::string& tenant_id,
+                      const boost::uuids::uuid& account_id,
+                      const std::string& username,
+                      ores::refdata::domain::party party,
+                      bool set_default) {
+        bool changed = false;
+        if (party.status != "Active") {
+            party.status = "Active";
+            changed = true;
+        }
+        if (!party.image_id) {
+            auto image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo", username);
+            if (image_id) {
+                party.image_id = image_id;
+                changed = true;
+            }
+        }
+        if (changed) {
+            party.change_reason_code = "system.external_data_import";
+            party.change_commentary = "Activated (and logo attached) during Acme provisioning";
+            party.modified_by = username;
+            party.performed_by = username;
+            client.request(ores::refdata::messaging::save_party_request::from(party));
+        }
+
+        ores::variability::messaging::complete_party_onboarding_request onboarding_req;
+        onboarding_req.party_id = boost::uuids::to_string(party.id);
+        client.request(onboarding_req);
+
+        ores::iam::domain::account_party assoc;
+        assoc.tenant_id = tenant_id;
+        assoc.account_id = account_id;
+        assoc.party_id = party.id;
+        assoc.modified_by = username;
+        assoc.performed_by = username;
+        assoc.change_reason_code = "system.external_data_import";
+        assoc.change_commentary = "Associated during Acme provisioning";
+        ores::iam::messaging::save_account_party_request assoc_req;
+        assoc_req.account_parties = {std::move(assoc)};
+        client.request(assoc_req);
+
+        if (set_default) {
+            ores::iam::messaging::set_my_default_party_request default_req;
+            default_req.party_id = boost::uuids::to_string(party.id);
+            client.request(default_req);
+        }
+    }
+
+    // Attaches the demo logo to BARCLAYS PLC, the real GLEIF counterparty
+    // used to demonstrate the counterparty image_id feature -- Acme
+    // Corporation is a party, not itself a counterparty (see "Fix
+    // remaining --source acme provisioning gaps" for the history of why
+    // this isn't a synthetic "Acme Corp" counterparty).
+    void attach_demo_counterparty_logo(internal_request_client& client,
+                                       ores::database::context& ctx,
+                                       const std::string& tenant_id,
+                                       const std::string& username) {
+        ores::refdata::messaging::get_counterparties_request req;
+        req.limit = 1000;
+        auto resp = client.request(req);
+        for (auto& cp : resp.counterparties) {
+            if (cp.short_code != "BRCLYS")
+                continue;
+            if (cp.image_id)
+                return;
+            auto image_id =
+                copy_template_image(client, ctx, tenant_id, "demo_counterparty_logo", username);
+            if (!image_id)
+                return;
+            cp.image_id = image_id;
+            cp.change_reason_code = "system.external_data_import";
+            cp.change_commentary = "Attached demo logo to BARCLAYS PLC during Acme provisioning";
+            cp.modified_by = username;
+            cp.performed_by = username;
+            client.request(ores::refdata::messaging::save_counterparty_request::from(cp));
+            return;
+        }
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    ores::iam::service::internal_impersonation_service impersonation_;
 };
 
 } // namespace ores::iam::messaging

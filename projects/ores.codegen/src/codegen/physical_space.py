@@ -208,3 +208,26 @@ def resolve_generation_set(supported: frozenset[str],
                            target: frozenset[str]) -> frozenset[str]:
     """What actually generates = supported ∩ target."""
     return supported & target
+
+
+def address_supports_model_type(address: str | None, model_type: str,
+                                graph: Graph) -> bool:
+    """True if some facet under ``address`` can ever generate ``model_type``.
+
+    Ignores enablement (``ores.*.enabled`` overrides, ``#+default:``) —
+    this only asks whether the *address itself* is capable of the model
+    type at all, regardless of what any particular entity has opted in or
+    out of. A facet with no ``#+model_types:`` declared admits every type.
+
+    Used to distinguish a genuine model-type/address incompatibility (e.g.
+    a ``junction`` model against ``ores.cpp.qt``, which no facet under that
+    address ever generates) from an ordinary empty intersection caused by
+    disablement — the two must be handled differently by callers (see
+    :func:`codegen.generate._generate_single`).
+    """
+    target = compute_target_set(address, graph)
+    for facet in target:
+        mts = graph.facet_model_types.get(facet, [])
+        if not mts or model_type in mts:
+            return True
+    return False

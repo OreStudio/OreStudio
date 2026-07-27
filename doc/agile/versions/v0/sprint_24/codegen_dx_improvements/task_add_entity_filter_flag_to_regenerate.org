@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-entity-filter-flag-to-regenerate
 #+pr:
 #+blocked_on:
 #+blocked_since:

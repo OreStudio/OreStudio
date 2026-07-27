@@ -121,7 +121,7 @@
           <item row="5" column="1">
            <widget class="QLineEdit" name="processTypeEdit">
             <property name="placeholderText">
-             <string>geometric, arithmetic, or ou</string>
+             <string>geometric, arithmetic, or ornstein_uhlenbeck</string>
             </property>
            </widget>
           </item>

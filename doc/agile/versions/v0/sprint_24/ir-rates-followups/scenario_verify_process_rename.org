@@ -35,7 +35,7 @@ This page documents a test scenario verifying [[id:390E6886-6A04-4840-A53D-9873F
 |---------------+------------------------------------------|
 | Verifies task | [[id:390E6886-6A04-4840-A53D-9873FC491ABB][Rename CIR, OU, and GMM processes to their proper names]] |
 | Parent story  | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]]   |
-| Target dialog | =IrCurveEditor= — Menu: Market Data > Synthetic > Configuration > IR Curve Generation Configs |
+| Target dialog | =IrCurveEditor= — Menu: Market Data > Synthetic > Market Simulator (right-click a feed's IR Curves row > Add, or the toolbar's "New IR Curve" action) |
 | Clients       |                                          |
 | State         | PENDING                               |
 
@@ -63,13 +63,12 @@ notes back as a =*** Result= child heading directly under it.
 |--------+-------|
 | Status | PASS |
 
-** Open IR Curve Generation Configs list
+** Open Market Simulator and the seeded curves
 
-- Menu: Market Data > Synthetic > Configuration > IR Curve Generation
-  Configs.
-- Verify the list opens and shows the seeded Barclays curves (the
-  =2026 Realistic= archetype rows), each currently using the
-  Cox-Ingersoll-Ross engine.
+- Menu: Market Data > Synthetic > Market Simulator.
+- Expand the Barclays feed's IR Curves node and verify the seeded
+  curves (the =2026 Realistic= archetype rows) are listed, each
+  currently using the Cox-Ingersoll-Ross engine.
 
 *** Result
 
@@ -159,10 +158,11 @@ notes back as a =*** Result= child heading directly under it.
 
 ** Verify FX engine combo shows Ornstein-Uhlenbeck
 
-- Menu: Market Data > Synthetic > Configuration > FX Spot Generation
-  Configs.
-- Reopen any seeded FX config, or Add a new one; on the Behaviour tab
-  select the Ornstein-Uhlenbeck engine from the combo.
+- Menu: Market Data > Synthetic > Market Simulator; expand the
+  Barclays feed's FX Rates node.
+- Reopen any seeded FX config (double-click a row), or use the "New
+  FX Rate" action to add one; on the Behaviour tab select the
+  Ornstein-Uhlenbeck engine from the combo.
 - Verify the combo shows "Ornstein-Uhlenbeck" (not the raw =ou= code)
   and the field relabelling (κ/σ tooltips mentioning
   Ornstein-Uhlenbeck) behaves as before the rename.

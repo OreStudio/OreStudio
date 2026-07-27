@@ -265,7 +265,7 @@ std::nullopt
 | "source_name" <> ''                                   |
 | "ore_key" <> ''                                       |
 | "ticks_per_hour" > 0                                  |
-| "process_type" in ('geometric', 'arithmetic', 'ou')   |
+| "process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')   |
 | "price_source" in ('fixed', 'vintage')                |
 | ("price_source" = 'fixed' and "gmm_initial_price" > 0 and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "gmm_initial_price" = 0 and "vintage_source" <> '' and "vintage_date" <> '') |
 
@@ -365,7 +365,7 @@ std::nullopt
 | price_source        | Price Source        | priceSourceEdit      | line_edit |        | true        | fixed, or vintage                |
 | gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        |             | Required if Price Source is fixed |
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
-| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
+| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ornstein_uhlenbeck |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
 | vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
 | vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |

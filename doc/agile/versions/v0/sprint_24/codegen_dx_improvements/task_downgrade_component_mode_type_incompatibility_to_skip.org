@@ -161,7 +161,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =load_graph()= reloaded a second time on the empty-units skip path (redundant I/O) | physical_space.py | Accepted | Cached via =functools.lru_cache=, keyed on =templates_dir=; safe since the template library doesn't change mid-run and the returned =Graph= is never mutated. |
+| 2 | party.org's dropped =* Natural keys= intro prose (doc-quality nit) | ores.refdata.party.org | Accepted | Restored as body text under =* Columns= instead of discarding it. |
+| 3 | Redundant graph reload — alternative suggestion: thread the graph through instead of caching | generate.py | Declined | Caching is simpler and doesn't require changing =resolve_targets()='s public signature (two external callers unpack its 3-tuple). |
+| 4 | Behaviour change: explicit =cmd_generate= now returns rc=1 (was rc=0) for a genuine type/address incompatibility | generate.py | Declined | Intentional — this is exactly the acceptance criterion ("keep ERROR for explicit single-entity invocations"); reviewer found no script relying on the old rc=0. |
+| 5 | calendar_exception.org/calendar_rule.org landed on main (via rebase) still on the old key-shape, after this task's original 56-file migration | ores.refdata modeling | Accepted | Migrated both to the unified =Columns=/=:primary_key:=/=:natural_key:= shape in the same push. |
 
 * Result
 
@@ -186,3 +190,18 @@ folded into this task's scope: stale generated code vs. current
 templates, the ~75 =lookup_entity= models outside =refdata= needing
 the same key-shape migration, and the codegen meta-model knowledge
 doc.
+
+Review round 1 (see =* Review=): cached =load_graph()= (was reloaded
+a second time on every type-incompatible skip — the exact path this
+task makes fire constantly), restored a dropped documentation
+paragraph in =party.org=, and migrated two more entity models
+(=calendar_exception=, =calendar_rule=) that landed on =main= via a
+=pr sync= rebase after the original 56-file migration, on the same
+old key shape. Local re-verification after this round hit an
+unrelated, already-fixed-on-=main= bug (an HTML-entity-corrupted SQL
+default in =refdata_calendar_date_create.sql=, fixed by commit
+=8563845f4= before this branch had picked it up) — resolved by
+re-running =pr sync=, not by any change in this PR. Full local
+verification re-run clean after resyncing: build clean, ctest 74/74,
+=ores.codegen= suite 77/77, dry-run zero ERROR/WARNING across every
+address.

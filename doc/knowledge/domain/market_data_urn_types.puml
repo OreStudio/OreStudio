@@ -1,0 +1,157 @@
+@startuml
+!include <tupadr3/common>
+hide empty members
+
+enum asset_class {
+  ir
+  fx
+  equity
+  credit
+  commodity
+}
+
+enum instrument_type {
+  fixing
+  curve
+  quote
+  vol
+}
+
+enum curve_role {
+  discount
+  projection
+  self_discounting
+}
+
+enum metric {
+  par_rate
+  discount_factor
+}
+
+enum index_family {
+  libor
+  euribor
+  sofr
+  estr
+  sonia
+  tona
+}
+
+class fx_market_data_identifier {
+  +pair : currency_pair
+  +type : instrument_type
+}
+class fx_market_data_requirement {
+  +pair : optional<currency_pair>
+  +type : optional<instrument_type>
+}
+
+class ir_market_data_identifier {
+  +ccy : currency
+  +type : instrument_type
+  +index : optional<index_family>
+  +tenor : optional<tenor>
+  +role : optional<curve_role>
+  +metric : optional<metric>
+  +point : optional<point>
+}
+class ir_market_data_requirement {
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+  +index : optional<index_family>
+  +tenor : optional<tenor>
+  +role : optional<curve_role>
+  +metric : optional<metric>
+  +point : optional<point>
+}
+
+class equity_market_data_identifier {
+  +ticker : string
+  +ccy : currency
+  +type : instrument_type
+}
+class equity_market_data_requirement {
+  +ticker : optional<string>
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+}
+
+class credit_market_data_identifier {
+  +reference_entity : string
+  +ccy : currency
+  +type : instrument_type
+  +point : optional<point>
+}
+class credit_market_data_requirement {
+  +reference_entity : optional<string>
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+  +point : optional<point>
+}
+
+class commodity_market_data_identifier {
+  +commodity_code : string
+  +ccy : currency
+  +type : instrument_type
+  +point : optional<point>
+}
+class commodity_market_data_requirement {
+  +commodity_code : optional<string>
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+  +point : optional<point>
+}
+
+class market_data_identifier <<variant>> {
+  fx_market_data_identifier
+  ir_market_data_identifier
+  equity_market_data_identifier
+  credit_market_data_identifier
+  commodity_market_data_identifier
+}
+
+class market_data_requirement <<variant>> {
+  fx_market_data_requirement
+  ir_market_data_requirement
+  equity_market_data_requirement
+  credit_market_data_requirement
+  commodity_market_data_requirement
+}
+
+class "free functions" as functions <<no inheritance>> {
+  +parse_oresmd(uri) : market_data_identifier
+  +to_uri(market_data_identifier) : oresmd_uri
+  +resolve(market_data_requirement, ...) : market_data_identifier
+}
+
+market_data_identifier o-- fx_market_data_identifier
+market_data_identifier o-- ir_market_data_identifier
+market_data_identifier o-- equity_market_data_identifier
+market_data_identifier o-- credit_market_data_identifier
+market_data_identifier o-- commodity_market_data_identifier
+
+market_data_requirement o-- fx_market_data_requirement
+market_data_requirement o-- ir_market_data_requirement
+market_data_requirement o-- equity_market_data_requirement
+market_data_requirement o-- credit_market_data_requirement
+market_data_requirement o-- commodity_market_data_requirement
+
+functions ..> asset_class : dispatches on
+functions ..> market_data_identifier
+functions ..> market_data_requirement
+
+fx_market_data_requirement ..> fx_market_data_identifier : resolve()
+ir_market_data_requirement ..> ir_market_data_identifier : resolve()
+equity_market_data_requirement ..> equity_market_data_identifier : resolve()
+credit_market_data_requirement ..> credit_market_data_identifier : resolve()
+commodity_market_data_requirement ..> commodity_market_data_identifier : resolve()
+
+fx_market_data_identifier ..> instrument_type
+ir_market_data_identifier ..> instrument_type
+equity_market_data_identifier ..> instrument_type
+credit_market_data_identifier ..> instrument_type
+commodity_market_data_identifier ..> instrument_type
+ir_market_data_identifier ..> curve_role
+ir_market_data_identifier ..> metric
+ir_market_data_identifier ..> index_family
+@enduml

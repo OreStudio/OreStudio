@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/design-canonical-market-data-urn
+#+pr: 1708
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -45,11 +45,11 @@ no code migration happens in this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-22                               |
 
 * Acceptance
@@ -73,9 +73,44 @@ no code migration happens in this task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Wrote the design as a dedicated knowledge doc,
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market
+Data URI]], rather than inline here, so it can be linked from
+=market_data_identifier.org=, the ORE catalogue doc, and the external
+comparison doc the same way every other durable design decision in this
+story cluster is. Grounded every field in a specific row of the gap
+analysis task's Result table (no speculative fields), reused the exact
+worked-instrument set the survey/gap-analysis tasks already established
+(3M/6M USD LIBOR, USD SOFR, EUR EURIBOR 6M, EUR ESTR, one par swap, one
+FX spot) for direct comparability, and used the ORE market data
+catalogue's documented per-type quote-key shapes for the projection
+rules rather than inventing new ones.
+
+The design went through several rounds of user review that reshaped it
+substantially from the first draft: it started as a flat, colon-delimited
+"URN" and was corrected to a real RFC 3986 URI (scheme =oresmd=) once it
+became clear the design needed a genuinely hierarchical/conditional
+grammar rather than a positional one; the grammar itself moved from
+fixed path positions to query parameters specifically to handle
+per-asset-class conditionality (an FX URI needs none of IR's
+index/tenor/role fields) without =NONE= placeholders — both the
+hierarchical and query-parameter approaches are documented with their
+trade-offs, not just the one adopted. A =metric= field was added after
+review surfaced that =tenor=+=point= alone cannot disambiguate a par-rate
+quote from a curve-sampled discount factor at the same coordinate. A
+"logical vs. physical" section grounds the design in the existing
+requirement/identifier distinction, reframed after review to show
+=oresmd= spanning *both* levels (a partially-specified URI is a
+requirement, a fully-specified one is a resolved instance) rather than
+only ever being the physical side, with worked one-requirement-to-many-
+instances resolution examples and their corresponding ORE Studio config
+rows. Finally, a data model section proposes a typed C++ class hierarchy
+(=market_data_identifier=/=market_data_requirement= base pair, one
+concrete pair per asset class) making the same logical/physical
+distinction a compile-time guarantee, illustrated with a PlantUML class
+diagram (=market_data_urn_types.puml=) following this repo's standard
+diagram convention (source file + generated PNG + regeneration
+instructions, not an inline babel block).
 
 * Notes
 
@@ -94,12 +129,73 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1708][#1708]] | [knowledge] Design oresmd: ORE Studio Market Data URI |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =index= claimed controlled vocab but typed as plain string in the class diagram | market_data_urn_types.puml | Accepted | Added an =index_family= enum, used it on both IR classes |
+| 2 | =ir_market_data_identifier='s mandatory index/tenor/role contradict the swaption worked example (all absent there) | market_data_urn_types.puml, market_data_urn.org | Accepted | Made index/tenor/role =optional<>= on both IR classes; added prose explaining "resolved" means type-appropriate fields settled, not every field non-null |
+| 3 | Credit/commodity classes have dedicated seniority/tenor fields, contradicting the prose's point-absorbs-both rationale | market_data_urn_types.puml | Accepted | Replaced with a generic =point : optional<point>= field on both, matching IR's pattern and the worked examples |
+| 4 | Promised backlinks from market_data_identifier.org/ore_market_data_catalogue.org/external_market_data_identifiers.org were never added | 3 existing knowledge docs | Accepted | Added backlinks to all three; also fixed a stale "Market data identifiers" link title in market_data_identifier.org while there |
+| 5 | IR swap quote-key example bakes in an undocumented =2D= settlement-lag dimension with no corresponding oresmd field | market_data_urn.org | Accepted | Added a note that spot-lag is a per-currency convention looked up from =entity=, the same kind of external lookup the Bloomberg/RIC projection already documents |
+| 6 | =asset_class= inconsistently called both "path" and "authority/host" | market_data_urn.org | Accepted | Fixed wording throughout — asset_class is the URI authority/host, only entity is the path |
+| 7 | "Two free functions" undercounts by one -- =resolve= is a third, unintroduced free function | market_data_urn.org | Accepted | Reworded to "Three free functions", added a proper introduction for =resolve(market_data_requirement, ...) -> market_data_identifier= alongside =parse_oresmd=/=to_uri= |
+| 8 | New backlog capture not registered in the auto-generated inbox index | doc/agile/product_backlog/inbox.org | Accepted | Ran =regenerate_backlog_indexes.py=; =inbox.org= now lists the capture |
+
+Regenerated =market_data_urn_types.png= from the corrected =.puml= after
+fixes 1–3.
+
+Post-review, user feedback also drove two further design changes (not
+from the PR review, but the same round of hardening before merge):
+dropped the abstract-base-class/virtual-dispatch shape entirely in
+favour of five independent structs per side tied together only as a
+=std::variant=, since reflection-based serialisation (=rfl=) generally
+does not handle polymorphic hierarchies well and the URI's own
+=asset_class= already tells a consumer which concrete type applies; and
+trimmed "Relationship to existing schemes" down to a pointer, since the
+plan is a hard cutover (legacy fields get deleted, not permanently kept
+alongside =oresmd=) — the per-field migration content itself was
+preserved in a new backlog capture,
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete
+market_series qualifier and ore_key]], rather than lost.
 
 * Result
+
+Delivered [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio
+Market Data URI]], meeting every Acceptance bullet:
+
+- A grammar (=oresmd://<asset_class>/<entity>?...=) and full field list
+  exist, each field justified against a specific row of the
+  [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][gap analysis task]]'s
+  Result table — no speculative fields, per a dedicated Field
+  justification table in the doc.
+- Worked examples cover the same instrument set as the survey (3M/6M
+  USD LIBOR, USD SOFR, EUR EURIBOR 6M, EUR ESTR, one par swap quote,
+  one FX spot) plus every other asset class in
+  [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+  identifiers]] (swaptions, equities, credit, commodities), each
+  showing the =oresmd= URI and its projection into ORE's index name,
+  curve key, and quote key.
+- The tenor-index and curve-role gaps are demonstrably resolved:
+  dedicated subsections walk through the =USD-LIBOR-3M=/=6M= pair and
+  the =EUR-EURIBOR-6M=/=EUR-ESTR= pair, showing each gets a distinct,
+  structurally-differentiated URI.
+- The relationship to =market_series= and =fx_spot_generation_config.ore_key=
+  is stated explicitly (generalisation/generation-source change, with
+  rationale) in a dedicated section — no three competing schemes remain
+  in the mental model.
+- The deliverable is the design doc itself; no schema, code, or
+  =curve_feed_controller= change was made.
+
+Beyond the original Acceptance, the design was extended during review to
+cover: the hierarchical-vs-query-parameter grammar trade-off (both
+documented, not just the one adopted); a =metric= field disambiguating
+par-rate from discount-factor quotes at the same curve point; a
+logical-vs-physical section (with worked one-requirement-to-many-
+instances resolution tables, each row mapped to the corresponding ORE
+Studio config entity); and a proposed typed C++ data model
+(=market_data_identifier=/=market_data_requirement= hierarchy, one
+concrete pair per asset class) illustrated with a PlantUML class
+diagram.

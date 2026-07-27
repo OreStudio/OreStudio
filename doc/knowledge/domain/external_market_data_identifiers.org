@@ -788,3 +788,4 @@ that every row in this document's comparison tables above draws from.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative, per-type quote-key dimension inventory (49 types) that every ORE quote key in this document's comparison tables is drawn from.
 - [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — the fourth scheme compared above: version history, content model, and where its retrieved specification files live.
 - [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — the fifth scheme compared above: version history, the Market Data message family, symbology, and where its retrieved data dictionaries live.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — a proposed sixth scheme: ORE Studio's own canonical identifier, with deterministic projection rules into every scheme compared in this document.

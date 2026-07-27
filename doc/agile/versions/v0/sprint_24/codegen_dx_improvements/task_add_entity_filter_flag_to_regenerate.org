@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: BC628EAD-27D1-464E-9E51-33FB48AD2D75
+:END:
+#+title: Task: Add --entity filter flag to codegen.sh regenerate
+#+description: Implement an --entity (or --entities) flag that restricts a --component run to the named entities only. No other entity files are generated or written to disk.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=codegen.sh regenerate --component <name> --address <addr>= always
+generates every model discovered in that component. There is no way
+to restrict a run to a named subset of entities (e.g. only
+=rounding_type=, =monetary_nature=, =currency_market_tier= within
+=refdata=) — every targeted run generates every other entity too,
+which the caller must then manually discard.
+
+Add an =--entity= (accepting a comma-separated list, e.g. =--entity
+rounding_type,monetary_nature=) flag to =codegen.sh regenerate= in
+=projects/ores.codegen/src/codegen/cli.py=/=generate.py=. When
+present, =cmd_regenerate= restricts the discovered model files to
+those whose entity name matches the list before generating — no
+other entity's files are written to disk. Omitting the flag keeps
+today's behaviour (every discovered model). An unknown name in the
+list should be a clear error, not a silent no-op, so a typo doesn't
+look like "nothing to generate."
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- =codegen.sh regenerate --component refdata --address ores.cpp.qt
+  --entity rounding_type,monetary_nature,currency_market_tier=
+  generates *only* files for those three entities; no other entity's
+  files are written to disk (verified via =--dry-run= file-list diff
+  against an unfiltered run).
+- Omitting =--entity= is unaffected: every discovered model in the
+  component is generated, identical to today's output.
+- Naming an entity that doesn't exist in the component with
+  =--entity= is a clear ERROR (non-zero exit), not a silent
+  no-op/empty result.
+- =--entity= is rejected (clear ERROR) when combined with a plain
+  =codegen.sh generate --model <path>= single-model invocation, or
+  documented as a no-op there if that's simpler — pick one and make
+  =--help= say so.
+- =codegen.sh --help= documents the new flag.
+- CI passes; no production source files are changed by this task
+  (only =ores.codegen= tooling).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

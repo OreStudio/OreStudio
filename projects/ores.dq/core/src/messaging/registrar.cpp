@@ -53,6 +53,13 @@
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
+#include "ores.dq.core/service/badge_definition_service.hpp"
+#include "ores.dq.core/service/badge_severity_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include <memory>
 
 namespace ores::dq::messaging {
@@ -60,6 +67,14 @@ namespace ores::dq::messaging {
 namespace {
 
 constexpr std::string_view queue_group = "ores.dq.service";
+
+// Function-local static: must outlive the history.v1.get subscription
+// (see ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
 
 }
 
@@ -436,6 +451,37 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(code_domain_subs.begin()),
                     std::make_move_iterator(code_domain_subs.end()));
+    }
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject. The registrar resolves each
+    // request into a scoped context exactly like every other subject
+    // (make_request_context), so a provider sees the same
+    // tenant/party/roles/workspace visibility any other handler in
+    // this file would.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+        hist_registry.register_history_provider(
+            "ores.dq.badge_definition",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::badge_definition_service svc(scoped_ctx);
+                auto versions = svc.get_definition_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_badge_definition_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.badge_severity",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::badge_severity_service svc(scoped_ctx);
+                auto versions = svc.get_severity_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_badge_severity_fields);
+            });
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "dq", queue_group, ctx, verifier));
     }
 
     auto badge = std::make_shared<badge_handler>(nats, ctx, verifier);

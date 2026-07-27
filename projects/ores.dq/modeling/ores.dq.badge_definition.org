@@ -201,9 +201,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.dq/domain/badge_definition.hpp
+:domain_include:         ores.dq.api/domain/badge_definition.hpp
 :domain_class:           dq::domain::badge_definition
-:protocol_include:       ores.dq/messaging/badge_definition_protocol.hpp
+:protocol_include:       ores.dq.api/messaging/badge_definition_protocol.hpp
 :collection_name:        definitions
 :item_var:               definition
 :key_field:              code
@@ -223,22 +223,42 @@ faker::number::integer(1, 100)
 :settings_group:         BadgeDefinitionListWindow
 :window_title:           Badge Definitions
 :icon:                   Tag
+:has_change_reason_cache: true
 :END:
+
+*** Detail fields
+
+| field              | label        | widget                | type          | is_key | is_required | placeholder            | flag_source | combo_domain_type          | combo_fetch_include            | combo_fetch_fn        | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label       | combo_setter_pascal | badge_key |
+|--------------------+--------------+------------------------+---------------+--------+-------------+-------------------------+--------------+-----------------------------+-----------------------------------+-------------------------+-------------------------+--------------------+----------------------+--------------------+--------------------+------------------------+-----------|
+| code               | Code         | codeEdit               | line_edit     | true   | true        | Badge code              |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
+| name               | Name         | nameEdit               | line_edit     |        | true        | Enter name              |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
+| description        | Description  | descriptionEdit        | text_edit     |        | true        | Enter description       |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
+| background_colour  | Background   | backgroundColourButton | colour        |        | true        |                         |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
+| text_colour        | Text         | textColourButton       | colour        |        | true        |                         |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
+| severity_code      | Severity     | severityCodeCombo      | dynamic_combo |        | true        |                         |              | dq::domain::badge_severity | ores.qt/LookupFetcher.hpp        | fetch_badge_severities  | severityCodeWatcher    | code               | description          | display_order      | badge severities   | SeverityCodeCombo     |           |
+| display_order      | Order        | displayOrderEdit       | spin_box      |        | true        |                         |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
 
 *** Columns (Qt model)
 
-| enum_name        | field             | header      | type      | width |
-|------------------+-------------------+-------------+-----------+-------|
-| Code             | code              | Code        | string    | 150   |
-| Name             | name              | Name        | string    | 150   |
-| Description      | description       | Description | string    | 250   |
-| BackgroundColour | background_colour | Background  | string    | 100   |
-| TextColour       | text_colour       | Text        | string    | 80    |
-| SeverityCode     | severity_code     | Severity    | string    | 100   |
-| DisplayOrder     | display_order     | Order       | int       | 80    |
-| Version          | version           | Version     | int       | 80    |
-| ModifiedBy       | modified_by       | Modified By | string    | 120   |
-| RecordedAt       | recorded_at       | Recorded At | timestamp | 150   |
+| enum_name        | field             | header      | type      | width | self_colour |
+|------------------+-------------------+-------------+-----------+-------+-------------|
+| Code             | code              | Code        | string    | 150   |             |
+| Name             | name              | Name        | string    | 150   |             |
+| Description      | description       | Description | string    | 250   |             |
+| BackgroundColour | background_colour | Background  | string    | 100   | true        |
+| TextColour       | text_colour       | Text        | string    | 80    | true        |
+| SeverityCode     | severity_code     | Severity    | string    | 100   |             |
+| DisplayOrder     | display_order     | Order       | int       | 80    |             |
+| Version          | version           | Version     | int       | 80    |             |
+| ModifiedBy       | modified_by       | Modified By | string    | 120   |             |
+| RecordedAt       | recorded_at       | Recorded At | timestamp | 150   |             |
+
+*** Related entity shortcuts
+
+| signal            | icon | label            | tooltip                     |
+|-------------------+------+------------------+------------------------------|
+| BadgeSeverities    | Tag  | Severities       | Open Badge Severities list   |
+| BadgeMappings      | Tag  | Mappings         | Open Badge Mappings list     |
 
 ** Custom repository methods
 

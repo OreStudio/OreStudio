@@ -130,6 +130,80 @@ TEST_CASE("resolve_returns_nullptr_for_unmapped_badge_code", tags) {
     CHECK(cache.resolve("login_status", "Online") == nullptr);
 }
 
+TEST_CASE("fallback_returns_nullptr_when_not_loaded", tags) {
+    auto lg(make_logger(test_suite));
+
+    BadgeCache cache(nullptr);
+    BOOST_LOG_SEV(lg, info) << "Testing fallback on unloaded cache";
+
+    CHECK(!cache.isLoaded());
+    CHECK(cache.fallback() == nullptr);
+}
+
+TEST_CASE("fallback_returns_reserved_definition_when_present", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Mirrors the real seed data: a reserved '__unmapped__' row alongside
+    // ordinary badge definitions, with no mapping pointing at it -- exactly
+    // what BadgeCache::fallback() looks up directly by code, bypassing the
+    // mapping index entirely.
+    BadgeCache cache(nullptr);
+    cache.populate_for_testing({make_def("__unmapped__", "#f97316", "#ffffff"),
+                                make_def("login_online", "#22c55e", "#ffffff")},
+                               {make_mapping("login_status", "Online", "login_online")});
+
+    BOOST_LOG_SEV(lg, info) << "Testing fallback resolves the reserved definition";
+
+    REQUIRE(cache.isLoaded());
+    const auto* result = cache.fallback();
+    REQUIRE(result != nullptr);
+    CHECK(result->code == "__unmapped__");
+    CHECK(result->background_colour == "#f97316");
+    CHECK(result->text_colour == "#ffffff");
+}
+
+TEST_CASE("fallback_returns_nullptr_when_reserved_row_missing", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A loaded cache whose definitions simply don't include '__unmapped__'
+    // (e.g. an older seed) must not crash or return an unrelated entry.
+    BadgeCache cache(nullptr);
+    cache.populate_for_testing({make_def("login_online", "#22c55e", "#ffffff")},
+                               {make_mapping("login_status", "Online", "login_online")});
+
+    BOOST_LOG_SEV(lg, info) << "Testing fallback with no reserved row seeded";
+
+    REQUIRE(cache.isLoaded());
+    CHECK(cache.fallback() == nullptr);
+}
+
+TEST_CASE("resolve_for_unmapped_entity_falls_back_via_separate_call", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Mirrors the resolver pattern every badge-rendering call site uses:
+    // resolve() misses for an entity_code with no mapping (e.g. after a
+    // badge_mapping row is removed), so the caller falls through to a
+    // second, separate fallback() call -- this is the exact two-call
+    // sequence EntityItemDelegate's generated resolvers perform, tested here
+    // without any client/NATS/eventing plumbing at all.
+    BadgeCache cache(nullptr);
+    cache.populate_for_testing(
+        {make_def("__unmapped__", "#f97316", "#ffffff"), make_def("active", "#22c55e", "#ffffff")},
+        {make_mapping("party_status", "Active", "active")});
+
+    BOOST_LOG_SEV(lg, info) << "Testing resolve-miss-then-fallback sequence";
+
+    REQUIRE(cache.resolve("party_status", "Active") != nullptr);
+
+    // "Inactive" was never mapped (e.g. removed via SQL in manual QA) --
+    // resolve() misses, and the caller's fallback() call must still surface
+    // the reserved badge rather than nullptr.
+    CHECK(cache.resolve("party_status", "Inactive") == nullptr);
+    const auto* fb = cache.fallback();
+    REQUIRE(fb != nullptr);
+    CHECK(fb->code == "__unmapped__");
+}
+
 TEST_CASE("resolve_multiple_mappings_in_same_domain", tags) {
     auto lg(make_logger(test_suite));
 

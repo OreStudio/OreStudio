@@ -19,6 +19,7 @@
  */
 #include "ores.qt/BadgeSeverityDetailDialog.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ui_BadgeSeverityDetailDialog.h"
@@ -180,6 +181,14 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
         return;
     }
 
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    severity_.change_reason_code = crSel->reason_code;
+    severity_.change_commentary = crSel->commentary;
+
     updateSeverityFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving badge severity: " << severity_.code;
@@ -249,6 +258,11 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting badge severity: " << severity_.code;
 

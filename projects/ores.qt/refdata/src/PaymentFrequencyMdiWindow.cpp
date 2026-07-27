@@ -142,13 +142,20 @@ void PaymentFrequencyMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair fallback{color_constants::badge_fallback,
-                                                   color_constants::badge_fallback_text};
+            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
+                                                 color_constants::badge_fallback_text,
+                                                 true};
             if (!cache)
-                return fallback;
+                return hardcoded_fallback;
             auto* def = cache->resolve("tenor_unit", value.toStdString());
-            if (!def)
-                return fallback;
+            if (!def) {
+                auto* reserved = cache->fallback();
+                if (!reserved)
+                    return hardcoded_fallback;
+                return {QColor(QString::fromStdString(reserved->background_colour)),
+                        QColor(QString::fromStdString(reserved->text_colour)),
+                        true};
+            }
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });

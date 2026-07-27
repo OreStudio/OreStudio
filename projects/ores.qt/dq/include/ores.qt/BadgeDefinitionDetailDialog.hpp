@@ -23,7 +23,11 @@
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ColourSwatchHelper.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include <QPushButton>
+#include <vector>
 
 namespace Ui {
 class BadgeDefinitionDetailDialog;
@@ -60,6 +64,16 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
     void definitionSaved(const QString& code);
     void definitionDeleted(const QString& code);
@@ -77,14 +91,19 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromDefinition();
     void updateDefinitionFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateSeverityCodeCombo();
+
 
     Ui::BadgeDefinitionDetailDialog* ui_;
     ClientManager* clientManager_;

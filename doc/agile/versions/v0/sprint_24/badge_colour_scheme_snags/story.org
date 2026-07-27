@@ -8,7 +8,7 @@
 #+filetags: :qt:badges:ui:refdata:sprint_24:v0:
 #+created: 2026-07-21
 #+updated: 2026-07-21
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -37,12 +37,12 @@ distinct from the coverage-audit-and-rollout work split into
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Palette-swatch task done; PR pending.   |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the palette-swatch task first (it's the more visible fix). |
-| Last touched  | 2026-07-21                               |
+| Next          | Pick up "Badge sources should badge their own list too". |
+| Last touched  | 2026-07-26                               |
 
 * Acceptance
 
@@ -61,11 +61,32 @@ distinct from the coverage-audit-and-rollout work split into
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | BACKLOG | | | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
+| [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | DONE | 2026-07-22 | 2026-07-26 | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
 | [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
 
 * Decisions
 
+- Colour fields get a dedicated =colour= codegen detail-field type
+  (swatch button + QColorDialog) rather than a raw =line_edit= with
+  hex text -- any future entity needing a colour picker inherits this
+  for free.
+- A column that *is* a colour (e.g. =background_colour=) gets its own
+  self-colour list-column style, distinct from =is_badge= (which
+  resolves a code through =BadgeCache=) -- the two facets model
+  different relationships (own value vs. lookup) and must not be
+  conflated.
+- The fallback for an unresolved badge is a real, reserved
+  =badge_definition= row (=code='__unmapped__'=), not a second
+  hardcoded constant living alongside =ColorConstants::badge_fallback=
+  -- every client/delegate resolves it through =BadgeCache::fallback()=
+  the same way it resolves any other badge, and it gets a dashed-border
+  treatment so it never reads as a legitimate grey/inactive badge.
+- Qt-client caches that need to stay fresh (=BadgeCache=,
+  =ChangeReasonCache=) subscribe directly to their NATS change-event(s)
+  via =ClientManager= and reload on receipt, re-subscribing on
+  login/reconnect -- this is a different, GUI-tier pattern from the
+  server-side entity-mirror cache facet (see
+  [[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]), not a shared mechanism.
 * Out of scope
 
 - The badge adoption coverage audit and rollout across

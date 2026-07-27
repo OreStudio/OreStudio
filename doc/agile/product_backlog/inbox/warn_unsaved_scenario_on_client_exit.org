@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 61555754-E2CF-4F20-BCE6-BAD41F66A390
+:END:
+#+title: Warn about unsaved QA Validation Runner changes on client exit
+#+description: If the QA Validation Runner has unsaved step results/notes when the user tries to close the Qt client, warn them and offer to save before exiting instead of silently discarding the changes.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ux:qa-validation-runner:testing:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+If the QA Validation Runner panel (=QaValidationRunnerWidget=, in
+=ores.qt/api=) has step results or notes ticked/entered but not yet
+written back to the =test_scenario= doc's =* Results=/=*** Result=
+sections, and the user tries to close the Qt client (whole-app quit,
+not just the panel), warn them with a dialog offering to save first --
+the same "unsaved changes" guard every other editable
+dialog/window in the app already gives before a destructive action,
+rather than silently discarding the run. Track a dirty flag on the
+widget (set whenever a step's status/notes change, cleared on save)
+and check it in the application's close/quit path, prompting
+Save/Discard/Cancel like a standard "unsaved changes" dialog.
+
+* Why
+
+Surfaced during manual QA of [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven
+fallback badge]]: the tester ran through every step of
+[[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][a fallback-badge/eventing test scenario]] and marked them all as
+passed, but the client closed (or the panel was otherwise left)
+before the results were saved -- the on-disk scenario doc still
+showed only the first 3 steps as PASS and the rest PENDING, with a
+stale "Completed at" timestamp from an earlier partial run. The
+statuses had to be reconstructed and re-applied by hand afterwards.
+A save-on-exit prompt would have caught this at the moment the client
+was closed, instead of leaving a silently incomplete test record that
+looked plausible (a "PASSED" Results header) but didn't match the
+per-step detail.
+
+* References
+
+- =projects/ores.qt/api/src/QaValidationRunnerWidget.cpp= -- the panel
+  this applies to.
+- [[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][Test Scenario: Verify data-driven fallback badge and badge eventing]]
+  -- the scenario whose lost save prompted this capture.
+
+* See also
+
+- [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] -- the
+  task being manually QA'd when this was noticed.

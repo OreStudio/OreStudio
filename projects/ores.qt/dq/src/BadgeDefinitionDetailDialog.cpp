@@ -18,10 +18,15 @@
  *
  */
 #include "ores.qt/BadgeDefinitionDetailDialog.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.api/messaging/badge_definition_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ui_BadgeDefinitionDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -37,8 +42,20 @@ BadgeDefinitionDetailDialog::BadgeDefinitionDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 BadgeDefinitionDetailDialog::~BadgeDefinitionDetailDialog() {
@@ -57,6 +74,10 @@ ProvenanceWidget* BadgeDefinitionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString BadgeDefinitionDetailDialog::code() const {
+    return QString::fromStdString(definition_.code);
+}
+
 void BadgeDefinitionDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -68,6 +89,8 @@ void BadgeDefinitionDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
+
+void BadgeDefinitionDetailDialog::setupCombos() {}
 
 void BadgeDefinitionDetailDialog::setupConnections() {
     connect(
@@ -89,10 +112,21 @@ void BadgeDefinitionDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &BadgeDefinitionDetailDialog::onFieldChanged);
+    wire_colour_picker(this, ui_->backgroundColourButton, [this]() { onFieldChanged(); });
+    wire_colour_picker(this, ui_->textColourButton, [this]() { onFieldChanged(); });
+    connect(ui_->severityCodeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BadgeDefinitionDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &BadgeDefinitionDetailDialog::onFieldChanged);
 }
 
 void BadgeDefinitionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateSeverityCodeCombo();
 }
 
 void BadgeDefinitionDetailDialog::setUsername(const std::string& username) {
@@ -113,19 +147,59 @@ void BadgeDefinitionDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void BadgeDefinitionDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void BadgeDefinitionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->backgroundColourButton->setEnabled(!readOnly);
+    ui_->textColourButton->setEnabled(!readOnly);
+    ui_->severityCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void BadgeDefinitionDetailDialog::populateSeverityCodeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating severity_code combo";
+    populateDynamicCombo<dq::domain::badge_severity>(
+        ui_->severityCodeCombo,
+        this,
+        clientManager_,
+        &fetch_badge_severities,
+        "severityCodeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(definition_.severity_code); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load badge severities: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; },
+        QString{});
+}
 void BadgeDefinitionDetailDialog::updateUiFromDefinition() {
     ui_->codeEdit->setText(QString::fromStdString(definition_.code));
     ui_->nameEdit->setText(QString::fromStdString(definition_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(definition_.description));
+    set_colour_swatch(ui_->backgroundColourButton,
+                      QString::fromStdString(definition_.background_colour));
+    set_colour_swatch(ui_->textColourButton, QString::fromStdString(definition_.text_colour));
+    {
+        const auto val = QString::fromStdString(definition_.severity_code);
+        const int idx = ui_->severityCodeCombo->findData(val);
+        if (idx >= 0)
+            ui_->severityCodeCombo->setCurrentIndex(idx);
+    }
+    ui_->displayOrderEdit->setValue(definition_.display_order);
 
     populateProvenance(definition_.version,
                        definition_.modified_by,
@@ -144,8 +218,11 @@ void BadgeDefinitionDetailDialog::updateDefinitionFromUi() {
     }
     definition_.name = ui_->nameEdit->text().trimmed().toStdString();
     definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    definition_.background_colour = colour_swatch_value(ui_->backgroundColourButton).toStdString();
+    definition_.text_colour = colour_swatch_value(ui_->textColourButton).toStdString();
+    definition_.severity_code = ui_->severityCodeCombo->currentText().toStdString();
+    definition_.display_order = ui_->displayOrderEdit->value();
     definition_.modified_by = username_;
-    definition_.performed_by = username_;
 }
 
 void BadgeDefinitionDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -166,8 +243,9 @@ void BadgeDefinitionDetailDialog::updateSaveButtonState() {
 bool BadgeDefinitionDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const bool severity_code_selected = ui_->severityCodeCombo->currentIndex() >= 0;
 
-    return !code_val.isEmpty() && !name_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty() && severity_code_selected;
 }
 
 void BadgeDefinitionDetailDialog::onSaveClicked() {
@@ -181,6 +259,15 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    definition_.change_reason_code = crSel->reason_code;
+    definition_.change_commentary = crSel->commentary;
 
     updateDefinitionFromUi();
 
@@ -204,31 +291,34 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, response_result.error()};
+            return {false, "Failed to communicate with server"};
         }
 
         return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Badge Definition saved successfully";
-            QString code = QString::fromStdString(self->definition_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->definitionSaved(code);
-            self->notifySaveSuccess(tr("Badge Definition '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Badge Definition saved successfully";
+                    QString code = QString::fromStdString(self->definition_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->definitionSaved(code);
+                    self->notifySaveSuccess(tr("Badge Definition '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -238,6 +328,15 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(
             this, "Disconnected", "Cannot delete badge definition while disconnected from server.");
+        return;
+    }
+
+    if (definition_.code == "__unmapped__") {
+        MessageBoxHelper::warning(
+            this,
+            "Reserved Badge Definition",
+            "'__unmapped__' is the reserved fallback badge shown when a badge mapping is "
+            "missing, and cannot be deleted.");
         return;
     }
 
@@ -252,6 +351,11 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting badge definition: " << definition_.code;
 
     QPointer<BadgeDefinitionDetailDialog> self = this;
@@ -261,18 +365,18 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code_str = definition_.code]() -> DeleteResult {
+    auto task = [self, code = definition_.code]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         dq::messaging::delete_badge_definition_request request;
-        request.codes = {code_str};
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, response_result.error()};
+            return {false, "Failed to communicate with server"};
         }
 
         return {response_result->success, response_result->message};
@@ -299,5 +403,6 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

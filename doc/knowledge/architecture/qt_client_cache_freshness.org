@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 4FF4167B-D970-4383-A263-24E329C9AB95
+:END:
+#+title: How does a Qt client cache stay fresh?
+#+description: Qt-client-side caches (ChangeReasonCache, BadgeCache) subscribe to NATS change-notification events and reload on receipt, tied to the login/logout/reconnect lifecycle -- distinct from the server-side entity-mirror cache.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:caching:qt:nats:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+
+* Summary
+
+A Qt-client-side cache (=ChangeReasonCache=, =BadgeCache=, both in
+=ores.qt/api=) stays fresh by subscribing, via =ClientManager=, to the
+NATS change-notification subject(s) for the entity/entities it mirrors,
+and reloading itself whenever a matching notification arrives --
+re-subscribing on every =loggedIn=/=reconnected= signal, since a fresh
+connection has no standing subscriptions. This is a distinct mechanism
+from [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][the server-side
+entity-mirror cache]] (=partitioned_cache= + the =nats-event-cache=
+codegen facet): same *idea* -- load, then reload on a change event --
+but a different tier, concurrency model, and transport, so the
+server-side facet is not the tool to reach for when a *Qt* cache goes
+stale. There is currently no codegen facet for the Qt-side pattern; it
+is hand-written per cache, following =ChangeReasonCache= as the
+reference implementation.
+
+* Detail
+
+** The pattern
+
+1. Construction: if =clientManager_= is already logged in, subscribe
+   immediately; otherwise wait for it.
+2. Connect =ClientManager::loggedIn= and =ClientManager::reconnected=
+   to a =subscribeToEvents()= method that calls
+   =clientManager_->subscribeToEvent(event_name)= for every
+   change-event subject the cache cares about. Both signals matter --
+   a reconnect drops and re-establishes NATS subscriptions
+   server-side, so the client must re-subscribe every time, not just
+   once at first login.
+3. Connect =ClientManager::notificationReceived= to a handler that
+   compares the incoming =eventType= against the subject(s) from step
+   2, and on a match: mark the cache stale (=is_loaded_ = false=),
+   call the existing =loadAll()=, and connect a one-shot
+   (=Qt::SingleShotConnection=) lambda on the cache's own =loaded=
+   signal to emit a =refreshed= signal once the reload actually lands
+   -- so callers that only care about "did something change" (as
+   opposed to "trigger a load") have a signal to hook, without
+   duplicating the load-completion bookkeeping =onDefinitionsLoaded=
+   /=onMappingsLoaded= already do.
+4. Views reading the cache (e.g. =EntityItemDelegate='s badge
+   resolvers) already call =resolve()=/=fallback()= at *paint* time,
+   not once at setup time, so a repaint after =loaded()= fires is
+   enough to pick up the fresh data -- no separate invalidation path
+   needed on the view side.
+
+=BadgeCache= additionally demonstrates the case where the cache spans
+*two* backing message types (=badge_definition= and its
+=badge_mapping= join) but only *one* of them publishes a
+change-event -- =badge_mapping= is a junction row with no generated
+entity handler of its own (see the =dq= messaging registrar), so
+editing a mapping does not, today, trigger a live refresh anywhere;
+only =badge_definition= edits (e.g. a colour change through
+=BadgeDefinitionDetailDialog=) do. A cache spanning a similar
+event/non-event split elsewhere should subscribe to whichever half
+*does* publish and accept that the other half needs a reconnect to
+pick up out-of-band changes (e.g. a direct SQL edit in a test/ops
+scenario), rather than inventing a mapping-level event for a rarely-
+edited join table.
+
+** Why not the server-side entity-mirror cache instead
+
+[[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][The server-side
+entity-mirror cache]] (=partitioned_cache<PartitionKey,Key,Value>= +
+the =nats-event-cache= facet) solves the same-shaped problem --
+load, then reload on a change event -- but at a different tier, and
+adopting it for a Qt cache would import machinery built for problems
+the GUI tier doesn't have while leaving the one it does have
+(interactive login/logout) unmodelled:
+
+| Dimension     | Server-side entity-mirror cache               | Qt-client cache (this pattern)              |
+|---------------+-------------------------------------------------+----------------------------------------------|
+| Tier          | Backend service caching another service's data  | GUI presentation cache, one process          |
+| Concurrency   | Multi-threaded NATS handlers, no event loop --   | Single-threaded Qt event loop; all mutation  |
+|               | needs lock-free =immer::atom<immer::map<...>>=  | already serialised via =QFutureWatcher=/     |
+|               |                                                   | signal-slot on the GUI thread                |
+| Auth          | Service-account JWT via a =token_provider=       | The logged-in human user's session, via      |
+|               | (=make_service_token_provider=); no login concept | =ClientManager=                             |
+| Partitioning  | Keyed by =tenant_id=, warmed for every tenant the | One active tenant per session -- nothing to  |
+|               | service might ever be asked about                | partition                                    |
+| Protocol      | A dedicated generated =read_{entity}_for_cache_*= | Reuses the entity's *existing* request (e.g. |
+|               | request/response pair, separate from normal CRUD | =get_badge_definitions_request=) the Qt      |
+|               |                                                   | client already calls                         |
+| Lifecycle     | Warmed once at service startup; lives for the     | Must react to login/logout/reconnect of one  |
+|               | process's lifetime; no reconnect concept          | human operator                               |
+
+Reaching for the facet here would mean generating a redundant
+=read_badge_definitions_for_cache= handler duplicating an existing
+message, pulling =ores.eventing.core=/=immer= into the Qt build (a
+layering boundary the GUI tier doesn't cross today), and building
+service-token plumbing for a client that already has a real user
+session -- solving problems that don't exist at this tier while
+leaving the one that does (session lifecycle) unaddressed.
+
+* See also
+
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an
+  entity-mirror cache live?]] -- the server-side counterpart this
+  pattern is contrasted with.
+- [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror
+  cache + codegen facet]] -- the story that built
+  =partitioned_cache= and the =nats-event-cache= facet.

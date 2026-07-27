@@ -31,8 +31,16 @@
 namespace ores::history::messaging {
 
 /**
- * @brief Subscribes the one generic history subject (history.v1.get) to a
+ * @brief Subscribes the generic history subject for one component
+ * (<component>.v1.history.get, e.g. "dq.v1.history.get") to a
  * history_handler backed by @p registry, under the given queue group.
+ *
+ * Every ORE Studio subject lives inside its owning component's
+ * namespace (see the "ORE Studio Messaging Reference" knowledge doc) —
+ * a bare cross-component subject would be delivered to every service's
+ * queue group at once, racing services that have no matching provider
+ * against the one that does. @p component scopes the subject so only
+ * the composing service's own subscription ever receives its requests.
  *
  * @p ctx and @p verifier are the same service-level context/JWT
  * verifier every other per-entity registrar in the composing service
@@ -46,6 +54,7 @@ namespace ores::history::messaging {
 ORES_HISTORY_CORE_EXPORT ores::nats::service::subscription
 register_history_handlers(ores::nats::service::client& nats,
                           const service::dispatch_registry& registry,
+                          std::string_view component,
                           std::string_view queue_group,
                           ores::database::context ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier);

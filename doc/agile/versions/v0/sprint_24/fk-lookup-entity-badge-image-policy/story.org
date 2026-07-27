@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5FD778C7-574A-49C5-A85B-9146AE7FA868
+:END:
+#+title: Story: Classify FK-like/lookup entities and decide badge vs image vs plain-text rendering policy
+#+description: Inventory every FK-like/code/lookup entity in the system (badge_severity, code_domain, currencies, and similar reference tables) and classify each one: should it render as a colour badge (like badge_definition), an image/flag (like currencies), or plain text/neither. Not every code entity is the same -- badges and flags serve different semantic purposes, and today the choice is ad hoc per entity with no documented policy. Produce the classification, decide the policy, then update codegen to generate the right rendering per entity classification and regenerate all affected entities.
+#+type: story
+#+level: s2
+#+filetags: :codegen:badge:ux:architecture:sprint_24:v0:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every FK-like/lookup/code entity in the system currently gets an ad hoc
+rendering treatment decided per-entity as it's built: =badge_definition=
+renders as a colour swatch, currencies render as flags, and everything
+else renders as plain text — with no documented policy for which
+treatment a given entity should get. This surfaced concretely while
+fixing badge severities: is a severity itself a badge? What about
+=code_domain=? There's no criterion to answer that.
+
+This story inventories every FK-like/code/lookup entity, classifies
+each one against a small set of rendering treatments (colour badge,
+image/flag, plain text), documents the policy that drives the
+classification, and updates codegen so future entities pick up the
+right treatment automatically instead of by convention-following.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-25                               |
+
+* Acceptance
+
+- An inventory exists of every FK-like/code/lookup entity in the
+  system (reference-data codes, DQ badge-adjacent entities, currencies,
+  and any others of the same shape).
+- Each entity is classified into one of: colour badge, image/flag, or
+  plain text/neither — with the reasoning documented, not just the
+  verdict.
+- A written policy/decision doc captures the classification criteria
+  so future entities can be assigned a treatment without re-litigating
+  the question each time.
+- Codegen is updated so an entity's rendering treatment is a
+  declarative choice in its model, driving the generated Qt list/detail
+  views automatically.
+- Existing entities affected by a policy change are regenerated to
+  match (e.g. any entity currently mis-classified, such as badge
+  severities if the decision is that severities should be badges).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Redesigning the colour palette or flag/image asset pipeline
+  themselves — this story is about classification and codegen wiring,
+  not visual design of the treatments.

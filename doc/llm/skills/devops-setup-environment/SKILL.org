@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:environment:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-07-22
 
 #+begin_export markdown
 ---
@@ -38,38 +38,45 @@ Run the steps in order; each is idempotent.
    git fetch origin main && git checkout --detach origin/main
    #+end_src
 
-2. /Sync the doc indexes/ (=doc-sync-index=):
+2. /Sync the vcpkg submodule/ to what main's tree expects — a stale
+   vcpkg pin causes hard-to-diagnose build failures later:
+
+   #+begin_src sh :results verbatim
+   git submodule update --init vcpkg
+   #+end_src
+
+3. /Sync the doc indexes/ (=doc-sync-index=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh index --org-roam-db-sync
    #+end_src
 
-3. /Deploy the skills bundle/ (=devops-deploy-skills=):
+4. /Deploy the skills bundle/ (=devops-deploy-skills=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh build --direct skills
    #+end_src
 
-4. /Deploy Claude Code settings/ (=devops-deploy-settings=):
+5. /Deploy Claude Code settings/ (=devops-deploy-settings=):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh build --direct settings
    #+end_src
 
-5. /Initialise the environment/ — .env, certificates, IAM key:
+6. /Initialise the environment/ — .env, certificates, IAM key:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh env configure
    #+end_src
 
-6. /Recreate the database/ (=devops-recreate-db=) — stop services
+7. /Recreate the database/ (=devops-recreate-db=) — stop services
    first if they hold connections:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-7. /Build the project/ — required before services can start or the
+8. /Build the project/ — required before services can start or the
    shell can provision anything; use =compass build=, never raw
    =cmake= invocations:
 
@@ -77,26 +84,26 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh build
    #+end_src
 
-8. /Provision the Barclays tenant via the shell/ — run the full
+9. /Provision the Barclays tenant via the shell/ — run the full
    Barclays/GLEIF provisioning script from the generated library:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
    #+end_src
 
-9. /Verify/ — bearings clean. Do not start services as part of this
-   skill; only run =compass services start= if the user explicitly
-   asks for it:
+10. /Verify/ — bearings clean. Do not start services as part of this
+    skill; only run =compass services start= if the user explicitly
+    asks for it:
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh bearings
-   #+end_src
+    #+begin_src sh :results verbatim
+    ./projects/ores.compass/compass.sh bearings
+    #+end_src
 
 * Recipes
 
 - [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — the verification at the end.
-- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — step 2 in detail.
-- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — step 3 in detail.
+- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — step 3 in detail.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — step 4 in detail.
 
 * Reference
 

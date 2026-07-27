@@ -18,25 +18,40 @@
  *
  */
 #include "ores.qt/BadgeDefinitionController.hpp"
+#include "ores.dq.api/eventing/badge_definition_changed_event.hpp"
+#include "ores.dq.api/messaging/badge_definition_protocol.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/BadgeDefinitionDetailDialog.hpp"
-#include "ores.qt/BadgeDefinitionHistoryDialog.hpp"
 #include "ores.qt/BadgeDefinitionMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view definition_event_name =
+    eventing::domain::event_traits<dq::eventing::badge_definition_changed_event>::name;
+}
+
 BadgeDefinitionController::BadgeDefinitionController(QMainWindow* mainWindow,
                                                      QMdiArea* mdiArea,
                                                      ClientManager* clientManager,
+                                                     ChangeReasonCache* changeReasonCache,
                                                      const QString& username,
                                                      QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, definition_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -76,6 +91,14 @@ void BadgeDefinitionController::showListWindow() {
             &BadgeDefinitionMdiWindow::showDefinitionHistory,
             this,
             &BadgeDefinitionController::onShowHistory);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::showBadgeSeveritiesRequested,
+            this,
+            &BadgeDefinitionController::showBadgeSeveritiesRequested);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::showBadgeMappingsRequested,
+            this,
+            &BadgeDefinitionController::showBadgeMappingsRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -92,6 +115,8 @@ void BadgeDefinitionController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -140,6 +165,7 @@ void BadgeDefinitionController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void BadgeDefinitionController::onShowHistory(const dq::domain::badge_definition& definition) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << definition.code;
     showHistoryWindow(QString::fromStdString(definition.code));
@@ -149,6 +175,8 @@ void BadgeDefinitionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new badge definition";
 
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -197,6 +225,8 @@ void BadgeDefinitionController::showDetailWindow(const dq::domain::badge_definit
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << definition.code;
 
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -239,6 +269,7 @@ void BadgeDefinitionController::showDetailWindow(const dq::domain::badge_definit
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<BadgeDefinitionController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -265,10 +296,14 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new BadgeDefinitionHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(dq::domain::badge_definition{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &BadgeDefinitionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
                 if (!self)
@@ -276,7 +311,7 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &BadgeDefinitionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
                 if (!self)
@@ -284,13 +319,23 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &BadgeDefinitionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &BadgeDefinitionController::onRevertVersion);
+            [self = QPointer<BadgeDefinitionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &BadgeDefinitionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &BadgeDefinitionController::onOpenVersion);
+            [self = QPointer<BadgeDefinitionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -301,10 +346,12 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Badge Definition History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<BadgeDefinitionController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -332,6 +379,8 @@ void BadgeDefinitionController::onOpenVersion(const dq::domain::badge_definition
     }
 
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDefinition(definition);
@@ -376,15 +425,110 @@ void BadgeDefinitionController::onOpenVersion(const dq::domain::badge_definition
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void BadgeDefinitionController::fetchBadgeDefinitionHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<dq::domain::badge_definition>, QString>)>
+        callback) {
+    dq::messaging::get_badge_definition_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<dq::domain::badge_definition>, QString>;
+
+    QPointer<BadgeDefinitionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void BadgeDefinitionController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<BadgeDefinitionController> self = this;
+    fetchBadgeDefinitionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::badge_definition>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void BadgeDefinitionController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<BadgeDefinitionController> self = this;
+    fetchBadgeDefinitionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::badge_definition>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void BadgeDefinitionController::onRevertVersion(const dq::domain::badge_definition& definition) {
     BOOST_LOG_SEV(lg(), info) << "Reverting badge definition to version: " << definition.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setDefinition(definition);
+    auto reverted_definition = definition;
+    reverted_definition.version = 0;
+    detailDialog->setDefinition(reverted_definition);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &BadgeDefinitionDetailDialog::statusMessage,
@@ -422,6 +566,28 @@ void BadgeDefinitionController::onRevertVersion(const dq::domain::badge_definiti
 
 EntityListMdiWindow* BadgeDefinitionController::listWindow() const {
     return listWindow_;
+}
+
+void BadgeDefinitionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

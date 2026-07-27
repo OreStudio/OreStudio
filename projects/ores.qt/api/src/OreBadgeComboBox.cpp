@@ -54,16 +54,22 @@ void OreBadgeComboBox::paintEvent(QPaintEvent*) {
 
     QColor bg = color_constants::badge_fallback;
     QColor fg = color_constants::badge_fallback_text;
+    bool is_fallback = true;
     if (const auto* def = cache_ ? cache_->resolve(badge_key_, text.toStdString()) : nullptr) {
         bg = QColor(QString::fromStdString(def->background_colour));
         fg = QColor(QString::fromStdString(def->text_colour));
+        is_fallback = false;
+    } else if (const auto* reserved = cache_ ? cache_->fallback() : nullptr) {
+        bg = QColor(QString::fromStdString(reserved->background_colour));
+        fg = QColor(QString::fromStdString(reserved->text_colour));
     }
 
     QFont badgeFont = font();
     badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
     badgeFont.setBold(true);
 
-    DelegatePaintUtils::draw_inline_badge(&painter, textRect, text, bg, fg, badgeFont);
+    DelegatePaintUtils::draw_inline_badge(
+        &painter, textRect, text, bg, fg, badgeFont, 4, 3, is_fallback);
 }
 
 }

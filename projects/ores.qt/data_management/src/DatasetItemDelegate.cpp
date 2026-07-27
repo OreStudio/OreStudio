@@ -22,6 +22,7 @@
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionViewItem>
@@ -48,17 +49,20 @@ void DatasetItemDelegate::paint(QPainter* painter,
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
-        auto resolve = [this](const QString& domain,
-                              const QString& value) -> std::pair<QColor, QColor> {
+        auto resolve = [this](const QString& domain, const QString& value) -> badge_color_pair {
             if (badgeCache_ && !value.isEmpty()) {
                 auto* def = badgeCache_->resolve(domain.toStdString(), value.toStdString());
                 if (def)
                     return {QColor(QString::fromStdString(def->background_colour)),
                             QColor(QString::fromStdString(def->text_colour))};
+                if (auto* reserved = badgeCache_->fallback())
+                    return {QColor(QString::fromStdString(reserved->background_colour)),
+                            QColor(QString::fromStdString(reserved->text_colour)),
+                            true};
             }
-            // Fallback for unresolved badge definitions — deliberately not
-            // gray, which is reserved for inactive/negative states.
-            return {color_constants::badge_fallback, color_constants::badge_fallback_text};
+            // Hardcoded last resort for a not-yet-loaded cache — deliberately
+            // not gray, which is reserved for inactive/negative states.
+            return {color_constants::badge_fallback, color_constants::badge_fallback_text, true};
         };
 
         // Get the tag values
@@ -71,18 +75,42 @@ void DatasetItemDelegate::paint(QPainter* painter,
         badgeRect.adjust(4, 0, 0, 0);
 
         if (!origin.isEmpty()) {
-            auto [bg, fg] = resolve("dq_origin", origin);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, origin, bg, fg, badgeFont);
+            auto colors = resolve("dq_origin", origin);
+            DelegatePaintUtils::draw_inline_badge(painter,
+                                                  badgeRect,
+                                                  origin,
+                                                  colors.background,
+                                                  colors.foreground,
+                                                  badgeFont,
+                                                  4,
+                                                  3,
+                                                  colors.is_fallback);
         }
 
         if (!nature.isEmpty()) {
-            auto [bg, fg] = resolve("dq_nature", nature);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, nature, bg, fg, badgeFont);
+            auto colors = resolve("dq_nature", nature);
+            DelegatePaintUtils::draw_inline_badge(painter,
+                                                  badgeRect,
+                                                  nature,
+                                                  colors.background,
+                                                  colors.foreground,
+                                                  badgeFont,
+                                                  4,
+                                                  3,
+                                                  colors.is_fallback);
         }
 
         if (!treatment.isEmpty()) {
-            auto [bg, fg] = resolve("dq_treatment", treatment);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, treatment, bg, fg, badgeFont);
+            auto colors = resolve("dq_treatment", treatment);
+            DelegatePaintUtils::draw_inline_badge(painter,
+                                                  badgeRect,
+                                                  treatment,
+                                                  colors.background,
+                                                  colors.foreground,
+                                                  badgeFont,
+                                                  4,
+                                                  3,
+                                                  colors.is_fallback);
         }
 
         return;

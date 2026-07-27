@@ -21,6 +21,9 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.dq.core/messaging/registrar.hpp"
 #include "ores.dq.service/app/application_exception.hpp"
+#include "ores.dq.service/messaging/event_registrar.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -64,6 +67,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                     cfg.nats.subject_prefix)
                               << "')";
 
+    // =========================================================================
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
+    // =========================================================================
+    ores::eventing::service::event_bus event_bus;
+    ores::eventing::service::postgres_event_source event_source(make_context(cfg.database),
+                                                                 event_bus);
+
+    auto generated_event_subs =
+        messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
+
+    event_source.start();
+    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -77,6 +93,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+
+    event_source.stop();
     co_return;
 }
 

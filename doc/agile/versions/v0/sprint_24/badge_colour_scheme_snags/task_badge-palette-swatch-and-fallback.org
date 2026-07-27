@@ -8,12 +8,12 @@
 #+filetags: :badge_colour_scheme_snags:sprint_24:v0:
 #+owner: marco
 #+branch: feature/badge-palette-swatch-and-fallback
-#+pr:
+#+pr: 1704
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
 #+updated: 2026-07-21
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-15                               |
 
 * Acceptance
@@ -52,11 +52,99 @@ mechanism for consistency, not reinvent a second rendering approach.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=badge_definition= is already on the standard codegen stack
+(regenerated in 772982ea5), but two Qt detail-dialog/list-delegate
+facets it needs don't exist in codegen yet — this is not a plain
+model-declaration task, it starts with two small codegen extensions.
+
+Investigation findings:
+
+- ~BadgeDefinitionMdiWindow~ sets no item delegate at all today;
+  ~BackgroundColour~/~TextColour~ render as raw hex-string text
+  (~ClientBadgeDefinitionModel::data()~).
+- ~BadgeDefinitionDetailDialog~ has *no UI fields at all* for
+  ~background_colour~/~text_colour~/~severity_code~/~display_order~ —
+  only ~code~/~name~/~description~ exist. This is because
+  ~ores.dq.badge_definition.org~ never declares a =** Detail fields=
+  table under =** Qt=, so ~core.py~'s auto-generate fallback
+  (~core.py:2256~) only emits key/name/description.
+- Codegen's detail-field vocabulary
+  (~line_edit/text_edit/static_combo/dynamic_combo/flagged_combo/check_box/spin_box~,
+  see ~core.py:2290-2345~) has *no colour-picker type*. Needs adding
+  before the model can declare one.
+- Codegen's list-column badge facet (~is_badge~, ~cpp_qt_mdi_window.cpp.mustache:245~)
+  always resolves via ~BadgeCache::resolve(badge_key, value)~ —
+  i.e. "this column's value is a code that points at a separate
+  badge_definition". ~background_colour~/~text_colour~ are the
+  opposite: they *are* the colour, not a code to look up. Needs a
+  second resolver shape, not reuse of ~is_badge~ as-is.
+- ~BadgeSeverityMdiWindow~/~ClientBadgeSeverityModel~ have no reverse-FK
+  facet in codegen at all — the "which badge_definitions reference
+  this severity" column has to be hand-added.
+- Fallback: ~ColorConstants::badge_fallback~ (orange/white) is the
+  hardcoded pair ~EntityItemDelegate::paint()~ falls back to. Real
+  seed rows live in ~dq_badge_system_populate.sql~ via
+  ~ores_dq_badge_definitions_upsert_fn~.
+
+Steps:
+
+1. Codegen: add a ~colour~ detail-field type — flag computation in
+   ~core.py~, swatch-button + ~QColorDialog~ block in
+   ~qt_detail_dialog_ui.mustache~, wiring in the detail-dialog impl
+   mustache.
+2. Codegen: add a self-colour list-column style (parallel to
+   ~is_badge~) whose generated resolver reads the row's own two
+   colour fields instead of calling ~BadgeCache::resolve~.
+3. Model: add =** Detail fields= to ~ores.dq.badge_definition.org~
+   (code/name/description as today; ~background_colour~/~text_colour~
+   as ~colour~; ~severity_code~ as ~dynamic_combo~ fetching
+   ~badge_severity~; ~display_order~ as ~spin_box~); flag
+   ~BackgroundColour~/~TextColour~ in "Columns (Qt model)" with the
+   new self-colour style; add =** Related entity shortcuts=
+   (Severities, Mappings).
+4. Regenerate; reconcile hand-wiring at the controller/plugin level
+   (~BadgeDefinitionController~ → ~DqPlugin~, mirroring
+   ~BookController~/~RefdataPlugin~'s ~showBookStatusesRequested~
+   pattern).
+5. Hand-add the ~BadgeSeverityMdiWindow~ reverse-link column/widget —
+   no codegen facet for this exists.
+6. Fallback: reserved ~badge_definition~ row (~code='__unmapped__'~)
+   in ~dq_badge_system_populate.sql~; ~BadgeCache::fallback()~
+   accessor; switch both the codegen-generated ~is_badge~ resolver
+   template and ~EntityItemDelegate~'s built-in fallback off
+   ~ColorConstants::badge_fallback~ onto it; distinct dashed-border
+   treatment in ~DelegatePaintUtils~ so it doesn't read as
+   inactive/grey.
+7. Manual QA scenario per acceptance (remove a ~badge_mapping~ row,
+   confirm fallback rendering).
 
 * Notes
+
+Manual QA against the fallback badge (removing a =badge_mapping= row
+via SQL) surfaced that =BadgeCache= never subscribed to any
+change-notification event -- only loaded once at login. Fixed by
+mirroring =ChangeReasonCache='s subscribe-and-reload pattern (see
+[[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]); =badge_definition= edits
+(e.g. a colour change) now propagate live to every client.
+
+=badge_mapping= itself still has no live propagation -- it is a
+junction row with no generated entity handler, so it publishes no
+NATS change-event at all (confirmed true of every junction in the
+codebase, not just this one). Removing/restoring a mapping requires a
+client reconnect to be picked up. Closing this properly is tracked in
+[[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]],
+filed as its own sprint 24 story rather than folded into this task.
+
+Also discovered while manually testing the fallback: badge data
+(=badge_severity=/=badge_definition=/=code_domain=/=badge_mapping=)
+is duplicated per-tenant -- the system-tenant seed rows created by
+=dq_badge_system_populate.sql= get copied into each tenant's own
+=tenant_id= by the "provision tenant" bundle-publish step, and
+=badge_service= reads scoped to the *caller's* tenant. Any manual
+SQL edit/restore against badge data must target the tenant under
+test (e.g. via =ores_iam_tenant_by_code_fn('barclays')=), not the
+system tenant -- an easy mistake to make since the seed script itself
+only ever writes system-tenant rows.
 
 * Test Scenarios
 
@@ -67,18 +155,60 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:5410A1A8-5601-4A32-B507-7C69C9F6DFE7][Badge Definition: swatch rendering, colour picker, and related-entity shortcuts]] | PASSED | Eventing not exercised by this scenario -- see the fallback/eventing scenario below |
+| [[id:FCDEA23C-D507-4F15-9A8D-4156F6A69739][Verify data-driven fallback badge and badge eventing]] | PASSED | Covers step 6 (fallback badge) and the eventing gap noted above; badge_mapping's per-tenant-duplicate + no-live-event limitation confirmed and tracked separately |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1704][#1704]] | [qt,codegen] Badge palette swatch rendering and data-driven fallback badge |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No guard against deleting the reserved =__unmapped__= badge via the UI | =BadgeDefinitionDetailDialog.cpp= | Accepted | Added a delete-time guard; rename is already prevented since =code= is read-only outside create mode |
+| 2 | =BadgeCache::onNotificationReceived= can stack multiple one-shot =refreshed()= connections while a reload is in flight | =BadgeCache.cpp= | Accepted | Only add the one-shot connection when a reload isn't already in flight |
+| 3 | =validateInput()= doesn't explicitly validate colour fields | =BadgeDefinitionDetailDialog.cpp= | Declined | By construction: =ColourSwatchHelper= normalises any invalid hex to =#ffffff=, so there's no invalid state to catch |
 
 * Result
+
+All acceptance criteria met:
+
+- =BadgeDefinitionMdiWindow='s Background/Text columns render as real
+  coloured badges via =EntityItemDelegate=/=badge_centered=, the same
+  mechanism task 1 established -- not a second rendering approach.
+- =BadgeDefinitionDetailDialog= gained a full Detail fields set
+  (colour-picker swatches for background/text, severity dynamic_combo,
+  display_order spin_box) via a new =colour= codegen detail-field type
+  and a new self-colour list-column style -- codegen extensions, not a
+  one-off hand-wire.
+- =BadgeSeverityMdiWindow= shows its reverse-FK link to referencing
+  badge_definitions (hand-added; no codegen facet exists for this yet).
+- =BadgeDefinitionMdiWindow= gained the "Related entity shortcuts"
+  toolbar (Severities, Mappings), matching the pattern used elsewhere
+  (e.g. Book).
+- Fallback: reserved =badge_definition= row (=code='__unmapped__'=)
+  replaces =ColorConstants::badge_fallback= at every badge-rendering
+  call site; =BadgeCache::fallback()= resolves it the same way
+  =resolve()= resolves any other badge. Dashed-border treatment in
+  =DelegatePaintUtils= makes it visibly distinct from any real
+  grey/inactive badge.
+- =BadgeCache= now subscribes to =badge_definition_changed= and
+  reloads on receipt (mirroring =ChangeReasonCache=), so a colour edit
+  propagates live to every running client, not just the definitions
+  list window that made the edit.
+- Manual QA scenario executed end-to-end (removed the =party_status=/
+  =Active= mapping via SQL, confirmed the fallback badge rendered with
+  the correct dashed/orange treatment, confirmed a =badge_definition=
+  colour edit propagates live between two client instances, restored
+  seed data) -- both test scenarios PASSED.
+
+Two gaps surfaced during manual QA and deliberately scoped out rather
+than folded into this task, each filed as its own backlog item (see
+* Notes above for detail): junctions (including =badge_mapping=) have
+no live NATS eventing at all in codegen today
+([[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing story]]); and a general FK-like/lookup-entity
+badge-vs-image-vs-plain-text rendering policy doesn't exist yet
+([[id:5FD778C7-574A-49C5-A85B-9146AE7FA868][FK-like/lookup entity rendering policy story]]).

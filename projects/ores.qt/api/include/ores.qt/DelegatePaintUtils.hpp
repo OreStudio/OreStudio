@@ -75,20 +75,25 @@ struct ORES_QT_API DelegatePaintUtils {
      * @brief Draws a centered pill-shaped badge with text.
      *
      * Renders a rounded rectangle badge centered in the given rect, with the
-     * specified background color, text color, and font.
+     * specified background color, text color, and font. When @p dashed is
+     * true, draws a dashed border around the pill so it reads as a reserved
+     * fallback badge rather than a legitimate colour -- used for the
+     * __unmapped__ badge_definition.
      */
     static void draw_centered_badge(QPainter* painter,
                                     const QRect& rect,
                                     const QString& text,
                                     const QColor& bg,
                                     const QColor& fg,
-                                    const QFont& font);
+                                    const QFont& font,
+                                    bool dashed = false);
 
     /**
      * @brief Draws a left-aligned inline badge and advances the rect.
      *
      * Renders a pill badge at the left edge of rect, then moves rect.left()
-     * past the badge plus spacing, ready for the next badge.
+     * past the badge plus spacing, ready for the next badge. @p dashed mirrors
+     * draw_centered_badge()'s reserved-fallback treatment.
      */
     static void draw_inline_badge(QPainter* painter,
                                   QRect& rect,
@@ -97,7 +102,8 @@ struct ORES_QT_API DelegatePaintUtils {
                                   const QColor& fg,
                                   const QFont& font,
                                   int padding = 4,
-                                  int spacing = 3);
+                                  int spacing = 3,
+                                  bool dashed = false);
 };
 
 }

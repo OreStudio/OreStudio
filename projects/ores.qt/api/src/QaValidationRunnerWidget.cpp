@@ -303,6 +303,11 @@ void QaValidationRunnerWidget::promptAndLoadScenario() {
 }
 
 bool QaValidationRunnerWidget::loadScenario(const QString& path) {
+    if (!QFileInfo::exists(path)) {
+        emit errorOccurred(tr("File not found: '%1'. Try passing a full path.").arg(path));
+        return false;
+    }
+
     orgmode::domain::document doc;
     try {
         doc = orgmode::parser::parse_file(path.toStdString());

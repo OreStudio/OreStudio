@@ -50,12 +50,43 @@ struct entity_history_version final {
 struct get_entity_history_response;
 
 /**
+ * @brief Derives the component-scoped generic history subject for an
+ * entity_type_of() dispatch key, e.g. "ores.dq.badge_definition" ->
+ * "dq.v1.history.get".
+ *
+ * Every ORE Studio subject lives inside its owning component's
+ * namespace (see the "ORE Studio Messaging Reference" knowledge doc).
+ * A single bare "history.v1.get" subject shared by every service would
+ * be delivered to every service's queue group at once — the client
+ * would race the one service that actually owns the entity against
+ * every other service replying "not found" near-instantly, and the
+ * wrong reply usually wins. Scoping the subject to the owning
+ * component (same segment as e.g. "dq.v1.badge_definitions.history")
+ * means only that component's registrar ever receives the request.
+ */
+[[nodiscard]] inline std::string history_subject_for(const std::string& entity_type) {
+    const auto first_dot = entity_type.find('.');
+    const auto second_dot =
+        first_dot == std::string::npos ? std::string::npos : entity_type.find('.', first_dot + 1);
+    const std::string component = (first_dot != std::string::npos && second_dot != std::string::npos)
+        ? entity_type.substr(first_dot + 1, second_dot - first_dot - 1)
+        : std::string("unknown");
+    return component + ".v1.history.get";
+}
+
+/**
  * @brief The one generic history request every entity shares.
  *
  * entity_type is the entity_type_of() dispatch key (e.g.
  * "ores.refdata.currency"); entity_id is the entity's own primary key
  * rendered as a string, since key shapes vary across entities. No
  * typed domain payload crosses the wire for history.
+ *
+ * nats_subject exists only to satisfy call sites' nats_request concept
+ * check; it is never actually used to send a request — the real,
+ * component-scoped subject is computed per-call from entity_type via
+ * history_subject_for() and passed explicitly, since a static member
+ * can't vary with the request's own data.
  */
 struct get_entity_history_request final {
     using response_type = struct get_entity_history_response;

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.dq.api/messaging/badge_severity_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
@@ -516,6 +517,19 @@ fetch_coding_schemes(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->coding_schemes);
+}
+
+std::expected<std::vector<dq::domain::badge_severity>, QString>
+fetch_badge_severities(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    dq::messaging::get_badge_severities_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->severities);
 }
 
 std::expected<std::vector<refdata::domain::asset_class_code>, QString>

@@ -70,12 +70,40 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <functional>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+
+// Re-orders a menu's top-level entries alphabetically by title, dropping any
+// separators plugins may have added between contribution blocks — those
+// groupings become redundant once the entries are sorted.
+void alphabetizeMenu(QMenu* menu) {
+    if (!menu)
+        return;
+
+    QList<QAction*> entries;
+    for (auto* action : menu->actions()) {
+        if (!action->isSeparator())
+            entries.append(action);
+    }
+    std::stable_sort(entries.begin(), entries.end(), [](QAction* a, QAction* b) {
+        return QString(a->text()).remove(QLatin1Char('&')).toLower() <
+               QString(b->text()).remove(QLatin1Char('&')).toLower();
+    });
+
+    for (auto* action : menu->actions())
+        menu->removeAction(action);
+    for (auto* action : entries)
+        menu->addAction(action);
+}
+
+}
 
 MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     : QMainWindow(parent)
@@ -572,6 +600,11 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     // AdminPlugin in the setup_menus() loop above). Close it off with Exit.
     ui_->menuFile->addSeparator();
     ui_->menuFile->addAction(ui_->ExitAction);
+
+    // Data Quality's top-level entries are contributed by multiple plugins
+    // in load_order, not alphabetical, order — normalise once everyone has
+    // added theirs.
+    alphabetizeMenu(dataQualityMenu);
 
     BOOST_LOG_SEV(lg(), debug) << "Collecting plugin menus and toolbar actions.";
     for (auto* plugin : plugins) {

@@ -59,7 +59,8 @@ void EntityItemDelegate::paint(QPainter* painter,
                 // Fallback for columns without a resolver — deliberately not
                 // gray, which is reserved for inactive/negative states.
                 badge_color_pair colors{color_constants::badge_fallback,
-                                        color_constants::badge_fallback_text};
+                                        color_constants::badge_fallback_text,
+                                        true};
                 auto it = column_resolvers_.find(col);
                 if (it != column_resolvers_.end())
                     colors = it->second(text);
@@ -68,8 +69,13 @@ void EntityItemDelegate::paint(QPainter* painter,
                 badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
                 badgeFont.setBold(true);
 
-                DelegatePaintUtils::draw_centered_badge(
-                    painter, opt.rect, text, colors.background, colors.foreground, badgeFont);
+                DelegatePaintUtils::draw_centered_badge(painter,
+                                                        opt.rect,
+                                                        text,
+                                                        colors.background,
+                                                        colors.foreground,
+                                                        badgeFont,
+                                                        colors.is_fallback);
             }
             return;
         }

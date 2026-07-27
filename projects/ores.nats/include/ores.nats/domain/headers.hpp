@@ -64,6 +64,19 @@ inline constexpr std::string_view x_workspace_id = "X-Workspace-Id";
 /// Absence means single-workspace query (workspace_id exact match only).
 inline constexpr std::string_view x_workspace_resolution = "X-Workspace-Resolution";
 
+/// Transparent payload compression marker. When present with value
+/// @c content_encoding_gzip, the message body is gzip-compressed on the
+/// wire. Set automatically by client::publish()/request_sync()/js_publish()
+/// for payloads at or above the compression threshold; extract_message()
+/// checks for it and decompresses transparently, so every consumer of
+/// ores::nats::message always sees the original, uncompressed bytes
+/// regardless of how the sender decided to transmit them. No handler or
+/// protocol type needs to know this header exists.
+inline constexpr std::string_view x_content_encoding = "X-Content-Encoding";
+
+/// Value of x_content_encoding when the body is gzip-compressed.
+inline constexpr std::string_view content_encoding_gzip = "gzip";
+
 } // namespace ores::nats::headers
 
 #endif

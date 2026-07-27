@@ -19,6 +19,7 @@
  */
 #include "ores.nats/service/client.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/compression.hpp"
 #include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
@@ -172,6 +173,7 @@ message extract_message(natsMsg* msg) {
         free(keys);
     }
 
+    m.data = ores::nats::decompress_if_flagged(m.data, m.headers);
     return m;
 }
 
@@ -201,15 +203,17 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
 // Caller owns the result and must call natsMsg_Destroy.
 natsMsg* make_msg(std::string_view subject,
                   std::span<const std::byte> data,
-                  const std::unordered_map<std::string, std::string>& headers,
+                  std::unordered_map<std::string, std::string> headers,
                   const char* reply = nullptr) {
+
+    const auto payload = ores::nats::compress_if_worthwhile(data, headers);
 
     natsMsg* msg = nullptr;
     const natsStatus s = natsMsg_Create(&msg,
                                         std::string(subject).c_str(),
                                         reply,
-                                        reinterpret_cast<const char*>(data.data()),
-                                        static_cast<int>(data.size()));
+                                        reinterpret_cast<const char*>(payload.data()),
+                                        static_cast<int>(payload.size()));
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));

@@ -273,11 +273,19 @@ def cmd_generate(args: Any, base_dir: Path) -> int:
 
 def cmd_regenerate(args: Any, base_dir: Path) -> int:
     from .manifest import (  # noqa: PLC0415
-        all_components, discover_models, get_component,
+        all_components, discover_models, entity_name_from_path, get_component,
     )
+
+    entity_filter = None
+    if getattr(args, "entity", None):
+        if args.all:
+            log.error("--entity is not valid with --all; pass --component instead.")
+            return 1
+        entity_filter = {n.strip() for n in args.entity.split(",") if n.strip()}
 
     component_names = all_components() if args.all else [args.component]
     total_errors = 0
+    matched_entities: set = set()
 
     for comp_name in component_names:
         try:
@@ -297,6 +305,17 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
             )
             continue
 
+        if entity_filter is not None:
+            selected = []
+            for model_path in model_files:
+                name = entity_name_from_path(model_path)
+                if name in entity_filter:
+                    matched_entities.add(name)
+                    selected.append(model_path)
+            model_files = selected
+            if not model_files:
+                continue
+
         log.info(
             "Regenerating %d models for component %r (address: %s)%s...",
             len(model_files),
@@ -310,6 +329,15 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
                                   address=args.address, component_mode=True)
             if rc != 0:
                 total_errors += 1
+
+    if entity_filter is not None:
+        unknown = entity_filter - matched_entities
+        if unknown:
+            log.error(
+                "--entity named %s not found in component %r.",
+                ", ".join(sorted(unknown)), args.component,
+            )
+            total_errors += 1
 
     if total_errors:
         log.error("%d error(s) during regeneration.", total_errors)

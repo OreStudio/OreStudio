@@ -171,6 +171,27 @@ def discover_models(
     return sorted(matches)
 
 
+def entity_name_from_path(path: Path) -> str:
+    """Extract a human-readable entity name from a model file path.
+
+    ores.refdata.country.org        -> country
+    ores.refdata.book_status.org    -> book_status
+    country_domain_entity.json      -> country
+    audit_record_field_group.org    -> audit_record
+    """
+    stem = path.stem
+    for suffix in (
+        "_domain_entity", "_field_group", "_junction",
+        "_table", "_lookup_entity", "_enum", "_component", "_service_registry",
+    ):
+        if stem.endswith(suffix):
+            stem = stem[: -len(suffix)]
+            break
+    if "." in stem:
+        stem = stem.split(".")[-1]
+    return stem
+
+
 def get_component(name: str) -> Component:
     if name not in COMPONENTS:
         known = ", ".join(sorted(COMPONENTS))

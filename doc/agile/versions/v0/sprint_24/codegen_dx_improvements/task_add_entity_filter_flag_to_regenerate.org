@@ -70,9 +70,38 @@ look like "nothing to generate."
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Added =--entity NAME[,NAME...]= to both parsers that expose
+  =regenerate= (=projects/ores.codegen/src/codegen/cli.py= and the
+  =compass codegen regenerate= wrapper in
+  =projects/ores.compass/src/compass.py=, which has its own duplicate
+  argparse setup) — both delegate to the same
+  =codegen.generate.cmd_regenerate()=.
+- =cmd_regenerate()= parses =--entity= into a set, rejects it when
+  combined with =--all= (ERROR, matches the story's "restrict a
+  --component run" framing), then per component filters
+  =discover_models()='s result down to models whose extracted entity
+  name is in the set, tracking which names were actually matched.
+  After the component loop, any requested name never matched is an
+  ERROR — a typo doesn't read as "nothing to generate."
+- Reused (rather than duplicated) entity-name extraction: moved
+  =compass_codegen_entity.py='s existing
+  =_entity_name_from_path()= into =codegen.manifest= as the public
+  =entity_name_from_path()=, and updated
+  =compass_codegen_entity.py= to import it from there — one
+  filename→entity-name mapping instead of two copies that could
+  drift.
+- Verified live: =--entity rounding_type,monetary_nature,...=
+  generates only those entities' files; an unknown name errors
+  (exit 1); a mix of known+unknown still generates the known ones but
+  still errors overall; =--entity= with =--all= errors; omitting
+  =--entity= is byte-identical to before. Same behaviour confirmed
+  through both the direct =codegen.sh regenerate= CLI and the
+  =compass codegen regenerate= wrapper.
+- 6 new unit tests (=test_regenerate_entity_filter.py=, isolating the
+  filter logic from real generation via a monkeypatched
+  =_generate_single= and a synthetic fixture component, per
+  =test_manifest.py='s existing pattern). Full =ores.codegen= suite:
+  83/83 passing.
 
 * Notes
 

@@ -33,6 +33,11 @@ Cross-cutting properties. Consumed by *both* C++ and SQL codegen.
 
 * Columns
 
+Logical, human-meaningful identifiers (=full_name=, =short_code=,
+flagged =:natural_key: true= below) are inserted into the C++ struct
+alongside the primary key, and exposed in SQL as additional
+unique-indexed columns.
+
 ** id
 :PROPERTIES:
 :type:        uuid

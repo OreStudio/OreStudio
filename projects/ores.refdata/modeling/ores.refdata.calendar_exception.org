@@ -37,11 +37,13 @@ data.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this exception row.
@@ -49,12 +51,11 @@ UUID uniquely identifying this exception row.
 Surrogate key -- a calendar can have many exceptions, so there is no
 single natural key column.
 
-* Natural keys
-
 ** calendar_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 The calendar this exception belongs to.
@@ -67,8 +68,9 @@ std::string("TARGET")
 
 ** exception_date
 :PROPERTIES:
-:type:     date
-:cpp_type: std::chrono::year_month_day
+:type:        date
+:cpp_type:    std::chrono::year_month_day
+:natural_key: true
 :END:
 
 The specific calendar date this exception applies to.
@@ -78,8 +80,6 @@ One exception per (calendar, date) pair.
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
 #+end_src
-
-* Columns
 
 ** is_business_day
 :PROPERTIES:

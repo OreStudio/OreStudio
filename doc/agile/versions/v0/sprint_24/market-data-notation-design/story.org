@@ -64,12 +64,12 @@ agreed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-22                               |
+| Next          | Nothing — implementation is follow-on work per Out of scope. |
+| Last touched  | 2026-07-27                               |
 
 * Acceptance
 
@@ -110,7 +110,7 @@ agreed.
 |------+-------+-------+-----+-------------|
 | [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] | DONE | 2026-07-23 | 2026-07-24 | Reconcile the existing market data identifiers and ORE catalogue docs into one state-of-the-art survey of how ORE, Bloomberg, and Reuters/Refinitiv address interest-rate market data. |
 | [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] | DONE | 2026-07-24 | 2026-07-24 | Enumerate every place ore_key/index_name/qualifier/market_series keys fail to project onto ORE's index name / curve key / quote key model, including the tenor-index and curve-role gaps. |
-| [[id:4ACFF837-A9A4-4F17-9246-8E58993E469B][Design a canonical ORE Studio market data URN]] | STARTED | 2026-07-27 | | Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC. |
+| [[id:4ACFF837-A9A4-4F17-9246-8E58993E469B][Design a canonical ORE Studio market data URN]] | DONE | 2026-07-27 | 2026-07-27 | Propose a structured ORE-Studio-native notation with deterministic projection rules into ORE's index/curve/quote keys and Bloomberg/RIC. |
 | [[id:7422E41C-41FA-4106-A88D-74E142454773][Survey MDDL and FIX as additional market data notations]] | DONE | 2026-07-26 | 2026-07-26 | Extend the external market data identifiers comparative analysis with MDDL and FIX: download/archive their specifications with data lineage, add knowledge docs, and add comparative-analysis coverage across every instrument section. |
 
 * Decisions
@@ -128,6 +128,21 @@ agreed.
   session; the LIBOR-key finding (index name never appears standalone in
   the ORE curve/quote key formats, only via =CURVE_ID= convention lookup)
   is documented there and should be cited, not re-derived.
+- The canonical notation is a real [[https://www.rfc-editor.org/rfc/rfc3986][RFC 3986]] URI, scheme =oresmd=
+  (=oresmd://<asset_class>/<entity>?...=), not the flat colon-delimited
+  "URN" the story's own title provisionally called it -- optional
+  metadata (tenor, curve role, index family, ...) lives in the URI's
+  query string, conditional per asset class, rather than in fixed path
+  positions, so one grammar covers every asset class without =NONE=
+  placeholders or per-asset-class variants. See
+  [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]'s "Why a URI, and why query
+  parameters" section for the hierarchical alternative considered and
+  why it was not adopted.
+- =oresmd= spans both the logical (requirement) and physical (resolved
+  instance) levels [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] distinguishes -- a
+  partially-specified URI is a requirement, a fully-specified one is a
+  resolved instance -- rather than only ever representing the physical
+  side.
 
 * Out of scope
 

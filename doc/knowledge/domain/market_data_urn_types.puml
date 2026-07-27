@@ -1,0 +1,132 @@
+@startuml
+!include <tupadr3/common>
+hide empty members
+
+enum asset_class {
+  ir
+  fx
+  equity
+  credit
+  commodity
+}
+
+enum instrument_type {
+  fixing
+  curve
+  quote
+  vol
+}
+
+enum curve_role {
+  discount
+  projection
+  self_discounting
+}
+
+enum metric {
+  par_rate
+  discount_factor
+}
+
+abstract class market_data_identifier {
+  +asset_class() : asset_class
+  +entity() : string
+  +to_uri() : oresmd_uri
+  +{static} from_uri(oresmd_uri) : market_data_identifier
+}
+
+abstract class market_data_requirement {
+  +asset_class() : asset_class
+  +resolve(...) : market_data_identifier
+}
+
+class fx_market_data_identifier {
+  +pair : currency_pair
+  +type : instrument_type
+}
+class fx_market_data_requirement {
+  +pair : optional<currency_pair>
+  +type : optional<instrument_type>
+}
+
+class ir_market_data_identifier {
+  +ccy : currency
+  +index : string
+  +tenor : tenor
+  +role : curve_role
+  +type : instrument_type
+  +metric : optional<metric>
+  +point : optional<point>
+}
+class ir_market_data_requirement {
+  +ccy : optional<currency>
+  +index : optional<string>
+  +tenor : optional<tenor>
+  +role : optional<curve_role>
+  +type : optional<instrument_type>
+  +metric : optional<metric>
+  +point : optional<point>
+}
+
+class equity_market_data_identifier {
+  +ticker : string
+  +ccy : currency
+  +type : instrument_type
+}
+class equity_market_data_requirement {
+  +ticker : optional<string>
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+}
+
+class credit_market_data_identifier {
+  +reference_entity : string
+  +ccy : currency
+  +seniority : string
+  +tenor : tenor
+  +type : instrument_type
+}
+class credit_market_data_requirement {
+  +reference_entity : optional<string>
+  +ccy : optional<currency>
+  +seniority : optional<string>
+  +tenor : optional<tenor>
+  +type : optional<instrument_type>
+}
+
+class commodity_market_data_identifier {
+  +commodity_code : string
+  +ccy : currency
+  +type : instrument_type
+  +tenor : optional<tenor>
+}
+class commodity_market_data_requirement {
+  +commodity_code : optional<string>
+  +ccy : optional<currency>
+  +type : optional<instrument_type>
+  +tenor : optional<tenor>
+}
+
+market_data_identifier <|-- fx_market_data_identifier
+market_data_identifier <|-- ir_market_data_identifier
+market_data_identifier <|-- equity_market_data_identifier
+market_data_identifier <|-- credit_market_data_identifier
+market_data_identifier <|-- commodity_market_data_identifier
+
+market_data_requirement <|-- fx_market_data_requirement
+market_data_requirement <|-- ir_market_data_requirement
+market_data_requirement <|-- equity_market_data_requirement
+market_data_requirement <|-- credit_market_data_requirement
+market_data_requirement <|-- commodity_market_data_requirement
+
+fx_market_data_requirement ..> fx_market_data_identifier : resolve()
+ir_market_data_requirement ..> ir_market_data_identifier : resolve()
+equity_market_data_requirement ..> equity_market_data_identifier : resolve()
+credit_market_data_requirement ..> credit_market_data_identifier : resolve()
+commodity_market_data_requirement ..> commodity_market_data_identifier : resolve()
+
+market_data_identifier ..> asset_class
+market_data_identifier ..> instrument_type
+ir_market_data_identifier ..> curve_role
+ir_market_data_identifier ..> metric
+@enduml

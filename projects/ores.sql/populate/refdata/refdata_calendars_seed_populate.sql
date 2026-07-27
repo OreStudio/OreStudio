@@ -33,6 +33,15 @@
  * columns here, not FKs; the target table's own insert trigger validates
  * them once published).
  *
+ * refdata.calendars also declares a *formal* dependency on iso.countries:
+ * every row's country_code (including the ZZ sentinel for supranational
+ * calendars like TARGET) must resolve against the target tenant's own
+ * ores_refdata_countries_tbl at publish time -- see
+ * ores_refdata_calendars_insert_fn(). Without this dependency edge, bundle
+ * publish's dependency-graph resolution (publication_service::
+ * resolve_publication_order()) has no way to know calendars must publish
+ * after countries, and may order them either way.
+ *
  * This script is idempotent.
  */
 
@@ -59,6 +68,12 @@ BEGIN
         current_date,
         'Internal Use Only',
         'calendars'
+    );
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.calendars',
+        'iso.countries',
+        'country_reference'
     );
 END $$;
 

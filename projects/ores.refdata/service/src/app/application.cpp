@@ -25,7 +25,6 @@
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
-#include "ores.refdata.api/eventing/counterparty_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/currency_market_tier_changed_event.hpp"
@@ -120,8 +119,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ev::service::registrar::register_mapping<rdev::business_centre_changed_event>(
         event_source, "ores.refdata.business_centre", "ores_refdata_business_centres");
-    ev::service::registrar::register_mapping<rdev::counterparty_changed_event>(
-        event_source, "ores.refdata.counterparty", "ores_refdata_counterparties");
     ev::service::registrar::register_mapping<rdev::counterparty_contact_information_changed_event>(
         event_source,
         "ores.refdata.counterparty_contact_information",
@@ -153,17 +150,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.business_centre",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto counterparty_sub = event_bus.subscribe<rdev::counterparty_changed_event>(
-        [&nats](const rdev::counterparty_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::counterparty_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.counterparty",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.counterparty_ids,
                                                 .tenant_id = e.tenant_id});
         });
 

@@ -22,17 +22,19 @@
 // Per-entity generated event-mapping registrars.
 //
 // Not every ores.refdata domain_entity is wired here yet:
-// counterparty, counterparty_contact_information, counterparty_identifier,
+// counterparty_contact_information, counterparty_identifier,
 // currency_market_tier, monetary_nature, party, party_contact_information,
 // and party_identifier have stale nats-eventing output (their
 // changed_event's id field would rename from `ids` to `<entity>_ids` on
 // regeneration) — pre-existing drift unrelated to this registrar, tracked
-// separately. Those eight stay hand-wired in application.cpp until that drift
+// separately. Those seven stay hand-wired in application.cpp until that drift
 // is resolved; see the migrate-remaining-entities capture. business_unit was
 // migrated here (its own such drift resolved) while moving it, business_unit_type,
 // and party_id_scheme onto full codegen — see the "Migrate all entities onto the
 // generic HistoryDialog" story. portfolio was migrated here the same way while
-// regenerating it against current codegen templates.
+// regenerating it against current codegen templates. counterparty's drift was
+// resolved incidentally while attaching a logo/image to it (see "Attach a
+// logo/image to a counterparty" task), so it moved here too.
 #include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
@@ -42,6 +44,7 @@
 #include "ores.refdata.service/messaging/business_unit_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/calendar_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/counterparty_event_registrar.hpp"
 #include "ores.refdata.service/messaging/country_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_driver_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_enabled_derived_pair_event_registrar.hpp"
@@ -95,6 +98,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_business_unit_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_contact_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_counterparty_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_driver_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_crm_enabled_derived_pair_event_mapping(event_source, event_bus, nats));

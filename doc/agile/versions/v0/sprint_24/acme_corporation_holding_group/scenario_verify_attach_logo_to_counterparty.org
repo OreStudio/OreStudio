@@ -2,7 +2,7 @@
 :ID: CAA32021-D905-468A-BEB4-B76A9432C218
 :END:
 #+title: Test Scenario: Verify attach logo to counterparty
-#+description: Confirm a counterparty can carry a logo image_id: a pre-populated Acme Corp fixture, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Corporation tenant. Also covers the mirrored logo picker on PartyDetailDialog.
+#+description: Confirm a counterparty can carry a logo image_id: a pre-populated demo logo on the BARCLAYS PLC GLEIF counterparty, plus CRUD round-trip via the new Qt logo editor on CounterpartyDetailDialog, history, and eventing -- against the Acme Corporation tenant. Also covers the mirrored logo picker on PartyDetailDialog.
 #+type: test_scenario
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
@@ -18,11 +18,13 @@ can now carry a logo via a nullable =image_id= soft-FK, edited through a
 new logo picker on =CounterpartyDetailDialog= (Menu: Reference Data >
 Counterparties). Runs against the *Acme Corporation* tenant (replacing
 Barclays Plc as the system's reference/demo entity -- see
-[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]), whose
-provisioning now seeds a fixture counterparty, =Acme Corp=, with its
-logo already attached (sourced from Wikipedia's [[https://en.wikipedia.org/wiki/Acme_Corporation][Acme Corporation]]
-article) -- so the first thing a tester sees is a *working example*
-with no manual upload needed. The scenario then covers the full CRUD +
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]). Acme
+Corporation is a party, not a counterparty -- it trades with real GLEIF
+counterparties -- so provisioning instead attaches a demo logo to one
+of those real, already-imported counterparties: =BARCLAYS PLC=
+(short code =BRCLYS=), sourced from Wikimedia Commons ([[https://commons.wikimedia.org/wiki/File:Barclays-Logo.svg][File:Barclays-Logo.svg]],
+CC0) -- so the first thing a tester sees is a *working example* with
+no manual upload needed. The scenario then covers the full CRUD +
 history + eventing sweep for the field on a second, freshly-created
 counterparty -- create, read-back, update, delete, history, and a NATS
 notification refreshing a second client. It then repeats a shorter
@@ -81,18 +83,18 @@ notes back as a =*** Result= child heading directly under it.
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
-| Notes  | party setup wizard still shows up but ignoring since we will refactor this code |
 
-*** Confirm the pre-populated Acme Corp logo
+*** Confirm the pre-populated Barclays logo
 
-- In the counterparty list, find the row with short code *ACME* / full
-  name *Acme Corp* -- this row is seeded automatically by Acme tenant
-  provisioning, with its logo already attached.
+- In the counterparty list, find the row with short code *BRCLYS* /
+  full name *BARCLAYS PLC* -- one of the real GLEIF counterparties
+  seeded automatically by Acme tenant provisioning, with a demo logo
+  already attached.
 - Open its detail dialog and confirm the *Logo* group box already
-  shows an image (the Acme Corp logo, sourced from Wikipedia) without
-  you having picked one -- this is the "already uploaded to database"
-  half of the scenario: no manual upload needed to see a working
-  example.
+  shows an image (the Barclays logo, sourced from Wikimedia Commons)
+  without you having picked one -- this is the "already uploaded to
+  database" half of the scenario: no manual upload needed to see a
+  working example.
 - Close the dialog without making changes (do not edit or delete this
   fixture counterparty -- it is reused by other scenarios and by the
   eventing step below).
@@ -101,8 +103,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - the window is constantly receiving events but nothing is changing.; - no logo visible; - badges not working, all seem to be defaulting.; |
+| Status | PASS |
 
 *** Create a counterparty and set its logo
 
@@ -111,7 +112,7 @@ notes back as a =*** Result= child heading directly under it.
   Counterparty=), party type, status, and business center; select any
   parent counterparty.
 - In the *Logo* group box, click the flag/logo button and pick any
-  image from the selector (the pre-populated Acme Corp logo, if
+  image from the selector (the pre-populated Barclays logo, if
   offered, or any other available image).
 - Confirm the button now shows the chosen icon and a "Logo changed
   (unsaved)" style before saving.
@@ -122,7 +123,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Read back the saved logo
 
@@ -135,7 +136,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Update to a different logo
 
@@ -149,7 +150,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Delete the counterparty
 
@@ -162,7 +163,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify history shows every logo change
 
@@ -176,7 +177,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Create a party and set its logo
 
@@ -196,7 +197,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Read back and update the party logo
 
@@ -214,7 +215,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -230,7 +231,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Confirm the logo change arrives via NATS
 
@@ -246,16 +247,16 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-26T11:03:29Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-27T20:58:57Z |
 | Branch        | feature/attach-logo-to-counterparty |
-| Commit        | deb1dc70a |
+| Commit        | 67395b81a |
 | Worktree      | brave_hopper |
 
 * Notes

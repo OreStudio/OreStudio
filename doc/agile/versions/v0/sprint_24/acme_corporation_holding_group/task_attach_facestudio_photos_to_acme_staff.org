@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: BF7C9D7C-F974-4EF5-B34D-ABA5618491C4
+:ID: 9A96B3F7-8A99-40AF-B588-451B31216C71
 :END:
-#+title: Task: Fix: counterparty/party logo does not render in the Qt detail dialog
-#+description: Manual QA of the attach-logo-to-counterparty feature found the logo never appears in CounterpartyDetailDialog's flag button, even for a pre-populated demo fixture. Two root causes found and fixed: setCounterparty()/setParty() never called updateFlagDisplay() after loading the real entity, and ImageCache::loadImageById() shared one QFutureWatcher across concurrent single-image requests, silently dropping all but the most recent.
+#+title: Task: Attach FaceStudio profile pictures to generated Acme staff accounts
+#+description: The Generalise account images task added an image_id FK to ores_iam_accounts_tbl specifically so accounts could carry a profile picture, and its own Result explicitly deferred actually setting it to this follow-up -- which was never filed. generate_data.py currently sets no image_id at all for any of the 45 generated Acme staff accounts, so no photos appear anywhere in the Qt UI.
 #+type: task
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
@@ -11,8 +11,8 @@
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-07-26
-#+updated: 2026-07-26
+#+created: 2026-07-27
+#+updated: 2026-07-27
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The counterparty/party logo picker (already merged, DONE) must actually display the selected/pre-populated image in the Qt dialog. Currently it never renders, confirmed via manual QA against a live Acme Corporation tenant with a known-good pre-populated logo fixture.
+Every generated Acme staff account should have a profile picture, matching the parent story's own acceptance criterion (every generated staff account has an associated profile picture) -- currently unmet.
 
 * Status
 
@@ -31,12 +31,12 @@ The counterparty/party logo picker (already merged, DONE) must actually display 
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-07-26                               |
+| Last touched | 2026-07-27                               |
 
 * Acceptance
 
-- Opening CounterpartyDetailDialog (or PartyDetailDialog) for an entity with a valid image_id shows the logo in the flag button, both for a pre-populated fixture and for a freshly-picked-and-saved image.
-- Root cause is identified and documented, not just worked around.
+- generate_data.py (or the codegen/SQL layer downstream of it) assigns each of the 45 generated Acme staff accounts an image_id referencing a locale-appropriate picture from external/facestudio/faces.
+- Staff photos are visible in the Qt UI (account list/detail) after --source acme provisioning, with no manual step needed.
 
 * Plan
 

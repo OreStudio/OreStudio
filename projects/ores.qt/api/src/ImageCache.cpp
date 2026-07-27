@@ -48,7 +48,6 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     , incremental_changes_watcher_(new QFutureWatcher<ImageIdsResult>(this))
     , images_watcher_(new QFutureWatcher<ImagesResult>(this))
     , image_list_watcher_(new QFutureWatcher<ImageListResult>(this))
-    , single_image_watcher_(new QFutureWatcher<SingleImageResult>(this))
     , set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this))
     , set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this))
     , all_available_watcher_(new QFutureWatcher<ImagesResult>(this))
@@ -75,10 +74,6 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
             &QFutureWatcher<ImageListResult>::finished,
             this,
             &ImageCache::onImageListLoaded);
-    connect(single_image_watcher_,
-            &QFutureWatcher<SingleImageResult>::finished,
-            this,
-            &ImageCache::onSingleImageLoaded);
     connect(set_currency_image_watcher_,
             &QFutureWatcher<SetCurrencyImageResult>::finished,
             this,
@@ -784,18 +779,28 @@ void ImageCache::loadImageById(const std::string& image_id) {
             return {true, requested_id, std::move(response->images[0])};
         });
 
-    single_image_watcher_->setFuture(future);
+    // Each call gets its own watcher rather than sharing one instance: a
+    // shared QFutureWatcher only ever tracks the most recently assigned
+    // future, so calling setFuture() again before an earlier future
+    // finishes silently stops watching it -- the earlier request's
+    // image_id then stays stuck in pending_image_requests_ forever and
+    // imageLoaded() never fires for it. Self-deletes once the result is
+    // processed.
+    auto* watcher = new QFutureWatcher<SingleImageResult>(this);
+    connect(watcher, &QFutureWatcher<SingleImageResult>::finished, this, [self, watcher]() {
+        if (self) {
+            try {
+                self->handleSingleImageResult(watcher->result());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Exception loading single image: " << e.what();
+            }
+        }
+        watcher->deleteLater();
+    });
+    watcher->setFuture(future);
 }
 
-void ImageCache::onSingleImageLoaded() {
-    decltype(single_image_watcher_->result()) result;
-    try {
-        result = single_image_watcher_->result();
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Exception loading single image: " << e.what();
-        return;
-    }
-
+void ImageCache::handleSingleImageResult(const SingleImageResult& result) {
     // Clear pending status
     pending_image_requests_.erase(result.image_id);
 

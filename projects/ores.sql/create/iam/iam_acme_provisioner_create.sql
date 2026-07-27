@@ -27,8 +27,8 @@
 -- of its own) publishes that company's business units, portfolios, books,
 -- accounts, and account contact informations, plus a single tenant-wide
 -- import of real GLEIF counterparties (small) so every ACME Corporation party can
--- trade against a realistic counterparty set, and the Acme Corp counterparty
--- fixture with its logo already attached. Called from a single NATS
+-- trade against a realistic counterparty set, with a demo logo already
+-- attached to one of them (BARCLAYS PLC). Called from a single NATS
 -- request/handler (see ores.iam.core/messaging/tenant_handler.hpp)
 -- -- no repeated per-party logins, no orchestration logic client-side.
 --
@@ -40,11 +40,12 @@
 -- =============================================================================
 
 -- =============================================================================
--- Activates a party and marks its onboarding wizard complete -- the two
--- effects normally produced by the shell/wizard "provision party" flow's
--- final phase (see ores.shell/provision_commands.cpp), needed here because
--- --source acme publishes party-scoped data directly in SQL rather than via
--- that generic per-party flow. LEI-imported parties land Inactive with no
+-- Activates a party, attaches the Acme Corporation demo logo, and marks its
+-- onboarding wizard complete -- effects normally produced by the shell/
+-- wizard "provision party" flow's final phase (see
+-- ores.shell/provision_commands.cpp), needed here because --source acme
+-- publishes party-scoped data directly in SQL rather than via that generic
+-- per-party flow. LEI-imported parties land Inactive with no
 -- onboarding.party setting, which would otherwise re-launch the Party
 -- Provisioning Wizard on every login (see auth_is_party_onboarding_complete
 -- in ores.iam.core/messaging/auth_handler.hpp).
@@ -52,7 +53,9 @@
 -- Uses the same select-rowtype/mutate/reinsert idiom as
 -- ores_refdata_parties_touch_version_fn: the parties table only has an
 -- INSERT trigger (append-only temporal versioning), so a raw UPDATE would
--- bypass it and silently skip the version bump / history trail.
+-- bypass it and silently skip the version bump / history trail. Status and
+-- image_id are combined into a single reinsert (rather than one each) to
+-- avoid a spurious double version bump on first activation.
 -- =============================================================================
 create or replace function ores_iam_acme_activate_party_fn(
     p_tenant_id uuid,
@@ -61,6 +64,8 @@ create or replace function ores_iam_acme_activate_party_fn(
 declare
     rec ores_refdata_parties_tbl%rowtype;
     v_actor text;
+    v_logo_image_id uuid;
+    v_template_image record;
 begin
     select * into rec
     from "ores_refdata_parties_tbl"
@@ -71,13 +76,46 @@ begin
 
     v_actor := coalesce(ores_iam_current_service_fn(), current_user);
 
-    if found and rec.status != 'Active' then
+    if found and rec.image_id is null then
+        select image_id into v_logo_image_id
+        from ores_assets_images_tbl
+        where tenant_id = p_tenant_id
+          and key = 'acme_party_logo'
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_logo_image_id is null then
+            select image_id, key, description, mime_type, data into v_template_image
+            from ores_assets_images_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and key = 'acme_party_logo'
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if v_template_image.image_id is not null then
+                v_logo_image_id := gen_random_uuid();
+                insert into ores_assets_images_tbl (
+                    image_id, tenant_id, version, key, description, mime_type, data,
+                    modified_by, performed_by, change_reason_code, change_commentary
+                ) values (
+                    v_logo_image_id, p_tenant_id, 0,
+                    v_template_image.key, v_template_image.description,
+                    v_template_image.mime_type, v_template_image.data,
+                    v_actor, current_user, 'system.external_data_import',
+                    'Copied from system-tenant template: ' || v_template_image.key
+                );
+            end if;
+        end if;
+    end if;
+
+    if found and (rec.status != 'Active' or (rec.image_id is null and v_logo_image_id is not null)) then
         rec.version := 0;
         rec.status := 'Active';
+        if rec.image_id is null then
+            rec.image_id := v_logo_image_id;
+        end if;
         rec.modified_by := v_actor;
         rec.performed_by := current_user;
         rec.change_reason_code := 'system.external_data_import';
-        rec.change_commentary := 'Activated during Acme provisioning';
+        rec.change_commentary := 'Activated (and logo attached) during Acme provisioning';
 
         insert into "ores_refdata_parties_tbl"
         select (rec).*;
@@ -143,8 +181,8 @@ declare
     v_row record;
     v_template_image record;
     v_logo_image_id uuid;
-    v_existing_counterparty_id uuid;
     v_account_rec ores_iam_accounts_tbl%rowtype;
+    v_counterparty_rec ores_refdata_counterparties_tbl%rowtype;
 begin
     -- Step 1: business centres (required for party creation).
     select id into v_dataset_id
@@ -348,20 +386,22 @@ begin
         return next;
     end loop;
 
-    -- Step 5: the Acme Corp counterparty fixture, with its logo already
-    -- attached -- so a tester sees a working example with no manual upload
-    -- needed. The logo is a raster PNG (see acme_corp_logo_populate.sql's
-    -- header for why it bypasses the SVG-only DQ staging pipeline): copy
-    -- the system-tenant template row into the target tenant, then
-    -- upsert the counterparty referencing it.
+    -- Step 5: attach a demo logo to one of the real, already-imported GLEIF
+    -- counterparties -- Acme Corporation is a party (the synthetic
+    -- holding-group tenant under test); it trades with real GLEIF
+    -- counterparties, it is not itself also a counterparty, so there is no
+    -- synthetic "Acme Corp" counterparty to create here. BARCLAYS PLC
+    -- (short_code BRCLYS) is picked as a recognisable, deterministic
+    -- example so a tester sees a working logo with no manual upload
+    -- needed.
     select image_id, key, description, mime_type, data into v_template_image
     from ores_assets_images_tbl
     where tenant_id = ores_utility_system_tenant_id_fn()
-      and key = 'acme_corp_logo'
+      and key = 'demo_counterparty_logo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_template_image.image_id is null then
-        step := 'corp_logo.skipped';
+        step := 'demo_counterparty_logo.skipped';
         action := 'template_not_found'; record_count := 0;
         return next;
     else
@@ -384,29 +424,33 @@ begin
                 'system.external_data_import',
                 'Copied from system-tenant template: ' || v_template_image.key
             );
-            step := 'corp_logo'; action := 'inserted'; record_count := 1;
+            step := 'demo_counterparty_logo'; action := 'inserted'; record_count := 1;
             return next;
         end if;
 
-        select id into v_existing_counterparty_id
+        -- Counterparties is append-only temporal (INSERT trigger only,
+        -- same idiom as ores_iam_acme_activate_party_fn above) -- a raw
+        -- UPDATE would bypass versioning/history.
+        select * into v_counterparty_rec
         from ores_refdata_counterparties_tbl
         where tenant_id = p_target_tenant_id
-          and short_code = 'ACME'
-          and valid_to = ores_utility_infinity_timestamp_fn();
+          and short_code = 'BRCLYS'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        for update;
 
-        if v_existing_counterparty_id is null then
-            insert into ores_refdata_counterparties_tbl (
-                id, tenant_id, version, short_code, full_name, party_type,
-                business_center_code, status, image_id,
-                modified_by, performed_by, change_reason_code, change_commentary
-            ) values (
-                gen_random_uuid(), p_target_tenant_id, 0, 'ACME', 'Acme Corp', 'Corporate',
-                'WRLD', 'Active', v_logo_image_id,
-                coalesce(ores_iam_current_service_fn(), current_user), current_user,
-                'system.external_data_import',
-                'Acme Corp counterparty fixture, with its logo already attached'
-            );
-            step := 'corp_counterparty'; action := 'inserted'; record_count := 1;
+        if found and v_counterparty_rec.image_id is null then
+            v_counterparty_rec.version := 0;
+            v_counterparty_rec.image_id := v_logo_image_id;
+            v_counterparty_rec.modified_by := coalesce(ores_iam_current_service_fn(), current_user);
+            v_counterparty_rec.performed_by := current_user;
+            v_counterparty_rec.change_reason_code := 'system.external_data_import';
+            v_counterparty_rec.change_commentary :=
+                'Attached demo logo to BARCLAYS PLC during Acme provisioning';
+
+            insert into ores_refdata_counterparties_tbl
+            select (v_counterparty_rec).*;
+
+            step := 'demo_counterparty_logo.attached'; action := 'updated'; record_count := 1;
             return next;
         end if;
     end if;

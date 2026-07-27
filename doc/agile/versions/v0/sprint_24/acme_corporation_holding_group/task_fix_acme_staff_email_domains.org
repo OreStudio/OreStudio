@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: BF7C9D7C-F974-4EF5-B34D-ABA5618491C4
+:ID: A226BB18-9C51-4322-BE35-EEC461A2DF81
 :END:
-#+title: Task: Fix: counterparty/party logo does not render in the Qt detail dialog
-#+description: Manual QA of the attach-logo-to-counterparty feature found the logo never appears in CounterpartyDetailDialog's flag button, even for a pre-populated demo fixture. Two root causes found and fixed: setCounterparty()/setParty() never called updateFlagDisplay() after loading the real entity, and ImageCache::loadImageById() shared one QFutureWatcher across concurrent single-image requests, silently dropping all but the most recent.
+#+title: Task: Fix Acme staff email domains: proper per-country TLDs, not a raw office code
+#+description: generate_data.py builds staff emails as name.index@office_code.acmecorp.example (e.g. ...@acme_uk.acmecorp.example), which looks wrong, not like a real corporate email. Use a proper per-country domain instead (e.g. acmecorp.co.uk, acmecorp.com, acmecorp.com.hk), matching each OFFICES entry's country.
 #+type: task
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
@@ -11,8 +11,8 @@
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-07-26
-#+updated: 2026-07-26
+#+created: 2026-07-27
+#+updated: 2026-07-27
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The counterparty/party logo picker (already merged, DONE) must actually display the selected/pre-populated image in the Qt dialog. Currently it never renders, confirmed via manual QA against a live Acme Corporation tenant with a known-good pre-populated logo fixture.
+Acme Corporation exists to exercise real system functionality realistically; staff emails using a raw internal office code as if it were a domain segment undermines that. Each office (UK/US/HK) should get a locale-appropriate corporate email domain.
 
 * Status
 
@@ -31,12 +31,12 @@ The counterparty/party logo picker (already merged, DONE) must actually display 
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-07-26                               |
+| Last touched | 2026-07-27                               |
 
 * Acceptance
 
-- Opening CounterpartyDetailDialog (or PartyDetailDialog) for an entity with a valid image_id shows the logo in the flag button, both for a pre-populated fixture and for a freshly-picked-and-saved image.
-- Root cause is identified and documented, not just worked around.
+- generate_data.py's OFFICES config carries (or derives) a proper per-country email domain (e.g. acmecorp.co.uk, acmecorp.com, acmecorp.com.hk) instead of office_code.acmecorp.example.
+- Regenerated accounts.json and populate SQL reflect the corrected email domains; existing tests updated if they assert on the old format.
 
 * Plan
 

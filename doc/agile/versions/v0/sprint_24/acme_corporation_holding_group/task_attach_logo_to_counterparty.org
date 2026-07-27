@@ -73,6 +73,18 @@ the Acme Corp logo asset already supplied for this purpose.
 
 * Notes
 
+Correction (found during manual QA on the follow-on PartyDetailDialog
+work): the "Acme Corp logo asset already supplied for this purpose"
+premise in the =* Goal= above was conceptually wrong -- Acme
+Corporation is a *party* (the synthetic holding-group tenant), not
+itself a counterparty; it trades with real GLEIF counterparties, so
+there is no "Acme Corp" counterparty to attach a logo to. The demo
+fixture now attaches a logo to a real, already-imported GLEIF
+counterparty (=BARCLAYS PLC=, short code =BRCLYS=) instead -- see
+=iam_acme_provisioner_create.sql= and
+=acme_demo_counterparty_logo_populate.sql=. The =image_id= feature
+itself (this task's actual scope) is unaffected.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

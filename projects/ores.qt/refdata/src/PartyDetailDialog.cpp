@@ -191,6 +191,11 @@ void PartyDetailDialog::setUsername(const std::string& username) {
 void PartyDetailDialog::setParty(const refdata::domain::party& party) {
     party_ = party;
     updateUiFromParty();
+    // initFlagButton() (setupUi(), constructor time) already ran
+    // updateFlagDisplay() once against a default-constructed party_
+    // (entityImageId() -> nullopt) -- re-run now that the real image_id is
+    // known, else the flag button never reflects it.
+    updateFlagDisplay();
     childTables_->reload(party_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(party_.id, clientManager_);
 }
@@ -436,7 +441,7 @@ void PartyDetailDialog::onSaveClicked() {
     connect(watcher,
             &QFutureWatcher<SaveResult>::finished,
             self,
-            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            [self, watcher]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
 

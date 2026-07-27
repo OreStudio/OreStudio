@@ -195,6 +195,11 @@ void CounterpartyDetailDialog::setUsername(const std::string& username) {
 void CounterpartyDetailDialog::setCounterparty(const refdata::domain::counterparty& counterparty) {
     counterparty_ = counterparty;
     updateUiFromCounterparty();
+    // initFlagButton() (setupUi(), constructor time) already ran
+    // updateFlagDisplay() once against a default-constructed counterparty_
+    // (entityImageId() -> nullopt) -- re-run now that the real image_id is
+    // known, else the flag button never reflects it.
+    updateFlagDisplay();
     childTables_->reload(
         counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(counterparty_.id, clientManager_);
@@ -442,7 +447,7 @@ void CounterpartyDetailDialog::onSaveClicked() {
     connect(watcher,
             &QFutureWatcher<SaveResult>::finished,
             self,
-            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            [self, watcher]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
 

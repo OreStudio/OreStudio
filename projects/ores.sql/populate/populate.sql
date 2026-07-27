@@ -104,7 +104,8 @@
 \ir acme/acme_hk_books_artefact_populate.sql
 \ir acme/acme_hk_accounts_artefact_populate.sql
 \ir acme/acme_hk_account_contact_informations_artefact_populate.sql
-\ir acme/acme_corp_logo_populate.sql
+\ir acme/acme_party_logo_populate.sql
+\ir acme/acme_demo_counterparty_logo_populate.sql
 
 -- =============================================================================
 -- Badge Severities Dataset (self-published DQ artefact; must follow the

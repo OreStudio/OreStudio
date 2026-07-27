@@ -17,7 +17,7 @@ create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
 {{#entity.columns}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/entity.columns}}
 {{#entity.has_image_id}}
     ,"image_id" uuid
@@ -49,7 +49,7 @@ create or replace function ores_dq_{{entity.entity_plural}}_artefact_insert_fn(
     p_{{entity.primary_key.column}} {{entity.primary_key.type}},
     p_version integer,
 {{#entity.columns}}
-    p_{{name}} {{type}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+    p_{{name}} {{type}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
 {{/entity.columns}}
 {{#entity.has_image_id}}
     ,p_image_id uuid default null

@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 77F77107-23CE-46B4-B51E-F7DBAC742C3D
+:END:
+#+title: Task: Send raw bytes instead of base64 for image-carrying NATS messages
+#+description: Follow-up to the compression task: stop routing image byte payloads through rfl::json's default base64 encoding. Not load-bearing (the generic transparent gzip mechanism already gives a 2.5x margin against the worst measured case per the decision task), but removes a pointless encode/decode round-trip and the remaining ~33% base64 overhead. Needs a custom wire encoding for image-carrying messages specifically, bypassing rfl::json for that field.
+#+type: task
+#+level: s1
+#+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Image byte payloads currently travel base64-encoded inside a JSON
+string field (via =rfl::json='s default =std::vector<uint8_t>=
+handling), even though the compression task's generic transport-level
+gzip already compresses that JSON+base64 text as opaque bytes. This
+task removes the base64 layer specifically for image-carrying
+messages, so the raw SVG bytes go straight into the (already
+compressed) NATS payload with no encode-then-immediately-decode
+round trip.
+
+Not load-bearing: the compression task's own data shows gzip-with-
+base64 already gives a 2.5x margin against the worst measured case.
+This is a further ~25% payload reduction plus removing pure CPU/
+bandwidth waste, not a bug fix. Needs a custom wire encoding for
+image-carrying messages specifically (bypassing =rfl::json='s default
+behaviour for that field), which is why it's split from the
+compression task rather than bundled with it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

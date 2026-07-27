@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-nats-compression-vs-http-transport
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
 #+updated: 2026-07-26
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,22 +40,96 @@ compression alone isn't enough.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
 
--
+- [X] Worst-case payload estimated from real data, not just a rule of
+  thumb.
+- [X] Estimate compared against NATS's actual max payload.
+- [X] Decision recorded below with rationale, ready to distil into the
+  story's =* Decisions= at close.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Data: NATS's actual max payload
+
+No =max_payload= override exists anywhere in this repo's generated
+NATS config (=build/config/nats-*.conf=) or in =ores.compass='s NATS
+setup code, so the server default applies: *1,048,576 bytes (1 MiB)*.
+Confirms the story's claim.
+
+** Data: worst-case SVG batch, measured (not estimated)
+
+The story names Norfolk Island and CEFTA as "complex" examples, but
+checking the actual source data (=external/flags/flag-icons/=, 276
+SVGs, the source =flags_generate_metadata_sql.py= reads from) shows
+those aren't the worst offenders -- =nf.svg= is 5.6 KB, =cefta.svg= is
+910 B. The real top of the distribution is far larger:
+
+| Flag                | Raw bytes |
+|----------------------+-----------|
+| rs.svg (Serbia)       |   181,634 |
+| sh-ac.svg (Ascension) |   143,373 |
+| bo.svg (Bolivia)      |   102,880 |
+| mx.svg (Mexico)       |    84,753 |
+| es.svg (Spain)        |    80,958 |
+| (10 more, descending) |           |
+
+Measured the actual worst case a batch of =MAX_IMAGES_PER_REQUEST=
+(currently 15) could construct -- the 15 largest SVGs in the corpus,
+gzip -9'd for real rather than assuming the "70-80%" rule of thumb:
+
+| Encoding                          |     Bytes | vs. 1 MiB limit |
+|------------------------------------+-----------+------------------|
+| Raw, base64'd (today's wire format) | 1,348,864 | *132% -- overflows* |
+| Raw bytes, no base64, uncompressed  | 1,011,648 | 96% -- still tight |
+| Gzip -9, still base64'd             |   415,601 | 40%              |
+| Gzip -9, raw bytes (no base64)      |   311,701 | 30%              |
+
+** Finding
+
+The worst-case 15-image batch *already exceeds* NATS's 1 MiB limit
+today (1,348,864 bytes, ~1.29x over) purely from base64 inflation on
+top of raw SVG size -- confirming the bug is real and not just a
+theoretical edge case, and that even removing base64 alone (without
+compression) leaves it at 96% of the limit with no margin.
+
+Adding gzip compression -- even without touching the base64 layer --
+drops the same worst case to ~406 KB (40% of the limit, a comfortable
+~2.5x margin). Doing both (raw bytes + gzip) drops it further to
+~305 KB (30% of the limit, ~3.4x margin). Either way, compression
+alone resolves the overflow with room to spare; base64 removal is
+worth doing regardless (it is free bandwidth/CPU savings and the
+"decode what you just encoded for no reason" cost the story flagged),
+but is not itself load-bearing for fixing the bug.
+
+** Decision
+
+*Stay on NATS request-reply.* Implement both remaining tasks as
+scoped:
+
+1. Compression + raw-byte wire encoding for image-carrying messages
+   (this is what actually fixes the overflow, with a ~2.5-3.4x
+   margin against the worst measured case).
+2. Byte-size-aware batching as the defense-in-depth backstop --- not
+   load-bearing given the margin above, but cheap insurance against a
+   future even-larger SVG landing in the corpus, or a batch size
+   larger than 15 being reintroduced later.
+
+The HTTP storage-endpoint transport migration is *not* warranted: it
+would be a materially bigger change (new storage-addressing scheme
+for images, touching the client's fetch path end to end) for a
+problem that compression alone already solves with a comfortable
+margin. Revisit only if a future single SVG (not a batch) somehow
+approaches 1 MiB on its own, which no image in the current corpus is
+remotely close to (the single largest, rs.svg at 181,634 bytes raw,
+is 49,978 bytes gzip'd -- under 5% of the limit on its own).
 
 * Notes
 
@@ -83,3 +157,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Decision: stay on NATS request-reply; do not migrate image delivery
+to the HTTP storage-endpoint transport. Measured the actual worst-case
+batch (the 15 largest SVGs in =external/flags/flag-icons/=, not the
+story's anecdotal examples, which turned out not to be the worst
+offenders) and found it already overflows NATS's 1 MiB default limit
+today under the current base64+uncompressed wire format
+(1,348,864 bytes, ~132% of the limit) -- confirming the bug is real.
+Gzip compression alone (independent of the base64 question) drops the
+same worst case to ~406 KB (40% of the limit, ~2.5x margin); doing
+both (raw bytes + gzip) drops it to ~312 KB (30%, ~3.4x margin). All
+acceptance criteria met; full data and rationale in =* Plan= above.
+
+No PR raised for this task -- the two implementation tasks it unblocks
+land first, then everything goes up together.

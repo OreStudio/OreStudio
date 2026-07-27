@@ -19,7 +19,7 @@ create table if not exists "{{junction.product}}_{{junction.component}}_{{juncti
     "{{junction.right.column}}" {{junction.right.type}} not null,
     "version" integer not null,
 {{#junction.columns}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/junction.columns}}
     "modified_by" text not null,
     "performed_by" text not null,

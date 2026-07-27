@@ -81,6 +81,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Optimization may not engage on common login path due to unguaranteed loadAll()/loadImageList() async race | ImageCache.cpp/.hpp | Fixed | Added finishLoadAllChain()/resumeDeferredLoadAllChain(): loadAll()'s chain now defers its final fetch until available_images_ is populated instead of proceeding with unknown-size fallback. |
+| 2 | O(n*m) linear scan merging incremental-change sizes into available_images_ | ImageCache.cpp | Declined | Non-blocking per review; list sizes are low hundreds, not worth the complexity now. |
+| 3 | No unit tests for fetchImagesInBatches | ImageCache.cpp | Declined | No existing test scaffolding for ores.qt/api (private static method, live ClientManager* dependency); consistent with existing coverage, not a regression. |
 
 * Result

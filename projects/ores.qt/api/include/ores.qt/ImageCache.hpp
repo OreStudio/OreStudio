@@ -335,6 +335,30 @@ private:
     void loadImagesByIds(const std::vector<std::string>& image_ids);
 
     /**
+     * @brief Complete the loadAll() chain by fetching pending_image_ids_,
+     * deferring until available_images_ (and its size_bytes) is populated
+     * if the image list hasn't loaded yet.
+     *
+     * Called from every exit point of the currency/country/BC/calendar
+     * chain loadAll() kicks off. Without this, pending_image_ids_ would
+     * be fetched via loadImagesByIds() before loadImageList() (fired
+     * independently, e.g. by MainWindow at login) has necessarily
+     * completed -- every id would then be treated as unknown-size and
+     * batched one request per image, defeating byte-size-aware batching
+     * on this common path purely due to incidental async ordering.
+     */
+    void finishLoadAllChain();
+
+    /**
+     * @brief Resume a loadAll() chain deferred by finishLoadAllChain(),
+     * if one is pending. Called from onImageListLoaded() regardless of
+     * whether the list load succeeded, so a failure can't leave
+     * pending_image_ids_ (and load_all_in_progress_) stuck forever --
+     * loadImagesByIds() falls back to its existing unknown-size handling.
+     */
+    void resumeDeferredLoadAllChain();
+
+    /**
      * @brief Load business centre -> country alpha-2 mapping.
      */
     void loadBusinessCentreMapping();
@@ -444,6 +468,11 @@ private:
     bool is_loading_images_{false};
     bool is_loading_all_available_{false};
     bool load_all_in_progress_{false};
+
+    // Set by finishLoadAllChain() when the loadAll() chain reaches its end
+    // before available_images_ is populated; resumeDeferredLoadAllChain()
+    // clears it and fetches pending_image_ids_ once the list arrives.
+    bool pending_ids_await_list_{false};
 
     // Image IDs collected during loadAll() for preloading
     std::vector<std::string> pending_image_ids_;

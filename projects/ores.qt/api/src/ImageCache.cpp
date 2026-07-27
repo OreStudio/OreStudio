@@ -265,7 +265,7 @@ void ImageCache::loadCountryImageIds() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load country image IDs: not connected.";
         // Still try to load what we have from currencies
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -347,7 +347,7 @@ void ImageCache::loadBusinessCentreMapping() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load BC mapping: not connected.";
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -392,7 +392,7 @@ void ImageCache::onBusinessCentreMappingLoaded() {
         result = bc_mapping_watcher_->result();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading BC mapping: " << e.what();
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
     if (result.success) {
@@ -412,7 +412,7 @@ void ImageCache::loadCalendarMapping() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load calendar mapping: not connected.";
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -463,7 +463,7 @@ void ImageCache::onCalendarMappingLoaded() {
         result = calendar_mapping_watcher_->result();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading calendar mapping: " << e.what();
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
     if (result.success) {
@@ -480,7 +480,30 @@ void ImageCache::onCalendarMappingLoaded() {
     }
 
     // Now load all the images
-    loadImagesByIds(pending_image_ids_);
+    finishLoadAllChain();
+}
+
+void ImageCache::finishLoadAllChain() {
+    if (!available_images_.empty()) {
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
+
+    // available_images_ is empty, so loadImagesByIds() would treat every
+    // id in pending_image_ids_ as unknown-size and batch them one per
+    // request -- defeating byte-size-aware batching on this (common,
+    // login-time) path just because loadImageList()'s single round trip
+    // hasn't completed yet while this four-request chain was running.
+    // Defer to onImageListLoaded(), which calls back in once the list (and
+    // its size_bytes) is available. Avoid triggering a second, redundant
+    // list load if one is already in flight (e.g. MainWindow.cpp's own
+    // loadImageList() call, fired independently at login).
+    BOOST_LOG_SEV(lg(), debug)
+        << "finishLoadAllChain(): image list not yet loaded, deferring "
+        << pending_image_ids_.size() << " pending image IDs until it arrives.";
+    pending_ids_await_list_ = true;
+    if (!image_list_watcher_->isRunning())
+        loadImageList();
 }
 
 QIcon ImageCache::getCurrencyFlagIcon(const std::string& iso_code) {
@@ -983,6 +1006,7 @@ void ImageCache::onImageListLoaded() {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading image list: " << e.what();
         emit loadError(tr("Failed to load image list"));
+        resumeDeferredLoadAllChain();
         return;
     }
     if (result.success) {
@@ -995,6 +1019,19 @@ void ImageCache::onImageListLoaded() {
         BOOST_LOG_SEV(lg(), error) << "Failed to load image list.";
         emit loadError(tr("Failed to load image list"));
     }
+    // Whether or not the list itself succeeded, unblock any loadAll() chain
+    // that deferred here in finishLoadAllChain() -- on failure,
+    // loadImagesByIds() falls back to its existing unknown-size handling
+    // rather than leaving pending_image_ids_ (and load_all_in_progress_)
+    // stuck forever.
+    resumeDeferredLoadAllChain();
+}
+
+void ImageCache::resumeDeferredLoadAllChain() {
+    if (!pending_ids_await_list_)
+        return;
+    pending_ids_await_list_ = false;
+    loadImagesByIds(pending_image_ids_);
 }
 
 void ImageCache::loadAllAvailableImages() {

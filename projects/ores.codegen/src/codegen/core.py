@@ -2606,6 +2606,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'is_static_combo': f['is_static_combo'],
                     'is_dynamic_combo': f['is_dynamic_combo'],
                     'is_flagged_combo': f['is_flagged_combo'],
+                    'is_check_box': f['is_check_box'],
                     # The primary key's own line_edit is never
                     # user-editable when the entity has a UUID primary
                     # key: setCreateMode() auto-generates it

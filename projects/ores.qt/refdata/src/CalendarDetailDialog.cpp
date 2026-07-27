@@ -178,6 +178,7 @@ void CalendarDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->sourceEdit->setReadOnly(!createMode);
+    ui_->isEditableCheck->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -196,6 +197,7 @@ void CalendarDetailDialog::setReadOnly(bool readOnly) {
     ui_->calendarTypeCombo->setEnabled(!readOnly);
     ui_->countryCodeCombo->setEnabled(!readOnly);
     ui_->sourceEdit->setReadOnly(true);
+    ui_->isEditableCheck->setEnabled(false);
     ui_->baseCalendarCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -246,7 +248,7 @@ void CalendarDetailDialog::populateBaseCalendarCodeCombo() {
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
         [this](const auto& t) { return t.code == calendar_.code; },
-        QString{});
+        QObject::tr("No Base Calendar"));
 }
 void CalendarDetailDialog::updateUiFromCalendar() {
     ui_->codeEdit->setText(QString::fromStdString(calendar_.code));
@@ -295,8 +297,14 @@ void CalendarDetailDialog::updateCalendarFromUi() {
         calendar_.source = ui_->sourceEdit->text().trimmed().toStdString();
     }
     if (createMode_) {
+        calendar_.is_editable = ui_->isEditableCheck->isChecked();
     }
-    calendar_.base_calendar_code = ui_->baseCalendarCodeCombo->currentText().toStdString();
+    {
+        const auto base_calendar_code_str =
+            ui_->baseCalendarCodeCombo->currentData().toString().trimmed().toStdString();
+        calendar_.base_calendar_code =
+            base_calendar_code_str.empty() ? std::nullopt : std::optional{base_calendar_code_str};
+    }
     calendar_.modified_by = username_;
 }
 

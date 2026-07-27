@@ -583,6 +583,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
 {{#is_flagged_combo}}
     ui_->{{widget}}->setEnabled(createMode);
 {{/is_flagged_combo}}
+{{#is_check_box}}
+    ui_->{{widget}}->setEnabled(createMode);
+{{/is_check_box}}
 {{/domain_entity.qt.locked_fields}}
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
@@ -631,6 +634,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_flagged_combo}}
     ui_->{{widget}}->setEnabled(false);
 {{/is_flagged_combo}}
+{{#is_check_box}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_check_box}}
 {{/is_locked_after_create}}
 {{^is_locked_after_create}}
 {{#is_line_edit}}
@@ -648,6 +654,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_flagged_combo}}
     ui_->{{widget}}->setEnabled(!readOnly);
 {{/is_flagged_combo}}
+{{#is_check_box}}
+    ui_->{{widget}}->setEnabled(!readOnly);
+{{/is_check_box}}
 {{/is_locked_after_create}}
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
@@ -1094,6 +1103,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{#is_flagged_combo}}
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentText().trimmed().toStdString();
 {{/is_flagged_combo}}
+{{#is_check_box}}
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->isChecked();
+{{/is_check_box}}
     }
 {{/is_uuid}}
 {{#is_uuid}}
@@ -1219,8 +1231,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     }
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_optional_string}}
+    {
+        const auto {{field}}_str = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+            {{field}}_str.empty() ? std::nullopt : std::optional{ {{field}}_str };
+    }
+{{/is_optional_string}}
+{{^is_optional_string}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
         ui_->{{widget}}->currentText().toStdString();
+{{/is_optional_string}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
 {{/combo_fetch_fn}}

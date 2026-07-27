@@ -319,15 +319,15 @@ drop function if exists ores_refdata_validate_calendar_fn;
 
 *** Detail fields
 
-| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_fetch | combo_allow_blank | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | view_group | immutable |
-|-------+-------+--------+------+--------+-------------+-------------+-------------+-------------+-------------------+-------------------+---------------------+----------------+--------------------+------------------+---------------------+------------------+-------------+---------------------+------------+-----------|
-| code | Code | codeEdit | line_edit | true | true | Enter QuantLib calendar code |  |  |  |  |  |  |  |  |  |  |  |  | General |  |
-| name | Name | nameEdit | line_edit |  | true | Enter calendar name |  |  |  |  |  |  |  |  |  |  |  |  | General |  |
-| calendar_type | Type | calendarTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar_type | ores.qt/LookupFetcher.hpp | fetch_calendar_types | calendarTypeWatcher | code | description | display_order | calendar types | CalendarTypeCombo | General |  |
-| country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  | General |  |
-| source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  | General | true |
-| is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |
-| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  | true | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  |
+| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_fetch | combo_allow_blank | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | view_group | immutable | combo_blank_label |
+|-------+-------+--------+------+--------+-------------+-------------+-------------+-------------+-------------------+-------------------+---------------------+----------------+--------------------+------------------+---------------------+------------------+-------------+---------------------+------------+-----------+-------------------|
+| code | Code | codeEdit | line_edit | true | true | Enter QuantLib calendar code |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| name | Name | nameEdit | line_edit |  | true | Enter calendar name |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| calendar_type | Type | calendarTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar_type | ores.qt/LookupFetcher.hpp | fetch_calendar_types | calendarTypeWatcher | code | description | display_order | calendar types | CalendarTypeCombo | General |  |  |
+| country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  | General |  |  |
+| source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  | true | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  | No Base Calendar |
 
 *** Columns (Qt model)
 

@@ -98,6 +98,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | base_calendar_code combo has no blank option; write-back never produces std::nullopt -- risks silently attaching an arbitrary base calendar on save | cpp_qt_detail_dialog.cpp.mustache, calendar.org | Fixed | Set combo_blank_label for the field (threads through the existing mechanism); added an is_optional_string branch to the is_dynamic_combo write-back section, using currentData() + nullopt-on-empty, mirroring the existing is_optional_uuid pattern (PartyDetailDialog's parent_party_id). |
+| 2 | is_editable checkbox is a dead control -- never read back into the entity, generates an empty if(createMode_) block | cpp_qt_detail_dialog.cpp.mustache, core.py | Fixed | Added an is_check_box branch to the locked-after-create sections of update...FromUi(), setCreateMode(), and setReadOnly() (all three had the same gap); also added is_check_box to core.py's locked_fields dict so the setCreateMode()/setReadOnly() template branches actually fire. |
 
 * Result

@@ -29,11 +29,13 @@ categorise parties and counterparties.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique type code.
@@ -44,12 +46,11 @@ Examples: 'Bank', 'Corporate', 'HedgeFund'.
 std::string(faker::word::noun()) + "_type"
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the party type.
@@ -57,8 +58,6 @@ Human-readable name for the party type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Party"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

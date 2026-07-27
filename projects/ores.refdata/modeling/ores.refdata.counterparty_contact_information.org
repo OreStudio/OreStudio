@@ -24,23 +24,24 @@ Settlement, Billing). Each counterparty can have one contact record per type.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this contact information record.
 
 Surrogate key for the counterparty contact information record.
 
-* Natural keys
-
 ** counterparty_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 The counterparty this contact information belongs to.
@@ -56,6 +57,7 @@ uuid_gen()
 :type:                text
 :cpp_type:            std::string
 :no_generator_suffix: true
+:natural_key:         true
 :END:
 
 The type or purpose of this contact.
@@ -72,8 +74,6 @@ References the contact_type lookup table (e.g. Legal, Operations).
     return std::string(types[idx % 4]);
 }()
 #+end_src
-
-* Columns
 
 ** street_line_1
 :PROPERTIES:

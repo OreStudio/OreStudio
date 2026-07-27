@@ -31,11 +31,13 @@ Book/BusinessCentre's own moves to =ores.refdata=, and the same move
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique leg type code.
@@ -45,10 +47,6 @@ Examples: 'Fixed', 'Floating', 'OIS', 'CMS', 'CMSSpread', 'CPI', 'YoY'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_leg_" + std::to_string(++counter)
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

@@ -29,20 +29,18 @@ categorise contact information records for parties and counterparties.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique contact type code.
 
 Examples: 'Legal', 'Operations', 'Settlement'.
-
-* Natural keys
-
-* Columns
 
 ** name
 :PROPERTIES:

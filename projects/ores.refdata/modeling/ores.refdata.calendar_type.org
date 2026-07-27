@@ -30,11 +30,13 @@ collapsing their distinct provenance.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique calendar type code.
@@ -42,12 +44,11 @@ Unique calendar type code.
 Examples: 'public_holiday', 'central_bank_meeting', 'financial_centre',
 'data_release', 'other'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the calendar type.
@@ -55,8 +56,6 @@ Human-readable name for the calendar type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Calendar Type"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

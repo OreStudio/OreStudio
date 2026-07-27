@@ -25,23 +25,24 @@ multiple identifiers across different schemes.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this counterparty identifier.
 
 Surrogate key for the counterparty identifier record.
 
-* Natural keys
-
 ** counterparty_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 The counterparty this identifier belongs to.
@@ -57,6 +58,7 @@ uuid_gen()
 :type:                text
 :cpp_type:            std::string
 :no_generator_suffix: true
+:natural_key:         true
 :END:
 
 The identification scheme for this identifier.
@@ -77,8 +79,9 @@ References the party_id_scheme lookup table (e.g. LEI, BIC).
 
 ** id_value
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 The identifier value.
@@ -91,8 +94,6 @@ differs.
 #+begin_src cpp :name generator
 std::string(faker::string::alphanumeric(20))
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

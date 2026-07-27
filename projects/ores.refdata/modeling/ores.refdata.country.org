@@ -27,11 +27,13 @@ Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** alpha2_code
 :PROPERTIES:
-:column:   alpha2_code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 ISO 3166-1 alpha-2 code (e.g., "US", "GB").
@@ -42,12 +44,11 @@ intentional — the fictional generator (=generate_fictional_countries=, injecte
 via paste) is the authoritative test-data source for country and does not rely
 on the template-generated synthetic path.
 
-* Natural keys
-
 ** alpha3_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 ISO 3166-1 alpha-3 code (e.g., "USA", "GBR").
@@ -58,8 +59,9 @@ std::string(faker::location::countryCode()) + "X"
 
 ** numeric_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 ISO 3166-1 numeric code (e.g., "840", "826").
@@ -67,8 +69,6 @@ ISO 3166-1 numeric code (e.g., "840", "826").
 #+begin_src cpp :name generator
 std::to_string(faker::number::integer(10001, 99999))
 #+end_src
-
-* Columns
 
 ** name
 :PROPERTIES:

@@ -30,11 +30,13 @@ Book/BusinessCentre's own moves to =ores.refdata=.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique floating index type code in ISDA/ORE convention.
@@ -44,10 +46,6 @@ Examples: 'EUR-EURIBOR-6M', 'USD-SOFR', 'GBP-SONIA', 'JPY-TONAR'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_idx_" + std::to_string(++counter)
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

@@ -30,21 +30,22 @@ Scoped to a tenant and a party, matching its parent config.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this driver pair.
 
-* Natural keys
-
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Owning party (legal entity) this driver pair belongs to.
@@ -55,8 +56,9 @@ ctx.generate_uuid()
 
 ** config_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Parent =crm_topology_config= this driver pair belongs to.
@@ -67,8 +69,9 @@ ctx.generate_uuid()
 
 ** base_currency_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Base currency ISO code of the driver pair (soft FK to currencies).
@@ -79,8 +82,9 @@ std::string("EUR")
 
 ** quote_currency_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Quote currency ISO code of the driver pair (soft FK to currencies).
@@ -88,8 +92,6 @@ Quote currency ISO code of the driver pair (soft FK to currencies).
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
-
-* Columns
 
 ** enabled
 :PROPERTIES:

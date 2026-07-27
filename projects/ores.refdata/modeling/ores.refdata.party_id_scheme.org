@@ -29,23 +29,24 @@ coding_scheme_code field cross-references the DQ coding scheme table.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique scheme code.
 
 Examples: 'LEI', 'BIC', 'MIC'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the identifier scheme.
@@ -53,8 +54,6 @@ Human-readable name for the identifier scheme.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Scheme"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

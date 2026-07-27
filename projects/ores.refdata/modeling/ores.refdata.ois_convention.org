@@ -26,11 +26,13 @@ SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml.
 :has_workspace_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique convention identifier.
@@ -40,10 +42,6 @@ Examples: 'EUR-OIS-CONVENTIONS', 'USD-OIS-CONVENTIONS'.
 #+begin_src cpp :name generator
 std::string("EUR-OIS-CONVENTIONS")
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** spot_lag
 :PROPERTIES:

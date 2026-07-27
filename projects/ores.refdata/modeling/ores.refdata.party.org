@@ -31,27 +31,24 @@ organisation itself.
 
 Cross-cutting properties. Consumed by *both* C++ and SQL codegen.
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this party.
 
 Surrogate key for the party record.
 
-* Natural keys
-
-Logical, human-meaningful identifiers. Inserted into the C++ struct
-alongside the primary key, and exposed in SQL as additional unique-indexed
-columns.
-
 ** full_name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Full legal name of the party.
@@ -64,8 +61,9 @@ std::string(faker::company::companyName())
 
 ** short_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Short code for quick reference.
@@ -75,8 +73,6 @@ A brief mnemonic code used in trading systems.
 #+begin_src cpp :name generator
 std::string(faker::string::alpha(6))
 #+end_src
-
-* Columns
 
 Regular columns. Inserted as struct fields in C++ and as table columns in
 SQL.

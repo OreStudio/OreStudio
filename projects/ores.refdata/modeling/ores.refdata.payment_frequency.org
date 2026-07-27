@@ -49,11 +49,13 @@ the full reasoning.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique payment frequency code -- ORE's canonical long-form
@@ -65,12 +67,11 @@ Examples: 'Annual', 'Semiannual', 'Quarterly', 'Monthly', 'Once'.
 std::string("Annual")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the payment frequency.
@@ -78,8 +79,6 @@ Human-readable name for the payment frequency.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Frequency"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

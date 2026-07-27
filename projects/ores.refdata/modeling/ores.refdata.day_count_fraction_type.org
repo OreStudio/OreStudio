@@ -31,12 +31,14 @@ description / display_order) as
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
-:is_text:  true
+:type:        text
+:cpp_type:    std::string
+:is_text:     true
+:primary_key: true
 :END:
 
 Unique day count fraction type code.
@@ -46,10 +48,6 @@ Examples: 'A360', 'A365F', 'Thirty360', 'ActActISDA'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_dcf"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** name
 :PROPERTIES:

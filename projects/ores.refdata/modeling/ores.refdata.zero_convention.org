@@ -26,11 +26,13 @@ ORE conventions.xml. The id field is the natural key (ORE <Id> element).
 :has_workspace_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique convention identifier.
@@ -40,10 +42,6 @@ Examples: 'EUR-ZERO-CONVENTIONS', 'USD-ZERO-CONVENTIONS'.
 #+begin_src cpp :name generator
 std::string("EUR-ZERO-CONVENTIONS")
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** tenor_based
 :PROPERTIES:

@@ -29,11 +29,13 @@ classify the intent of portfolio records.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique purpose type code.
@@ -44,12 +46,11 @@ Examples: 'Hedging', 'Trading', 'Investment'.
 std::string("PurposeType")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the purpose type.
@@ -57,8 +58,6 @@ Human-readable name for the purpose type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Purpose"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

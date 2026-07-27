@@ -39,63 +39,61 @@ bool is_weekend(std::chrono::weekday w, const std::bitset<7>& mask) {
     return mask.test(w.c_encoding());
 }
 
-std::optional<std::chrono::year_month_day>
-resolve_natural_date(const calendar_rule& rule, std::chrono::year y,
-                     std::chrono::year_month_day easter) {
+std::optional<std::chrono::year_month_day> resolve_natural_date(
+    const calendar_rule& rule, std::chrono::year y, std::chrono::year_month_day easter) {
     using namespace std::chrono;
 
     switch (rule.kind) {
-    case calendar_rule_kind::fixed_date: {
-        if (!rule.month || !rule.day)
-            return std::nullopt;
-        return year_month_day{y, *rule.month, std::chrono::day{*rule.day}};
-    }
-    case calendar_rule_kind::nth_weekday_of_month: {
-        if (!rule.month || !rule.weekday || !rule.occurrence)
-            return std::nullopt;
-        const year_month_weekday ymw{y, *rule.month, (*rule.weekday)[*rule.occurrence]};
-        if (!ymw.ok())
-            return std::nullopt;
-        return year_month_day{sys_days{ymw}};
-    }
-    case calendar_rule_kind::last_weekday_of_month: {
-        if (!rule.month || !rule.weekday)
-            return std::nullopt;
-        const year_month_weekday_last ymwl{y, *rule.month, weekday_last{*rule.weekday}};
-        if (!ymwl.ok())
-            return std::nullopt;
-        return year_month_day{sys_days{ymwl}};
-    }
-    case calendar_rule_kind::easter_offset: {
-        if (!rule.day_offset)
-            return std::nullopt;
-        return year_month_day{sys_days{easter} + days{*rule.day_offset}};
-    }
+        case calendar_rule_kind::fixed_date: {
+            if (!rule.month || !rule.day)
+                return std::nullopt;
+            return year_month_day{y, *rule.month, std::chrono::day{*rule.day}};
+        }
+        case calendar_rule_kind::nth_weekday_of_month: {
+            if (!rule.month || !rule.weekday || !rule.occurrence)
+                return std::nullopt;
+            const year_month_weekday ymw{y, *rule.month, (*rule.weekday)[*rule.occurrence]};
+            if (!ymw.ok())
+                return std::nullopt;
+            return year_month_day{sys_days{ymw}};
+        }
+        case calendar_rule_kind::last_weekday_of_month: {
+            if (!rule.month || !rule.weekday)
+                return std::nullopt;
+            const year_month_weekday_last ymwl{y, *rule.month, weekday_last{*rule.weekday}};
+            if (!ymwl.ok())
+                return std::nullopt;
+            return year_month_day{sys_days{ymwl}};
+        }
+        case calendar_rule_kind::easter_offset: {
+            if (!rule.day_offset)
+                return std::nullopt;
+            return year_month_day{sys_days{easter} + days{*rule.day_offset}};
+        }
     }
     return std::nullopt;
 }
 
-std::chrono::year_month_day apply_shift(std::chrono::year_month_day date,
-                                        observance_shift shift) {
+std::chrono::year_month_day apply_shift(std::chrono::year_month_day date, observance_shift shift) {
     using namespace std::chrono;
     const sys_days d{date};
     const weekday w{d};
 
     switch (shift) {
-    case observance_shift::none:
-        return date;
-    case observance_shift::nearest_weekday:
-        if (w == Saturday)
-            return year_month_day{d - days{1}};
-        if (w == Sunday)
-            return year_month_day{d + days{1}};
-        return date;
-    case observance_shift::roll_forward_to_monday:
-        if (w == Saturday)
-            return year_month_day{d + days{2}};
-        if (w == Sunday)
-            return year_month_day{d + days{1}};
-        return date;
+        case observance_shift::none:
+            return date;
+        case observance_shift::nearest_weekday:
+            if (w == Saturday)
+                return year_month_day{d - days{1}};
+            if (w == Sunday)
+                return year_month_day{d + days{1}};
+            return date;
+        case observance_shift::roll_forward_to_monday:
+            if (w == Saturday)
+                return year_month_day{d + days{2}};
+            if (w == Sunday)
+                return year_month_day{d + days{1}};
+            return date;
     }
     return date;
 }
@@ -120,14 +118,15 @@ std::chrono::year_month_day calendar_rule_engine::easter_sunday(std::chrono::yea
     const int month = (h + l - 7 * m + 114) / 31;
     const int day = ((h + l - 7 * m + 114) % 31) + 1;
 
-    return std::chrono::year_month_day{
-        y, std::chrono::month{static_cast<unsigned>(month)}, std::chrono::day{static_cast<unsigned>(day)}};
+    return std::chrono::year_month_day{y,
+                                       std::chrono::month{static_cast<unsigned>(month)},
+                                       std::chrono::day{static_cast<unsigned>(day)}};
 }
 
 std::vector<instantiated_holiday>
 calendar_rule_engine::instantiate_holidays_batch(std::span<const calendar_ruleset> calendars,
-                                                  std::chrono::year_month_day start,
-                                                  std::chrono::year_month_day end) {
+                                                 std::chrono::year_month_day start,
+                                                 std::chrono::year_month_day end) {
     using namespace std::chrono;
 
     const sys_days start_days{start};

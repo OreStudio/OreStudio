@@ -50,33 +50,22 @@ TEST_CASE("WeekendsOnly has no holidays at all, over any range", "[quantlib_cale
 }
 
 TEST_CASE("US Settlement holiday list 2004-2005 matches QuantLib's testUSSettlement dataset",
-         "[quantlib_calendar_rulesets][united_states]") {
-    const std::vector<calendar_ruleset> calendars = {quantlib_calendar_rulesets::united_states_settlement()};
+          "[quantlib_calendar_rulesets][united_states]") {
+    const std::vector<calendar_ruleset> calendars = {
+        quantlib_calendar_rulesets::united_states_settlement()};
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
         calendars, year{2004} / January / 1, year{2005} / December / 31);
     const auto actual = dates_for(0, holidays);
 
     const std::vector<year_month_day> expected = {
-        year{2004} / January / 1,
-        year{2004} / January / 19,
-        year{2004} / February / 16,
-        year{2004} / May / 31,
-        year{2004} / July / 5,
-        year{2004} / September / 6,
-        year{2004} / October / 11,
-        year{2004} / November / 11,
-        year{2004} / November / 25,
+        year{2004} / January / 1,   year{2004} / January / 19,  year{2004} / February / 16,
+        year{2004} / May / 31,      year{2004} / July / 5,      year{2004} / September / 6,
+        year{2004} / October / 11,  year{2004} / November / 11, year{2004} / November / 25,
         year{2004} / December / 24,
 
-        year{2004} / December / 31,
-        year{2005} / January / 17,
-        year{2005} / February / 21,
-        year{2005} / May / 30,
-        year{2005} / July / 4,
-        year{2005} / September / 5,
-        year{2005} / October / 10,
-        year{2005} / November / 11,
-        year{2005} / November / 24,
+        year{2004} / December / 31, year{2005} / January / 17,  year{2005} / February / 21,
+        year{2005} / May / 30,      year{2005} / July / 4,      year{2005} / September / 5,
+        year{2005} / October / 10,  year{2005} / November / 11, year{2005} / November / 24,
         year{2005} / December / 26,
     };
 
@@ -85,8 +74,9 @@ TEST_CASE("US Settlement holiday list 2004-2005 matches QuantLib's testUSSettlem
 }
 
 TEST_CASE("US Settlement holiday list 1961 (pre-Uniform Monday Holiday Act) matches QuantLib",
-         "[quantlib_calendar_rulesets][united_states]") {
-    const std::vector<calendar_ruleset> calendars = {quantlib_calendar_rulesets::united_states_settlement()};
+          "[quantlib_calendar_rulesets][united_states]") {
+    const std::vector<calendar_ruleset> calendars = {
+        quantlib_calendar_rulesets::united_states_settlement()};
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
         calendars, year{1961} / January / 1, year{1961} / December / 31);
     const auto actual = dates_for(0, holidays);

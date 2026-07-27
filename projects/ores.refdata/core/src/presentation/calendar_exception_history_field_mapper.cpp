@@ -30,8 +30,8 @@ render_calendar_exception_fields(const domain::calendar_exception& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Calendar Code", .value = v.calendar_code});
-    fields.push_back({.name = "Exception Date",
-                      .value = std::format("{:%Y-%m-%d}", v.exception_date)});
+    fields.push_back(
+        {.name = "Exception Date", .value = std::format("{:%Y-%m-%d}", v.exception_date)});
     fields.push_back({.name = "Is Business Day", .value = v.is_business_day ? "true" : "false"});
     fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
     fields.push_back({.name = "Modified By", .value = v.modified_by});

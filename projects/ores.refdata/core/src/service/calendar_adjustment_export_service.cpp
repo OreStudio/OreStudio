@@ -33,7 +33,7 @@ namespace {
 
 domain::calendar_adjustment
 to_adjustment(const domain::calendar& c,
-             const std::vector<domain::calendar_exception>& exceptions) {
+              const std::vector<domain::calendar_exception>& exceptions) {
     domain::calendar_adjustment adj;
     adj.calendar_name = c.code;
     adj.base_calendar = c.base_calendar_code;

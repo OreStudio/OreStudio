@@ -34,8 +34,7 @@ using ores::service::messaging::reply;
 
 namespace {
 inline auto& lg() {
-    static auto instance =
-        make_logger("ores.refdata.messaging.calendar_materialisation_handler");
+    static auto instance = make_logger("ores.refdata.messaging.calendar_materialisation_handler");
     return instance;
 }
 } // namespace
@@ -63,12 +62,12 @@ void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
     if (auto req = decode<regenerate_calendar_dates_request>(msg)) {
         try {
             service::calendar_materialisation_service svc(req_ctx);
-            const auto end_year = req->end_year
-                ? std::optional<std::chrono::year>(std::chrono::year{*req->end_year})
-                : std::nullopt;
-            const auto rows = req->calendar_code
-                ? svc.regenerate(*req->calendar_code, end_year)
-                : svc.regenerate_all(end_year);
+            const auto end_year =
+                req->end_year ?
+                    std::optional<std::chrono::year>(std::chrono::year{*req->end_year}) :
+                    std::nullopt;
+            const auto rows = req->calendar_code ? svc.regenerate(*req->calendar_code, end_year) :
+                                                   svc.regenerate_all(end_year);
             BOOST_LOG_SEV(lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,

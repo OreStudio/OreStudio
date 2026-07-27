@@ -39,8 +39,7 @@ public:
     /// algorithm. Computed once per year by @c instantiate_holidays_batch
     /// and shared across every calendar with an @c easter_offset rule that
     /// year, rather than recomputed per calendar.
-    [[nodiscard]] static std::chrono::year_month_day
-    easter_sunday(std::chrono::year y);
+    [[nodiscard]] static std::chrono::year_month_day easter_sunday(std::chrono::year y);
 
     /// Walks every year in [start.year(), end.year()], evaluating each
     /// calendar's active rules and exceptions once, and returns the flat

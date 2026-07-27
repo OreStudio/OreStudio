@@ -40,7 +40,8 @@ business_day_calendar_set::from_rows(std::span<const calendar_date_row> rows,
     for (std::size_t i = 1; i < offsets.size(); ++i)
         offsets[i] += offsets[i - 1];
 
-    return business_day_calendar_set{std::move(holidays), std::move(offsets), std::move(weekend_masks)};
+    return business_day_calendar_set{
+        std::move(holidays), std::move(offsets), std::move(weekend_masks)};
 }
 
 std::vector<bool>
@@ -59,8 +60,10 @@ business_day_calendar_set::is_business_day_batch(std::span<const calendar_query>
         }
 
         if (is_business_day && q.calendar_index + 1 < calendar_offsets_.size()) {
-            const auto begin = holidays_.cbegin() + static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index]);
-            const auto end = holidays_.cbegin() + static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index + 1]);
+            const auto begin = holidays_.cbegin() +
+                               static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index]);
+            const auto end = holidays_.cbegin() +
+                             static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index + 1]);
             if (std::binary_search(begin, end, q.date))
                 is_business_day = false;
         }

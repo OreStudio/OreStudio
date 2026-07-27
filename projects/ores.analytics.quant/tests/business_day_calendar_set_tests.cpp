@@ -27,7 +27,7 @@ using ores::analytics::quant::domain::calendar_date_row;
 using ores::analytics::quant::domain::calendar_query;
 
 TEST_CASE("a date matching a stored holiday row is not a business day",
-         "[business_day_calendar_set]") {
+          "[business_day_calendar_set]") {
     const std::vector<calendar_date_row> rows = {
         {0, year{2024} / January / 1},
         {0, year{2024} / December / 25},
@@ -48,7 +48,7 @@ TEST_CASE("a date matching a stored holiday row is not a business day",
 }
 
 TEST_CASE("a weekend date is never a business day even without a matching holiday row",
-         "[business_day_calendar_set]") {
+          "[business_day_calendar_set]") {
     const std::vector<calendar_date_row> rows = {};
     const auto set = business_day_calendar_set::from_rows(rows, 1, {std::bitset<7>{0b1000001}});
 
@@ -67,20 +67,20 @@ TEST_CASE("a weekend date is never a business day even without a matching holida
 }
 
 TEST_CASE("each calendar's holiday segment is independent of the others",
-         "[business_day_calendar_set]") {
+          "[business_day_calendar_set]") {
     const std::vector<calendar_date_row> rows = {
         {0, year{2024} / January / 1},
         {1, year{2024} / July / 4},
     };
-    const auto set =
-        business_day_calendar_set::from_rows(rows, 2, {std::bitset<7>{0b1000001}, std::bitset<7>{0b1000001}});
+    const auto set = business_day_calendar_set::from_rows(
+        rows, 2, {std::bitset<7>{0b1000001}, std::bitset<7>{0b1000001}});
 
     CHECK(set.calendar_count() == 2);
     CHECK(set.holiday_count(0) == 1);
     CHECK(set.holiday_count(1) == 1);
 
     const std::vector<calendar_query> queries = {
-        {0, year{2024} / July / 4},  // holiday for calendar 1, not calendar 0
+        {0, year{2024} / July / 4}, // holiday for calendar 1, not calendar 0
         {1, year{2024} / July / 4},
         {0, year{2024} / January / 1},
         {1, year{2024} / January / 1},
@@ -95,7 +95,7 @@ TEST_CASE("each calendar's holiday segment is independent of the others",
 }
 
 TEST_CASE("a custom weekend_mask per calendar is honoured independently",
-         "[business_day_calendar_set]") {
+          "[business_day_calendar_set]") {
     const std::vector<calendar_date_row> rows = {};
     // Calendar 0: default Sat/Sun weekend. Calendar 1: Fri/Sat weekend.
     const auto set = business_day_calendar_set::from_rows(
@@ -114,7 +114,7 @@ TEST_CASE("a custom weekend_mask per calendar is honoured independently",
 }
 
 TEST_CASE("empty rows and zero calendars produce an empty, well-formed set",
-         "[business_day_calendar_set]") {
+          "[business_day_calendar_set]") {
     const std::vector<calendar_date_row> rows = {};
     const auto set = business_day_calendar_set::from_rows(rows, 0, {});
 

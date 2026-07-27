@@ -102,9 +102,9 @@ constexpr int k_default_end_horizon_year = 2050;
 constexpr int k_max_horizon_years_ahead = 100;
 
 int clamp_horizon_year(int horizon_year) {
-    const auto today_y = std::chrono::year_month_day{
-        std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())}
-                              .year();
+    const auto today_y = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                         std::chrono::system_clock::now())}
+                             .year();
     const int max_year = static_cast<int>(today_y) + k_max_horizon_years_ahead;
     return std::min(horizon_year, max_year);
 }
@@ -140,8 +140,9 @@ bool is_weekend(std::chrono::weekday wd, const std::bitset<7>& weekend_mask) {
 calendar_materialisation_service::calendar_materialisation_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::size_t calendar_materialisation_service::regenerate(const std::string& calendar_code,
-                                                          std::optional<std::chrono::year> end_year) {
+std::size_t
+calendar_materialisation_service::regenerate(const std::string& calendar_code,
+                                             std::optional<std::chrono::year> end_year) {
     repository::calendar_repository calendar_repo;
     auto calendars = calendar_repo.read_latest(ctx_, calendar_code);
     if (calendars.empty())
@@ -149,14 +150,16 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
     const auto& cal = calendars.front();
 
     ores::variability::repository::system_settings_repository settings_repo;
-    const auto start_offset = read_int_setting(
-        settings_repo, ctx_, "calendar.materialisation.start_offset_years",
-        k_default_start_offset_years);
-    const auto horizon_year = clamp_horizon_year(
-        end_year
-            ? static_cast<int>(*end_year)
-            : read_int_setting(settings_repo, ctx_, "calendar.materialisation.end_horizon",
-                               k_default_end_horizon_year));
+    const auto start_offset = read_int_setting(settings_repo,
+                                               ctx_,
+                                               "calendar.materialisation.start_offset_years",
+                                               k_default_start_offset_years);
+    const auto horizon_year =
+        clamp_horizon_year(end_year ? static_cast<int>(*end_year) :
+                                      read_int_setting(settings_repo,
+                                                       ctx_,
+                                                       "calendar.materialisation.end_horizon",
+                                                       k_default_end_horizon_year));
 
     // Cycle guard: a chain of base_calendar_code references must terminate
     // in a base-less calendar. Each recursive call below visits one more
@@ -170,9 +173,9 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
         if (!visited.insert(c.code).second)
             throw std::runtime_error("base_calendar_code cycle detected at: " + c.code);
 
-        const auto today_y = std::chrono::year_month_day{
-            std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())}
-                                  .year();
+        const auto today_y = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                             std::chrono::system_clock::now())}
+                                 .year();
         const auto range_start = year_start(today_y + std::chrono::years{start_offset});
         const auto range_end = year_end(std::chrono::year{horizon_year});
 
@@ -202,8 +205,7 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
             const std::string source = c.source == "user" ? "user_defined" : "quantlib_computed";
 
             for (auto d = range_start; d <= range_end;
-                 d = std::chrono::year_month_day{
-                     std::chrono::sys_days{d} + std::chrono::days{1}}) {
+                 d = std::chrono::year_month_day{std::chrono::sys_days{d} + std::chrono::days{1}}) {
                 const auto wd = std::chrono::weekday{std::chrono::sys_days{d}};
                 const bool weekend = is_weekend(wd, ruleset.weekend_mask);
                 const bool holiday = holiday_set.contains(d);
@@ -239,7 +241,7 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
                 row.modified_by = ctx_.actor().empty() ? "system" : ctx_.actor();
                 row.change_reason_code = "system.calendar_materialisation";
                 row.change_commentary = "Materialised from base " + *c.base_calendar_code +
-                    " + calendar_exception overlay";
+                                        " + calendar_exception overlay";
                 rows.push_back(std::move(row));
             }
         }
@@ -250,7 +252,8 @@ std::size_t calendar_materialisation_service::regenerate(const std::string& cale
 
     // Extend-only: never rewrite a date already materialised at or below
     // the current watermark for this specific calendar.
-    auto existing = repository::calendar_date_repository(ctx_).read_latest_by_calendar(calendar_code);
+    auto existing =
+        repository::calendar_date_repository(ctx_).read_latest_by_calendar(calendar_code);
     std::set<std::chrono::year_month_day> existing_dates;
     for (const auto& e : existing)
         existing_dates.insert(e.date);

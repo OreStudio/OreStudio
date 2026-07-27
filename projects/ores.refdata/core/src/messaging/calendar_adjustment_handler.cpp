@@ -65,7 +65,9 @@ void calendar_adjustment_handler::get(ores::nats::message msg) {
                                                     .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_calendar_adjustments_response{.success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  get_calendar_adjustments_response{.success = false, .message = e.what()});
         }
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode: " << msg.subject;

@@ -29,8 +29,7 @@
 
 namespace ores::refdata::messaging {
 
-std::vector<ores::nats::service::subscription>
-register_calendar_materialisation_handlers(
+std::vector<ores::nats::service::subscription> register_calendar_materialisation_handlers(
     ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);

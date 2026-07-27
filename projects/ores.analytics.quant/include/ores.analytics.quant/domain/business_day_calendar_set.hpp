@@ -59,8 +59,9 @@ public:
     /// and rows come from a DISTINCT query -- absent by construction).
     /// @p calendar_count must be >= the highest calendar_index in @p rows.
     [[nodiscard]] static business_day_calendar_set
-    from_rows(std::span<const calendar_date_row> rows, std::size_t calendar_count,
-             std::vector<std::bitset<7>> weekend_masks);
+    from_rows(std::span<const calendar_date_row> rows,
+              std::size_t calendar_count,
+              std::vector<std::bitset<7>> weekend_masks);
 
     /// Answers each query against the flat holiday storage via binary
     /// search, aligned 1:1 with @p queries by index.
@@ -86,8 +87,8 @@ private:
         , weekend_masks_(std::move(weekend_masks)) {}
 
     std::vector<std::chrono::year_month_day> holidays_; // flat, sorted per-calendar segment
-    std::vector<std::size_t> calendar_offsets_;           // CSR row-pointers, size = calendar_count + 1
-    std::vector<std::bitset<7>> weekend_masks_;           // per calendar, indexed by calendar_index
+    std::vector<std::size_t> calendar_offsets_; // CSR row-pointers, size = calendar_count + 1
+    std::vector<std::bitset<7>> weekend_masks_; // per calendar, indexed by calendar_index
 };
 
 } // namespace ores::analytics::quant::domain

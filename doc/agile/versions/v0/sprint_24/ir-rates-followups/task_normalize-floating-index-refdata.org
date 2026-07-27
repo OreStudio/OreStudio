@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/normalize-floating-index-refdata
-#+pr:
+#+pr: 1713
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1713][#1713]] | [agile] Abandon floating-index normalization task, supersede by oresmd |
 
 * Review
 

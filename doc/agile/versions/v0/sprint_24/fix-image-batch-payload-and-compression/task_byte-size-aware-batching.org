@@ -8,7 +8,7 @@
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
 #+branch: feature/byte-size-aware-batching
-#+pr:
+#+pr: 1712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1712][#1712]] | [assets,qt] Make ImageCache batching byte-size aware |
 
 * Review
 

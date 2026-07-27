@@ -39,11 +39,11 @@ naming a type the address doesn't support) must still raise an ERROR
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
@@ -164,3 +164,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met. =codegen.sh regenerate --component
+refdata --dry-run= (the modern name for the old =refdata-cpp=, per
+the story's own =* Decisions= note) is clean — zero ERROR, zero
+WARNING lines — across every address (=ores.sql.schema=,
+=ores.cpp.domain=, =ores.cpp.repository=, =ores.cpp.service=,
+=ores.cpp.qt=); an explicit single-model invocation naming an
+incompatible type/address pair still raises an ERROR and exit code 1.
+Full =ores.codegen= test suite: 77/77 passing (10 new). No production
+(C++/Qt/SQL) source touched — only =ores.codegen= tooling and
+=ores.refdata='s =.org= models.
+
+Also fixed, as a required precondition for the above (see =* Plan=):
+all 56 =ores.refdata= entity models migrated to the unified =* Columns=
+key shape, unblocking =--component=/=--entity=/single-model
+regeneration for the whole component, which had been failing to load
+entirely (any address) since another environment's now-closed story
+changed the parser. Three follow-ups filed as captures rather than
+folded into this task's scope: stale generated code vs. current
+templates, the ~75 =lookup_entity= models outside =refdata= needing
+the same key-shape migration, and the codegen meta-model knowledge
+doc.

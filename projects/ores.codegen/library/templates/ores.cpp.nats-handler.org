@@ -4,7 +4,7 @@
 #+title: ores.cpp.nats-handler
 #+description: NATS subscription handlers.
 #+type: facet
-#+model_types: domain_entity schema
+#+model_types: domain_entity schema junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

@@ -108,6 +108,50 @@ calendar_date_repository::read_latest_by_date(const std::string& date) {
         "Reading latest calendar dates by date.");
 }
 
+std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_calendar(
+    const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code
+                               << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
+                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("date"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+        ctx_,
+        query,
+        [](const auto& entities) { return calendar_date_mapper::map(entities); },
+        lg(),
+        "Reading latest calendar dates by calendar (paginated).");
+}
+
+std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calendar(
+    const std::string& calendar_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Calendar: "
+                               << calendar_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by calendar: " << count;
+    return count;
+}
+
 void calendar_date_repository::remove(const std::string& calendar_code, const std::string& date) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar date from database: " << calendar_code << "/"
                                << date;

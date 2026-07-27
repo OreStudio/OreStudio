@@ -4,7 +4,7 @@
 #+title: ores.cpp.nats-sub-registrar
 #+description: Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler.
 #+type: facet
-#+model_types: domain_entity schema
+#+model_types: domain_entity schema junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

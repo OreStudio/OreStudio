@@ -300,3 +300,4 @@ wrong prices.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.
 - [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] — current sprint.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — knowledge index.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the proposed canonical ORE Studio identifier whose quote-key projection rules are built from this catalogue's documented per-type shapes.

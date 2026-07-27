@@ -28,6 +28,15 @@ enum metric {
   discount_factor
 }
 
+enum index_family {
+  libor
+  euribor
+  sofr
+  estr
+  sonia
+  tona
+}
+
 abstract class market_data_identifier {
   +asset_class() : asset_class
   +entity() : string
@@ -51,19 +60,19 @@ class fx_market_data_requirement {
 
 class ir_market_data_identifier {
   +ccy : currency
-  +index : string
-  +tenor : tenor
-  +role : curve_role
   +type : instrument_type
+  +index : optional<index_family>
+  +tenor : optional<tenor>
+  +role : optional<curve_role>
   +metric : optional<metric>
   +point : optional<point>
 }
 class ir_market_data_requirement {
   +ccy : optional<currency>
-  +index : optional<string>
+  +type : optional<instrument_type>
+  +index : optional<index_family>
   +tenor : optional<tenor>
   +role : optional<curve_role>
-  +type : optional<instrument_type>
   +metric : optional<metric>
   +point : optional<point>
 }
@@ -82,29 +91,27 @@ class equity_market_data_requirement {
 class credit_market_data_identifier {
   +reference_entity : string
   +ccy : currency
-  +seniority : string
-  +tenor : tenor
   +type : instrument_type
+  +point : optional<point>
 }
 class credit_market_data_requirement {
   +reference_entity : optional<string>
   +ccy : optional<currency>
-  +seniority : optional<string>
-  +tenor : optional<tenor>
   +type : optional<instrument_type>
+  +point : optional<point>
 }
 
 class commodity_market_data_identifier {
   +commodity_code : string
   +ccy : currency
   +type : instrument_type
-  +tenor : optional<tenor>
+  +point : optional<point>
 }
 class commodity_market_data_requirement {
   +commodity_code : optional<string>
   +ccy : optional<currency>
   +type : optional<instrument_type>
-  +tenor : optional<tenor>
+  +point : optional<point>
 }
 
 market_data_identifier <|-- fx_market_data_identifier
@@ -129,4 +136,5 @@ market_data_identifier ..> asset_class
 market_data_identifier ..> instrument_type
 ir_market_data_identifier ..> curve_role
 ir_market_data_identifier ..> metric
+ir_market_data_identifier ..> index_family
 @enduml

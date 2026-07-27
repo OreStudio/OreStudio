@@ -268,5 +268,6 @@ identifier" actually happens.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical-only projection of an identifier.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space of every valid identifier.
 - [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the resolution mechanism picking exactly one identifier for a requirement.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — this repository's own concrete (logical-field) identifier scheme, worked through above.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC/Bloomberg/ORE/MDDL/FIX comparison, worked through above.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — a worked vendor-projection target, worked through above.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — a proposed replacement for this document's own canonical key, generalising it with a structured tenor/curve-role/instrument-type grammar.

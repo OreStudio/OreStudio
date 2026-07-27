@@ -138,7 +138,7 @@ oresmd://<asset_class>/<entity>/<ccy>/<index_family>/<tenor>/<curve_role>/<instr
 | *Pros* | Compact; every field is visible at a glance in one string; prefix-matching/globbing works naturally (=oresmd://ir/usd/libor/3m/*= matches every USD 3M LIBOR record), which would map cleanly onto this codebase's existing dot-delimited NATS subject convention (see [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]'s =/= → =.= mapping); no ambiguity about parameter order, since position *is* the key; "rhymes" with the slash-delimited shape already familiar from ORE's own canonical key and =market_series='s =series_type/metric/qualifier[/point_id]=. |
 | *Cons* | Fixed position count does not survive asset-class variation — equities need (entity, currency), credit needs (entity, currency, seniority, tenor), IR needs (currency, index family, tenor, curve role) — forcing =NONE= padding for every position an asset class doesn't use, or silently drifting into per-asset-class variant grammars; inserting a new optional field later renumbers every downstream position (a breaking change); "this field does not apply" and "this field is empty" are both spelled the same way (=NONE=), which is not type-safe. |
 
-*** Approach adopted: asset-class + entity path, everything else as query parameters
+*** Approach adopted: asset-class authority, entity path, everything else as query parameters
 
 #+begin_src text
 oresmd://<asset_class>/<entity>?ccy=<CCY>&index=<FAMILY>&tenor=<TENOR>&role=<ROLE>&type=<TYPE>&point=<POINT>
@@ -160,11 +160,14 @@ either =NONE= padding or per-asset-class grammars.
 oresmd://<asset_class>/<entity>[?<query>]
 #+end_src
 
-- =asset_class= (path, the URI's authority/host segment): one of =ir=,
-  =fx=, =equity=, =credit=, =commodity= — matches the asset-class
-  sections of [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market
-  data identifiers]] exactly, so every worked example in that document
-  has a direct =oresmd= counterpart below.
+- =asset_class= (the URI's authority/host component, not a path
+  segment — the =//= before it makes it so): one of =ir=, =fx=,
+  =equity=, =credit=, =commodity= — matches the asset-class sections of
+  [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+  identifiers]] exactly, so every worked example in that document has a
+  direct =oresmd= counterpart below. A =boost::urls::url=
+  implementation reads this via =.authority()=/=.host()=, not
+  =.segments()=.
 - =entity= (path, mandatory): the free-form subject — a currency
   (=usd=) for IR, a 6-character currency pair (=eurusd=) for FX, a
   ticker or index code (=aapl=, =sp5=) for equities, a reference-entity
@@ -254,7 +257,15 @@ Deterministic, worked for each field combination:
 - *Quote key* (=type=quote= or =type=vol=): per the
   [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]'s
   documented per-type shapes — see the worked examples below, one per
-  asset class, for the exact mapping each asset class uses.
+  asset class, for the exact mapping each asset class uses. Not every
+  dimension in every catalogue shape is derivable from an =oresmd=
+  field alone: =IR_SWAP/RATE='s settlement/spot-lag dimension (=2D= in
+  the worked USD/EUR examples below) is a per-currency market
+  convention (2 business days for USD/EUR, but not universal), looked
+  up from =entity= rather than carried by any =oresmd= query
+  parameter — the same kind of external-convention lookup the
+  Bloomberg/RIC projection below needs, just for a dimension internal
+  to ORE's own quote key rather than an external vendor notation.
 - *Bloomberg/RIC* (best-effort only, per the survey — these are
   vendor-licensed and not fully systematic): a lookup table keyed on
   (=asset_class=, =entity=, =index=, =tenor=) is required rather than a
@@ -375,22 +386,35 @@ guarantee the string-based =oresmd= URI alone cannot give.
   members at all, rather than =NONE=-valued ones), mirroring the
   query-parameter grammar's own conditionality at the type level.
 - A parallel =market_data_requirement= hierarchy mirrors the identifier
-  hierarchy field-for-field, but every field is =std::optional=
-  (or equivalent) rather than mandatory — a requirement is, at the type
-  level, exactly an identifier of the same asset class with some fields
-  not yet known. A =resolve(...)= operation takes a requirement plus
-  whatever additional information narrows it (a source, a vintage, an
-  explicit choice among the fields still open) and returns the
-  corresponding identifier, or fails if fields remain unresolved.
+  hierarchy field-for-field. Note that "resolved" does *not* mean
+  "every field on the identifier class is non-null" — the swaption
+  worked example above is a fully-resolved =ir_market_data_identifier=
+  with =index=/=tenor=/=role= all absent, because those fields simply
+  do not apply to a =type=vol= instrument. =index=/=tenor=/=role=/
+  =metric=/=point= are therefore =std::optional= on *both* the
+  identifier and the requirement — the fields that differ are which of
+  them =resolve(...)= is obliged to have settled (one way or the
+  other, including "confirmed not applicable") before it will produce
+  an identifier at all, a check that varies by =type= (a =curve= needs
+  =index=/=tenor=/=role= settled; a =vol= URI does not). Only =ccy= and
+  =type= are unconditionally mandatory on =ir_market_data_identifier=,
+  since every IR instrument has both.
 - Controlled vocabularies (=asset_class=, =instrument_type=,
-  =curve_role=, =metric=) are enums, not strings, so an invalid value
-  is a compile error or a construction-time validation failure, not a
-  silently-accepted typo the way today's free-text =index_name= is.
-- =tenor= and =currency= are not reinvented here — a real implementation
-  would bind these to whatever this codebase's own domain types for
-  tenor and currency already are, rather than introduce competing ones.
+  =curve_role=, =metric=, and — closing the same free-text gap
+  =index_name= has today — =index_family=) are enums, not strings, so
+  an invalid value is a compile error or a construction-time validation
+  failure, not a silently-accepted typo.
+- =tenor=, =currency=, and =point= are not reinvented here — a real
+  implementation would bind these to whatever this codebase's own
+  domain types for tenor and currency already are, rather than
+  introduce competing ones; credit and commodity reuse the same generic
+  =point= type IR's swap-tenor/curve-point case uses (carrying
+  seniority+tenor for credit, or a forward tenor for commodity),
+  exactly mirroring how their URI-level =point= query key already
+  absorbs those dimensions rather than getting dedicated fields of
+  their own.
 
-#+caption: Proposed oresmd type system: a market_data_identifier/market_data_requirement base pair, one concrete class per asset class, each requirement field-for-field optional relative to its identifier counterpart.
+#+caption: Proposed oresmd type system: a market_data_identifier/market_data_requirement base pair, one concrete class per asset class, fields std::optional wherever that asset class's grammar makes them conditional.
 [[proj:doc/knowledge/domain/market_data_urn_types.png]]
 
 Source: [[./market_data_urn_types.puml][=market_data_urn_types.puml=]].

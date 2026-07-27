@@ -135,7 +135,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =index= claimed controlled vocab but typed as plain string in the class diagram | market_data_urn_types.puml | Accepted | Added an =index_family= enum, used it on both IR classes |
+| 2 | =ir_market_data_identifier='s mandatory index/tenor/role contradict the swaption worked example (all absent there) | market_data_urn_types.puml, market_data_urn.org | Accepted | Made index/tenor/role =optional<>= on both IR classes; added prose explaining "resolved" means type-appropriate fields settled, not every field non-null |
+| 3 | Credit/commodity classes have dedicated seniority/tenor fields, contradicting the prose's point-absorbs-both rationale | market_data_urn_types.puml | Accepted | Replaced with a generic =point : optional<point>= field on both, matching IR's pattern and the worked examples |
+| 4 | Promised backlinks from market_data_identifier.org/ore_market_data_catalogue.org/external_market_data_identifiers.org were never added | 3 existing knowledge docs | Accepted | Added backlinks to all three; also fixed a stale "Market data identifiers" link title in market_data_identifier.org while there |
+| 5 | IR swap quote-key example bakes in an undocumented =2D= settlement-lag dimension with no corresponding oresmd field | market_data_urn.org | Accepted | Added a note that spot-lag is a per-currency convention looked up from =entity=, the same kind of external lookup the Bloomberg/RIC projection already documents |
+| 6 | =asset_class= inconsistently called both "path" and "authority/host" | market_data_urn.org | Accepted | Fixed wording throughout — asset_class is the URI authority/host, only entity is the path |
+
+Regenerated =market_data_urn_types.png= from the corrected =.puml= after
+fixes 1–3.
 
 * Result
 

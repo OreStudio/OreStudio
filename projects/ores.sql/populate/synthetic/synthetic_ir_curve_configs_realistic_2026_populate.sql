@@ -27,13 +27,13 @@
  * AONIA, CAD/CORRA, CNY/SHIBOR-ON, HKD/HONIA, SGD/SORA, SEK/SWESTR,
  * NOK/NOWA, NZD/NZIONA, KRW/KOFR, INR/MIBOR, MXN/TIIE-ON, ZAR/ZARONIA,
  * DKK/DESTR, PLN/POLONIA, TWD/TAIBOR-ON), with per-currency-calibrated
- * CIR parameters (distinct reversion speed/vol/level per curve,
+ * Cox-Ingersoll-Ross parameters (distinct reversion speed/vol/level per curve,
  * reflecting each market's own typical short-rate level and
  * volatility -- e.g. JPY near-zero and low-vol, EM currencies
  * (MXN/ZAR/INR/PLN) higher level and higher vol than G10) rather than
  * one uniform set, and a seven-entry Curve Template per
  * curve (short-end deposits through a 10Y swap) so a bootstrapped
- * curve has real shape to show. CIR chosen over Vasicek here because
+ * curve has real shape to show. Cox-Ingersoll-Ross chosen over Vasicek here because
  * volatility scaling with the level and non-negativity by
  * construction are a better fit for short rates, without needing a
  * real reference curve to calibrate against (which Hull-White's own
@@ -48,7 +48,7 @@
  * between at the collection level (see MarketSimulatorWindow's Start-at-
  * Root theme prompt), not layers meant to run side by side.
  *
- * Parameters are plain, real annualised CIR values -- day-per-tick
+ * Parameters are plain, real annualised Cox-Ingersoll-Ross values -- day-per-tick
  * scaling (ir_curve_template_resolver's "1 tick = 1 day" convention)
  * is handled by process_factory::make_yield_curve_process()'s own dt
  * parameter, not here (see the "Fix day-scaled kappa/sigma
@@ -83,7 +83,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic IR Curve Configs: 2026 Realistic',
-        'One overnight-RFR CIR short-rate curve per top-20-by-turnover currency, per-curve-calibrated annualised parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
+        'One overnight-RFR Cox-Ingersoll-Ross short-rate curve per top-20-by-turnover currency, per-curve-calibrated annualised parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
         'ORESTUDIO',
         '2026 Realistic theme for the Synthetic data collections bundle',
         current_date,
@@ -136,14 +136,14 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.index_name,
-        '2026 Realistic archetype: a per-currency-calibrated CIR short-rate process for '
+        '2026 Realistic archetype: a per-currency-calibrated Cox-Ingersoll-Ross short-rate process for '
         || c.currency_code || '''s current overnight risk-free rate, ' || c.index_name || '. '
-        || 'CIR''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
+        || 'Cox-Ingersoll-Ross''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
         || 'better fit for short rates than Vasicek''s constant-vol Gaussian, without needing '
         || 'a real reference curve to calibrate Hull-White against. This is the dataset '
         || 'Barclays'' own provisioning flow publishes and auto-starts by default -- the '
         || 'primary, currently-live curve for this currency.',
-        true, true, c.currency_code, c.index_name, 'CIR',
+        true, true, c.currency_code, c.index_name, 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly'
     from (values

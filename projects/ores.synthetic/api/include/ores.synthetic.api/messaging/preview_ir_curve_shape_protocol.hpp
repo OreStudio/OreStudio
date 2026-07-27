@@ -53,7 +53,7 @@ struct preview_ir_curve_shape_request {
 
     static constexpr int max_entries = 50;
 
-    /** @brief Short-rate process engine: "vasicek", "cir", or "hull_white". */
+    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", or "hull_white". */
     std::string process_type = "vasicek";
     double kappa = 0.0;
     double theta = 0.0;

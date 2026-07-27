@@ -30,7 +30,7 @@ namespace ores::synthetic::messaging {
  * @brief Request a batch (dry-run) simulation of short-rate sample paths.
  *
  * The IR curve analogue of simulate_fx_spot_paths_request: builds the real short-rate process
- * (Vasicek/CIR/Hull-White) and steps it to generate the whole batch in one response, so an IR
+ * (Vasicek/Cox-Ingersoll-Ross/Hull-White) and steps it to generate the whole batch in one response, so an IR
  * curve editor can preview the configured process behaviour before persisting or starting a feed.
  * Stateless: nothing is persisted or published.
  */
@@ -42,7 +42,7 @@ struct simulate_ir_curve_paths_request {
     static constexpr int max_num_ticks = 5000;
     static constexpr int max_num_paths = 50;
 
-    /** @brief Short-rate process engine: "vasicek", "cir", or "hull_white". */
+    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", or "hull_white". */
     std::string process_type = "vasicek";
 
     /** @brief Mean-reversion speed. */

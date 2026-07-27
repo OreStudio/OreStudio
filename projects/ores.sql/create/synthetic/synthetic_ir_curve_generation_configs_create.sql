@@ -26,7 +26,7 @@
  *
  * A typed sub-configuration owned by a market_data_generation_config. Describes
  * how to synthesise a single currency+index interest-rate curve: which
- * short-rate process drives it (vasicek/cir/hull_white, per
+ * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white, per
  * ores.analytics.quant's IYieldCurveProcess engines) and that process's
  * parameters. The actual instrument grid (which tenors to publish at which
  * role) is held separately as ordered ir_curve_template_entry rows, the
@@ -73,7 +73,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("source_name" <> ''),
     check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
-    check ("process_type" <> 'CIR' or "initial_rate" >= 0)
+    check ("process_type" <> 'COX_INGERSOLL_ROSS' or "initial_rate" >= 0)
 );
 
 -- Composite natural key: unique combination for active records

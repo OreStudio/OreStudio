@@ -175,7 +175,7 @@ faker::number::integer(1, 3600)
 :END:
 
 Price-process engine: "geometric" (multiplicative), "arithmetic"
-(additive), or "ou" (Ornstein-Uhlenbeck, mean-reverting).
+(additive), or "ornstein_uhlenbeck" (Ornstein-Uhlenbeck, mean-reverting).
 
 #+begin_src cpp :name generator
 std::string("geometric")
@@ -265,7 +265,7 @@ std::nullopt
 | "source_name" <> ''                                   |
 | "ore_key" <> ''                                       |
 | "ticks_per_hour" > 0                                  |
-| "process_type" in ('geometric', 'arithmetic', 'ou')   |
+| "process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')   |
 | "price_source" in ('fixed', 'vintage')                |
 | ("price_source" = 'fixed' and "gmm_initial_price" > 0 and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "gmm_initial_price" = 0 and "vintage_source" <> '' and "vintage_date" <> '') |
 
@@ -365,7 +365,7 @@ std::nullopt
 | price_source        | Price Source        | priceSourceEdit      | line_edit |        | true        | fixed, or vintage                |
 | gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        |             | Required if Price Source is fixed |
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
-| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
+| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ornstein_uhlenbeck |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
 | vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
 | vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |
@@ -374,7 +374,7 @@ std::nullopt
 
 =formatter= is optional: a free function =formatter(field) -> QString=
 called instead of the type's built-in renderer — for a column whose raw
-value needs a friendly label (e.g. ProcessType's "geometric"/"ou" code
+value needs a friendly label (e.g. ProcessType's "geometric"/"ornstein_uhlenbeck" code
 becoming "Geometric Brownian Motion"/"Ornstein-Uhlenbeck"). Leave blank
 to use the plain type renderer. =formatter_include= names the header
 the formatter function needs, if any.

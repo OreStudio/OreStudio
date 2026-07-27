@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/processes/arithmetic_gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
+#include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
 
-arithmetic_gmm_process::arithmetic_gmm_process(std::vector<double> means,
-                                               std::vector<double> stdevs,
-                                               std::vector<double> weights,
-                                               double initial_price,
-                                               std::uint32_t seed)
+gaussian_mixture_model_process::gaussian_mixture_model_process(std::vector<double> means,
+                         std::vector<double> stdevs,
+                         std::vector<double> weights,
+                         double initial_price,
+                         std::uint32_t seed)
     : means_(std::move(means))
     , stdevs_(std::move(stdevs))
     , weights_(std::move(weights))
@@ -35,27 +36,26 @@ arithmetic_gmm_process::arithmetic_gmm_process(std::vector<double> means,
     , component_dist_(weights_.begin(), weights_.end()) {
 
     if (means_.size() != stdevs_.size() || means_.size() != weights_.size())
-        throw std::invalid_argument(
-            "arithmetic_gmm_process: means, stdevs, weights must have equal size");
+        throw std::invalid_argument("gaussian_mixture_model_process: means, stdevs, weights must have equal size");
     if (means_.empty())
-        throw std::invalid_argument("arithmetic_gmm_process: at least one component required");
+        throw std::invalid_argument("gaussian_mixture_model_process: at least one component required");
     if (initial_price <= 0.0)
-        throw std::invalid_argument("arithmetic_gmm_process: initial_price must be positive");
+        throw std::invalid_argument("gaussian_mixture_model_process: initial_price must be positive");
 }
 
-double arithmetic_gmm_process::next() {
+double gaussian_mixture_model_process::next() {
     const int k = component_dist_(rng_);
     // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
     // the process on σ <= 0 in debug builds). A zero-variance component is
     // degenerate: the draw is exactly the mean, so handle it directly.
     const double sd = stdevs_[k];
-    const double increment =
+    const double log_return =
         sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
-    price_ += increment;
+    price_ *= std::exp(log_return);
     return price_;
 }
 
-double arithmetic_gmm_process::current() const {
+double gaussian_mixture_model_process::current() const {
     return price_;
 }
 

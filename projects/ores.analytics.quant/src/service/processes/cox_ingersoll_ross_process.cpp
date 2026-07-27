@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/processes/cir_process.hpp"
+#include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
 
-cir_process::cir_process(
+cox_ingersoll_ross_process::cox_ingersoll_ross_process(
     double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
     : kappa_(kappa)
     , theta_(theta)
@@ -33,18 +33,18 @@ cir_process::cir_process(
     , rng_(seed) {
 
     if (kappa_ <= 0.0)
-        throw std::invalid_argument("cir_process: kappa must be strictly positive");
+        throw std::invalid_argument("cox_ingersoll_ross_process: kappa must be strictly positive");
     if (theta_ <= 0.0)
-        throw std::invalid_argument("cir_process: theta must be strictly positive");
+        throw std::invalid_argument("cox_ingersoll_ross_process: theta must be strictly positive");
     if (sigma_ < 0.0)
-        throw std::invalid_argument("cir_process: sigma must be non-negative");
+        throw std::invalid_argument("cox_ingersoll_ross_process: sigma must be non-negative");
     if (initial_rate < 0.0)
-        throw std::invalid_argument("cir_process: initial_rate must be non-negative");
+        throw std::invalid_argument("cox_ingersoll_ross_process: initial_rate must be non-negative");
     if (dt_ <= 0.0)
-        throw std::invalid_argument("cir_process: dt must be strictly positive");
+        throw std::invalid_argument("cox_ingersoll_ross_process: dt must be strictly positive");
 }
 
-double cir_process::next_stochastic() {
+double cox_ingersoll_ross_process::next_stochastic() {
     const double decay = std::exp(-kappa_ * dt_);
     const double c = sigma_ * sigma_ * (1.0 - decay) / (4.0 * kappa_);
     const double d = 4.0 * kappa_ * theta_ / (sigma_ * sigma_);
@@ -61,7 +61,7 @@ double cir_process::next_stochastic() {
     return c * x;
 }
 
-double cir_process::next() {
+double cox_ingersoll_ross_process::next() {
     if (sigma_ == 0.0) {
         // Deterministic mean-reversion ODE: dr = kappa*(theta-r)*dt. The
         // general stochastic formulas above have a sigma-in-the-denominator
@@ -74,11 +74,11 @@ double cir_process::next() {
     return rate_;
 }
 
-double cir_process::current() const {
+double cox_ingersoll_ross_process::current() const {
     return rate_;
 }
 
-double cir_process::discount_factor(std::size_t ticks_ahead) const {
+double cox_ingersoll_ross_process::discount_factor(std::size_t ticks_ahead) const {
     // tau is real elapsed years, not a raw tick count -- see the class
     // docstring for why omitting the *dt_ scaling here silently
     // over-discounts by roughly 1/dt_ at fine tick granularities.

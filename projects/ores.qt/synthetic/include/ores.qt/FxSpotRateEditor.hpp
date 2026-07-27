@@ -142,10 +142,10 @@ private:
     void buildInstrumentTab();
     void buildBehaviourTab();
     // left pane (Simple): a QStackedWidget switching between the GBM/arithmetic
-    // sliders and "ou"'s dedicated θ/κ/σ controls, per the active engine.
+    // sliders and "ornstein_uhlenbeck"'s dedicated θ/κ/σ controls, per the active engine.
     QWidget* buildSimpleControls();
     QWidget* buildGbmSimpleControls(); // Simple page for mixing engines
-    QWidget* buildOuSimpleControls();  // Simple page for "ou"
+    QWidget* buildOuSimpleControls();  // Simple page for "ornstein_uhlenbeck"
     QWidget* buildAdvancedControls();  // left pane (Advanced): table + add/reset
     void populateCurrencyCombo(QComboBox* combo);
     void recomputeOreKey();
@@ -158,8 +158,8 @@ private:
     void rebuildModelFromSimple();   // sliders -> model
     void rebuildModelFromAdvanced(); // table -> model
     void refreshCharts();            // model -> both charts + weight-sum label
-    void updateWeightSumLabel();     // weight-sum label text (or κ echo for "ou")
-    // "ou"'s Simple page: θ/κ/σ controls, dispatched from the functions above.
+    void updateWeightSumLabel();     // weight-sum label text (or κ echo for "ornstein_uhlenbeck")
+    // "ornstein_uhlenbeck"'s Simple page: θ/κ/σ controls, dispatched from the functions above.
     void syncOuSimpleFromModel();
     void rebuildOuModelFromSimple();
     void onResetOuSimple();
@@ -173,8 +173,8 @@ private:
     void updateComponentColors();
 
     void onEngineChanged();
-    void updateEngineUi(); // relabel headers/tooltips/warning and gate Add for "ou"
-    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ou"
+    void updateEngineUi(); // relabel headers/tooltips/warning and gate Add for "ornstein_uhlenbeck"
+    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ornstein_uhlenbeck"
     [[nodiscard]] bool currentEngineSupportsMixing() const;
     [[nodiscard]] QString incrementNoun() const; // label noun for the active engine
     // Detailed hover text for a component row's Name/μ/σ/Weight cells, explaining
@@ -252,7 +252,7 @@ private:
     SamplePricePathsChart* pathsChart_;  // prominent, full-width bottom
 
     // Behaviour tab — Simple page. simpleModeStack_ switches between the GBM/
-    // arithmetic sliders (index 0) and "ou"'s θ/κ/σ controls (index 1).
+    // arithmetic sliders (index 0) and "ornstein_uhlenbeck"'s θ/κ/σ controls (index 1).
     QStackedWidget* simpleModeStack_;
     QSlider* driftSlider_;
     QSlider* volSlider_;
@@ -261,7 +261,7 @@ private:
     QLabel* volValueLabel_;
     QLabel* jumpValueLabel_;
 
-    // Behaviour tab — Simple page, "ou" controls.
+    // Behaviour tab — Simple page, "ornstein_uhlenbeck" controls.
     QLabel* ouThetaLabel_; // read-only echo of priceSpin_ (θ is edited there)
     QSlider* kappaSlider_; // log-mapped, see kappaSliderToValue/kappaValueToSlider
     QDoubleSpinBox* kappaSpin_;
@@ -271,7 +271,7 @@ private:
 
     // Behaviour tab — Advanced page.
     QTableWidget* componentTable_;
-    QPushButton* addComponentBtn_; // disabled for the single-regime "ou" engine
+    QPushButton* addComponentBtn_; // disabled for the single-regime "ornstein_uhlenbeck" engine
     QLabel* weightSumLabel_;
 
     std::vector<std::string> knownCodes_;

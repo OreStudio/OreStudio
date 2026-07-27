@@ -45,7 +45,7 @@ namespace ores #F2F2F2 {
 
             namespace service #F2F2F2 {
 
-                class gmm_process {
+                class gaussian_mixture_model_process {
                     -means_ : vector<double>
                     -stdevs_ : vector<double>
                     -weights_ : vector<double>
@@ -56,7 +56,7 @@ namespace ores #F2F2F2 {
                     .. geometric (multiplicative) engine ..
                 }
 
-                class arithmetic_gmm_process {
+                class arithmetic_gaussian_mixture_model_process {
                     -means_ : vector<double>
                     -stdevs_ : vector<double>
                     -weights_ : vector<double>
@@ -67,7 +67,7 @@ namespace ores #F2F2F2 {
                     .. additive engine; price may cross zero ..
                 }
 
-                class ou_process {
+                class ornstein_uhlenbeck_process {
                     -kappa_ : double
                     -theta_ : double
                     -sigma_ : double
@@ -82,12 +82,12 @@ namespace ores #F2F2F2 {
                     +{static} make_process(process_type, means, stdevs,\nweights, initial_price, seed) : unique_ptr<IStochasticProcess>
                 }
 
-                gmm_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                arithmetic_gmm_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                ou_process ..|> ores::analytics::quant::domain::IStochasticProcess
-                process_factory ..> gmm_process : creates
-                process_factory ..> arithmetic_gmm_process : creates
-                process_factory ..> ou_process : creates
+                gaussian_mixture_model_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                arithmetic_gaussian_mixture_model_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                ornstein_uhlenbeck_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                process_factory ..> gaussian_mixture_model_process : creates
+                process_factory ..> arithmetic_gaussian_mixture_model_process : creates
+                process_factory ..> ornstein_uhlenbeck_process : creates
                 process_factory ..> ores::analytics::quant::domain::process_parameter_validation : validates via
             }
 

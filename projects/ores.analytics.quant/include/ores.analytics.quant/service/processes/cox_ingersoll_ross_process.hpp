@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_CIR_PROCESS_HPP
-#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_CIR_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_COX_INGERSOLL_ROSS_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_COX_INGERSOLL_ROSS_PROCESS_HPP
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
@@ -73,10 +73,10 @@ namespace ores::analytics::quant::service {
  * tick count -- see the class's knowledge doc for why omitting this
  * silently over-discounts by roughly 1/dt at fine tick granularities.
  */
-class ORES_ANALYTICS_QUANT_EXPORT cir_process final
+class ORES_ANALYTICS_QUANT_EXPORT cox_ingersoll_ross_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
-    cir_process(double kappa,
+    cox_ingersoll_ross_process(double kappa,
                 double theta,
                 double sigma,
                 double initial_rate,

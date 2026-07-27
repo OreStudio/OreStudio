@@ -68,7 +68,7 @@ double hull_white_process::next() {
         rate_ = theta_i + (rate_ - theta_i) * decay + sigma_ * std::sqrt(var) * z;
     } else {
         // kappa <= 0 (or too small to divide by safely): no mean reversion --
-        // same degenerate treatment as ou_process's driftless-random-walk
+        // same degenerate treatment as ornstein_uhlenbeck_process's driftless-random-walk
         // fallback, and QuantLib's own small-speed algebraic limit
         // (variance = sigma^2*dt).
         rate_ += sigma_ * std::sqrt(dt_) * z;

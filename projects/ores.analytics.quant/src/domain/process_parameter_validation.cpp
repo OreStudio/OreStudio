@@ -67,7 +67,7 @@ process_parameter_validation_result validate_process_parameters(const std::strin
     if (initial_price <= 0.0)
         return invalid("Initial price must be positive.");
 
-    if (process_type == "ou")
+    if (process_type == "ornstein_uhlenbeck")
         return validate_ou(stdevs, weights);
 
     // "geometric", "arithmetic", and any unrecognised value all use the mixing
@@ -87,13 +87,13 @@ validate_yield_curve_process_parameters(const std::string& process_type,
     if (sigma < 0.0)
         return invalid("Volatility (σ) cannot be negative.");
 
-    if (process_type == "cir") {
+    if (process_type == "cox_ingersoll_ross") {
         if (kappa <= 0.0)
-            return invalid("CIR requires κ (mean reversion speed) to be strictly positive.");
+            return invalid("Cox-Ingersoll-Ross requires κ (mean reversion speed) to be strictly positive.");
         if (theta_path.front() <= 0.0)
-            return invalid("CIR requires θ (mean reversion level) to be strictly positive.");
+            return invalid("Cox-Ingersoll-Ross requires θ (mean reversion level) to be strictly positive.");
         if (initial_rate < 0.0)
-            return invalid("CIR requires a non-negative initial rate.");
+            return invalid("Cox-Ingersoll-Ross requires a non-negative initial rate.");
         return {};
     }
 

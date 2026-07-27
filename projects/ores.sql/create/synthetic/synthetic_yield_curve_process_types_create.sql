@@ -26,8 +26,8 @@
  *
  * Reference data table enumerating the IYieldCurveProcess engines
  * ores.analytics.quant's process_factory::make_yield_curve_process()
- * can construct: VASICEK, CIR, HULL_WHITE. Replaces an inline
- * CHECK ("process_type" in ('vasicek', 'cir', 'hull_white')) constraint
+ * can construct: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE. Replaces an inline
+ * CHECK ("process_type" in ('vasicek', 'cox_ingersoll_ross', 'hull_white')) constraint
  * on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
  * catalogue row per engine -- same reasoning as promoting
  * instrument_code from a hardcoded list to a real reference-data table.

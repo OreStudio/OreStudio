@@ -36,11 +36,11 @@ struct process_parameter_validation_result final {
 
 /**
  * @brief Validate the raw (means, stdevs, weights, initial_price) tuple for the
- * given process_type ("geometric", "arithmetic", "ou", ...), independent of
+ * given process_type ("geometric", "arithmetic", "ornstein_uhlenbeck", ...), independent of
  * both the UI and the process-construction machinery.
  *
  * This is the single source of truth for "are these parameters good?" — the
- * process classes (gmm_process, ou_process, ...) still validate defensively
+ * process classes (gaussian_mixture_model_process, ornstein_uhlenbeck_process, ...) still validate defensively
  * in their constructors, but callers that want a friendly ok/error-message
  * pair *before* attempting to build or persist a process should call this
  * instead of duplicating the rules. Lives in ores.analytics.quant (not
@@ -53,7 +53,7 @@ struct process_parameter_validation_result final {
  * std::discrete_distribution from them, which is undefined behaviour over an
  * all-zero or empty set).
  *
- * For "ou" (single-regime, not a mixture): only stdevs.front() (sigma) and
+ * For "ornstein_uhlenbeck" (single-regime, not a mixture): only stdevs.front() (sigma) and
  * weights.front() (kappa) are used; sigma must be non-negative. kappa has no
  * required sign — kappa <= 0 is a valid, if degenerate, driftless random walk.
  *
@@ -68,7 +68,7 @@ validate_process_parameters(const std::string& process_type,
 
 /**
  * @brief Validate the raw (kappa, theta_path, sigma, initial_rate) tuple
- * for the given yield-curve process_type ("vasicek", "cir", "hull_white"),
+ * for the given yield-curve process_type ("vasicek", "cox_ingersoll_ross", "hull_white"),
  * independent of both the UI and the process-construction machinery.
  *
  * Extends the single-source-of-truth validation above with a second
@@ -78,14 +78,14 @@ validate_process_parameters(const std::string& process_type,
  *
  * For "vasicek" and "hull_white": theta_path must be non-empty; sigma must
  * be non-negative; kappa has no required sign (kappa <= 0 is a valid, if
- * degenerate, driftless case, same as "ou"). initial_rate has no sign
+ * degenerate, driftless case, same as "ornstein_uhlenbeck"). initial_rate has no sign
  * constraint here (a negative short rate is economically unusual but not
  * invalid for a Gaussian model).
  *
- * For "cir": kappa and theta_path.front() (theta) must both be strictly
+ * For "cox_ingersoll_ross": kappa and theta_path.front() (theta) must both be strictly
  * positive (the sqrt(r) volatility term makes kappa <= 0 ill-posed, and
- * CIR's mean-reversion level cannot be non-positive); sigma must be
- * non-negative; initial_rate must be non-negative (CIR's domain is
+ * Cox-Ingersoll-Ross's mean-reversion level cannot be non-positive); sigma must be
+ * non-negative; initial_rate must be non-negative (Cox-Ingersoll-Ross's domain is
  * r >= 0). The Feller condition (2*kappa*theta >= sigma^2) is *not*
  * enforced here -- violating it is valid (the process can then touch
  * zero) rather than an error.

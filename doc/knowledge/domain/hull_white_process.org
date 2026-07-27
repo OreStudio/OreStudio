@@ -124,12 +124,12 @@ Hull & White's original paper writes the SDE in "drift intercept" form,
 $dr = [\phi(t) - a r]\, dt + \sigma\, dW$ with $\phi(t) =
 \kappa\theta(t)$. =hull_white_process= instead uses the "target level"
 form shown above, $\kappa(\theta(t)-r)$, the same shape as
-[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][=ou_process='s]] SDE. The two
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][=ornstein_uhlenbeck_process='s]] SDE. The two
 are algebraically equivalent (relabel $\phi(t) = \kappa\theta(t)$ to move
 between them), but the target-level form is chosen deliberately in this
 codebase: it makes both the degenerate $\kappa \le 0$ case and the
 Vasicek special case ($\theta(t)$ held constant) reduce to *exactly*
-=ou_process='s formula, with no re-derivation or approximation needed —
+=ornstein_uhlenbeck_process='s formula, with no re-derivation or approximation needed —
 a direct, mechanical consequence of the form chosen, not a coincidence of
 the underlying mathematics.
 

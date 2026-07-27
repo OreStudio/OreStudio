@@ -6539,7 +6539,7 @@ package "synthetic" #F9FBE7 {
     IR Curve Generation Config Table
     A typed sub-configuration owned by a market_data_generation_config. Describes
     how to synthesise a single currency+index interest-rate curve: which
-    short-rate process drives it (vasicek/cir/hull_white, per
+    short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white, per
     ores.analytics.quant's IYieldCurveProcess engines) and that process's
     parameters. The actual instrument grid (which tenors to publish at which
     role) is held separately as ordered ir_curve_template_entry rows, the
@@ -6650,8 +6650,8 @@ package "synthetic" #F9FBE7 {
     Yield Curve Process Type Table
     Reference data table enumerating the IYieldCurveProcess engines
     ores.analytics.quant's process_factory::make_yield_curve_process()
-    can construct: VASICEK, CIR, HULL_WHITE. Replaces an inline
-    CHECK ("process_type" in ('vasicek', 'cir', 'hull_white')) constraint
+    can construct: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE. Replaces an inline
+    CHECK ("process_type" in ('vasicek', 'cox_ingersoll_ross', 'hull_white')) constraint
     on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
     catalogue row per engine -- same reasoning as promoting
     instrument_code from a hardcoded list to a real reference-data table.

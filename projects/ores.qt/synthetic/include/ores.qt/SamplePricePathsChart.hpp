@@ -77,9 +77,9 @@ public:
     void setProcessType(const std::string& processType);
 
     /**
-     * @brief Draw a dashed horizontal reference line at @p level (e.g. "ou"'s θ),
+     * @brief Draw a dashed horizontal reference line at @p level (e.g. "ornstein_uhlenbeck"'s θ),
      * labelled on the chart. Pass std::nullopt to remove it (the default —
-     * mean-reversion is "ou"-specific, other engines have no such level).
+     * mean-reversion is "ornstein_uhlenbeck"-specific, other engines have no such level).
      */
     void setReferenceLevel(std::optional<double> level);
 

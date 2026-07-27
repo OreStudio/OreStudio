@@ -41,18 +41,18 @@ public:
     /**
      * @brief Build the price process for the given engine.
      *
-     * @param process_type "geometric" (GBM), "arithmetic" (additive), or "ou"
+     * @param process_type "geometric" (GBM), "arithmetic" (additive), or "ornstein_uhlenbeck"
      *        (Ornstein-Uhlenbeck, mean-reverting). Any unrecognised value
      *        falls back to geometric.
      *
-     * For "ou" the GMM component channels are repurposed as scalar
+     * For "ornstein_uhlenbeck" the GMM component channels are repurposed as scalar
      * parameters rather than a mixture (OU is a single-regime process, not a
      * mixture): weights[0] = kappa (reversion speed), stdevs[0] = sigma
      * (volatility), and initial_price doubles as theta (long-run mean) — the
      * process reverts toward its own starting level by default. means is
-     * unused for "ou".
+     * unused for "ornstein_uhlenbeck".
      *
-     * @param dt The year-fraction one tick represents, forwarded to "ou"
+     * @param dt The year-fraction one tick represents, forwarded to "ornstein_uhlenbeck"
      *        only (default 1.0 -- one tick per year); "geometric"/
      *        "arithmetic" take means/stdevs as already-per-tick log-return
      *        moments with no kappa/dt coupling, so dt does not apply to
@@ -71,14 +71,14 @@ public:
      * @brief Build a short-rate process that also exposes the model's
      * implied zero-coupon bond price (the "latent curve").
      *
-     * @param process_type "vasicek", "cir", or "hull_white". Any other
+     * @param process_type "vasicek", "cox_ingersoll_ross", or "hull_white". Any other
      *        value throws std::invalid_argument -- unlike make_process()
      *        above, there is no silent fallback, since a caller asking
      *        for a yield-curve process by an unrecognised name almost
      *        certainly has a bug, not a reasonable default to fall back
      *        to.
      * @param theta_path The mean-reversion level (constant for "vasicek"/
-     *        "cir" -- only theta_path.front() is used; piecewise-constant
+     *        "cox_ingersoll_ross" -- only theta_path.front() is used; piecewise-constant
      *        per tick for "hull_white", see hull_white_process).
      * @param dt The year-fraction one tick represents (default 1.0 -- one
      *        tick per year). kappa/theta_path/sigma/initial_rate stay in

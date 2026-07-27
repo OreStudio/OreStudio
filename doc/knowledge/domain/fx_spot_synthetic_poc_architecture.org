@@ -455,8 +455,8 @@ projects/ores.synthetic/
         sawtooth_process.cpp/.hpp
         step_process.cpp/.hpp
         gbm_process.cpp/.hpp
-        ou_process.cpp/.hpp
-        gmm_process.cpp/.hpp
+        ornstein_uhlenbeck_process.cpp/.hpp
+        gaussian_mixture_model_process.cpp/.hpp
         gjr_garch_process.cpp/.hpp
         regime_switching_process.cpp/.hpp
         jump_diffusion_process.cpp/.hpp

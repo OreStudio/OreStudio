@@ -2,21 +2,21 @@
 :ID: B6FDABE7-C146-4B63-9C87-B18DEA09D27A
 :END:
 #+title: ores.synthetic.yield_curve_process_type
-#+description: Reference data table classifying which short-rate process engine (vasicek, cir, hull_white) an ir_curve_generation_config uses to drive its curve.
+#+description: Reference data table classifying which short-rate process engine (vasicek, cox_ingersoll_ross, hull_white) an ir_curve_generation_config uses to drive its curve.
 #+type: ores.codegen.entity
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: yield_curve_process_type
 #+entity_plural: yield_curve_process_types
 #+entity_title: Yield Curve Process Type
-#+brief: Short-rate process engine selector for IR curve generation: vasicek, cir, or hull_white.
+#+brief: Short-rate process engine selector for IR curve generation: vasicek, cox_ingersoll_ross, or hull_white.
 #+created: 2026-07-16
 #+updated: 2026-07-16
 
 Reference data table enumerating the =IYieldCurveProcess= engines
 =ores.analytics.quant='s =process_factory::make_yield_curve_process()=
-can construct: =VASICEK=, =CIR=, =HULL_WHITE=. Replaces an inline
-=CHECK ("process_type" in ('vasicek', 'cir', 'hull_white'))= constraint
+can construct: =VASICEK=, =COX_INGERSOLL_ROSS=, =HULL_WHITE=. Replaces an inline
+=CHECK ("process_type" in ('vasicek', 'cox_ingersoll_ross', 'hull_white'))= constraint
 on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
 catalogue row per engine -- same reasoning as promoting
 =instrument_code= from a hardcoded list to a real reference-data table.
@@ -43,7 +43,7 @@ until it is genuinely shared by something else, per this story's own
 
 Unique yield curve process type code.
 
-Examples: 'VASICEK', 'CIR', 'HULL_WHITE'.
+Examples: 'VASICEK', 'COX_INGERSOLL_ROSS', 'HULL_WHITE'.
 
 #+begin_src cpp :name generator
 std::string("YieldCurveProcessType")

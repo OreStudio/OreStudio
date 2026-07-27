@@ -36,13 +36,13 @@ chain rule.
 
 There is no direct C++ analogue to show here — Ito's lemma is a paper-and-
 pencil derivation tool, not something the codebase computes at runtime.
-What *is* in the codebase is one of its results: =cir_process.hpp='s
+What *is* in the codebase is one of its results: =cox_ingersoll_ross_process.hpp='s
 closed-form bond price formula only exists because someone applied Ito's
 lemma to the short-rate SDE to derive it, once, offline — the code below
 just evaluates the closed-form result Ito's lemma made possible:
 
 #+begin_src cpp
-// cir_process::discount_factor -- the *result* of applying Ito's lemma
+// cox_ingersoll_ross_process::discount_factor -- the *result* of applying Ito's lemma
 // to the CIR short-rate SDE, evaluated directly; the derivation itself
 // happened on paper, not in this function.
 const double gamma = std::sqrt(kappa_ * kappa_ + 2.0 * sigma_ * sigma_);

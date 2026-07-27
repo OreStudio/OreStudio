@@ -946,10 +946,17 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             qt_out["has_generate_action"] = any(
                 a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
             )
-            # A detail dialog needs a QToolBar iff it hosts either version-nav
-            # actions or the Generate action (both add QAction rows to it).
+            # A detail dialog needs a QToolBar iff it hosts version-nav
+            # actions, the Generate action (both add QAction rows to it),
+            # or the author explicitly asked for one (e.g. to host a
+            # hand-written paste-block action with no dedicated knob of
+            # its own, like calendar's "Regenerate up to <year>") --
+            # an explicit :has_toolbar: true in the drawer must survive
+            # this derivation, not be silently overwritten by it.
             qt_out["has_toolbar"] = bool(
-                qt_out.get("has_version_navigation") or qt_out["has_generate_action"]
+                qt_out.get("has_toolbar")
+                or qt_out.get("has_version_navigation")
+                or qt_out["has_generate_action"]
             )
             res = _section(qt, "Related entity shortcuts")
             if res:

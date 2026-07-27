@@ -52,15 +52,15 @@ independent halves:
 
 * Acceptance
 
-- [ ] Calendar's detail dialog shows =source=, =is_editable=, and
+- [X] Calendar's detail dialog shows =source=, =is_editable=, and
   =base_calendar_code= (the last as a dynamic combo over other
   calendars, matching =calendar_rule=/=calendar_exception='s existing
   =calendar_code= combo pattern).
-- [ ] Opening a =source='quantlib'= calendar locks every field in the
+- [X] Opening a =source='quantlib'= calendar locks every field in the
   dialog, not just the fields already locked-after-create -- users
   cannot edit a QuantLib-sourced calendar's own name/type/country via
   the UI, full stop.
-- [ ] A "Regenerate up to <year>" action exists (calendar detail
+- [X] A "Regenerate up to <year>" action exists (calendar detail
   dialog or list-window toolbar) that calls
   =refdata.v1.calendar_dates.regenerate= for the open calendar and
   surfaces success/failure and rows-written to the user.

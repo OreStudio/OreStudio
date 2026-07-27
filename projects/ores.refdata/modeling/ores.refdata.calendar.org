@@ -315,6 +315,7 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :has_version_navigation:      false
 :changed_event_class:         refdata::eventing::calendar_changed_event
 :changed_event_include:       ores.refdata.api/eventing/calendar_changed_event.hpp
+:has_toolbar:                 true
 :END:
 
 *** Detail fields
@@ -492,6 +493,109 @@ saved.
 
 #+begin_src cpp :name entity_set_load_hook :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
     setReadOnly(!calendar_.is_editable);
+#+end_src
+
+** Qt: "Regenerate up to <year>" action
+
+A toolbar action (=:has_toolbar: true=, above) that calls the
+=refdata.v1.calendar_dates.regenerate= NATS command
+(=regenerate_calendar_dates_request=, in
+=ores.refdata.api/messaging/calendar_materialisation_protocol.hpp=)
+for the calendar currently open in this dialog, extending its
+materialised
+[[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_dates]] up to a
+user-prompted end year. Available regardless of =is_editable= --
+regenerating derived =calendar_dates= rows is not the same as editing
+the template's own fields, so it isn't gated by the whole-form lock
+above. Disabled in create mode (nothing to regenerate for a row that
+doesn't exist on the server yet).
+
+#+begin_src cpp :name impl_includes :implements 3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C
+#include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
+#include <QDate>
+#include <QInputDialog>
+#+end_src
+
+#+begin_src cpp :name declaration :implements F55CB64E-165A-4E15-A50A-5723C0320E97
+    QAction* regenerateAction_{nullptr};
+    void onRegenerateClicked();
+#+end_src
+
+#+begin_src cpp :name setup_connections_extra :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
+    regenerateAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
+        tr("Regenerate"));
+    regenerateAction_->setToolTip(
+        tr("Regenerate this calendar's holidays up to a chosen year"));
+    regenerateAction_->setEnabled(!createMode_);
+    connect(regenerateAction_, &QAction::triggered,
+            this, &CalendarDetailDialog::onRegenerateClicked);
+#+end_src
+
+#+begin_src cpp :name implementation :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732
+void CalendarDetailDialog::onRegenerateClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot regenerate while disconnected from server.");
+        return;
+    }
+
+    bool ok = false;
+    const int currentYear = QDate::currentDate().year();
+    const int endYear = QInputDialog::getInt(this, tr("Regenerate Holidays"),
+        tr("Regenerate up to year:"), currentYear + 10,
+        currentYear, currentYear + 100, 1, &ok);
+    if (!ok) return;
+
+    const std::string calendarCode = calendar_.code;
+    QPointer<CalendarDetailDialog> self = this;
+
+    struct RegenerateResult {
+        bool success;
+        std::string message;
+        std::uint64_t rows_written;
+    };
+
+    auto task = [self, calendarCode, endYear]() -> RegenerateResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed", 0};
+        }
+
+        refdata::messaging::regenerate_calendar_dates_request request;
+        request.calendar_code = calendarCode;
+        request.end_year = endYear;
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server", 0};
+        }
+
+        return {response_result->success, response_result->message,
+                response_result->rows_written};
+    };
+
+    auto* watcher = new QFutureWatcher<RegenerateResult>(self);
+    connect(watcher, &QFutureWatcher<RegenerateResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Regenerated " << result.rows_written
+                                      << " calendar_dates rows";
+            emit self->statusMessage(
+                tr("Regenerated %1 holiday row(s)").arg(result.rows_written));
+        } else {
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Regenerate Failed", errorMsg);
+        }
+    });
+
+    QFuture<RegenerateResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
 #+end_src
 
 * See also

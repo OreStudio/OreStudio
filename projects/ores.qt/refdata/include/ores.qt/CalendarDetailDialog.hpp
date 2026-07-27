@@ -24,8 +24,11 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/calendar.hpp"
+#include <QAction>
+#include <QToolBar>
 #include <vector>
 
 namespace Ui {
@@ -108,6 +111,8 @@ private:
 
     void populateCountryCodeCombo();
 
+    QAction* regenerateAction_{nullptr};
+    void onRegenerateClicked();
 
     Ui::CalendarDetailDialog* ui_;
     ClientManager* clientManager_;
@@ -116,6 +121,8 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+
+    QToolBar* toolBar_{nullptr};
 };
 
 }

@@ -141,6 +141,8 @@ via its "Verifies task" field.
 | 4 | Promised backlinks from market_data_identifier.org/ore_market_data_catalogue.org/external_market_data_identifiers.org were never added | 3 existing knowledge docs | Accepted | Added backlinks to all three; also fixed a stale "Market data identifiers" link title in market_data_identifier.org while there |
 | 5 | IR swap quote-key example bakes in an undocumented =2D= settlement-lag dimension with no corresponding oresmd field | market_data_urn.org | Accepted | Added a note that spot-lag is a per-currency convention looked up from =entity=, the same kind of external lookup the Bloomberg/RIC projection already documents |
 | 6 | =asset_class= inconsistently called both "path" and "authority/host" | market_data_urn.org | Accepted | Fixed wording throughout — asset_class is the URI authority/host, only entity is the path |
+| 7 | "Two free functions" undercounts by one -- =resolve= is a third, unintroduced free function | market_data_urn.org | Accepted | Reworded to "Three free functions", added a proper introduction for =resolve(market_data_requirement, ...) -> market_data_identifier= alongside =parse_oresmd=/=to_uri= |
+| 8 | New backlog capture not registered in the auto-generated inbox index | doc/agile/product_backlog/inbox.org | Accepted | Ran =regenerate_backlog_indexes.py=; =inbox.org= now lists the capture |
 
 Regenerated =market_data_urn_types.png= from the corrected =.puml= after
 fixes 1–3.

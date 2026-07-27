@@ -394,11 +394,16 @@ would come at a real cost: reflection-based serialisation libraries
 (e.g. =rfl=/reflect-cpp, a natural fit for round-tripping these plain
 structs to/from JSON or the database) generally handle plain structs
 and =std::variant= well but do not handle polymorphic class hierarchies
-gracefully. Two free functions do the asset-class dispatch instead of a
-virtual call: =parse_oresmd(uri) -> market_data_identifier= inspects the
-URI's =asset_class= component and constructs the matching concrete
+gracefully. Three free functions do the asset-class dispatch instead of
+a virtual call: =parse_oresmd(uri) -> market_data_identifier= inspects
+the URI's =asset_class= component and constructs the matching concrete
 struct inside the variant; =to_uri(market_data_identifier) -> oresmd_uri=
-does the reverse via =std::visit=.
+does the reverse via =std::visit=; =resolve(market_data_requirement,
+...) -> market_data_identifier= takes a requirement plus whatever
+additional information narrows it (a source, a vintage, an explicit
+choice among the fields still open) and, via =std::visit= over the
+requirement variant, either produces the matching identifier variant
+member or fails if fields remain unresolved.
 
 - A parallel =market_data_requirement= variant (same five asset
   classes, same "no base class" shape) mirrors the identifier variant

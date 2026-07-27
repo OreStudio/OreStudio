@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/calendar-qt-source-editability-and-holidays-browse
-#+pr: 1700
+#+pr: 1707
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1707][#1707]] | [ores.refdata,ores.codegen] Calendar Regenerate-up-to-year action |
 | [[https://github.com/OreStudio/OreStudio/pull/1700][#1700]] | [ores.refdata,ores.codegen] Calendar detail dialog: source/editability/base template |
 
 * Review

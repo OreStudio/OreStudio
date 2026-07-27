@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market-data-notation-design:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/design-canonical-market-data-urn
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -45,7 +45,7 @@ no code migration happens in this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -73,9 +73,18 @@ no code migration happens in this task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Wrote the design as a dedicated knowledge doc,
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][ORE Studio Market Data
+URN]], rather than inline here, so it can be linked from
+=market_data_identifier.org=, the ORE catalogue doc, and the external
+comparison doc the same way every other durable design decision in this
+story cluster is. Grounded every field in a specific row of the gap
+analysis task's Result table (no speculative fields), reused the exact
+worked-instrument set the survey/gap-analysis tasks already established
+(3M/6M USD LIBOR, USD SOFR, EUR EURIBOR 6M, EUR ESTR, one par swap, one
+FX spot) for direct comparability, and used the ORE market data
+catalogue's documented per-type quote-key shapes for the projection
+rules rather than inventing new ones.
 
 * Notes
 

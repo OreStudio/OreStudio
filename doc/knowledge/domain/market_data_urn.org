@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: C3E053CA-0D4B-480B-9119-E11530160EC1
+:END:
+#+title: ORE Studio Market Data URN
+#+description: A canonical, structured ORE-Studio-native market data identifier with explicit currency/index/tenor/curve-role/instrument-type fields, and deterministic projection rules into ORE's index name, curve key, and quote key (and best-effort Bloomberg/RIC).
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:design:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+
+* Summary
+
+The market data URN is a proposed, structured ORE-Studio-native
+identifier — =mdurn:<scope>:<index_family>:<tenor>:<curve_role>:<instrument_type>[:<point>]=
+— designed to close every gap
+[[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][the gap analysis task]] found:
+no structured tenor field (so same-currency, different-tenor indices
+collide), no curve-role field (so discount and projection curves for
+the same currency can't be told apart), and no single field ORE Studio's
+own schemas key off that projects deterministically into ORE's index
+name, curve key, and quote key. It generalises the one place ORE Studio
+already gets this right
+([[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][=fx_spot_generation_config.ore_key=]])
+and supersedes the free-text qualifier in
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][the existing =market_series=
+key]] by giving it a structured source to be deterministically generated
+from, rather than typed by hand. This is a *design* document only — no
+schema, code, or =curve_feed_controller= change is made here.
+
+* Field list and grammar
+
+** Grammar
+
+#+begin_src text
+mdurn:<scope>:<index_family>:<tenor>:<curve_role>:<instrument_type>[:<point>]
+#+end_src
+
+- =scope=: a currency code (=USD=, =EUR=, ...) for IR/MM instruments, or
+  a 6-character currency pair (=EURUSD=) for FX instruments.
+- =index_family=: the benchmark family token (=LIBOR=, =EURIBOR=,
+  =SOFR=, =ESTR=, =SONIA=, =TONA=, ...), or =NONE= for FX (FX has no
+  benchmark index).
+- =tenor=: the index's own tenor (=3M=, =6M=, =1D=, ...), or =NONE= for FX.
+- =curve_role=: one of =DISCOUNT=, =PROJECTION=, =SELF_DISCOUNTING= (the
+  degenerate single-curve case current synthetic data uses, where one
+  curve serves both roles), or =NONE= for FX.
+- =instrument_type=: one of =FIXING= (identifies a rate fixing/index),
+  =CURVE= (identifies a whole curve), or =QUOTE= (identifies one raw
+  quote/point).
+- =point= (optional): present only when =instrument_type=QUOTE= and the
+  quote is a term-structure point (a swap tenor, a curve point) rather
+  than a scalar (e.g. FX spot).
+
+** Field justification
+
+Every field is justified by a specific finding in
+[[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][the gap analysis]] — no
+speculative fields:
+
+| Field | Gap it closes |
+|-------+----------------|
+| =scope= (currency/pair) | Already present today (=currency_code=) — carried forward, not a new field. |
+| =index_family= | Closes: "=index_name= is free text ... nothing stops a typo'd =index_name= from silently colliding" — =index_family= is a fixed benchmark-family token, not free text. |
+| =tenor= | Closes the tenor-index gap directly: "two configs sharing =currency_code=... can only be told apart if their free-text =index_name= strings happen to differ" — =tenor= is now a distinct, structured field, so =USD-LIBOR-3M= and =USD-LIBOR-6M= are structurally distinct URNs, not string-lookalikes. |
+| =curve_role= | Closes the discount-vs-projection gap directly: "nothing records that a =USD-LIBOR-3M= curve is a *projection* curve, not the *discount* curve" — =curve_role= is an explicit, required field with no default that could be silently wrong. |
+| =instrument_type= | Closes: =curve_feed_controller='s qualifier "has no concept of curve family... or of curve role, so it cannot express 'these two curves legitimately coexist'" — by separating *what kind of thing* (fixing/curve/quote) from the coordinates, two records can now share every other field while differing only in =instrument_type= without being mistaken for a collision. |
+| =point= | Closes: =market_series='s "=qualifier= is a single free-text column, not a per-type fixed-dimension tuple" — =point= is the structured slot for exactly the tenor/coordinate =market_series= currently has no dedicated field for. |
+
+* Projection rules
+
+Deterministic, worked for each field combination:
+
+- *Index name* (from =FIXING= URNs): =<scope>-<index_family>-<tenor>=
+  for indexed benchmarks (e.g. =USD-LIBOR-3M=); =<scope>-<index_family>=
+  for overnight benchmarks with no tenor suffix (e.g. =USD-SOFR=,
+  =EUR-ESTR=) — mirrors ORE's own index-name convention exactly.
+- *Curve key* (from =CURVE= URNs): =Yield/<scope>/<curve_id>= where
+  =curve_id= is =<scope><tenor>= with the tenor's unit letter and any
+  separators stripped (e.g. =USD3M=, =USD1D=, =EUR6M=), per ORE's
+  =Yield/<CCY>/<CURVE_ID>= convention.
+- *Quote key* (from =QUOTE= URNs): per the
+  [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]]'s
+  documented per-type shapes — =MM/RATE/<scope>/2D/<tenor>= for a money-market
+  deposit rate, =IR_SWAP/RATE/<scope>/2D/<tenor>/<point>= for a par swap
+  rate (the =index_family='s tenor becomes the float-leg-tenor
+  dimension, =point= becomes the swap-tenor dimension), or
+  =FX/RATE/<ccy1>/<ccy2>= for an FX spot URN.
+- *Bloomberg/RIC* (best-effort only, per the survey — these are
+  vendor-licensed and not fully systematic): a lookup table keyed on
+  (=scope=, =index_family=, =tenor=) is required rather than a pure
+  string transform, since — per
+  [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+  identifiers]] — neither vendor's convention is a deterministic
+  function of these fields alone (e.g. RIC's =ICAP=/=GFI= broker
+  suffixes, Bloomberg's per-asset-class ticker shape). The URN does not
+  attempt to *generate* a valid RIC/Bloomberg string; it only records
+  which one a given URN corresponds to, where known, the same
+  reference-table approach =external_market_data_identifiers.org='s
+  worked examples already use.
+
+* Worked examples
+
+| URN | Index name | Curve key | Quote key |
+|-----+------------+-----------+-----------|
+| =mdurn:USD:LIBOR:3M:PROJECTION:FIXING= | =USD-LIBOR-3M= | =Yield/USD/USD3M= | — (fixing, not a quote) |
+| =mdurn:USD:LIBOR:6M:PROJECTION:FIXING= | =USD-LIBOR-6M= | =Yield/USD/USD6M= | — |
+| =mdurn:USD:SOFR:1D:DISCOUNT:FIXING= | =USD-SOFR= | =Yield/USD/USD1D= | — |
+| =mdurn:EUR:EURIBOR:6M:PROJECTION:FIXING= | =EUR-EURIBOR-6M= | =Yield/EUR/EUR6M= | — |
+| =mdurn:EUR:ESTR:1D:DISCOUNT:FIXING= | =EUR-ESTR= | =Yield/EUR/EUR1D= | — |
+| =mdurn:USD:LIBOR:3M:PROJECTION:QUOTE:5Y= | — | — | =IR_SWAP/RATE/USD/2D/3M/5Y= |
+| =mdurn:EURUSD:NONE:NONE:NONE:QUOTE= | — | — | =FX/RATE/EUR/USD= |
+
+** Tenor-index gap, resolved
+
+The first two rows above — =mdurn:USD:LIBOR:3M:...= and
+=mdurn:USD:LIBOR:6M:...= — are the exact same-currency,
+different-tenor-index pair the gap analysis flagged as
+indistinguishable today (=USD-LIBOR-3M= vs a hypothetical
+=USD-LIBOR-6M=, both only distinguished by string content of a free-text
+=index_name=). Under the URN, =tenor= is a distinct grammar position:
+the two URNs differ structurally at that position, not just in string
+content, and project to distinct curve keys (=USD3M= vs =USD6M=)
+automatically.
+
+** Discount-vs-projection gap, resolved
+
+The =EUR-EURIBOR-6M= and =EUR-ESTR= rows are the same-currency
+discount-vs-projection pair the gap analysis flagged: both are =EUR=,
+but =EUR-EURIBOR-6M='s URN has =curve_role=PROJECTION= while
+=EUR-ESTR='s has =curve_role=DISCOUNT=. =curve_feed_controller= (or its
+eventual URN-aware successor) can now express "these two curves
+legitimately coexist because one discounts and one projects" as a
+structural fact about the two URNs, rather than an unstated assumption
+about what two similar-looking =index_name= strings happen to mean.
+
+* Relationship to existing schemes
+
+- *=fx_spot_generation_config.ore_key=*: the URN's FX branch
+  (=mdurn:EURUSD:NONE:NONE:NONE:QUOTE= → =FX/RATE/EUR/USD=) produces
+  exactly this field's existing value. *Relationship: generalisation.*
+  The URN is a strict superset — =ore_key= becomes the =QUOTE=
+  projection of an FX-scoped URN, with no change to the projected value
+  itself, only to what generates it.
+- *=market_series= =series_type/metric/qualifier[/point_id]=*: the
+  URN's =QUOTE= projection rules above produce exactly the
+  =TYPE/SUBTYPE/dim...= shape =market_series='s =series_type=/=metric=
+  columns already mirror; the difference is that =market_series='s
+  =qualifier=/=point_id= are currently free text, hand-populated per
+  row, while under the URN they would be deterministically generated
+  from the URN's =scope=/=index_family=/=tenor=/=point= fields.
+  *Relationship: the URN supersedes the free-text population of
+  =qualifier=/=point_id=, while =market_series='s own top-level
+  =series_type=/=metric=/=qualifier=/=point_id= column shape is kept
+  unchanged* — this is a generation-source change, not a schema
+  change, consistent with this task's no-schema-change constraint.
+- *=ir_curve_generation_config='s (=currency_code=, =index_name=) pair*:
+  replaced conceptually by a =CURVE=-typed URN (=scope= = =currency_code=,
+  =index_family=+=tenor= replacing free-text =index_name=, plus the new
+  =curve_role= field this table has no equivalent of today).
+  *Relationship: the URN generalises this pair and adds the two fields
+  (structured tenor, curve role) the gap analysis found missing* — no
+  migration is proposed here; that is follow-on implementation work.
+
+No three competing schemes remain in the mental model after this
+design: =fx_spot_generation_config.ore_key= and =market_series='s
+qualifier/point_id both become projections *of* the URN, not
+independent schemes coexisting alongside it.
+
+* See also
+
+- [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] — the gap table every URN field above is justified against.
+- [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] and [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — the survey material the projection rules (especially the Bloomberg/RIC best-effort mapping) are grounded in.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative per-type quote-key shapes the Quote-key projection rule is built from.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the existing =market_series= key this design proposes to generate from the URN rather than replace structurally.
+- [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]] — the still-BACKLOG task whose data model should agree with this URN's =curve_role= field on one representation.

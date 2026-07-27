@@ -64,6 +64,10 @@ Finance concepts the codebase relies on, grouped by topic.
   Community's actively-maintained wire protocol and message dictionary,
   its Market Data message family, and =SecurityIDSource= symbology
   (which explicitly names RIC and Bloomberg as member schemes).
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][ORE Studio Market Data URN]] — a proposed canonical, structured
+  identifier (=mdurn:<scope>:<index_family>:<tenor>:<curve_role>:<instrument_type>[:<point>]=)
+  with deterministic projection rules into ORE's index name, curve key,
+  and quote key, closing the tenor-index and curve-role gaps.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — hub note for how a
   logical need for market data (a requirement) resolves into a concrete
   item drawn from the market data universe: requirements, identifiers,

@@ -41,14 +41,14 @@ stopgap gets replaced with a real FK to the normalized model.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | ABANDONED                              |
+| Field        | Value                                                                                     |
+|--------------+---------------------------------------------------------------------------------------------|
+| State        | ABANDONED                                                                                  |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Nothing.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing -- superseded, see Result.                  |
-| Last touched | 2026-07-28                               |
+| Now          | Nothing.                                                                                   |
+| Waiting on   | Nothing.                                                                                   |
+| Next         | Nothing -- superseded, see Result.                                                         |
+| Last touched | 2026-07-28                                                                                 |
 
 * Acceptance
 

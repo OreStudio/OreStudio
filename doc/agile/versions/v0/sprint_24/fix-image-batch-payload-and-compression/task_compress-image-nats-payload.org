@@ -43,24 +43,86 @@ sibling byte-size-aware-batching task for the remaining backstop).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
 
--
+- [X] Image responses are compressed on the wire (server compresses,
+  client decompresses) -- implemented generically at the NATS
+  transport layer rather than image-specifically; see Plan/Notes for
+  why that's sufficient and preferable.
+- [ ] Image data travels as raw bytes instead of base64-in-JSON --
+  descoped from this task; not load-bearing given the compression
+  margin, tracked separately as
+  [[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][a follow-up task]] (see
+  Notes).
+- [X] Worst-case batch verified via unit test against a synthetic
+  payload sized like the decision task's measured worst case.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Implemented as a *generic, transparent transport-level mechanism* in
+=ores.nats= rather than an image-specific change, after finding that
+every inbound/outbound NATS message in the codebase already funnels
+through two choke points:
+
+- =extract_message()= (=ores.nats/src/service/client.cpp=) builds
+  =ores::nats::message= from every raw =natsMsg*= -- both request-reply
+  replies and subscription callbacks, client and server side alike.
+- =make_msg()= (same file) builds every outbound =natsMsg*= -- used by
+  =publish()=, =request_sync()=, and =js_publish()=.
+
+Added =ores.nats/domain/compression.hpp=+=.cpp=:
+- =compress_if_worthwhile(data, headers)= -- gzips (reusing the
+  existing =ores::utility::compression::gzip_compress=, the same one
+  =ores.storage='s HTTP transport already uses) and sets the new
+  =X-Content-Encoding: gzip= header, but only when: the payload is
+  >= 4096 bytes (=compression_threshold_bytes=; below this gzip's
+  ~20-byte framing overhead and the CPU cost isn't worth it -- the vast
+  majority of NATS traffic is small request/response JSON and pays
+  zero cost), the caller hasn't already set a content-encoding header,
+  and compressing would actually shrink the payload (safety net).
+- =decompress_if_flagged(data, headers)= -- the inverse, called
+  unconditionally from =extract_message()=.
+
+Wired into both choke points. Result: every message above the
+threshold -- not just images -- gets transparent compression, with
+*zero changes* to =ImageCache=, =ClientManager=, any protocol struct,
+or any domain type. Pulled the logic into a proper testable
+header+impl (rather than leaving it =extract_message()=/=make_msg()=-
+local) specifically so it has real unit test coverage without needing
+a live NATS server.
+
+Also found and fixed, in a separate commit on this branch (unrelated
+to compression, but blocking =compass db recreate= for anyone on
+current main): three SQL codegen templates
+(=sql_schema_table_create=, =sql_schema_junction_create=,
+=sql_schema_artefact_create=) rendered a column's SQL default via the
+double-mustache ={{default}}=, which HTML-escapes its output --
+turning the quotes a text default gets wrapped in (e.g.
+='quantlib_computed'=) into =&#x27;= entities and producing invalid
+SQL. =sql_schema_domain_entity_create= already used the correct raw
+={{{default}}}= form.
 
 * Notes
+
+Scope was narrowed from the task's original title/description (which
+named both compression and raw-bytes-instead-of-base64) after
+weighing the tradeoff with the story owner: the decision task's own
+data shows generic gzip alone (keeping =rfl::json='s base64 encoding
+as-is) already gets a 2.5x margin against the worst measured case --
+comfortably enough. Raw-bytes-instead-of-base64 is real but not
+load-bearing (a further ~25% improvement) and requires a much more
+invasive, image-specific wire-encoding change (bypassing
+=rfl::json='s default =std::vector<uint8_t>=-to-base64 behaviour).
+Split into
+[[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][a separate follow-up task]]
+rather than expanding this one's scope.
 
 * Test Scenarios
 
@@ -86,3 +148,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped a generic, transparent transport-level gzip compression
+mechanism in =ores.nats= (=domain/compression.hpp=+=.cpp=, wired into
+=make_msg()=/=extract_message()=), rather than an image-specific
+change -- every NATS message above 4096 bytes now gets compressed
+automatically, with zero changes to =ImageCache=, =ClientManager=, or
+any protocol/domain type. 7 new unit tests in
+=domain_compression_tests.cpp= cover the threshold gating, the
+compression-doesn't-help safety net, header precedence, and full
+round-trip correctness including a synthetic worst-case-sized payload.
+
+Raw-bytes-instead-of-base64 (the task's other originally-named
+mechanism) was descoped as not load-bearing and split into a separate
+follow-up task -- see Notes.
+
+Also fixed an unrelated regression discovered while recreating the
+local database to verify this change: three SQL codegen templates were
+HTML-escaping quoted column defaults into invalid SQL, breaking
+=compass db recreate= for anyone on current main. Fixed in a separate
+commit on this branch (=1cb431617=).
+
+Full local verification: =ores.nats.tests= (including the 7 new
+cases) and the complete =ctest= suite both green, 74/74 tests passing
+on =linux-clang-debug-make=.

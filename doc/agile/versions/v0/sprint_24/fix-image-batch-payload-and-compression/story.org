@@ -80,9 +80,9 @@ if NATS-with-compression genuinely can't be made to fit.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Compression task started.              |
+| Now           | Compression done; batching remains.    |
 | Waiting on    | Nothing.                               |
-| Next          | Implement compression; then batching.  |
+| Next          | Start the byte-size-aware batching task. |
 | Last touched  | 2026-07-26                               |
 
 * Acceptance
@@ -108,9 +108,10 @@ if NATS-with-compression genuinely can't be made to fit.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3BC1C308-9683-48EE-91E1-6F7A3F622F62][Decide: NATS binary+compression vs. HTTP storage-endpoint transport for image delivery]] | DONE | 2026-07-26 | 2026-07-26 | Confirm that sending images as raw (non-base64) compressed bytes over NATS resolves the payload-overflow problem on its own, before considering a move to the existing HTTP storage-endpoint transport. Record the decision and rationale. |
-| [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][Add gzip compression to the image NATS pipeline, send raw bytes instead of base64]] | STARTED | 2026-07-27 | | Server compresses SVG image data before sending; client decompresses on receive. Stop routing binary image data through the JSON/base64 encoding used for the rest of the messaging protocol -- send it as raw bytes on the wire for image-carrying messages, eliminating both the base64 inflation and the missing compression in one pass. |
+| [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][Add gzip compression to the image NATS pipeline, send raw bytes instead of base64]] | DONE | 2026-07-27 | 2026-07-27 | Server compresses SVG image data before sending; client decompresses on receive. Stop routing binary image data through the JSON/base64 encoding used for the rest of the messaging protocol -- send it as raw bytes on the wire for image-carrying messages, eliminating both the base64 inflation and the missing compression in one pass. |
 | [[id:DF92CC86-8A91-44FE-AA34-5CC78D1B2F12][Make ImageCache batching byte-size aware]] | BACKLOG | | | Track cumulative estimated payload size (post-compression) while building each image-fetch batch, not just image count, so a batch is cut short before it would risk exceeding the NATS payload limit. Backstop for whatever pathological cases remain after compression; revisit MAX_IMAGES_PER_REQUEST once this and the compression task both land. |
 | [[id:DFE8C121-DDE6-4FE8-891A-0A0DE2B44DFA][Make ImageCache batching byte-size aware, add SVG compression]] (ABANDONED -- split above) | ABANDONED | | | Superseded: bundled a design decision with two independent implementation concerns under one task. |
+| [[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][Send raw bytes instead of base64 for image-carrying NATS messages]] | BACKLOG | | | Follow-up to the compression task: stop routing image byte payloads through rfl::json's default base64 encoding. Not load-bearing (the generic transparent gzip mechanism already gives a 2.5x margin against the worst measured case per the decision task), but removes a pointless encode/decode round-trip and the remaining ~33% base64 overhead. Needs a custom wire encoding for image-carrying messages specifically, bypassing rfl::json for that field. |
 
 * Decisions
 
@@ -140,9 +141,31 @@ tasks proceed as scoped: compression + raw-byte wire encoding (the
 load-bearing fix), and byte-size-aware batching (defense-in-depth
 backstop, not load-bearing given the margin above).
 
+** Compression implemented generically at the NATS transport layer, not image-specifically
+
+Decided in the [[id:BB6947FC-EE92-44E9-984A-BDFFC25A9BCA][compression task]]. Every NATS message (client and
+server, request-reply and pub/sub) already funnels through two choke
+points in =ores.nats= (=make_msg()= on send, =extract_message()= on
+receive). Added a size-thresholded (4096 bytes), header-flagged
+(=X-Content-Encoding: gzip=) compress/decompress pair there instead of
+in image-specific code -- every message above the threshold benefits
+automatically, with zero changes to =ImageCache=, =ClientManager=, or
+any protocol/domain type, and the mechanism is unit-testable in
+isolation. This effectively delivers the "compress all NATS messages"
+capture below as infrastructure, without deciding to spend effort
+auditing every other message type's traffic patterns -- it simply
+applies wherever a payload happens to be large enough.
+
+Raw-bytes-instead-of-base64 (the compression task's other originally-
+named mechanism) was descoped as not load-bearing given the 2.5x
+margin gzip-with-base64 already provides; split into
+[[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][a separate follow-up task]].
+
 * Out of scope
 
-- Compressing NATS messages generically (the =rfl::json= transport used
-  by every other message type, not just images) -- separate, broader
-  question, filed as a backlog capture:
+- Auditing non-image NATS traffic to decide whether any of it should
+  be deliberately restructured to benefit from compression (as opposed
+  to benefiting automatically, for free, whenever it happens to cross
+  the size threshold above) -- separate, broader question, filed as a
+  backlog capture:
   [[id:4BD63D23-5BB1-455A-92F1-83B6D74EFBD1][Consider compressing all NATS JSON messages, not just images]].

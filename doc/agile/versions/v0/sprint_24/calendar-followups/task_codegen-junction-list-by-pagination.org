@@ -13,35 +13,79 @@
 #+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-27
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Domain-entity models with a =foreign_keys= entry flagged =list_by=
+already get a paginated, filtered list method generated end to end:
+=repository::read_latest_by_<column>(ctx, value, offset, limit)= +
+=get_total_<entity>_count_by_<column>=, wired through the service
+layer (=service_impl.org=). Junction models have no equivalent --
+their generated =read_latest_by_{{left,right}}.column_short}}=
+accessors take no =offset=/=limit= and return every matching row.
+
+This task extends the junction repository and service mustache
+templates (=ores.cpp.repository.repository_header/impl.org=,
+=ores.cpp.service.service_impl.org=) with the same paginated,
+filtered-list shape for a junction's =Left=/=Right= columns, mirroring
+the existing domain_entity =list_by= knob rather than inventing a new
+one. First consumer will be =calendar_dates=, filtered by
+=calendar_code= (the =Left= column), in the follow-on task
+[[id:3E688A38-757A-4DE6-A7D2-9CA9B1EC2255][Codegen: generate calendar_date service/protocol/nats-handler layers using extra_list_requests]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-27                               |
 
 * Acceptance
 
--
+- [X] A junction model can flag its =Left= and/or =Right= column as
+  =list_by= (mirroring the domain_entity =foreign_keys.list_by= knob)
+  to get a paginated, filtered list method generated.
+- [X] Generated method shape matches the domain_entity pattern:
+  repository =read_latest_by_<column>(ctx, value, offset, limit)= +
+  =get_total_<entity>_count_by_<column>(ctx, value)=, wired through
+  the service layer the same way.
+- [X] Existing junctions regenerate byte-identical with the knob unset
+  (verified via =compass codegen entity generate <entity> --address
+  ores.cpp --diff= against a couple of representative junctions).
+- [X] Documented in the meta-model page(s) alongside the existing
+  domain_entity =list_by= knob.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Junction =Left=/=Right= PROPERTIES drawers are already read generically
+by =_fk_side_from_section= in =org_loader.py= (every key becomes a
+dict entry, booleans auto-typed) -- no Python changes needed, just a
+new =:list_by: true= property plus mustache blocks that key off it.
+
+Mirrored the existing domain_entity =foreign_keys.list_by= shape
+(=repository_header/impl.org=, =service_header/impl.org=) into the
+junction sections of the same four templates, gated by
+=left.list_by=/=right.list_by=:
+- Repository: an overload of =read_latest_by_<column>= taking
+  =(value, offset, limit)= alongside the existing unpaginated one (C++
+  overload by parameter count -- no naming collision), plus
+  =get_total_<entity>_count_by_<column>=.
+- Service: same shape, delegating to the repository.
+
+Ordering reuses the junction's existing =order_column= (no per-column
+order override needed for the first consumer).
 
 * Notes
 
@@ -69,3 +113,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added a =:list_by: true= knob to junction =Left=/=Right= sections
+(mirrors the existing domain_entity =foreign_keys.list_by= knob) that
+generates a paginated, filtered =read_latest_by_<column>(value,
+offset, limit)= + =get_total_<entity>_count_by_<column>= pair through
+the repository and service layers -- landed across
+=ores.cpp.repository.repository_header/impl.org= and
+=ores.cpp.service.service_header/impl.org=. Documented in
+=codegen_input_org_schema.org=.
+
+Flagged =calendar_date='s =Left= (=calendar_code=) as =list_by: true=
+as the intended first consumer.
+
+*Verification*: regenerated two existing junctions
+(=currency_calendar=, =currency_currency_group=, knob left unset) via
+=--address ores.cpp --diff= -- both showed only pre-existing,
+unrelated generator-include drift, zero diff attributable to this
+change. Regenerated =calendar_date= itself via the same command and
+confirmed the new paginated repository method appears with the exact
+expected shape (verified as a dry-run diff; not yet applied to
+=calendar_date='s checked-in files -- that lands with the messaging
+layer in the next task in the chain).

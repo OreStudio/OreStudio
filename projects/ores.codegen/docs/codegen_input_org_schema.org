@@ -194,7 +194,12 @@ mandatory FK sides (=* Left=, =* Right=) and optional extra columns.
 
 #+begin_example
 * Left                     — PROPERTIES: column, column_short, column_title,
-                             type, cpp_type, index_comment
+                             type, cpp_type, index_comment, list_by (optional,
+                             default false — generates a paginated
+                             read_latest_by_<column>(value, offset, limit) +
+                             get_total_<entity>_count_by_<column> pair through
+                             the repository and service layers, mirroring the
+                             domain_entity foreign_keys.list_by knob)
   — Body: domain prose; optional #+begin_src cpp :name generator
 * Right                    — same shape as * Left
 * Columns

@@ -36,6 +36,7 @@ consistent and never requires a live rule evaluation.
 :type:          text
 :cpp_type:      std::string
 :index_comment: Index for looking up dates for a calendar
+:list_by:       true
 :END:
 
 QuantLib/ORE calendar token (e.g. TARGET, UnitedStates).

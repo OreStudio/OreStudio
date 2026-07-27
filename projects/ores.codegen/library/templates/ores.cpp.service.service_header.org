@@ -287,6 +287,58 @@ public:
     list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
 {{/left.is_uuid}}
 
+{{#left.list_by}}
+    /**
+     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}, with pagination.
+     */
+    std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}},
+                                                std::uint32_t offset, std::uint32_t limit);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}},
+                                                std::uint32_t offset, std::uint32_t limit);
+{{/left.is_uuid}}
+
+    /**
+     * @brief Gets the total count of active {{name_words}} filtered by {{left.column}}.
+     */
+    std::uint32_t get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+{{#left.is_uuid}}
+        const boost::uuids::uuid& {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+        const std::string& {{left.column}});
+{{/left.is_uuid}}
+
+{{/left.list_by}}
+{{#right.list_by}}
+    /**
+     * @brief Lists {{name_words}} for a specific {{right.column_title_lower}}, with pagination.
+     */
+    std::vector<domain::{{name_singular}}>
+{{#right.is_uuid}}
+    list_{{name_short}}_by_{{right.column_short}}(const boost::uuids::uuid& {{right.column}},
+                                                 std::uint32_t offset, std::uint32_t limit);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    list_{{name_short}}_by_{{right.column_short}}(const std::string& {{right.column}},
+                                                 std::uint32_t offset, std::uint32_t limit);
+{{/right.is_uuid}}
+
+    /**
+     * @brief Gets the total count of active {{name_words}} filtered by {{right.column}}.
+     */
+    std::uint32_t get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+{{#right.is_uuid}}
+        const boost::uuids::uuid& {{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        const std::string& {{right.column}});
+{{/right.is_uuid}}
+
+{{/right.list_by}}
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
      *

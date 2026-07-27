@@ -829,6 +829,178 @@ std::vector<domain::{{name_singular}}>
         lg(), "Reading latest {{name_words}} by {{right.column_short}}.");
 }
 
+{{#left.list_by}}
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{left.column_short}}(
+{{#left.is_uuid}}
+    const boost::uuids::uuid& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    const std::string& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
+{{/left.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
+                               << {{left.column}} << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+{{#left.is_uuid}}
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+        order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+{{#left.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+        order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{left.column_short}} (paginated).");
+}
+
+std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+{{#left.is_uuid}}
+    const boost::uuids::uuid& {{left.column}}) {
+    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    const std::string& {{left.column}}) {
+{{/left.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{left.column_title}}: " << {{left.column}};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result { long long count; };
+
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{#left.is_uuid}}
+                       where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+                       where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+                       sqlgen::to<count_result>;
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{#left.is_uuid}}
+                       where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+                       where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+                       sqlgen::to<count_result>;
+{{/has_tenant_id}}
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{left.column_short}}: " << count;
+    return count;
+}
+
+{{/left.list_by}}
+{{#right.list_by}}
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{right.column_short}}(
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    const std::string& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
+{{/right.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
+                               << {{right.column}} << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+{{#right.is_uuid}}
+        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+        order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+{{#right.is_uuid}}
+        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+        order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{right.column_short}} (paginated).");
+}
+
+std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}) {
+    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    const std::string& {{right.column}}) {
+{{/right.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{right.column_title}}: " << {{right.column}};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result { long long count; };
+
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{#right.is_uuid}}
+                       where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+                       where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+                       sqlgen::to<count_result>;
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{#right.is_uuid}}
+                       where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+                       where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+                       sqlgen::to<count_result>;
+{{/has_tenant_id}}
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{right.column_short}}: " << count;
+    return count;
+}
+
+{{/right.list_by}}
 {{^read_only}}
 void {{name_singular}}_repository::remove(
 {{#left.is_uuid}}

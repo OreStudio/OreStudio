@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1C673C53-9ED0-4C02-B856-EF031A1CC95F
+:END:
+#+title: Task: Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list
+#+description: The Qt cpp.qt facet has a has_readonly_paginated_list knob but no way to scope a generated list window's get-request to an owning parent key (e.g. a calendar's calendar_code). Design and implement a parent_key_field/parent_key_param-style knob in the client_model/controller/mdi_window templates so a paginated read-only list can be opened for a specific parent and pass that key on every request.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

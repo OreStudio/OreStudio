@@ -42,7 +42,7 @@ create table if not exists "ores_refdata_calendar_dates_tbl" (
     "date" date not null,
     "version" integer not null,
     "is_business_day" boolean not null default false,
-    "source" text not null default &#x27;quantlib_computed&#x27;,
+    "source" text not null default 'quantlib_computed',
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

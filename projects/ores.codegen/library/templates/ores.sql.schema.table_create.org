@@ -45,7 +45,7 @@ create table if not exists "{{entity.product}}_{{entity.component}}_{{entity.ent
 {{/entity.has_tenant_id}}
     "version" integer not null,
 {{#entity.columns}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/entity.columns}}
 {{#entity.has_coding_scheme}}
     "coding_scheme_code" text not null,

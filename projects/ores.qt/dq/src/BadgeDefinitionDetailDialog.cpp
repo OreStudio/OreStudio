@@ -331,6 +331,15 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    if (definition_.code == "__unmapped__") {
+        MessageBoxHelper::warning(
+            this,
+            "Reserved Badge Definition",
+            "'__unmapped__' is the reserved fallback badge shown when a badge mapping is "
+            "missing, and cannot be deleted.");
+        return;
+    }
+
     QString code = QString::fromStdString(definition_.code);
     auto reply = MessageBoxHelper::question(
         this,

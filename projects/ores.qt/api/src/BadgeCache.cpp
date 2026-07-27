@@ -88,11 +88,19 @@ void BadgeCache::onNotificationReceived(const QString& eventType,
     BOOST_LOG_SEV(lg(), info) << "Received badge definition change notification, refreshing cache";
 
     is_loaded_ = false;
-    loadAll();
 
-    // Emit refreshed after load completes
-    connect(
-        this, &BadgeCache::loaded, this, [this]() { emit refreshed(); }, Qt::SingleShotConnection);
+    // A reload already in flight will emit `loaded` once for itself; adding
+    // another one-shot handler here would fire `refreshed` twice for what
+    // is logically a single reload.
+    if (!is_loading_) {
+        connect(this,
+                &BadgeCache::loaded,
+                this,
+                [this]() { emit refreshed(); },
+                Qt::SingleShotConnection);
+    }
+
+    loadAll();
 }
 
 void BadgeCache::loadAll() {

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
-#+updated: 2026-07-25
+#+updated: 2026-07-27
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -43,12 +43,12 @@ independent halves:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started -- the source/editability/regenerate half can start immediately; the browse-holidays half is blocked. |
-| Waiting on   | [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] (browse-holidays half only). |
-| Next         | Begin the unblocked half.                  |
-| Last touched | 2026-07-25                               |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-27                               |
 
 * Acceptance
 
@@ -64,10 +64,18 @@ independent halves:
   dialog or list-window toolbar) that calls
   =refdata.v1.calendar_dates.regenerate= for the open calendar and
   surfaces success/failure and rows-written to the user.
-- [ ] A "Browse Holidays" action opens a read-only, paginated view of
+- [X] A "Browse Holidays" action opens a read-only, paginated view of
   the calendar's =calendar_dates= rows, each showing date,
   is-business-day, and source -- built on the facet from
   [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]].
+  *Split out* -- generating calendar_dates' messaging/Qt layers needs
+  more codegen groundwork than this task's scope (junction pagination,
+  a first real =extra_list_requests= consumer, Qt parent-scoping).
+  Moved to a four-task chain:
+  [[id:3282E378-74C0-43B4-B952-544FCEADE66A][Codegen: extend junction repository/service templates with paginated list_by filter]] →
+  [[id:3E688A38-757A-4DE6-A7D2-9CA9B1EC2255][Codegen: generate calendar_date service/protocol/nats-handler layers using extra_list_requests]] →
+  [[id:1C673C53-9ED0-4C02-B856-EF031A1CC95F][Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list]] →
+  [[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]].
 
 * Plan
 
@@ -103,3 +111,19 @@ via its "Verifies task" field.
 | 2 | is_editable checkbox is a dead control -- never read back into the entity, generates an empty if(createMode_) block | cpp_qt_detail_dialog.cpp.mustache, core.py | Fixed | Added an is_check_box branch to the locked-after-create sections of update...FromUi(), setCreateMode(), and setReadOnly() (all three had the same gap); also added is_check_box to core.py's locked_fields dict so the setCreateMode()/setReadOnly() template branches actually fire. |
 
 * Result
+
+Three of four acceptance items shipped in PR #1707/#1700
+(source/is_editable/base_calendar_code display, whole-form lock for
+non-editable calendars, "Regenerate up to <year>" action).
+
+The fourth (Browse Holidays) turned out to need substantially more
+codegen groundwork than this task's scope: =calendar_date= has no
+service/protocol/nats-handler layer at all yet, the junction
+repository/service templates have no paginated filtered-list
+mechanism (=extra_list_requests= exists in the protocol/nats-handler
+templates but has never had a real consumer), and the Qt
+=has_readonly_paginated_list= knob has no way to scope a list window
+to a parent key. Rather than freehand these as one-off hand-written
+layers, split the remaining work into a four-task chain (see
+Acceptance) so each piece lands as reusable codegen capability.
+Closing this task on its three completed items.

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 568238F1-AD99-49CB-817F-09D3810D5185
+:END:
+#+title: Story: Offload service and DB runtime to a WSL host over SSH
+#+description: Provision a WSL-based host so the running aspects of a dev environment (services, DB, and optionally a UI/docker image for testing) can be offloaded to a separate box, reachable via SSH, while development, builds, and the client stay local.
+#+type: story
+#+level: s2
+#+filetags: :devops:environment:wsl:infrastructure:sprint_24:v0:
+#+created: 2026-07-23
+#+updated: 2026-07-23
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Offload the running aspects of a dev environment — services and the
+database — to a WSL-based host reachable over SSH, freeing up the
+local dev machine to be used mainly for Claude Code and builds
+(compute-heavy work), while services/DB run remotely. The client
+should be able to stay local and connect to the remote services over
+the network.
+
+Docker is not a hard requirement: favour the simplest approach that
+is easiest for day-to-day development (e.g. scp'ing build artifacts
+across plus SSH to restart services), and only reach for a Docker
+image if it turns out to be genuinely easier for the testing
+use case. The analysis task should weigh this and recommend an
+approach.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-23                               |
+
+* Acceptance
+
+- A WSL-based host is provisioned and reachable via SSH from the dev
+  machine.
+- Services and the database can be run on the WSL host, using
+  whichever mechanism the analysis task recommends as architecturally
+  simplest for development (e.g. scp + SSH restart; Docker only if
+  it proves genuinely easier for testing).
+- The Qt client can run locally and connect to the services/DB
+  running on the remote WSL host.
+- Documented, repeatable steps (or scripts) exist for standing the
+  environment up and tearing it down on the WSL host.
+- A single PR is raised only once the whole story (all tasks) is
+  complete.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | DONE | 2026-07-23 | 2026-07-24 | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
+| [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] | DONE | 2026-07-24 | 2026-07-27 | Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out. |
+| [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][Debug: start_all() coroutine never resumes inside podman container]] | BACKLOG | | | process_supervisor::start_all()'s coroutine, spawned via co_spawn(io_ctx, ..., use_awaitable) in application.cpp, never begins executing inside the podman container -- its unconditional first log line never appears despite the same io_ctx demonstrably running other coroutines concurrently (NATS connect succeeds, JWKS-fetch retries fire on schedule). Natively, the identical code reaches that line and does its DB reads within ~200ms. Consequence: no supervised services (IAM etc.) ever launch in-container, so the controller's own JWKS fetch from IAM loops forever. |
+
+* Decisions
+
+- Newton (192.168.1.22, WSL2 Debian 11 "bullseye") is the target
+  host: systemd as PID 1, mirrored networking (no portproxy needed),
+  PostgreSQL 17 + TimescaleDB 2.22 on port 5433 (5432 is blocked by
+  Windows' Hyper-V port-exclusion range, not a real conflict).
+- =compass env configure= now supports a non-default =PGPORT= in
+  =.env= — first-class, not a per-host hack.
+- Packaging: =build/cpack/CMakeLists.txt= gained a =TGZ= generator
+  alongside =DEB= so =compass build package= produces a plain
+  install-tree tarball. A CPack services/qt component split (to drop
+  the desktop client from the deploy artifact) was scoped and found
+  non-trivial — ~97 untagged =install(TARGETS ...)= sites across the
+  codebase — and captured separately rather than done inline.
+- *Reversed the story's initial no-Docker lean*: a live deploy test
+  showed our own C++ service binaries (built on this box's Debian
+  sid/forky) cannot run on Newton's older glibc (Debian 11) when
+  simply copied over — =GLIBC_2.38=/=GLIBCXX_3.4.32= etc. not found.
+  This is unrelated to the DB (separate Postgres install) and to
+  =nats-server= (vendored as a static per-OS binary under
+  =external/nats/=, unaffected since Go binaries carry no libc
+  dependency) — it's specific to binaries we compile. Docker is now
+  the plan for those, via the new
+  [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] task.
+
+* Out of scope
+
+-

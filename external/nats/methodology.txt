@@ -1,0 +1,38 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE BINARY DOWNLOAD
+   Official prebuilt release archives, one per target operating
+   system/architecture, downloaded from the nats-io/nats-server
+   GitHub releases page for the pinned version (v2.14.3):
+
+     https://github.com/nats-io/nats-server/releases/download/v2.14.3/nats-server-v2.14.3-linux-amd64.tar.gz
+     https://github.com/nats-io/nats-server/releases/download/v2.14.3/nats-server-v2.14.3-windows-amd64.zip
+     https://github.com/nats-io/nats-server/releases/download/v2.14.3/nats-server-v2.14.3-darwin-amd64.tar.gz
+     https://github.com/nats-io/nats-server/releases/download/v2.14.3/nats-server-v2.14.3-darwin-arm64.tar.gz
+
+   Each archive was verified against the release's published
+   SHA256SUMS before being committed:
+
+     f3d0c820c749f81d717310fb00d4903919e70e3e66b268bd352a088b9788eb93  nats-server-v2.14.3-linux-amd64.tar.gz
+     94e338d742761272e31eab1efb1f767eac3a2e56e4c05a7933c65a73fe95a27b  nats-server-v2.14.3-windows-amd64.zip
+     effa518fe623433d7c3321991db419bb1e00aa9b19ae761b559b580434afc3ab  nats-server-v2.14.3-darwin-amd64.tar.gz
+     e086395457a7a93a440433a446c9f161f917d35c0374640555123e8d8d4b7fe9  nats-server-v2.14.3-darwin-arm64.tar.gz
+
+2. WHY VENDORED INSTEAD OF INSTALLED FROM A PACKAGE REPOSITORY
+   ORE Studio's own dev/CI hosts install nats-server from their
+   distro's package manager. Deployment targets outside that set
+   (e.g. a WSL Debian 11 "bullseye" host with no current nats-server
+   apt package and no passwordless sudo to add one) need a
+   self-contained binary instead. The upstream releases are
+   statically-linked Go binaries with no libc version dependency,
+   unlike distro packages — safe to copy onto an older host as-is.
+
+3. UPDATING THE PINNED VERSION
+   Repeat step 1 for the new tag, replace the four archives under
+   packages/, update the "version"/"downloaded_at" fields in
+   manifest.json, and re-verify each archive's checksum against the
+   new release's SHA256SUMS before committing.
+
+4. COMMIT TO REPOSITORY
+   git add external/nats/*
+   git commit -m "[external] Vendor nats-server v2.14.3 binaries per OS"

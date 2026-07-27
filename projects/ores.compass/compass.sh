@@ -38,19 +38,21 @@ if [ ! -d "$VENV_PATH" ]; then
         echo "   You may need to install the venv package: sudo apt install python3-venv"
         exit 1
     fi
+fi
 
-    # Install requirements if they exist (future-proofing for NLP packages),
-    # unless --no-deps requested a stdlib-only bootstrap.
-    if [ "$NO_DEPS" -eq 1 ]; then
-        echo "ℹ️  --no-deps: skipping dependency install (stdlib-only use)."
-    elif [ -f "$SCRIPT_DIR/requirements.txt" ]; then
-        echo "📦 Installing dependencies from requirements.txt..."
-        "$VENV_BIN/pip" install --upgrade pip -q
-        "$VENV_BIN/pip" install -r "$SCRIPT_DIR/requirements.txt" -q
-    else
-        echo "ℹ️  No requirements.txt found. Using standard library only."
-    fi
-    echo "✅ Virtual environment ready."
+# Install/refresh requirements if they exist (future-proofing for NLP
+# packages), unless --no-deps requested a stdlib-only bootstrap. Re-syncs
+# whenever requirements.txt changes, not just on first venv creation, so a
+# stale venv from before a new dependency was added self-heals.
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+STAMP_PATH="$VENV_PATH/.requirements.stamp"
+if [ "$NO_DEPS" -eq 1 ]; then
+    :
+elif [ -f "$REQUIREMENTS_FILE" ] && { [ ! -f "$STAMP_PATH" ] || [ "$REQUIREMENTS_FILE" -nt "$STAMP_PATH" ]; }; then
+    echo "📦 Installing dependencies from requirements.txt..."
+    "$VENV_BIN/pip" install --upgrade pip -q
+    "$VENV_BIN/pip" install -r "$REQUIREMENTS_FILE" -q
+    cp "$REQUIREMENTS_FILE" "$STAMP_PATH"
 fi
 
 source "$VENV_BIN/activate"

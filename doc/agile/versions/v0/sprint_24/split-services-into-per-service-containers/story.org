@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: FFC4117A-3D79-4779-A347-92532ED2A19A
+:END:
+#+title: Story: Split ORE Studio services into one container per service
+#+description: Move from the single-container process-supervisor (ores.controller.service launching/monitoring the other 17 services as child processes) to the idiomatic Podman/container pattern of one process per container, with the orchestrator (podman pod, compose, or k8s) responsible for start ordering and supervision.
+#+type: story
+#+level: s2
+#+filetags: :docker:architecture:deployment:sprint_24:v0:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Deploy each ORE Studio backend service (currently 17, plus the controller
+itself) as its own container, launched and supervised by the container
+orchestrator (podman pod, compose, or eventually k8s) rather than by
+~ores.controller.service~ spawning them as child processes inside a single
+container. This is the idiomatic Podman/container
+pattern -- one process per container -- and gets us standard per-service
+health checks, restart policies, and log routing "for free" from the
+orchestrator instead of reimplementing them in ~process_supervisor~.
+
+The controller currently does real control-plane work beyond process
+babysitting -- dependency-ordered startup, DB-backed instance/phase
+tracking, readiness gating (see
+~ores.controller.core/service/process_supervisor.cpp~) -- so this is not a
+simple lift-and-shift: that logic needs to either move into the
+orchestration layer (init containers / dependency ordering in the pod spec)
+or stay as a thin coordination service that no longer itself execs the
+other binaries.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-27                               |
+
+* Acceptance
+
+- Each of the 18 service binaries runs as PID 1 of its own container image
+  (or a small number of shared images parameterised by entrypoint args),
+  not spawned as a child process by another container.
+- Startup ordering (e.g. IAM before its dependents) and readiness gating are
+  expressed at the orchestration layer, not inside a C++ process supervisor.
+- Per-service logs are retrievable via ~podman logs <service>~ without
+  needing ~--log-to-console~/~--log-enabled~ plumbing per binary.
+- The existing DB-backed service_instance/phase tracking either moves to
+  the orchestrator's own state (preferred) or is demonstrably still useful
+  and is kept deliberately, not by default.
+- End-to-end smoke test: the full fleet starts, reaches steady state, and
+  survives killing and restarting one service container without taking
+  down the others.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Kubernetes manifests -- podman pod/compose is the target for this story;
+  k8s is a possible later step, not required here.
+- Redesigning ~ores.controller.service~'s domain responsibilities (service
+  definitions/dependencies as data) beyond what's needed to stop it
+  exec'ing other services directly.
+- Production hardening (secrets management, TLS cert rotation, HA) --
+  tracked separately.

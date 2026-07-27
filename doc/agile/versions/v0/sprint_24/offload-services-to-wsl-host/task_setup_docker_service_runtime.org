@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: EE315554-2A5B-4576-B25E-FE282E9B90CF
+:END:
+#+title: Task: Set up Docker for the service runtime deployment
+#+description: Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out.
+#+type: task
+#+level: s1
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
+#+owner: marco
+#+branch: feature/offload-services-to-wsl-host
+#+pr: 1709
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-24
+#+updated: 2026-07-24
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give ORE Studio a proper Docker build (Dockerfile, image build
+script, and a run/compose setup) for the service runtime, so services
+can be deployed to hosts whose glibc doesn't match this dev box's,
+without needing to rebuild the whole toolchain for every target
+distro.
+
+This directly follows from [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][the analysis task]]'s live deploy test: the
+plain "build locally, scp the binaries" approach fails outright on a
+Debian 11 (bullseye, glibc 2.31) host when built on this box's Debian
+sid/forky — =GLIBC_2.38=/=GLIBCXX_3.4.32=/=CXXABI_1.3.13= not found.
+Docker sidesteps this by baking a matching runtime into the image
+itself. Note: this only affects binaries we compile — the DB
+(separate Postgres install) and the vendored =external/nats/=
+=nats-server= binary (statically linked, no libc dependency) are
+unaffected and don't need containerising for this reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-24                               |
+
+* Acceptance
+
+Scope narrowed at close: getting every supervised service to actually
+reach =running= inside the container turned out to be its own, deeper
+problem (=start_all()='s coroutine never resumes in-container — see
+[[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][the follow-up debug task]]) rather than something this task's
+Dockerfile/env work could close. What *is* delivered and verified here:
+
+- A Dockerfile builds an image containing the ORE Studio service
+  binaries (controller + domain services) against a base whose
+  glibc/libstdc++ is new enough for what we compile — done
+  (=docker/service-runtime.Dockerfile=, chainguard =glibc-dynamic=).
+- NATS runs as its own sidecar container in a shared-network-namespace
+  pod with the services container, rather than needing a host-alias
+  rewrite — done (=docker/nats.Dockerfile=, =docker/run-pod.sh=).
+- A run/teardown script starts the pod with the right env (NATS, DB
+  connection) wired in, analogous to what =compass services start=
+  does locally — done (=docker/run-pod.sh=, =docker/stop-pod.sh=),
+  modulo the services container's own supervised-service startup
+  (deferred to the follow-up task above).
+- Documented, repeatable build steps exist for producing the image —
+  done (=docker/stage-runtime.sh= + the Dockerfiles).
+- A real use-after-free crash in =ores.controller.service= was found
+  and fixed along the way (confirmed via gdb backtrace) — the
+  container no longer segfaults on a NATS-connect failure, it fails
+  gracefully and reports a real exit code instead.
+
+Deferred to the follow-up task, not claimed here:
+- The image running on an actual bullseye/WSL deploy host (Newton) —
+  not yet exercised on real target hardware, only validated on this
+  dev box's own podman.
+- All 18 supervised services actually reaching =running= inside the
+  container end-to-end.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Basic analysis (done)
+
+- *Runtime dependency footprint is small*: =ldd= on the service
+  binaries (=ores.controller.service=, =ores.http.server=, and their
+  =libores.*.so= libraries) shows only =libc.so.6=, =libstdc++.so.6=,
+  =libgcc_s.so.1=, =libm.so.6=, plus our own =libores.*.so= libraries
+  — Boost, OpenSSL, libpq, nats.c, pugixml, sqlgen etc. are all
+  statically linked in via vcpkg. This means the container image
+  needs *no* apt-installed runtime libraries beyond a compatible
+  libc/libstdc++ — a plain base image is enough, no dependency-closure
+  work.
+- *Exact symbol versions needed*: =objdump -T= on the libraries shows
+  a ceiling of =GLIBC_2.38= and =GLIBCXX_3.4.32= (this box ships
+  glibc 2.42, Debian sid/forky). Any base image with glibc >= 2.38
+  and a matching libstdc++ (GCC >= 13) works.
+- *Candidate base image: =ubuntu:24.04= (Noble)* — ships glibc 2.39
+  and libstdc++6 from GCC 13.2 (covers =GLIBCXX_3.4.32=). This isn't
+  an arbitrary pick: our own CI (=.github/workflows/nightly-linux.yml=,
+  =continuous-linux.yml=) already runs and validates builds on
+  =ubuntu-24.04= runners, so targeting the same OS for the runtime
+  image reuses an already-proven compatibility baseline rather than
+  introducing a new one. Debian 12 "bookworm" (glibc 2.36) is *not*
+  new enough; Debian 13 "trixie" or =ubuntu:24.04=/newer both work.
+- *No existing Docker precedent in-repo* to build on — the only
+  Dockerfiles in the tree are vcpkg's own CI infra
+  (=vcpkg/scripts/azure-pipelines/*/Dockerfile=), unrelated to
+  shipping our services. This will be a new Dockerfile from scratch.
+- *Build-vs-copy choice not yet made*: either (a) copy this box's
+  already-built =cmake --install= tree straight into a
+  =ubuntu:24.04=-based runtime image (fast, reuses the existing CPack
+  TGZ artifact, but ties the image to whatever glibc this box happens
+  to have — fine today since 2.42 > 2.38, but not guaranteed to stay
+  that way as this box's rolling-release glibc advances), or (b) a
+  multi-stage build that compiles inside a pinned =ubuntu:24.04=
+  builder stage (slower, bigger Dockerfile, but the image's glibc
+  ceiling is pinned and reproducible regardless of what this dev box
+  is running). Leaning towards (b) for correctness, but not decided —
+  next step before writing the Dockerfile.
+
+** Open questions
+
+- Confirm (b) is worth the extra build-stage complexity vs. just
+  re-running =compass build package= against a documented "this box
+  must be no newer than X" constraint.
+- Which services actually need to run in the container for the
+  offload use case — the full domain-service fleet spawned by
+  =ores.controller.service=, or a narrower subset for the story's
+  testing goal?
+- How the container reaches Postgres/NATS (both currently native
+  installs on Newton, outside any container) — network mode, and
+  whether the vendored =external/nats/= binary is even still needed
+  once services + NATS could plausibly all move into containers.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1709][#1709]] | [docker] Service-runtime container: NATS sidecar, controller crash fix |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | ~start_all_task~ join not wrapped in try/catch: an exception there skips ~stop_all()~ (orphaning children) and silently discards an earlier captured failure. Raised independently by all three review passes. | application.cpp | Accepted | Wrapped the join in its own try/catch, folding into the existing ~failure~ exception_ptr only if not already set, before falling through to ~stop_all()~ and the final rethrow. |
+| 2 | Staged NATS client private keys made world-readable (~chmod -R a+rX~) when only the same host uid running the container needs them. | run-pod.sh | Accepted | Narrowed to ~chmod -R u+rwX,go-rwx~ — the services container already runs as ~--user "$(id -u):$(id -g)"~, the same uid doing the staging. |
+| 3 | Staging copies the whole ~build/keys/nats/~ dir (CA private key + every service's client key), broader than any one container needs. | run-pod.sh | Declined (for now) | Correct in principle, but the controller genuinely needs every other service's cert path too — it derives each supervised service's ~--nats-tls-cert/key~ from that same directory when launching it (~process_supervisor.cpp~). Narrowing this is really the split-into-one-container-per-service story's job, not a local tweak here; noted there instead of half-fixing it. |
+| 4 | Script sources root ~.env~ while checking for/erroring on ~docker/.env~ — works today only because ~generate-env.sh~ copies one to the other byte-for-byte. | run-pod.sh, stop-pod.sh | Accepted | Both scripts now source ~docker/.env~ explicitly (and ~stop-pod.sh~ gained the same existence check ~run-pod.sh~ already had). |
+| 5 | Unused ~rw~ bind mount of the NATS JetStream store dir into the services container — grep confirms no controller/service code reads that path; it's sidecar-internal. | run-pod.sh | Accepted | Dropped the mount from the services container; the sidecar's own mount (which does need it) is untouched. |
+| 6 | ~stage-runtime.sh~ hardcodes the ~linux-clang-debug-make~ preset. | stage-runtime.sh | Declined (for now) | Correct for the current debug-only validation workflow this PR describes; parameterizing it is a real deployable-image concern for later, not this task. |
+| 7 | Base images (~debian:bookworm-slim~, chainguard ~glibc-dynamic:latest~) pinned by tag, not digest. | nats.Dockerfile, service-runtime.Dockerfile | Declined (for now) | Reproducible-build hardening, out of scope for this task; the vendored-binary checksum approach already covers the actually-security-sensitive artifact (nats-server). |
+| 8 | Follow-up note: with the start_all() fix, ~stop_all()~ is now also blocked behind the in-container hang documented in the filed follow-up task, not just startup. | application.cpp | Acknowledged, no code change | Carried forward into [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][the follow-up debug task]] rather than addressed here — it's the same root cause that task already exists to investigate. |
+
+* Result
+
+Shipped, merged via [[https://github.com/OreStudio/OreStudio/pull/1709][PR #1709]]:
+
+- ~docker/service-runtime.Dockerfile~ (chainguard ~glibc-dynamic~ base,
+  strips debug info) and ~docker/stage-runtime.sh~ (stages the service
+  binaries + their vcpkg-external dependency closure out of the local
+  ~cmake --install~ tree).
+- ~docker/nats.Dockerfile~ — NATS runs as its own scratch-based sidecar
+  container (statically-linked vendored ~nats-server~ binary), sharing
+  the services container's network namespace in a podman pod
+  (~docker/run-pod.sh~/~docker/stop-pod.sh~) rather than needing a
+  ~host.containers.internal~ rewrite.
+- Per-service ~ORES_CONTROLLER_SERVICE_NATS_*~ env stamping in
+  ~env_init.py~, since the controller is the only process a container
+  entrypoint launches directly and it never had these stamped before
+  (compass_services.py normally passes them as explicit CLI flags).
+- A real use-after-free crash found and fixed in
+  ~ores.controller.service~ (confirmed via gdb backtrace, reproduces
+  natively too, not container-specific): ~supervisor.start_all()~ was
+  spawned detached, so a ~nats.connect()~ failure could destroy
+  ~process_supervisor~ while ~start_all()~ was still running on it. Now
+  joined and exception-safe on both paths (tightened further in the
+  PR's own review round).
+- NATS client TLS certs are staged into a podman-managed volume rather
+  than bind-mounted directly from the host — bind-mounting them breaks
+  the TLS handshake for reasons isolated by elimination (not a
+  path/permission/seccomp/capability/openssl.cnf issue).
+
+Deliberately not claimed here (see the narrowed Acceptance above): the
+services container's own supervised-service startup doesn't complete
+end-to-end yet (~start_all()~'s coroutine never resumes inside the
+container — root cause still open) and the image hasn't been exercised
+on the actual bullseye/WSL deploy host. Both carried forward as
+[[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][a dedicated follow-up task]] in this story, plus a
+separately filed story to split services into one container per
+service rather than one controller-supervised container for all 18.

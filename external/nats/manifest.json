@@ -1,0 +1,24 @@
+{
+    "name": "NATS Server",
+    "description": "Prebuilt nats-server binary releases, vendored per operating system for deploying ORE Studio's message bus to hosts without a matching package repository (e.g. an older Debian base lacking a current nats-server apt package).",
+    "source_url": "https://github.com/nats-io/nats-server",
+    "version": "v2.14.3",
+    "downloaded_at": "2026-07-24",
+    "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "NATS Server",
+        "description": "Vendored nats-server release binaries, not reference data — no dataset/populate mapping applies.",
+        "owner": "Platform Team"
+    },
+    "sources": [
+        {
+            "name": "nats-server GitHub Releases",
+            "description": "Official prebuilt nats-server binaries from the nats-io/nats-server GitHub release page.",
+            "url": "https://github.com/nats-io/nats-server/releases/tag/v2.14.3",
+            "license": "Apache License 2.0",
+            "data_file": "packages/"
+        }
+    ],
+    "datasets": [],
+    "dependencies": []
+}

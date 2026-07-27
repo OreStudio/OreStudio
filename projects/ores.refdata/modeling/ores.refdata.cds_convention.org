@@ -26,11 +26,13 @@ The rule field governs IMM dates and standard CDS roll dates.
 :has_workspace_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique convention identifier.
@@ -40,10 +42,6 @@ Examples: 'CDS-STANDARD-CONVENTIONS', 'EUR-CDS-CONVENTIONS'.
 #+begin_src cpp :name generator
 std::string("CDS-STANDARD-CONVENTIONS")
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** settlement_days
 :PROPERTIES:

@@ -35,11 +35,13 @@ pure overhead. Like every other soft-FK relationship in this codebase,
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** pair_code
 :PROPERTIES:
-:column:   pair_code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Same value as the owning =currency_pair.pair_code= (e.g. "EUR/USD") —
@@ -48,8 +50,6 @@ a 1:1 extension key, not an independent identifier.
 #+begin_src cpp :name generator
 std::string(faker::finance::currencyCode()) + "/" + std::string(faker::finance::currencyCode())
 #+end_src
-
-* Columns
 
 ** pip_factor
 :PROPERTIES:

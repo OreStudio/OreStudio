@@ -26,23 +26,24 @@ Values include: Fiat, Commodity, Synthetic, Supranational.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique monetary nature code.
 
 Examples: 'Fiat', 'Commodity', 'Synthetic', 'Supranational'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the monetary nature.
@@ -50,8 +51,6 @@ Human-readable name for the monetary nature.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Monetary Nature"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

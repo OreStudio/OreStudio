@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 99F0C885-6129-472B-ADBC-4EA6D32BACD5
+:END:
+#+title: Update codegen entity meta-model doc for unified Columns key shape
+#+description: projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.org still documents the retired * Primary key/* Natural keys sections rather than the unified * Columns + :primary_key:/:natural_key: shape shipped by story 36A25C95.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:documentation:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.org=
+(the "Codegen entity meta-model — keys and columns" knowledge doc)
+still describes and diagrams the =* Primary key=/=* Natural keys=/
+=* Columns= three-way split. Update its prose, examples, and UML
+class diagram to describe the unified =* Columns= section with
+per-field =:primary_key:=/=:natural_key:= flags instead — the shape
+=org_loader.py= has actually parsed since commit =1e0775417=.
+
+* Why
+
+Story [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]] shipped the new shape but its own
+=* Result= flags this doc as a known, unaddressed gap ("still
+describes the old =Primary key=/=Natural keys= sections"). Confirmed
+still true as of task [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Downgrade address/model-type incompatibility to skip in --component mode]], which had to migrate 56 real entity models to this
+same shape without an authoritative up-to-date reference doc to
+follow.
+
+* References
+
+- [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Task: Downgrade address/model-type incompatibility to skip in --component mode]]
+
+* See also
+
+- [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Story: Unify entity key modeling: one way to declare primary/natural keys, with compound-key support]]
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Codegen entity meta-model — keys and columns]]

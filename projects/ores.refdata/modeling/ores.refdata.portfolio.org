@@ -27,23 +27,24 @@ via self-referencing parent_portfolio_id.
 :generate_touch_function: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this portfolio.
 
 Surrogate key for the portfolio record.
 
-* Natural keys
-
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this portfolio.
@@ -56,8 +57,9 @@ ctx.generate_uuid()
 
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the portfolio.
@@ -67,8 +69,6 @@ e.g., 'Global Rates', 'APAC Credit'.
 #+begin_src cpp :name generator
 std::string(faker::company::companyName()) + " Portfolio"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

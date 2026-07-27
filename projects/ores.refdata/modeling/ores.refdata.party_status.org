@@ -29,23 +29,24 @@ track the lifecycle of party and counterparty records.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique status code.
 
 Examples: 'Active', 'Inactive', 'Suspended'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the status.
@@ -53,8 +54,6 @@ Human-readable name for the status.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Status"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

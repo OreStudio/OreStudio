@@ -26,6 +26,7 @@ The node name *is* its address, so addresses, ``--address`` values and
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -72,8 +73,18 @@ class Graph:
         raise ValueError(f"unknown address: {address!r}")
 
 
+@lru_cache(maxsize=None)
 def load_graph(templates_dir: Path) -> Graph:
-    """Build the graph from the ``ores.*`` node docs in ``templates_dir``."""
+    """Build the graph from the ``ores.*`` node docs in ``templates_dir``.
+
+    Cached per ``templates_dir`` — resolve_targets() and, on the empty-units
+    path, _generate_single() both load the same graph for the same model,
+    and a --component run does this once per model file, so re-parsing
+    every ores.*.org node from disk on each call would double the I/O for
+    a path that's expected to fire constantly during auto-discovery. Safe
+    within a single process invocation: the template library doesn't
+    change mid-run, and the returned Graph is never mutated by callers.
+    """
     g = Graph()
     for path in sorted(Path(templates_dir).glob("ores.*.org")):
         text = path.read_text(encoding="utf-8")
@@ -208,3 +219,26 @@ def resolve_generation_set(supported: frozenset[str],
                            target: frozenset[str]) -> frozenset[str]:
     """What actually generates = supported ∩ target."""
     return supported & target
+
+
+def address_supports_model_type(address: str | None, model_type: str,
+                                graph: Graph) -> bool:
+    """True if some facet under ``address`` can ever generate ``model_type``.
+
+    Ignores enablement (``ores.*.enabled`` overrides, ``#+default:``) —
+    this only asks whether the *address itself* is capable of the model
+    type at all, regardless of what any particular entity has opted in or
+    out of. A facet with no ``#+model_types:`` declared admits every type.
+
+    Used to distinguish a genuine model-type/address incompatibility (e.g.
+    a ``junction`` model against ``ores.cpp.qt``, which no facet under that
+    address ever generates) from an ordinary empty intersection caused by
+    disablement — the two must be handled differently by callers (see
+    :func:`codegen.generate._generate_single`).
+    """
+    target = compute_target_set(address, graph)
+    for facet in target:
+        mts = graph.facet_model_types.get(facet, [])
+        if not mts or model_type in mts:
+            return True
+    return False

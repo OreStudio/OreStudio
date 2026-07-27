@@ -35,21 +35,22 @@ topologies and never share an engine.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this configuration.
 
-* Natural keys
-
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Owning party (legal entity) this CRM topology belongs to.
@@ -60,8 +61,9 @@ ctx.generate_uuid()
 
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Stable name for this configuration, unique per tenant and party (e.g.
@@ -70,8 +72,6 @@ Stable name for this configuration, unique per tenant and party (e.g.
 #+begin_src cpp :name generator
 std::string(faker::word::noun())
 #+end_src
-
-* Columns
 
 ** pivot_currency_code
 :PROPERTIES:

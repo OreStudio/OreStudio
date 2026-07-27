@@ -21,6 +21,7 @@ from codegen.physical_space import (  # noqa: E402
     Graph,
     _enabled_overrides,
     _parse_default,
+    address_supports_model_type,
     compute_supported_set,
     compute_target_set,
     is_enabled,
@@ -146,6 +147,32 @@ def test_generation_set_empty_when_target_outside_supported(graph):
     supported = compute_supported_set({"ores.cpp.enabled": "false"}, graph, "domain_entity")
     target = compute_target_set("ores.cpp", graph)
     assert resolve_generation_set(supported, target) == frozenset()
+
+
+# --- address/model-type incompatibility (distinct from disablement) -------
+
+def test_address_supports_model_type_true_for_admitted_type(graph):
+    assert address_supports_model_type("ores.cpp.qt", "domain_entity", graph) is True
+
+
+def test_address_supports_model_type_false_for_unadmitted_type(graph):
+    """'table' is only declared on ores.sql.schema; ores.cpp.qt admits only
+    domain_entity, so it can never generate a table model."""
+    assert address_supports_model_type("ores.cpp.qt", "table", graph) is False
+
+
+def test_address_supports_model_type_true_when_any_facet_under_ts_admits_it(graph):
+    """ores.sql (a technical space) expands to ores.sql.schema, which does
+    admit 'table' -- the address need not be the exact facet."""
+    assert address_supports_model_type("ores.sql", "table", graph) is True
+
+
+def test_address_supports_model_type_ignores_enablement(graph):
+    """Disabling a facet doesn't change whether it's type-*capable* --
+    address_supports_model_type answers a different question than
+    compute_supported_set (capability vs. current enablement)."""
+    graph.facet_default["ores.sql.schema"] = False
+    assert address_supports_model_type("ores.sql.schema", "table", graph) is True
 
 
 # --- layer (b) activation seam: archetype-granularity + kind + default-off -

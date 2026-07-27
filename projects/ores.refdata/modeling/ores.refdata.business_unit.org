@@ -25,23 +25,24 @@ Each unit belongs to a top-level legal entity (party).
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this business unit.
 
 Surrogate key for the business unit record.
 
-* Natural keys
-
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Top-level legal entity this unit belongs to.
@@ -54,8 +55,9 @@ uuid_gen()
 
 ** unit_name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the business unit.
@@ -65,8 +67,6 @@ e.g., 'FX Options Desk', 'London Branch'.
 #+begin_src cpp :name generator
 faker::company::companyName() + " Desk"
 #+end_src
-
-* Columns
 
 ** parent_business_unit_id
 :PROPERTIES:

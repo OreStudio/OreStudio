@@ -31,23 +31,24 @@ change needed for a new group.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique currency group code.
 
 Examples: 'G11', 'SCANDIES', 'ANTIPODEANS', 'COMMODITY', 'ASIANS', 'LATAMS'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the currency group.
@@ -55,8 +56,6 @@ Human-readable name for the currency group.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Group"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

@@ -27,23 +27,24 @@ parent.level.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this business unit type.
 
 Surrogate key for the record.
 
-* Natural keys
-
 ** coding_scheme_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Coding scheme this type belongs to.
@@ -56,8 +57,9 @@ std::string("ORES-ORG")
 
 ** code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Short code identifying this type within the coding scheme.
@@ -67,8 +69,6 @@ e.g. "DIVISION", "DESK".
 #+begin_src cpp :name generator
 std::string("TYPE") + std::to_string(idx)
 #+end_src
-
-* Columns
 
 ** name
 :PROPERTIES:

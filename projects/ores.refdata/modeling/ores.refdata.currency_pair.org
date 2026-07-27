@@ -33,11 +33,13 @@ rationale.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** pair_code
 :PROPERTIES:
-:column:   pair_code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Canonical base/quote pair code, e.g. "EUR/USD", always stored in
@@ -46,8 +48,6 @@ canonical base-currency-precedence order.
 #+begin_src cpp :name generator
 std::string(faker::finance::currencyCode()) + "/" + std::string(faker::finance::currencyCode())
 #+end_src
-
-* Columns
 
 ** base_currency
 :PROPERTIES:

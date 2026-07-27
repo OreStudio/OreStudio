@@ -29,23 +29,24 @@ parent_counterparty_id for group structures.
 :generate_touch_function: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this counterparty.
 
 Surrogate key for the counterparty record.
 
-* Natural keys
-
 ** short_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Short code for quick reference.
@@ -55,8 +56,6 @@ A brief mnemonic code used in trading systems.
 #+begin_src cpp :name generator
 std::string(faker::string::alpha(6))
 #+end_src
-
-* Columns
 
 ** full_name
 :PROPERTIES:

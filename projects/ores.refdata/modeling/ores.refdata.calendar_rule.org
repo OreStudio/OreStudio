@@ -35,26 +35,19 @@ stays a timeless, indefinitely-repeating pattern.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this rule row.
 
 Surrogate key -- a calendar can have many rules, so there is no
 single natural key column.
-
-* Natural keys
-
-TODO -- no natural key: a calendar can have many rules with no
-per-column uniqueness, so =calendar_code= lives under Columns/Foreign
-keys instead (mirrors =book.parent_portfolio_id=, a mandatory
-non-unique parent reference).
-
-* Columns
 
 ** calendar_code
 :PROPERTIES:

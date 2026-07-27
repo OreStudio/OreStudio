@@ -28,11 +28,13 @@ rounding, and display formatting across the system.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** iso_code
 :PROPERTIES:
-:column:   iso_code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
@@ -48,12 +50,11 @@ this synthetic path.
 std::string("X")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable currency name (e.g., "US Dollar", "Euro").
@@ -61,8 +62,6 @@ Human-readable currency name (e.g., "US Dollar", "Euro").
 #+begin_src cpp :name generator
 "Test Currency " + std::to_string(faker::number::integer(1000, 9999))
 #+end_src
-
-* Columns
 
 ** numeric_code
 :PROPERTIES:

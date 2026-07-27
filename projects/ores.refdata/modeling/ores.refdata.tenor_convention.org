@@ -42,11 +42,13 @@ not here.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique convention code.
@@ -57,10 +59,6 @@ Examples: 'RATES_SPOT_FORWARD', 'FX_SWAP_NEAR_LEG', 'CREDIT_CDS_IMM',
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_convention_" + std::to_string(++counter)
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

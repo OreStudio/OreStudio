@@ -32,12 +32,14 @@ soft FK.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
-:is_text:  true
+:type:        text
+:cpp_type:    std::string
+:is_text:     true
+:primary_key: true
 :END:
 
 FpML-style business centre code.
@@ -47,10 +49,6 @@ Examples: 'USNY' (New York), 'GBLO' (London).
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_bc"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** source
 :PROPERTIES:

@@ -30,11 +30,13 @@ which capital regime (market risk vs credit risk) applies to a book.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique regulatory book type code.
@@ -45,12 +47,11 @@ Examples: 'Trading', 'Banking'.
 std::string("RegulatoryBookType")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the regulatory book type.
@@ -58,8 +59,6 @@ Human-readable name for the regulatory book type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Book Type"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

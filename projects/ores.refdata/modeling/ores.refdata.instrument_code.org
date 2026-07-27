@@ -46,11 +46,13 @@ tenant, like other shared code tables.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique short, FIX-inspired mnemonic code for the instrument type --
@@ -63,12 +65,11 @@ Examples: 'IRS', 'FRA', 'CDS', 'FXBAR', 'EQVS'.
 std::string("InstrumentCode")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable full name for the instrument code (e.g. "Forward Rate
@@ -77,8 +78,6 @@ Agreement" for =FRA=).
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Instrument"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

@@ -36,11 +36,13 @@ lookup entity rather than two booleans.
 :component: refdata
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique ledger feed type code.
@@ -51,12 +53,11 @@ Examples: 'None', 'Automatic', 'Manual'.
 std::string("LedgerFeedType")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the ledger feed type.
@@ -64,8 +65,6 @@ Human-readable name for the ledger feed type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Feed Type"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

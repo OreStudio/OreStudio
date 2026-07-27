@@ -28,11 +28,13 @@ instead inherited from the referenced IBOR index convention.
 :has_workspace_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique convention identifier.
@@ -42,10 +44,6 @@ Examples: 'USD-LIBOR-CONVENTIONS', 'EUR-EURIBOR-CONVENTIONS'.
 #+begin_src cpp :name generator
 std::string("USD-LIBOR-CONVENTIONS")
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** index_based
 :PROPERTIES:

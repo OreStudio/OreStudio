@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/seed-ir-curve-sample-data
-#+pr:
+#+pr: 1705
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
@@ -243,7 +243,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1705][#1705]] | [dq,sql,qt] Vintage-aware seeding for ir_curve_feed |
 
 * Review
 

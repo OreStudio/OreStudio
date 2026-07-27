@@ -35,18 +35,24 @@ domain::calendar_ruleset quantlib_calendar_rulesets::target() {
         // New Year's Day
         calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = January, .day = 1u},
         // Good Friday (Easter Sunday - 2 days), from 2000
-        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = -2,
+        calendar_rule{.kind = calendar_rule_kind::easter_offset,
+                      .day_offset = -2,
                       .effective_from = year{2000}},
         // Easter Monday (Easter Sunday + 1 day), from 2000
-        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = 1,
+        calendar_rule{.kind = calendar_rule_kind::easter_offset,
+                      .day_offset = 1,
                       .effective_from = year{2000}},
         // Labour Day, from 2000
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = May, .day = 1u,
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = May,
+                      .day = 1u,
                       .effective_from = year{2000}},
         // Christmas
         calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u},
         // Day of Goodwill, from 2000
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 26u,
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = December,
+                      .day = 26u,
                       .effective_from = year{2000}},
     };
     cal.exceptions = {
@@ -68,50 +74,89 @@ domain::calendar_ruleset quantlib_calendar_rulesets::united_states_settlement() 
         // New Year's Day (Monday if Sunday, preceding Friday if Saturday --
         // the latter naturally lands in the prior December via date
         // arithmetic, matching QuantLib's separate "Dec 31st if Friday" leg).
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = January, .day = 1u,
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = January,
+                      .day = 1u,
                       .shift = observance_shift::nearest_weekday},
         // Martin Luther King's birthday (third Monday in January), from 1983
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = January,
-                      .weekday = Monday, .occurrence = 3u, .effective_from = year{1983}},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = January,
+                      .weekday = Monday,
+                      .occurrence = 3u,
+                      .effective_from = year{1983}},
         // Washington's birthday: February 22nd (adjusted) pre-1971...
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = February, .day = 22u,
-                      .shift = observance_shift::nearest_weekday, .effective_to = year{1970}},
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = February,
+                      .day = 22u,
+                      .shift = observance_shift::nearest_weekday,
+                      .effective_to = year{1970}},
         // ...third Monday in February from 1971
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = February,
-                      .weekday = Monday, .occurrence = 3u, .effective_from = year{1971}},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = February,
+                      .weekday = Monday,
+                      .occurrence = 3u,
+                      .effective_from = year{1971}},
         // Memorial Day: May 30th (adjusted) pre-1971...
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = May, .day = 30u,
-                      .shift = observance_shift::nearest_weekday, .effective_to = year{1970}},
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = May,
+                      .day = 30u,
+                      .shift = observance_shift::nearest_weekday,
+                      .effective_to = year{1970}},
         // ...last Monday in May from 1971
-        calendar_rule{.kind = calendar_rule_kind::last_weekday_of_month, .month = May,
-                      .weekday = Monday, .effective_from = year{1971}},
+        calendar_rule{.kind = calendar_rule_kind::last_weekday_of_month,
+                      .month = May,
+                      .weekday = Monday,
+                      .effective_from = year{1971}},
         // Juneteenth, declared 2021 but only observed by exchanges since 2022
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = June, .day = 19u,
-                      .shift = observance_shift::nearest_weekday, .effective_from = year{2022}},
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = June,
+                      .day = 19u,
+                      .shift = observance_shift::nearest_weekday,
+                      .effective_from = year{2022}},
         // Independence Day
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = July, .day = 4u,
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = July,
+                      .day = 4u,
                       .shift = observance_shift::nearest_weekday},
         // Labor Day (first Monday in September)
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = September,
-                      .weekday = Monday, .occurrence = 1u},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = September,
+                      .weekday = Monday,
+                      .occurrence = 1u},
         // Columbus Day (second Monday in October), from 1971
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = October,
-                      .weekday = Monday, .occurrence = 2u, .effective_from = year{1971}},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = October,
+                      .weekday = Monday,
+                      .occurrence = 2u,
+                      .effective_from = year{1971}},
         // Veterans Day: November 11th (adjusted) up to and including 1970...
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = November, .day = 11u,
-                      .shift = observance_shift::nearest_weekday, .effective_to = year{1970}},
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = November,
+                      .day = 11u,
+                      .shift = observance_shift::nearest_weekday,
+                      .effective_to = year{1970}},
         // ...fourth Monday in October from 1971 to 1977...
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = October,
-                      .weekday = Monday, .occurrence = 4u, .effective_from = year{1971},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = October,
+                      .weekday = Monday,
+                      .occurrence = 4u,
+                      .effective_from = year{1971},
                       .effective_to = year{1977}},
         // ...back to November 11th (adjusted) from 1978
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = November, .day = 11u,
-                      .shift = observance_shift::nearest_weekday, .effective_from = year{1978}},
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = November,
+                      .day = 11u,
+                      .shift = observance_shift::nearest_weekday,
+                      .effective_from = year{1978}},
         // Thanksgiving Day (fourth Thursday in November)
-        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month, .month = November,
-                      .weekday = Thursday, .occurrence = 4u},
+        calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
+                      .month = November,
+                      .weekday = Thursday,
+                      .occurrence = 4u},
         // Christmas
-        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u,
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = December,
+                      .day = 25u,
                       .shift = observance_shift::nearest_weekday},
     };
     return cal;

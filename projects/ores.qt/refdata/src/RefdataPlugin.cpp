@@ -462,20 +462,20 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(calendarController_.get());
 
     calendarRuleController_ = std::make_unique<CalendarRuleController>(ctx_.main_window,
-                                                                        ctx_.mdi_area,
-                                                                        ctx_.client_manager,
-                                                                        ctx_.change_reason_cache,
-                                                                        ctx_.username,
-                                                                        this);
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(calendarRuleController_.get());
 
     calendarExceptionController_ =
         std::make_unique<CalendarExceptionController>(ctx_.main_window,
-                                                       ctx_.mdi_area,
-                                                       ctx_.client_manager,
-                                                       ctx_.change_reason_cache,
-                                                       ctx_.username,
-                                                       this);
+                                                      ctx_.mdi_area,
+                                                      ctx_.client_manager,
+                                                      ctx_.change_reason_cache,
+                                                      ctx_.username,
+                                                      this);
     connectControllerSignals(calendarExceptionController_.get());
 
     zeroConventionController_ = std::make_unique<ZeroConventionController>(ctx_.main_window,

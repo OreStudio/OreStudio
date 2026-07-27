@@ -66,9 +66,9 @@ struct calendar_rule final {
     calendar_rule_kind kind;
     std::optional<std::chrono::month> month;
     std::optional<unsigned> day;                 // fixed_date
-    std::optional<std::chrono::weekday> weekday;  // nth/last_weekday_of_month
-    std::optional<unsigned> occurrence;           // nth_weekday_of_month: 1..4
-    std::optional<int> day_offset;                // easter_offset (e.g. -2 = Good Friday)
+    std::optional<std::chrono::weekday> weekday; // nth/last_weekday_of_month
+    std::optional<unsigned> occurrence;          // nth_weekday_of_month: 1..4
+    std::optional<int> day_offset;               // easter_offset (e.g. -2 = Good Friday)
     observance_shift shift = observance_shift::none;
     std::optional<std::chrono::year> effective_from;
     std::optional<std::chrono::year> effective_to;

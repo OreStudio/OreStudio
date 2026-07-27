@@ -28,8 +28,7 @@ namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
 } // namespace
 
-std::vector<ores::nats::service::subscription>
-register_calendar_materialisation_handlers(
+std::vector<ores::nats::service::subscription> register_calendar_materialisation_handlers(
     ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
@@ -37,8 +36,9 @@ register_calendar_materialisation_handlers(
     auto h = std::make_shared<calendar_materialisation_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        regenerate_calendar_dates_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->regenerate(std::move(msg)); }));
+        regenerate_calendar_dates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->regenerate(std::move(msg));
+        }));
     return subs;
 }
 

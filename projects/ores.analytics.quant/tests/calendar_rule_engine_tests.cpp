@@ -57,7 +57,7 @@ TEST_CASE("easter_sunday matches known reference dates", "[calendar_rule_engine]
 }
 
 TEST_CASE("TARGET holiday list 1999-2006 matches QuantLib's testTARGET dataset",
-         "[calendar_rule_engine][target]") {
+          "[calendar_rule_engine][target]") {
     const std::vector<calendar_ruleset> calendars = {quantlib_calendar_rulesets::target()};
     const auto start = year{1999} / January / 1;
     const auto end = year{2006} / December / 31;
@@ -66,50 +66,27 @@ TEST_CASE("TARGET holiday list 1999-2006 matches QuantLib's testTARGET dataset",
     const auto actual = dates_for(0, holidays);
 
     const std::vector<year_month_day> expected = {
-        year{1999} / January / 1,
-        year{1999} / December / 31,
+        year{1999} / January / 1,   year{1999} / December / 31,
 
-        year{2000} / April / 21,
-        year{2000} / April / 24,
-        year{2000} / May / 1,
-        year{2000} / December / 25,
-        year{2000} / December / 26,
+        year{2000} / April / 21,    year{2000} / April / 24,    year{2000} / May / 1,
+        year{2000} / December / 25, year{2000} / December / 26,
 
-        year{2001} / January / 1,
-        year{2001} / April / 13,
-        year{2001} / April / 16,
-        year{2001} / May / 1,
-        year{2001} / December / 25,
-        year{2001} / December / 26,
+        year{2001} / January / 1,   year{2001} / April / 13,    year{2001} / April / 16,
+        year{2001} / May / 1,       year{2001} / December / 25, year{2001} / December / 26,
         year{2001} / December / 31,
 
-        year{2002} / January / 1,
-        year{2002} / March / 29,
-        year{2002} / April / 1,
-        year{2002} / May / 1,
-        year{2002} / December / 25,
-        year{2002} / December / 26,
+        year{2002} / January / 1,   year{2002} / March / 29,    year{2002} / April / 1,
+        year{2002} / May / 1,       year{2002} / December / 25, year{2002} / December / 26,
 
-        year{2003} / January / 1,
-        year{2003} / April / 18,
-        year{2003} / April / 21,
-        year{2003} / May / 1,
-        year{2003} / December / 25,
-        year{2003} / December / 26,
+        year{2003} / January / 1,   year{2003} / April / 18,    year{2003} / April / 21,
+        year{2003} / May / 1,       year{2003} / December / 25, year{2003} / December / 26,
 
-        year{2004} / January / 1,
-        year{2004} / April / 9,
-        year{2004} / April / 12,
+        year{2004} / January / 1,   year{2004} / April / 9,     year{2004} / April / 12,
 
-        year{2005} / March / 25,
-        year{2005} / March / 28,
-        year{2005} / December / 26,
+        year{2005} / March / 25,    year{2005} / March / 28,    year{2005} / December / 26,
 
-        year{2006} / April / 14,
-        year{2006} / April / 17,
-        year{2006} / May / 1,
-        year{2006} / December / 25,
-        year{2006} / December / 26,
+        year{2006} / April / 14,    year{2006} / April / 17,    year{2006} / May / 1,
+        year{2006} / December / 25, year{2006} / December / 26,
     };
 
     REQUIRE(actual.size() == expected.size());
@@ -117,9 +94,10 @@ TEST_CASE("TARGET holiday list 1999-2006 matches QuantLib's testTARGET dataset",
 }
 
 TEST_CASE("a rule with no effective_from/effective_to fires in every year",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
-    cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
+    cal.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
 
     // 2018-12-25 (Tue), 2019-12-25 (Wed), 2020-12-25 (Fri) are all
     // weekdays -- unlike 2021/2022, which fall on the weekend.
@@ -150,7 +128,7 @@ TEST_CASE("effective_from/effective_to gate a rule to a year range", "[calendar_
 }
 
 TEST_CASE("nth_weekday_of_month resolves the 4th Thursday of November (US Thanksgiving)",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     cal.rules = {calendar_rule{.kind = calendar_rule_kind::nth_weekday_of_month,
                                .month = November,
@@ -168,11 +146,10 @@ TEST_CASE("nth_weekday_of_month resolves the 4th Thursday of November (US Thanks
 }
 
 TEST_CASE("last_weekday_of_month resolves the last Monday of August (UK Summer Bank Holiday)",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
-    cal.rules = {calendar_rule{.kind = calendar_rule_kind::last_weekday_of_month,
-                               .month = August,
-                               .weekday = Monday}};
+    cal.rules = {calendar_rule{
+        .kind = calendar_rule_kind::last_weekday_of_month, .month = August, .weekday = Monday}};
 
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
         std::vector<calendar_ruleset>{cal}, year{2004} / January / 1, year{2006} / December / 31);
@@ -185,7 +162,7 @@ TEST_CASE("last_weekday_of_month resolves the last Monday of August (UK Summer B
 }
 
 TEST_CASE("nearest_weekday shift rolls Saturday back and Sunday forward",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date,
                                .month = July,
@@ -204,8 +181,8 @@ TEST_CASE("nearest_weekday shift rolls Saturday back and Sunday forward",
 }
 
 TEST_CASE("nearest_weekday shift observes a rule across a year boundary into a query range whose "
-         "own year would not otherwise fire the rule",
-         "[calendar_rule_engine]") {
+          "own year would not otherwise fire the rule",
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     // effective_from 2028 isolates the boundary case: the rule's *natural*
     // date never falls inside the query range [2027-01-01, 2027-12-31], so
@@ -229,7 +206,7 @@ TEST_CASE("nearest_weekday shift observes a rule across a year boundary into a q
 }
 
 TEST_CASE("roll_forward_to_monday shift moves both Saturday and Sunday to the following Monday",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date,
                                .month = January,
@@ -248,7 +225,7 @@ TEST_CASE("roll_forward_to_monday shift moves both Saturday and Sunday to the fo
 }
 
 TEST_CASE("a calendar_exception adds an additional holiday not covered by any rule",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     cal.exceptions = {calendar_exception{.date = year{2012} / June / 5, .is_business_day = false}};
 
@@ -261,10 +238,12 @@ TEST_CASE("a calendar_exception adds an additional holiday not covered by any ru
 }
 
 TEST_CASE("a calendar_exception can override a rule-generated holiday back to a business day",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
-    cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
-    cal.exceptions = {calendar_exception{.date = year{2020} / December / 25, .is_business_day = true}};
+    cal.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
+    cal.exceptions = {
+        calendar_exception{.date = year{2020} / December / 25, .is_business_day = true}};
 
     // 2019-12-25 (Wed) and 2020-12-25 (Fri) are weekdays; 2021-12-25 is a
     // Saturday and already excluded by the weekend check regardless of the
@@ -279,10 +258,11 @@ TEST_CASE("a calendar_exception can override a rule-generated holiday back to a 
 }
 
 TEST_CASE("weekend days are never included as holidays even when a rule would otherwise match",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     // Christmas 2021 fell on a Saturday.
-    cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
+    cal.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
 
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
         std::vector<calendar_ruleset>{cal}, year{2021} / January / 1, year{2021} / December / 31);
@@ -291,10 +271,11 @@ TEST_CASE("weekend days are never included as holidays even when a rule would ot
 }
 
 TEST_CASE("a custom weekend_mask (e.g. Friday/Saturday) is honoured instead of the default",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal;
     cal.weekend_mask = std::bitset<7>{0b0100001}; // Sunday(bit0) + Friday(bit5)
-    cal.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
+    cal.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u}};
 
     // December 25th 2020 was a Friday -- a holiday under the default
     // Sat/Sun weekend, but a weekend day itself under this custom mask.
@@ -305,14 +286,18 @@ TEST_CASE("a custom weekend_mask (e.g. Friday/Saturday) is honoured instead of t
 }
 
 TEST_CASE("multiple calendars are instantiated independently in one batch call",
-         "[calendar_rule_engine]") {
+          "[calendar_rule_engine]") {
     calendar_ruleset cal_a;
-    cal_a.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = January, .day = 1u}};
+    cal_a.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = January, .day = 1u}};
     calendar_ruleset cal_b;
-    cal_b.rules = {calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = March, .day = 1u}};
+    cal_b.rules = {
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = March, .day = 1u}};
 
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
-        std::vector<calendar_ruleset>{cal_a, cal_b}, year{2021} / January / 1, year{2021} / December / 31);
+        std::vector<calendar_ruleset>{cal_a, cal_b},
+        year{2021} / January / 1,
+        year{2021} / December / 31);
 
     REQUIRE(dates_for(0, holidays).size() == 1);
     CHECK(dates_for(0, holidays)[0] == year{2021} / January / 1);

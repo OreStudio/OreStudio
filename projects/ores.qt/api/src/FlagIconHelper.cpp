@@ -34,7 +34,7 @@ namespace ores::qt {
 namespace {
 constexpr int flag_spacing = 2; // small gap so the two flags read as distinct, not overlapping
 constexpr int key_flag_left_margin = 4; // left inset for the overlay icon
-constexpr int key_flag_gap = 4; // gap between the overlay icon and the text
+constexpr int key_flag_gap = 4;         // gap between the overlay icon and the text
 
 // Keeps the overlay flag label vertically centred and repositioned to the
 // line edit's left inset whenever the line edit itself is resized (e.g. the
@@ -43,7 +43,10 @@ constexpr int key_flag_gap = 4; // gap between the overlay icon and the text
 // files as plain QLineEdit.
 class KeyFlagLabelPositioner : public QObject {
 public:
-    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label) : QObject(label), edit_(edit), label_(label) {
+    KeyFlagLabelPositioner(QLineEdit* edit, QLabel* label)
+        : QObject(label)
+        , edit_(edit)
+        , label_(label) {
         edit_->installEventFilter(this);
     }
 
@@ -136,8 +139,8 @@ void set_line_edit_flag_icon(QLineEdit* edit,
         // "already exists" branch below.
         label_ptr->setProperty("oresKeyFlagPositioner", QVariant::fromValue<void*>(positioner));
     } else {
-        positioner =
-            static_cast<KeyFlagLabelPositioner*>(label_ptr->property("oresKeyFlagPositioner").value<void*>());
+        positioner = static_cast<KeyFlagLabelPositioner*>(
+            label_ptr->property("oresKeyFlagPositioner").value<void*>());
     }
 
     label_ptr->setFixedSize(iconSize);

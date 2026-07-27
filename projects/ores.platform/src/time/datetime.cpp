@@ -113,7 +113,7 @@ std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) 
         throw std::invalid_argument("from_iso8601_date: failed to parse: " + str);
 
     const auto date = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
-        std::chrono::day{static_cast<unsigned>(dd)};
+                      std::chrono::day{static_cast<unsigned>(dd)};
     if (!date.ok())
         throw std::invalid_argument("from_iso8601_date: not a valid calendar date: " + str);
 

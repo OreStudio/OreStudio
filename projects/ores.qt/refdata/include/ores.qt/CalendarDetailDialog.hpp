@@ -103,6 +103,8 @@ private:
 
     void populateCalendarTypeCombo();
 
+    void populateBaseCalendarCodeCombo();
+
 
     void populateCountryCodeCombo();
 

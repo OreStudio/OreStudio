@@ -38,11 +38,13 @@ than a nullable country reference, since no single country owns them.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 QuantLib/ORE calendar token, verbatim (e.g. "TARGET", "UnitedStates",
@@ -52,12 +54,11 @@ QuantLib/ORE calendar token, verbatim (e.g. "TARGET", "UnitedStates",
 std::string("X")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable, unique display name (e.g. "TARGET (Euro area)",
@@ -66,8 +67,6 @@ Human-readable, unique display name (e.g. "TARGET (Euro area)",
 #+begin_src cpp :name generator
 "Test Calendar " + std::to_string(faker::number::integer(1000, 9999))
 #+end_src
-
-* Columns
 
 ** calendar_type
 :PROPERTIES:
@@ -320,12 +319,15 @@ drop function if exists ores_refdata_validate_calendar_fn;
 
 *** Detail fields
 
-| field         | label         | widget              | type          | is_key | is_required | placeholder                     | flag_source | combo_fetch          | combo_allow_blank | combo_domain_type                 | combo_fetch_include        | combo_fetch_fn        | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label      | combo_setter_pascal | view_group |
-|---------------+---------------+----------------------+---------------+--------+-------------+----------------------------------+--------------+------------------------+---------------------+------------------------------------+-----------------------------+------------------------+----------------------+-------------------+----------------------+-------------------+-------------------+-----------------------+-------------|
-| code          | Code          | codeEdit             | line_edit     | true   | true        | Enter QuantLib calendar code     |              |                        |                     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
-| name          | Name          | nameEdit             | line_edit     |        | true        | Enter calendar name              |              |                        |                     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
-| calendar_type | Type          | calendarTypeCombo    | dynamic_combo |        |             |                                  |              |                        |                     | refdata::domain::calendar_type     | ores.qt/LookupFetcher.hpp    | fetch_calendar_types    | calendarTypeWatcher  | code              | description          | display_order     | calendar types    | CalendarTypeCombo     | General     |
-| country_code  | Country       | countryCodeCombo     | flagged_combo |        |             |                                  | country      | fetch_country_codes   | true                |                                     | ores.qt/LookupFetcher.hpp    |                         |                      |                   |                      |                   |                   |                       | General     |
+| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_fetch | combo_allow_blank | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | view_group | immutable | combo_blank_label |
+|-------+-------+--------+------+--------+-------------+-------------+-------------+-------------+-------------------+-------------------+---------------------+----------------+--------------------+------------------+---------------------+------------------+-------------+---------------------+------------+-----------+-------------------|
+| code | Code | codeEdit | line_edit | true | true | Enter QuantLib calendar code |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| name | Name | nameEdit | line_edit |  | true | Enter calendar name |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| calendar_type | Type | calendarTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar_type | ores.qt/LookupFetcher.hpp | fetch_calendar_types | calendarTypeWatcher | code | description | display_order | calendar types | CalendarTypeCombo | General |  |  |
+| country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  | General |  |  |
+| source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  | No Base Calendar |
 
 *** Columns (Qt model)
 
@@ -471,6 +473,26 @@ generate_quantlib_calendars(utility::generation::generation_context& ctx) {
 #+end_src
 
 ** Custom repository methods
+
+** Qt: lock the whole form for a non-editable template
+
+=is_editable=false= (every =source='quantlib'= row, and any
+=source='user'= row an admin has otherwise marked non-editable) must
+lock every field in the detail dialog, not just the fields already
+locked-after-create ( =code=, =source=, =is_editable= ) -- a user must
+not be able to change a QuantLib-transcribed template's own
+=name=/=calendar_type=/=country_code=/=base_calendar_code= via the
+UI, full stop. =setReadOnly(true)= already does exactly this (it
+drives every non-locked-after-create field's enabled state, not only
+the locked-after-create ones), so this seam just calls it based on
+the row just loaded -- create mode never reaches this seam (=set{{Entity}}=
+is only called when opening an existing row), so a brand-new
+=is_editable=false=-by-default calendar stays fully editable until
+saved.
+
+#+begin_src cpp :name entity_set_load_hook :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
+    setReadOnly(!calendar_.is_editable);
+#+end_src
 
 * See also
 

@@ -8,12 +8,12 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/calendar-qt-source-editability-and-holidays-browse
-#+pr:
+#+pr: 1700
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
 #+updated: 2026-07-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,7 +43,7 @@ independent halves:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
 | Now          | Not yet started -- the source/editability/regenerate half can start immediately; the browse-holidays half is blocked. |
 | Waiting on   | [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] (browse-holidays half only). |
@@ -92,12 +92,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1700][#1700]] | [ores.refdata,ores.codegen] Calendar detail dialog: source/editability/base template |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | base_calendar_code combo has no blank option; write-back never produces std::nullopt -- risks silently attaching an arbitrary base calendar on save | cpp_qt_detail_dialog.cpp.mustache, calendar.org | Fixed | Set combo_blank_label for the field (threads through the existing mechanism); added an is_optional_string branch to the is_dynamic_combo write-back section, using currentData() + nullopt-on-empty, mirroring the existing is_optional_uuid pattern (PartyDetailDialog's parent_party_id). |
+| 2 | is_editable checkbox is a dead control -- never read back into the entity, generates an empty if(createMode_) block | cpp_qt_detail_dialog.cpp.mustache, core.py | Fixed | Added an is_check_box branch to the locked-after-create sections of update...FromUi(), setCreateMode(), and setReadOnly() (all three had the same gap); also added is_check_box to core.py's locked_fields dict so the setCreateMode()/setReadOnly() template branches actually fire. |
 
 * Result

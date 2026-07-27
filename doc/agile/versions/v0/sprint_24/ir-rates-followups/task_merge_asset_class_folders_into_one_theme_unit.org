@@ -160,6 +160,33 @@ plan, and a data migration for already-provisioned parties.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Design note: [[id:E3246BEF-DEAA-4223-9D35-5F06426DF0D9][Synthetic Theme as One Atomic DQ Dataset]]
+(=doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org=),
+written before implementation per this task's own acceptance
+criterion. Summary of the confirmed root cause and chosen design:
+
+- Confirmed in code (not assumed): the DQ *bundle* grouping
+  (=ores_dq_dataset_bundle_member_populate.sql=) already models "these
+  datasets are one theme", but =publication_service::publish()= loops
+  over a bundle's member dataset ids and publishes each independently
+  — the atomicity gap is real and lives one layer below where the
+  task's own Analysis section pointed (the two
+  =ores_synthetic_publish_*_from_dq_fn= functions each independently
+  resolving their own container/folder), not just there.
+- The DQ artefact tables themselves need no reshaping — they are
+  already scoped only by =dataset_id=. The actual change is
+  collapsing each theme's two per-asset-class dataset rows into one
+  theme dataset row, merging the two publish-from-dq functions into
+  one (=ores_synthetic_publish_theme_from_dq_fn=) that resolves one
+  container/folder and loops both (all) asset classes' artefact
+  tables inside a single transaction, and collapsing the NATS
+  subject/bundle-membership accordingly.
+- A one-off, idempotent migration script re-points this environment's
+  already-provisioned Barclays containers/folders onto the new model
+  (per acceptance: existing tenants migrated, not silently left
+  broken).
+- See the design note's =* Execution Order= for the full phased plan.
+
 * Notes
 
 * Test Scenarios

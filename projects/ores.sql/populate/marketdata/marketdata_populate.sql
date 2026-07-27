@@ -35,5 +35,8 @@
 \echo '--- FX Driver Rates Seed Data: 2026-05-05 Vintage ---'
 \ir ./marketdata_fx_driver_rates_2026_populate.sql
 
+\echo '--- IR Deposit Rates Seed Data: 2016-02-05 Vintage ---'
+\ir ./marketdata_ir_deposit_rates_populate.sql
+
 \echo ''
 \echo '=== Market Data Component Population Complete ==='

@@ -22,10 +22,12 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp"                      // IWYU pragma: keep.
+#include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <format>
 #include <rfl/json.hpp>
 #include <span>
 #include <stdexcept>
@@ -170,21 +172,114 @@ std::string strip_currency_prefix(const std::string& currency_code, const std::s
         return index_name.substr(prefix.size());
     return index_name;
 }
+
+// ISO date part of an observation_datetime -- see feed_controller::date_part()'s own copy of this
+// (duplicated rather than shared: the two live in different components with no natural common
+// header for a one-line helper).
+std::string date_part(std::chrono::system_clock::time_point tp) {
+    const auto days = std::chrono::floor<std::chrono::days>(tp);
+    return std::format("{:%F}", days);
+}
+
+// Resolves initial_rate from a real market_observation when cfg.price_source is "vintage",
+// mirroring feed_controller::vintage_data_available() -- but keyed on the resolved entries'
+// shortest-tenor DEPOSIT entry's point_id rather than a hardcoded "SPOT", since an IR curve feed
+// has no single scalar equivalent to FX spot (see make_ir_curve_feed's own doc comment for why
+// DEPOSIT is the anchor).
+//
+// @throws vintage_data_missing_error if there is no DEPOSIT entry to anchor on, or no matching
+// observation is found.
+double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
+                                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
+                                    const std::vector<ir_curve_resolved_entry>& resolved,
+                                    const std::string& caller_bearer_token) {
+    const auto* anchor = select_vintage_anchor_entry(resolved);
+    if (!anchor) {
+        throw vintage_data_missing_error(
+            "Cannot resolve vintage initial_rate: config has no DEPOSIT entry to anchor on.");
+    }
+
+    const auto missing_message = [&] {
+        return "No vintage data found for source=" + cfg.vintage_source +
+               ", date=" + cfg.vintage_date + ", point_id=" + anchor->point_id + ".";
+    };
+
+    const auto qualifier =
+        cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name);
+
+    auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
+    ores::marketdata::client::market_data_client md_client(delegated_nats);
+
+    auto series = md_client.find_series("RATES", "YIELD", qualifier);
+    if (!series)
+        throw vintage_data_missing_error("Failed to look up series for '" + qualifier +
+                                         "': " + series.error());
+    if (!series->has_value())
+        throw vintage_data_missing_error(missing_message());
+
+    // Paged scan -- see feed_controller::vintage_data_available()'s own comment on why an
+    // unbounded fetch is unsafe here (NATS max payload).
+    constexpr std::uint32_t page_size = 200;
+    const auto series_id_str = boost::uuids::to_string((*series)->id);
+    std::uint32_t offset = 0;
+    for (;;) {
+        auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
+        if (!observations) {
+            throw vintage_data_missing_error("Failed to look up observations for '" + qualifier +
+                                             "': " + observations.error());
+        }
+        for (const auto& obs : *observations) {
+            if (obs.source == cfg.vintage_source && obs.point_id == anchor->point_id &&
+                date_part(obs.observation_datetime) == cfg.vintage_date) {
+                try {
+                    return std::stod(obs.value);
+                } catch (const std::exception& e) {
+                    throw vintage_data_missing_error("Vintage observation value '" + obs.value +
+                                                     "' is not a valid number: " + e.what());
+                }
+            }
+        }
+        if (observations->size() < page_size)
+            break;
+        offset += page_size;
+    }
+    throw vintage_data_missing_error(missing_message());
+}
+
+}
+
+const ir_curve_resolved_entry*
+select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
+    const ir_curve_resolved_entry* anchor = nullptr;
+    for (const auto& e : resolved) {
+        if (e.curve_role != "DEPOSIT")
+            continue;
+        if (!anchor || e.ticks_ahead_end < anchor->ticks_ahead_end)
+            anchor = &e;
+    }
+    return anchor;
 }
 
 std::shared_ptr<ir_curve_feed>
 make_ir_curve_feed(ores::nats::service::client& nats,
+                   ores::nats::service::nats_client& auth_nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
                    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-                   const ir_curve_refdata_context& refctx) {
+                   const ir_curve_refdata_context& refctx,
+                   const std::string& caller_bearer_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
+
+    const auto initial_rate = cfg.price_source == "vintage" ?
+                                  resolve_vintage_initial_rate(
+                                      auth_nats, cfg, resolved, caller_bearer_token) :
+                                  cfg.initial_rate;
 
     auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
         lowercase(cfg.process_type),
         cfg.kappa,
         {cfg.theta},
         cfg.sigma,
-        cfg.initial_rate,
+        initial_rate,
         42,
         ir_curve_feed_dt);
 

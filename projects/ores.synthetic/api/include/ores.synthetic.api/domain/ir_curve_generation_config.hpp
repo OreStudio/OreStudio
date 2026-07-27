@@ -143,6 +143,38 @@ struct ir_curve_generation_config final {
     bool auto_start = false;
 
     /**
+     * @brief Where this curve's starting short rate comes from: "fixed" (use initial_rate as
+     * entered) or "vintage" (derive it from the vintage_source/vintage_date market-data observation
+     * on this config's shortest-tenor DEPO entry, guarded by availability). The
+     * vintage_source/vintage_date pair is populated only when this is "vintage" -- see the SQL
+     * check. Unlike fx_spot_generation_config.price_source, this check does not sentinel
+     * initial_rate to a fixed value when "vintage": real short rates can legitimately be zero or
+     * negative (unlike an FX spot price), so initial_rate is simply left at whatever was last
+     * stored/computed and overwritten by the resolved vintage value at feed-start time. Defaults to
+     * "fixed" (unlike fx_spot_generation_config.price_source, which defaults to "vintage"):
+     * existing IR curve configs are all hand-entered kappa/theta/sigma/initial_rate today, so
+     * "fixed" is the non-breaking default for this column's introduction.
+     */
+    std::string price_source = "fixed";
+
+    /**
+     * @brief Source tag of the market-data vintage this curve's starting short rate and
+     * availability guard are validated against (e.g. "ore.reference"), matching
+     * market_observation.source. Only populated (and required) when price_source is "vintage";
+     * empty when "fixed" -- see price_source. (Empty string, not SQL NULL: the codegen used here
+     * has no true-nullable text support.)
+     */
+    std::string vintage_source;
+
+    /**
+     * @brief Observation date of the market-data vintage this curve's starting short rate and
+     * availability guard are validated against, ISO format (e.g. "2016-02-05"), matching
+     * market_observation.observation_datetime. Only populated (and required) when price_source is
+     * "vintage"; empty when "fixed" -- see price_source.
+     */
+    std::string vintage_date;
+
+    /**
      * @brief Free-text description of what this configuration represents -- what
      * regime/vintage/index it targets, and, for a legacy index (e.g. USD LIBOR-3M, EONIA), that it
      * is historical/discontinued and why it is still offered (testing pre-cessation scenarios).

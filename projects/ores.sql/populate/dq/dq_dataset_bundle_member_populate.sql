@@ -174,6 +174,11 @@ BEGIN
     -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
     -- Market-data generation config only, across all asset classes: a new
     -- asset class never requires a client code change, only a new row here.
+    -- These configs' price_source='vintage' rows depend on real market data they resolve
+    -- against at feed-start time -- that dependency is declared in
+    -- synthetic_dataset_dependency_populate.sql, not re-stated here as bundle membership;
+    -- publish_bundle resolves it via the dependency graph (see
+    -- publication_service::list_bundle_publishable_datasets), same as the ID-based publish path.
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.fx_spot_configs.ore_samples_2016', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.ir_curve_configs.ore_samples_2016', 20);

@@ -24,6 +24,7 @@
 #include "feed_controller.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <memory>
@@ -49,6 +50,7 @@ class registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
+                      ores::nats::service::nats_client& auth_nats,
                       std::shared_ptr<feed_controller> ctrl,
                       std::shared_ptr<curve_feed_controller> curve_ctrl,
                       ores::database::context ctx,

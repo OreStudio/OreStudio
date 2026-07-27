@@ -131,6 +131,7 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
 // ir_curve_feed_config_handler's NATS control-plane -- mirroring feed_controller/
 // market_feed_config_handler's split for FX.
 void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
+                                       ores::nats::service::nats_client& auth_nats,
                                        ores::synthetic::service::curve_feed_controller& ctrl,
                                        const ores::database::context& ctx) {
     namespace synth_repo = ores::synthetic::repository;
@@ -173,7 +174,7 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
 
         try {
             std::string conflicting_source_name;
-            if (ctrl.add(make_ir_curve_feed(nats, cfg, it->second, *refctx),
+            if (ctrl.add(make_ir_curve_feed(nats, auth_nats, cfg, it->second, *refctx),
                          &conflicting_source_name)) {
                 ++started;
             } else {
@@ -273,7 +274,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                               << " feed(s) auto-started; waiting for control signals";
 
     auto curve_ctrl = std::make_shared<ores::synthetic::service::curve_feed_controller>();
-    auto_start_enabled_ir_curve_feeds(nats, *curve_ctrl, db_ctx);
+    auto_start_enabled_ir_curve_feeds(nats, svc_nats, *curve_ctrl, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Curve feed controller ready — " << curve_ctrl->running_count()
                               << " feed(s) auto-started";
 
@@ -282,10 +283,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, curve_ctrl](auto& n, auto c, auto v) {
+        [ctrl, curve_ctrl, &svc_nats](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs =
-                ores::synthetic::service::registrar::register_handlers(n, ctrl, curve_ctrl, c, v);
+            auto market_subs = ores::synthetic::service::registrar::register_handlers(
+                n, svc_nats, ctrl, curve_ctrl, c, v);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

@@ -149,7 +149,10 @@ begin
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-        'Synthetic FX Spot (2016 ORE Samples): ' || p.base || '/' || p.quote,
+        -- Name prefix mirrors price_source, same convention as the synthetic IR curve config
+        -- populate scripts (see synthetic_ir_curve_configs_ore_samples_2016_populate.sql) --
+        -- every row here is 'vintage' today.
+        'Vintage Synthetic FX Spot (2016 ORE Samples): ' || p.base || '/' || p.quote,
         '2016 ORE Samples synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
         true, p.base, p.quote,
         0, 1800, 'geometric',

@@ -106,6 +106,12 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
                 return ir_curve_generation_config.enabled ? tr("true") : tr("false");
             case AutoStart:
                 return ir_curve_generation_config.auto_start ? tr("true") : tr("false");
+            case PriceSource:
+                return QString::fromStdString(ir_curve_generation_config.price_source);
+            case VintageSource:
+                return QString::fromStdString(ir_curve_generation_config.vintage_source);
+            case VintageDate:
+                return QString::fromStdString(ir_curve_generation_config.vintage_date);
             case Version:
                 return static_cast<qlonglong>(ir_curve_generation_config.version);
             case ModifiedBy:
@@ -127,8 +133,15 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
 QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
                                                         Qt::Orientation orientation,
                                                         int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case CurrencyCode:
@@ -153,6 +166,12 @@ QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
             return tr("Enabled");
         case AutoStart:
             return tr("Auto-Start");
+        case PriceSource:
+            return tr("Price Source");
+        case VintageSource:
+            return tr("Vintage Source");
+        case VintageDate:
+            return tr("Vintage Date");
         case Version:
             return tr("Version");
         case ModifiedBy:

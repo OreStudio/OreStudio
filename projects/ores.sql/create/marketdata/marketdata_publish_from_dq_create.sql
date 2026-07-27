@@ -34,11 +34,11 @@
 -- =============================================================================
 -- Market Data Observations: marketdata.v1.market-data-observations.publish-from-dq
 --
--- Generic across series_type/metric (FX spot today; rates curves, vol
+-- Generic across series_type/metric (FX spot, rates curves today; vol
 -- surfaces, ... later, as more datasets are published under the same
--- market_data_observations artefact shape) - classification below only
--- covers FX/RATE (this dataset's only content); extend the case when a
--- non-FX dataset is added.
+-- market_data_observations artefact shape) - classification below covers
+-- FX/RATE and RATES/YIELD; extend the case when a further asset class is
+-- added.
 -- =============================================================================
 
 create or replace function ores_marketdata_publish_market_data_observations_from_dq_fn(
@@ -121,6 +121,10 @@ begin
             v_asset_class := 'fx';
             v_series_subclass := 'spot';
             v_is_scalar := true;
+        elsif r.series_type = 'RATES' and r.metric = 'YIELD' then
+            v_asset_class := 'rates';
+            v_series_subclass := 'yield';
+            v_is_scalar := false;
         else
             raise exception 'Unclassified series_type/metric: %/% - extend this function', r.series_type, r.metric;
         end if;

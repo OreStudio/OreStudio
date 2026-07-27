@@ -81,6 +81,25 @@ begin
         get diagnostics v_deleted = row_count;
     end if;
 
+    -- The ZZ sentinel (ISO 3166-1's own reserved user-assigned code) is not
+    -- part of any real ISO country dataset, so it never arrives via the DQ
+    -- artefact loop below -- ensure it exists for the target tenant here,
+    -- mirroring refdata_countries_populate.sql's system-tenant seed, so
+    -- supranational calendars (e.g. TARGET) can reference it after
+    -- provisioning a new tenant.
+    insert into ores_refdata_countries_tbl (
+        tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        p_target_tenant_id, 'ZZ', 0, 'ZZZ', '999',
+        'Supranational / Not Country-Specific', 'Supranational / Not Country-Specific',
+        coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+        'ISO 3166-1 user-assigned sentinel for supranational calendars'
+    )
+    on conflict (tenant_id, alpha2_code)
+    where valid_to = ores_utility_infinity_timestamp_fn()
+    do nothing;
+
     for r in
         select
             dq.alpha2_code,

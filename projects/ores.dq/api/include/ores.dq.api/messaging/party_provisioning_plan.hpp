@@ -50,7 +50,7 @@ inline const std::vector<party_bundle_publish_step>& party_provisioning_bundle_p
     static const std::vector<party_bundle_publish_step> plan{
         {"risk_management", "organisation structure and risk reporting"},
         {"synthetic_realistic_2026", "synthetic market data configuration"},
-        {"marketdata.reference_vintage_2016_02_05", "FX driver rates"},
+        {"marketdata.reference_vintage_2026_05_05", "FX driver rates"},
     };
     return plan;
 }

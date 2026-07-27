@@ -26,6 +26,8 @@
 #include "ores.qt/OreCurrencyComboBox.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/SampleShortRatePathsChart.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/payment_frequency_protocol.hpp"
@@ -35,6 +37,7 @@
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QCompleter>
+#include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
@@ -42,6 +45,7 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
@@ -57,7 +61,10 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
+#include <format>
 #include <map>
+#include <set>
 
 namespace ores::qt {
 
@@ -267,7 +274,81 @@ void IrCurveEditor::buildInstrumentTab() {
     form->addRow(tr("Source"), sourceNameEdit_);
 
     outer->addWidget(identityBox);
+
+    // Price source: mirrors FxSpotRateEditor::buildInstrumentTab()'s own layout (two radio-headed
+    // groups, checking one disables the other) -- the field this gates (r0) lives on the Process
+    // tab rather than here, unlike FX's Initial price, so vintage mode instead disables that
+    // tab's initialRateSlider_/Spin_/advancedTable_ cell (see updatePriceSourceEnablement below).
+    auto* priceSourceIntro =
+        new QLabel(tr("Where this curve's starting rate (r0) comes from — pick one."), tab);
+    priceSourceIntro->setStyleSheet("color: gray; font-style: italic;");
+    outer->addWidget(priceSourceIntro);
+
+    fixedRadio_ = new QRadioButton(tr("Fixed"), tab);
+    vintageRadio_ = new QRadioButton(tr("From vintage data"), tab);
+    priceSourceGroup_ = new QButtonGroup(this);
+    priceSourceGroup_->setExclusive(true);
+    priceSourceGroup_->addButton(fixedRadio_, 0);
+    priceSourceGroup_->addButton(vintageRadio_, 1);
+    outer->addWidget(fixedRadio_);
+    auto* fixedNote = new QLabel(
+        tr("r0 is set on the Process tab, used as entered."), tab);
+    fixedNote->setContentsMargins(20, 0, 0, 8);
+    fixedNote->setStyleSheet("color: gray;");
+    outer->addWidget(fixedNote);
+
+    outer->addWidget(vintageRadio_);
+    auto* vintageForm = new QFormLayout();
+    vintageForm->setContentsMargins(20, 0, 0, 8);
+    vintageSourceEdit_ = new QLineEdit(tab);
+    vintageSourceEdit_->setText(QString::fromStdString(ir_.vintage_source));
+    vintageSourceEdit_->setPlaceholderText(tr("e.g. ore.samples.2016-02-05"));
+    vintageDateEdit_ = new QLineEdit(tab);
+    vintageDateEdit_->setText(QString::fromStdString(ir_.vintage_date));
+    vintageDateEdit_->setPlaceholderText(tr("YYYY-MM-DD"));
+    vintageForm->addRow(tr("Vintage source"), vintageSourceEdit_);
+    vintageForm->addRow(tr("Vintage date"), vintageDateEdit_);
+    browseVintageButton_ = new QPushButton(tr("Browse available…"), tab);
+    browseVintageButton_->setToolTip(
+        tr("List the (source, date) vintages actually imported for this currency/index, "
+           "instead of typing them blind."));
+    browseVintageButton_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+    vintageForm->addRow(QString(), browseVintageButton_);
+    outer->addLayout(vintageForm);
+    connect(browseVintageButton_,
+            &QPushButton::clicked,
+            this,
+            &IrCurveEditor::onBrowseVintageClicked);
+
     outer->addStretch(1);
+
+    const bool vintageMode = ir_.price_source == "vintage";
+    (vintageMode ? vintageRadio_ : fixedRadio_)->setChecked(true);
+    const auto updatePriceSourceEnablement = [this]() {
+        const bool vintage = priceSourceGroup_->checkedId() == 1;
+        BOOST_LOG_SEV(lg(), debug)
+            << "updatePriceSourceEnablement: checkedId=" << priceSourceGroup_->checkedId()
+            << ", vintage=" << vintage;
+        vintageSourceEdit_->setEnabled(vintage);
+        vintageDateEdit_->setEnabled(vintage);
+        browseVintageButton_->setEnabled(vintage);
+        // Simple-page controls only -- the Advanced table's r0 cell stays editable regardless
+        // (its edits still just flow into initialRateSpin_, see the itemChanged handler above),
+        // since disabling individual QTableWidgetItem flags doesn't survive
+        // onProcessFieldChanged()'s per-edit item replacement. Harmless either way: the server
+        // ignores initial_rate entirely when price_source is "vintage".
+        if (initialRateSlider_)
+            initialRateSlider_->setEnabled(!vintage);
+        if (initialRateSpin_)
+            initialRateSpin_->setEnabled(!vintage);
+    };
+    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [this, updatePriceSourceEnablement](int id) {
+        BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
+        updatePriceSourceEnablement();
+    });
+    // buildProcessTab() runs after this method returns, so initialRateSlider_/Spin_/advancedTable_
+    // don't exist yet -- defer the first enablement sync to the next event loop turn.
+    QTimer::singleShot(0, this, updatePriceSourceEnablement);
 
     connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
         populateIndexNameCombo();
@@ -975,6 +1056,157 @@ void IrCurveEditor::onMoveTemplateRowDown() {
     templateTable_->selectRow(row + 1);
 }
 
+void IrCurveEditor::onBrowseVintageClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Browse available vintages clicked.";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: not connected.";
+        QMessageBox::warning(
+            this, tr("Disconnected"), tr("Cannot browse vintages while disconnected."));
+        return;
+    }
+
+    const auto ccy = currencyCombo_->currentText().toStdString();
+    const auto idx = indexNameCombo_->currentText().toStdString();
+    if (ccy.empty() || idx.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: currency='" << ccy
+                                  << "', index='" << idx << "' (one or both empty).";
+        QMessageBox::warning(this, tr("Incomplete"), tr("Pick currency and index name first."));
+        return;
+    }
+    // Mirrors ir_curve_feed.cpp's own strip_currency_prefix(): idx already excludes the
+    // "<CCY>-" prefix (see indexNameCombo_'s own population), so no stripping needed here.
+    const std::string qualifier = ccy + "/" + idx;
+    BOOST_LOG_SEV(lg(), info) << "Fetching vintages for qualifier '" << qualifier << "'.";
+
+    QPointer<IrCurveEditor> self = this;
+    auto* cm = clientManager_;
+
+    // Unlike FX's single SPOT point per vintage, an IR curve has one observation per DEPOSIT
+    // tenor -- point_id is shown (not filtered to a single value) so the tester can see which
+    // tenor(s) a given (source, date) actually covers.
+    struct Vintage {
+        std::string source;
+        std::string date;
+        std::string point_id;
+    };
+    struct FetchResult {
+        bool success = false;
+        std::vector<Vintage> vintages;
+        QString error;
+    };
+
+    auto task = [cm, qualifier]() -> FetchResult {
+        namespace m = ores::marketdata::messaging;
+        m::get_market_series_request series_req;
+        series_req.limit = 10000;
+        auto series_resp = cm->process_authenticated_request(series_req);
+        if (!series_resp) {
+            BOOST_LOG_SEV(lg(), error)
+                << "get_market_series_request failed: " << series_resp.error();
+            return {.success = false,
+                    .vintages = {},
+                    .error = QString::fromStdString(series_resp.error())};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "get_market_series_request returned "
+                                   << series_resp->market_series.size() << " series.";
+
+        std::string series_id;
+        for (const auto& s : series_resp->market_series) {
+            if (s.series_type == "RATES" && s.metric == "YIELD" && s.qualifier == qualifier) {
+                series_id = boost::uuids::to_string(s.id);
+                break;
+            }
+        }
+        if (series_id.empty()) {
+            BOOST_LOG_SEV(lg(), info)
+                << "No RATES/YIELD series found for qualifier '" << qualifier << "'.";
+            return {.success = true, .vintages = {}, .error = {}};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "Matched series_id=" << series_id << " for qualifier '"
+                                   << qualifier << "'.";
+
+        m::get_market_observations_by_series_id_request obs_req;
+        obs_req.series_id = series_id;
+        obs_req.limit = 10000;
+        auto obs_resp = cm->process_authenticated_request(obs_req);
+        if (!obs_resp) {
+            BOOST_LOG_SEV(lg(), error) << "get_market_observations_by_series_id_request failed: "
+                                       << obs_resp.error();
+            return {.success = false,
+                    .vintages = {},
+                    .error = QString::fromStdString(obs_resp.error())};
+        }
+        BOOST_LOG_SEV(lg(), debug) << "get_market_observations_by_series_id_request returned "
+                                   << obs_resp->market_observations.size() << " observations.";
+
+        std::set<std::tuple<std::string, std::string, std::string>> seen;
+        std::vector<Vintage> vintages;
+        for (const auto& obs : obs_resp->market_observations) {
+            const auto days = std::chrono::floor<std::chrono::days>(obs.observation_datetime);
+            const auto date = std::format("{:%F}", days);
+            if (seen.emplace(obs.source, date, obs.point_id).second)
+                vintages.push_back({obs.source, date, obs.point_id});
+        }
+        std::sort(vintages.begin(), vintages.end(), [](const auto& a, const auto& b) {
+            return std::tie(a.source, a.date) > std::tie(b.source, b.date); // newest first
+        });
+        BOOST_LOG_SEV(lg(), info) << "Resolved " << vintages.size()
+                                  << " distinct vintage(s) for qualifier '" << qualifier << "'.";
+        return {.success = true, .vintages = std::move(vintages), .error = {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, ccy, idx]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Browse vintages fetch finished: success=" << result.success
+            << ", count=" << result.vintages.size() << ", self-alive=" << (self != nullptr);
+        if (!self)
+            return;
+        if (!result.success) {
+            QMessageBox::warning(self, self->tr("Failed to fetch vintages"), result.error);
+            return;
+        }
+        if (result.vintages.empty()) {
+            QMessageBox::information(
+                self,
+                self->tr("No vintages found"),
+                self->tr("No market data has been imported yet for RATES/YIELD/%1/%2. Run an "
+                         "import first, then browse again.")
+                    .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
+            return;
+        }
+
+        QDialog dialog(self);
+        dialog.setWindowTitle(
+            self->tr("Available vintages for %1/%2")
+                .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
+        auto* layout = new QVBoxLayout(&dialog);
+        auto* list = new QListWidget(&dialog);
+        for (const auto& v : result.vintages) {
+            list->addItem(QString("%1 — %2 (%3)").arg(QString::fromStdString(v.source),
+                                                       QString::fromStdString(v.date),
+                                                       QString::fromStdString(v.point_id)));
+        }
+        list->setCurrentRow(0);
+        layout->addWidget(list);
+        auto* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+        layout->addWidget(box);
+        connect(box, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        connect(box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+        connect(list, &QListWidget::itemDoubleClicked, &dialog, &QDialog::accept);
+
+        if (dialog.exec() == QDialog::Accepted && list->currentRow() >= 0) {
+            const auto& chosen = result.vintages[static_cast<std::size_t>(list->currentRow())];
+            self->vintageSourceEdit_->setText(QString::fromStdString(chosen.source));
+            self->vintageDateEdit_->setText(QString::fromStdString(chosen.date));
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
 void IrCurveEditor::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         QMessageBox::warning(
@@ -997,6 +1229,16 @@ void IrCurveEditor::onSaveClicked() {
         return;
     }
 
+    const bool vintageMode = priceSourceGroup_->checkedId() == 1;
+    if (vintageMode && (vintageSourceEdit_->text().trimmed().isEmpty() ||
+                        vintageDateEdit_->text().trimmed().isEmpty())) {
+        QMessageBox::warning(this,
+                             tr("Incomplete"),
+                             tr("Vintage source and date are both required when the price source "
+                                "is \"From vintage data\"."));
+        return;
+    }
+
     const auto crOpType = isNew_ ? ChangeReasonDialog::OperationType::Create :
                                    ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, true, isNew_ ? "system" : "common");
@@ -1014,6 +1256,15 @@ void IrCurveEditor::onSaveClicked() {
     ir.sigma = sigmaSpin_->value();
     ir.initial_rate = initialRateSpin_->value();
     ir.fixed_leg_payment_frequency_code = fixedLegFrequencyCombo_->currentText().toStdString();
+    if (vintageMode) {
+        ir.price_source = "vintage";
+        ir.vintage_source = vintageSourceEdit_->text().trimmed().toStdString();
+        ir.vintage_date = vintageDateEdit_->text().trimmed().toStdString();
+    } else {
+        ir.price_source = "fixed";
+        ir.vintage_source.clear();
+        ir.vintage_date.clear();
+    }
     ir.source_name = sourceNameEdit_->text().trimmed().toStdString();
     if (ir.source_name.empty())
         ir.source_name = defaultSourceName().toStdString();

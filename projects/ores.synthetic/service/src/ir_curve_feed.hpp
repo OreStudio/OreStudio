@@ -23,16 +23,30 @@
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace ores::synthetic::service {
+
+/**
+ * @brief Thrown by make_ir_curve_feed() when cfg.price_source is "vintage" and no matching
+ * market_observation is found for (vintage_source, vintage_date) on the config's anchor entry --
+ * mirrors feed_controller::start_result::vintage_data_missing's actionable-rejection contract for
+ * FX, but as an exception rather than a result enum since make_ir_curve_feed already throws
+ * std::invalid_argument for other construction failures (process_type/curve_role/tenor data).
+ */
+class vintage_data_missing_error final : public std::runtime_error {
+public:
+    explicit vintage_data_missing_error(const std::string& detail) : std::runtime_error(detail) {}
+};
 
 /**
  * @brief Concrete IR curve family feed: one short-rate process step fans out to N tenor ticks.
@@ -103,16 +117,41 @@ private:
 /**
  * @brief Resolves a config's Curve Template entries and constructs its ir_curve_feed, ready to
  * start() on its own thread. Shared by auto-start and the on-demand start control-plane so the
- * two paths can never drift (e.g. one lowercasing process_type and the other not).
+ * two paths can never drift (e.g. one lowercasing process_type and the other not) -- including
+ * vintage resolution below, which both paths now go through identically.
+ *
+ * When cfg.price_source is "vintage", the process's initial_rate is resolved from a real
+ * market_observation instead of cfg.initial_rate: the resolved entries' shortest-tenor DEPOSIT
+ * entry is looked up in market_observation by (cfg.vintage_source, cfg.vintage_date, that entry's
+ * point_id), via a market_data_client delegated with @p caller_bearer_token so the lookup runs in
+ * the caller's own tenant/party context (market_observation is tenant-scoped under RLS; this
+ * service's own service-account token is bound to the system tenant). An empty
+ * caller_bearer_token falls back to @p auth_nats's own (undelegated) identity -- e.g. auto-start,
+ * which has no end-user session. When cfg.price_source is "fixed" (the default), @p auth_nats and
+ * @p caller_bearer_token are unused and cfg.initial_rate is used as-is.
  *
  * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()
  * and process_factory::make_yield_curve_process()).
+ * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
+ * is found (or the config has no DEPOSIT entry to anchor on).
  */
 std::shared_ptr<ir_curve_feed>
 make_ir_curve_feed(ores::nats::service::client& nats,
+                   ores::nats::service::nats_client& auth_nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
                    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-                   const ir_curve_refdata_context& refctx);
+                   const ir_curve_refdata_context& refctx,
+                   const std::string& caller_bearer_token = {});
+
+/**
+ * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry
+ * with the smallest ticks_ahead_end (the point instrument closest to an overnight/short rate —
+ * the natural real-world analog to a short-rate model's initial_rate). Returns nullptr if @p
+ * resolved has no DEPOSIT entry. Exposed separately from make_ir_curve_feed's vintage resolution
+ * so the pure selection logic is unit-testable without a live market_data_client.
+ */
+const ir_curve_resolved_entry*
+select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved);
 
 }
 

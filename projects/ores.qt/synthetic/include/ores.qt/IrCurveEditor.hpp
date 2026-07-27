@@ -39,6 +39,7 @@
 
 class QButtonGroup;
 class QPushButton;
+class QRadioButton;
 class QSlider;
 class QStackedWidget;
 class QTableWidget;
@@ -124,6 +125,7 @@ private slots:
     void onProcessFieldChanged();
     void onTemplateChanged();
     void onModeChanged();
+    void onBrowseVintageClicked();
 
 private:
     // One Curve Template row, the single source of truth for the table (mirrors
@@ -178,6 +180,17 @@ private:
     QCheckBox* enabledCheck_;
     QSpinBox* secondsSpin_;
     QLineEdit* sourceNameEdit_;
+    // Price source: mirrors FxSpotRateEditor's own radio-group pattern (see its header's
+    // priceSourceGroup_ comment). Checking "Vintage" makes vintageSourceEdit_/vintageDateEdit_
+    // authoritative and disables the Process tab's r0 controls (initialRateSlider_/Spin_ and the
+    // Advanced table's r0 cell), since the starting rate is then resolved server-side from a real
+    // DEPOSIT-tenor observation -- see ir_curve_generation_config.price_source.
+    QRadioButton* fixedRadio_;
+    QRadioButton* vintageRadio_;
+    QButtonGroup* priceSourceGroup_;
+    QLineEdit* vintageSourceEdit_;
+    QLineEdit* vintageDateEdit_;
+    QPushButton* browseVintageButton_;
 
     // Process tab.
     QComboBox* engineCombo_;

@@ -64,11 +64,11 @@ only in per-pair-calibrated vs exaggerated-uniform volatility.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-18                               |
 
 * Acceptance
@@ -237,7 +237,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:B2C15EED-4064-47F0-9E7D-F9CDA6F0E564][Verify vintage-aware seeding for ir_curve_feed]] | PASSED | All 6 steps pass against a fresh Barclays provision |
 
 * PRs
 
@@ -252,3 +252,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met and manually verified end-to-end against
+a freshly provisioned Barclays Plc tenant:
+
+- =ir_curve_feed=/=make_ir_curve_feed= resolves =initial_rate= from a
+  real =market_observation= when =price_source=vintage=, anchored on
+  the resolved Curve Template's shortest-tenor =DEPOSIT= entry;
+  =vintage_data_missing_error= on a missing observation, mirroring
+  =feed_controller='s contract for FX.
+- Both the auto-start and on-demand (=ir_curve_feed_config_handler=)
+  paths share this resolution, so they can't drift.
+- =IrCurveEditor= gained the =price_source=/=vintage_source=/
+  =vintage_date= fields (mirroring FX), including a Browse-available-
+  vintages picker.
+- =ores.synthetic.service.tests= extended with
+  =ir_curve_feed_vintage_tests.cpp= (4 new cases); full suite green
+  (74/74).
+
+Two real bugs surfaced and fixed along the way, both required for the
+scenario to even reach a runnable state:
+- =publication_service::list_bundle_publishable_datasets= didn't
+  resolve a bundle member's own dependencies, so a vintage-mode
+  config's dependency on the real market data it resolves against was
+  silently dropped from bundle publish.
+- =refdata.calendars= had no declared dependency on =iso.countries= in
+  =ores_dq_dataset_dependencies_tbl=, so the dependency-graph
+  resolution above could (and did) order calendars before the country
+  rows (including the =ZZ= supranational sentinel) their own
+  =country_code= column requires -- breaking real GLEIF tenant
+  provisioning, not just this story's synthetic bundles. Also fixed a
+  duplicate =account_contact_informations_tenant_isolation_policy=
+  RLS policy block in =iam_rls_policies_create.sql= blocking DB
+  recreate entirely, unrelated pre-existing bug hit along the way.
+
+Three follow-up gaps discovered during manual QA, filed as separate
+BACKLOG tasks in this story rather than fixed here (out of scope for
+this task's acceptance):
+- [[id:94BF8EBA-30B7-45C1-8C5A-757F9C56DD32][Fix vintage-mode preview
+  chart using stale r0/initial price instead of resolved rate]]
+- [[id:48D6933D-05F4-4B34-B796-FE1B4A2A6444][Extend
+  SyntheticBindingDialog to cover IR curve configs]]
+- [[id:09256701-DF1E-4ADB-AF3F-171F1C9D5061][Fix Browse-available-
+  vintages dialog: slow unfiltered fetch and detached window]]

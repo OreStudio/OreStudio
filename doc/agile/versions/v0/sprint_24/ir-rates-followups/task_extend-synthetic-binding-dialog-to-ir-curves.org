@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 48D6933D-05F4-4B34-B796-FE1B4A2A6444
+:END:
+#+title: Task: Extend SyntheticBindingDialog to cover IR curve configs
+#+description: SyntheticBindingDialog only ever lists fx_spot_generation_config records and bulk-creates feed bindings for them; ir_curve_generation_config has no equivalent, so IR curve feed ticks can never be persisted into market_observations even manually, unlike FX. Generalize the dialog (or add a sibling) to cover IR curves too, matching this story's own goal of bringing IR curves to FX parity.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Discovered while manually verifying vintage-aware IR curve seeding
+([[id:FC800706-1673-4E48-84C2-22569E836DF5][task]]): =ores_marketdata_feed_bindings_tbl= is what makes the
+marketdata service persist a synthetic feed's ticks as
+=market_observations= (subscribing to =synthetic.v1.tick.<source_name>=
+and republishing on the tenant-scoped stream) -- without a binding, a
+feed's ticks flow over NATS but are never stored, so there is no way
+to inspect a curve's live/historical rate afterwards (e.g. via SQL, or
+any screen backed by =market_observations=).
+
+=SyntheticBindingDialog= (=projects/ores.qt/marketdata/src/
+SyntheticBindingDialog.cpp=) is the existing manual tool for this --
+it lists =fx_spot_generation_config= records and bulk-creates bindings
+for the ones a user checks. It has no =ir_curve_generation_config=
+equivalent at all: an IR curve feed's ticks can never be persisted,
+even by hand, today. This story's own goal is bringing IR curve feeds
+to FX's existing quality bar -- this is one more gap in that parity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- =SyntheticBindingDialog= (or a sibling reachable the same way) lists
+  =ir_curve_generation_config= records alongside/instead of FX ones,
+  with the same checklist-and-bulk-create-bindings behaviour,
+  including pre-ticking rows that already have a binding.
+- After binding an IR curve feed and starting it, its ticks land in
+  =ores_marketdata_market_observations_tbl= the same way FX's already
+  do -- verifiable by SQL or any observation-backed screen.
+- No regression to the existing FX-only flow for callers that only
+  ever bind FX configs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

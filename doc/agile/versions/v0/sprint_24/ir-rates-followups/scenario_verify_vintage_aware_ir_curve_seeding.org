@@ -57,6 +57,12 @@ notes back as a =*** Result= child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
 select *BARCLAYS PLC*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Market Simulator
 
 - Menu: Market Data > Synthetic > Market Simulator.
@@ -64,6 +70,12 @@ select *BARCLAYS PLC*.
   Realistic* (auto-provisioned by default) and *2016 ORE Samples*
   (published separately for this scenario) — each with FX and IR
   Curves sibling nodes.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Start the 2016 ORE Samples theme
 
@@ -75,6 +87,13 @@ select *BARCLAYS PLC*.
   =price_source=fixed= config) and *Vintage Synthetic IR Curve (2016
   ORE Samples): USD/USD-LIBOR-3M* (a =price_source=vintage= config) —
   the naming prefix distinguishes them at a glance.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | cant see Vintage Synthetic IR Curve (2016 ORE Samples): |
 
 ** Verify the vintage curve resolved its real rate
 
@@ -90,6 +109,12 @@ select *BARCLAYS PLC*.
   resolved rate, since the Process tab's r0 control shows whatever was
   last typed there, not the server-resolved value.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Verify a fixed curve used its typed rate
 
 - Select *Fixed Synthetic IR Curve (2016 ORE Samples): EUR/EUR-EURIBOR-3M*
@@ -97,6 +122,12 @@ select *BARCLAYS PLC*.
 - Confirm *Price Source* = =Fixed=, and the running feed's starting
   rate matches the *Initial rate r0* value shown on the *Process* tab
   exactly — no server-side resolution for this one.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Add a new vintage config via the editor
 
@@ -109,6 +140,13 @@ select *BARCLAYS PLC*.
   *Vintage Date* populate.
 - Save. Confirm the new curve appears in the tree and starting it
   resolves to the same *0.007961* rate as the seeded exemplar.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | when i click on browse availalble no browser widget comes up |
 
 ** Add a vintage config with a missing observation
 
@@ -137,14 +175,20 @@ select *BARCLAYS PLC*.
 # Single-client scenarios (the common case) keep steps as direct
 # children of * Steps, as above.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-27T10:47:40Z |
+| Branch        | feature/seed-ir-curve-sample-data |
+| Commit        | c338707e0 |
+| Worktree      | bright_faraday |
 
 * Notes

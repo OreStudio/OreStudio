@@ -8,7 +8,7 @@
 #+filetags: :badge_colour_scheme_snags:sprint_24:v0:
 #+owner: marco
 #+branch: feature/badge-palette-swatch-and-fallback
-#+pr:
+#+pr: 1704
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1704][#1704]] | [qt,codegen] Badge palette swatch rendering and data-driven fallback badge |
 
 * Review
 

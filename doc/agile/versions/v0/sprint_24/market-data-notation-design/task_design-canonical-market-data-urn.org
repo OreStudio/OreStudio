@@ -145,6 +145,20 @@ via its "Verifies task" field.
 Regenerated =market_data_urn_types.png= from the corrected =.puml= after
 fixes 1–3.
 
+Post-review, user feedback also drove two further design changes (not
+from the PR review, but the same round of hardening before merge):
+dropped the abstract-base-class/virtual-dispatch shape entirely in
+favour of five independent structs per side tied together only as a
+=std::variant=, since reflection-based serialisation (=rfl=) generally
+does not handle polymorphic hierarchies well and the URI's own
+=asset_class= already tells a consumer which concrete type applies; and
+trimmed "Relationship to existing schemes" down to a pointer, since the
+plan is a hard cutover (legacy fields get deleted, not permanently kept
+alongside =oresmd=) — the per-field migration content itself was
+preserved in a new backlog capture,
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete
+market_series qualifier and ore_key]], rather than lost.
+
 * Result
 
 Delivered [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio

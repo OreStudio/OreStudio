@@ -15,6 +15,21 @@ that merely share a naming convention.
 
 ** Confirmed current state (read from code, not assumed)
 
+*Updated 2026-07-27, post-merge of PR #1705
+(=feature/seed-ir-curve-sample-data=)*: that branch landed vintage-
+aware seeding for =ir_curve_feed= while this task was paused to avoid
+clashing with it (price_source/vintage_source/vintage_date columns on
+=ores_synthetic_publish_ir_curve_configs_from_dq_fn=, and
+=list_bundle_publishable_datasets()= now resolving bundle members
+through the dependency graph via
+=synthetic_dataset_dependency_populate.sql= rather than a flat SQL
+join). The bullets below are re-verified against that merged state;
+the design (one theme dataset, one merged publish function) is
+unaffected by their change other than needing to carry the vintage
+columns through and keep using the dependency-resolving
+=list_publishable_datasets()= core rather than reverting to the old
+flat lookup.
+
 - =ores_dq_dataset_bundle_member_populate.sql= already groups a
   theme's per-asset-class datasets under one bundle code (e.g.
   =synthetic_realistic_2026= has members
@@ -76,6 +91,17 @@ a redesign of the artefact tables' own columns.
 
 * Schema Changes
 
+0. *Dataset dependency rows* (=synthetic_dataset_dependency_populate.sql=,
+   landed by PR #1705, merged into this branch): three of the four
+   dependency rows key off a per-asset-class dataset code that this
+   design retires (=synthetic.fx_spot_configs.ore_samples_2016=,
+   =...uniform_demo=, =...realistic_2026=,
+   =synthetic.ir_curve_configs.ore_samples_2016=). Each must be
+   re-pointed to the new theme dataset code (e.g.
+   =synthetic.themes.ore_samples_2016=) in the same commit that
+   retires the old codes, or vintage-mode dependency resolution
+   silently loses its edge and regresses to the pre-#1705 "No vintage
+   data found" failure mode for every affected theme.
 1. *DQ dataset catalog* (=dq_dataset_populate.sql= or wherever
    =synthetic.fx_spot_configs.<theme>=/=synthetic.ir_curve_configs.<theme>=
    are currently seeded): replace the two rows per theme with one
@@ -102,7 +128,10 @@ a redesign of the artefact tables' own columns.
    =ores_synthetic_publish_fx_spot_configs_from_dq_fn= +
    =..._ir_curve_configs_from_dq_fn= with one
    =ores_synthetic_publish_theme_from_dq_fn(p_dataset_id, p_target_tenant_id, p_mode, p_params)=
-   that, in a single function body (single transaction):
+   that, in a single function body (single transaction), carrying
+   forward PR #1705's =price_source=/=vintage_source=/=vintage_date=
+   plumbing on both the FX and IR loops unchanged (already present on
+   both functions pre-merge):
    - Resolves-or-creates *one* container
      (=ores_synthetic_market_data_generation_configs_tbl= row) and
      *one* collection folder for =p_dataset_id=, exactly like today's

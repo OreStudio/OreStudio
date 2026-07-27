@@ -85,7 +85,7 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_counterparty(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.full_name.empty());
@@ -93,9 +93,10 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     CHECK(sut.party_type == "Bank");
     CHECK(sut.business_center_code == "WRLD");
     CHECK(sut.status == "Active");
+    CHECK(!sut.image_id.has_value());
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {

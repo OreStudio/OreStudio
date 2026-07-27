@@ -40,6 +40,8 @@ render_counterparty_fields(const domain::counterparty& v) {
                                    std::string{}});
     fields.push_back({.name = "Business Center Code", .value = v.business_center_code});
     fields.push_back({.name = "Status", .value = v.status});
+    fields.push_back({.name = "Image ID",
+                      .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

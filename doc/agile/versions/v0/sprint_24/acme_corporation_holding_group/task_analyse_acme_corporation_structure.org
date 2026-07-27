@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 69E9CD42-EED4-403F-9331-AE369B8581B6
+:END:
+#+title: Task: Analyse Acme Bank corporate structure and current populatability
+#+description: In-depth analysis of the correct corporate/organisational structure for Acme Bank, modelled on Barclays, and what can be populated with the system's current entity support; land the result as a dataset set up through the Data Librarian workflow.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch: feature/analyse-acme-bank-structure
+#+pr: 1660
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-21
+#+updated: 2026-07-22
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before building anything, do an in-depth analysis to ground the
+Acme Bank corporate structure and figure out what's realistically
+populatable with the entities ORE Studio supports today:
+
+- Research Barclays' actual corporate structure (holding company,
+  legal entity subsidiaries, divisions such as Barclays UK, Barclays
+  International/Investment Bank, business centres/locations) as the
+  reference shape for Acme Bank.
+- Map that structure onto ORE Studio's current entity model (party
+  hierarchy, business units, portfolios, books, accounts/staff,
+  roles/permissions) and identify what can be populated now versus
+  what needs new entity support first.
+- Produce a proposed Acme Bank structure: the party tree, which
+  divisions trade derivatives (and therefore need the full
+  business-unit/portfolio/book chain), the business centres/locales
+  involved, and the staff roles to generate per desk.
+- Set up the output as a dataset through the Data Librarian workflow,
+  so the analysis is captured and trackable as first-class reference
+  data rather than a one-off document.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- A documented reference corporate structure for Barclays (or the
+  parts of it relevant here) is captured and cited.
+- A proposed Acme Bank party hierarchy exists, mapped 1:1 against
+  current ORE Studio entities, calling out which divisions trade
+  derivatives (needing the full business-unit/portfolio/book chain)
+  and which stop at a shallower level.
+- Gaps between the proposed structure and current entity support are
+  explicitly listed — i.e. what can be populated today vs. what
+  blocks on future entity/feature work.
+- Staff roles and business-centre locales needed per desk are
+  identified (feeding the later name-generation and RBAC work).
+- The analysis is set up as a dataset through the Data Librarian
+  workflow, not left as a loose document.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1660][#1660]] | [agile] Analyse Acme Bank corporate structure and current populatability |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Analysis doesn't account for ores.synthetic's existing organisation_generator_service (parties, business units, portfolios, books, GB/US contacts, LEI/BIC) | dataset_overview.org | Accepted | Added "Relationship to the existing ores.synthetic generator" section; reconciled the acme/"Acme Corp" tenant naming collision; updated the generator follow-up task to extend ores.synthetic rather than write from scratch |
+| 2 | FaceStudio image count off by one (378 vs 377) | dataset_overview.org | Accepted | Fixed to 377 |
+| 3 | Stale #+updated/Last touched/Now fields after this task's own edits | story.org, task_analyse_acme_bank_structure.org | Accepted | Bumped dates and reworded Now/Next to reflect current state |
+
+* Result
+
+Landed the analysis as [[proj:projects/ores.seeder/datasets/acme_corporation_structure_analysis/dataset_overview.org][acme_corporation_structure_analysis]], a first-class
+=ores.seeder= dataset:
+
+- Barclays' real corporate structure researched and cited (CIB
+  Markets as the reference shape for the trading floor).
+- Proposed Acme Bank party hierarchy: Group → International → three
+  branches (London, New York, Hong Kong), each with a checksum-valid
+  synthetic LEI on GLEIF's reserved =9695= pre-LOU test prefix, so
+  Acme integrates with the real GLEIF counterparty universe rather
+  than being an isolated fictional world (contrast with =slovaris=).
+- Trading floor + Middle Office + Market Risk support functions
+  proposed per branch (49 staff accounts total), with locale-matched
+  names and FaceStudio-sourced profile pictures.
+- Gaps identified: no locale-aware name generation, no account
+  profile-picture support (accounts have no image field; the existing
+  images table is SVG-only), only 1 business centre seeded today, no
+  DQ artefact type for tracking generated org/staff data, and RBAC
+  roles don't reach desk granularity.
+- Scope decisions made with the user: existing orphaned business
+  unit/portfolio/book/report fixtures should be re-parented under
+  Acme; business-unit/portfolio/book *population* is deferred until
+  =prime_origin='s unified DQ dataset-publish refactor lands; picture
+  storage will generalise the existing =ores_assets_images_tbl=
+  rather than add a parallel table.
+
+Follow-up implementation tasks split out separately per those
+decisions (see story =* Tasks=).

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: D9FC5720-C3B2-4280-9512-A0335CEF8D61
+:END:
+#+title: Task: Rework Acme provisioning: simulate real per-party setup via internal actor impersonation
+#+description: Replace --source acme's hand-written SQL orchestration with a server-side workflow that drives the real request/handler pipeline a user would exercise (LEI import, per-party dataset-bundle publish, activation, onboarding) by minting short-lived JWTs internally per actor/party -- transparent to the user, no manual re-logins -- and reports human-readable step-by-step progress to the client. Establishes a reusable internal-impersonation pattern for future multi-actor workflows; the Acme spec itself becomes data-driven rather than hardcoded.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-26
+#+updated: 2026-07-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The current --source acme path re-implements party activation, onboarding completion, and dataset publishing directly in a single hand-written plpgsql function, bypassing the C++ service/repository layer entirely (and the real counterparty save() path for the demo counterparty-logo fixture). This already caused one real bug: the SQL path forgot to activate parties and mark onboarding complete, re-launching the Party Provisioning Wizard on every login. Target state: (1) reuse the real request pipelines a manual holding-group setup exercises, by minting short-lived JWTs server-side for each actor/party context needed and issuing the same NATS requests a client would -- not raw SQL, not in-process service calls -- so the Acme path continuously exercises and validates the exact same code real users run; (2) establish this internal-impersonation (mint scoped JWT, issue request, discard) as a reusable architectural pattern for other multi-actor server-side workflows, not a one-off for Acme; (3) make the holding-group spec (legal entities, LEIs, dataset bundles per entity) data-driven rather than hardcoded in SQL, so Acme is the first consumer of a generic mechanism, not a special case; (4) surface human-readable step-by-step progress to the client as it runs (e.g. "Step 1: Creating holding-group party", "Step 2: Publishing UK business units"), matching what a manual walkthrough would show, instead of raw internal step-codes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-26                               |
+
+* Acceptance
+
+- A single --source acme (or equivalent) request completes the full four-party Acme Corporation holding-group setup with no manual per-party login, by internally impersonating each actor via short-lived JWTs and driving the real NATS handler pipeline (LEI import, dataset-bundle publish, party activation, onboarding completion, counterparty logo attachment) end to end.
+- The internal-impersonation mechanism (mint scoped JWT for actor X, issue request, discard) is a named, reusable component -- not embedded ad hoc in the Acme orchestrator -- documented for reuse by future multi-actor workflows.
+- The holding-group spec (legal entities, LEIs, dataset bundles per entity) is data-driven (config/dataset), not hardcoded in a SQL VALUES list or C++ literal.
+- The client-visible log shows human-readable, per-step progress (e.g. "Step 1: Creating holding-group party") as the workflow runs, not raw internal step/action codes.
+- No hand-written SQL re-implements activation/onboarding/versioned-save logic that already exists correctly in the C++ service/repository layer.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

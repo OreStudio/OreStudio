@@ -296,7 +296,6 @@ private slots:
     void onCalendarMappingLoaded();
     void onImagesLoaded();
     void onImageListLoaded();
-    void onSingleImageLoaded();
     void onCurrencyImageSet();
     void onCountryImageSet();
     void onAllAvailableImagesLoaded();
@@ -397,6 +396,14 @@ private:
         assets::domain::image image;
     };
 
+    // Processes one loadImageById() result and emits imageLoaded(). Not a
+    // slot: each request gets its own heap-allocated, self-deleting
+    // QFutureWatcher (see loadImageById()) rather than sharing one instance
+    // -- a single shared watcher would silently drop every request but the
+    // most recently assigned future when several are in flight at once
+    // (e.g. FlagSelectorDialog's icon grid loading ~20 distinct image_ids).
+    void handleSingleImageResult(const SingleImageResult& result);
+
     struct SetCurrencyImageResult {
         bool success;
         std::string iso_code;
@@ -433,7 +440,6 @@ private:
     QFutureWatcher<ImageIdsResult>* incremental_changes_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
     QFutureWatcher<ImageListResult>* image_list_watcher_;
-    QFutureWatcher<SingleImageResult>* single_image_watcher_;
     QFutureWatcher<SetCurrencyImageResult>* set_currency_image_watcher_;
     QFutureWatcher<SetCountryImageResult>* set_country_image_watcher_;
     QFutureWatcher<ImagesResult>* all_available_watcher_;

@@ -97,6 +97,13 @@ void CounterpartyDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // Logo editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+}
+
+std::optional<boost::uuids::uuid> CounterpartyDetailDialog::entityImageId() const {
+    return counterparty_.image_id;
 }
 
 void CounterpartyDetailDialog::setupCombos() {}
@@ -107,6 +114,7 @@ void CounterpartyDetailDialog::setupConnections() {
         ui_->deleteButton, &QPushButton::clicked, this, &CounterpartyDetailDialog::onDeleteClicked);
     connect(
         ui_->closeButton, &QPushButton::clicked, this, &CounterpartyDetailDialog::onCloseClicked);
+    connect(this, &DetailDialogBase::flagEdited, this, &CounterpartyDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CounterpartyDetailDialog::onCodeChanged);
     connect(
@@ -187,6 +195,11 @@ void CounterpartyDetailDialog::setUsername(const std::string& username) {
 void CounterpartyDetailDialog::setCounterparty(const refdata::domain::counterparty& counterparty) {
     counterparty_ = counterparty;
     updateUiFromCounterparty();
+    // initFlagButton() (setupUi(), constructor time) already ran
+    // updateFlagDisplay() once against a default-constructed counterparty_
+    // (entityImageId() -> nullopt) -- re-run now that the real image_id is
+    // known, else the flag button never reflects it.
+    updateFlagDisplay();
     childTables_->reload(
         counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(counterparty_.id, clientManager_);
@@ -399,6 +412,8 @@ void CounterpartyDetailDialog::onSaveClicked() {
         return;
     counterparty_.change_reason_code = crSel->reason_code;
     counterparty_.change_commentary = crSel->commentary;
+    if (flagChanged())
+        counterparty_.image_id = selectedImageId();
 
     updateCounterpartyFromUi();
 
@@ -429,24 +444,28 @@ void CounterpartyDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
-            QString code = QString::fromStdString(self->counterparty_.short_code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->counterpartySaved(code);
-            self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
+                    QString code = QString::fromStdString(self->counterparty_.short_code);
+                    self->hasChanges_ = false;
+                    self->resetFlagChanged();
+                    self->updateSaveButtonState();
+                    emit self->counterpartySaved(code);
+                    self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: F9D8112C-CA73-43E1-9CAD-3578E993CC30
+:END:
+#+title: Task: ores.shell and ores.qt UX for one-click Acme provisioning
+#+description: Wire the new tenant-provisioning source into ores.shell (provision tenant --source acme) and the ores.qt tenant-creation wizard, offering a simple 'ACME (full sample bank) vs Manual' choice; no orchestration logic client-side, just invoking the server-side command from task: server-side orchestration for one-click Acme provisioning.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch: feature/acme-wizard-ux
+#+pr: 1685
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire =--source acme= (already server-side complete per the prior task)
+into the ores.qt tenant-creation wizard: a simple "Acme Bank (full
+sample bank)" vs "Manual setup" choice on the wizard's first page,
+with Acme mode skipping straight to a single-request execute step --
+no client-side orchestration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-23                               |
+
+* Acceptance
+
+- =TenantProvisioningWizard='s Welcome page offers "Acme Bank (full
+  sample holding group)" vs "Manual setup".
+- Choosing Acme skips Bundle Selection, Data Source, and Party Setup
+  pages entirely, going straight to Execute.
+- Execute page for Acme mode issues a single
+  =provision_acme_tenant_command= (no bundle publish, no synthetic
+  generation, no client-side party-association loop), then finalizes
+  (clears bootstrap flag) same as the manual path.
+- Manual path (GLEIF/synthetic) is unchanged.
+- =ores.shell='s =provision tenant --source acme= was already wired
+  in the prior task; no shell changes needed here.
+
+* Plan
+
+- Discovered =ores.shell='s =--source acme= wiring already landed in
+  the prior task (PR #1678); this task's remaining scope is
+  ores.qt-only.
+- Add =DataSourceMode::acme= to =TenantProvisioningWizard=.
+- =ProvisioningWelcomePage=: add an Acme/Manual radio choice;
+  =validatePage()= sets the mode, =nextId()= branches straight to
+  =Page_Execute= for Acme (bypassing Bundle/DataSource/PartySetup).
+- =TenantExecutePage=: branch in =initializePage()= to a new
+  =startAcmeProvisioning()= that issues
+  =iam::messaging::provision_acme_tenant_command=, logs the returned
+  steps, then calls the existing =startFinalize()= -- skipping
+  bundle publish, synthetic generation, and party association
+  (mirroring the shell path, which also skips generic party
+  association for Acme).
+- =TenantApplyAndSummaryPage=: Acme-specific summary text instead of
+  the bundle-name summary.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:B296624F-FFC8-4AD6-9DCC-F66FE74B3623][Provision a tenant via the ores.qt Acme Bank wizard path]] | FAILED (out of scope) | All 14 wizard-flow steps passed; the one FAIL (step 15) is a DQ badge-rendering issue on the party list, unrelated to this task's scope -- data itself was correct. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1685][#1685]] | [qt] ores.qt UX for one-click Acme provisioning |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 5068212694 | Orphaned duplicate step-15 screenshot | scenario_acme_wizard_ux_step15_*.png | Accepted | Deleted the unreferenced =_041206.png=; the scenario doc only links =_041227.png=. |
+| 5068212694 | Add comment noting Acme command is parameterless by design | TenantProvisioningWizard.cpp | Accepted | One-line comment added at the request construction site. |
+| 5068212694 | Modality change removes implicit reentrancy guard on all 3 wizards | MainWindow.cpp | Declined | All three =show*Wizard()= methods are wired to one-shot login-flow signals (=bootstrapModeDetected=, =tenantBootstrapDetected=, =partySetupDetected=), each fired once per login attempt -- not from a repeatable menu action -- so double-invocation isn't reachable through normal UI. |
+
+* Result
+
+Implemented as planned: =TenantProvisioningWizard= now offers "Acme
+Bank (full sample holding group)" vs "Manual setup" on the Welcome
+page. Choosing Acme skips Bundle Selection, Data Source, and Party
+Setup, going straight to Execute, which issues a single
+=provision_acme_tenant_command= and finalizes -- no client-side
+orchestration. Manual (GLEIF/synthetic) path unchanged.
+
+Verified end-to-end via the QA scenario walking the full flow from a
+fresh, un-bootstrapped database: system provisioning, the Acme
+one-click tenant path, and the saved-connection setup. All 14 wizard
+steps passed, including the branch-skip and Acme-specific summary
+text. The scenario's one failure (step 15, verifying party data
+server-side) was a DQ severity-badge rendering issue on the party
+list -- the underlying party data was correct, and badge rendering is
+outside this task's scope (tracked separately, see
+=badge-palette-swatch-and-fall...= in =eager_maxwell=).

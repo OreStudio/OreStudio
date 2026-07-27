@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 21C9CA52-3515-4D99-9B95-1F5BA8A05DCD
+:END:
+#+title: Task: Attach a logo/image to a counterparty
+#+description: Add a nullable image_id FK on counterparties (same generalised ores_assets_images_tbl / soft-FK pattern used for accounts), so a counterparty can carry a logo -- e.g. the Acme Corp logo asset already supplied for this purpose.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch: feature/attach-logo-to-counterparty
+#+pr: 1698
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-22
+#+updated: 2026-07-22
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a nullable =image_id= soft-FK on counterparties (to
+=ores_assets_images_tbl=, the format-agnostic image store already
+generalised for accounts), so a counterparty can carry a logo -- e.g.
+the Acme Corp logo asset already supplied for this purpose.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-22                               |
+
+* Acceptance
+
+- =ores_refdata_counterparties_tbl= gains a nullable =image_id= uuid
+  column with a soft-FK validation against =ores_assets_images_tbl=
+  (rejects an =image_id= that doesn't reference an active image row).
+- Counterparty domain/repository/mapper/generator round-trip
+  =image_id= (get/save preserve it; synthetic generator leaves it
+  unset).
+- Data layer only -- no Qt upload-button UI in this task (accounts'
+  own upload UI was hand-written outside codegen; a generic
+  upload-widget codegen facet is out of scope here).
+
+* Plan
+
+- Counterparty is a fully =domain_entity=-codegen-driven table (unlike
+  =ores_iam_accounts_tbl=, which is hand-maintained), so the FK is
+  added at the model level (=ores.refdata.counterparty.org=) and
+  regenerated, not hand-edited into the generated SQL.
+- Discovered a codegen gap: the soft-FK validation template
+  (=ores.sql.schema.domain_entity_create.org= /
+  =sql_schema_domain_entity_create.mustache=) hardcoded the target
+  table's PK column name as =id=, which every existing soft-FK target
+  happens to use. =ores_assets_images_tbl='s PK column is =image_id=,
+  not =id=, so extended the template with an optional
+  =:target_column:= FK property (defaulting to =id=, so every existing
+  entity's generated SQL is byte-identical) -- a small, reusable
+  extension rather than a counterparty-only hack.
+- Added the =image_id= column (optional =boost::uuids::uuid=, mirrors
+  =ores.refdata.country='s own =image_id= column) and a
+  =:target_column: image_id= FK block to
+  =ores.refdata.counterparty.org=.
+- Regenerated via =compass codegen entity generate counterparty=
+  (all applicable layers: SQL, domain, mapper, repository, generator,
+  Qt).
+
+* Notes
+
+Correction (found during manual QA on the follow-on PartyDetailDialog
+work): the "Acme Corp logo asset already supplied for this purpose"
+premise in the =* Goal= above was conceptually wrong -- Acme
+Corporation is a *party* (the synthetic holding-group tenant), not
+itself a counterparty; it trades with real GLEIF counterparties, so
+there is no "Acme Corp" counterparty to attach a logo to. The demo
+fixture now attaches a logo to a real, already-imported GLEIF
+counterparty (=BARCLAYS PLC=, short code =BRCLYS=) instead -- see
+=iam_acme_provisioner_create.sql= and
+=acme_demo_counterparty_logo_populate.sql=. The =image_id= feature
+itself (this task's actual scope) is unaffected.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:CAA32021-D905-468A-BEB4-B76A9432C218][Verify attach logo to counterparty]] | PENDING | Adds a Qt logo picker to CounterpartyDetailDialog (out of the original data-layer-only scope) so the field is user-testable. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1698][#1698]] | [refdata,qt,iam,sql,agile] Attach a logo/image to a counterparty; rename Acme Bank to Acme Corporation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added a nullable =image_id= soft-FK to counterparties, following the
+same generalised =ores_assets_images_tbl= pattern used for accounts.
+Counterparty is fully =domain_entity=-codegen-driven (unlike the
+hand-maintained accounts table), so the change was made at the model
+level (=ores.refdata.counterparty.org=) and regenerated via =compass
+codegen entity generate counterparty=, not hand-edited into generated
+SQL.
+
+Discovered and fixed a codegen gap along the way: the soft-FK
+validation template hardcoded the target table's PK column as =id=,
+which happened to hold for every existing soft-FK target but not for
+=ores_assets_images_tbl= (PK column =image_id=). Extended the
+=domain_entity= FK facet with an optional =:target_column:= property
+(default =id=, so every other entity's generated SQL is
+byte-identical) rather than special-casing counterparty -- a small,
+reusable extension.
+
+Regenerating counterparty also picked up unrelated template drift
+that had accumulated since it was last generated (matching what
+sibling entities like =counterparty_identifier= already reflect):
+generator defaults (=version 0=/="system.test"= instead of =version
+1=/="system.new"=) and the =counterparty_changed_event= field rename
+(=ids= -> =counterparty_ids=). Updated the one stale hand-wired
+subscriber reference in =application.cpp= and the one stale generator
+test assertion to match; no behavioural regression -- verified via
+full local build (clean) and =ctest= (74/74 passed) after a DB
+recreate to pick up the new column.
+
+No Qt upload-button UI in this task (out of scope -- see Acceptance).

@@ -19,7 +19,7 @@
  */
 
 -- =============================================================================
--- Staging table for generated staff accounts (e.g. Acme Bank), consumed by a
+-- Staging table for generated staff accounts (e.g. Acme Corporation), consumed by a
 -- publish-from-dq function (see the server-side-orchestration follow-up
 -- task) that creates rows in ores_iam_accounts_tbl.
 -- =============================================================================

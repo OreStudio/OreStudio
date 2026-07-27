@@ -93,6 +93,7 @@ protected:
         return hasChanges_;
     }
     QString code() const override;
+    std::optional<boost::uuids::uuid> entityImageId() const override;
 
 private:
     void setupUi();

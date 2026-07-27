@@ -19,7 +19,7 @@
  */
 
 -- =============================================================================
--- Staging table for generated account contact information (e.g. Acme Bank
+-- Staging table for generated account contact information (e.g. Acme Corporation
 -- staff real names), consumed by a publish-from-dq function (see the
 -- server-side-orchestration follow-up task) that creates rows in
 -- ores_iam_account_contact_informations_tbl. account_username identifies the

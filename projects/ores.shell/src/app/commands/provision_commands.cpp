@@ -340,7 +340,7 @@ void provision_commands::process_tenant(std::ostream& out,
     // client-side party-association loop -- see
     // ores_iam_provision_acme_tenant_fn).
     if (source == "acme") {
-        out << "[1/2] Provisioning the Acme Bank holding group..." << std::endl;
+        out << "[1/2] Provisioning the Acme Corporation holding group..." << std::endl;
         iam::messaging::provision_acme_tenant_command provision_req;
         auto provisioned = do_request(out, session, provision_req, publish_timeout, true);
         if (!provisioned)
@@ -364,7 +364,7 @@ void provision_commands::process_tenant(std::ostream& out,
             return;
         }
 
-        out << "✓ Acme Bank holding group provisioned." << std::endl;
+        out << "✓ Acme Corporation holding group provisioned." << std::endl;
         out << "Next: logout, then log back in — the party setup is per party; run "
                "provision party <party>."
             << std::endl;

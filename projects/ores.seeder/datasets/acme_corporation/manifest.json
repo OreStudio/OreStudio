@@ -1,0 +1,125 @@
+{
+    "name": "ACME Corporation Reference Data",
+    "description": "Source data for ACME Corporation: a synthetic four-entity investment-bank holding group (Group, UK, US, HK) with LEIs, business units, portfolios, books, and staff accounts, used as the system's fully-populated reference/demo entity.",
+    "naming_blurb": "\"Acme\" is the archetypal fictional-company name, from the Acme Corporation of Looney Tunes' Road Runner cartoons -- now a generic byword for a placeholder business. It is used here, as in countless other software test fixtures, to signal plainly that this is synthetic reference/demo data, not a real institution.",
+    "reference_url": "https://en.wikipedia.org/wiki/Acme_Corporation",
+    "generated_at": "2026-07-22",
+    "methodologies": [
+        {
+            "name": "OreStudio Code Generation Methodology",
+            "description": "Methodology for generating artefact files using the OreStudio code generator",
+            "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen",
+            "steps_file": "methodology.txt"
+        }
+    ],
+    "catalogs": [
+        {
+            "name": "ACME Corporation",
+            "description": "Synthetic investment-bank holding group used to exercise the full system (organisation, RBAC, trading structure).",
+            "owner": "Testing Team"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "ACME Corporation LEI Entities",
+            "code": "acme.lei_entities",
+            "catalog": "ACME Corporation",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "ACME Corporation's four legal entities (Group, UK, US, HK), each with a checksum-valid synthetic LEI on GLEIF's reserved 9695 test prefix.",
+            "source_system": "ACMEBANK",
+            "business_context": "Party hierarchy for ACME Corporation",
+            "license": "Internal use only",
+            "artefact_type": "lei_entities",
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation LEI Relationships",
+            "code": "acme.lei_relationships",
+            "catalog": "ACME Corporation",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Parent/subsidiary consolidation relationships linking each ACME Corporation office to the holding company.",
+            "source_system": "ACMEBANK",
+            "business_context": "Party hierarchy for ACME Corporation",
+            "license": "Internal use only",
+            "artefact_type": "lei_relationships",
+            "dependencies": ["acme.lei_entities"],
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation Business Units",
+            "code": "acme.business_units",
+            "catalog": "ACME Corporation",
+            "subject_area": "Organisation",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Trading desks (IR Swaps, Credit Trading, FX Rates) and support functions (Middle Office, Market Risk) per ACME Corporation office.",
+            "source_system": "ACMEBANK",
+            "business_context": "Organisational hierarchy for ACME Corporation",
+            "license": "Internal use only",
+            "artefact_type": "business_units",
+            "dependencies": ["acme.lei_entities"],
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation Portfolios",
+            "code": "acme.portfolios",
+            "catalog": "ACME Corporation",
+            "subject_area": "Trading",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "One physical portfolio per desk, rolled up under a per-office virtual Global Markets portfolio.",
+            "source_system": "ACMEBANK",
+            "business_context": "Portfolio hierarchy for ACME Corporation",
+            "license": "Internal use only",
+            "artefact_type": "portfolios",
+            "dependencies": ["acme.business_units"],
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation Books",
+            "code": "acme.books",
+            "catalog": "ACME Corporation",
+            "subject_area": "Trading",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "One trading book per desk portfolio.",
+            "source_system": "ACMEBANK",
+            "business_context": "Trading books for ACME Corporation",
+            "license": "Internal use only",
+            "artefact_type": "books",
+            "dependencies": ["acme.portfolios"],
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation Staff Accounts",
+            "code": "acme.accounts",
+            "catalog": "ACME Corporation",
+            "subject_area": "Organisation",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Locale-appropriate staff accounts (desk heads, traders, managers, analysts) per ACME Corporation business unit, one fixed shared password. NOTE: requires a new 'accounts' artefact_type/DQ artefact table/publish-from-dq function -- see the server-side-orchestration follow-up task; this dataset is defined ahead of that infrastructure landing.",
+            "source_system": "ACMEBANK",
+            "business_context": "Staff accounts for ACME Corporation, one per desk/support-function role",
+            "license": "Internal use only",
+            "artefact_type": "accounts",
+            "dependencies": ["acme.business_units"],
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data"
+        }
+    ]
+}

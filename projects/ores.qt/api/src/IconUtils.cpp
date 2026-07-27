@@ -330,10 +330,17 @@ QPixmap IconUtils::svgDataToPixmap(const std::string& svg_data, int height) {
         return {};
     }
 
-    // Get SVG's default (viewBox) size to preserve aspect ratio
-    QSizeF svgSize = renderer.defaultSize();
+    // Prefer the viewBox for aspect ratio: render() maps the viewBox to
+    // fill the whole target rect, so if the root <svg>'s width/height
+    // attributes disagree with its viewBox (seen in the wild, e.g. some
+    // Wikimedia Commons logo exports), sizing the canvas off defaultSize()
+    // squashes the artwork to the wrong ratio. viewBoxF() is empty when the
+    // SVG has no viewBox, in which case defaultSize() is the only signal.
+    QSizeF svgSize = renderer.viewBoxF().size();
+    if (svgSize.isEmpty())
+        svgSize = renderer.defaultSize();
     if (svgSize.isEmpty()) {
-        svgSize = QSizeF(4, 3); // Default to 4:3 if no viewBox
+        svgSize = QSizeF(4, 3); // Default to 4:3 if neither is available
     }
     qreal aspectRatio = svgSize.width() / svgSize.height();
     int width = static_cast<int>(height * aspectRatio);
@@ -365,10 +372,13 @@ QIcon IconUtils::svgDataToIcon(const std::string& svg_data) {
 
     QIcon icon;
 
-    // Get SVG's default (viewBox) size to preserve aspect ratio
-    QSizeF svgSize = renderer.defaultSize();
+    // See svgDataToPixmap() above for why viewBoxF() is preferred over
+    // defaultSize() here.
+    QSizeF svgSize = renderer.viewBoxF().size();
+    if (svgSize.isEmpty())
+        svgSize = renderer.defaultSize();
     if (svgSize.isEmpty()) {
-        svgSize = QSizeF(4, 3); // Default to 4:3 if no viewBox
+        svgSize = QSizeF(4, 3); // Default to 4:3 if neither is available
     }
     qreal aspectRatio = svgSize.width() / svgSize.height();
 

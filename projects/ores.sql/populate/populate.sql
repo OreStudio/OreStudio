@@ -76,7 +76,7 @@
 \ir catalogues/catalogues_populate.sql
 
 -- =============================================================================
--- Acme Bank Dataset (self-published DQ artefact; synthetic reference-data
+-- Acme Corporation Dataset (self-published DQ artefact; synthetic reference-data
 -- tenant used to demo/exercise the full system end to end. Must follow the
 -- catalogues layer, since it references the 'OreStudio Code Generation
 -- Methodology'. Publish-from-dq wiring lands with the server-side-
@@ -84,7 +84,7 @@
 -- =============================================================================
 
 \echo ''
-\echo '--- Acme Bank Dataset ---'
+\echo '--- Acme Corporation Dataset ---'
 \ir acme/acme_catalog_populate.sql
 \ir acme/acme_dataset_populate.sql
 \ir acme/acme_lei_entities_artefact_populate.sql
@@ -104,6 +104,8 @@
 \ir acme/acme_hk_books_artefact_populate.sql
 \ir acme/acme_hk_accounts_artefact_populate.sql
 \ir acme/acme_hk_account_contact_informations_artefact_populate.sql
+\ir acme/acme_party_logo_populate.sql
+\ir acme/acme_demo_counterparty_logo_populate.sql
 
 -- =============================================================================
 -- Badge Severities Dataset (self-published DQ artefact; must follow the

@@ -108,8 +108,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Whether we got here via normal shutdown or the catch above, start_all()
     // may still be in flight — always join it before touching `supervisor`
     // again (stop_all(), then its destructor) to avoid the use-after-free
-    // race described above.
-    co_await std::move(start_all_task);
+    // race described above. start_all() does its own DB reads and can throw
+    // independently of the block above, so this needs the same catch-and-
+    // preserve-the-first-failure treatment: an exception here must not skip
+    // stop_all() (orphaning any children start_all() already launched) or
+    // silently replace an earlier, possibly more informative failure.
+    try {
+        co_await std::move(start_all_task);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "start_all() failed: " << e.what();
+        if (!failure)
+            failure = std::current_exception();
+    }
 
     // Gracefully stop all child processes before we exit. Without this,
     // children never receive SIGTERM and keep running as orphans.

@@ -24,7 +24,7 @@ if [[ ! -f docker/.env ]]; then
 fi
 
 # shellcheck disable=SC1091
-source .env
+source docker/.env
 
 label="${ORES_CHECKOUT_LABEL:-$(basename "$root")}"
 pod_name="ores-pod-${label}"
@@ -44,7 +44,11 @@ echo "=== Staging NATS client certs into volume '$certs_volume' ==="
 podman volume create "$certs_volume" >/dev/null 2>&1 || true
 volume_mountpoint="$(podman volume inspect "$certs_volume" --format '{{.Mountpoint}}')"
 cp -a "$keys_dir"/. "$volume_mountpoint"/
-chmod -R a+rX "$volume_mountpoint"
+# Owner-only: the services container reads this volume as --user "$(id -u):$(id -g)"
+# (the same host uid/gid doing the staging here), and $keys_dir holds every
+# service's client private key plus the CA private key -- no other local
+# account needs read access to them.
+chmod -R u+rwX,go-rwx "$volume_mountpoint"
 echo "  Staged $(find "$volume_mountpoint" -maxdepth 1 -type f | wc -l) files"
 
 echo "=== Recreating pod '$pod_name' ==="
@@ -68,7 +72,6 @@ podman run -d --rm --pod "$pod_name" --name "ores-services-${label}" \
     --user "$(id -u):$(id -g)" \
     --env-file docker/.env \
     -v "$certs_volume:$keys_dir:ro" \
-    -v "$nats_store_dir:$nats_store_dir:rw" \
     "$services_image" >/dev/null
 
 echo

@@ -7,8 +7,13 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
+if [[ ! -f docker/.env ]]; then
+    echo "Error: docker/.env not found -- run docker/generate-env.sh first" >&2
+    exit 1
+fi
+
 # shellcheck disable=SC1091
-source .env
+source docker/.env
 
 label="${ORES_CHECKOUT_LABEL:-$(basename "$root")}"
 pod_name="ores-pod-${label}"

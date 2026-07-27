@@ -46,6 +46,46 @@ Per-field migration:
   coexist because one discounts and one projects" instead of colliding
   on a flat string.
 
+* Findings from a parallel implementation attempt (2026-07-27/28)
+
+While starting
+[[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate
+index reference data]] (a pre-existing BACKLOG task predating this
+capture, aimed at consolidating =floating_index_type=/
+=overnight_index_convention= into a normalized =index=+
+=currency_index= refdata model), two things surfaced that belong here
+rather than in that task:
+
+- *That task would have built a third competing scheme.* Its
+  =index=/=currency_index= design (an =index= entity keyed on a bare
+  family code, plus a junction asserting (currency, index, tenor) and
+  deriving a =CCY-INDEX[-TENOR]= soft-FK string) solves the exact same
+  free-text-=index_name= problem =oresmd='s =index_family= enum +
+  =tenor= query key already solves, but as a separate ORE-Studio-refdata
+  mechanism rather than an application of =oresmd= itself — precisely
+  the "no three competing schemes" anti-pattern this capture's own =Why=
+  section warns against. *Recommendation*: do not build a standalone
+  =index=/=currency_index= refdata model; migrate =ir_curve_generation_config=
+  directly onto =oresmd= per this capture's existing per-field migration
+  plan instead. [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][The
+  normalize-floating-index-refdata task]] should be re-scoped or closed
+  as superseded once this migration lands.
+- *=floating_index_type= isn't the only legacy catalog =oresmd='s
+  =index_family= enum should absorb.* =floating_index_type='s 25 rows
+  are a flattened mix of two other real, populated tables:
+  =overnight_index_convention= (SOFR/SONIA/ESTR/...-shaped rows) and
+  =ibor_index_convention= (EURIBOR/LIBOR-shaped rows with tenor
+  variants) — both are live destinations of =ores.cli='s real ORE
+  =conventions.xml= import command (=application::import_conventions()=
+  writes =convs.overnight_index=/=convs.ibor_index= straight into them
+  via their repositories), not orphaned scaffolding as a first pass
+  incorrectly concluded from grepping only for SQL soft-FK/validator
+  references. Any =index_family= enum design should map onto (or
+  absorb) both tables' real fixing-calendar/day-count/settlement-lag
+  conventions, and the =conventions.xml= importer is itself a consumer
+  that will eventually need to write through =oresmd='s data model
+  instead of straight into either legacy table.
+
 * Why
 
 The oresmd design task explicitly scoped out any code/schema migration

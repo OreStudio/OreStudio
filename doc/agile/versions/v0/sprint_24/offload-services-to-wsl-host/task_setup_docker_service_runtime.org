@@ -8,7 +8,7 @@
 #+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/offload-services-to-wsl-host
-#+pr:
+#+pr: 1709
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-24
@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1709][#1709]] | [docker] Service-runtime container: NATS sidecar, controller crash fix |
 
 * Review
 

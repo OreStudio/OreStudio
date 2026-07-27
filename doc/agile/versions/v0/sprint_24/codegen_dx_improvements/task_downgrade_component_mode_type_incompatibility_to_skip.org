@@ -65,9 +65,78 @@ naming a type the address doesn't support) must still raise an ERROR
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Implemented the type/address incompatibility split in
+=projects/ores.codegen/src/codegen/generate.py=/=physical_space.py=
+(the Goal referenced =generator.py=, which doesn't exist — the actual
+module is =generate.py=):
+
+- Added =address_supports_model_type()= to =physical_space.py=: true
+  if *any* facet under an address admits a given model type, ignoring
+  enablement — distinguishes a genuine type/address incompatibility
+  from an ordinary "nothing enabled" empty intersection.
+- =_generate_single()= now takes a =component_mode= flag. When the
+  generation set is empty *because the type is incompatible with the
+  address*, it's a silent DEBUG skip in component mode and a hard
+  ERROR for an explicit single-model invocation. The pre-existing
+  "compatible type, nothing enabled" WARNING path is untouched.
+  =cmd_regenerate='s per-model loop passes =component_mode=True=;
+  =cmd_generate= (single explicit call) defaults to =False=.
+- 10 new unit tests (=test_generate_component_mode.py= — synthetic
+  on-disk physical-space graph exercising all four branches; plus 4
+  cases added to =test_physical_space.py=). Full =ores.codegen= suite:
+  77/77 passing.
+
+** Unplanned but required: migrated =ores.refdata='s 56 entity models
+
+While verifying against the real =refdata= component, every
+=domain_entity= model failed to load at all (=Missing primary key=),
+for *any* address — unrelated to this task's type/address logic.
+Root cause: =org_loader.py='s =validate_model()= was rewritten by
+commit =1e0775417= ([[id:D230B754-3456-445A-812C-6854E8F63AE3][Design and implement the unified Columns/:primary_key:
+model shape in org_loader.py]], story [[id:36A25C95-F3D8-4999-ABB7-42DEC9C95A09][Unify entity key modeling]],
+env =solid_dirac=) to require fields flagged =:primary_key:=/
+=:natural_key:= inside a single =* Columns= section, replacing the
+old =* Primary key=/=* Natural keys=/=* Columns= three-way split every
+=ores.refdata= entity model still used. That story is *closed* and its
+own =* Result= explicitly says the model migration "remain[s] open
+work, left for a follow-up story" — i.e. this was a known, deliberate,
+temporarily-broken state with no owning task, not an accident I was
+stepping on.
+
+Migrated by script (mechanical, not hand-edited) all 56
+=#+type: ores.codegen.entity= models under
+=projects/ores.refdata/modeling/= to the new shape: the =* Primary
+key= section's single field becomes the first =** <name>= entry under
+=* Columns= with =:primary_key: true= added; each =* Natural keys=
+child gets =:natural_key: true= added and moves under =* Columns= too;
+existing =* Columns= children are untouched. Verified every migrated
+model loads/validates cleanly, and =codegen.sh regenerate --component
+refdata --dry-run= across every address (=ores.sql.schema=,
+=ores.cpp.domain=, =ores.cpp.repository=, =ores.cpp.service=,
+=ores.cpp.qt=) now produces *zero* ERROR and *zero* WARNING lines.
+
+*Deliberately not done* (out of scope for this task, flagged for
+follow-up):
+- *Regenerating checked-in generated code.* A real (non-dry-run)
+  generation of a couple of these entities to sanity-check the
+  migration produced large, unrelated diffs — the checked-in SQL/C++
+  for at least =rounding_type= and =party= predates a template
+  rewrite (=sql_schema_create.mustache= → the current
+  =sql_schema_domain_entity_create.mustache=: =clock_timestamp()= vs
+  =current_timestamp=, =NEW=/=OLD= casing, an added unique index,
+  etc.) — i.e. these outputs were already stale before this task,
+  independent of the key-shape migration. Regenerating and reviewing
+  that catch-up for all of =refdata= is a much larger, separate
+  change; this task only touches the =.org= models, never runs a real
+  (non-dry-run) generation, and the repo's generated C++/SQL is
+  unchanged.
+- The codegen meta-model knowledge doc
+  (=projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.org=)
+  still documents the old =* Primary key=/=* Natural keys= sections —
+  the closed unification story flagged this as its own known gap too.
+- The ~75 =lookup_entity=/=table=-shaped models outside =refdata= that
+  the same commit also affects are untouched (this task only had
+  reason to touch =refdata=, the component the DX story is about).
 
 * Notes
 

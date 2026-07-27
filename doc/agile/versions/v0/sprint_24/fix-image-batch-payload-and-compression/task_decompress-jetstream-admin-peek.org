@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: EA0F14E2-0804-45F8-9B87-EDC304DFCE08
+:END:
+#+title: Task: Decompress payloads in jetstream_admin peek_message/peek_last_message
+#+description: jetstream_admin::peek_message() and peek_last_message() (projects/ores.nats/src/service/jetstream_admin.cpp) read natsMsg data directly without extracting headers or calling decompress_if_flagged(), unlike extract_message() in client.cpp. Since js_publish() now transparently gzips payloads at or above the 4096-byte threshold, any JetStream message that crosses it (e.g. an image-batch workflow message) will show up as raw gzip bytes in admin tooling such as ores.qt's QueueDetailDialog. Fix by extracting headers the same way extract_message() does, then running data through decompress_if_flagged() before returning stream_message. Raised in PR #1706 review, explicitly non-blocking for that PR.
+#+type: task
+#+level: s1
+#+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Since PR #1706, =js_publish()= transparently gzips any payload at or
+above 4096 bytes (the compression task's threshold). The admin
+"peek" path (=jetstream_admin::peek_message=/=peek_last_message=)
+never grew the matching decompression step =extract_message()= got in
+the same PR -- it reads =natsMsg= data directly and doesn't even
+extract headers, so it has no way to know a payload is compressed.
+Result: an admin inspecting a queued message that happened to cross
+the threshold (e.g. =ores.qt='s =QueueDetailDialog=) now sees raw
+gzip bytes instead of the JSON/content they expect, with no
+indication decompression was skipped.
+
+Fix: extract headers in =peek_message=/=peek_last_message= the same
+way =extract_message()= does, then run the payload through
+=decompress_if_flagged()= before returning =stream_message=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

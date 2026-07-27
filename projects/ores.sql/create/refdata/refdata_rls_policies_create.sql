@@ -743,6 +743,45 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Calendar Dates
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_dates_tbl enable row level security;
+
+create policy calendar_dates_tenant_isolation_policy on ores_refdata_calendar_dates_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Calendar Exceptions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_exceptions_tbl enable row level security;
+
+create policy calendar_exceptions_tenant_isolation_policy on ores_refdata_calendar_exceptions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Calendar Rules
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_rules_tbl enable row level security;
+
+create policy calendar_rules_tenant_isolation_policy on ores_refdata_calendar_rules_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currency Countries
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_countries_tbl enable row level security;

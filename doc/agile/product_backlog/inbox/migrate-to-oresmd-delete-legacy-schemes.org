@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: CA11A754-C153-42A7-AF8B-FA8447CE50B1
+:END:
+#+title: Migrate to oresmd, delete market_series qualifier and ore_key
+#+description: Follow-on implementation to the oresmd design: migrate ir_curve_generation_config, market_series, and fx_spot_generation_config onto oresmd, then delete the legacy free-text qualifier/ore_key fields -- single scheme, no permanent coexistence.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:identifiers:ore:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Migrate ORE Studio's market data identifiers onto
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]] and delete the
+legacy schemes it replaces — a hard cutover, not permanent coexistence.
+Per-field migration:
+
+- *=fx_spot_generation_config.ore_key=*: the URI's FX branch
+  (=oresmd://fx/eurusd?type=quote= → =FX/RATE/EUR/USD=) already produces
+  exactly this field's existing value — =ore_key= becomes the
+  =type=quote= projection of an FX-scoped =oresmd= URI. Once every
+  consumer reads the projected value from =oresmd= instead, delete the
+  =ore_key= column/field.
+- *=market_series= =series_type/metric/qualifier[/point_id]=*: the
+  URI's =type=quote=/=type=vol= projection rules produce exactly the
+  =TYPE/SUBTYPE/dim...= shape =market_series='s =series_type=/=metric=
+  columns already mirror; =qualifier=/=point_id= are currently free
+  text, hand-populated per row — under =oresmd= they would be
+  deterministically generated from the URI's
+  =entity=/=index=/=tenor=/=point= fields instead. Migrate every write
+  path to generate =qualifier=/=point_id= from an =oresmd= identifier,
+  then the free-text population path can be deleted (the
+  =series_type=/=metric=/=qualifier=/=point_id= column shape itself can
+  stay — this is a generation-source change, not necessarily a schema
+  change, though revisit once migration is underway).
+- *=ir_curve_generation_config='s (=currency_code=, =index_name=)
+  pair*: replaced by a =type=curve= =oresmd= URI (=entity= =
+  =currency_code=, =index=+=tenor= replacing free-text =index_name=,
+  plus the =role= field this table has no equivalent of today).
+  =curve_feed_controller='s qualifier-based collision check should be
+  rebuilt on top of =oresmd= fields (asset class, entity, index, tenor,
+  role) so it can finally express "these two curves legitimately
+  coexist because one discounts and one projects" instead of colliding
+  on a flat string.
+
+* Why
+
+The oresmd design task explicitly scoped out any code/schema migration
+("no three competing schemes remain in the mental model" was a design
+goal, not an implementation one) — this capture exists so that
+per-field migration plan isn't lost once the design doc itself is
+trimmed down to describe only the =oresmd= scheme, not the legacy
+schemes it will eventually replace. Implementing this closes the
+tenor-index and curve-role gaps
+[[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][the gap analysis task]]
+found in production code, not just in a design document.
+
+* References
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the design this migrates onto.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — documents the =market_series= key being replaced.
+- [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] — the gaps this migration closes in code.
+
+* See also
+
+- [[id:9606C647-5255-4C94-B5A2-C6D7B8BB3C95][Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters]] — the design story this is follow-on work from.
+- [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]] — the still-BACKLOG task whose data model should agree with =oresmd='s =role= field on one representation.

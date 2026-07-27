@@ -37,18 +37,6 @@ enum index_family {
   tona
 }
 
-abstract class market_data_identifier {
-  +asset_class() : asset_class
-  +entity() : string
-  +to_uri() : oresmd_uri
-  +{static} from_uri(oresmd_uri) : market_data_identifier
-}
-
-abstract class market_data_requirement {
-  +asset_class() : asset_class
-  +resolve(...) : market_data_identifier
-}
-
 class fx_market_data_identifier {
   +pair : currency_pair
   +type : instrument_type
@@ -114,17 +102,43 @@ class commodity_market_data_requirement {
   +point : optional<point>
 }
 
-market_data_identifier <|-- fx_market_data_identifier
-market_data_identifier <|-- ir_market_data_identifier
-market_data_identifier <|-- equity_market_data_identifier
-market_data_identifier <|-- credit_market_data_identifier
-market_data_identifier <|-- commodity_market_data_identifier
+class market_data_identifier <<variant>> {
+  fx_market_data_identifier
+  ir_market_data_identifier
+  equity_market_data_identifier
+  credit_market_data_identifier
+  commodity_market_data_identifier
+}
 
-market_data_requirement <|-- fx_market_data_requirement
-market_data_requirement <|-- ir_market_data_requirement
-market_data_requirement <|-- equity_market_data_requirement
-market_data_requirement <|-- credit_market_data_requirement
-market_data_requirement <|-- commodity_market_data_requirement
+class market_data_requirement <<variant>> {
+  fx_market_data_requirement
+  ir_market_data_requirement
+  equity_market_data_requirement
+  credit_market_data_requirement
+  commodity_market_data_requirement
+}
+
+class "free functions" as functions <<no inheritance>> {
+  +parse_oresmd(uri) : market_data_identifier
+  +to_uri(market_data_identifier) : oresmd_uri
+  +resolve(market_data_requirement, ...) : market_data_identifier
+}
+
+market_data_identifier o-- fx_market_data_identifier
+market_data_identifier o-- ir_market_data_identifier
+market_data_identifier o-- equity_market_data_identifier
+market_data_identifier o-- credit_market_data_identifier
+market_data_identifier o-- commodity_market_data_identifier
+
+market_data_requirement o-- fx_market_data_requirement
+market_data_requirement o-- ir_market_data_requirement
+market_data_requirement o-- equity_market_data_requirement
+market_data_requirement o-- credit_market_data_requirement
+market_data_requirement o-- commodity_market_data_requirement
+
+functions ..> asset_class : dispatches on
+functions ..> market_data_identifier
+functions ..> market_data_requirement
 
 fx_market_data_requirement ..> fx_market_data_identifier : resolve()
 ir_market_data_requirement ..> ir_market_data_identifier : resolve()
@@ -132,8 +146,11 @@ equity_market_data_requirement ..> equity_market_data_identifier : resolve()
 credit_market_data_requirement ..> credit_market_data_identifier : resolve()
 commodity_market_data_requirement ..> commodity_market_data_identifier : resolve()
 
-market_data_identifier ..> asset_class
-market_data_identifier ..> instrument_type
+fx_market_data_identifier ..> instrument_type
+ir_market_data_identifier ..> instrument_type
+equity_market_data_identifier ..> instrument_type
+credit_market_data_identifier ..> instrument_type
+commodity_market_data_identifier ..> instrument_type
 ir_market_data_identifier ..> curve_role
 ir_market_data_identifier ..> metric
 ir_market_data_identifier ..> index_family

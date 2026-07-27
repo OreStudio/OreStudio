@@ -376,17 +376,33 @@ instance are never the same type — a function that needs a resolved
 instance simply cannot be called with a requirement, a compile-time
 guarantee the string-based =oresmd= URI alone cannot give.
 
-- A common =market_data_identifier= abstract base (asset class,
-  =to_uri()=/=from_uri()=) is implemented by one concrete, strongly-typed
-  leaf class per asset class (=fx_market_data_identifier=,
-  =ir_market_data_identifier=, =equity_market_data_identifier=,
-  =credit_market_data_identifier=, =commodity_market_data_identifier=)
-  — each exposing *only* the fields that asset class actually uses (an
-  =fx_market_data_identifier= has no =index_family=/=tenor=/=curve_role=
-  members at all, rather than =NONE=-valued ones), mirroring the
-  query-parameter grammar's own conditionality at the type level.
-- A parallel =market_data_requirement= hierarchy mirrors the identifier
-  hierarchy field-for-field. Note that "resolved" does *not* mean
+Deliberately *no* abstract base class or virtual dispatch: one
+independent, strongly-typed, plain struct per asset class
+(=fx_market_data_identifier=, =ir_market_data_identifier=,
+=equity_market_data_identifier=, =credit_market_data_identifier=,
+=commodity_market_data_identifier=), each exposing *only* the fields
+that asset class actually uses (an =fx_market_data_identifier= has no
+=index_family=/=tenor=/=curve_role= members at all, rather than
+=NONE=-valued ones), mirroring the query-parameter grammar's own
+conditionality at the type level. The five identifier structs are tied
+together only as a =std::variant<...>= (aliased =market_data_identifier=
+for readability), never as siblings of a common base — since the URI's
+=asset_class= authority component already tells a consumer which
+concrete struct it is looking at, a base class/virtual interface would
+buy nothing an ordinary tagged union does not already provide, and it
+would come at a real cost: reflection-based serialisation libraries
+(e.g. =rfl=/reflect-cpp, a natural fit for round-tripping these plain
+structs to/from JSON or the database) generally handle plain structs
+and =std::variant= well but do not handle polymorphic class hierarchies
+gracefully. Two free functions do the asset-class dispatch instead of a
+virtual call: =parse_oresmd(uri) -> market_data_identifier= inspects the
+URI's =asset_class= component and constructs the matching concrete
+struct inside the variant; =to_uri(market_data_identifier) -> oresmd_uri=
+does the reverse via =std::visit=.
+
+- A parallel =market_data_requirement= variant (same five asset
+  classes, same "no base class" shape) mirrors the identifier variant
+  field-for-field. Note that "resolved" does *not* mean
   "every field on the identifier class is non-null" — the swaption
   worked example above is a fully-resolved =ir_market_data_identifier=
   with =index=/=tenor=/=role= all absent, because those fields simply
@@ -414,7 +430,7 @@ guarantee the string-based =oresmd= URI alone cannot give.
   absorbs those dimensions rather than getting dedicated fields of
   their own.
 
-#+caption: Proposed oresmd type system: a market_data_identifier/market_data_requirement base pair, one concrete class per asset class, fields std::optional wherever that asset class's grammar makes them conditional.
+#+caption: Proposed oresmd type system: five independent, non-inheriting structs per side (identifier/requirement), tied together only as a std::variant per side; free functions (parse_oresmd, to_uri, resolve) dispatch on the URI's asset_class rather than using virtual calls.
 [[proj:doc/knowledge/domain/market_data_urn_types.png]]
 
 Source: [[./market_data_urn_types.puml][=market_data_urn_types.puml=]].
@@ -422,40 +438,23 @@ Regenerate with =plantuml -tpng doc/knowledge/domain/market_data_urn_types.puml=
 
 * Relationship to existing schemes
 
-- *=fx_spot_generation_config.ore_key=*: the URI's FX branch
-  (=oresmd://fx/eurusd?type=quote= → =FX/RATE/EUR/USD=) produces exactly
-  this field's existing value. *Relationship: generalisation.* The URI
-  is a strict superset — =ore_key= becomes the =type=quote= projection
-  of an FX-scoped URI, with no change to the projected value itself,
-  only to what generates it.
-- *=market_series= =series_type/metric/qualifier[/point_id]=*: the
-  URI's =type=quote=/=type=vol= projection rules above produce exactly
-  the =TYPE/SUBTYPE/dim...= shape =market_series='s =series_type=/=metric=
-  columns already mirror; the difference is that =market_series='s
-  =qualifier=/=point_id= are currently free text, hand-populated per
-  row, while under =oresmd= they would be deterministically generated
-  from the URI's =entity=/=index=/=tenor=/=point= fields.
-  *Relationship: =oresmd= supersedes the free-text population of
-  =qualifier=/=point_id=, while =market_series='s own top-level
-  =series_type=/=metric=/=qualifier=/=point_id= column shape is kept
-  unchanged* — a generation-source change, not a schema change.
-- *=ir_curve_generation_config='s (=currency_code=, =index_name=) pair*:
-  replaced conceptually by a =type=curve= =oresmd= URI (=entity= =
-  =currency_code=, =index=+=tenor= replacing free-text =index_name=,
-  plus the new =role= query key this table has no equivalent of today).
-  *Relationship: =oresmd= generalises this pair and adds the two fields
-  (structured tenor, curve role) the gap analysis found missing.*
-
-No three competing schemes remain in the mental model after this
-design: =fx_spot_generation_config.ore_key= and =market_series='s
-qualifier/point_id both become projections *of* =oresmd=, not
-independent schemes coexisting alongside it.
+=oresmd= is designed as ORE Studio's single identifier scheme, not one
+more scheme coexisting alongside =fx_spot_generation_config.ore_key=,
+=market_series='s free-text qualifier, and =ir_curve_generation_config='s
+=(currency_code, index_name)= pair — those are all superseded, not
+wrapped. The per-field migration plan (what each legacy field maps to,
+and what gets deleted once migration is complete) is tracked as
+follow-on implementation work in
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete
+market_series qualifier and ore_key]], rather than in this design
+document.
 
 * See also
 
 - [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] — the gap table every field above is justified against.
 - [[id:DE8A3312-90B2-486C-B3EB-0B19C089CD93][Survey ORE, Bloomberg, and Reuters market data notations]] and [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — the survey material the projection rules (especially the Bloomberg/RIC best-effort mapping) are grounded in, and the worked instruments this document's examples are matched to.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative per-type quote-key shapes the quote-key projection rule is built from.
-- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the existing =market_series= key this design proposes to generate from =oresmd= rather than replace structurally.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the existing =market_series= key =oresmd= supersedes.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical side of the logical/physical distinction =oresmd= sits on the physical side of.
 - [[id:4985176A-6A64-4F11-91D6-DC01003B5F2E][Dual-curve discount+projection model]] — the still-BACKLOG task whose data model should agree with this URI's =role= query key on one representation.
+- [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] — the follow-on implementation capture tracking the per-field migration and deletion plan.

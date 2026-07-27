@@ -40,27 +40,46 @@ unaffected and don't need containerising for this reason.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Basic analysis done: runtime deps are minimal (only libc/libstdc++/libgcc/libm — everything else statically linked), candidate base image is ubuntu:24.04. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide build-vs-copy approach, then write the Dockerfile. |
+| Next         | Nothing. |
 | Last touched | 2026-07-24                               |
 
 * Acceptance
 
+Scope narrowed at close: getting every supervised service to actually
+reach =running= inside the container turned out to be its own, deeper
+problem (=start_all()='s coroutine never resumes in-container — see
+[[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][the follow-up debug task]]) rather than something this task's
+Dockerfile/env work could close. What *is* delivered and verified here:
+
 - A Dockerfile builds an image containing the ORE Studio service
   binaries (controller + domain services) against a base whose
-  glibc/libstdc++ is new enough for what we compile, or the build
-  itself targets an older/matching glibc inside the container.
-- The image runs on Newton (or an equivalent bullseye WSL host)
-  without the =GLIBC_*=/=GLIBCXX_*= errors seen in the analysis
-  task's deploy test.
-- A run/compose script starts the containerised services with the
-  right env (NATS, DB connection) wired in, analogous to what
-  =compass services start= does locally.
-- Documented, repeatable build + deploy steps exist (or a script) for
-  producing and shipping the image to the WSL host.
+  glibc/libstdc++ is new enough for what we compile — done
+  (=docker/service-runtime.Dockerfile=, chainguard =glibc-dynamic=).
+- NATS runs as its own sidecar container in a shared-network-namespace
+  pod with the services container, rather than needing a host-alias
+  rewrite — done (=docker/nats.Dockerfile=, =docker/run-pod.sh=).
+- A run/teardown script starts the pod with the right env (NATS, DB
+  connection) wired in, analogous to what =compass services start=
+  does locally — done (=docker/run-pod.sh=, =docker/stop-pod.sh=),
+  modulo the services container's own supervised-service startup
+  (deferred to the follow-up task above).
+- Documented, repeatable build steps exist for producing the image —
+  done (=docker/stage-runtime.sh= + the Dockerfiles).
+- A real use-after-free crash in =ores.controller.service= was found
+  and fixed along the way (confirmed via gdb backtrace) — the
+  container no longer segfaults on a NATS-connect failure, it fails
+  gracefully and reports a real exit code instead.
+
+Deferred to the follow-up task, not claimed here:
+- The image running on an actual bullseye/WSL deploy host (Newton) —
+  not yet exercised on real target hardware, only validated on this
+  dev box's own podman.
+- All 18 supervised services actually reaching =running= inside the
+  container end-to-end.
 
 * Plan
 
@@ -154,3 +173,39 @@ via its "Verifies task" field.
 | 8 | Follow-up note: with the start_all() fix, ~stop_all()~ is now also blocked behind the in-container hang documented in the filed follow-up task, not just startup. | application.cpp | Acknowledged, no code change | Carried forward into [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][the follow-up debug task]] rather than addressed here — it's the same root cause that task already exists to investigate. |
 
 * Result
+
+Shipped, merged via [[https://github.com/OreStudio/OreStudio/pull/1709][PR #1709]]:
+
+- ~docker/service-runtime.Dockerfile~ (chainguard ~glibc-dynamic~ base,
+  strips debug info) and ~docker/stage-runtime.sh~ (stages the service
+  binaries + their vcpkg-external dependency closure out of the local
+  ~cmake --install~ tree).
+- ~docker/nats.Dockerfile~ — NATS runs as its own scratch-based sidecar
+  container (statically-linked vendored ~nats-server~ binary), sharing
+  the services container's network namespace in a podman pod
+  (~docker/run-pod.sh~/~docker/stop-pod.sh~) rather than needing a
+  ~host.containers.internal~ rewrite.
+- Per-service ~ORES_CONTROLLER_SERVICE_NATS_*~ env stamping in
+  ~env_init.py~, since the controller is the only process a container
+  entrypoint launches directly and it never had these stamped before
+  (compass_services.py normally passes them as explicit CLI flags).
+- A real use-after-free crash found and fixed in
+  ~ores.controller.service~ (confirmed via gdb backtrace, reproduces
+  natively too, not container-specific): ~supervisor.start_all()~ was
+  spawned detached, so a ~nats.connect()~ failure could destroy
+  ~process_supervisor~ while ~start_all()~ was still running on it. Now
+  joined and exception-safe on both paths (tightened further in the
+  PR's own review round).
+- NATS client TLS certs are staged into a podman-managed volume rather
+  than bind-mounted directly from the host — bind-mounting them breaks
+  the TLS handshake for reasons isolated by elimination (not a
+  path/permission/seccomp/capability/openssl.cnf issue).
+
+Deliberately not claimed here (see the narrowed Acceptance above): the
+services container's own supervised-service startup doesn't complete
+end-to-end yet (~start_all()~'s coroutine never resumes inside the
+container — root cause still open) and the image hasn't been exercised
+on the actual bullseye/WSL deploy host. Both carried forward as
+[[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][a dedicated follow-up task]] in this story, plus a
+separately filed story to split services into one container per
+service rather than one controller-supervised container for all 18.

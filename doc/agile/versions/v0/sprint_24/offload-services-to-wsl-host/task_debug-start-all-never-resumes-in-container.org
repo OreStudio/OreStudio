@@ -8,7 +8,7 @@
 #+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/debug-start-all-never-resumes-in-container
-#+pr:
+#+pr: 1724
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1724][#1724]] | [ores.controller] Fix start_all() never resuming (co_spawn use_awaitable hazard) |
 
 * Review
 

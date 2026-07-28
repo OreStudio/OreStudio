@@ -49,9 +49,11 @@ BookStatusController::BookStatusController(QMainWindow* mainWindow,
                                            ClientManager* clientManager,
                                            ChangeReasonCache* changeReasonCache,
                                            const QString& username,
+                                           BadgeCache* badgeCache,
                                            QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, status_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void BookStatusController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookStatusMdiWindow(clientManager_, username_);
+    listWindow_ = new BookStatusMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,

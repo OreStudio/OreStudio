@@ -190,15 +190,15 @@ drop function if exists ores_refdata_validate_book_status_fn;
 
 *** Columns (Qt model)
 
-| enum_name    | field         | header        | type      | width |
-|--------------+---------------+---------------+-----------+-------|
-| Code         | code          | Code          | string    | auto  |
-| Name         | name          | Name          | string    | auto  |
-| Description  | description   | Description   | string    | auto  |
-| DisplayOrder | display_order | Display Order | int       | 70    |
-| Version      | version       | Version       | int       | 70    |
-| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
-| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+| enum_name    | field         | header        | type      | width | is_badge | badge_key   |
+|--------------+---------------+---------------+-----------+-------+----------+-------------|
+| Code         | code          | Code          | string    | auto  | true     | book_status |
+| Name         | name          | Name          | string    | auto  |          |             |
+| Description  | description   | Description   | string    | auto  |          |             |
+| DisplayOrder | display_order | Display Order | int       | 70    |          |             |
+| Version      | version       | Version       | int       | 70    |          |             |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |          |             |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |          |             |
 
 ** Custom repository methods
 

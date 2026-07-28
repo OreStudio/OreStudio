@@ -8,12 +8,12 @@
 #+filetags: :badge_colour_scheme_snags:sprint_24:v0:
 #+owner: marco
 #+branch: feature/badge-source-self-annotation
-#+pr:
+#+pr: 1723
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-21
-#+environment:
+#+updated: 2026-07-28
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,27 +26,58 @@ Opening a badge-source entity's own list window (e.g. Book Status) shows its own
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-28                               |
 
 * Acceptance
 
-- New model annotation (e.g. #+badge_source_domain: <code_domain>, or reuse badge_key on the entity's own key column) drives codegen to badge_key-wire the entity's own list column to its own code_domain.
-- Piloted on at least book_status (or another entity already referenced via badge_key elsewhere) -- regenerated, its own list now shows badges matching the same colours consumers already show.
-- No change to consumer entities' existing badge rendering (zero diff on their generated files).
-- Manual QA: open the pilot entity's own list window, confirm badges render and match the colours seen when the same values are badged elsewhere (e.g. Book's Status column).
+- [X] New model annotation (e.g. #+badge_source_domain: <code_domain>, or reuse badge_key on the entity's own key column) drives codegen to badge_key-wire the entity's own list column to its own code_domain.
+- [X] Piloted on at least book_status (or another entity already referenced via badge_key elsewhere) -- regenerated, its own list now shows badges matching the same colours consumers already show.
+- [X] No change to consumer entities' existing badge rendering (zero diff on their generated files).
+- [ ] Manual QA: open the pilot entity's own list window, confirm badges render and match the colours seen when the same values are badged elsewhere (e.g. Book's Status column). Not performed this session -- no live client/environment run; only build+ctest verified. Should be exercised by the user or a follow-up session before closing the parent story.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reused =badge_key= on the entity's own list column rather than
+inventing a new =#+badge_source_domain:= annotation: investigation
+showed codegen's =is_badge=/=badge_key= mechanism is already
+column-agnostic about whether the value comes from a foreign
+entity's code or the domain's own code -- the same
+=BadgeCache::resolve(domain, code)= call works either way. Piloted
+on =book_status=: added =is_badge: true=/=badge_key: book_status= to
+its own =Code= column in the "Columns (Qt model)" table, regenerated.
+
+Blocked mid-implementation by an unrelated, pre-existing bug: codegen's
+primary-key model shape migration (task D230B754/story 36A25C95) had
+landed on =org_loader.py= without any =.org= model migrated yet, so
+=book_status.org= (old =* Primary key=/=* Natural keys= heading
+format) failed to load at all. Migrated =book_status.org= (and,
+to verify zero-diff on consumers, =book.org=/=portfolio.org=) to the
+new =* Columns=/=:primary_key:= shape as a prerequisite -- landed
+separately as PR #1716's sibling investigation surfaced a second,
+larger side quest (see Notes) split into its own PR (#1720) before
+returning to finish this task here.
 
 * Notes
+
+Regenerating =book= (a =book_status= consumer, to verify the
+zero-diff acceptance criterion) surfaced that the As-of lookup
+resolution codegen facet (story 753E984D) had extended the backend
+(repository/service/protocol/NATS-handler) codegen layers properly,
+but its Qt-side wiring was hand-patched directly onto
+=BookDetailDialog.cpp=/=BookController.cpp= instead of becoming a
+template facet -- invisible to codegen, so this task's own regen
+would have silently deleted it. Fixed as a proper
+=combo_as_of_fetch_fn= detail-field facet and merged separately as
+PR #1720, since it's unrelated to badge self-annotation. Also
+surfaced (and fixed in a separate hotfix, PR #1716) a pre-existing,
+unrelated test-drift bug in =party_generator_produces_valid_instance=
+and an unsafe =business_center_code= generator default in
+=party.org=.
 
 * Test Scenarios
 
@@ -63,12 +94,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1723][#1723]] | [qt,codegen] Badge sources should badge their own list too |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ModifiedBy/RecordedAt rows missing trailing empty is_badge/badge_key cells, inconsistent with book.org/portfolio.org | =ores.refdata.book_status.org= | Accepted | Added the trailing empty cells; cosmetic only, confirmed zero regen diff |
 
 * Result
+
+=book_status='s own =code= column is now =is_badge: true=/
+=badge_key: book_status= in its "Columns (Qt model)" table --
+the same mechanism every consumer already uses, with no new codegen
+facet needed (the =BadgeCache::resolve(domain, code)= call is
+column-agnostic about who owns the domain). Regenerated
+=BookStatusMdiWindow=/=BookStatusController= (+ hand-wired
+=RefdataPlugin.cpp= constructor call updated for the new
+=BadgeCache*= parameter). Verified =book=/=portfolio= (consumers)
+regenerate with zero diff. Local build clean; ctest 74/74 passed.
+Manual QA (live client) not performed this session -- flagged above.

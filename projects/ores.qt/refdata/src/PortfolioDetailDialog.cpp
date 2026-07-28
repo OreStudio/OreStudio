@@ -178,6 +178,7 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->purposeTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
+    ui_->isVirtualCheckBox->setEnabled(!readOnly);
     ui_->aggregationCcyEdit->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -322,24 +323,27 @@ void PortfolioDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Portfolio saved successfully";
-            QString code = QString::fromStdString(self->portfolio_.name);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->portfolioSaved(code);
-            self->notifySaveSuccess(tr("Portfolio '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Portfolio saved successfully";
+                    QString code = QString::fromStdString(self->portfolio_.name);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->portfolioSaved(code);
+                    self->notifySaveSuccess(tr("Portfolio '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

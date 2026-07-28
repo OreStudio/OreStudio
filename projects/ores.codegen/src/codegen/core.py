@@ -2707,6 +2707,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')
             )
+            # A dynamic_combo field can declare combo_as_of_fetch_fn (an
+            # `_at_timepoint(ClientManager*, QString)` sibling of its normal
+            # combo_fetch_fn) so a read-only/historical view of this entity
+            # resolves that combo's options as-of the entity's own
+            # recorded_at, not against the current (possibly since-renamed
+            # or deleted) lookup list -- see the As-of lookup resolution
+            # codegen facet story. Gates the datetime.hpp include and the
+            # setX()/setReadOnly() re-populate calls below.
+            qt['has_as_of_combo_fields'] = any(
+                f.get('combo_as_of_fetch_fn') for f in detail_fields
+                if f.get('type') == 'dynamic_combo'
+            )
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )

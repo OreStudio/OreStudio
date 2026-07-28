@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: B7C0E4CD-1C5B-4237-BF96-99853A57336D
+:END:
+#+title: Story: Windows CI: pip self-upgrade fails invoking pip.exe directly
+#+description: compass.sh's requirements-install step ran '$VENV_BIN/pip install --upgrade pip -q', which on Windows fails because pip.exe cannot overwrite its own running binary ('ERROR: To modify pip, please run the following command...'), breaking the Windows CI job's Setup Database step.
+#+type: story
+#+level: s2
+#+filetags: :compass:ci:windows:tech-debt:sprint_24:v0:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows CI job so it doesn't fail on the pip
+self-upgrade step in compass.sh's requirements install.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-28                               |
+
+* Acceptance
+
+- Windows CI's Setup Database step no longer fails on pip self-upgrade.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:79CC13F9-F334-4FB7-81A8-1205051D7E2B][Scaffold story: Windows CI: pip self-upgrade fails invoking pip.exe directly]] | DONE | 2026-07-28 | 2026-07-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D30F3AEE-E1BE-42EE-BA5A-5A40AB487FCB][Implement Windows CI: pip self-upgrade fails invoking pip.exe directly]] | DONE | 2026-07-28 | 2026-07-28 | Initial task for: Windows CI: pip self-upgrade fails invoking pip.exe directly |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: D30F3AEE-E1BE-42EE-BA5A-5A40AB487FCB
+:END:
+#+title: Task: Implement Windows CI: pip self-upgrade fails invoking pip.exe directly
+#+description: Initial task for: Windows CI: pip self-upgrade fails invoking pip.exe directly
+#+type: task
+#+level: s1
+#+filetags: :windows_ci_pip_self_upgrade_fix:sprint_24:v0:
+#+owner: marco
+#+branch: hotfix/windows-ci-pip-self-upgrade-fix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B7C0E4CD-1C5B-4237-BF96-99853A57336D][Windows CI: pip self-upgrade fails invoking pip.exe directly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the Windows CI job's "Setup Database" step, which fails on any
+push that changes projects/ores.compass/requirements.txt's mtime
+relative to the venv stamp, because compass.sh invokes pip.exe
+directly to upgrade itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B7C0E4CD-1C5B-4237-BF96-99853A57336D][Windows CI: pip self-upgrade fails invoking pip.exe directly]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- compass.sh's requirements-install step no longer invokes pip.exe directly to upgrade itself.
+- Local sanity check (Linux): removing the venv requirements stamp and re-running compass.sh completes without error.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+compass.sh now upgrades pip via `"$VENV_BIN/python3" -m pip install
+--upgrade pip -q` instead of invoking `"$VENV_BIN/pip"` directly --
+on Windows, pip.exe cannot overwrite its own running binary and
+fails with "ERROR: To modify pip, please run the following
+command...", exactly the failure seen in the Windows CI run
+(job 90156725928). Verified locally (Linux) by clearing the venv's
+requirements stamp and re-running compass.sh; Windows verification
+deferred to CI on this PR.

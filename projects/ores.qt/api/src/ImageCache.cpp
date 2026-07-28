@@ -260,7 +260,7 @@ void ImageCache::loadCountryImageIds() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load country image IDs: not connected.";
         // Still try to load what we have from currencies
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -342,7 +342,7 @@ void ImageCache::loadBusinessCentreMapping() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load BC mapping: not connected.";
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -387,7 +387,7 @@ void ImageCache::onBusinessCentreMappingLoaded() {
         result = bc_mapping_watcher_->result();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading BC mapping: " << e.what();
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
     if (result.success) {
@@ -407,7 +407,7 @@ void ImageCache::loadCalendarMapping() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load calendar mapping: not connected.";
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
 
@@ -458,7 +458,7 @@ void ImageCache::onCalendarMappingLoaded() {
         result = calendar_mapping_watcher_->result();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading calendar mapping: " << e.what();
-        loadImagesByIds(pending_image_ids_);
+        finishLoadAllChain();
         return;
     }
     if (result.success) {
@@ -475,7 +475,40 @@ void ImageCache::onCalendarMappingLoaded() {
     }
 
     // Now load all the images
-    loadImagesByIds(pending_image_ids_);
+    finishLoadAllChain();
+}
+
+void ImageCache::finishLoadAllChain() {
+    // Not connected (or no client): loadImageList() would early-return
+    // without ever setting its QFuture, so onImageListLoaded() -- the only
+    // place that clears a deferred wait -- would never fire, permanently
+    // stalling pending_ids_await_list_/load_all_in_progress_ and
+    // deadlocking every future loadAll()/reload() call. Deferring buys
+    // nothing here anyway (a real fetch can't happen either way), so fetch
+    // immediately and let loadImagesByIds()'s existing unknown-size
+    // handling apply -- matching this function's pre-existing behaviour
+    // at every disconnected-chain call site.
+    const bool connected = clientManager_ && clientManager_->isConnected();
+    if (!available_images_.empty() || !connected) {
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
+
+    // available_images_ is empty, so loadImagesByIds() would treat every
+    // id in pending_image_ids_ as unknown-size and batch them one per
+    // request -- defeating byte-size-aware batching on this (common,
+    // login-time) path just because loadImageList()'s single round trip
+    // hasn't completed yet while this four-request chain was running.
+    // Defer to onImageListLoaded(), which calls back in once the list (and
+    // its size_bytes) is available. Avoid triggering a second, redundant
+    // list load if one is already in flight (e.g. MainWindow.cpp's own
+    // loadImageList() call, fired independently at login).
+    BOOST_LOG_SEV(lg(), debug)
+        << "finishLoadAllChain(): image list not yet loaded, deferring "
+        << pending_image_ids_.size() << " pending image IDs until it arrives.";
+    pending_ids_await_list_ = true;
+    if (!image_list_watcher_->isRunning())
+        loadImageList();
 }
 
 QIcon ImageCache::getCurrencyFlagIcon(const std::string& iso_code) {
@@ -531,21 +564,34 @@ QIcon ImageCache::getCalendarFlagIcon(const std::string& calendar_code) {
 void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
     BOOST_LOG_SEV(lg(), debug) << "loadImagesByIds() called with " << image_ids.size() << " IDs.";
 
+    // available_images_ carries size_bytes from the last list/incremental
+    // load, used below for byte-size-aware batching; ids not found there
+    // (e.g. requested before any list load) fall back to fetchImagesInBatches'
+    // conservative "unknown size" handling.
+    std::unordered_map<std::string, std::uint64_t> id_to_size;
+    id_to_size.reserve(available_images_.size());
+    for (const auto& info : available_images_)
+        id_to_size[info.image_id] = info.size_bytes;
+
     // Deduplicate and filter out already-cached images
-    std::vector<std::string> ids_to_fetch;
+    std::vector<assets::messaging::image_info> to_fetch;
     std::unordered_set<std::string> seen;
 
     for (const auto& id : image_ids) {
         if (seen.find(id) == seen.end() && image_data_cache_.find(id) == image_data_cache_.end()) {
-            ids_to_fetch.push_back(id);
+            assets::messaging::image_info info;
+            info.image_id = id;
+            if (const auto it = id_to_size.find(id); it != id_to_size.end())
+                info.size_bytes = it->second;
+            to_fetch.push_back(std::move(info));
             seen.insert(id);
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << ids_to_fetch.size()
+    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << to_fetch.size()
                                << " images (already cached: " << image_data_cache_.size() << ").";
 
-    if (ids_to_fetch.empty()) {
+    if (to_fetch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "All images already cached, no changes.";
         load_all_in_progress_ = false;
         // Don't emit allLoaded - nothing changed, no need to refresh UI
@@ -555,8 +601,8 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
     is_loading_images_ = true;
     ClientManager* clientMgr = clientManager_;
 
-    QFuture<ImagesResult> future = QtConcurrent::run([clientMgr, ids_to_fetch]() -> ImagesResult {
-        return fetchImagesInBatches(clientMgr, ids_to_fetch);
+    QFuture<ImagesResult> future = QtConcurrent::run([clientMgr, to_fetch]() -> ImagesResult {
+        return fetchImagesInBatches(clientMgr, to_fetch);
     });
 
     images_watcher_->setFuture(future);
@@ -608,11 +654,14 @@ void ImageCache::loadIncrementalChanges() {
             << "Received " << response->images.size() << " images modified since last load.";
 
         std::vector<std::string> image_ids;
+        image_ids.reserve(response->images.size());
         for (const auto& img : response->images) {
             image_ids.push_back(img.image_id);
         }
 
-        return {.success = true, .image_ids = std::move(image_ids)};
+        return {.success = true,
+               .image_ids = std::move(image_ids),
+               .image_infos = std::move(response->images)};
     });
 
     incremental_changes_watcher_->setFuture(future);
@@ -640,6 +689,20 @@ void ImageCache::onIncrementalChangesLoaded() {
         BOOST_LOG_SEV(lg(), info) << "No images changed since last load.";
         load_all_in_progress_ = false;
         return;
+    }
+
+    // Merge fresh metadata (incl. size_bytes) into available_images_ so
+    // loadImagesByIds()'s byte-size-aware batching below sees up-to-date
+    // sizes for these changed images, not stale ones from the last full
+    // load (or none, for images newly created since then).
+    for (const auto& info : result.image_infos) {
+        const auto it = std::find_if(
+            available_images_.begin(), available_images_.end(),
+            [&info](const auto& existing) { return existing.image_id == info.image_id; });
+        if (it != available_images_.end())
+            *it = info;
+        else
+            available_images_.push_back(info);
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size() << " changed images.";
@@ -825,12 +888,37 @@ QIcon ImageCache::dataToIcon(const std::vector<std::uint8_t>& data, const std::s
     return IconUtils::imageDataToIcon(data, mime_type);
 }
 
-ImageCache::ImagesResult
-ImageCache::fetchImagesInBatches(ClientManager* clientManager,
-                                 const std::vector<std::string>& image_ids) {
+namespace {
 
-    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches() called with " << image_ids.size()
-                               << " image IDs.";
+// Safely below NATS's 1 MiB default max payload -- see the "Fix image-batch
+// NATS payload overflow" story's decision task for the measured margins.
+// This backstop deliberately does not assume compression is in effect (it
+// runs transparently below the protocol layer and its actual ratio isn't
+// visible here): the threshold is sized against the *uncompressed*
+// estimated wire size, so the cap holds even if compression somehow
+// underperforms or is disabled, exactly matching its role as a backstop
+// independent of the compression task.
+constexpr std::uint64_t safe_batch_bytes = 900'000;
+
+// rfl::json base64-encodes each image's raw bytes into the JSON response
+// body (~33% inflation) on top of the JSON structure itself; this
+// approximates that overhead so the byte-size estimate reflects what
+// actually crosses the wire, not just the raw SVG size. Matches the
+// decision task's measured base64 inflation factor.
+constexpr double estimated_wire_overhead_ratio = 1.35;
+
+std::uint64_t estimatedWireBytes(std::uint64_t raw_bytes) {
+    return static_cast<std::uint64_t>(static_cast<double>(raw_bytes) * estimated_wire_overhead_ratio);
+}
+
+} // namespace
+
+ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
+    ClientManager* clientManager,
+    const std::vector<assets::messaging::image_info>& images_to_fetch) {
+
+    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches() called with " << images_to_fetch.size()
+                               << " images.";
 
     if (!clientManager) {
         BOOST_LOG_SEV(lg(), error) << "clientManager is null in fetchImagesInBatches.";
@@ -840,37 +928,56 @@ ImageCache::fetchImagesInBatches(ClientManager* clientManager,
     std::vector<assets::domain::image> all_images;
     int failed_batches = 0;
 
-    constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
+    constexpr std::size_t max_batch_count = assets::messaging::MAX_IMAGES_PER_REQUEST;
+    std::vector<std::string> batch;
+    std::uint64_t batch_estimated_bytes = 0;
     int batch_num = 0;
-    for (std::size_t i = 0; i < image_ids.size(); i += batch_size) {
-        std::vector<std::string> batch;
-        for (std::size_t j = i; j < std::min(i + batch_size, image_ids.size()); ++j) {
-            batch.push_back(image_ids[j]);
-        }
 
-        batch_num++;
-        BOOST_LOG_SEV(lg(), debug)
-            << "Fetching batch " << batch_num << " with " << batch.size() << " images.";
+    auto flush_batch = [&]() {
+        if (batch.empty())
+            return;
+        ++batch_num;
+        BOOST_LOG_SEV(lg(), debug) << "Fetching batch " << batch_num << " with " << batch.size()
+                                   << " images (~" << batch_estimated_bytes
+                                   << " estimated wire bytes).";
 
         assets::messaging::get_images_request request;
         request.image_ids = std::move(batch);
+        batch.clear();
+        batch_estimated_bytes = 0;
 
         auto response = clientManager->process_authenticated_request(std::move(request));
-
         if (!response) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to fetch images (batch " << batch_num << "): " << response.error();
             ++failed_batches;
-            continue;
+            return;
         }
 
         BOOST_LOG_SEV(lg(), debug)
             << "Batch " << batch_num << " returned " << response->images.size() << " images.";
-
-        for (auto& img : response->images) {
+        for (auto& img : response->images)
             all_images.push_back(std::move(img));
-        }
+    };
+
+    for (const auto& info : images_to_fetch) {
+        // Unknown size (e.g. a single-id lookup issued before any image
+        // list was ever loaded) is treated as maximally large rather than
+        // 0, so it can't silently pack many "unknown" images into one
+        // batch and defeat the cap -- it always gets a batch to itself.
+        const std::uint64_t estimated_bytes =
+            info.size_bytes > 0 ? estimatedWireBytes(info.size_bytes) : safe_batch_bytes;
+
+        const bool would_overflow = !batch.empty() &&
+            (batch_estimated_bytes + estimated_bytes > safe_batch_bytes ||
+             batch.size() >= max_batch_count);
+        if (would_overflow)
+            flush_batch();
+
+        batch.push_back(info.image_id);
+        batch_estimated_bytes += estimated_bytes;
     }
+    flush_batch();
 
     BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches complete. Total: " << all_images.size()
                                << " images, failed_batches: " << failed_batches;
@@ -914,6 +1021,7 @@ void ImageCache::onImageListLoaded() {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception loading image list: " << e.what();
         emit loadError(tr("Failed to load image list"));
+        resumeDeferredLoadAllChain();
         return;
     }
     if (result.success) {
@@ -926,6 +1034,19 @@ void ImageCache::onImageListLoaded() {
         BOOST_LOG_SEV(lg(), error) << "Failed to load image list.";
         emit loadError(tr("Failed to load image list"));
     }
+    // Whether or not the list itself succeeded, unblock any loadAll() chain
+    // that deferred here in finishLoadAllChain() -- on failure,
+    // loadImagesByIds() falls back to its existing unknown-size handling
+    // rather than leaving pending_image_ids_ (and load_all_in_progress_)
+    // stuck forever.
+    resumeDeferredLoadAllChain();
+}
+
+void ImageCache::resumeDeferredLoadAllChain() {
+    if (!pending_ids_await_list_)
+        return;
+    pending_ids_await_list_ = false;
+    loadImagesByIds(pending_image_ids_);
 }
 
 void ImageCache::loadAllAvailableImages() {
@@ -945,30 +1066,32 @@ void ImageCache::loadAllAvailableImages() {
         return;
     }
 
-    // Collect image IDs that we need to fetch (not already cached)
-    std::vector<std::string> image_ids_to_fetch;
+    // Collect images we need to fetch (not already cached), carrying
+    // size_bytes straight from available_images_ for byte-size-aware
+    // batching.
+    std::vector<assets::messaging::image_info> images_to_fetch;
     for (const auto& img : available_images_) {
         if (image_data_cache_.find(img.image_id) == image_data_cache_.end() &&
             pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
-            image_ids_to_fetch.push_back(img.image_id);
+            images_to_fetch.push_back(img);
             pending_image_requests_.insert(img.image_id);
         }
     }
 
-    if (image_ids_to_fetch.empty()) {
+    if (images_to_fetch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "All available images already cached.";
         emit allAvailableImagesLoaded();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size() << " available images.";
+    BOOST_LOG_SEV(lg(), debug) << "Loading " << images_to_fetch.size() << " available images.";
 
     is_loading_all_available_ = true;
     ClientManager* clientMgr = clientManager_;
 
     QFuture<ImagesResult> future =
-        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
-            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
+        QtConcurrent::run([clientMgr, images_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, images_to_fetch);
         });
 
     all_available_watcher_->setFuture(future);

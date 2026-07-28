@@ -334,6 +334,40 @@ private:
     void loadImagesByIds(const std::vector<std::string>& image_ids);
 
     /**
+     * @brief Complete the loadAll() chain by fetching pending_image_ids_,
+     * deferring until available_images_ (and its size_bytes) is populated
+     * if the image list hasn't loaded yet.
+     *
+     * Called from every exit point of the currency/country/BC/calendar
+     * chain loadAll() kicks off. Without this, pending_image_ids_ would
+     * be fetched via loadImagesByIds() before loadImageList() (fired
+     * independently, e.g. by MainWindow at login) has necessarily
+     * completed -- every id would then be treated as unknown-size and
+     * batched one request per image, defeating byte-size-aware batching
+     * on this common path purely due to incidental async ordering.
+     *
+     * Only defers when connected: loadImageList() early-returns without
+     * ever setting its QFuture when there's no live connection, so
+     * onImageListLoaded() -- the only place a deferred wait gets resumed
+     * -- would never fire, permanently stalling pending_ids_await_list_
+     * and load_all_in_progress_ and deadlocking every future
+     * loadAll()/reload() call. Deferring buys nothing while disconnected
+     * anyway (a real fetch can't happen either way), so this fetches
+     * immediately in that case instead, same as before this method
+     * existed.
+     */
+    void finishLoadAllChain();
+
+    /**
+     * @brief Resume a loadAll() chain deferred by finishLoadAllChain(),
+     * if one is pending. Called from onImageListLoaded() regardless of
+     * whether the list load succeeded, so a failure can't leave
+     * pending_image_ids_ (and load_all_in_progress_) stuck forever --
+     * loadImagesByIds() falls back to its existing unknown-size handling.
+     */
+    void resumeDeferredLoadAllChain();
+
+    /**
      * @brief Load business centre -> country alpha-2 mapping.
      */
     void loadBusinessCentreMapping();
@@ -356,6 +390,12 @@ private:
         std::vector<std::string> image_ids;
         // Code -> image_id mappings populated during fetch
         std::unordered_map<std::string, std::string> code_to_image_id;
+        // Full metadata (incl. size_bytes) for the fetched ids, so callers
+        // that know sizes can merge them into available_images_ for
+        // byte-size-aware batching later. Only populated by
+        // loadIncrementalChanges(); other ImageIdsResult producers
+        // (currency/country id loads) leave this empty.
+        std::vector<assets::messaging::image_info> image_infos;
     };
 
     struct BusinessCentreMappingResult {
@@ -376,14 +416,28 @@ private:
     };
 
     /**
-     * @brief Fetch images in batches from the server.
+     * @brief Fetch images in batches from the server, sized by cumulative
+     * estimated payload rather than image count alone.
+     *
+     * Each batch is closed -- and a get_images_request issued for it --
+     * before adding an image whose size_bytes would push the batch's
+     * running estimated-encoded-size total past safe_batch_bytes, so no
+     * batch risks exceeding NATS's max payload regardless of how the
+     * requested images happen to cluster by size. images_to_fetch entries
+     * with size_bytes == 0 (unknown -- e.g. a single-id lookup issued
+     * before any image list was ever loaded) are treated as
+     * safe_batch_bytes-sized on their own, so an unknown-size image
+     * always gets its own batch rather than silently defeating the cap.
+     * batch_size (MAX_IMAGES_PER_REQUEST) still applies as a generous
+     * sanity bound on top.
      *
      * @param clientManager The client manager to use for requests
-     * @param image_ids The list of image IDs to fetch
+     * @param images_to_fetch The images to fetch, with known sizes
      * @return ImagesResult containing fetched images
      */
-    static ImagesResult fetchImagesInBatches(ClientManager* clientManager,
-                                             const std::vector<std::string>& image_ids);
+    static ImagesResult
+    fetchImagesInBatches(ClientManager* clientManager,
+                         const std::vector<assets::messaging::image_info>& images_to_fetch);
 
     struct ImageListResult {
         bool success;
@@ -431,6 +485,11 @@ private:
     bool is_loading_images_{false};
     bool is_loading_all_available_{false};
     bool load_all_in_progress_{false};
+
+    // Set by finishLoadAllChain() when the loadAll() chain reaches its end
+    // before available_images_ is populated; resumeDeferredLoadAllChain()
+    // clears it and fetches pending_image_ids_ once the list arrives.
+    bool pending_ids_await_list_{false};
 
     // Image IDs collected during loadAll() for preloading
     std::vector<std::string> pending_image_ids_;

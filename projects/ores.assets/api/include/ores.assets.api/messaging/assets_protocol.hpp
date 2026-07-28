@@ -31,17 +31,17 @@
 namespace ores::assets::messaging {
 
 /**
- * @brief Maximum number of images to request in a single batch.
+ * @brief Sanity cap on the number of images in a single batch.
  *
- * This is a count cap, not a byte-size cap -- SVG images vary widely in size
- * (a few KB for a simple flag, considerably more for a complex one), so a
- * batch of this many images can still exceed NATS's default max payload
- * (1MB) if several large images cluster into the same batch, silently
- * dropping the whole batch. 15 keeps batches comfortably under that limit
- * even in the worst case observed so far; a byte-size-aware batching pass
- * is the correct long-term fix (see the "Image batching" follow-on task).
+ * No longer the primary defence against oversized batches -- ImageCache's
+ * batching is byte-size aware (see image_info::size_bytes and
+ * ImageCache::fetchImagesInBatches), tracking cumulative estimated payload
+ * size and cutting a batch before it would risk exceeding NATS's max
+ * payload, regardless of how many or how large the images in it are.
+ * This remains as a generous upper bound so a batch of many tiny images
+ * doesn't grow unboundedly.
  */
-constexpr std::size_t MAX_IMAGES_PER_REQUEST = 15;
+constexpr std::size_t MAX_IMAGES_PER_REQUEST = 200;
 
 /**
  * @brief Lightweight image metadata (no SVG data) for list responses.
@@ -50,6 +50,17 @@ struct image_info {
     std::string image_id;
     std::string key;
     std::string description;
+
+    /**
+     * @brief Size of this image's data in bytes, uncompressed.
+     *
+     * Lets callers batch subsequent get_images_request fetches by
+     * cumulative byte size rather than count alone -- see
+     * MAX_IMAGES_PER_REQUEST's doc comment. Populated from data already
+     * held in memory server-side to build this list, so it costs nothing
+     * extra to compute.
+     */
+    std::uint64_t size_bytes = 0;
 };
 
 struct get_images_request {

@@ -53,10 +53,6 @@ single helper route through an injected =wire_codec= instead of
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
 
-* Acceptance
-
--
-
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions

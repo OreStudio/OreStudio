@@ -55,10 +55,6 @@ scope.
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
 
-* Acceptance
-
--
-
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions

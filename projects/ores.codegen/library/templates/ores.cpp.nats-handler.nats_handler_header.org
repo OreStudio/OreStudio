@@ -423,6 +423,130 @@ private:
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HANDLER_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HANDLER_HPP
+
+#include <optional>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+#include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
+
+namespace ores::{{component}}::messaging {
+
+namespace {
+inline auto& {{name_singular}}_handler_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.{{component}}.messaging.{{name_singular}}_handler");
+    return instance;
+}
+} // namespace
+
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for {{name_words}} operations.
+ */
+class {{name_singular}}_handler {
+public:
+    {{name_singular}}_handler(ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+
+{{#left.list_by}}
+    void list_by_{{left.column_short}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<get_{{name}}_by_{{left.column_short}}_request>(msg)) {
+            get_{{name}}_by_{{left.column_short}}_response resp;
+            try {
+                resp.{{name}} = svc.list_{{name_short}}_by_{{left.column_short}}(
+                    req->{{left.column}}, req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(req->{{left.column}}));
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+{{/left.list_by}}
+{{#right.list_by}}
+    void list_by_{{right.column_short}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<get_{{name}}_by_{{right.column_short}}_request>(msg)) {
+            get_{{name}}_by_{{right.column_short}}_response resp;
+            try {
+                resp.{{name}} = svc.list_{{name_short}}_by_{{right.column_short}}(
+                    req->{{right.column}}, req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(req->{{right.column}}));
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+{{/right.list_by}}
+private:
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+};
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/junction}}
 {{#entity}}
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP

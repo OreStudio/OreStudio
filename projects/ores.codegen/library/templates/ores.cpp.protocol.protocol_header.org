@@ -186,6 +186,57 @@ struct read_{{entity_plural}}_for_cache_response {
 
 #endif
 {{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_include_upper}}_MESSAGING_{{name_singular_upper}}_PROTOCOL_HPP
+#define ORES_{{component_include_upper}}_MESSAGING_{{name_singular_upper}}_PROTOCOL_HPP
+
+#include <cstdint>
+#include <string>
+#include <vector>
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::messaging {
+
+{{#left.list_by}}
+struct get_{{name}}_by_{{left.column_short}}_request {
+    using response_type = struct get_{{name}}_by_{{left.column_short}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.list_by_{{left.column}}";
+    std::string {{left.column}};
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_{{name}}_by_{{left.column_short}}_response {
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+{{/left.list_by}}
+{{#right.list_by}}
+struct get_{{name}}_by_{{right.column_short}}_request {
+    using response_type = struct get_{{name}}_by_{{right.column_short}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.list_by_{{right.column}}";
+    std::string {{right.column}};
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_{{name}}_by_{{right.column_short}}_response {
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+{{/right.list_by}}
+}
+
+#endif
+{{/junction}}
 {{#entity}}
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP

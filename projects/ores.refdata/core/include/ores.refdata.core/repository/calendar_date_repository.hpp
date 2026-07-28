@@ -55,6 +55,17 @@ public:
 
     std::vector<domain::calendar_date> read_latest();
     std::vector<domain::calendar_date> read_latest_by_calendar(const std::string& calendar_code);
+    /**
+     * @brief Reads latest calendar dates filtered by calendar_code, with pagination.
+     */
+    std::vector<domain::calendar_date> read_latest_by_calendar(const std::string& calendar_code,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active calendar dates filtered by calendar_code.
+     */
+    std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
     std::vector<domain::calendar_date> read_latest_by_date(const std::string& date);
 
     void remove(const std::string& calendar_code, const std::string& date);

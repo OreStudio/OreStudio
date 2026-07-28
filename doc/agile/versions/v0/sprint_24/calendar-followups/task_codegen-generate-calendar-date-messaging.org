@@ -7,41 +7,96 @@
 #+level: s1
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-generate-calendar-date-messaging
+#+pr: 1714
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-27
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=calendar_date= currently has only domain/SQL/repository layers
+generated. This task applies the =list_by= knob added in
+[[id:3282E378-74C0-43B4-B952-544FCEADE66A][Codegen: extend junction repository/service templates with paginated list_by filter]]
+(repository + service, regenerated for real this time, not just
+dry-run diffed) and generates a protocol/nats-handler layer via the
+=extra_list_requests= knob -- the first real consumer of that
+mechanism -- so a paginated, filtered-by-calendar_code NATS request
+exists for the Qt Browse Holidays view to call in the follow-on task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-27                               |
 
 * Acceptance
 
--
+- [X] calendar_date's repository/service files regenerate for real
+  (not dry-run) with the paginated list_by-by-calendar_code method.
+- [X] calendar_date gets a protocol layer with a paginated,
+  calendar_code-filtered get_calendar_dates_.../request/response pair
+  via extra_list_requests.
+- [X] calendar_date gets a nats-handler layer wiring that request to
+  the service's paginated list method, registered on a NATS subject.
+- [X] Build is clean and calendar_date's new messaging code compiles
+  and links.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+*Correction to the Goal's premise*: =extra_list_requests= turned out
+to be a domain_entity-only mechanism -- =protocol_header.org=,
+=nats_handler_header.org=, and =nats_registrar_{header,implementation}.org=
+are each wrapped entirely in =\{\{#domain_entity\}\}...\{\{/domain_entity\}\}=,
+with no junction path at all. Deeper still: all four facets
+(=ores.cpp.service=, =ores.cpp.protocol=, =ores.cpp.nats-handler=,
+=ores.cpp.nats-sub-registrar=) declare
+=#+model_types: domain_entity schema= -- junction models are excluded
+at the facet-applicability level, so even the =\{\{#junction\}\}=
+section already added to =service_header/impl.org= in the prior task
+was unreachable dead code until this task added =junction= to that
+list.
+
+Rather than reusing =extra_list_requests= verbatim, added a parallel,
+deliberately minimal =\{\{#junction\}\}= section to each of the four
+templates, covering only what a read-only paginated browse view
+needs (no save/delete/history/CRUD -- junctions don't have a uniform
+CRUD shape the way domain entities do):
+- =protocol_header.org=: =get_<name>_by_<column>_request/response=
+  gated by =left.list_by=/=right.list_by=, same shape as the
+  domain_entity =extra_list_requests= block.
+- =nats_handler_header.org=: a handler class with one
+  =list_by_<column>= method per flagged side, calling the service's
+  paginated =list_<name_short>_by_<column>= + count methods.
+- =nats_registrar_{header,implementation}.org=: constructor + one
+  subject subscription per flagged side.
+- =service.org=: added =junction= to =#+model_types:= so the
+  service-layer =list_by= section from the prior task actually fires.
+
+Verified via =--diff= against =currency_calendar= (no =list_by= set)
+that all four facets now generate a minimal-but-valid skeleton (empty
+handler/registrar, base service methods) with zero regression risk to
+existing entities -- these files aren't checked in for any junction
+except =calendar_date=, so nothing else's build is affected.
+
+Wired =calendar_date_registrar= into
+=ores.refdata.core/src/messaging/registrar.cpp= (hand-maintained
+composition point, not itself generated) alongside the other
+alphabetically-ordered =register_*_handlers= calls.
 
 * Notes
 
@@ -60,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1714][#1714]] | [refdata,codegen] Generate calendar_date messaging layer, fix date-column validation in service templates |
 
 * Review
 
@@ -69,3 +124,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =calendar_date='s full messaging layer (service, protocol,
+nats-handler, nats-registrar) via a new =\{\{#junction\}\}= path added
+to all four generating templates, and wired
+=calendar_date_registrar= into the hand-maintained
+=ores.refdata.core/src/messaging/registrar.cpp=.
+
+Build broke on first attempt: the generated
+=save_calendar_date= validation called =.empty()= on
+=calendar_date.date= (a =std::chrono::year_month_day=, which has no
+=.empty()=) -- a latent bug in =cpp_service.cpp.mustache= /
+=ores.cpp.service.service_impl.org=, which only distinguished
+=is_uuid= vs. a string-only =.empty()= fallback for primary-key/
+junction-key validation, with no branch for the =is_date= flag that
+already existed in the codegen data model (used elsewhere, e.g. SQL
+templates). Fixed both templates to check =is_date= first
+(=!x.ok()=) before falling back to =.empty()=, then regenerated
+=calendar_date_service.\{hpp,cpp\}= for real from the corrected
+template rather than hand-patching the generated output. Full build
+is green.

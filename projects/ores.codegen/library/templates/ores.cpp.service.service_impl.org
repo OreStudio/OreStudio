@@ -263,7 +263,12 @@ void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{nam
     if ({{name_singular_short}}.{{left.column}}.is_nil()) {
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+{{#left.is_date}}
+    if (!{{name_singular_short}}.{{left.column}}.ok()) {
+{{/left.is_date}}
+{{^left.is_date}}
     if ({{name_singular_short}}.{{left.column}}.empty()) {
+{{/left.is_date}}
 {{/left.is_uuid}}
         throw std::invalid_argument("{{left.column_title}} cannot be empty.");
     }
@@ -271,7 +276,12 @@ void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{nam
     if ({{name_singular_short}}.{{right.column}}.is_nil()) {
 {{/right.is_uuid}}
 {{^right.is_uuid}}
+{{#right.is_date}}
+    if (!{{name_singular_short}}.{{right.column}}.ok()) {
+{{/right.is_date}}
+{{^right.is_date}}
     if ({{name_singular_short}}.{{right.column}}.empty()) {
+{{/right.is_date}}
 {{/right.is_uuid}}
         throw std::invalid_argument("{{right.column_title}} cannot be empty.");
     }

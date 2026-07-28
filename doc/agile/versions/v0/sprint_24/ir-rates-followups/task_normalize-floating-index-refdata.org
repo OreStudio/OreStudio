@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/normalize-floating-index-refdata
+#+pr: 1713
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-18
@@ -41,14 +41,14 @@ stopgap gets replaced with a real FK to the normalized model.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                                     |
+|--------------+---------------------------------------------------------------------------------------------|
+| State        | ABANDONED                                                                                  |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-18                               |
+| Now          | Nothing.                                                                                   |
+| Waiting on   | Nothing.                                                                                   |
+| Next         | Nothing -- superseded, see Result.                                                         |
+| Last touched | 2026-07-28                                                                                 |
 
 * Acceptance
 
@@ -90,12 +90,52 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1713][#1713]] | [agile] Abandon floating-index normalization task, supersede by oresmd |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Both automated reviews confirmed the two filed findings against the codebase; no blocking issues | - | Accepted (cosmetic) | Fixed Status table cell padding in c7a5d7b2c |
 
 * Result
+
+Abandoned in favour of a broader, already-designed replacement:
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd, ORE Studio's
+canonical market data URI]], merged to main after this task started.
+=oresmd='s =index_family= enum + =tenor= query key close exactly the
+free-text =index_name= gap this task set out to fix, but as one field
+combination of a single scheme spanning every asset class, not a new
+standalone =index=/=currency_index= refdata model -- building the
+latter would have created a third competing scheme alongside
+=oresmd=, the "no three competing schemes" anti-pattern
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][the oresmd migration
+capture]]'s own =Why= section warns against.
+
+An implementation attempt got far enough to surface two real findings
+before being abandoned, both filed on
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][the migration capture]]
+rather than here:
+
+- =floating_index_type='s 25 rows are a flattened mix of two other
+  real tables, =overnight_index_convention= and
+  =ibor_index_convention= -- both live destinations of =ores.cli='s
+  ORE =conventions.xml= import command, not orphaned scaffolding (a
+  first pass wrongly concluded "zero consumers" from grepping only
+  SQL soft-FK references, missing this CLI import path entirely).
+  =oresmd='s =index_family= enum design needs to account for both.
+- =ir_curve_generation_config='s =(currency_code, index_name)= pair
+  is exactly what the migration capture's own per-field plan already
+  names as migrating onto a =type=curve= =oresmd= URI -- confirming
+  this task's own scope is a subset of that capture's, not
+  independent work.
+
+The =index=/=currency_index= codegen model, seed data, and consumer
+migration built during the implementation attempt were not committed
+(stashed, then discarded) -- =floating_index_type=/
+=overnight_index_convention= remain as-is pending the oresmd
+migration.
+
+Follow-on work tracked on
+[[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete
+market_series qualifier and ore_key]], not a new task here.

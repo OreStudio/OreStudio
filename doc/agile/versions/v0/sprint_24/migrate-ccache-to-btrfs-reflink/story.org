@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ID: 03831B51-455F-4743-AD12-216FFD778CC8
+:END:
+#+title: Story: Migrate shared ccache/build storage to btrfs for reflink-safe hardlink-free caching
+#+description: ccache's hard_link=true mode, combined with a cache_dir shared across many concurrent git worktrees on the same host, is explicitly documented by ccache as unsafe: two worktrees compiling the same TU concurrently can corrupt the shared inode, silently breaking every worktree holding a hardlink to it. Root-caused via GDB after a heap-corruption crash in ores.refdata.service during Barclays provisioning (see task_merge_asset_class_folders_into_one_theme_unit.org). ext4 (the current filesystem for /mnt/development) has no reflink support, so the safe alternative (file_clone=true) silently falls back to plain copies, losing the disk-space savings hard_link was adopted for. Fix: reformat the SSD to btrfs, migrate the ccache cache_dir there, switch ccache to file_clone=true/hard_link=false, and rebuild every active worktree.
+#+type: story
+#+level: s2
+#+filetags: :devops:infrastructure:sprint_24:v0:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Reformat the shared SSD (=/mnt/development=, currently a single 220G ext4
+partition at 83% full, 36G free) to btrfs, and reconfigure ccache to use
+btrfs reflinks (=file_clone=true=, =hard_link=false=) instead of hard
+links, so concurrent worktree builds can no longer corrupt each other's
+cached object files via a shared inode -- the failure class root-caused
+in [[id:390E6886-6A04-4840-A53D-9873FC491ABB][the CIR rename PR's review round]] (heap corruption crash in
+=ores.refdata.service= during Barclays provisioning, traced via GDB to a
+stale/corrupted =party_repository.cpp.o= that a ccache-disabled rebuild
+proved didn't match a fresh compile of the same source). ccache's own
+manual explicitly warns against =hard_link=true= combined with a
+=cache_dir= shared by multiple concurrent build trees, for exactly this
+reason; ext4 has no reflink support at all, so =file_clone= silently
+falls back to plain (non-deduplicated) copies without a filesystem
+change.
+
+Everything on this partition is destroyed by the reformat and must be
+recreated: every worktree's checkout, build output, and the ccache
+store itself, plus the shared PostgreSQL 18 cluster
+(=/mnt/development/postgres/18/main=) that backs every worktree's
+database.
+
+** SSD inventory (2026-07-28, as user =marco=, not root)
+
+=/mnt/development= (=/dev/sda1=, ext4, 220G total, 173G used, 36G free):
+
+| Path | Size | Notes |
+|------+------+-------|
+| =Development/OreStudio/ores_dev_swift_curie= | 19G | worktree |
+| =Development/OreStudio/ores_dev_prime_origin= | 17G | worktree |
+| =Development/OreStudio/ores_dev_brave_hopper= | 17G | worktree |
+| =Development/OreStudio/ores_dev_bright_faraday= | 14G | worktree |
+| =Development/OreStudio/ores_dev_jolly_knuth= | 13G | worktree |
+| =Development/OreStudio/ores_dev_solid_dirac= | 12G | worktree |
+| =Development/OreStudio/ores_dev_merry_newton= | 12G | worktree (this session) |
+| =Development/OreStudio/ores_dev_eager_maxwell= | 12G | worktree |
+| =Development/OreStudio/ores_dev_clever_dijkstra= | 12G | worktree |
+| =Development/OreStudio/Hedgr.remote= | 4.8G | external/reference repo |
+| =Development/OreStudio/Engine.remote= | 2.2G | external/reference repo (ORE upstream) |
+| =Development/OreStudio/Papers=, =log= | 35M, 120K | negligible |
+| =.cache/ccache= | 9.3G | the shared cache this story fixes |
+| =.cache/sccache= | 74M | second, mostly-unused compiler cache |
+| =postgres/18/main= | unknown (denied) | owned by =postgres= user, =du= needs root |
+| =lost+found=, =models= | 16K, 4K | negligible |
+
+PostgreSQL logical size (via =pg_database_size=, sums to less than the
+physical data directory will show): *11 GB* across all databases --
+=ores_dev_local1..4= (test/scratch dev DBs, ~9.3G combined) plus one
+~200-450MB database per active worktree.
+
+*Not yet measured (needs root -- user will finish this part)*: the
+physical size of =postgres/18/main= itself (WAL, indexes, bloat can
+make this meaningfully bigger than the logical 11G), and whether
+anything else under =/mnt/development= is owned by a user other than
+=marco= and so invisible to an unprivileged =du=.
+
+** Migration plan (btrfs, exact commands)
+
+Nothing here has been run yet -- this is the plan, to be executed and
+checked off as tasks once the story is broken down. =/dev/sda1= is
+assumed throughout (confirm with =lsblk -f= before running anything
+destructive -- it may have changed by execution time).
+
+*** 0. Preconditions
+
+- Confirm free space elsewhere (another disk, a remote host, or
+  removable media) to hold backups -- the 36G free on =/mnt/development=
+  itself is *not* enough headroom to back up its own 173G in place.
+- Coordinate with anyone else using this host: every active worktree's
+  services must be stopped and no build may be running during the
+  backup or reformat.
+
+*** 1. Stop everything using the partition
+
+#+begin_src sh
+# From each active worktree (swift_curie, prime_origin, brave_hopper,
+# bright_faraday, jolly_knuth, solid_dirac, merry_newton, eager_maxwell,
+# clever_dijkstra):
+cd /mnt/development/Development/OreStudio/<worktree>
+./projects/ores.compass/compass.sh services stop
+
+# Stop PostgreSQL itself (adjust unit name if not systemd/this version):
+sudo systemctl stop postgresql@18-main
+#+end_src
+
+*** 2. Back up what can't be regenerated
+
+Everything under a worktree's =build/= directory (object files, vcpkg
+downloads/installed, NATS jetstream state) is disposable -- it gets
+rebuilt in step 6. The ccache store itself is also disposable (it is
+being replaced). What genuinely needs backing up:
+
+- *Uncommitted/unpushed work in every worktree* -- check each one
+  before wiping anything:
+  #+begin_src sh
+  for wt in swift_curie prime_origin brave_hopper bright_faraday \
+            jolly_knuth solid_dirac merry_newton eager_maxwell \
+            clever_dijkstra; do
+      echo "=== ores_dev_$wt ==="
+      cd /mnt/development/Development/OreStudio/ores_dev_$wt
+      git status --short
+      git log --branches --not --remotes --oneline  # unpushed commits
+  done
+  #+end_src
+  Push or stash anything that shows up before proceeding -- a reformat
+  is not recoverable.
+
+- *PostgreSQL data*, via logical dump (much smaller and more portable
+  than a filesystem-level copy of the data directory, and sidesteps the
+  physical-vs-logical size gap noted in the inventory above):
+  #+begin_src sh
+  sudo -u postgres pg_dumpall -f /path/on/other/disk/ores_all_databases_$(date +%Y%m%d).sql
+  #+end_src
+  (=/path/on/other/disk= must genuinely be off this partition -- see
+  Precondition 0.)
+
+- =Hedgr.remote=/=Engine.remote= (4.8G/2.2G): confirm these are clean
+  clones of upstream repos with no local-only commits before treating
+  them as re-clonable; if so, no backup needed, just re-clone in step 6.
+
+*** 3. Unmount and reformat
+
+#+begin_src sh
+sudo umount /mnt/development
+sudo mkfs.btrfs -f -L development /dev/sda1
+#+end_src
+
+=mkfs.btrfs= defaults are fine here -- no need for =-O no-holes= or
+custom node sizes for this use case. Confirm the filesystem before
+mounting:
+
+#+begin_src sh
+sudo btrfs filesystem show /dev/sda1
+#+end_src
+
+*** 4. Mount and restore the fstab entry
+
+#+begin_src sh
+sudo mount /dev/sda1 /mnt/development
+sudo chown marco:marco /mnt/development
+# Update /etc/fstab's ext4 entry for /dev/sda1 to type btrfs (keep
+# noatime; btrfs also benefits from compress=zstd if not already
+# implied by other tooling -- confirm before adding).
+#+end_src
+
+*** 5. Reconfigure ccache for reflink, not hard link
+
+#+begin_src sh
+ccache --set-config=hard_link=false
+ccache --set-config=file_clone=true
+mkdir -p /mnt/development/.cache/ccache
+ccache --set-config=cache_dir=/mnt/development/.cache/ccache
+ccache --zero-stats
+#+end_src
+
+Verify reflink actually engages once files exist (after the first real
+build in step 6):
+#+begin_src sh
+# Two files sharing extents (reflinked) show the same physical block
+# count as one file, not double, in `filefrag -e` or `xfs_bmap`-style
+# tooling; btrfs equivalent:
+sudo btrfs filesystem du -s /mnt/development/.cache/ccache
+#+end_src
+
+*** 6. Recreate every worktree
+
+Per worktree (see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][devops-provision-environment]] for the scripted
+version of most of this):
+#+begin_src sh
+cd /mnt/development/Development/OreStudio
+git clone <remote> ores_dev_<name>   # or restore the git worktree link
+# if these are `git worktree` children of a shared bare repo rather
+# than independent clones, use `git worktree add` from that bare repo
+# instead -- confirm which topology this fleet actually uses before
+# writing the real task.
+cd ores_dev_<name>
+./projects/ores.compass/compass.sh env configure -y
+./projects/ores.compass/compass.sh build
+#+end_src
+
+Restore the PostgreSQL cluster once (not per worktree -- one shared
+instance):
+#+begin_src sh
+sudo -u postgres pg_restore ... # or psql -f for the pg_dumpall output
+# from step 2, then per-worktree:
+./projects/ores.compass/compass.sh db recreate -y -k
+#+end_src
+
+(=db recreate= drops and rebuilds from the SQL =create=/=populate=
+scripts regardless, so restoring the dump mainly matters for anything
+=db recreate= doesn't reseed -- confirm during execution whether the
+=pg_dumpall= restore is even necessary versus just running =db
+recreate= fresh for every worktree, which is this repo's normal,
+already-idempotent path.)
+
+*** 7. Verify
+
+- =ccache --show-config= reports =hard_link = false=, =file_clone =
+  true=.
+- A build in two different worktrees of the same commit produces a
+  ccache hit in the second one (confirms the shared cache still works)
+  without the second worktree's object file being a hard link
+  (=stat -c '%h' <file>.o= reports link count 1, not >1).
+- Full =compass build rat= green in at least two worktrees run
+  concurrently, deliberately racing the same TU, with no crash --
+  the regression test for the bug this story fixes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-28                               |
+
+* Acceptance
+
+- =/mnt/development= is reformatted to btrfs and mounted with the
+  new filesystem in =/etc/fstab= (ext4 entry replaced, not appended).
+- Shared ccache =cache_dir= is reconfigured with =hard_link = false=,
+  =file_clone = true=, and =ccache --show-config= confirms both.
+- Every worktree in the fleet (=ores_dev_swift_curie=,
+  =ores_dev_prime_origin=, =ores_dev_brave_hopper=,
+  =ores_dev_bright_faraday=, =ores_dev_jolly_knuth=,
+  =ores_dev_solid_dirac=, =ores_dev_merry_newton=,
+  =ores_dev_eager_maxwell=, =ores_dev_clever_dijkstra=) is recreated
+  and builds clean from scratch.
+- PostgreSQL 18 cluster is recreated and every worktree's database is
+  restored to a working state via =db recreate=.
+- A ccache hit across two different worktrees building the same
+  commit produces an object file with link count 1 (=stat -c '%h'=),
+  confirming =file_clone=/copy semantics rather than a hard link.
+- =compass build rat= run concurrently in two worktrees, deliberately
+  racing the same TU, completes green with no crash -- the regression
+  test for the corruption bug this story fixes.
+- No git worktree loses committed history; any uncommitted work
+  found during the pre-migration sweep is either pushed or explicitly
+  accepted as discarded by the user before the reformat proceeds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Automated detection/recovery tooling for hard-link corruption
+  (option C from the alternatives considered) -- superseded by this
+  migration, not built alongside it.
+- Serializing builds across worktrees (option B) -- rejected in
+  favour of this fix.
+- Migrating any host other than =neumann= (the fleet's build host).
+- Changing ccache's =direct_mode=/=inode_cache=/=compiler_check=
+  settings beyond =hard_link=/=file_clone= -- out of scope unless a
+  problem surfaces during verification.
+- btrfs tuning beyond the basics needed for correctness (e.g.
+  subvolume layout, snapshots, =compress=zstd=) -- noted as a "maybe"
+  in the migration plan but not required for this story's acceptance.
+- Finishing the SSD/Postgres physical-size inventory -- the user is
+  completing that part directly, running as root.

@@ -24,15 +24,16 @@ Produce the design document this story's remaining tasks execute
 against, covering:
 
 1. *Blast-radius audit*: every NATS-relevant =rfl::json::write=/
-   =rfl::json::read= call site, by component --
-   =ores.service::messaging::handler_helpers= (2 call sites, already
-   centralised), =ores.qt::ClientManager= (~10, spread across
-   =ClientManager.hpp=/=.cpp= plus =ClientManagerExportPortfolio.cpp=/
-   =ClientManagerTradeInstrument.cpp=), =ores.shell= (26 occurrences of
-   a copy-pasted =do_request=/=do_auth_request= helper across ~13
-   command files). Confirm =ores.cli='s =rfl::json= hits are config-
-   file I/O, not NATS calls, and drop it from scope (or file a small
-   follow-up if any genuine NATS call sites turn up).
+   =rfl::json::read= call site, by component -- =ores.service=
+   (=handler_helpers.hpp= plus any stragglers bypassing it),
+   =ores.qt= (=ClientManager= plus any stragglers bypassing it),
+   =ores.shell= (the copy-pasted =do_request=/=do_auth_request=
+   helper plus any call sites using some other direct pattern).
+   Confirm =ores.cli='s =rfl::json= hits are config-file I/O, not
+   NATS calls, and drop it from scope (or file a small follow-up if
+   any genuine NATS call sites turn up). The verified counts and
+   per-file breakdown live in =* Plan= below, not here, so this
+   section doesn't go stale if the audit is later corrected.
 2. *Architecture*: a concrete, non-polymorphic =wire_codec= type,
    holding a =wire_format= (=json= or =msgpack=) decided once at
    construction from a =.env=-driven config value, threaded through
@@ -371,6 +372,7 @@ via its "Verifies task" field.
 |   | Minor nits (typo, missing default/unreachable arm in wire_codec snippet) | task_write-up-wire-format-architecture.org | Fixed | "suffient" -> "sufficient"; added std::unreachable() note to the snippet |
 | 4 | ores.shell definition count still wrong after round 3 fix: 14/9 claimed, actually 18/13, plus provision_commands.cpp is a differently-shaped third variant | task_write-up-wire-format-architecture.org | Fixed | Corrected to 18 definitions across 13 files, noted provision_commands.cpp's distinct Request-object shape |
 | 5 | Stale "9 files" leftover survived the round-4 fix in one sentence | task_write-up-wire-format-architecture.org | Fixed | Updated to "13 files" for consistency with the rest of the section |
+| 6 | Goal section and story.org's Tasks table still stated the original wrong audit numbers (2 sites/already centralised; 26 occurrences/~13 files) | task_write-up-wire-format-architecture.org, story.org, task_consolidate-migrate-shell-wire-codec.org | Fixed | Reworded Goal to avoid restating counts that go stale; corrected story.org's Tasks row and, while at it, the sibling shell-migration task's stale description/Goal too |
 
 * Result
 

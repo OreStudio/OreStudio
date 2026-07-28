@@ -25,18 +25,21 @@
 
 using ores::analytics::quant::service::gaussian_mixture_model_process;
 
-TEST_CASE("gaussian_mixture_model_process reports the initial price before any next() call", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process reports the initial price before any next() call",
+          "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
     CHECK(p.current() == 100.0);
 }
 
-TEST_CASE("gaussian_mixture_model_process next() updates and returns the same value as current()", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process next() updates and returns the same value as current()",
+          "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
     const double n = p.next();
     CHECK(n == p.current());
 }
 
-TEST_CASE("gaussian_mixture_model_process is deterministic for a fixed seed", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process is deterministic for a fixed seed",
+          "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process a({0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, 7);
     gaussian_mixture_model_process b({0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, 7);
 
@@ -44,7 +47,8 @@ TEST_CASE("gaussian_mixture_model_process is deterministic for a fixed seed", "[
         CHECK(a.next() == b.next());
 }
 
-TEST_CASE("gaussian_mixture_model_process with different seeds diverges", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process with different seeds diverges",
+          "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process a({0.001}, {0.05}, {1.0}, 100.0, 1);
     gaussian_mixture_model_process b({0.001}, {0.05}, {1.0}, 100.0, 2);
 
@@ -56,30 +60,40 @@ TEST_CASE("gaussian_mixture_model_process with different seeds diverges", "[gaus
     CHECK(any_different);
 }
 
-TEST_CASE("gaussian_mixture_model_process price stays strictly positive (geometric engine)", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process price stays strictly positive (geometric engine)",
+          "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process p({-1.0, 1.0}, {0.5, 0.5}, {0.5, 0.5}, 100.0, 99);
     for (int i = 0; i < 500; ++i)
         REQUIRE(p.next() > 0.0);
 }
 
-TEST_CASE("gaussian_mixture_model_process with a zero-variance component draws exactly the mean", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process with a zero-variance component draws exactly the mean",
+          "[gaussian_mixture_model_process]") {
     // sd == 0 hits the degenerate branch (avoids libstdc++ aborting on sigma <= 0).
     gaussian_mixture_model_process p({0.1}, {0.0}, {1.0}, 100.0);
     const double expected = 100.0 * std::exp(0.1);
     CHECK(p.next() == Catch::Approx(expected));
 }
 
-TEST_CASE("gaussian_mixture_model_process rejects mismatched parameter vector sizes", "[gaussian_mixture_model_process]") {
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0, 0.0}, {0.01}, {1.0}, 100.0), std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01, 0.01}, {1.0}, 100.0), std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0, 0.0}, 100.0), std::invalid_argument);
+TEST_CASE("gaussian_mixture_model_process rejects mismatched parameter vector sizes",
+          "[gaussian_mixture_model_process]") {
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0, 0.0}, {0.01}, {1.0}, 100.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01, 0.01}, {1.0}, 100.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0, 0.0}, 100.0),
+                    std::invalid_argument);
 }
 
-TEST_CASE("gaussian_mixture_model_process rejects an empty component set", "[gaussian_mixture_model_process]") {
+TEST_CASE("gaussian_mixture_model_process rejects an empty component set",
+          "[gaussian_mixture_model_process]") {
     CHECK_THROWS_AS(gaussian_mixture_model_process({}, {}, {}, 100.0), std::invalid_argument);
 }
 
-TEST_CASE("gaussian_mixture_model_process rejects a non-positive initial price", "[gaussian_mixture_model_process]") {
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, -1.0), std::invalid_argument);
+TEST_CASE("gaussian_mixture_model_process rejects a non-positive initial price",
+          "[gaussian_mixture_model_process]") {
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, 0.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, -1.0),
+                    std::invalid_argument);
 }

@@ -503,9 +503,9 @@ void ImageCache::finishLoadAllChain() {
     // its size_bytes) is available. Avoid triggering a second, redundant
     // list load if one is already in flight (e.g. MainWindow.cpp's own
     // loadImageList() call, fired independently at login).
-    BOOST_LOG_SEV(lg(), debug)
-        << "finishLoadAllChain(): image list not yet loaded, deferring "
-        << pending_image_ids_.size() << " pending image IDs until it arrives.";
+    BOOST_LOG_SEV(lg(), debug) << "finishLoadAllChain(): image list not yet loaded, deferring "
+                               << pending_image_ids_.size()
+                               << " pending image IDs until it arrives.";
     pending_ids_await_list_ = true;
     if (!image_list_watcher_->isRunning())
         loadImageList();
@@ -660,8 +660,8 @@ void ImageCache::loadIncrementalChanges() {
         }
 
         return {.success = true,
-               .image_ids = std::move(image_ids),
-               .image_infos = std::move(response->images)};
+                .image_ids = std::move(image_ids),
+                .image_infos = std::move(response->images)};
     });
 
     incremental_changes_watcher_->setFuture(future);
@@ -697,8 +697,9 @@ void ImageCache::onIncrementalChangesLoaded() {
     // load (or none, for images newly created since then).
     for (const auto& info : result.image_infos) {
         const auto it = std::find_if(
-            available_images_.begin(), available_images_.end(),
-            [&info](const auto& existing) { return existing.image_id == info.image_id; });
+            available_images_.begin(), available_images_.end(), [&info](const auto& existing) {
+                return existing.image_id == info.image_id;
+            });
         if (it != available_images_.end())
             *it = info;
         else
@@ -908,7 +909,8 @@ constexpr std::uint64_t safe_batch_bytes = 900'000;
 constexpr double estimated_wire_overhead_ratio = 1.35;
 
 std::uint64_t estimatedWireBytes(std::uint64_t raw_bytes) {
-    return static_cast<std::uint64_t>(static_cast<double>(raw_bytes) * estimated_wire_overhead_ratio);
+    return static_cast<std::uint64_t>(static_cast<double>(raw_bytes) *
+                                      estimated_wire_overhead_ratio);
 }
 
 } // namespace
@@ -937,9 +939,9 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         if (batch.empty())
             return;
         ++batch_num;
-        BOOST_LOG_SEV(lg(), debug) << "Fetching batch " << batch_num << " with " << batch.size()
-                                   << " images (~" << batch_estimated_bytes
-                                   << " estimated wire bytes).";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Fetching batch " << batch_num << " with " << batch.size() << " images (~"
+            << batch_estimated_bytes << " estimated wire bytes).";
 
         assets::messaging::get_images_request request;
         request.image_ids = std::move(batch);
@@ -968,9 +970,9 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         const std::uint64_t estimated_bytes =
             info.size_bytes > 0 ? estimatedWireBytes(info.size_bytes) : safe_batch_bytes;
 
-        const bool would_overflow = !batch.empty() &&
-            (batch_estimated_bytes + estimated_bytes > safe_batch_bytes ||
-             batch.size() >= max_batch_count);
+        const bool would_overflow =
+            !batch.empty() && (batch_estimated_bytes + estimated_bytes > safe_batch_bytes ||
+                               batch.size() >= max_batch_count);
         if (would_overflow)
             flush_batch();
 

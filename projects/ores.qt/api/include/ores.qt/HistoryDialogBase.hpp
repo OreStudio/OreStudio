@@ -309,10 +309,8 @@ protected:
      */
     template <typename Request, typename OnSuccess>
     void runHistoryRequest(ClientManager* client_manager, Request request, OnSuccess on_success) {
-        runHistoryRequest(client_manager,
-                          Request::nats_subject,
-                          std::move(request),
-                          std::move(on_success));
+        runHistoryRequest(
+            client_manager, Request::nats_subject, std::move(request), std::move(on_success));
     }
 
     /**
@@ -324,17 +322,19 @@ protected:
      */
     template <typename Request, typename OnSuccess>
     void runHistoryRequest(ClientManager* client_manager,
-                          std::string_view subject,
-                          Request request,
-                          OnSuccess on_success) {
+                           std::string_view subject,
+                           Request request,
+                           OnSuccess on_success) {
         using Response = typename decltype(client_manager->process_authenticated_request(
             subject, std::move(request)))::value_type;
         using Result = std::expected<Response, std::string>;
 
         QPointer<HistoryDialogBase> self = this;
-        QFuture<Result> future = QtConcurrent::run(
-            [self, client_manager, subject = std::string(subject), request = std::move(request)]() mutable
-                -> Result {
+        QFuture<Result> future =
+            QtConcurrent::run([self,
+                               client_manager,
+                               subject = std::string(subject),
+                               request = std::move(request)]() mutable -> Result {
                 if (!client_manager || !client_manager->isConnected())
                     return std::unexpected("Disconnected from server");
                 auto result =

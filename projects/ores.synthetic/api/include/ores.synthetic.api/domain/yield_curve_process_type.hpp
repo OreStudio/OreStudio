@@ -28,7 +28,8 @@
 namespace ores::synthetic::domain {
 
 /**
- * @brief Short-rate process engine selector for IR curve generation: vasicek, cox_ingersoll_ross, or hull_white.
+ * @brief Short-rate process engine selector for IR curve generation: vasicek, cox_ingersoll_ross,
+ * or hull_white.
  *
  * Reference data table enumerating the IYieldCurveProcess engines
  * ores.analytics.quant's process_factory::make_yield_curve_process()

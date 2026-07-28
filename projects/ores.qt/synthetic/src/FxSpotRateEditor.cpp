@@ -1698,7 +1698,8 @@ void FxSpotRateEditor::refreshCharts() {
     }
 
     if (distChart_)
-        distChart_->setComponents(distComps); // empty for κ=0 "ornstein_uhlenbeck" — no stationary distribution
+        distChart_->setComponents(
+            distComps); // empty for κ=0 "ornstein_uhlenbeck" — no stationary distribution
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);

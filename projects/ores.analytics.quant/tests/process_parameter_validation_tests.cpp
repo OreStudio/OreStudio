@@ -85,7 +85,8 @@ TEST_CASE("mixing engines accept a single negative weight as long as the sum is 
     CHECK(r.valid);
 }
 
-TEST_CASE("ornstein_uhlenbeck rejects missing kappa/sigma channels", "[process_parameter_validation]") {
+TEST_CASE("ornstein_uhlenbeck rejects missing kappa/sigma channels",
+          "[process_parameter_validation]") {
     CHECK_FALSE(validate_process_parameters("ornstein_uhlenbeck", {}, {}, {0.3}, 100.0).valid);
     CHECK_FALSE(validate_process_parameters("ornstein_uhlenbeck", {}, {1.0}, {}, 100.0).valid);
 }
@@ -122,25 +123,40 @@ TEST_CASE("vasicek/hull_white accept a negative initial or mean-reversion rate",
 TEST_CASE("yield curve engines reject an empty theta_path", "[process_parameter_validation]") {
     CHECK_FALSE(validate_yield_curve_process_parameters("vasicek", 0.3, {}, 0.01, 0.03).valid);
     CHECK_FALSE(validate_yield_curve_process_parameters("hull_white", 0.3, {}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {}, 0.01, 0.03).valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {}, 0.01, 0.03).valid);
 }
 
 TEST_CASE("yield curve engines reject a negative sigma", "[process_parameter_validation]") {
     CHECK_FALSE(validate_yield_curve_process_parameters("vasicek", 0.3, {0.03}, -0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, -0.01, 0.03).valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, -0.01, 0.03)
+            .valid);
 }
 
-TEST_CASE("cox_ingersoll_ross requires strictly positive kappa and theta", "[process_parameter_validation]") {
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.0, {0.03}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", -0.1, {0.03}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.0}, 0.01, 0.03).valid);
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {-0.01}, 0.01, 0.03).valid);
+TEST_CASE("cox_ingersoll_ross requires strictly positive kappa and theta",
+          "[process_parameter_validation]") {
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.0, {0.03}, 0.01, 0.03)
+            .valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", -0.1, {0.03}, 0.01, 0.03)
+            .valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.0}, 0.01, 0.03)
+            .valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {-0.01}, 0.01, 0.03)
+            .valid);
 }
 
 TEST_CASE("cox_ingersoll_ross rejects a negative initial rate", "[process_parameter_validation]") {
-    CHECK_FALSE(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, -0.001).valid);
+    CHECK_FALSE(
+        validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, -0.001)
+            .valid);
 }
 
 TEST_CASE("cox_ingersoll_ross accepts a zero initial rate", "[process_parameter_validation]") {
-    CHECK(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, 0.0).valid);
+    CHECK(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, 0.0)
+              .valid);
 }

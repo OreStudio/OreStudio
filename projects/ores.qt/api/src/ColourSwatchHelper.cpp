@@ -37,7 +37,7 @@ void set_colour_swatch(QPushButton* button, const QString& hex) {
 
     button->setText(normalised);
     button->setStyleSheet(QString("background-color: %1; color: %2; border: none; "
-                                   "border-radius: 10px; padding: 2px 10px; font-weight: bold;")
+                                  "border-radius: 10px; padding: 2px 10px; font-weight: bold;")
                               .arg(normalised, label.name()));
     button->setProperty("hexColour", normalised);
 
@@ -56,7 +56,9 @@ QString colour_swatch_value(const QPushButton* button) {
     return stored.isEmpty() ? QStringLiteral("#ffffff") : stored;
 }
 
-void wire_colour_picker(QObject* context, QPushButton* button, const std::function<void()>& on_changed) {
+void wire_colour_picker(QObject* context,
+                        QPushButton* button,
+                        const std::function<void()>& on_changed) {
     if (!button)
         return;
 

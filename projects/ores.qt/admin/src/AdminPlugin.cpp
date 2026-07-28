@@ -303,16 +303,14 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
             // pop a QMessageBox once the window below is wired up.
             if (!QFileInfo::exists(smc.open_scenario_path)) {
                 BOOST_LOG_SEV(lg(), error)
-                    << "--open-scenario: file not found: '"
-                    << smc.open_scenario_path.toStdString()
+                    << "--open-scenario: file not found: '" << smc.open_scenario_path.toStdString()
                     << "'. Try passing a full path.";
                 std::exit(1);
             }
             ensure_qa_runner_window();
             if (!qaValidationRunnerWidget_->loadScenario(smc.open_scenario_path)) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "--open-scenario: could not load '"
-                    << smc.open_scenario_path.toStdString() << "'";
+                BOOST_LOG_SEV(lg(), error) << "--open-scenario: could not load '"
+                                           << smc.open_scenario_path.toStdString() << "'";
                 std::exit(1);
             }
             qaValidationRunnerWindow_->setVisible(true);

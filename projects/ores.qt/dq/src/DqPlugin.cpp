@@ -55,12 +55,13 @@ void DqPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(ctx_.main_window,
-                                                                             ctx_.mdi_area,
-                                                                             ctx_.client_manager,
-                                                                             ctx_.change_reason_cache,
-                                                                             ctx_.username,
-                                                                             this);
+    badgeDefinitionController_ =
+        std::make_unique<BadgeDefinitionController>(ctx_.main_window,
+                                                    ctx_.mdi_area,
+                                                    ctx_.client_manager,
+                                                    ctx_.change_reason_cache,
+                                                    ctx_.username,
+                                                    this);
     connectControllerSignals(badgeDefinitionController_.get());
 
     badgeSeverityController_ = std::make_unique<BadgeSeverityController>(ctx_.main_window,

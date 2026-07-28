@@ -45,7 +45,8 @@ namespace ores::synthetic::service {
  */
 class vintage_data_missing_error final : public std::runtime_error {
 public:
-    explicit vintage_data_missing_error(const std::string& detail) : std::runtime_error(detail) {}
+    explicit vintage_data_missing_error(const std::string& detail)
+        : std::runtime_error(detail) {}
 };
 
 /**

@@ -42,10 +42,10 @@ class ORES_ANALYTICS_QUANT_EXPORT gaussian_mixture_model_process final
     : public ores::analytics::quant::domain::IStochasticProcess {
 public:
     gaussian_mixture_model_process(std::vector<double> means,
-                std::vector<double> stdevs,
-                std::vector<double> weights,
-                double initial_price,
-                std::uint32_t seed = 42);
+                                   std::vector<double> stdevs,
+                                   std::vector<double> weights,
+                                   double initial_price,
+                                   std::uint32_t seed = 42);
 
     double next() override;
     double current() const override;

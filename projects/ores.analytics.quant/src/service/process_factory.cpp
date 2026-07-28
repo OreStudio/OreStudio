@@ -51,7 +51,8 @@ process_factory::make_process(const std::string& process_type,
     if (process_type == "ornstein_uhlenbeck") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
-        return std::make_unique<ornstein_uhlenbeck_process>(kappa, initial_price, sigma, initial_price, seed, dt);
+        return std::make_unique<ornstein_uhlenbeck_process>(
+            kappa, initial_price, sigma, initial_price, seed, dt);
     }
     // Default to the geometric engine for "geometric" and any unknown value.
     // ores.analytics.quant deliberately carries no logging dependency (it stays

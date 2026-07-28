@@ -60,19 +60,17 @@ void BadgeLabelUtils::apply(QLabel* label,
 
     label->setText(text);
     label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet(QString("QLabel {"
-                                 "  background-color: %1;"
-                                 "  color: %2;"
-                                 "  border-radius: 6px;"
-                                 "  padding: 1px 6px;"
-                                 "  font-size: 10px;"
-                                 "  font-weight: bold;"
-                                 "  border: %3 %4;"
-                                 "}")
-                             .arg(bg.name(),
-                                  fg.name(),
-                                  is_fallback ? "1px dashed" : "0px none",
-                                  fg.name()));
+    label->setStyleSheet(
+        QString("QLabel {"
+                "  background-color: %1;"
+                "  color: %2;"
+                "  border-radius: 6px;"
+                "  padding: 1px 6px;"
+                "  font-size: 10px;"
+                "  font-weight: bold;"
+                "  border: %3 %4;"
+                "}")
+            .arg(bg.name(), fg.name(), is_fallback ? "1px dashed" : "0px none", fg.name()));
 }
 
 void BadgeLabelUtils::clear(QLabel* label) {

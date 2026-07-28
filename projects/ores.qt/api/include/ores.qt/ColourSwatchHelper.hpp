@@ -65,9 +65,8 @@ ORES_QT_API QString colour_swatch_value(const QPushButton* button);
  * @param on_changed Invoked after a valid colour is chosen and painted —
  * generated code passes onFieldChanged() here to mark the dialog dirty.
  */
-ORES_QT_API void wire_colour_picker(QObject* context,
-                                    QPushButton* button,
-                                    const std::function<void()>& on_changed);
+ORES_QT_API void
+wire_colour_picker(QObject* context, QPushButton* button, const std::function<void()>& on_changed);
 
 }
 

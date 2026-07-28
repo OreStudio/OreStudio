@@ -68,9 +68,10 @@ struct get_entity_history_response;
     const auto first_dot = entity_type.find('.');
     const auto second_dot =
         first_dot == std::string::npos ? std::string::npos : entity_type.find('.', first_dot + 1);
-    const std::string component = (first_dot != std::string::npos && second_dot != std::string::npos)
-        ? entity_type.substr(first_dot + 1, second_dot - first_dot - 1)
-        : std::string("unknown");
+    const std::string component =
+        (first_dot != std::string::npos && second_dot != std::string::npos) ?
+            entity_type.substr(first_dot + 1, second_dot - first_dot - 1) :
+            std::string("unknown");
     return component + ".v1.history.get";
 }
 

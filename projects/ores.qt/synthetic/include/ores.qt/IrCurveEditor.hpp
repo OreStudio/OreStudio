@@ -58,9 +58,10 @@ class CurveShapePreviewChart;
  *
  * Edits the ir_curve_generation_config together with its ir_curve_template_entry tenor grid in
  * one place (Instrument, Process, Curve Template, Provenance). Unlike FX's gmm_component mixture,
- * an IR curve has exactly one short-rate process (Vasicek/Cox-Ingersoll-Ross/Hull-White) -- the Process tab edits
- * scalar parameters directly rather than a component table -- plus a curve-shape preview chart FX
- * has no equivalent of, since FX publishes one scalar spot rather than a tenor grid.
+ * an IR curve has exactly one short-rate process (Vasicek/Cox-Ingersoll-Ross/Hull-White) -- the
+ * Process tab edits scalar parameters directly rather than a component table -- plus a curve-shape
+ * preview chart FX has no equivalent of, since FX publishes one scalar spot rather than a tenor
+ * grid.
  */
 class IrCurveEditor final : public DetailDialogBase {
     Q_OBJECT

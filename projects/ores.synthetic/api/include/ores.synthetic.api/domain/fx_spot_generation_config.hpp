@@ -107,8 +107,8 @@ struct fx_spot_generation_config final {
     int ticks_per_hour = 0;
 
     /**
-     * @brief Price-process engine: "geometric" (multiplicative), "arithmetic" (additive), or "ornstein_uhlenbeck"
-     * (Ornstein-Uhlenbeck, mean-reverting).
+     * @brief Price-process engine: "geometric" (multiplicative), "arithmetic" (additive), or
+     * "ornstein_uhlenbeck" (Ornstein-Uhlenbeck, mean-reverting).
      */
     std::string process_type = "geometric";
 

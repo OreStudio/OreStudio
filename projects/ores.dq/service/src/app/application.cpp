@@ -72,7 +72,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // =========================================================================
     ores::eventing::service::event_bus event_bus;
     ores::eventing::service::postgres_event_source event_source(make_context(cfg.database),
-                                                                 event_bus);
+                                                                event_bus);
 
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);

@@ -58,9 +58,8 @@ void BadgeMappingsTab::reload(const std::string& codeDomainCode, BadgeCache* bad
 
     badgeDelegate_->set_badge_color_resolver(
         1, [cache = badgeCache, codeDomainCode](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                             color_constants::badge_fallback_text,
-                                                             true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             const auto* definition = cache->resolve(codeDomainCode, value.toStdString());

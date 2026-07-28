@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 0BB94CF5-87F0-472A-8A9B-7E852EE6ECA2
+:END:
+#+title: Task: Implement Qt as-of combo facet and primary-key model shape migration
+#+description: Initial task for: Qt as-of combo facet and primary-key model shape migration
+#+type: task
+#+level: s1
+#+filetags: :qt_as_of_combo_facet_and_pk_migration:sprint_24:v0:
+#+owner: marco
+#+branch: feature/qt-as-of-combo-facet-and-pk-migration
+#+pr: 1720
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:903B7C8F-04FA-4258-AB77-E8414B6DE585][Qt as-of combo facet and primary-key model shape migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Turn the hand-patched as-of Qt combo logic into a proper codegen
+facet, and migrate book/book_status/portfolio to the new
+Columns/:primary_key: model shape needed to regenerate them at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:903B7C8F-04FA-4258-AB77-E8414B6DE585][Qt as-of combo facet and primary-key model shape migration]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- Local build clean (linux-clang-debug-make).
+- Full ctest suite passes.
+- book/book_status/portfolio regenerate with zero diff against the working tree.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1720][#1720]] | [codegen,refdata] Qt as-of combo facet + primary-key model migration |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR description claims book/book_status/portfolio.org primary-key migration; not actually in this diff | PR body | Accepted | Corrected the PR description; primary-key shape already on main (commit 1e0775417), portfolio.org has zero diff |
+| 2 | Malformed table row (ragged trailing cells) in book_status.org | =ores.refdata.book_status.org= | Accepted | Trimmed the two stray empty cells on the ModifiedBy/RecordedAt rows |
+| 3 | Missing test coverage for has_as_of_combo_fields | =core.py= | Accepted | Extracted to a standalone function + added =test_as_of_combo_fields.py= |
+| 4 | Incidental drift-fix riding along with the regen not called out in description | PR body | Accepted | Updated the PR description to list the checkbox/pagination/tooltip drift explicitly and flag it for manual smoke test |
+
+* Result
+
+74/74 ctest confirmed green. Review round 1 addressed: corrected the
+PR description (no primary-key migration in this diff; portfolio.org
+has zero diff), fixed a malformed table row in book_status.org, added
+unit test coverage for has_as_of_combo_fields, and called out the
+incidental checkbox/pagination/tooltip drift-fix riding along with
+the regen.

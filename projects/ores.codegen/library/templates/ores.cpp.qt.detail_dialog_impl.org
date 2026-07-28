@@ -110,6 +110,11 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.has_date_detail_fields}}
 #include "ores.platform/time/datetime.hpp"
 {{/domain_entity.qt.has_date_detail_fields}}
+{{^domain_entity.qt.has_date_detail_fields}}
+{{#domain_entity.qt.has_as_of_combo_fields}}
+#include "ores.platform/time/datetime.hpp"
+{{/domain_entity.qt.has_as_of_combo_fields}}
+{{/domain_entity.qt.has_date_detail_fields}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 {{#domain_entity.qt.has_flag_icon}}
@@ -560,6 +565,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::set{{domain_entity.entity_pasc
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
     {{domain_entity.qt.item_var}}_ = {{domain_entity.qt.item_var}};
     updateUiFrom{{domain_entity.entity_pascal_short}}();
+{{#domain_entity.qt.has_as_of_combo_fields}}
+    // Re-resolve the as-of combos if setClientManager() already ran with a
+    // different (or no) {{domain_entity.entity_singular}} -- see the call-order
+    // note in populate*Combo() for each as-of field below.
+    if (clientManager_ && readOnly_) {
+{{#domain_entity.qt.detail_fields}}
+{{#combo_as_of_fetch_fn}}
+        populate{{combo_setter_pascal}}();
+{{/combo_as_of_fetch_fn}}
+{{/domain_entity.qt.detail_fields}}
+    }
+{{/domain_entity.qt.has_as_of_combo_fields}}
 <<paste:D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F>>
 }
 
@@ -677,6 +694,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
     if (revertAction_)
         revertAction_->setVisible(readOnly);
 {{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_as_of_combo_fields}}
+    // Re-resolve the as-of combos if setClientManager() already ran before
+    // this call established readOnly_ -- see the call-order note in
+    // populate*Combo() for each as-of field below.
+    if (clientManager_) {
+{{#domain_entity.qt.detail_fields}}
+{{#combo_as_of_fetch_fn}}
+        populate{{combo_setter_pascal}}();
+{{/combo_as_of_fetch_fn}}
+{{/domain_entity.qt.detail_fields}}
+    }
+{{/domain_entity.qt.has_as_of_combo_fields}}
 {{! see * Extension points above }}
 <<paste:7A4AE8D5-A22D-4912-B4BF-D58215681CD2>>
 }
@@ -795,11 +824,31 @@ void {{domain_entity.entity_pascal}}DetailDialog::onRevertClicked() {
 {{#combo_domain_type}}
 void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}}() {
     BOOST_LOG_SEV(lg(), debug) << "Populating {{field}} combo";
+{{#combo_as_of_fetch_fn}}
+    std::function<std::expected<std::vector<{{combo_domain_type}}>, QString>(ClientManager*)>
+        fetch = &{{combo_fetch_fn}};
+    if (readOnly_) {
+        // Resolve this historical {{domain_entity.entity_singular}} version's
+        // {{field}} badge as-of its own recorded_at, not against the current
+        // (possibly since-renamed or deleted) lookup list -- see the As-of
+        // lookup resolution codegen facet story. set{{domain_entity.entity_pascal_short}}()/setReadOnly()
+        // re-invoke this populate call if they run after setClientManager(),
+        // so call order between them doesn't matter.
+        const auto as_of = QString::fromStdString(ores::platform::time::datetime::to_db_string(
+            {{domain_entity.qt.item_var}}_.recorded_at));
+        fetch = [as_of](ClientManager* cm) { return {{combo_as_of_fetch_fn}}(cm, as_of); };
+    }
+{{/combo_as_of_fetch_fn}}
     populateDynamicCombo<{{combo_domain_type}}>(
         ui_->{{widget}},
         this,
         clientManager_,
+{{#combo_as_of_fetch_fn}}
+        fetch,
+{{/combo_as_of_fetch_fn}}
+{{^combo_as_of_fetch_fn}}
         &{{combo_fetch_fn}},
+{{/combo_as_of_fetch_fn}}
         "{{combo_watcher_name}}",
 {{#combo_display_field}}
         [](const auto& t) { return QString::fromStdString(t.{{combo_display_field}}); },

@@ -191,8 +191,8 @@ void BookDetailDialog::setBook(const refdata::domain::book& book) {
     book_ = book;
     updateUiFromBook();
     // Re-resolve the as-of combos if setClientManager() already ran with a
-    // different (or no) book -- see the call-order note in
-    // populateBookStatusCombo().
+    // different (or no) book -- see the call-order
+    // note in populate*Combo() for each as-of field below.
     if (clientManager_ && readOnly_) {
         populateBookStatusCombo();
         populateRegulatoryBookTypeCombo();
@@ -227,12 +227,13 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusCombo->setEnabled(!readOnly);
     ui_->regulatoryBookTypeCombo->setEnabled(!readOnly);
+    ui_->isSweepableCheckBox->setEnabled(!readOnly);
     ui_->ratesCentreCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     // Re-resolve the as-of combos if setClientManager() already ran before
     // this call established readOnly_ -- see the call-order note in
-    // populateBookStatusCombo().
+    // populate*Combo() for each as-of field below.
     if (clientManager_) {
         populateBookStatusCombo();
         populateRegulatoryBookTypeCombo();
@@ -244,12 +245,12 @@ void BookDetailDialog::populateBookStatusCombo() {
     std::function<std::expected<std::vector<refdata::domain::book_status>, QString>(ClientManager*)>
         fetch = &fetch_book_statuses;
     if (readOnly_) {
-        // Resolve this historical book version's status badge as-of its own
-        // recorded_at, not against the current (possibly since-renamed or
-        // deleted) status list -- see the As-of lookup resolution codegen
-        // facet story. setBook()/setReadOnly() re-invoke this populate call
-        // if they run after setClientManager(), so call order between them
-        // doesn't matter -- see setBook()/setReadOnly().
+        // Resolve this historical book version's
+        // book_status badge as-of its own recorded_at, not against the current
+        // (possibly since-renamed or deleted) lookup list -- see the As-of
+        // lookup resolution codegen facet story. setBook()/setReadOnly()
+        // re-invoke this populate call if they run after setClientManager(),
+        // so call order between them doesn't matter.
         const auto as_of =
             QString::fromStdString(ores::platform::time::datetime::to_db_string(book_.recorded_at));
         fetch = [as_of](ClientManager* cm) {
@@ -282,7 +283,12 @@ void BookDetailDialog::populateRegulatoryBookTypeCombo() {
         ClientManager*)>
         fetch = &fetch_regulatory_book_types;
     if (readOnly_) {
-        // See the matching comment in populateBookStatusCombo().
+        // Resolve this historical book version's
+        // regulatory_book_type badge as-of its own recorded_at, not against the current
+        // (possibly since-renamed or deleted) lookup list -- see the As-of
+        // lookup resolution codegen facet story. setBook()/setReadOnly()
+        // re-invoke this populate call if they run after setClientManager(),
+        // so call order between them doesn't matter.
         const auto as_of =
             QString::fromStdString(ores::platform::time::datetime::to_db_string(book_.recorded_at));
         fetch = [as_of](ClientManager* cm) {
@@ -436,24 +442,27 @@ void BookDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Book saved successfully";
-            QString code = QString::fromStdString(self->book_.name);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->bookSaved(code);
-            self->notifySaveSuccess(tr("Book '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Book saved successfully";
+                    QString code = QString::fromStdString(self->book_.name);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->bookSaved(code);
+                    self->notifySaveSuccess(tr("Book '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

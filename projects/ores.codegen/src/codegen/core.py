@@ -1309,6 +1309,29 @@ def validate_explorer_interface(domain_entity):
             f"qt.explorer_interface requires qt.has_explorer_api")
 
 
+def has_as_of_combo_fields(detail_fields):
+    """
+    Whether any dynamic_combo detail field declares combo_as_of_fetch_fn --
+    an `_at_timepoint(ClientManager*, QString)` sibling of its normal
+    combo_fetch_fn, so a read-only/historical view of this entity resolves
+    that combo's options as-of the entity's own recorded_at, not against
+    the current (possibly since-renamed or deleted) lookup list. See the
+    As-of lookup resolution codegen facet story.
+
+    Args:
+        detail_fields (list[dict]): the qt.detail_fields list; not mutated.
+
+    Returns:
+        bool: gates the datetime.hpp include and the
+            setX()/setReadOnly() re-populate calls in the Qt detail-dialog
+            template.
+    """
+    return any(
+        f.get('combo_as_of_fetch_fn') for f in detail_fields
+        if f.get('type') == 'dynamic_combo'
+    )
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2707,6 +2730,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')
             )
+            # Gates the datetime.hpp include and the setX()/setReadOnly()
+            # re-populate calls below -- see has_as_of_combo_fields's own
+            # docstring for what combo_as_of_fetch_fn is for.
+            qt['has_as_of_combo_fields'] = has_as_of_combo_fields(detail_fields)
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )

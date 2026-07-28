@@ -30,6 +30,19 @@ ORE-derived canonical form adopted as the logical starting point.
 
 * Layperson's mental model
 
+In the DNS analogy this cluster uses throughout, an identifier plays the
+role of the IP address — the physical, fully-specified reference that a
+network (or a database query, or a NATS subject) can actually act on,
+as opposed to the domain name (the requirement) that describes what is
+wanted without naming any particular physical answer. The one place the
+DNS analogy stops rather than being stretched is the vendor projection
+step: there is no DNS counterpart to "re-express this IP address in a
+second registrar's own notation," the way $T_{\text{vendor}}$ must
+re-express an identifier in Bloomberg's or Reuters' own grammar. The
+CIDR aside below covers that coarseness relationship — why a requirement
+is necessarily less specific than the identifier that satisfies it —
+more precisely than DNS can.
+
 Think of an identifier as a form with two sections. The top section —
 asset class, qualifier, curve role, and (where relevant) a specific
 tenor or surface point — is exactly what a requirement already

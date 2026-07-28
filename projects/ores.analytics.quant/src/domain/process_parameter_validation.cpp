@@ -89,9 +89,11 @@ validate_yield_curve_process_parameters(const std::string& process_type,
 
     if (process_type == "cox_ingersoll_ross") {
         if (kappa <= 0.0)
-            return invalid("Cox-Ingersoll-Ross requires κ (mean reversion speed) to be strictly positive.");
+            return invalid(
+                "Cox-Ingersoll-Ross requires κ (mean reversion speed) to be strictly positive.");
         if (theta_path.front() <= 0.0)
-            return invalid("Cox-Ingersoll-Ross requires θ (mean reversion level) to be strictly positive.");
+            return invalid(
+                "Cox-Ingersoll-Ross requires θ (mean reversion level) to be strictly positive.");
         if (initial_rate < 0.0)
             return invalid("Cox-Ingersoll-Ross requires a non-negative initial rate.");
         return {};

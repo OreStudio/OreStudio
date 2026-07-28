@@ -169,9 +169,8 @@ void ReportDefinitionMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("report_concurrency_policy", value.toStdString());
@@ -188,9 +187,8 @@ void ReportDefinitionMdiWindow::setupTable() {
         });
     delegate->set_badge_color_resolver(
         5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("report_fsm_state", value.toStdString());

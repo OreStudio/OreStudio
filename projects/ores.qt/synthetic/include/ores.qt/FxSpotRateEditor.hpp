@@ -174,7 +174,8 @@ private:
 
     void onEngineChanged();
     void updateEngineUi(); // relabel headers/tooltips/warning and gate Add for "ornstein_uhlenbeck"
-    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ornstein_uhlenbeck"
+    [[nodiscard]] std::string
+    currentEngine() const; // "geometric" / "arithmetic" / "ornstein_uhlenbeck"
     [[nodiscard]] bool currentEngineSupportsMixing() const;
     [[nodiscard]] QString incrementNoun() const; // label noun for the active engine
     // Detailed hover text for a component row's Name/μ/σ/Weight cells, explaining

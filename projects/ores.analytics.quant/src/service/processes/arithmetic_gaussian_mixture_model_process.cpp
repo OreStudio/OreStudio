@@ -22,11 +22,12 @@
 
 namespace ores::analytics::quant::service {
 
-arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_process(std::vector<double> means,
-                                               std::vector<double> stdevs,
-                                               std::vector<double> weights,
-                                               double initial_price,
-                                               std::uint32_t seed)
+arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_process(
+    std::vector<double> means,
+    std::vector<double> stdevs,
+    std::vector<double> weights,
+    double initial_price,
+    std::uint32_t seed)
     : means_(std::move(means))
     , stdevs_(std::move(stdevs))
     , weights_(std::move(weights))
@@ -35,12 +36,14 @@ arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_pro
     , component_dist_(weights_.begin(), weights_.end()) {
 
     if (means_.size() != stdevs_.size() || means_.size() != weights_.size())
-        throw std::invalid_argument(
-            "arithmetic_gaussian_mixture_model_process: means, stdevs, weights must have equal size");
+        throw std::invalid_argument("arithmetic_gaussian_mixture_model_process: means, stdevs, "
+                                    "weights must have equal size");
     if (means_.empty())
-        throw std::invalid_argument("arithmetic_gaussian_mixture_model_process: at least one component required");
+        throw std::invalid_argument(
+            "arithmetic_gaussian_mixture_model_process: at least one component required");
     if (initial_price <= 0.0)
-        throw std::invalid_argument("arithmetic_gaussian_mixture_model_process: initial_price must be positive");
+        throw std::invalid_argument(
+            "arithmetic_gaussian_mixture_model_process: initial_price must be positive");
 }
 
 double arithmetic_gaussian_mixture_model_process::next() {

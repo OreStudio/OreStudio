@@ -1185,9 +1185,10 @@ void TenantApplyAndSummaryPage::initializePage() {
     QString summary = tr("<p>Your organisation has been onboarded successfully.</p>");
 
     if (wizard_->dataSourceMode() == TenantProvisioningWizard::DataSourceMode::acme) {
-        summary += tr("<p><b>Acme Corporation holding group provisioned:</b> four-party LEI hierarchy, "
-                      "GLEIF counterparties, and per-company business units/portfolios/books/"
-                      "accounts.</p>");
+        summary +=
+            tr("<p><b>Acme Corporation holding group provisioned:</b> four-party LEI hierarchy, "
+               "GLEIF counterparties, and per-company business units/portfolios/books/"
+               "accounts.</p>");
     } else if (!wizard_->selectedBundleCode().isEmpty()) {
         summary += tr("<p><b>Reference data loaded:</b> %1</p>").arg(wizard_->selectedBundleName());
     }

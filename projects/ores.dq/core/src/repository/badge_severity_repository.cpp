@@ -52,7 +52,8 @@ std::vector<domain::badge_severity> badge_severity_repository::read_latest(conte
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) | order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
         ctx,
@@ -67,8 +68,9 @@ badge_severity_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severity. code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<badge_severity_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
         ctx,

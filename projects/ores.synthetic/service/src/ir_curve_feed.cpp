@@ -269,10 +269,10 @@ make_ir_curve_feed(ores::nats::service::client& nats,
                    const std::string& caller_bearer_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
-    const auto initial_rate = cfg.price_source == "vintage" ?
-                                  resolve_vintage_initial_rate(
-                                      auth_nats, cfg, resolved, caller_bearer_token) :
-                                  cfg.initial_rate;
+    const auto initial_rate =
+        cfg.price_source == "vintage" ?
+            resolve_vintage_initial_rate(auth_nats, cfg, resolved, caller_bearer_token) :
+            cfg.initial_rate;
 
     auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
         lowercase(cfg.process_type),

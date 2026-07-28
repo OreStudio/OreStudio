@@ -59,8 +59,7 @@ BadgeCache::BadgeCache(ClientManager* clientManager, QObject* parent)
                 &BadgeCache::onNotificationReceived);
 
         connect(clientManager_, &ClientManager::loggedIn, this, &BadgeCache::subscribeToEvents);
-        connect(
-            clientManager_, &ClientManager::reconnected, this, &BadgeCache::subscribeToEvents);
+        connect(clientManager_, &ClientManager::reconnected, this, &BadgeCache::subscribeToEvents);
 
         if (clientManager_->isLoggedIn())
             subscribeToEvents();
@@ -93,11 +92,12 @@ void BadgeCache::onNotificationReceived(const QString& eventType,
     // another one-shot handler here would fire `refreshed` twice for what
     // is logically a single reload.
     if (!is_loading_) {
-        connect(this,
-                &BadgeCache::loaded,
-                this,
-                [this]() { emit refreshed(); },
-                Qt::SingleShotConnection);
+        connect(
+            this,
+            &BadgeCache::loaded,
+            this,
+            [this]() { emit refreshed(); },
+            Qt::SingleShotConnection);
     }
 
     loadAll();

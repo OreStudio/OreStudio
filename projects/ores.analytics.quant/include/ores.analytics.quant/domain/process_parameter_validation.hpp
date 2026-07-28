@@ -40,12 +40,11 @@ struct process_parameter_validation_result final {
  * both the UI and the process-construction machinery.
  *
  * This is the single source of truth for "are these parameters good?" — the
- * process classes (gaussian_mixture_model_process, ornstein_uhlenbeck_process, ...) still validate defensively
- * in their constructors, but callers that want a friendly ok/error-message
- * pair *before* attempting to build or persist a process should call this
- * instead of duplicating the rules. Lives in ores.analytics.quant (not
- * ores.synthetic) so it's usable from any consumer without pulling in a
- * heavier service-layer library — including the Qt client.
+ * process classes (gaussian_mixture_model_process, ornstein_uhlenbeck_process, ...) still validate
+ * defensively in their constructors, but callers that want a friendly ok/error-message pair
+ * *before* attempting to build or persist a process should call this instead of duplicating the
+ * rules. Lives in ores.analytics.quant (not ores.synthetic) so it's usable from any consumer
+ * without pulling in a heavier service-layer library — including the Qt client.
  *
  * For a mixing engine (geometric/arithmetic): means, stdevs and weights must
  * have equal, non-empty size, every stdev must be non-negative, and the

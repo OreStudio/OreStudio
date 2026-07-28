@@ -53,7 +53,7 @@ TEST_CASE("large compressible payload is compressed and flagged", tags) {
 
     REQUIRE(out.size() < large.size());
     REQUIRE(headers.at(std::string(ores::nats::headers::x_content_encoding)) ==
-           ores::nats::headers::content_encoding_gzip);
+            ores::nats::headers::content_encoding_gzip);
 }
 
 TEST_CASE("large incompressible payload is left uncompressed despite size", tags) {
@@ -76,8 +76,7 @@ TEST_CASE("large incompressible payload is left uncompressed despite size", tags
         REQUIRE(out.size() == large.size());
 }
 
-TEST_CASE("compress_if_worthwhile never overrides an existing content-encoding header",
-         tags) {
+TEST_CASE("compress_if_worthwhile never overrides an existing content-encoding header", tags) {
     const std::string large(ores::nats::compression_threshold_bytes * 4, 'a');
     std::unordered_map<std::string, std::string> headers{
         {std::string(ores::nats::headers::x_content_encoding), "identity"}};
@@ -97,8 +96,7 @@ TEST_CASE("decompress_if_flagged is a no-op without the header", tags) {
     REQUIRE(std::string(reinterpret_cast<const char*>(out.data()), out.size()) == data);
 }
 
-TEST_CASE("decompress_if_flagged throws on the gzip header with a non-gzip payload",
-         tags) {
+TEST_CASE("decompress_if_flagged throws on the gzip header with a non-gzip payload", tags) {
     // Pins the contract callers must handle: a message that claims gzip
     // encoding but isn't valid gzip (corrupted in transit, or a malformed
     // sender) throws rather than silently returning garbage. Every inbound
@@ -126,8 +124,8 @@ TEST_CASE("compress then decompress round-trips to the original bytes", tags) {
         ores::nats::decompress_if_flagged(std::span<const std::byte>(compressed), headers);
 
     REQUIRE(decompressed.size() == original.size());
-    REQUIRE(std::string(reinterpret_cast<const char*>(decompressed.data()),
-                        decompressed.size()) == original);
+    REQUIRE(std::string(reinterpret_cast<const char*>(decompressed.data()), decompressed.size()) ==
+            original);
 }
 
 TEST_CASE("round-trip preserves synthetic worst-case SVG-batch-sized binary data", tags) {
@@ -147,6 +145,6 @@ TEST_CASE("round-trip preserves synthetic worst-case SVG-batch-sized binary data
     const auto decompressed =
         ores::nats::decompress_if_flagged(std::span<const std::byte>(compressed), headers);
     REQUIRE(decompressed.size() == original.size());
-    REQUIRE(std::string(reinterpret_cast<const char*>(decompressed.data()),
-                        decompressed.size()) == original);
+    REQUIRE(std::string(reinterpret_cast<const char*>(decompressed.data()), decompressed.size()) ==
+            original);
 }

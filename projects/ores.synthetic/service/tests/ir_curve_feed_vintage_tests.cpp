@@ -68,8 +68,7 @@ TEST_CASE("select_vintage_anchor_entry returns nullptr for an empty template", t
     CHECK(select_vintage_anchor_entry(resolved) == nullptr);
 }
 
-TEST_CASE("select_vintage_anchor_entry is stable when several DEPOSIT entries tie on tenor",
-         tags) {
+TEST_CASE("select_vintage_anchor_entry is stable when several DEPOSIT entries tie on tenor", tags) {
     // Ties should not throw or crash; either candidate is an acceptable anchor. This just
     // documents that behaviour is deterministic (first-seen wins, since strictly-less-than never
     // replaces an equal ticks_ahead_end).

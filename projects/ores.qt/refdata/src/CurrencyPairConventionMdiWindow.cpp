@@ -163,12 +163,12 @@ void CurrencyPairConventionMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
-            auto* def = cache->resolve("currency_pair_convention_business_day_convention", value.toStdString());
+            auto* def = cache->resolve("currency_pair_convention_business_day_convention",
+                                       value.toStdString());
             if (!def) {
                 auto* reserved = cache->fallback();
                 if (!reserved)
@@ -182,12 +182,12 @@ void CurrencyPairConventionMdiWindow::setupTable() {
         });
     delegate->set_badge_color_resolver(
         5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
-            auto* def = cache->resolve("currency_pair_convention_spot_relative", value.toStdString());
+            auto* def =
+                cache->resolve("currency_pair_convention_spot_relative", value.toStdString());
             if (!def) {
                 auto* reserved = cache->fallback();
                 if (!reserved)
@@ -201,12 +201,12 @@ void CurrencyPairConventionMdiWindow::setupTable() {
         });
     delegate->set_badge_color_resolver(
         6, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
-            auto* def = cache->resolve("currency_pair_convention_end_of_month", value.toStdString());
+            auto* def =
+                cache->resolve("currency_pair_convention_end_of_month", value.toStdString());
             if (!def) {
                 auto* reserved = cache->fallback();
                 if (!reserved)

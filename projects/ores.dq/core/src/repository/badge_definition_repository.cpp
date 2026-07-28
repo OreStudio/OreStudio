@@ -53,7 +53,8 @@ std::vector<domain::badge_definition> badge_definition_repository::read_latest(c
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) | order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
         ctx,

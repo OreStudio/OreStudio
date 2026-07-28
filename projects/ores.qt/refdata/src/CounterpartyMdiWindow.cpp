@@ -176,9 +176,8 @@ void CounterpartyMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("party_type", value.toStdString());
@@ -195,9 +194,8 @@ void CounterpartyMdiWindow::setupTable() {
         });
     delegate->set_badge_color_resolver(
         3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("party_status", value.toStdString());

@@ -39,7 +39,8 @@ cox_ingersoll_ross_process::cox_ingersoll_ross_process(
     if (sigma_ < 0.0)
         throw std::invalid_argument("cox_ingersoll_ross_process: sigma must be non-negative");
     if (initial_rate < 0.0)
-        throw std::invalid_argument("cox_ingersoll_ross_process: initial_rate must be non-negative");
+        throw std::invalid_argument(
+            "cox_ingersoll_ross_process: initial_rate must be non-negative");
     if (dt_ <= 0.0)
         throw std::invalid_argument("cox_ingersoll_ross_process: dt must be strictly positive");
 }

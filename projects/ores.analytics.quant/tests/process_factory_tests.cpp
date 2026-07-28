@@ -87,7 +87,8 @@ TEST_CASE("process_factory builds a hull_white yield curve process with a piecew
 }
 
 TEST_CASE("process_factory builds a cox_ingersoll_ross yield curve process", "[process_factory]") {
-    auto p = process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 7);
+    auto p =
+        process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 7);
     REQUIRE(p != nullptr);
     CHECK(p->current() == 0.05);
     for (int i = 0; i < 100; ++i)
@@ -96,8 +97,10 @@ TEST_CASE("process_factory builds a cox_ingersoll_ross yield curve process", "[p
 
 TEST_CASE("process_factory yield curve engines are deterministic for a fixed seed",
           "[process_factory]") {
-    auto a = process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 42);
-    auto b = process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 42);
+    auto a =
+        process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 42);
+    auto b =
+        process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.5, {0.04}, 0.1, 0.05, 42);
     for (int i = 0; i < 10; ++i)
         CHECK(a->next() == b->next());
 }
@@ -114,6 +117,7 @@ TEST_CASE("process_factory rejects invalid yield curve parameters before constru
           "[process_factory]") {
     CHECK_THROWS_AS(process_factory::make_yield_curve_process("vasicek", 0.3, {}, 0.01, 0.03),
                     std::invalid_argument);
-    CHECK_THROWS_AS(process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.0, {0.03}, 0.01, 0.03),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        process_factory::make_yield_curve_process("cox_ingersoll_ross", 0.0, {0.03}, 0.01, 0.03),
+        std::invalid_argument);
 }

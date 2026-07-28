@@ -30,8 +30,7 @@ compress_if_worthwhile(std::span<const std::byte> data,
         headers.contains(std::string(headers::x_content_encoding)))
         return {data.begin(), data.end()};
 
-    const std::span<const char> as_chars(reinterpret_cast<const char*>(data.data()),
-                                         data.size());
+    const std::span<const char> as_chars(reinterpret_cast<const char*>(data.data()), data.size());
     auto compressed = ores::utility::compression::gzip_compress(as_chars);
     if (compressed.size() >= data.size())
         return {data.begin(), data.end()};

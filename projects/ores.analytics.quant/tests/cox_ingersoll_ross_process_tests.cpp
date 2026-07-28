@@ -27,18 +27,21 @@
 
 using ores::analytics::quant::service::cox_ingersoll_ross_process;
 
-TEST_CASE("cox_ingersoll_ross_process reports the initial rate before any next() call", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process reports the initial rate before any next() call",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.3, 0.03, 0.05, 0.03);
     CHECK(p.current() == 0.03);
 }
 
-TEST_CASE("cox_ingersoll_ross_process next() updates and returns the same value as current()", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process next() updates and returns the same value as current()",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.3, 0.03, 0.05, 0.03);
     const double n = p.next();
     CHECK(n == p.current());
 }
 
-TEST_CASE("cox_ingersoll_ross_process is deterministic for a fixed seed", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process is deterministic for a fixed seed",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process a(0.5, 0.04, 0.1, 0.05, 7);
     cox_ingersoll_ross_process b(0.5, 0.04, 0.1, 0.05, 7);
 
@@ -46,7 +49,8 @@ TEST_CASE("cox_ingersoll_ross_process is deterministic for a fixed seed", "[cox_
         CHECK(a.next() == b.next());
 }
 
-TEST_CASE("cox_ingersoll_ross_process never produces a negative rate over a long run", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process never produces a negative rate over a long run",
+          "[cox_ingersoll_ross_process]") {
     // Feller condition satisfied (2*kappa*theta = 0.06 >= sigma^2 = 0.04):
     // rate should stay strictly positive.
     cox_ingersoll_ross_process p(0.6, 0.05, 0.2, 0.05, 321);
@@ -54,9 +58,10 @@ TEST_CASE("cox_ingersoll_ross_process never produces a negative rate over a long
         CHECK(p.next() >= 0.0);
 }
 
-TEST_CASE("cox_ingersoll_ross_process never produces a negative rate even when the Feller condition is "
-          "violated",
-          "[cox_ingersoll_ross_process]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process never produces a negative rate even when the Feller condition is "
+    "violated",
+    "[cox_ingersoll_ross_process]") {
     // 2*kappa*theta = 0.02 < sigma^2 = 0.25: the process can touch zero,
     // but the exact simulation must never go negative.
     cox_ingersoll_ross_process p(0.1, 0.1, 0.5, 0.05, 321);
@@ -64,7 +69,8 @@ TEST_CASE("cox_ingersoll_ross_process never produces a negative rate even when t
         CHECK(p.next() >= 0.0);
 }
 
-TEST_CASE("cox_ingersoll_ross_process mean-reverts toward theta over a long run (statistical)", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process mean-reverts toward theta over a long run (statistical)",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.6, 0.05, 0.1, 0.1, 123);
     std::vector<double> tail;
     for (int i = 0; i < 8000; ++i) {
@@ -76,9 +82,10 @@ TEST_CASE("cox_ingersoll_ross_process mean-reverts toward theta over a long run 
     CHECK(mean == Catch::Approx(0.05).margin(0.02));
 }
 
-TEST_CASE("cox_ingersoll_ross_process with zero volatility follows the deterministic mean-reversion ODE "
-          "exactly",
-          "[cox_ingersoll_ross_process]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process with zero volatility follows the deterministic mean-reversion ODE "
+    "exactly",
+    "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.5, 0.03, 0.0, 0.08);
     double prev = 0.08;
     for (int i = 0; i < 50; ++i) {
@@ -90,7 +97,8 @@ TEST_CASE("cox_ingersoll_ross_process with zero volatility follows the determini
     CHECK(prev == Catch::Approx(0.03).margin(1e-6));
 }
 
-TEST_CASE("cox_ingersoll_ross_process handles a zero initial rate without producing NaN", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process handles a zero initial rate without producing NaN",
+          "[cox_ingersoll_ross_process]") {
     // lambda (non-centrality) is exactly 0 when r_t == 0 -- must not divide
     // by zero or otherwise misbehave.
     cox_ingersoll_ross_process p(0.3, 0.03, 0.05, 0.0, 55);
@@ -101,12 +109,14 @@ TEST_CASE("cox_ingersoll_ross_process handles a zero initial rate without produc
     }
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor(0) is exactly 1", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process discount_factor(0) is exactly 1",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.3, 0.03, 0.05, 0.03);
     CHECK(p.discount_factor(0) == 1.0);
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor decreases monotonically with maturity", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process discount_factor decreases monotonically with maturity",
+          "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.3, 0.03, 0.05, 0.03);
     double prev = 1.0;
     for (std::size_t t = 1; t <= 20; ++t) {
@@ -117,9 +127,10 @@ TEST_CASE("cox_ingersoll_ross_process discount_factor decreases monotonically wi
     }
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor with zero volatility matches the deterministic "
-          "closed form",
-          "[cox_ingersoll_ross_process]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process discount_factor with zero volatility matches the deterministic "
+    "closed form",
+    "[cox_ingersoll_ross_process]") {
     cox_ingersoll_ross_process p(0.5, 0.03, 0.0, 0.05);
     // r(s) = theta + (r0-theta)*e^{-kappa*s}; integral over [0,tau] has a
     // simple closed form -- recomputed independently here as an oracle.
@@ -131,8 +142,9 @@ TEST_CASE("cox_ingersoll_ross_process discount_factor with zero volatility match
     }
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor stays finite and in (0, 1] for long maturities",
-          "[cox_ingersoll_ross_process]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process discount_factor stays finite and in (0, 1] for long maturities",
+    "[cox_ingersoll_ross_process]") {
     // Regression test: the un-normalised textbook formula computes
     // exp(gamma*tau) directly, which overflows to +inf once gamma*tau
     // exceeds ~709 -- e.g. gamma around 0.3 with tau in the thousands
@@ -161,17 +173,20 @@ TEST_CASE("cox_ingersoll_ross_process rejects negative sigma", "[cox_ingersoll_r
     CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, -0.01, 0.03), std::invalid_argument);
 }
 
-TEST_CASE("cox_ingersoll_ross_process rejects a negative initial rate", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process rejects a negative initial rate",
+          "[cox_ingersoll_ross_process]") {
     CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, -0.001), std::invalid_argument);
 }
 
-TEST_CASE("cox_ingersoll_ross_process accepts a zero initial rate", "[cox_ingersoll_ross_process]") {
+TEST_CASE("cox_ingersoll_ross_process accepts a zero initial rate",
+          "[cox_ingersoll_ross_process]") {
     CHECK_NOTHROW(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.0));
 }
 
 // -- dt (year-fraction per tick) coverage --------------------------------
 
-TEST_CASE("cox_ingersoll_ross_process default dt is exactly today's un-scaled behaviour", "[cox_ingersoll_ross_process][dt]") {
+TEST_CASE("cox_ingersoll_ross_process default dt is exactly today's un-scaled behaviour",
+          "[cox_ingersoll_ross_process][dt]") {
     cox_ingersoll_ross_process implicit(0.5, 0.04, 0.1, 0.05, 7);
     cox_ingersoll_ross_process explicit_default(0.5, 0.04, 0.1, 0.05, 7, 1.0);
 
@@ -181,9 +196,10 @@ TEST_CASE("cox_ingersoll_ross_process default dt is exactly today's un-scaled be
         CHECK(implicit.discount_factor(t) == explicit_default.discount_factor(t));
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor with zero volatility reproduces the deterministic "
-          "closed form across a dt sweep",
-          "[cox_ingersoll_ross_process][dt]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process discount_factor with zero volatility reproduces the deterministic "
+    "closed form across a dt sweep",
+    "[cox_ingersoll_ross_process][dt]") {
     // Extends the existing "matches the deterministic closed form" test
     // (tau == raw ticks_ahead, dt == 1 implicitly) to a dt sweep, using the
     // same independently-recomputed oracle with tau = ticks_ahead * dt.
@@ -199,9 +215,10 @@ TEST_CASE("cox_ingersoll_ross_process discount_factor with zero volatility repro
     }
 }
 
-TEST_CASE("cox_ingersoll_ross_process discount_factor converges to the closed-form CIR bond price as dt "
-          "shrinks (zero volatility)",
-          "[cox_ingersoll_ross_process][dt]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process discount_factor converges to the closed-form CIR bond price as dt "
+    "shrinks (zero volatility)",
+    "[cox_ingersoll_ross_process][dt]") {
     // Same discretisation-convergence property as hull_white_process's
     // equivalent test: CIR's closed form is itself continuous-time exact
     // (unlike Hull-White's iterative recursion), so unlike Hull-White this
@@ -222,8 +239,9 @@ TEST_CASE("cox_ingersoll_ross_process discount_factor converges to the closed-fo
     }
 }
 
-TEST_CASE("cox_ingersoll_ross_process next_stochastic per-tick variance scales with dt (statistical)",
-          "[cox_ingersoll_ross_process][dt]") {
+TEST_CASE(
+    "cox_ingersoll_ross_process next_stochastic per-tick variance scales with dt (statistical)",
+    "[cox_ingersoll_ross_process][dt]") {
     const std::uint32_t seed = 99;
     const double kappa = 0.5, theta = 0.05, sigma = 0.05, r0 = 0.05;
 
@@ -248,7 +266,10 @@ TEST_CASE("cox_ingersoll_ross_process next_stochastic per-tick variance scales w
     CHECK(ratio == Catch::Approx(std::sqrt(1.0 / 365.0)).margin(0.03));
 }
 
-TEST_CASE("cox_ingersoll_ross_process rejects non-positive dt", "[cox_ingersoll_ross_process][dt]") {
-    CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.03, 42, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.03, 42, -1.0), std::invalid_argument);
+TEST_CASE("cox_ingersoll_ross_process rejects non-positive dt",
+          "[cox_ingersoll_ross_process][dt]") {
+    CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.03, 42, 0.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.03, 42, -1.0),
+                    std::invalid_argument);
 }

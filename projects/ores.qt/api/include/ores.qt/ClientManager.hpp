@@ -492,7 +492,8 @@ public:
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto raw = send_authenticated_request(subject, rfl::json::write(request), timeout);
+            const auto raw =
+                send_authenticated_request(subject, rfl::json::write(request), timeout);
             auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
                 return std::unexpected(std::string("Failed to deserialize response: ") +

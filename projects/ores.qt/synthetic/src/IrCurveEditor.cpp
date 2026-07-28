@@ -19,6 +19,8 @@
  */
 #include "ores.qt/IrCurveEditor.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/CurveShapePreviewChart.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -26,8 +28,6 @@
 #include "ores.qt/OreCurrencyComboBox.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/SampleShortRatePathsChart.hpp"
-#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/payment_frequency_protocol.hpp"
@@ -291,8 +291,7 @@ void IrCurveEditor::buildInstrumentTab() {
     priceSourceGroup_->addButton(fixedRadio_, 0);
     priceSourceGroup_->addButton(vintageRadio_, 1);
     outer->addWidget(fixedRadio_);
-    auto* fixedNote = new QLabel(
-        tr("r0 is set on the Process tab, used as entered."), tab);
+    auto* fixedNote = new QLabel(tr("r0 is set on the Process tab, used as entered."), tab);
     fixedNote->setContentsMargins(20, 0, 0, 8);
     fixedNote->setStyleSheet("color: gray;");
     outer->addWidget(fixedNote);
@@ -315,10 +314,8 @@ void IrCurveEditor::buildInstrumentTab() {
     browseVintageButton_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     vintageForm->addRow(QString(), browseVintageButton_);
     outer->addLayout(vintageForm);
-    connect(browseVintageButton_,
-            &QPushButton::clicked,
-            this,
-            &IrCurveEditor::onBrowseVintageClicked);
+    connect(
+        browseVintageButton_, &QPushButton::clicked, this, &IrCurveEditor::onBrowseVintageClicked);
 
     outer->addStretch(1);
 
@@ -342,10 +339,13 @@ void IrCurveEditor::buildInstrumentTab() {
         if (initialRateSpin_)
             initialRateSpin_->setEnabled(!vintage);
     };
-    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [this, updatePriceSourceEnablement](int id) {
-        BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
-        updatePriceSourceEnablement();
-    });
+    connect(priceSourceGroup_,
+            &QButtonGroup::idClicked,
+            this,
+            [this, updatePriceSourceEnablement](int id) {
+                BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
+                updatePriceSourceEnablement();
+            });
     // buildProcessTab() runs after this method returns, so initialRateSlider_/Spin_/advancedTable_
     // don't exist yet -- defer the first enablement sync to the next event loop turn.
     QTimer::singleShot(0, this, updatePriceSourceEnablement);
@@ -1069,8 +1069,8 @@ void IrCurveEditor::onBrowseVintageClicked() {
     const auto ccy = currencyCombo_->currentText().toStdString();
     const auto idx = indexNameCombo_->currentText().toStdString();
     if (ccy.empty() || idx.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: currency='" << ccy
-                                  << "', index='" << idx << "' (one or both empty).";
+        BOOST_LOG_SEV(lg(), warn) << "Browse vintages aborted: currency='" << ccy << "', index='"
+                                  << idx << "' (one or both empty).";
         QMessageBox::warning(this, tr("Incomplete"), tr("Pick currency and index name first."));
         return;
     }
@@ -1123,16 +1123,16 @@ void IrCurveEditor::onBrowseVintageClicked() {
                 << "No RATES/YIELD series found for qualifier '" << qualifier << "'.";
             return {.success = true, .vintages = {}, .error = {}};
         }
-        BOOST_LOG_SEV(lg(), debug) << "Matched series_id=" << series_id << " for qualifier '"
-                                   << qualifier << "'.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Matched series_id=" << series_id << " for qualifier '" << qualifier << "'.";
 
         m::get_market_observations_by_series_id_request obs_req;
         obs_req.series_id = series_id;
         obs_req.limit = 10000;
         auto obs_resp = cm->process_authenticated_request(obs_req);
         if (!obs_resp) {
-            BOOST_LOG_SEV(lg(), error) << "get_market_observations_by_series_id_request failed: "
-                                       << obs_resp.error();
+            BOOST_LOG_SEV(lg(), error)
+                << "get_market_observations_by_series_id_request failed: " << obs_resp.error();
             return {.success = false,
                     .vintages = {},
                     .error = QString::fromStdString(obs_resp.error())};
@@ -1180,15 +1180,15 @@ void IrCurveEditor::onBrowseVintageClicked() {
         }
 
         QDialog dialog(self);
-        dialog.setWindowTitle(
-            self->tr("Available vintages for %1/%2")
-                .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
+        dialog.setWindowTitle(self->tr("Available vintages for %1/%2")
+                                  .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
         auto* layout = new QVBoxLayout(&dialog);
         auto* list = new QListWidget(&dialog);
         for (const auto& v : result.vintages) {
-            list->addItem(QString("%1 — %2 (%3)").arg(QString::fromStdString(v.source),
-                                                       QString::fromStdString(v.date),
-                                                       QString::fromStdString(v.point_id)));
+            list->addItem(QString("%1 — %2 (%3)")
+                              .arg(QString::fromStdString(v.source),
+                                   QString::fromStdString(v.date),
+                                   QString::fromStdString(v.point_id)));
         }
         list->setCurrentRow(0);
         layout->addWidget(list);

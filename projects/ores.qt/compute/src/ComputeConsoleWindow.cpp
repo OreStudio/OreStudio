@@ -162,9 +162,8 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
         task_view_);
     task_delegate->set_badge_color_resolver(
         1, [cache = badge_cache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("compute_task_state", value.toStdString());
@@ -181,9 +180,8 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
         });
     task_delegate->set_badge_color_resolver(
         2, [cache = badge_cache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("compute_task_outcome", value.toStdString());

@@ -58,9 +58,8 @@ void EntityItemDelegate::paint(QPainter* painter,
             if (!text.isEmpty()) {
                 // Fallback for columns without a resolver — deliberately not
                 // gray, which is reserved for inactive/negative states.
-                badge_color_pair colors{color_constants::badge_fallback,
-                                        color_constants::badge_fallback_text,
-                                        true};
+                badge_color_pair colors{
+                    color_constants::badge_fallback, color_constants::badge_fallback_text, true};
                 auto it = column_resolvers_.find(col);
                 if (it != column_resolvers_.end())
                     colors = it->second(text);

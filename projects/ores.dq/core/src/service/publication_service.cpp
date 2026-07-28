@@ -460,7 +460,7 @@ publication_service::list_publishable_datasets(const std::vector<boost::uuids::u
 
 std::vector<bundle_publishable_dataset>
 publication_service::list_bundle_publishable_datasets(const std::string& bundle_code,
-                                                       bool resolve_dependencies) {
+                                                      bool resolve_dependencies) {
 
     BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code
                                << ", resolve_dependencies=" << resolve_dependencies;
@@ -482,8 +482,8 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
             try {
                 member_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(*row[0]));
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Invalid dataset_id in bundle " << bundle_code << ": "
-                                          << e.what();
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Invalid dataset_id in bundle " << bundle_code << ": " << e.what();
             }
         }
     }
@@ -491,8 +491,7 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
     auto result = list_publishable_datasets(member_ids, resolve_dependencies);
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " publishable datasets in bundle "
-                               << bundle_code << " (" << member_ids.size()
-                               << " direct member(s))";
+                               << bundle_code << " (" << member_ids.size() << " direct member(s))";
 
     return result;
 }

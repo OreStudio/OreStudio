@@ -209,9 +209,8 @@ void CurrencyMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         9, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("monetary_nature", value.toStdString());
@@ -228,9 +227,8 @@ void CurrencyMdiWindow::setupTable() {
         });
     delegate->set_badge_color_resolver(
         10, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair hardcoded_fallback{color_constants::badge_fallback,
-                                                 color_constants::badge_fallback_text,
-                                                 true};
+            static const badge_color_pair hardcoded_fallback{
+                color_constants::badge_fallback, color_constants::badge_fallback_text, true};
             if (!cache)
                 return hardcoded_fallback;
             auto* def = cache->resolve("currency_market_tier", value.toStdString());

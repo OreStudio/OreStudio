@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-up-wire-format-architecture
+#+pr: 1722
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -24,15 +24,16 @@ Produce the design document this story's remaining tasks execute
 against, covering:
 
 1. *Blast-radius audit*: every NATS-relevant =rfl::json::write=/
-   =rfl::json::read= call site, by component --
-   =ores.service::messaging::handler_helpers= (2 call sites, already
-   centralised), =ores.qt::ClientManager= (~10, spread across
-   =ClientManager.hpp=/=.cpp= plus =ClientManagerExportPortfolio.cpp=/
-   =ClientManagerTradeInstrument.cpp=), =ores.shell= (26 occurrences of
-   a copy-pasted =do_request=/=do_auth_request= helper across ~13
-   command files). Confirm =ores.cli='s =rfl::json= hits are config-
-   file I/O, not NATS calls, and drop it from scope (or file a small
-   follow-up if any genuine NATS call sites turn up).
+   =rfl::json::read= call site, by component -- =ores.service=
+   (=handler_helpers.hpp= plus any stragglers bypassing it),
+   =ores.qt= (=ClientManager= plus any stragglers bypassing it),
+   =ores.shell= (the copy-pasted =do_request=/=do_auth_request=
+   helper plus any call sites using some other direct pattern).
+   Confirm =ores.cli='s =rfl::json= hits are config-file I/O, not
+   NATS calls, and drop it from scope (or file a small follow-up if
+   any genuine NATS call sites turn up). The verified counts and
+   per-file breakdown live in =* Plan= below, not here, so this
+   section doesn't go stale if the audit is later corrected.
 2. *Architecture*: a concrete, non-polymorphic =wire_codec= type,
    holding a =wire_format= (=json= or =msgpack=) decided once at
    construction from a =.env=-driven config value, threaded through
@@ -53,30 +54,294 @@ against, covering:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-28                               |
 
 * Acceptance
 
-- [ ] Blast-radius table (component, file, call site, current
+- [X] Blast-radius table (component, file, call site, current
   behaviour) covering =ores.service=, =ores.qt=, =ores.shell=; scope
   decision recorded for =ores.cli=.
-- [ ] Architecture section specifying the =wire_codec= type's shape
+- [X] Architecture section specifying the =wire_codec= type's shape
   (constructor, template =encode=/=decode= methods), where it's
   constructed, and how it's threaded to each consumer.
-- [ ] Rationale section comparing the chosen design against per-
+- [X] Rationale section comparing the chosen design against per-
   message header negotiation, explaining why the simpler one was
   picked.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** 1. Blast-radius audit
+
+Every NATS-relevant =rfl::json::write=/=rfl::json::read= call site,
+found by grepping for direct calls and manually excluding unrelated
+usages (HTTP routes, DB entity JSON columns, config-file parsing --
+none of which are NATS wire format and are out of scope for this
+story).
+
+*** ores.service (server) -- one choke point plus real stragglers
+
+| File                                                | Line | Call                                    |
+|------------------------------------------------------+------+------------------------------------------|
+| =ores.service/messaging/handler_helpers.hpp=          |  175 | =reply()=: =rfl::json::write(resp)=       |
+| =ores.service/messaging/handler_helpers.hpp=          |  251 | =decode()=: =rfl::json::read<Req>(sv)=    |
+| =ores.service/service/heartbeat_publisher.hpp=        |  113 | =rfl::json::write(hb)= then =nats_.publish(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  178 | =rfl::json::write(event)= -> =nats->js_publish(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  251 | =rfl::json::write(req)= -> =nats.request_sync(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  260 | =rfl::json::read<get_step_result_response>(sv)= on the reply |
+
+=handler_helpers.hpp='s =reply()=/=decode()= are the single choke
+point almost every service handler in the codebase goes through
+(mirrors why the compression task only needed to touch =ores.nats='s
+two choke points), but they are *not* the whole story: the heartbeat
+publisher and the workflow-engine's step-request/event-publish path
+both bypass =handler_helpers.hpp= entirely and hard-code
+=rfl::json= directly against the NATS client. All four of these
+extra call sites need to move onto the injected =wire_codec= too --
+the migration task must not assume =handler_helpers.hpp= alone
+closes out =ores.service=.
+
+*** ores.qt -- ~10 ClientManager call sites plus stragglers, needs consolidation first
+
+| File                                    | Lines         | Call                                          |
+|-------------------------------------------+---------------+------------------------------------------------|
+| =ClientManager.hpp=                       | 443, 447      | =process_authenticated_request= (subject overload) |
+| =ClientManager.hpp=                       | 496-497       | =process_authenticated_request= (request overload) |
+| =ClientManager.hpp=                       | 652, 655      | =process_authenticated_request= (workspace-id overload) |
+| =ClientManager.hpp=                       | 692, 696      | =process_authenticated_request= (workspace-ctx overload) |
+| =ClientManager.cpp=                       | 609, 615      | login (=send_authenticated_request= + decode)  |
+| =ClientManager.cpp=                       | 645, 651      | signup (same shape)                            |
+| =ClientManager.cpp=                       | 681           | event-cache decode (=entity_change_event=)      |
+| =ClientManagerExportPortfolio.cpp=        | 46-47         | =exportPortfolio= (concrete, non-template)      |
+| =ClientManagerTradeInstrument.cpp=        | 36            | =trade_instrument= write                        |
+
+Every =process_authenticated_request= overload independently calls
+=rfl::json::write(request)= then, after the NATS round trip,
+=rfl::json::read<ResponseType>(raw)=. =exportPortfolio=/
+=trade_instrument= are deliberately concrete (non-template) wrappers
+-- per their own doc comments, to keep template instantiation out of
+callers with heavy accumulated context (avoiding an MSVC C1202 limit)
+-- so the migration must preserve that property, not templatise them
+away.
+
+=ClientManager= is not the only =ores.qt= consumer, though. Two more
+call sites bypass it entirely:
+
+| File                       | Lines               | Call                                          |
+|-----------------------------+----------------------+------------------------------------------------|
+| =synthetic/MarketSimulatorWindow.cpp= | 2505, 2507, 2575, 2631 | =rfl::json::read<...>(payload)= decoding =fx_spot_tick=/=ir_curve_tick= directly off a raw NATS subscription payload |
+| =application/ShellMdiWindow.cpp=      | 260, 265             | =rfl::json::write(req)=/=rfl::json::read<login_response>= for a login path via =shell_session_.request(...)=, separate from =ClientManager='s own login |
+
+Both need to route through the injected =wire_codec= as well.
+
+One near-miss investigated and excluded: =trading/OreImportWizard.cpp:862=
+(=req.import_choices_json = rfl::json::write(choices)=) encodes a
+domain field -- an embedded JSON string carried *inside*
+=ore_import_request= -- not the NATS wire-format serialization
+itself. The =req= object as a whole still goes through
+=cm->process_authenticated_request(req, ...)=, which the
+=ClientManager= audit above already covers, so this is not an
+additional call site.
+
+*** ores.shell -- 101 occurrences across 22 files, only some of them =do_request=
+
+=do_request=/=do_auth_request= is not a shared helper -- it is
+independently copy-pasted, in full, into the anonymous namespace of
+each command =.cpp= file (confirmed via
+=projects/ores.shell/src/app/commands/currencies_commands.cpp:40-59=
+as a representative sample; the same two ~15-line templates recur
+verbatim). The actual breakdown, verified by grep rather than
+estimated:
+
+- 13 files *define* their own copy of =do_request=/=do_auth_request=
+  (=account_parties_commands.cpp=, =accounts_commands.cpp=,
+  =countries_commands.cpp=, =currencies_commands.cpp=,
+  =change_reason_categories_commands.cpp=,
+  =change_reasons_commands.cpp=, =variability_commands.cpp=,
+  =tenants_commands.cpp=, =rbac_commands.cpp=, plus
+  =bundles_commands.cpp=, =crm_commands.cpp=,
+  =marketdata_commands.cpp=, which each independently copy-paste
+  their own =do_auth_request=), 18 definitions total (some files
+  define both templates). =provision_commands.cpp= has a *third,
+  differently-shaped* =do_request= -- it takes a =Request= object
+  plus a default =timeout= and =authenticated= bool and does its own
+  internal =rfl::json::write(req)= -- so the eventual shared helper
+  needs an overload covering that shape too, not just a drop-in
+  replacement for the other 12 files' identical pattern.
+- 60 actual call sites invoke these templates (=do_request<...>=/
+  =do_auth_request<...>=) across the files above.
+
+This duplication -- 18 copies of essentially the same ~15-line
+template pattern (plus one differently-shaped variant) across 13
+files -- is a pre-existing debt, independent of this story, that the
+migration should fix as a side effect (one shared helper, with an
+overload for =provision_commands.cpp='s shape, instead of 13 copies)
+rather than propagate.
+
+That is not the full picture, though: *7 more command files* have
+=rfl::json= call sites that don't go through =do_request=/
+=do_auth_request= at all, using some other/direct pattern against
+=nats_client::request()=/=authenticated_request()= not yet
+characterised in this doc -- =reports_commands.cpp=,
+=lei_commands.cpp=, =parties_commands.cpp=,
+=connection_commands.cpp=, =history_diff_renderer.cpp=,
+=synthetic_commands.cpp=, =workflow_commands.cpp= (15 occurrences
+between them), plus the previously-known stragglers below:
+
+| File                | Lines  | Call                                    |
+|-----------------------+--------+------------------------------------------|
+| =app/application.cpp=  | 70, 73 | bootstrap-status request/decode          |
+| =app/application.cpp=  | 93, 96 | login request/decode                     |
+| =app/repl.cpp=         | 139    | logout request                           |
+
+Honest grand total (excluding =config/options.cpp= and
+=config/login_options.cpp=, which write a JSON options value to a
+stream with no =nats_client=/=session.request= reference nearby --
+config-file I/O, not NATS wire format, same exclusion rationale as
+=ores.cli= below): *101 =rfl::json= occurrences across 22 files*.
+The migration task needs to consolidate all of it, not just the 13
+files that already use the named template pattern.
+
+*** ores.cli -- confirmed out of scope
+
+=ores.cli='s =rfl::json= hits (=config/import_options.cpp=,
+=config/delete_options.cpp=, =config/list_options.cpp=,
+=config/export_options.cpp=, =config/options.cpp=, =config/ore_roundtrip_options.cpp=)
+are all config-file/CLI-option I/O -- reading/writing a JSON options
+file, not building or parsing a NATS message body. Confirmed by
+inspecting the surrounding code: none of these call sites reference
+=nats_client=/=client::request_sync=/=publish=. Dropped from this
+story's scope entirely; no follow-up needed.
+
+** 2. Architecture
+
+*** The =wire_codec= type
+
+A concrete, non-polymorphic value type in =ores.nats= (new module,
+architecturally parallel to the already-shipped =ores.nats::compression=):
+
+#+begin_src cpp
+namespace ores::nats {
+
+enum class wire_format { json, msgpack };
+
+class wire_codec {
+public:
+    explicit wire_codec(wire_format format) : format_(format) {}
+
+    // Illustrative: the real implementation needs a default/unreachable
+    // arm (or equivalent exhaustiveness guard) so this doesn't trip
+    // -Wreturn-type; omitted here for brevity.
+    template <typename T>
+    std::vector<std::byte> encode(const T& obj) const {
+        switch (format_) {
+            case wire_format::json:    return to_bytes(rfl::json::write(obj));
+            case wire_format::msgpack: return to_bytes(rfl::msgpack::write(obj));
+        }
+        std::unreachable();
+    }
+
+    template <typename T>
+    rfl::Result<T> decode(std::span<const std::byte> data) const {
+        switch (format_) {
+            case wire_format::json:    return rfl::json::read<T>(as_string_view(data));
+            case wire_format::msgpack: return rfl::msgpack::read<T>(as_char_span(data));
+        }
+        std::unreachable();
+    }
+
+private:
+    wire_format format_;
+};
+
+}
+#+end_src
+
+Deliberately *not* polymorphic (no virtual functions): the format is
+decided once, at construction, and never changes for the instance's
+lifetime -- there is nothing here that benefits from indirection.
+=wire_format= is a plain 1-byte enum and =wire_codec= holds nothing
+else, so it is trivially copyable and cheap to pass by value,
+reference, or hold as a member wherever a consumer needs it. The
+=switch= inside =encode=/=decode= is not "runtime format switching"
+in the sense this story rejects (see below) -- it is a single branch
+on a value fixed at process startup, not a per-message inspection of
+incoming data; the branch predictor sees the same outcome on every
+call for the process's entire lifetime.
+
+Confirmed viable: =reflect-cpp='s =rfl::msgpack::Writer= already
+special-cases any =MutableContiguousByteContainer= (which
+=std::vector<std::uint8_t>= satisfies) via =msgpack_pack_bin=/
+=msgpack_pack_bin_body= -- native MessagePack binary framing, not an
+array of small integers and not base64. No custom serialization code
+is needed for any existing reflectable type; swapping =wire_format=
+is sufficient on its own.
+
+*** Config and construction
+
+One new =.env= value, e.g. =ORES_NATS_WIRE_FORMAT=json|msgpack=
+(default =json=, preserving today's behaviour for any process that
+doesn't set it), read once at process startup alongside existing NATS
+connection config (=nats_options=/=nats_configuration=). A single
+=wire_codec= instance is constructed from the resolved value and
+threaded to every consumer via dependency injection:
+
+- *Server* (=ores.service::messaging=): =reply()=/=decode()= take (or
+  close over) the codec; since these are free template functions
+  already parameterised on the message type, the natural shape is an
+  extra =const wire_codec&= parameter, or a codec held on the
+  =ores::nats::service::client= instance already passed to every
+  handler (avoiding a signature change to every handler).
+- *Qt client* (=ClientManager=): one =wire_codec= member, constructed
+  once when the client is constructed/connects, used by the
+  consolidated request helpers (see the =ClientManager= migration
+  task).
+- *Shell client*: one =wire_codec=, constructed once at
+  =ores.shell='s application startup, passed into the consolidated
+  =do_request=/=do_auth_request= helper (see the shell migration
+  task).
+
+** 3. Rationale versus the rejected alternative
+
+*Considered*: mirror the compression feature's design exactly -- a
+self-describing =X-Content-Type= NATS header (=application/json= /
+=application/msgpack=) stamped by the sender, auto-detected and
+dispatched-on by the receiver regardless of its own configured
+default. This would allow a genuinely mixed fleet: any service could
+switch formats independently, with zero coordination, and safely
+interoperate with services still on the old format mid-rollout.
+
+*Rejected*, per explicit instruction: this story wants a single
+decision made once at startup, not per-message runtime format
+detection. The header approach's extra flexibility comes at a real
+cost this story chooses not to pay:
+
+- Every =decode()= call becomes conditional on message content (a
+  header lookup plus a branch) rather than on a value fixed for the
+  process's whole lifetime -- a qualitatively different, "instantiate
+  a strategy chosen once and use it everywhere" pattern being asked
+  for here.
+- It reintroduces a small surface for misconfiguration/ambiguity (a
+  message with no header, a header naming an unsupported format) that
+  a whole-environment =.env= convention doesn't have.
+- The claimed benefit (safe incremental rollout across a mixed fleet)
+  is not a requirement this story was asked to satisfy -- =.env= is
+  explicitly the intended control surface, implying environments are
+  configured (and rolled out) as a unit, matching how this codebase's
+  other =.env=-driven settings already work.
+
+The compression feature's header-based design remains correct for
+*that* feature specifically, because compression's own trade-off is
+different: whether to compress is a per-message, size-dependent
+decision (small messages skip it entirely) that has no equivalent
+"whole environment agrees" framing -- there is no size threshold
+=.env= could sensibly encode. Wire *format*, by contrast, is a binary
+choice with no natural per-message trigger, making the simpler
+single-decision design both sufficient and preferable here.
 
 * Notes
 
@@ -95,12 +360,55 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1722][#1722]] | [agile] Write up NATS wire-format architecture and design decision |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.service audit missed heartbeat_publisher.hpp and workflow_helpers.hpp call sites, "already centralised" framing wrong | task_write-up-wire-format-architecture.org | Fixed | Added the 4 missed call sites and corrected the framing |
+| 2 | ores.qt audit missed MarketSimulatorWindow.cpp and ShellMdiWindow.cpp call sites | task_write-up-wire-format-architecture.org | Fixed | Added both, plus an explicit note that OreImportWizard.cpp:862 was checked and is a false positive (embedded JSON domain field, not wire format) |
+| 3 | ores.shell count ("26 across ~13 files") doesn't match reality; task-count in story.org also stale | task_write-up-wire-format-architecture.org, story.org | Fixed | Corrected to the verified breakdown (101 occurrences across 22 files); story.org's "Now" field corrected from 4 to 5 remaining tasks |
+|   | Minor nits (typo, missing default/unreachable arm in wire_codec snippet) | task_write-up-wire-format-architecture.org | Fixed | "suffient" -> "sufficient"; added std::unreachable() note to the snippet |
+| 4 | ores.shell definition count still wrong after round 3 fix: 14/9 claimed, actually 18/13, plus provision_commands.cpp is a differently-shaped third variant | task_write-up-wire-format-architecture.org | Fixed | Corrected to 18 definitions across 13 files, noted provision_commands.cpp's distinct Request-object shape |
+| 5 | Stale "9 files" leftover survived the round-4 fix in one sentence | task_write-up-wire-format-architecture.org | Fixed | Updated to "13 files" for consistency with the rest of the section |
+| 6 | Goal section and story.org's Tasks table still stated the original wrong audit numbers (2 sites/already centralised; 26 occurrences/~13 files) | task_write-up-wire-format-architecture.org, story.org, task_consolidate-migrate-shell-wire-codec.org | Fixed | Reworded Goal to avoid restating counts that go stale; corrected story.org's Tasks row and, while at it, the sibling shell-migration task's stale description/Goal too |
+| 7 | Sibling task's reworded Goal listed application.cpp/repl.cpp alongside the 7-file/15-occurrence group, implying 9 files behind that count | task_consolidate-migrate-shell-wire-codec.org | Fixed | Separated application.cpp/repl.cpp as distinct previously-known stragglers, matching the write-up task's Plan presentation |
 
 * Result
+
+Design doc complete in =* Plan= above. Key outputs for the
+implementation tasks that follow:
+
+- Blast-radius audit: 6 call sites in =ores.service= (the
+  =handler_helpers.hpp= choke point plus 4 stragglers in
+  =heartbeat_publisher.hpp=/=workflow_helpers.hpp=), ~10 in
+  =ores.qt::ClientManager= plus 2 more stragglers (needs consolidation
+  first), 101 occurrences across 22 files in =ores.shell= (only 60 of
+  which go through the copy-pasted =do_request=/=do_auth_request=
+  pattern across 13 defining files (18 definitions, one of them --
+  =provision_commands.cpp= -- a differently-shaped variant); the rest
+  use other direct patterns), all needing de-duplication into shared
+  helpers.
+  =ores.cli= confirmed genuinely out of scope -- its =rfl::json= hits
+  are config-file I/O, no NATS call sites found. (Corrected post-review:
+  the original pass under-counted =ores.service= and =ores.qt= call
+  sites and significantly under-counted =ores.shell='s; see =* Review=
+  above.)
+- Architecture: a non-polymorphic =wire_codec= value type (1-byte
+  enum member, template =encode=/=decode= methods), constructed once
+  at process startup from a new =.env= value
+  (=ORES_NATS_WIRE_FORMAT=, default =json=), threaded to each
+  consumer via dependency injection. Confirmed viable:
+  =reflect-cpp='s =rfl::msgpack::Writer= already packs
+  =std::vector<uint8_t>= as native binary via =msgpack_pack_bin=, no
+  custom serialization code needed.
+- Rationale recorded for rejecting the header-based per-message
+  negotiation alternative (which the already-shipped compression
+  feature uses) in favour of the simpler single-startup-decision
+  design, per explicit direction: wire format is a binary,
+  environment-wide choice with no natural per-message trigger, unlike
+  compression's genuinely per-message, size-dependent decision.
+
+No code changed -- this task is the spec the remaining four
+implementation tasks execute against.

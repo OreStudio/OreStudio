@@ -2,7 +2,7 @@
 :ID: 926379AF-B17C-4700-AF89-6AD1EB006281
 :END:
 #+title: Task: Consolidate and migrate ores.shell request helpers to wire_codec
-#+description: The do_request/do_auth_request template helper is copy-pasted independently into roughly thirteen shell command .cpp files (26 occurrences), each hard-coding rfl::json. De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly.
+#+description: The do_request/do_auth_request template helper is copy-pasted independently into thirteen shell command .cpp files (18 definitions, 60 call sites), plus 7 more files using other direct rfl::json patterns (101 occurrences across 22 files total). De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly.
 #+type: task
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
@@ -21,17 +21,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 =ores.shell='s =do_request=/=do_auth_request= template helper is
-currently copy-pasted independently into roughly thirteen command
-=.cpp= files (26 occurrences total, e.g.
-=currencies_commands.cpp=), each hard-coding =rfl::json::read= in its
-own local anonymous-namespace copy. De-duplicate into one shared
-helper in a shell-wide header (a real cleanup win independent of the
-format work -- this duplication predates this story), then have that
-single helper route through an injected =wire_codec= instead of
-=rfl::json= directly. Also migrate the handful of other direct
-=rfl::json= call sites in =ores.shell= that don't go through
-=do_request= (e.g. =application.cpp='s bootstrap/login calls,
-=repl.cpp='s logout call).
+currently copy-pasted independently into thirteen command =.cpp=
+files (18 definitions, 60 call sites, e.g. =currencies_commands.cpp=),
+each hard-coding =rfl::json= in its own local anonymous-namespace
+copy; one of those (=provision_commands.cpp=) has a differently-shaped
+=do_request= taking a =Request= object plus =timeout=/=authenticated=
+params, needing its own overload rather than a drop-in replacement.
+De-duplicate into one shared helper in a shell-wide header (a real
+cleanup win independent of the format work -- this duplication
+predates this story), then have that single helper route through an
+injected =wire_codec= instead of =rfl::json= directly. Also migrate
+the 7 more command files (15 occurrences) using other direct
+=rfl::json= patterns that don't go through =do_request= at all
+(=reports_commands.cpp=, =lei_commands.cpp=, =parties_commands.cpp=,
+=connection_commands.cpp=, =history_diff_renderer.cpp=,
+=synthetic_commands.cpp=, =workflow_commands.cpp=), plus the
+separate, previously-known stragglers outside =commands/=:
+=application.cpp='s bootstrap/login calls and =repl.cpp='s logout
+call. Full breakdown recorded in the write-up task's =* Plan=.
 
 * Status
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_24:v0:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -48,11 +48,11 @@ task.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Design doc done; 5 implementation tasks remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the write-up/design task.        |
+| Next          | Start the wire_codec foundation task.  |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance
@@ -82,14 +82,31 @@ task.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AC1B96D9-D86C-4BBB-94A4-E187469A0A8F][Write up the wire-format architecture analysis and design decision]] | BACKLOG | | | Document the current blast-radius audit (every NATS-relevant rfl::json call site across ores.service, ores.qt, ores.shell, plus confirming ores.cli is out of scope), the chosen architecture (a single non-polymorphic wire_codec constructed once at startup from .env, threaded via dependency injection, no per-message negotiation), and the rationale versus the rejected per-message header-negotiation alternative. This becomes the spec the later implementation tasks execute against. |
+| [[id:AC1B96D9-D86C-4BBB-94A4-E187469A0A8F][Write up the wire-format architecture analysis and design decision]] | DONE | 2026-07-28 | 2026-07-28 | Document the current blast-radius audit (every NATS-relevant rfl::json call site across ores.service, ores.qt, ores.shell, plus confirming ores.cli is out of scope), the chosen architecture (a single non-polymorphic wire_codec constructed once at startup from .env, threaded via dependency injection, no per-message negotiation), and the rationale versus the rejected per-message header-negotiation alternative. This becomes the spec the later implementation tasks execute against. |
 | [[id:D7D9EF5E-0299-47C4-A4FD-E64B284DF8DA][Build wire_codec abstraction and startup config in ores.nats]] | BACKLOG | | | Add a wire_format enum (json, msgpack), a .env-driven config value read once at startup, and a wire_codec class holding the chosen format at construction with template encode/decode methods dispatching to rfl::json or rfl::msgpack. Non-polymorphic, no per-message branching on message content -- the format is fixed for the codec instance's lifetime. Round-trip unit tests for both formats. This is the shared foundation every other task in this story depends on. |
 | [[id:7E1FE4CF-3FFD-4977-8ED8-2D7D51461BDA][Migrate ores.service messaging handler_helpers to wire_codec]] | BACKLOG | | | Update reply() and decode() in ores.service/messaging/handler_helpers.hpp to route through an injected wire_codec instead of a hard-coded rfl::json call. This is the server-side choke point almost every service handler already goes through, so this single change flips every service's request/response handling in one pass. Audit for any service-to-service NATS calls that bypass these two helpers and migrate or document them separately. |
 | [[id:12674934-6F8E-40C9-A8D7-ED29B0ADF322][Consolidate and migrate ores.qt ClientManager to wire_codec]] | BACKLOG | | | ClientManager.hpp/.cpp plus ClientManagerExportPortfolio.cpp and ClientManagerTradeInstrument.cpp currently have around ten separate call sites hard-coding rfl::json (process_authenticated_request variants, send_authenticated_request variants, login, signup, event-cache decode, exportPortfolio, trade_instrument). Consolidate these into one or two shared private helpers first, reducing duplication as a side effect, then have those route through an injected wire_codec instead of rfl::json directly. |
-| [[id:926379AF-B17C-4700-AF89-6AD1EB006281][Consolidate and migrate ores.shell request helpers to wire_codec]] | BACKLOG | | | The do_request/do_auth_request template helper is copy-pasted independently into roughly thirteen shell command .cpp files (26 occurrences), each hard-coding rfl::json. De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly. |
+| [[id:926379AF-B17C-4700-AF89-6AD1EB006281][Consolidate and migrate ores.shell request helpers to wire_codec]] | BACKLOG | | | The do_request/do_auth_request template helper is copy-pasted independently into thirteen shell command .cpp files (18 definitions, 60 call sites), plus 7 more files using other direct rfl::json patterns (101 occurrences across 22 files total). De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly. |
 | [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] | BACKLOG | | | With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe. |
 
 * Decisions
+
+** Architecture: non-polymorphic wire_codec, single startup decision, no per-message negotiation
+
+Decided in the [[id:AC1B96D9-D86C-4BBB-94A4-E187469A0A8F][write-up task]]. A self-describing, per-message header
+(mirroring the compression feature's =X-Content-Encoding=) was
+considered and explicitly rejected in favour of a =wire_codec= value
+type holding a =wire_format= fixed at construction from a =.env=
+value, read once at process startup and threaded to every consumer
+via dependency injection. Rationale: wire format is a binary,
+environment-wide choice with no natural per-message trigger, unlike
+compression's genuinely per-message, size-dependent decision -- the
+header approach's flexibility (safe mixed-fleet rollout) isn't a
+requirement here, and =.env= is explicitly the intended control
+surface. Full blast-radius audit (6 call sites in =ores.service=, ~10
+plus stragglers in =ores.qt=, 101 across 22 files in =ores.shell=;
+=ores.cli= confirmed out of scope) and the =wire_codec= type's shape
+are recorded in that task's =* Plan=.
 
 * Out of scope
 

@@ -120,11 +120,11 @@ plan, and a data migration for already-provisioned parties.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-23                               |
 
 * Acceptance
@@ -213,3 +213,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented option 2 from =* Analysis=: each synthetic theme is now
+one =ores_dq_datasets_tbl= row (=synthetic.themes.<theme>=) published
+by a single =ores_synthetic_publish_theme_from_dq_fn=, replacing the
+two independent =ores_synthetic_publish_{fx_spot,ir_curve}_configs_from_dq_fn=
+functions. The merged function resolves one container/collection
+folder, then loops FX and IR artefact rows inside a single
+transaction -- each asset class's own asset_class/instrument_type
+sub-folder is still created, but only if that asset class has rows
+for the theme, so a theme with just FX (the legacy
+=synthetic.fx_spot_configs=-only dataset) still works unchanged.
+=price_source=/=vintage_source=/=vintage_date= handling carried
+forward from both original functions.
+
+Collapsed accordingly: the NATS subject (one
+=synthetic.v1.theme.publish-from-dq= queue subscription instead of
+two), the =publish_from_dq_handler= allow-list, the =dq_artefact_types=
+row (=synthetic_theme= replacing the two per-asset-class rows), and
+each theme's DQ bundle membership (1 member instead of 2). FX seed
+scripts now register the shared theme dataset; IR seed scripts look
+it up instead of re-registering. Dataset-dependency rows and CRM
+topology bundle comments repointed to the new
+=synthetic.themes.*= codes.
+
+Migration for already-provisioned tenants: this environment's own
+Barclays tenant was re-provisioned from scratch (=db recreate= +
+live shell provisioning) rather than migrated in place, since a dev
+environment's provisioned data is disposable and =db recreate=
+already rebuilds it idempotently from the new SQL. No other tenant
+exists to migrate. A real-world already-provisioned-tenant migration
+(e.g. production) is out of scope for this task and not needed by
+its acceptance, which only required the gap not be silently left
+broken -- it is called out here explicitly.
+
+Acceptance met:
+- Verified via a clean =db recreate= (zero errors) and full live
+  Barclays shell provisioning.
+- Direct SQL check against =ores_synthetic_folders_tbl= confirmed
+  exactly one collection folder per theme with FX/Rates
+  asset-class sub-folders as children, for all three themes
+  (Uniform Volatility Demo, 2016 ORE Samples, 2026 Realistic).
+- =* Plan= above records the design (via the linked design note)
+  written before implementation started, per this task's own
+  acceptance criterion.
+- Coordinated with the concurrent =bright_faraday= worktree's
+  vintage-source work (PR #1705) before starting, confirmed no
+  file-level clash once that PR merged into main.
+
+Not separately re-verified in this pass: the Market Simulator Qt
+tree's Start/Stop-at-Root behaviour and the "Synthetic data themes"
+manual test scenario end to end -- the SQL-level structural check
+above is the direct evidence for the one-dataset-per-theme model;
+a full UI-level regression pass is left to the next hands-on QA
+session in this environment.

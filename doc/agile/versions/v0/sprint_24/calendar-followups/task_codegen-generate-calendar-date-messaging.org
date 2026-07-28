@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/codegen-generate-calendar-date-messaging
-#+pr:
+#+pr: 1714
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1714][#1714]] | [refdata,codegen] Generate calendar_date messaging layer, fix date-column validation in service templates |
 
 * Review
 

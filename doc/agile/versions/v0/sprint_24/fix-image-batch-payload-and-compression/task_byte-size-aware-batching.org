@@ -41,16 +41,30 @@ real constraint being enforced.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
 
--
+- [X] =ImageCache='s batch-fetch logic tracks cumulative estimated
+  payload size, not just image count -- =image_info= gained
+  =size_bytes= (free server-side; the list handler already loaded
+  each image's full data into memory), and =fetchImagesInBatches=
+  cuts a batch before adding an image that would push the running
+  estimate past a 900KB safe threshold.
+- [X] Verified by hand-tracing (own review + four independent
+  automated review passes) against the decision task's worst-case
+  scenarios: unknown-size images, mixed sizes, a single oversized
+  image, and the count-cap boundary. No unit test harness exists for
+  =ores.qt/api= to automate this (declined as a separate, non-blocking
+  finding -- see =* Review=).
+- [X] =MAX_IMAGES_PER_REQUEST= revisited: raised from 15 to 200,
+  repurposed as a generous sanity bound rather than the primary
+  defence, per the story's acceptance criteria.
 
 * Plan
 
@@ -87,3 +101,29 @@ via its "Verifies task" field.
 | 4 | Round-1 fix (#1) introduces a deadlock: loadImageList() early-returns without setting its QFuture when disconnected, so onImageListLoaded() never fires to clear the deferred wait, permanently stalling load_all_in_progress_ | ImageCache.cpp | Fixed | finishLoadAllChain() now checks connectivity itself; when disconnected it fetches immediately (matching pre-fix behaviour) instead of deferring, since a real fetch can't happen either way. |
 
 * Result
+
+Shipped in PR #1712. =image_info= gained =size_bytes= (free
+server-side); =ImageCache= caches it in =available_images_= across
+both full and incremental loads; =fetchImagesInBatches= cuts batches
+by cumulative estimated wire size (900KB threshold, unknown-size
+images always get their own batch) instead of a count cap alone.
+Deliberately estimates against uncompressed size rather than assuming
+the compression task's transparent gzip is in effect, so this backstop
+holds independent of compression's actual ratio.
+
+Two review rounds: round 1 fixed a real gap where the optimization
+might not engage on the common login path due to an unguaranteed
+=loadAll()=/=loadImageList()= async race (added
+=finishLoadAllChain()=/=resumeDeferredLoadAllChain()=); round 2 fixed
+a deadlock that fix itself introduced (disconnected-client path never
+resumed the deferred wait). Both confirmed fixed by follow-up
+automated review passes with no new findings. Two minor findings
+(O(n·m) merge scan, no unit tests for the batching cutover logic)
+declined as non-blocking.
+
+Two follow-up tasks split off separately: raw-bytes-not-base64 (not
+load-bearing, deferred pre-existing task) and decompressing
+=jetstream_admin='s peek path (unrelated to this task, filed from the
+compression PR's review).
+
+Full local verification: build clean, ctest 74/74 passing.

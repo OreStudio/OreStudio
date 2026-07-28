@@ -50,7 +50,7 @@ task.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Design doc done; 4 implementation tasks remain. |
+| Now           | Design doc done; 5 implementation tasks remain. |
 | Waiting on    | Nothing.                               |
 | Next          | Start the wire_codec foundation task.  |
 | Last touched  | 2026-07-28                               |
@@ -103,10 +103,10 @@ environment-wide choice with no natural per-message trigger, unlike
 compression's genuinely per-message, size-dependent decision -- the
 header approach's flexibility (safe mixed-fleet rollout) isn't a
 requirement here, and =.env= is explicitly the intended control
-surface. Full blast-radius audit (2 call sites in =ores.service=, ~10
-in =ores.qt=, 26 across ~13 files in =ores.shell=; =ores.cli=
-confirmed out of scope) and the =wire_codec= type's shape are
-recorded in that task's =* Plan=.
+surface. Full blast-radius audit (6 call sites in =ores.service=, ~10
+plus stragglers in =ores.qt=, 101 across 22 files in =ores.shell=;
+=ores.cli= confirmed out of scope) and the =wire_codec= type's shape
+are recorded in that task's =* Plan=.
 
 * Out of scope
 

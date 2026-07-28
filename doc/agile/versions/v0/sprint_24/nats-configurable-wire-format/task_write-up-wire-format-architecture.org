@@ -82,19 +82,29 @@ usages (HTTP routes, DB entity JSON columns, config-file parsing --
 none of which are NATS wire format and are out of scope for this
 story).
 
-*** ores.service (server) -- already centralised
+*** ores.service (server) -- one choke point plus real stragglers
 
 | File                                                | Line | Call                                    |
 |------------------------------------------------------+------+------------------------------------------|
 | =ores.service/messaging/handler_helpers.hpp=          |  175 | =reply()=: =rfl::json::write(resp)=       |
 | =ores.service/messaging/handler_helpers.hpp=          |  251 | =decode()=: =rfl::json::read<Req>(sv)=    |
+| =ores.service/service/heartbeat_publisher.hpp=        |  113 | =rfl::json::write(hb)= then =nats_.publish(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  178 | =rfl::json::write(event)= -> =nats->js_publish(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  251 | =rfl::json::write(req)= -> =nats.request_sync(...)= |
+| =ores.service/messaging/workflow_helpers.hpp=         |  260 | =rfl::json::read<get_step_result_response>(sv)= on the reply |
 
-Two call sites, already the single choke point almost every service
-handler in the codebase goes through (mirrors why the compression
-task only needed to touch =ores.nats='s two choke points). This is
-the cheapest, highest-leverage migration in the story.
+=handler_helpers.hpp='s =reply()=/=decode()= are the single choke
+point almost every service handler in the codebase goes through
+(mirrors why the compression task only needed to touch =ores.nats='s
+two choke points), but they are *not* the whole story: the heartbeat
+publisher and the workflow-engine's step-request/event-publish path
+both bypass =handler_helpers.hpp= entirely and hard-code
+=rfl::json= directly against the NATS client. All four of these
+extra call sites need to move onto the injected =wire_codec= too --
+the migration task must not assume =handler_helpers.hpp= alone
+closes out =ores.service=.
 
-*** ores.qt::ClientManager -- ~10 call sites, needs consolidation first
+*** ores.qt -- ~10 ClientManager call sites plus stragglers, needs consolidation first
 
 | File                                    | Lines         | Call                                          |
 |-------------------------------------------+---------------+------------------------------------------------|
@@ -117,27 +127,74 @@ callers with heavy accumulated context (avoiding an MSVC C1202 limit)
 -- so the migration must preserve that property, not templatise them
 away.
 
-*** ores.shell -- 26 occurrences, duplicated across ~13 files
+=ClientManager= is not the only =ores.qt= consumer, though. Two more
+call sites bypass it entirely:
+
+| File                       | Lines               | Call                                          |
+|-----------------------------+----------------------+------------------------------------------------|
+| =synthetic/MarketSimulatorWindow.cpp= | 2505, 2507, 2575, 2631 | =rfl::json::read<...>(payload)= decoding =fx_spot_tick=/=ir_curve_tick= directly off a raw NATS subscription payload |
+| =application/ShellMdiWindow.cpp=      | 260, 265             | =rfl::json::write(req)=/=rfl::json::read<login_response>= for a login path via =shell_session_.request(...)=, separate from =ClientManager='s own login |
+
+Both need to route through the injected =wire_codec= as well.
+
+One near-miss investigated and excluded: =trading/OreImportWizard.cpp:862=
+(=req.import_choices_json = rfl::json::write(choices)=) encodes a
+domain field -- an embedded JSON string carried *inside*
+=ore_import_request= -- not the NATS wire-format serialization
+itself. The =req= object as a whole still goes through
+=cm->process_authenticated_request(req, ...)=, which the
+=ClientManager= audit above already covers, so this is not an
+additional call site.
+
+*** ores.shell -- 101 occurrences across 22 files, only some of them =do_request=
 
 =do_request=/=do_auth_request= is not a shared helper -- it is
 independently copy-pasted, in full, into the anonymous namespace of
 each command =.cpp= file (confirmed via
 =projects/ores.shell/src/app/commands/currencies_commands.cpp:40-59=
 as a representative sample; the same two ~15-line templates recur
-verbatim). 26 occurrences of the pattern across roughly 13 files is a
-pre-existing duplication debt, independent of this story, that the
-migration should fix as a side effect (one shared helper instead of
-13 copies) rather than propagate.
+verbatim). The actual breakdown, verified by grep rather than
+estimated:
 
-A handful of call sites don't go through =do_request= at all and
-hard-code =rfl::json= directly against =nats_client::request()=/
-=authenticated_request()=:
+- 9 files *define* the templates (=account_parties_commands.cpp=,
+  =accounts_commands.cpp=, =countries_commands.cpp=,
+  =currencies_commands.cpp=, =change_reason_categories_commands.cpp=,
+  =change_reasons_commands.cpp=, =variability_commands.cpp=,
+  =tenants_commands.cpp=, =rbac_commands.cpp=), 14 definitions total
+  (some files define both templates).
+- 13 files *reference* =do_request=/=do_auth_request= by name (the 9
+  definers above plus =bundles_commands.cpp=, =crm_commands.cpp=,
+  =marketdata_commands.cpp=, =provision_commands.cpp=), with 60 actual
+  call sites invoking the templates across those files.
+
+This duplication -- 14 copies of the same ~15-line template pattern
+across 9 files -- is a pre-existing debt, independent of this story,
+that the migration should fix as a side effect (one shared helper
+instead of 9 copies) rather than propagate.
+
+That is not the full picture, though: *7 more command files* have
+=rfl::json= call sites that don't go through =do_request=/
+=do_auth_request= at all, using some other/direct pattern against
+=nats_client::request()=/=authenticated_request()= not yet
+characterised in this doc -- =reports_commands.cpp=,
+=lei_commands.cpp=, =parties_commands.cpp=,
+=connection_commands.cpp=, =history_diff_renderer.cpp=,
+=synthetic_commands.cpp=, =workflow_commands.cpp= (15 occurrences
+between them), plus the previously-known stragglers below:
 
 | File                | Lines  | Call                                    |
 |-----------------------+--------+------------------------------------------|
 | =app/application.cpp=  | 70, 73 | bootstrap-status request/decode          |
 | =app/application.cpp=  | 93, 96 | login request/decode                     |
 | =app/repl.cpp=         | 139    | logout request                           |
+
+Honest grand total (excluding =config/options.cpp= and
+=config/login_options.cpp=, which write a JSON options value to a
+stream with no =nats_client=/=session.request= reference nearby --
+config-file I/O, not NATS wire format, same exclusion rationale as
+=ores.cli= below): *101 =rfl::json= occurrences across 22 files*.
+The migration task needs to consolidate all of it, not just the 9
+files that already use the named template pattern.
 
 *** ores.cli -- confirmed out of scope
 
@@ -166,12 +223,16 @@ class wire_codec {
 public:
     explicit wire_codec(wire_format format) : format_(format) {}
 
+    // Illustrative: the real implementation needs a default/unreachable
+    // arm (or equivalent exhaustiveness guard) so this doesn't trip
+    // -Wreturn-type; omitted here for brevity.
     template <typename T>
     std::vector<std::byte> encode(const T& obj) const {
         switch (format_) {
             case wire_format::json:    return to_bytes(rfl::json::write(obj));
             case wire_format::msgpack: return to_bytes(rfl::msgpack::write(obj));
         }
+        std::unreachable();
     }
 
     template <typename T>
@@ -180,6 +241,7 @@ public:
             case wire_format::json:    return rfl::json::read<T>(as_string_view(data));
             case wire_format::msgpack: return rfl::msgpack::read<T>(as_char_span(data));
         }
+        std::unreachable();
     }
 
 private:
@@ -207,7 +269,7 @@ special-cases any =MutableContiguousByteContainer= (which
 =msgpack_pack_bin_body= -- native MessagePack binary framing, not an
 array of small integers and not base64. No custom serialization code
 is needed for any existing reflectable type; swapping =wire_format=
-is suffient on its own.
+is sufficient on its own.
 
 *** Config and construction
 
@@ -294,19 +356,29 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.service audit missed heartbeat_publisher.hpp and workflow_helpers.hpp call sites, "already centralised" framing wrong | task_write-up-wire-format-architecture.org | Fixed | Added the 4 missed call sites and corrected the framing |
+| 2 | ores.qt audit missed MarketSimulatorWindow.cpp and ShellMdiWindow.cpp call sites | task_write-up-wire-format-architecture.org | Fixed | Added both, plus an explicit note that OreImportWizard.cpp:862 was checked and is a false positive (embedded JSON domain field, not wire format) |
+| 3 | ores.shell count ("26 across ~13 files") doesn't match reality; task-count in story.org also stale | task_write-up-wire-format-architecture.org, story.org | Fixed | Corrected to the verified breakdown (101 occurrences across 22 files); story.org's "Now" field corrected from 4 to 5 remaining tasks |
+|   | Minor nits (typo, missing default/unreachable arm in wire_codec snippet) | task_write-up-wire-format-architecture.org | Fixed | "suffient" -> "sufficient"; added std::unreachable() note to the snippet |
 
 * Result
 
 Design doc complete in =* Plan= above. Key outputs for the
 implementation tasks that follow:
 
-- Blast-radius audit: 2 call sites in =ores.service= (already
-  centralised), ~10 in =ores.qt::ClientManager= (needs consolidation
-  first), 26 occurrences across ~13 files in =ores.shell= (currently
-  copy-pasted, needs de-duplication into one shared helper).
+- Blast-radius audit: 6 call sites in =ores.service= (the
+  =handler_helpers.hpp= choke point plus 4 stragglers in
+  =heartbeat_publisher.hpp=/=workflow_helpers.hpp=), ~10 in
+  =ores.qt::ClientManager= plus 2 more stragglers (needs consolidation
+  first), 101 occurrences across 22 files in =ores.shell= (only 60 of
+  which go through the copy-pasted =do_request=/=do_auth_request=
+  pattern across 9 defining files; the rest use other direct
+  patterns), all needing de-duplication into shared helpers.
   =ores.cli= confirmed genuinely out of scope -- its =rfl::json= hits
-  are config-file I/O, no NATS call sites found.
+  are config-file I/O, no NATS call sites found. (Corrected post-review:
+  the original pass under-counted =ores.service= and =ores.qt= call
+  sites and significantly under-counted =ores.shell='s; see =* Review=
+  above.)
 - Architecture: a non-polymorphic =wire_codec= value type (1-byte
   enum member, template =encode=/=decode= methods), constructed once
   at process startup from a new =.env= value

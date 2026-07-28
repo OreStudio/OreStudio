@@ -197,8 +197,8 @@ drop function if exists ores_refdata_validate_book_status_fn;
 | Description  | description   | Description   | string    | auto  |          |             |
 | DisplayOrder | display_order | Display Order | int       | 70    |          |             |
 | Version      | version       | Version       | int       | 70    |          |             |
-| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
-| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |          |             |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |          |             |
 
 ** Custom repository methods
 

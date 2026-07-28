@@ -143,11 +143,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         subs.push_back(
-            nats.queue_subscribe("synthetic.v1.fx-spot-configs.publish-from-dq",
-                                 "ores.synthetic.service",
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe("synthetic.v1.ir-curve-configs.publish-from-dq",
+            nats.queue_subscribe("synthetic.v1.theme.publish-from-dq",
                                  "ores.synthetic.service",
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }

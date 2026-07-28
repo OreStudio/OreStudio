@@ -52,43 +52,16 @@
  */
 
 -- =============================================================================
--- Dataset Registration
--- =============================================================================
-
-DO $$
-BEGIN
-    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Synthetic Market Data',
-        'Synthetic market data generation configs for parties: GMM-parameterised tick generators seeded with plausible starting values.',
-        'OreStudio Development Team'
-    );
-END $$;
-
-DO $$
-BEGIN
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.ir_curve_configs.uniform_demo',
-        'Synthetic Market Data',
-        'Trading',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Synthetic IR Curve Configs: Uniform Volatility Demo',
-        'One Vasicek short-rate curve per top-20-by-turnover currency, uniform annualised kappa/sigma, three-entry (Deposit/FRA/Swap) Curve Template each.',
-        'ORESTUDIO',
-        'Uniform Volatility Demo theme for the Synthetic data collections bundle',
-        current_date,
-        'Internal Use Only',
-        'synthetic_ir_curve_configs'
-    );
-END $$;
-
--- =============================================================================
 -- Artefact Seed Data
 -- =============================================================================
+--
+-- The theme dataset itself (synthetic.themes.uniform_demo) is registered by
+-- synthetic_fx_spot_configs_uniform_demo_populate.sql, which this script's
+-- \ir ordering in synthetic_populate.sql runs after -- this script looks it
+-- up by code rather than registering its own dataset, so FX and IR rows
+-- share one dataset id, published atomically by
+-- ores_synthetic_publish_theme_from_dq_fn. See
+-- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 
 do $$
 declare
@@ -108,11 +81,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.ir_curve_configs.uniform_demo'
+      and code = 'synthetic.themes.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.ir_curve_configs.uniform_demo';
+        raise exception 'Dataset not found: synthetic.themes.uniform_demo';
     end if;
 
     if exists (
@@ -123,7 +96,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.ir_curve_configs.uniform_demo';
+    raise debug 'Populating synthetic IR curve configs (uniform demo) for dataset: synthetic.themes.uniform_demo';
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,

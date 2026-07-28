@@ -89,10 +89,16 @@ END $$;
 -- Dataset Registration
 -- =============================================================================
 
+-- Registers the theme dataset itself (synthetic.themes.ore_samples_2016) --
+-- shared with this theme's IR curve configs (see
+-- synthetic_ir_curve_configs_ore_samples_2016_populate.sql), which looks this
+-- dataset up by code rather than registering its own. One theme, one
+-- dataset, published atomically by ores_synthetic_publish_theme_from_dq_fn --
+-- see doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.fx_spot_configs.ore_samples_2016',
+        'synthetic.themes.ore_samples_2016',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -101,13 +107,13 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic FX Spot Configs: 2016 ORE Samples',
-        '8 major + 3 EM/exotic FX driver pairs, 2-component geometric (GBM) Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.',
+        'Synthetic Theme: 2016 ORE Samples',
+        '8 major + 3 EM/exotic FX driver pairs (2-component geometric Gaussian mixture per pair) and one IR curve per currency, calibrated to plausible 2016 real-market behaviour.',
         'ORESTUDIO',
         '2016 ORE Samples theme for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
-        'synthetic_fx_spot_configs'
+        'synthetic_theme'
     );
 END $$;
 
@@ -123,11 +129,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.fx_spot_configs.ore_samples_2016'
+      and code = 'synthetic.themes.ore_samples_2016'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.fx_spot_configs.ore_samples_2016';
+        raise exception 'Dataset not found: synthetic.themes.ore_samples_2016';
     end if;
 
     if exists (
@@ -138,7 +144,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs (2016 ORE Samples) for dataset: synthetic.fx_spot_configs.ore_samples_2016';
+    raise debug 'Populating synthetic FX spot configs (2016 ORE Samples) for dataset: synthetic.themes.ore_samples_2016';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,

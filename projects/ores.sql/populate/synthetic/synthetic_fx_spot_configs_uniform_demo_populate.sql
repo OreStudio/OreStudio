@@ -58,10 +58,16 @@ END $$;
 -- Dataset Registration
 -- =============================================================================
 
+-- Registers the theme dataset itself (synthetic.themes.uniform_demo) -- shared
+-- with this theme's IR curve configs (see
+-- synthetic_ir_curve_configs_uniform_demo_populate.sql), which looks this
+-- dataset up by code rather than registering its own. One theme, one
+-- dataset, published atomically by ores_synthetic_publish_theme_from_dq_fn --
+-- see doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.fx_spot_configs.uniform_demo',
+        'synthetic.themes.uniform_demo',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -70,13 +76,13 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic FX Spot Configs: Uniform Volatility Demo',
-        '8 major + 3 EM/exotic FX driver pairs, single-component geometric process, deliberately exaggerated uniform volatility — easy to eyeball, exercises every UI feature.',
+        'Synthetic Theme: Uniform Volatility Demo',
+        '8 major + 3 EM/exotic FX driver pairs (single-component geometric process) and one Vasicek short-rate curve per top-20-by-turnover currency, all deliberately exaggerated/uniform for easy eyeballing — exercises every UI feature.',
         'ORESTUDIO',
         'Uniform Volatility Demo theme for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
-        'synthetic_fx_spot_configs'
+        'synthetic_theme'
     );
 END $$;
 
@@ -96,11 +102,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.fx_spot_configs.uniform_demo'
+      and code = 'synthetic.themes.uniform_demo'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.fx_spot_configs.uniform_demo';
+        raise exception 'Dataset not found: synthetic.themes.uniform_demo';
     end if;
 
     if exists (

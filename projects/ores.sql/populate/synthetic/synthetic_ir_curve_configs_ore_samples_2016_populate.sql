@@ -57,34 +57,16 @@
  */
 
 -- =============================================================================
--- Dataset Registration
--- =============================================================================
-
-DO $$
-BEGIN
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.ir_curve_configs.ore_samples_2016',
-        'Synthetic Market Data',
-        'Trading',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Synthetic IR Curve Configs: 2016 ORE Samples',
-        'Four legacy IBOR-era Vasicek short-rate curves (USD-LIBOR-3M, EUR-EURIBOR-3M, GBP-LIBOR-6M, JPY-LIBOR-6M), pinned to the pre-benchmark-reform world ORE''s own sample data comes from.',
-        'ORESTUDIO',
-        '2016 ORE Samples theme for the Synthetic data collections bundle',
-        current_date,
-        'Internal Use Only',
-        'synthetic_ir_curve_configs'
-    );
-END $$;
-
--- =============================================================================
 -- Artefact Seed Data
 -- =============================================================================
+--
+-- The theme dataset itself (synthetic.themes.ore_samples_2016) is registered
+-- by synthetic_fx_spot_configs_ore_samples_2016_populate.sql, which this
+-- script's \ir ordering in synthetic_populate.sql runs after -- this script
+-- looks it up by code rather than registering its own dataset, so FX and IR
+-- rows share one dataset id, published atomically by
+-- ores_synthetic_publish_theme_from_dq_fn. See
+-- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 
 do $$
 declare
@@ -94,11 +76,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.ir_curve_configs.ore_samples_2016'
+      and code = 'synthetic.themes.ore_samples_2016'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.ir_curve_configs.ore_samples_2016';
+        raise exception 'Dataset not found: synthetic.themes.ore_samples_2016';
     end if;
 
     if exists (
@@ -109,7 +91,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (2016 ORE Samples) for dataset: synthetic.ir_curve_configs.ore_samples_2016';
+    raise debug 'Populating synthetic IR curve configs (2016 ORE Samples) for dataset: synthetic.themes.ore_samples_2016';
 
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,

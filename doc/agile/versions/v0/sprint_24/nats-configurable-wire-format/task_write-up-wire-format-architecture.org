@@ -49,6 +49,17 @@ against, covering:
    entirely, at the cost of requiring a whole environment's =.env=
    files to agree.
 
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
 * Acceptance
 
 - [ ] Blast-radius table (component, file, call site, current
@@ -60,17 +71,6 @@ against, covering:
 - [ ] Rationale section comparing the chosen design against per-
   message header negotiation, explaining why the simpler one was
   picked.
-
-* Status
-
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
 
 * Plan
 

@@ -34,16 +34,6 @@ messages directly rather than through these two helpers (if any
 exist), and either migrate them too or document why they're out of
 scope.
 
-* Acceptance
-
-- [ ] =reply()=/=decode()= use the injected =wire_codec=; no direct
-  =rfl::json= call remains in =handler_helpers.hpp=.
-- [ ] Every existing service test suite still passes unmodified
-  (proves the migration is behaviour-preserving when the codec is
-  configured for =json=, today's default).
-- [ ] Audit result for bypassing call sites recorded in Notes, with
-  each one either migrated or explicitly deferred with a reason.
-
 * Status
 
 | Field        | Value                                  |
@@ -54,6 +44,16 @@ scope.
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] =reply()=/=decode()= use the injected =wire_codec=; no direct
+  =rfl::json= call remains in =handler_helpers.hpp=.
+- [ ] Every existing service test suite still passes unmodified
+  (proves the migration is behaviour-preserving when the codec is
+  configured for =json=, today's default).
+- [ ] Audit result for bypassing call sites recorded in Notes, with
+  each one either migrated or explicitly deferred with a reason.
 
 * Plan
 

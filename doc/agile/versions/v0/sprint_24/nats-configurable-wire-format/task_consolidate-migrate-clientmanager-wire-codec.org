@@ -31,16 +31,6 @@ these onto one or two shared private helpers first -- reducing
 duplication as a side effect -- then have those route through an
 injected =wire_codec= instead of calling =rfl::json= directly.
 
-* Acceptance
-
-- [ ] All ~10 call sites route through a small number of shared
-  helpers rather than each hard-coding =rfl::json= independently.
-- [ ] Those helpers use the injected =wire_codec=.
-- [ ] Existing Qt client behaviour is unchanged when the codec is
-  configured for =json= (today's default) -- manually verified against
-  a running client/service pair per this project's UI-change testing
-  convention.
-
 * Status
 
 | Field        | Value                                  |
@@ -51,6 +41,16 @@ injected =wire_codec= instead of calling =rfl::json= directly.
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] All ~10 call sites route through a small number of shared
+  helpers rather than each hard-coding =rfl::json= independently.
+- [ ] Those helpers use the injected =wire_codec=.
+- [ ] Existing Qt client behaviour is unchanged when the codec is
+  configured for =json= (today's default) -- manually verified against
+  a running client/service pair per this project's UI-change testing
+  convention.
 
 * Plan
 

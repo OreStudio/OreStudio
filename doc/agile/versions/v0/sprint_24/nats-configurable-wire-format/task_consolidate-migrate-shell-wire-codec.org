@@ -33,15 +33,6 @@ single helper route through an injected =wire_codec= instead of
 =do_request= (e.g. =application.cpp='s bootstrap/login calls,
 =repl.cpp='s logout call).
 
-* Acceptance
-
-- [ ] =do_request=/=do_auth_request= exist in exactly one place, used
-  by every command file that previously had its own copy.
-- [ ] That shared helper (and the other direct call sites identified
-  above) route through the injected =wire_codec=.
-- [ ] Existing shell command behaviour is unchanged when the codec is
-  configured for =json= (today's default).
-
 * Status
 
 | Field        | Value                                  |
@@ -52,6 +43,15 @@ single helper route through an injected =wire_codec= instead of
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] =do_request=/=do_auth_request= exist in exactly one place, used
+  by every command file that previously had its own copy.
+- [ ] That shared helper (and the other direct call sites identified
+  above) route through the injected =wire_codec=.
+- [ ] Existing shell command behaviour is unchanged when the codec is
+  configured for =json= (today's default).
 
 * Plan
 

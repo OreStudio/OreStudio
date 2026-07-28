@@ -40,17 +40,6 @@ Build the shared foundation the rest of the story depends on:
   =std::vector<uint8_t>= fields round-trip correctly under =msgpack=
   (this is the property the whole story exists to exploit).
 
-* Acceptance
-
-- [ ] =wire_codec= compiles and round-trips a representative
-  reflectable struct (including a byte-vector field) under both
-  =json= and =msgpack=.
-- [ ] Config value is read once at startup from =.env=, with a
-  documented default that preserves today's behaviour if unset.
-- [ ] No per-call branching cost beyond the single format check
-  already implied by having two supported formats -- no header
-  parsing, no per-message format inspection.
-
 * Status
 
 | Field        | Value                                  |
@@ -61,6 +50,17 @@ Build the shared foundation the rest of the story depends on:
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] =wire_codec= compiles and round-trips a representative
+  reflectable struct (including a byte-vector field) under both
+  =json= and =msgpack=.
+- [ ] Config value is read once at startup from =.env=, with a
+  documented default that preserves today's behaviour if unset.
+- [ ] No per-call branching cost beyond the single format check
+  already implied by having two supported formats -- no header
+  parsing, no per-message format inspection.
 
 * Plan
 

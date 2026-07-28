@@ -36,17 +36,6 @@ switching format is discoverable, and abandon the superseded
 raw-bytes task at this story's close (already marked ABANDONED with a
 pointer here; confirm and finalise).
 
-* Acceptance
-
-- [ ] A test environment configured for =msgpack= round-trips
-  correctly for representative request/response pairs across Qt and
-  shell clients.
-- [ ] Image-batch fetch/list flows verified specifically, confirming
-  no base64 inflation remains for image payloads under =msgpack=.
-- [ ] =.env= config knob documented in a How-do-I recipe.
-- [ ] Superseded raw-bytes-not-base64-for-images task confirmed
-  ABANDONED with its pointer to this story intact.
-
 * Status
 
 | Field        | Value                                  |
@@ -57,6 +46,17 @@ pointer here; confirm and finalise).
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] A test environment configured for =msgpack= round-trips
+  correctly for representative request/response pairs across Qt and
+  shell clients.
+- [ ] Image-batch fetch/list flows verified specifically, confirming
+  no base64 inflation remains for image payloads under =msgpack=.
+- [ ] =.env= config knob documented in a How-do-I recipe.
+- [ ] Superseded raw-bytes-not-base64-for-images task confirmed
+  ABANDONED with its pointer to this story intact.
 
 * Plan
 

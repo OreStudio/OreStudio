@@ -136,7 +136,7 @@ private:
  * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
  * is found (or the config has no DEPOSIT entry to anchor on).
  */
-std::shared_ptr<ir_curve_feed>
+ORES_SYNTHETIC_SERVICE_EXPORT std::shared_ptr<ir_curve_feed>
 make_ir_curve_feed(ores::nats::service::client& nats,
                    ores::nats::service::nats_client& auth_nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
@@ -151,7 +151,7 @@ make_ir_curve_feed(ores::nats::service::client& nats,
  * resolved has no DEPOSIT entry. Exposed separately from make_ir_curve_feed's vintage resolution
  * so the pure selection logic is unit-testable without a live market_data_client.
  */
-const ir_curve_resolved_entry*
+ORES_SYNTHETIC_SERVICE_EXPORT const ir_curve_resolved_entry*
 select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved);
 
 }

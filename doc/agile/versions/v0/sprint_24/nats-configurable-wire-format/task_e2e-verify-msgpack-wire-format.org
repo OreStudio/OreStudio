@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 493C5EF6-FE85-4623-8103-563EB5CA6EE3
+:END:
+#+title: Task: End-to-end verify msgpack wire format and close out the story
+#+description: With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+With every layer migrated onto the injected =wire_codec=, flip a test
+environment's =.env= to =ORES_NATS_WIRE_FORMAT=msgpack= and verify
+round-trip correctness end to end: Qt client to service, and shell
+client to service, across a representative spread of message types
+including the image-batch flows that originally surfaced this whole
+investigation. Confirms the
+[[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][raw-bytes-not-base64-for-images]]
+task's goal is achieved for free -- =reflect-cpp='s =msgpack= writer
+already packs =std::vector<uint8_t>= as native binary, no custom code
+needed.
+
+Record the =.env= config knob in the relevant How-do-I recipe so
+switching format is discoverable, and abandon the superseded
+raw-bytes task at this story's close (already marked ABANDONED with a
+pointer here; confirm and finalise).
+
+* Acceptance
+
+- [ ] A test environment configured for =msgpack= round-trips
+  correctly for representative request/response pairs across Qt and
+  shell clients.
+- [ ] Image-batch fetch/list flows verified specifically, confirming
+  no base64 inflation remains for image payloads under =msgpack=.
+- [ ] =.env= config knob documented in a How-do-I recipe.
+- [ ] Superseded raw-bytes-not-base64-for-images task confirmed
+  ABANDONED with its pointer to this story intact.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: D7D9EF5E-0299-47C4-A4FD-E64B284DF8DA
+:END:
+#+title: Task: Build wire_codec abstraction and startup config in ores.nats
+#+description: Add a wire_format enum (json, msgpack), a .env-driven config value read once at startup, and a wire_codec class holding the chosen format at construction with template encode/decode methods dispatching to rfl::json or rfl::msgpack. Non-polymorphic, no per-message branching on message content -- the format is fixed for the codec instance's lifetime. Round-trip unit tests for both formats. This is the shared foundation every other task in this story depends on.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the shared foundation the rest of the story depends on:
+
+- A =wire_format= enum (=json=, =msgpack=) and a =.env=-driven config
+  value (e.g. =ORES_NATS_WIRE_FORMAT=, default =json= for backward
+  compatibility), parsed once at process startup alongside existing
+  NATS connection config.
+- A =wire_codec= class (in =ores.nats=, alongside the existing
+  =compression= module it mirrors architecturally): constructed once
+  with the resolved =wire_format=, exposing template
+  =encode<T>(const T&) -> std::vector<std::byte>= and
+  =decode<T>(std::span<const std::byte>) -> rfl::Result<T>= methods
+  that dispatch internally to =rfl::json= or =rfl::msgpack= based on
+  the format fixed at construction. Non-polymorphic (no virtual
+  dispatch for a decision made once and never changing at runtime);
+  trivially copyable/cheap to hold by value or reference wherever
+  needed.
+- Round-trip unit tests for both formats, plus a test confirming
+  =std::vector<uint8_t>= fields round-trip correctly under =msgpack=
+  (this is the property the whole story exists to exploit).
+
+* Acceptance
+
+- [ ] =wire_codec= compiles and round-trips a representative
+  reflectable struct (including a byte-vector field) under both
+  =json= and =msgpack=.
+- [ ] Config value is read once at startup from =.env=, with a
+  documented default that preserves today's behaviour if unset.
+- [ ] No per-call branching cost beyond the single format check
+  already implied by having two supported formats -- no header
+  parsing, no per-message format inspection.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

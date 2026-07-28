@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 926379AF-B17C-4700-AF89-6AD1EB006281
+:END:
+#+title: Task: Consolidate and migrate ores.shell request helpers to wire_codec
+#+description: The do_request/do_auth_request template helper is copy-pasted independently into roughly thirteen shell command .cpp files (26 occurrences), each hard-coding rfl::json. De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.shell='s =do_request=/=do_auth_request= template helper is
+currently copy-pasted independently into roughly thirteen command
+=.cpp= files (26 occurrences total, e.g.
+=currencies_commands.cpp=), each hard-coding =rfl::json::read= in its
+own local anonymous-namespace copy. De-duplicate into one shared
+helper in a shell-wide header (a real cleanup win independent of the
+format work -- this duplication predates this story), then have that
+single helper route through an injected =wire_codec= instead of
+=rfl::json= directly. Also migrate the handful of other direct
+=rfl::json= call sites in =ores.shell= that don't go through
+=do_request= (e.g. =application.cpp='s bootstrap/login calls,
+=repl.cpp='s logout call).
+
+* Acceptance
+
+- [ ] =do_request=/=do_auth_request= exist in exactly one place, used
+  by every command file that previously had its own copy.
+- [ ] That shared helper (and the other direct call sites identified
+  above) route through the injected =wire_codec=.
+- [ ] Existing shell command behaviour is unchanged when the codec is
+  configured for =json= (today's default).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

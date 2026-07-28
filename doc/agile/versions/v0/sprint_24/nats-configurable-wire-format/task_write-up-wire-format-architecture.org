@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: AC1B96D9-D86C-4BBB-94A4-E187469A0A8F
+:END:
+#+title: Task: Write up the wire-format architecture analysis and design decision
+#+description: Document the current blast-radius audit (every NATS-relevant rfl::json call site across ores.service, ores.qt, ores.shell, plus confirming ores.cli is out of scope), the chosen architecture (a single non-polymorphic wire_codec constructed once at startup from .env, threaded via dependency injection, no per-message negotiation), and the rationale versus the rejected per-message header-negotiation alternative. This becomes the spec the later implementation tasks execute against.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the design document this story's remaining tasks execute
+against, covering:
+
+1. *Blast-radius audit*: every NATS-relevant =rfl::json::write=/
+   =rfl::json::read= call site, by component --
+   =ores.service::messaging::handler_helpers= (2 call sites, already
+   centralised), =ores.qt::ClientManager= (~10, spread across
+   =ClientManager.hpp=/=.cpp= plus =ClientManagerExportPortfolio.cpp=/
+   =ClientManagerTradeInstrument.cpp=), =ores.shell= (26 occurrences of
+   a copy-pasted =do_request=/=do_auth_request= helper across ~13
+   command files). Confirm =ores.cli='s =rfl::json= hits are config-
+   file I/O, not NATS calls, and drop it from scope (or file a small
+   follow-up if any genuine NATS call sites turn up).
+2. *Architecture*: a concrete, non-polymorphic =wire_codec= type,
+   holding a =wire_format= (=json= or =msgpack=) decided once at
+   construction from a =.env=-driven config value, threaded through
+   every consumer via dependency injection. No per-message format
+   negotiation, no content-type header, no runtime auto-detection --
+   the decision is made once at process startup and used consistently
+   for that process's lifetime.
+3. *Rationale versus the rejected alternative*: a self-describing,
+   per-message header (mirroring the already-shipped
+   =X-Content-Encoding= compression header) was considered and
+   rejected -- it would allow safe rolling/mixed-format deploys, but
+   introduces per-message runtime dispatch and a class of
+   misconfiguration risk the single-startup-decision design avoids
+   entirely, at the cost of requiring a whole environment's =.env=
+   files to agree.
+
+* Acceptance
+
+- [ ] Blast-radius table (component, file, call site, current
+  behaviour) covering =ores.service=, =ores.qt=, =ores.shell=; scope
+  decision recorded for =ores.cli=.
+- [ ] Architecture section specifying the =wire_codec= type's shape
+  (constructor, template =encode=/=decode= methods), where it's
+  constructed, and how it's threaded to each consumer.
+- [ ] Rationale section comparing the chosen design against per-
+  message header negotiation, explaining why the simpler one was
+  picked.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

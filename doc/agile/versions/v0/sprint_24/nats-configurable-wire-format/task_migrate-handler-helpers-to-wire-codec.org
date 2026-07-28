@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 7E1FE4CF-3FFD-4977-8ED8-2D7D51461BDA
+:END:
+#+title: Task: Migrate ores.service messaging handler_helpers to wire_codec
+#+description: Update reply() and decode() in ores.service/messaging/handler_helpers.hpp to route through an injected wire_codec instead of a hard-coded rfl::json call. This is the server-side choke point almost every service handler already goes through, so this single change flips every service's request/response handling in one pass. Audit for any service-to-service NATS calls that bypass these two helpers and migrate or document them separately.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.service::messaging::handler_helpers=' =reply()= and =decode()=
+are the two generic template functions almost every service handler
+in the codebase already calls to send a response and parse a request.
+Update them to use an injected =wire_codec= (from the previous task)
+instead of a hard-coded =rfl::json::write=/=rfl::json::read= call --
+this single change flips every service's request/response handling
+onto the configurable format in one pass, with no per-handler edits
+needed.
+
+Also audit for service-to-service NATS calls that build/parse
+messages directly rather than through these two helpers (if any
+exist), and either migrate them too or document why they're out of
+scope.
+
+* Acceptance
+
+- [ ] =reply()=/=decode()= use the injected =wire_codec=; no direct
+  =rfl::json= call remains in =handler_helpers.hpp=.
+- [ ] Every existing service test suite still passes unmodified
+  (proves the migration is behaviour-preserving when the codec is
+  configured for =json=, today's default).
+- [ ] Audit result for bypassing call sites recorded in Notes, with
+  each one either migrated or explicitly deferred with a reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

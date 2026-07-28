@@ -20,7 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a =:has_parent_scoped_list:= knob (paired with =:parent_key_field:=/
+=:parent_key_param:=) to =ores.codegen='s =ores.cpp.qt= facet so a
+=:has_readonly_paginated_list:= list window's get-request can be scoped
+to an owning parent key (e.g. =calendar_dates= scoped by
+=calendar_code=) and opened for a specific parent, with that key sent
+on every paginated fetch. Landed generically in
+=client_model=/=controller=/=mdi_window= templates -- not wired to
+=calendar_dates= itself, that's the follow-on task
+([[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]]).
 
 * Status
 
@@ -28,20 +36,135 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written; starting template implementation. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-27                               |
+| Next         | Implement the knob across client_model/controller/mdi_window templates, then verify via --diff against existing entities. |
+| Last touched | 2026-07-28                               |
 
 * Acceptance
 
--
+- [ ] A new =:has_parent_scoped_list:= knob exists (meaningful only
+  alongside =:has_readonly_paginated_list:=), paired with
+  =:parent_key_field:= (the protocol request field, e.g.
+  =calendar_code=) and =:parent_key_param:= (the C++ member/parameter
+  name).
+- [ ] =Client<Entity>Model= accepts and stores the parent key, and
+  sets it on the paginated get-request (=fetch_<collection>=/
+  =load_page=) on every call, alongside the existing offset/limit
+  plumbing.
+- [ ] =<Entity>MdiWindow= accepts the parent key in its constructor
+  and threads it through to the =ClientModel= it creates.
+- [ ] =<Entity>Controller= gets a public entry point (analogous to
+  =openAddWithParent=) that takes the parent key and opens the list
+  window scoped to it; =showListWindow()= still satisfies
+  =EntityController='s pure-virtual override.
+- [ ] Documented in =entity_meta_model_cpp_qt.org= alongside
+  =:has_readonly_paginated_list:=.
+- [ ] Verified via =--diff= against existing entities with the knob
+  unset (its default) showing zero drift attributable to this change
+  -- generation for =calendar_dates= itself is out of scope (follow-on
+  task, needs the messaging layer's protocol types wired in too).
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation findings
+
+- =:has_readonly_paginated_list:= (landed in
+  [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]])
+  already strips add/edit/delete/history affordances from the
+  controller and MDI window. Pagination itself
+  (=:has_pagination:=, offset/limit plumbing in
+  =cpp_qt_client_model.cpp.mustache='s =fetch_<collection>=) is
+  already fully generic. What's missing is purely the *parent key*:
+  nothing today lets a generated get-request carry a filter key set
+  once when the window opens and resent on every paginated fetch.
+- There is an existing, unrelated =:parent_entity_singular:=/
+  =:parent_entity_pascal:=/=:has_parent_relationship:= mechanism
+  (=core.py:2390-2398=), but it's for a different problem entirely:
+  pre-filling a UUID foreign key on *create* (=openAddWithParent=,
+  =showAddWindow(parentId)=) for an entity that's still full CRUD,
+  just listed under a parent window instead of top-level. It doesn't
+  touch the get-request at all, and reusing its naming for a
+  read-only list's *filter* key would conflate two unrelated
+  concepts. New, distinctly-named knob confirmed as the right call.
+- =Client<Entity>Model='s constructor
+  (=cpp_qt_client_model.cpp.mustache:36-42=) takes only
+  =(ClientManager*, QObject* parent)= today. The paginated
+  get-request is built once per fetch in =fetch_<collection>=
+  (=cpp_qt_client_model.cpp.mustache:243-247=):
+  ={{get_request_class}} request;= then conditionally
+  =request.offset=/=limit= under =:has_pagination:=. The parent key
+  just needs a third conditional line here,
+  =request.<parent_key_field> = <parent_key_param>_;=, plus a stored
+  member set from a new constructor parameter -- same shape as the
+  existing conditional ctor-param pattern already used for
+  =badgeCache_=/=imageCache_= elsewhere in these templates.
+  =<Entity>MdiWindow= constructs the =ClientModel=
+  (=cpp_qt_mdi_window.cpp.mustache:212=, currently
+  =new Client<Entity>Model(clientManager_, this)=) and needs the same
+  parent-key parameter threaded from its own constructor.
+- =<Entity>Controller::showListWindow()= is a pure-virtual override
+  of =EntityController= (=EntityController.hpp:110=, zero-arg,
+  == 0=) -- its signature can't change. Mirrors how
+  =has_parent_relationship= already solved the analogous problem for
+  =showAddWindow=: an optional/defaulted private overload plus a
+  distinctly-named public entry point (=openAddWithParent=) that
+  forwards into it. Same shape here: keep
+  =showListWindow() override= as the required zero-arg entry
+  (opens with an empty/unset parent key, for callers that don't
+  care), add a private
+  =showListWindow(const QString& <parent_key_param>)= overload doing
+  the actual construction and storing the key as a member, and a
+  public =open<ParentPascal>(const QString& <parent_key_param>)= that
+  calls it -- the real entry point every caller of a parent-scoped
+  list actually uses (e.g. a future "Browse Holidays" button passing
+  the selected calendar's =calendar_code=).
+
+** Direction
+
+- New boolean knob =:has_parent_scoped_list:= (default false),
+  meaningful only when =:has_readonly_paginated_list:= is also true
+  (not cross-validated at codegen time beyond that -- same
+  light-touch convention as other knob pairs in this facet).
+- Companion string knobs =:parent_key_field:= (protocol request field
+  name) and =:parent_key_param:= (C++ member/parameter name,
+  camelCase) -- both required when the knob is set, no derived
+  default, since there's no reliable way to infer either from the
+  entity's own columns (the parent key belongs to a different
+  entity).
+- Client model: add =const QString& <parent_key_param>= as a
+  conditional constructor parameter (before the trailing
+  =QObject* parent=, matching the existing optional-param
+  convention), store as =<parent_key_param>_= member, set
+  =request.<parent_key_field> = <parent_key_param>_.toStdString();=
+  in the paginated fetch alongside offset/limit.
+- MDI window: add the same conditional constructor parameter, store
+  as a member, forward it into the =ClientModel= it constructs.
+- Controller: add the private overload + public
+  =open<ParentPascal>(...)= entry point described above; the
+  zero-arg =showListWindow()= override delegates to the private
+  overload with an empty key.
+- Document under a new "Parent-scoped lists" bullet in
+  =entity_meta_model_cpp_qt.org=, distinct from the existing "Parent
+  scoping" bullet (=parent_entity_singular=/=has_parent_relationship=)
+  to avoid conflating the two mechanisms.
+
+** Verification plan
+
+Same approach as the prior =:has_readonly_paginated_list:= task:
+retangle, then regenerate a couple of structurally different existing
+entities via
+=compass codegen entity generate <entity> --address ores.cpp.qt --diff=
+with the new knobs left unset (their default) and confirm zero drift
+attributable to this change. Generating a working parent-scoped list
+for =calendar_dates= itself is explicitly out of scope here -- that's
+the follow-on task, which also needs =calendar_date='s protocol
+request struct to actually carry a =calendar_code= filter field (it
+does, from the just-closed messaging-layer task).
 
 * Notes
 

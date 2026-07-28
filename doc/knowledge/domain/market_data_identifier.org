@@ -25,8 +25,8 @@ down. This document defines the identifier's two field groups, what
 makes two identifiers the same identifier, and — since an identifier is
 expected to carry enough information to be re-expressed in any external
 vendor's own notation (Bloomberg, Reuters, ORE, ...) — what "physical"
-actually has to include for that to be possible, worked through this
-repository's own concrete scheme.
+actually has to include for that to be possible, worked through the
+ORE-derived canonical form adopted as the logical starting point.
 
 * Layperson's mental model
 
@@ -185,7 +185,7 @@ ought to be shaped; that question is addressed separately, below.
 An identifier's physical fields exist for one purpose: so that a
 one-directional transform can render the identifier into a specific
 external vendor's own notation — a Bloomberg ticker, a Reuters RIC, an
-ORE quote key — without needing to invent information the identifier
+ORE =CurveSpec= — without needing to invent information the identifier
 itself doesn't carry. Call this transform, per vendor, $T_{\text{vendor}}$:
 
 $$T_{\text{vendor}}: \mathrm{Identifier} \to \mathrm{VendorKey}$$

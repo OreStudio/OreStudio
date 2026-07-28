@@ -45,8 +45,8 @@ but still universally referred to as RIC, is a ticker-like code that
 Reuters — and, through successive acquisitions, Refinitiv and now LSEG
 (London Stock Exchange Group) — has used since the 1980s to identify
 tradeable instruments and indices across its market data terminals and
-feeds. It is the oldest of the three schemes covered in this document and
-carries that history in its design: rather than a single systematic
+feeds. It is the oldest of the schemes covered in this document and carries
+that history in its design: rather than a single systematic
 grammar, RIC is a loose family of per-asset-class conventions that grew
 organically as new instrument types were added to Reuters' systems over
 decades — an equity RIC appends an exchange suffix (=AAPL.OQ=), an index
@@ -117,7 +117,7 @@ and it is defined and owned entirely by
 the ORE open-source project, currently maintained by Acadia (formerly
 Quaternion Risk Management / AcadiaSoft). Because it exists to serve one
 program's input format rather than to label instruments for human traders
-across a whole industry, it is the most systematic of the three schemes:
+across a whole industry, it is the most systematic of the three short-string schemes:
 every key follows the same top-level slash-delimited shape,
 =TYPE/SUBTYPE/dim1/.../dimN=, regardless of asset class — though, unlike
 a flatter scheme, the number and meaning of the dimensions after
@@ -184,7 +184,7 @@ Software & Information Industry Association (SIIA), first published in
 the early 2000s; see
 [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition
 Language (MDDL)]] for its full version history and current status.
-Structurally it is the odd one out among the four schemes covered here:
+Structurally it differs from the short-string schemes covered here:
 RIC, Bloomberg, and the ORE canonical key are each a short single
 string that *is* the identifier, whereas MDDL is a full XML instrument
 record, and instrument identity is carried by an =instrumentIdentifier=
@@ -211,7 +211,7 @@ eXchange (FIX) Protocol]] for its full version history and content
 model. Unlike MDDL, FIX was never wound down — it remains the dominant
 open standard for pre-trade, trade, and post-trade messaging and, since
 2019, is continuously extended as "FIX Latest" rather than released in
-numbered versions. It is the only one of the five schemes here with a
+numbered versions. It is the only one of the six schemes here with a
 dedicated *market data message family*: =MarketDataRequest=,
 =MarketDataSnapshotFullRefresh=, =MarketDataIncrementalRefresh=, and
 =MarketDataRequestReject= (plus =MarketDataStatisticsRequest/Report= and
@@ -235,7 +235,7 @@ OpenGamma Strata is an open-source Java library for OTC derivatives
 pricing and risk analytics, originally developed by OpenGamma Ltd and
 now maintained by the open-source community. Its identifier abstraction,
 =com.opengamma.strata.data.MarketDataId<T>=, differs fundamentally in
-kind from the other five schemes covered here: it is a Java generic
+kind from the other five schemes covered here — it is a Java generic
 interface, not a string format or wire protocol. The Javadoc describes it
 as "an identifier for a unique item of market data... Implementations can
 identify any piece of market data. This includes observable values, such
@@ -466,7 +466,7 @@ actual message bytes.)
   messages (multi-leg =Instrument=/=InstrmtLegGrp= structures) rather
   than streamed through =MarketDataSnapshotFullRefresh=. Shortcoming:
   this is the same broker-composite, not-retail-ticker gap RIC and
-  Bloomberg both have for this row — none of the five schemes here has
+  Bloomberg both have for this row — none of the schemes here has
   a clean, publicly documented tick-level convention for an IRS par
   rate, only ORE's =IR_SWAP/RATE= key (a pricing-engine input, not a
   market feed convention) comes close.
@@ -490,8 +490,8 @@ actual message bytes.)
   publishes.
 - *ORE quote key*: the key follows the catalogue's documented
   =SWAPTION/RATE_LNVOL/CCY/expiry/swap_tenor/strike= shape — a genuine
-  advantage here, since it is the only one of the three schemes with an
-  openly documented structure for this instrument at all. Shortcoming:
+  advantage here, since it is the only one of the short-string schemes
+  with an openly documented structure for this instrument at all. Shortcoming:
   the four-dimension surface coordinate (expiry, tenor, strike) is
   carried entirely inside the =point_id= segment, so — unlike the FX or
   rates rows — a consumer must already know this type's specific
@@ -507,7 +507,7 @@ actual message bytes.)
   Bloomberg — swaption vol is broker-composite, over-the-counter data
   that none of RIC, Bloomberg, MDDL, or FIX has a standardised public
   convention for; ORE's =SWAPTION/RATE_LNVOL= key remains the only
-  openly documented structure for this instrument among the five
+  openly documented structure for this instrument among all six
   schemes compared in this document.
 
 ** Equities and indices
@@ -629,7 +629,7 @@ code's scheme URI is unchanged.)
   record, FIX pairs a comparably rich instrument description with a
   dedicated wire-level delivery mechanism — the =MarketDataRequest=/
   =MarketDataSnapshotFullRefresh=/=MarketDataIncrementalRefresh= message
-  family — that none of the other four schemes define. Shortcoming: FIX
+  family — that none of the other five schemes define. Shortcoming: FIX
   messages are typically consumed and generated through a FIX engine
   rather than read as a standalone document the way an MDDL or ORE
   =marketdata.csv= file can be; correctly parsing tag=value framing

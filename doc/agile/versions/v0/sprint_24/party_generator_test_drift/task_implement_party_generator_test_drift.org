@@ -8,7 +8,7 @@
 #+filetags: :party_generator_test_drift:sprint_24:v0:
 #+owner: marco
 #+branch: hotfix/party-generator-test-drift
-#+pr:
+#+pr: 1716
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -64,7 +64,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1716][#1716]] | [refdata] Fix stale party generator test/business_center_code |
 
 * Review
 

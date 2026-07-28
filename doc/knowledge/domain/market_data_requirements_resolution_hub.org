@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:requirements:resolution:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-28
 
 This is the hub note for how a logical need for market data — a
 requirement — becomes a concrete, usable piece of data at valuation
@@ -45,6 +45,7 @@ a notation, for precision.
 
 ** Lens 1: analogy — the DNS mapping
 
+#+begin_note
 Every document below returns to the same worked analogy: the Domain
 Name System. A market data *requirement* plays the role of a *domain
 name* — a stable, human-legible description of what is wanted,
@@ -68,18 +69,19 @@ vendor projection, covered in
 DNS has no real analogue for it (an IP address doesn't need to be
 re-expressed in a second registrar's own addressing scheme the way a
 market data identifier needs to be re-expressed in Bloomberg's or
-Reuters' notation). *Dependency resolution* plays the role of a browser recursively
-fetching a page's stylesheets, fonts, and images before it can finish
-rendering. A *snapshot* plays the role of a cached DNS record with its
-own retention policy, kept around after the fact for a different purpose
-than the cache it superficially resembles. The analogy is chosen because
-DNS is a system almost every reader already understands intuitively, and
-because — as it happens — DNS has already had to solve, in a completely
-unrelated domain, nearly every structural problem this cluster is
-concerned with. Where the analogy breaks down (most notably for
-snapshotting, whose *purpose* differs meaningfully from DNS caching's),
-each document says so explicitly rather than stretching the comparison
-past where it still illuminates.
+Reuters' notation). *Dependency resolution* plays the role of a browser
+recursively fetching a page's stylesheets, fonts, and images before it
+can finish rendering. A *snapshot* plays the role of a cached DNS record
+with its own retention policy, kept around after the fact for a different
+purpose than the cache it superficially resembles. The analogy is chosen
+because DNS is a system almost every reader already understands
+intuitively, and because — as it happens — DNS has already had to solve,
+in a completely unrelated domain, nearly every structural problem this
+cluster is concerned with. Where the analogy breaks down (most notably
+for snapshotting, whose *purpose* differs meaningfully from DNS
+caching's), each document says so explicitly rather than stretching the
+comparison past where it still illuminates.
+#+end_note
 
 ** Lens 2: notation — sets, not containers
 

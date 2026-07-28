@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/extend-synthetic-binding-dialog-to-ir-curves
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,7 +41,7 @@ to FX's existing quality bar -- this is one more gap in that parity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -65,6 +65,34 @@ to FX's existing quality bar -- this is one more gap in that parity.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+=SyntheticBindingDialog= currently operates directly on
+=std::vector<fx_spot_generation_config>= end to end (=loadConfigs=/
+=populateTable=/=createBindings=). Rather than duplicating that whole
+pipeline for IR, introduce one local, dialog-internal
+=BindableConfig { kind, ore_key, source_name }= struct that both
+config kinds convert into, and make the pipeline operate on
+=std::vector<BindableConfig>= instead of the FX domain type directly:
+
+- =loadConfigs()= fires both =get_fx_spot_generation_configs_request=
+  and =get_ir_curve_generation_configs_request= (existing defaults,
+  matching current FX-only behaviour) and merges both into one
+  =BindableConfig= list once both return.
+- FX's =ore_key= is already a stored field, used as-is.
+- IR curve configs have no =ore_key= field -- =feed_binding.ore_key=
+  is described as "an official ORE market series" key, and
+  =ir_curve_feed.cpp= already computes exactly that for its own
+  =market_series= qualifier lookup: =currency_code + "/" +
+  strip_currency_prefix(currency_code, index_name)= (e.g.
+  ="USD/LIBOR-3M"=). Mirror that same computation locally (the
+  prefix-stripping helper is already duplicated client-side in
+  =IrCurveEditor.cpp='s anonymous namespace for the same reason --
+  service-layer code isn't linkable from Qt).
+- Add a "Type" column (FX/IR) to the table so mixed rows aren't
+  ambiguous once both kinds can appear together.
+- =createBindings()= is otherwise kind-agnostic already (it only ever
+  read =ore_key=/=source_name= off the FX struct) -- no change needed
+  there beyond the type change.
 
 * Notes
 

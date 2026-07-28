@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include <QDialogButtonBox>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
@@ -36,6 +37,21 @@
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+
+// Mirrors ir_curve_feed.cpp's own strip_currency_prefix() (also duplicated client-side in
+// IrCurveEditor.cpp for the same reason: service-layer code isn't linkable from Qt). index_name
+// is the full floating_index_type code (e.g. "USD-LIBOR-3M") -- strip the redundant
+// "<CCY>-" prefix back off to build the same market_series qualifier ir_curve_feed uses.
+std::string strip_currency_prefix(const std::string& currency_code, const std::string& index_name) {
+    const auto prefix = currency_code + "-";
+    if (index_name.starts_with(prefix))
+        return index_name.substr(prefix.size());
+    return index_name;
+}
+
+}
 
 SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
                                                const std::string& username,
@@ -53,15 +69,17 @@ SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
 
     auto* layout = new QVBoxLayout(this);
 
-    layout->addWidget(new QLabel(tr("Select synthetic FX rates to create feed bindings for. "
-                                    "Rows already bound are pre-checked and will be skipped."),
-                                 this));
+    layout->addWidget(
+        new QLabel(tr("Select synthetic FX/IR curve feeds to create feed bindings for. "
+                      "Rows already bound are pre-checked and will be skipped."),
+                  this));
 
-    table_->setColumnCount(3);
-    table_->setHorizontalHeaderLabels({tr(""), tr("ORE Key"), tr("Source name")});
+    table_->setColumnCount(4);
+    table_->setHorizontalHeaderLabels({tr(""), tr("Type"), tr("ORE Key"), tr("Source name")});
     table_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     table_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    table_->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->verticalHeader()->setVisible(false);
@@ -96,13 +114,28 @@ void SyntheticBindingDialog::loadConfigs() {
     auto* cm = clientManager_;
     QPointer<SyntheticBindingDialog> self = this;
 
-    using Result = std::pair<bool, std::vector<synthetic::domain::fx_spot_generation_config>>;
+    using Result = std::pair<bool, std::vector<BindableConfig>>;
     auto task = [cm]() -> Result {
-        synthetic::messaging::get_fx_spot_generation_configs_request req;
-        auto resp = cm->process_authenticated_request(req);
-        if (!resp)
+        std::vector<BindableConfig> configs;
+
+        synthetic::messaging::get_fx_spot_generation_configs_request fx_req;
+        auto fx_resp = cm->process_authenticated_request(fx_req);
+        if (!fx_resp)
             return {false, {}};
-        return {true, resp->fx_spot_generation_configs};
+        for (const auto& cfg : fx_resp->fx_spot_generation_configs)
+            configs.push_back({"FX", cfg.ore_key, cfg.source_name});
+
+        synthetic::messaging::get_ir_curve_generation_configs_request ir_req;
+        auto ir_resp = cm->process_authenticated_request(ir_req);
+        if (!ir_resp)
+            return {false, {}};
+        for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
+            const auto ore_key =
+                cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name);
+            configs.push_back({"IR", ore_key, cfg.source_name});
+        }
+
+        return {true, std::move(configs)};
     };
 
     auto* watcher = new QFutureWatcher<Result>(this);
@@ -112,8 +145,9 @@ void SyntheticBindingDialog::loadConfigs() {
         if (!self)
             return;
         if (!ok) {
-            MessageBoxHelper::critical(
-                self, self->tr("Load failed"), self->tr("Could not load synthetic FX configs."));
+            MessageBoxHelper::critical(self,
+                                       self->tr("Load failed"),
+                                       self->tr("Could not load synthetic FX/IR curve configs."));
             self->reject();
             return;
         }
@@ -125,8 +159,7 @@ void SyntheticBindingDialog::loadConfigs() {
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void SyntheticBindingDialog::populateTable(
-    const std::vector<synthetic::domain::fx_spot_generation_config>& configs) {
+void SyntheticBindingDialog::populateTable(const std::vector<BindableConfig>& configs) {
     table_->setRowCount(static_cast<int>(configs.size()));
 
     for (int row = 0; row < static_cast<int>(configs.size()); ++row) {
@@ -142,8 +175,9 @@ void SyntheticBindingDialog::populateTable(
             chk->setToolTip(tr("Already bound — will be skipped"));
 
         table_->setItem(row, 0, chk);
-        table_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(cfg.ore_key)));
-        table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(cfg.source_name)));
+        table_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(cfg.kind)));
+        table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(cfg.ore_key)));
+        table_->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(cfg.source_name)));
     }
 }
 
@@ -160,7 +194,7 @@ void SyntheticBindingDialog::onSelectNoneClicked() {
 }
 
 void SyntheticBindingDialog::onCreateClicked() {
-    std::vector<synthetic::domain::fx_spot_generation_config> selected;
+    std::vector<BindableConfig> selected;
     for (int r = 0; r < table_->rowCount(); ++r) {
         auto* chk = table_->item(r, 0);
         if (!chk || chk->checkState() != Qt::Checked)
@@ -183,8 +217,7 @@ void SyntheticBindingDialog::onCreateClicked() {
     createBindings(selected);
 }
 
-void SyntheticBindingDialog::createBindings(
-    const std::vector<synthetic::domain::fx_spot_generation_config>& selected) {
+void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& selected) {
     createButton_->setEnabled(false);
     table_->setEnabled(false);
 

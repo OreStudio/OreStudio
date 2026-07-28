@@ -197,27 +197,52 @@ Nothing here has been run yet. =/dev/sda= is assumed throughout --
 *re-confirm with =lsblk -f= immediately before Step 3*, as device naming
 can change across boots and Step 3 is the irreversible one.
 
-*** 0. Preconditions and tooling
+*** 0. Preconditions and tooling (DONE 2026-07-28)
 
 btrfs kernel support is present (=btrfs.ko= ships with kernel
-=7.1.4+deb14-amd64=) but *btrfs-progs is not installed* -- =mkfs.btrfs=
-does not currently exist on this host. Install the toolchain first;
-discovering this after =umount= would be painful.
+=7.1.4+deb14-amd64=) but *btrfs-progs was not installed* -- =mkfs.btrfs=
+did not exist on this host. Install the toolchain first; discovering
+this after =umount= would be painful.
+
+Note two package names that are not what you would guess: =compsize= is
+shipped as *=btrfs-compsize=*, and =sgdisk= (needed by Step 3, i.e.
+*after* the =umount=) comes from *=gdisk=*, which was also absent.
 
 #+begin_src sh
 sudo apt update
-sudo apt install btrfs-progs duperemove compsize
+sudo apt install btrfs-progs duperemove btrfs-compsize gdisk
 mkfs.btrfs --version   # must succeed before proceeding
+sgdisk --version       # ditto -- Step 3 cannot run without it
 #+end_src
+
+Installed and verified 2026-07-28: btrfs-progs =v7.0=, duperemove
+=0.15.2=, btrfs-compsize =1.5=, gdisk/sgdisk =1.0.10=. =modprobe btrfs=
+succeeds and =btrfs= appears in =/proc/filesystems=.
+
+=/dev/sda= already carries a *GPT* label (disk identifier
+=D5A5F2FA-95B5-48DE-BF5A-DA950B1B0654=, single 223.6G partition), so
+Step 3's =sgdisk= commands need no MBR-to-GPT conversion.
+
+=apt update= reports pre-existing errors from two third-party repos
+(timescaledb-for-Ubuntu and a Microsoft mssql key). Unrelated to this
+work and harmless here -- everything needed comes from Debian main.
 
 - Confirm no other user is on =neumann=; no build or service may run
   during Steps 1-3.
-- Note the current state for rollback reference:
+- Note the current state for rollback reference (captured 2026-07-28 to
+  =/home/marco/=, which lives on =/dev/sdb2= and is untouched by this
+  migration):
   #+begin_src sh
-  lsblk -f > ~/pre-migration-lsblk.txt
+  lsblk -f > ~/pre-migration-lsblk.txt; blkid >> ~/pre-migration-lsblk.txt
+  swapon --show > ~/swap.pre-migration.txt
+  df -hT /mnt/development >> ~/swap.pre-migration.txt
   cp /etc/fstab ~/fstab.pre-migration
   cp /home/marco/.config/ccache/ccache.conf ~/ccache.conf.pre-migration
+  # PostgreSQL cluster config -- pg_dropcluster in Step 6 deletes it:
+  sudo cp -a /etc/postgresql/18/main ~/postgresql-18-main.conf.pre-migration
   #+end_src
+  The PostgreSQL config copy is listed again under Step 2; doing it here
+  is equivalent and gets it out of the way.
 - Keep an off-SSD copy of *this story*, since the disk holding it is the
   one being destroyed:
   #+begin_src sh
@@ -576,9 +601,9 @@ and it should be written down rather than rediscovered:
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Planned. Filesystem chosen, plan written; Step 0b (SSH agent) done, nothing destructive executed. |
-| Waiting on    | Push of =f8c7241a5= (see Step 2 gate).  |
-| Next          | Break the story into tasks, then execute Step 0. |
+| Now           | Steps 0 and 0b DONE (tooling installed, state captured, SSH agent fixed). Nothing destructive executed. |
+| Waiting on    | Nothing. Step 2 git gate is clear -- no unpushed commits, no dirty worktrees. |
+| Next          | Step 1 (stop services, swapoff), then STOP for explicit confirmation before Step 3. |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance

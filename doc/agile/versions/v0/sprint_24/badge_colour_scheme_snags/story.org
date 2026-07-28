@@ -39,10 +39,10 @@ distinct from the coverage-audit-and-rollout work split into
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Palette-swatch task done; PR pending.   |
-| Waiting on    | Nothing.                               |
-| Next          | Pick up "Badge sources should badge their own list too". |
-| Last touched  | 2026-07-26                               |
+| Now           | Both tasks implemented, built, and tested; PR for the self-badging task pending. |
+| Waiting on    | Manual QA of the self-badging task (live client, not performed this session). |
+| Next          | Manual QA, then close the story.       |
+| Last touched  | 2026-07-28                               |
 
 * Acceptance
 
@@ -62,7 +62,7 @@ distinct from the coverage-audit-and-rollout work split into
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | DONE | 2026-07-22 | 2026-07-26 | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
-| [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | BACKLOG | | | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
+| [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | DONE | 2026-07-28 | 2026-07-28 | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
 
 * Decisions
 

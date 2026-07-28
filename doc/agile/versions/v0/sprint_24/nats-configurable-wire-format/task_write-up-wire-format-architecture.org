@@ -156,21 +156,30 @@ as a representative sample; the same two ~15-line templates recur
 verbatim). The actual breakdown, verified by grep rather than
 estimated:
 
-- 9 files *define* the templates (=account_parties_commands.cpp=,
-  =accounts_commands.cpp=, =countries_commands.cpp=,
-  =currencies_commands.cpp=, =change_reason_categories_commands.cpp=,
+- 13 files *define* their own copy of =do_request=/=do_auth_request=
+  (=account_parties_commands.cpp=, =accounts_commands.cpp=,
+  =countries_commands.cpp=, =currencies_commands.cpp=,
+  =change_reason_categories_commands.cpp=,
   =change_reasons_commands.cpp=, =variability_commands.cpp=,
-  =tenants_commands.cpp=, =rbac_commands.cpp=), 14 definitions total
-  (some files define both templates).
-- 13 files *reference* =do_request=/=do_auth_request= by name (the 9
-  definers above plus =bundles_commands.cpp=, =crm_commands.cpp=,
-  =marketdata_commands.cpp=, =provision_commands.cpp=), with 60 actual
-  call sites invoking the templates across those files.
+  =tenants_commands.cpp=, =rbac_commands.cpp=, plus
+  =bundles_commands.cpp=, =crm_commands.cpp=,
+  =marketdata_commands.cpp=, which each independently copy-paste
+  their own =do_auth_request=), 18 definitions total (some files
+  define both templates). =provision_commands.cpp= has a *third,
+  differently-shaped* =do_request= -- it takes a =Request= object
+  plus a default =timeout= and =authenticated= bool and does its own
+  internal =rfl::json::write(req)= -- so the eventual shared helper
+  needs an overload covering that shape too, not just a drop-in
+  replacement for the other 12 files' identical pattern.
+- 60 actual call sites invoke these templates (=do_request<...>=/
+  =do_auth_request<...>=) across the files above.
 
-This duplication -- 14 copies of the same ~15-line template pattern
-across 9 files -- is a pre-existing debt, independent of this story,
-that the migration should fix as a side effect (one shared helper
-instead of 9 copies) rather than propagate.
+This duplication -- 18 copies of essentially the same ~15-line
+template pattern (plus one differently-shaped variant) across 13
+files -- is a pre-existing debt, independent of this story, that the
+migration should fix as a side effect (one shared helper, with an
+overload for =provision_commands.cpp='s shape, instead of 13 copies)
+rather than propagate.
 
 That is not the full picture, though: *7 more command files* have
 =rfl::json= call sites that don't go through =do_request=/
@@ -360,6 +369,7 @@ via its "Verifies task" field.
 | 2 | ores.qt audit missed MarketSimulatorWindow.cpp and ShellMdiWindow.cpp call sites | task_write-up-wire-format-architecture.org | Fixed | Added both, plus an explicit note that OreImportWizard.cpp:862 was checked and is a false positive (embedded JSON domain field, not wire format) |
 | 3 | ores.shell count ("26 across ~13 files") doesn't match reality; task-count in story.org also stale | task_write-up-wire-format-architecture.org, story.org | Fixed | Corrected to the verified breakdown (101 occurrences across 22 files); story.org's "Now" field corrected from 4 to 5 remaining tasks |
 |   | Minor nits (typo, missing default/unreachable arm in wire_codec snippet) | task_write-up-wire-format-architecture.org | Fixed | "suffient" -> "sufficient"; added std::unreachable() note to the snippet |
+| 4 | ores.shell definition count still wrong after round 3 fix: 14/9 claimed, actually 18/13, plus provision_commands.cpp is a differently-shaped third variant | task_write-up-wire-format-architecture.org | Fixed | Corrected to 18 definitions across 13 files, noted provision_commands.cpp's distinct Request-object shape |
 
 * Result
 
@@ -372,8 +382,10 @@ implementation tasks that follow:
   =ores.qt::ClientManager= plus 2 more stragglers (needs consolidation
   first), 101 occurrences across 22 files in =ores.shell= (only 60 of
   which go through the copy-pasted =do_request=/=do_auth_request=
-  pattern across 9 defining files; the rest use other direct
-  patterns), all needing de-duplication into shared helpers.
+  pattern across 13 defining files (18 definitions, one of them --
+  =provision_commands.cpp= -- a differently-shaped variant); the rest
+  use other direct patterns), all needing de-duplication into shared
+  helpers.
   =ores.cli= confirmed genuinely out of scope -- its =rfl::json= hits
   are config-file I/O, no NATS call sites found. (Corrected post-review:
   the original pass under-counted =ores.service= and =ores.qt= call

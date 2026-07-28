@@ -177,10 +177,17 @@ std::nullopt
 
 Business center location code.
 
-FpML business center code indicating primary location.
+FpML business center code indicating primary location. Synthetic
+parties default to =WRLD= (the global sentinel business centre,
+guaranteed seeded for every tenant by the system-tenant bootstrap --
+see the same reasoning in =ores.refdata.book.org=), not a real FpML
+city code like =GBLO=: real city codes only exist once the large,
+optional FpML business-centre reference dataset has been loaded, so
+using one here would make a freshly-generated party fail its
+FK-validation trigger in any environment that hasn't loaded it.
 
 #+begin_src cpp :name generator
-std::string("GBLO")
+std::string("WRLD")
 #+end_src
 
 ** status

@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/codegen-qt-parent-scoped-list
-#+pr:
+#+pr: 1719
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
@@ -183,7 +183,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1719][#1719]] | [codegen] Add has_parent_scoped_list Qt knob for parent-scoped lists |
 
 * Review
 

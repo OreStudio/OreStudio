@@ -117,7 +117,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.fx_spot_configs.uniform_demo';
+    raise debug 'Populating synthetic FX spot configs (uniform demo) for dataset: synthetic.themes.uniform_demo';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,

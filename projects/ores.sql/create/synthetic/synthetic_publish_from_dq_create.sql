@@ -105,47 +105,66 @@ begin
     end if;
 
     if p_mode = 'replace_all' then
-        -- Capture the fx-config ids being replaced before voiding them, so the
-        -- GMM components that reference them can be voided too — otherwise
-        -- they're orphaned (still valid_to = infinity) pointing at a now-closed
-        -- fx_spot_config_id, since the re-inserted rows below get fresh ids.
-        create temp table replaced_fx_configs (id uuid) on commit drop;
+        -- Void each asset class only if THIS dataset actually carries artefact
+        -- rows for it, mirroring the `if exists (...)` gates on the population
+        -- loops below. Without that symmetry, publishing a single-asset-class
+        -- theme in replace_all mode would void the party's other asset class
+        -- and then skip repopulating it (that loop being gated), silently
+        -- destroying configs with nothing left to restore them. Harmless while
+        -- every theme carries both FX and IR, but the point of the one-theme-
+        -- unit design is that a future asset class is just another gated loop.
+        if exists (
+            select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
+            where a.dataset_id = p_dataset_id
+        ) then
+            -- Capture the fx-config ids being replaced before voiding them, so
+            -- the GMM components that reference them can be voided too --
+            -- otherwise they're orphaned (still valid_to = infinity) pointing
+            -- at a now-closed fx_spot_config_id, since the re-inserted rows
+            -- below get fresh ids.
+            create temp table replaced_fx_configs (id uuid) on commit drop;
 
-        insert into replaced_fx_configs (id)
-        select id from ores_synthetic_fx_spot_generation_configs_tbl
-        where tenant_id = p_target_tenant_id
-          and party_id = v_party_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
+            insert into replaced_fx_configs (id)
+            select id from ores_synthetic_fx_spot_generation_configs_tbl
+            where tenant_id = p_target_tenant_id
+              and party_id = v_party_id
+              and valid_to = ores_utility_infinity_timestamp_fn();
 
-        update ores_synthetic_fx_spot_generation_configs_tbl
-        set valid_to = current_timestamp
-        where id in (select id from replaced_fx_configs);
+            update ores_synthetic_fx_spot_generation_configs_tbl
+            set valid_to = current_timestamp
+            where id in (select id from replaced_fx_configs);
 
-        get diagnostics v_deleted_fx = row_count;
+            get diagnostics v_deleted_fx = row_count;
 
-        update ores_synthetic_gmm_components_tbl
-        set valid_to = current_timestamp
-        where fx_spot_config_id in (select id from replaced_fx_configs)
-          and valid_to = ores_utility_infinity_timestamp_fn();
+            update ores_synthetic_gmm_components_tbl
+            set valid_to = current_timestamp
+            where fx_spot_config_id in (select id from replaced_fx_configs)
+              and valid_to = ores_utility_infinity_timestamp_fn();
+        end if;
 
-        create temp table replaced_ir_configs (id uuid) on commit drop;
+        if exists (
+            select 1 from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+            where a.dataset_id = p_dataset_id
+        ) then
+            create temp table replaced_ir_configs (id uuid) on commit drop;
 
-        insert into replaced_ir_configs (id)
-        select id from ores_synthetic_ir_curve_generation_configs_tbl
-        where tenant_id = p_target_tenant_id
-          and party_id = v_party_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
+            insert into replaced_ir_configs (id)
+            select id from ores_synthetic_ir_curve_generation_configs_tbl
+            where tenant_id = p_target_tenant_id
+              and party_id = v_party_id
+              and valid_to = ores_utility_infinity_timestamp_fn();
 
-        update ores_synthetic_ir_curve_generation_configs_tbl
-        set valid_to = current_timestamp
-        where id in (select id from replaced_ir_configs);
+            update ores_synthetic_ir_curve_generation_configs_tbl
+            set valid_to = current_timestamp
+            where id in (select id from replaced_ir_configs);
 
-        get diagnostics v_deleted_ir = row_count;
+            get diagnostics v_deleted_ir = row_count;
 
-        update ores_synthetic_ir_curve_template_entries_tbl
-        set valid_to = current_timestamp
-        where ir_curve_config_id in (select id from replaced_ir_configs)
-          and valid_to = ores_utility_infinity_timestamp_fn();
+            update ores_synthetic_ir_curve_template_entries_tbl
+            set valid_to = current_timestamp
+            where ir_curve_config_id in (select id from replaced_ir_configs)
+              and valid_to = ores_utility_infinity_timestamp_fn();
+        end if;
 
         v_deleted := v_deleted_fx + v_deleted_ir;
     end if;

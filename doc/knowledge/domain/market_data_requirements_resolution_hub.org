@@ -37,18 +37,12 @@ assume without re-deriving.
 Each linked note is a single focused concept; start here and follow
 the links in whatever order matches the question you have.
 
-* Two lenses on this cluster
-
-Every document below can be read through either of two lenses, used
-together rather than as alternatives: an analogy, for intuition, and
-a notation, for precision.
-
-** Lens 1: analogy — the DNS mapping
+** Aside, for readers who know DNS
 
 #+begin_note
-Every document below returns to the same worked analogy: the Domain
-Name System. A market data *requirement* plays the role of a *domain
-name* — a stable, human-legible description of what is wanted,
+Every document in this cluster returns to the same worked analogy: the
+Domain Name System. A market data *requirement* plays the role of a
+*domain name* — a stable, human-legible description of what is wanted,
 independent of any specific physical answer. A market data *identifier*
 plays the role of the *IP address* a domain name resolves to — the only
 kind of reference a network (or a database query, or a NATS subject) can
@@ -80,37 +74,38 @@ in a completely unrelated domain, nearly every structural problem this
 cluster is concerned with. Where the analogy breaks down (most notably
 for snapshotting, whose *purpose* differs meaningfully from DNS
 caching's), each document says so explicitly rather than stretching the
-comparison past where it still illuminates.
+comparison past where it still illuminates. Skip this aside entirely if
+DNS isn't already familiar; nothing in the individual documents depends
+on it.
 #+end_note
 
-** Lens 2: notation — sets, not containers
+* Set notation
 
-This cluster deliberately describes its concepts using ordinary
-mathematical set notation and set operations — union, intersection,
-subset, closure — rather than container-like, configuration-like prose.
-Several candidate terms were weighed for the collection of quotes a
-valuation actually resolves against. "Environment" was rejected: it
-connotes something ambient and configured once per run (closer to a
-deployment's env vars than to a value that varies per trade, per
-valuation date, and per pricing engine), and it invites confusion with
-unrelated senses of "environment" already in use elsewhere (runtime,
-test, deployment). "ORE's today's market" and similar ORE-flavoured
-names were also considered and rejected: they tie the concept to one
-engine's terminology and don't generalise to Bloomberg- or
-Reuters-sourced data, nor to the static/dynamic split this cluster
-relies on. "Set" was chosen because the concept genuinely is a set —
-closed under union, intersection, and closure, with subset and
-membership tests that matter operationally (does this valuation's
-requirement set fall inside the market data universe?) — so the
-mathematical vocabulary is not a metaphor layered on top but a precise
-description of how these objects behave; see
-[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
-the fuller comparison. The payoff of this framing is that most of the relationships
-between these concepts collapse from paragraphs of prose into a single
-line of notation, checkable the way an algebraic identity is checkable,
-rather than merely plausible the way a prose description is merely
-plausible. The central relationship every other document in this
-cluster either builds toward or assumes is:
+This cluster describes its concepts using ordinary mathematical set
+notation and set operations — union, intersection, subset, closure —
+rather than container-like, configuration-like prose. Several candidate
+terms were weighed for the collection of quotes a valuation actually
+resolves against. "Environment" was rejected: it connotes something
+ambient and configured once per run (closer to a deployment's env vars
+than to a value that varies per trade, per valuation date, and per
+pricing engine), and it invites confusion with unrelated senses of
+"environment" already in use elsewhere (runtime, test, deployment).
+"ORE's today's market" and similar ORE-flavoured names were also
+considered and rejected: they tie the concept to one engine's
+terminology and don't generalise to Bloomberg- or Reuters-sourced data,
+nor to the static/dynamic split this cluster relies on. "Set" was chosen
+because the concept genuinely is a set — closed under union,
+intersection, and closure, with subset and membership tests that matter
+operationally (does this valuation's requirement set fall inside the
+market data universe?) — so the mathematical vocabulary is not a
+metaphor layered on top but a precise description of how these objects
+behave; see [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data
+Universe]] for the fuller comparison. The payoff of this framing is that
+most of the relationships between these concepts collapse from paragraphs
+of prose into a single line of notation, checkable the way an algebraic
+identity is checkable, rather than merely plausible the way a prose
+description is merely plausible. The central relationship every other
+document in this cluster either builds toward or assumes is:
 
 $$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho(\,\mathrm{static}(\tau(T)) \,\cup\, \mathrm{dynamic}(T, d)\,)\bigr) \,\cap\, U$$
 
@@ -126,10 +121,10 @@ steps into one symbol for the population-level formula, since the
 formula only needs the final, most-refined set. The union of
 $\mathrm{static}(\tau(T))$ and $\mathrm{dynamic}(T, d)$ is *resolved*
 ($\rho$) into physical identifiers, one per requirement; the result is
-expanded to its full *dependency closure*;
-and intersecting that closure with the *market data universe* $U$
-produces $\mathrm{MDS}(T)$ — the concrete market data set the valuation
-of $T$ actually needs, and the only part of $U$ it ever touches.
+expanded to its full *dependency closure*; and intersecting that closure
+with the *market data universe* $U$ produces $\mathrm{MDS}(T)$ — the
+concrete market data set the valuation of $T$ actually needs, and the
+only part of $U$ it ever touches.
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] walks
 through this formula in full, with a worked FX Forward example; every
 symbol in it is defined, in depth, by exactly one of the linked

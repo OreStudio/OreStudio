@@ -8,7 +8,7 @@
 #+filetags: :windows_ci_pip_self_upgrade_fix:sprint_24:v0:
 #+owner: marco
 #+branch: hotfix/windows-ci-pip-self-upgrade-fix
-#+pr:
+#+pr: 1717
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -64,7 +64,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1717][#1717]] | [compass] Fix Windows CI pip self-upgrade |
 
 * Review
 

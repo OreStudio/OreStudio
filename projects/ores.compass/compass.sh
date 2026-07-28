@@ -50,7 +50,12 @@ if [ "$NO_DEPS" -eq 1 ]; then
     :
 elif [ -f "$REQUIREMENTS_FILE" ] && { [ ! -f "$STAMP_PATH" ] || [ "$REQUIREMENTS_FILE" -nt "$STAMP_PATH" ]; }; then
     echo "📦 Installing dependencies from requirements.txt..."
-    "$VENV_BIN/pip" install --upgrade pip -q
+    # Upgrade via `python -m pip`, not the `pip` executable directly: on
+    # Windows, pip.exe cannot overwrite its own running binary and fails
+    # with "ERROR: To modify pip, please run the following command:
+    # ... -m pip install --upgrade pip" -- invoking through the
+    # interpreter module sidesteps the self-lock.
+    "$VENV_BIN/python3" -m pip install --upgrade pip -q
     "$VENV_BIN/pip" install -r "$REQUIREMENTS_FILE" -q
     cp "$REQUIREMENTS_FILE" "$STAMP_PATH"
 fi

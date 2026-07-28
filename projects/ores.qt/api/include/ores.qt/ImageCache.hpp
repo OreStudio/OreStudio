@@ -346,6 +346,16 @@ private:
      * completed -- every id would then be treated as unknown-size and
      * batched one request per image, defeating byte-size-aware batching
      * on this common path purely due to incidental async ordering.
+     *
+     * Only defers when connected: loadImageList() early-returns without
+     * ever setting its QFuture when there's no live connection, so
+     * onImageListLoaded() -- the only place a deferred wait gets resumed
+     * -- would never fire, permanently stalling pending_ids_await_list_
+     * and load_all_in_progress_ and deadlocking every future
+     * loadAll()/reload() call. Deferring buys nothing while disconnected
+     * anyway (a real fetch can't happen either way), so this fetches
+     * immediately in that case instead, same as before this method
+     * existed.
      */
     void finishLoadAllChain();
 

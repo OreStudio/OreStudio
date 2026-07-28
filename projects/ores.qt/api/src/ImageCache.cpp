@@ -484,7 +484,17 @@ void ImageCache::onCalendarMappingLoaded() {
 }
 
 void ImageCache::finishLoadAllChain() {
-    if (!available_images_.empty()) {
+    // Not connected (or no client): loadImageList() would early-return
+    // without ever setting its QFuture, so onImageListLoaded() -- the only
+    // place that clears a deferred wait -- would never fire, permanently
+    // stalling pending_ids_await_list_/load_all_in_progress_ and
+    // deadlocking every future loadAll()/reload() call. Deferring buys
+    // nothing here anyway (a real fetch can't happen either way), so fetch
+    // immediately and let loadImagesByIds()'s existing unknown-size
+    // handling apply -- matching this function's pre-existing behaviour
+    // at every disconnected-chain call site.
+    const bool connected = clientManager_ && clientManager_->isConnected();
+    if (!available_images_.empty() || !connected) {
         loadImagesByIds(pending_image_ids_);
         return;
     }

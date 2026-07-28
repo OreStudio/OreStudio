@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 9B26660C-8680-4771-8067-280E87B83E56
+:END:
+#+title: Story: Party generator test expectations and business_center_code drift
+#+description: party_generator_produces_valid_instance asserted stale pre-standardization values (version==1, change_reason_code=='system.new'); party.org's business_center_code generator block specifies GBLO, an FpML code not guaranteed seeded, a landmine for the next clean regen.
+#+type: story
+#+level: s2
+#+filetags: :refdata:codegen:tech-debt:sprint_24:v0:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore ores.refdata.api.tests to green on main, and remove the
+business_center_code landmine from party.org before it reaches
+another regen.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-28                               |
+
+* Acceptance
+
+- ores.refdata.api.tests passes.
+- party.org's business_center_code generator uses a guaranteed-seeded value.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2769150C-C885-43A1-86E5-4F06F2382854][Scaffold story: Party generator test expectations and business_center_code drift]] | DONE | 2026-07-28 | 2026-07-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:AD3D9B64-8A21-412C-8EEA-1A5E3A080DB4][Implement Party generator test expectations and business_center_code drift]] | DONE | 2026-07-28 | 2026-07-28 | Initial task for: Party generator test expectations and business_center_code drift |
+
+* Decisions
+
+* Out of scope
+
+-

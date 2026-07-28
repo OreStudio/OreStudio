@@ -69,6 +69,29 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** TODO before closing: mop up temporary diagnostics + fix logging gaps
+
+While debugging, added raw ~fprintf(stderr, ...)~ diagnostics directly in
+~process_supervisor.cpp~/~application.cpp~ instead of ~BOOST_LOG_SEV~,
+specifically to avoid a *separate, real bug* found along the way:
+~lifecycle_manager::make_console_sink()~ never calls ~backend->auto_flush(true)~
+on the console sink's ~text_ostream_backend~ (unlike ~make_file_sink()~, which
+does). Without it, console output sits in ~std::cout~'s buffer and only
+appears once it fills or the process exits/flushes explicitly -- misleading
+under ~podman logs~, where output can appear to "hang" for a long time before
+a burst arrives. This cost real debugging time before being identified.
+
+Before closing this task:
+- Fix ~make_console_sink()~ to ~auto_flush(true)~ like the file sink already
+  does.
+- Remove the raw ~fprintf~ diagnostics added during this investigation
+  (~co_spawn~ entry points, ~start_all()~/~do_launch()~ entry, DB read
+  returns, topo-sort/loop-iteration markers).
+- Promote the genuinely useful ones to permanent ~BOOST_LOG_SEV(..., trace)~
+  (or ~debug~) log lines instead of deleting outright -- several pin down
+  exactly where startup is in a way the existing log statements don't
+  (e.g. per-iteration launch-loop progress, DB read counts).
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

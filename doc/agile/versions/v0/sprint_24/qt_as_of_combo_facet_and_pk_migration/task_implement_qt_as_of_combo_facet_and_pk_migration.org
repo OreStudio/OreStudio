@@ -8,7 +8,7 @@
 #+filetags: :qt_as_of_combo_facet_and_pk_migration:sprint_24:v0:
 #+owner: marco
 #+branch: feature/qt-as-of-combo-facet-and-pk-migration
-#+pr:
+#+pr: 1720
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -64,7 +64,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1720][#1720]] | [codegen,refdata] Qt as-of combo facet + primary-key model migration |
 
 * Review
 

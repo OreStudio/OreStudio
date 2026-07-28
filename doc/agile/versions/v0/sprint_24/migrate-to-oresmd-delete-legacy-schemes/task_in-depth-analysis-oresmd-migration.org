@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
 #+owner: marco
-#+branch: feature/in-depth-analysis-oresmd-migration
+#+branch: feature/migrate-to-oresmd-delete-legacy-schemes
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -59,9 +59,16 @@ namespace {
 }
 
 Client{{domain_entity.entity_pascal}}Model::Client{{domain_entity.entity_pascal}}Model(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager,
+{{#domain_entity.qt.has_parent_scoped_list}}
+    const QString& {{domain_entity.qt.parent_key_param}},
+{{/domain_entity.qt.has_parent_scoped_list}}
+    QObject* parent)
     : AbstractClientModel(parent),
       clientManager_(clientManager),
+{{#domain_entity.qt.has_parent_scoped_list}}
+      {{domain_entity.qt.parent_key_param}}_({{domain_entity.qt.parent_key_param}}),
+{{/domain_entity.qt.has_parent_scoped_list}}
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_({{domain_entity.entity_snake}}_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -300,6 +307,9 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                 request.offset = offset;
                 request.limit = limit;
 {{/domain_entity.qt.has_pagination}}
+{{#domain_entity.qt.has_parent_scoped_list}}
+                request.{{domain_entity.qt.parent_key_field}} = self->{{domain_entity.qt.parent_key_param}}_.toStdString();
+{{/domain_entity.qt.has_parent_scoped_list}}
 
                 auto result = self->clientManager_->
                     process_authenticated_request(std::move(request));

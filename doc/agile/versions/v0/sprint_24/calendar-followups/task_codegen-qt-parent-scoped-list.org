@@ -34,33 +34,33 @@ on every paginated fetch. Landed generically in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Plan written; starting template implementation. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the knob across client_model/controller/mdi_window templates, then verify via --diff against existing entities. |
+| Next         | Nothing. |
 | Last touched | 2026-07-28                               |
 
 * Acceptance
 
-- [ ] A new =:has_parent_scoped_list:= knob exists (meaningful only
+- [X] A new =:has_parent_scoped_list:= knob exists (meaningful only
   alongside =:has_readonly_paginated_list:=), paired with
   =:parent_key_field:= (the protocol request field, e.g.
   =calendar_code=) and =:parent_key_param:= (the C++ member/parameter
   name).
-- [ ] =Client<Entity>Model= accepts and stores the parent key, and
+- [X] =Client<Entity>Model= accepts and stores the parent key, and
   sets it on the paginated get-request (=fetch_<collection>=/
   =load_page=) on every call, alongside the existing offset/limit
   plumbing.
-- [ ] =<Entity>MdiWindow= accepts the parent key in its constructor
+- [X] =<Entity>MdiWindow= accepts the parent key in its constructor
   and threads it through to the =ClientModel= it creates.
-- [ ] =<Entity>Controller= gets a public entry point (analogous to
+- [X] =<Entity>Controller= gets a public entry point (analogous to
   =openAddWithParent=) that takes the parent key and opens the list
   window scoped to it; =showListWindow()= still satisfies
   =EntityController='s pure-virtual override.
-- [ ] Documented in =entity_meta_model_cpp_qt.org= alongside
+- [X] Documented in =entity_meta_model_cpp_qt.org= alongside
   =:has_readonly_paginated_list:=.
-- [ ] Verified via =--diff= against existing entities with the knob
+- [X] Verified via =--diff= against existing entities with the knob
   unset (its default) showing zero drift attributable to this change
   -- generation for =calendar_dates= itself is out of scope (follow-on
   task, needs the messaging layer's protocol types wired in too).
@@ -192,3 +192,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =:has_parent_scoped_list:= (paired with =:parent_key_field:=/
+=:parent_key_param:=) to =ores.codegen='s =ores.cpp.qt= facet, landed
+across =client_model_header/impl=, =mdi_window_header/impl=, and
+=controller_header/impl.org=:
+
+- =Client<Entity>Model= gains a conditional constructor parameter,
+  stores it as a member, and sends it on the paginated get-request
+  every fetch, alongside the existing offset/limit plumbing.
+- =<Entity>MdiWindow= gains the same conditional constructor
+  parameter and threads it into the =ClientModel= it constructs.
+- =<Entity>Controller= gains =openForParent(const QString&)= --
+  mirroring the existing =openAddWithParent= pattern for the
+  unrelated =has_parent_relationship= mechanism, but scoping a
+  read-only list's get-request rather than pre-filling a create
+  form's foreign key. The required =EntityController::showListWindow()=
+  zero-arg override delegates to a new private
+  =showListWindow(const QString&)= overload that does the real
+  construction (also used by =openForParent=); the window key now
+  incorporates the parent key so distinct parents get distinct/
+  reusable windows.
+
+Documented under a new "Parent-scoped lists" bullet in
+=entity_meta_model_cpp_qt.org=, explicitly distinguished from the
+pre-existing "Parent scoping" bullet
+(=parent_entity_singular=/=has_parent_relationship=) to avoid
+conflating the two mechanisms.
+
+*Verification*: retangled, then regenerated =book= and =currency=
+via =--address ores.cpp.qt --diff= with the new knobs left unset
+(their default) -- =currency= came back byte-identical; =book='s diff
+was pure pre-existing drift unrelated to this change (same class of
+drift task 35F743BF already saw and attributed to other, earlier
+work). Additionally smoke-tested the new templates by temporarily
+setting =:has_parent_scoped_list:=/=:parent_key_field:=/
+=:parent_key_param:= on =currency.org= (uncommitted, reverted via
+=git checkout= after inspection) and regenerating with =--diff=: the
+output was syntactically valid, correctly-gated C++ across all six
+touched files, matching the design exactly. Full local build (all
+targets, including =ores.qt.exe=) is green.
+
+Generating a working parent-scoped list for =calendar_dates= itself
+is out of scope here -- that's the follow-on task,
+[[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]].

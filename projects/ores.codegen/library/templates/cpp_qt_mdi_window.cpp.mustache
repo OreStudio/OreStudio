@@ -53,10 +53,16 @@ using namespace ores::logging;
 {{#domain_entity.qt.needs_image_cache}}
     ImageCache* imageCache,
 {{/domain_entity.qt.needs_image_cache}}
+{{#domain_entity.qt.has_parent_scoped_list}}
+    const QString& {{domain_entity.qt.parent_key_param}},
+{{/domain_entity.qt.has_parent_scoped_list}}
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
+{{#domain_entity.qt.has_parent_scoped_list}}
+      {{domain_entity.qt.parent_key_param}}_({{domain_entity.qt.parent_key_param}}),
+{{/domain_entity.qt.has_parent_scoped_list}}
 {{#domain_entity.qt.has_badge_columns}}
       badgeCache_(badgeCache),
 {{/domain_entity.qt.has_badge_columns}}
@@ -209,7 +215,11 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
-    model_ = new Client{{domain_entity.entity_pascal}}Model(clientManager_, this);
+    model_ = new Client{{domain_entity.entity_pascal}}Model(clientManager_,
+{{#domain_entity.qt.has_parent_scoped_list}}
+        {{domain_entity.qt.parent_key_param}}_,
+{{/domain_entity.qt.has_parent_scoped_list}}
+        this);
 {{#domain_entity.qt.needs_image_cache}}
     model_->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}

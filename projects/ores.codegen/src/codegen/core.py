@@ -2680,6 +2680,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_pagination'] = qt.get('has_pagination', False)
             # Default has_readonly_paginated_list to False if not set
             qt['has_readonly_paginated_list'] = qt.get('has_readonly_paginated_list', False)
+            # Default has_parent_scoped_list to False if not set. Paired
+            # with parent_key_field (the protocol request field, e.g.
+            # calendar_code) and parent_key_param (the C++ member/
+            # parameter name) -- both required when the knob is set, since
+            # the parent key belongs to a different entity and there's
+            # nothing on this entity to derive either from. Distinct from
+            # parent_entity_singular/has_parent_relationship above, which
+            # solves a different problem (pre-filling a foreign key on
+            # create for a still-full-CRUD entity, not filtering a
+            # read-only list's get-request).
+            qt['has_parent_scoped_list'] = qt.get('has_parent_scoped_list', False)
             qt['has_text_edit_fields'] = any(
                 f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )

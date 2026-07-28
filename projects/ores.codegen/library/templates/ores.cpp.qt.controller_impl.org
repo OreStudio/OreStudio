@@ -115,17 +115,37 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
     BOOST_LOG_SEV(lg(), debug) << "{{domain_entity.entity_pascal}}Controller created";
 }
 
+{{#domain_entity.qt.has_parent_scoped_list}}
+void {{domain_entity.entity_pascal}}Controller::showListWindow() {
+    showListWindow(QString());
+}
+
+void {{domain_entity.entity_pascal}}Controller::openForParent(
+    const QString& {{domain_entity.qt.parent_key_param}}) {
+    showListWindow({{domain_entity.qt.parent_key_param}});
+}
+
+void {{domain_entity.entity_pascal}}Controller::showListWindow(
+    const QString& {{domain_entity.qt.parent_key_param}}) {
+    BOOST_LOG_SEV(lg(), debug) << "showListWindow called for {{domain_entity.qt.parent_key_param}}="
+                               << {{domain_entity.qt.parent_key_param}};
+    {{domain_entity.qt.parent_key_param}}_ = {{domain_entity.qt.parent_key_param}};
+
+    const QString key = build_window_key("list", "{{domain_entity.entity_plural}}_" + {{domain_entity.qt.parent_key_param}});
+{{/domain_entity.qt.has_parent_scoped_list}}
+{{^domain_entity.qt.has_parent_scoped_list}}
 void {{domain_entity.entity_pascal}}Controller::showListWindow() {
     BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
 
     const QString key = build_window_key("list", "{{domain_entity.entity_plural}}");
+{{/domain_entity.qt.has_parent_scoped_list}}
     if (try_reuse_window(key)) {
         BOOST_LOG_SEV(lg(), debug) << "Reusing existing list window";
         return;
     }
 
     // Create new window
-    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_{{#domain_entity.qt.has_badge_columns}}, badgeCache_{{/domain_entity.qt.has_badge_columns}}{{#domain_entity.qt.needs_image_cache}}, imageCache_{{/domain_entity.qt.needs_image_cache}});
+    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_{{#domain_entity.qt.has_badge_columns}}, badgeCache_{{/domain_entity.qt.has_badge_columns}}{{#domain_entity.qt.needs_image_cache}}, imageCache_{{/domain_entity.qt.needs_image_cache}}{{#domain_entity.qt.has_parent_scoped_list}}, {{domain_entity.qt.parent_key_param}}_{{/domain_entity.qt.has_parent_scoped_list}});
 
     // Connect signals
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::statusChanged,

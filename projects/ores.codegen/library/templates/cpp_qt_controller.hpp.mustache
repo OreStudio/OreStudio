@@ -75,6 +75,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+{{#domain_entity.qt.has_parent_scoped_list}}
+    /**
+     * @brief Opens the list window scoped to @p {{domain_entity.qt.parent_key_param}},
+     * sending it on every paginated fetch. showListWindow() alone (the
+     * EntityController override above) opens with an empty/unset key.
+     */
+    void openForParent(const QString& {{domain_entity.qt.parent_key_param}});
+{{/domain_entity.qt.has_parent_scoped_list}}
 {{#domain_entity.qt.has_explorer_api}}
 {{^domain_entity.qt.has_readonly_paginated_list}}
     void openAdd();
@@ -159,12 +167,18 @@ private:
 private:
 {{/domain_entity.qt.has_readonly_paginated_list}}
 
+{{#domain_entity.qt.has_parent_scoped_list}}
+    void showListWindow(const QString& {{domain_entity.qt.parent_key_param}});
+{{/domain_entity.qt.has_parent_scoped_list}}
 {{#domain_entity.qt.has_change_reason_cache}}
     ChangeReasonCache* changeReasonCache_;
 {{/domain_entity.qt.has_change_reason_cache}}
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache_;
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_parent_scoped_list}}
+    QString {{domain_entity.qt.parent_key_param}}_;
+{{/domain_entity.qt.has_parent_scoped_list}}
     {{domain_entity.entity_pascal}}MdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

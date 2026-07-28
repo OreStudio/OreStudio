@@ -32,10 +32,13 @@ namespace ores::marketdata::core {
  * id:C3E053CA-0D4B-480B-9119-E11530160EC1's "Logical vs. physical" section.
  *
  * @p defaults supplies whatever additional information narrows the requirement (an
- * explicit choice among the fields still open) -- it must be the same asset class as
- * @p requirement. Every field the requirement leaves unset is taken from @p defaults;
- * a field left unset in both throws oresmd_exception naming it, rather than silently
- * defaulting a mandatory field.
+ * explicit choice among the fields still open) and is expected to be the same asset
+ * class as @p requirement, though this isn't a precondition whose violation is
+ * undefined: a mismatched @p defaults is simply treated as absent (via std::get_if),
+ * so every field the requirement itself leaves unset falls straight through to the
+ * "unresolved" case below. Every field the requirement leaves unset is otherwise taken
+ * from @p defaults; a field left unset in both (accounting for the mismatch case above)
+ * throws oresmd_exception naming it, rather than silently defaulting a mandatory field.
  */
 class ORES_MARKETDATA_CORE_EXPORT oresmd_resolver final {
 public:

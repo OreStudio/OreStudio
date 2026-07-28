@@ -18,10 +18,13 @@
  *
  */
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
+#include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
 #include <boost/throw_exception.hpp>
 #include <boost/url.hpp>
 #include <algorithm>
+#include <cctype>
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
@@ -31,18 +34,9 @@ namespace {
 
 using namespace ores::marketdata::domain;
 using ores::marketdata::core::oresmd_exception;
-
-std::string to_upper(std::string_view s) {
-    std::string r(s);
-    std::ranges::transform(r, r.begin(), [](unsigned char c) { return std::toupper(c); });
-    return r;
-}
-
-std::string to_lower(std::string_view s) {
-    std::string r(s);
-    std::ranges::transform(r, r.begin(), [](unsigned char c) { return std::tolower(c); });
-    return r;
-}
+using ores::marketdata::core::detail::is_overnight;
+using ores::marketdata::core::detail::to_lower;
+using ores::marketdata::core::detail::to_upper;
 
 /**
  * @brief Query parameters of an oresmd URI, decoded once and indexed by key -- every
@@ -74,6 +68,9 @@ struct query_params final {
                 qp.metric = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
+            else
+                BOOST_THROW_EXCEPTION(
+                    oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
         }
         return qp;
     }
@@ -149,6 +146,10 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
     validate_fx(qp);
     fx_market_data_identifier id;
     id.pair = to_upper(first_segment(u));
+    if (id.pair.size() != 6 ||
+        !std::ranges::all_of(id.pair, [](unsigned char c) { return std::isalpha(c); }))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
     id.type = parse_type(qp);
     return id;
 }
@@ -168,6 +169,10 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.metric = parse_enum<metric>("metric", *qp.metric);
     if (qp.point)
         id.point = to_lower(*qp.point);
+    if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",
+                        magic_enum::enum_name(*id.index))));
     return id;
 }
 

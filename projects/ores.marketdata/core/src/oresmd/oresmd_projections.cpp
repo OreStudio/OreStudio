@@ -18,7 +18,8 @@
  *
  */
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
-#include <algorithm>
+#include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
+#include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <sstream>
@@ -27,12 +28,8 @@
 namespace {
 
 using namespace ores::marketdata::domain;
-
-std::string to_upper(std::string_view s) {
-    std::string r(s);
-    std::ranges::transform(r, r.begin(), [](unsigned char c) { return std::toupper(c); });
-    return r;
-}
+using ores::marketdata::core::detail::is_overnight;
+using ores::marketdata::core::detail::to_upper;
 
 std::vector<std::string> split_point(const std::string& point) {
     std::vector<std::string> parts;
@@ -41,11 +38,6 @@ std::vector<std::string> split_point(const std::string& point) {
     while (std::getline(ss, part, ','))
         parts.push_back(to_upper(part));
     return parts;
-}
-
-bool is_overnight(index_family f) {
-    return f == index_family::sofr || f == index_family::estr || f == index_family::sonia ||
-           f == index_family::tona;
 }
 
 std::string curve_id(std::string_view ccy, std::string_view tenor) {

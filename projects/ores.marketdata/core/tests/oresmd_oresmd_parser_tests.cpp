@@ -278,3 +278,21 @@ TEST_CASE("reject_unrecognised_instrument_type_value", tags) {
 TEST_CASE("reject_malformed_uri", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("not a uri at all")), oresmd_exception);
 }
+
+TEST_CASE("reject_unrecognised_query_key", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenr=3m&type=fixing")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eur?type=quote")), oresmd_exception);
+}
+
+TEST_CASE("reject_ir_term_index_fixing_without_a_tenor", tags) {
+    // A term index (libor/euribor) needs a tenor to disambiguate which point on the
+    // curve it fixes at; an overnight index (sofr/estr/...) does not have this
+    // requirement -- see parse_ir_usd_sofr_discount_fixing above, which omits it too
+    // (its tenor is supplied for the curve key, but the check below is term-index-only).
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&type=fixing")),
+                      oresmd_exception);
+}

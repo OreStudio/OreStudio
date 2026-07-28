@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: D9BCA1E0-BB8C-4B3E-8A0B-4FC7098E0ED9
+:END:
+#+title: Task: In-depth analysis: migrate legacy identifiers onto oresmd
+#+description: Ground the per-field migration plan in the current codebase: enumerate every read/write consumer of ore_key, market_series qualifier/point_id, and ir_curve_generation_config's (currency_code, index_name), and confirm the oresmd projection rules cover every one before any schema/code change starts.
+#+type: task
+#+level: s1
+#+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before any schema or code change starts, ground the story's per-field
+migration plan in the actual codebase rather than the design-time
+assumptions it was written from:
+
+- Enumerate every read and write consumer of
+  =fx_spot_generation_config.ore_key=, =market_series='s
+  =series_type=/=metric=/=qualifier=/=point_id= columns, and
+  =ir_curve_generation_config='s (=currency_code=, =index_name=) pair
+  -- SQL, C++ repositories/controllers, and Qt UI alike -- so the
+  migration has a concrete, complete cutover list instead of the
+  three representative call sites the design doc worked from.
+- For each consumer, confirm a [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][=oresmd=]] projection rule already
+  produces its exact current value (or identify the gap if it
+  doesn't) -- no consumer should be discovered mid-migration.
+- Resolve the two open findings already surfaced in this story's
+  =Promoted from capture= section from a parallel implementation
+  attempt on [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]]: whether
+  that task's =index=/=currency_index= refdata design should be
+  dropped in favour of migrating =ir_curve_generation_config= directly
+  onto =oresmd=, and how =oresmd='s =index_family= enum should map
+  onto (or absorb) the =floating_index_type=, =overnight_index_convention=,
+  and =ibor_index_convention= tables that =ores.cli='s
+  =conventions.xml= importer actually writes into.
+- Produce a concrete, sequenced migration plan (which consumer moves
+  first, what stays dual-write during transition, what the final
+  delete step looks like) that the story's remaining tasks will
+  implement -- this task is analysis and planning only, no schema or
+  code change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- A complete inventory exists of every =ore_key=, =market_series=
+  qualifier/point_id, and =ir_curve_generation_config= (currency_code,
+  index_name) read/write consumer in the codebase, with file/line
+  references -- not a representative sample.
+- Each consumer is checked against =oresmd='s projection rules; any
+  consumer the current design doesn't cover is documented as a gap
+  (with a proposed fix) rather than silently left for a later task to
+  discover.
+- The =index=/=currency_index= vs. direct =oresmd= migration question
+  for [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] is explicitly
+  resolved (superseded, re-scoped, or kept as a distinct concern),
+  with rationale.
+- =oresmd='s =index_family= enum's relationship to =floating_index_type=,
+  =overnight_index_convention=, and =ibor_index_convention= (including
+  the =conventions.xml= importer that writes into them) is mapped out.
+- A sequenced migration plan (ordering, transition strategy, final
+  delete step) is written, ready to be split into implementation
+  tasks on this story.
+- No schema, code, or =curve_feed_controller= change is made as part
+  of this task -- the deliverable is the analysis and plan.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

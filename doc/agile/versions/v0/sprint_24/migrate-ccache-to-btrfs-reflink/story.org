@@ -70,6 +70,71 @@ unmeasured (needs root). It no longer gates anything -- the cluster is
 destroyed and recreated from scratch rather than copied or dumped, so
 neither its physical nor its logical size matters to this migration.
 
+** CORRECTION: the inventory above was incomplete (2026-07-28)
+
+The table above enumerates only =Development/OreStudio/*=. It misses an
+entire second project. Actual top level:
+
+| Path | Size |
+|------+------|
+| =Development/OreStudio= | 130G |
+| =Development/Moimba= | *12G -- absent from the original inventory* |
+
+Executing the plan as originally written would have destroyed Moimba
+without a single warning, because Step 2's gate looped over nine
+hardcoded OreStudio worktree names. See D6.
+
+** Moimba project (2026-07-28)
+
+Three .NET products sharing the same clone+worktree pattern as
+OreStudio. All remotes are under =github.com:Moimba/=.
+
+| Path | Size | Kind | Remote |
+|------+------+------+--------|
+| =Karga.local1= | 3.5G | worktree of =Karga.remote= | =Moimba/Karga= |
+| =Corimba.remote= | 3.1G | clone (hosts the worktrees) | =Moimba/Corimba= |
+| =Baobab.local1= | 2.1G | worktree of =Baobab.remote= | =Moimba/Baobab= |
+| =Corimba.plan32= | 871M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =Corimba.plan30= | 845M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =Corimba.plan31= | 657M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =KargaFormacao= | 395M | *see below* | -- |
+| =Karga.remote= | 94M | clone (hosts =Karga.local1=) | =Moimba/Karga= |
+| =Baobab.remote= | 58M | clone (hosts =Baobab.local1=) | =Moimba/Baobab= |
+
+Same topology caveat as OreStudio (D3): =Corimba.remote=,
+=Karga.remote= and =Baobab.remote= each host the object store for their
+worktrees, so those three directories are load-bearing. Unlike OreStudio
+this is *not* being re-rooted on bare repos -- out of scope here; noted
+so it is a deliberate omission rather than an oversight.
+
+*** =KargaFormacao= -- the one thing with no remote backing
+
+=KargaFormacao/Karga= is a full .NET source tree (=Karga.sln=,
+=Karga.Core=, =Karga.WebApi=, =Karga.Blazor=, =Karga.Mobile=, =Karga.Cli=)
+carrying its own =.git=. It was missed by the first repo sweep because
+that used =find -maxdepth 4= and this sits at depth 5 -- see D6.
+
+Its remote is *HTTPS* (=https://github.com/Moimba/Karga.git=), not SSH,
+so it does not authenticate via the agent configured in Step 0b. It held
+six uncommitted files of real work (=TallySheet3= domain, entity,
+repository and endpoint classes). Resolved 2026-07-28:
+
+- Committed and pushed to =wip/kargaformacao-tallysheet3= on
+  =git@github.com:Moimba/Karga.git= (pushed over SSH via an explicit
+  push URL; the repo's HTTPS remote config was left unchanged). Verified
+  on the remote at =e66226b44=.
+- The whole 395M tree is also copied to
+  =/home/marco/Development/KargaFormacao=, byte-identical.
+
+*** Trap: =/home/marco/Development/Moimba= is a symlink
+
+It points *at* =/mnt/development/Development/Moimba=. Anything copied
+"into home's Moimba" lands back on the partition being destroyed. Backup
+copies must go to a sibling path -- =/home/marco/Development/KargaFormacao=,
+not =/home/marco/Development/Moimba/KargaFormacao=.
+
+The symlink will dangle after the reformat until Moimba is recreated.
+
 ** Filesystem decision: btrfs vs XFS
 
 Both candidates support reflinks (=FICLONE=), so both fix the
@@ -318,17 +383,27 @@ not:
 
 1. *Uncommitted or unpushed git work.* Push it to the remote -- not to
    local disk.
+
+   *Do not enumerate repositories by hand.* The original version of this
+   step looped over nine hardcoded worktree names and would have missed
+   17 of the 26 repositories actually present (D6). Discover them:
+
    #+begin_src sh
-   for wt in swift_curie prime_origin brave_hopper bright_faraday \
-             jolly_knuth solid_dirac merry_newton eager_maxwell \
-             clever_dijkstra; do
-       echo "=== ores_dev_$wt ==="
-       cd /mnt/development/Development/OreStudio/ores_dev_$wt
-       git status --short
-       git log --branches --not --remotes --oneline   # unpushed commits
-       git stash list
+   for p in $(find /mnt/development -name .git -not -path "*/vcpkg*" \
+                   -not -path "*/node_modules/*" | sed 's|/\.git$||' | sort); do
+       d=$(git -C "$p" status --porcelain | wc -l)
+       u=$(git -C "$p" log --branches --not --remotes --oneline | wc -l)
+       s=$(git -C "$p" stash list | wc -l)
+       [ "$d$u$s" != "000" ] && printf '%-60s dirty=%-4s unpushed=%-4s stash=%s\n' \
+           "${p#/mnt/development/Development/}" "$d" "$u" "$s"
    done
    #+end_src
+
+   Note =-maxdepth= is deliberately absent: =KargaFormacao/Karga= sits at
+   depth 5 and Claude Code agent worktrees under
+   =<worktree>/.claude/worktrees/= sit deeper still. Both hold real work.
+   =vcpkg= and =node_modules= are pruned because they contain vendored
+   third-party repos, not our work.
    *Gate: this sweep must come back clean, or every remaining item must
    be explicitly accepted as discarded, before Step 3 runs.*
 
@@ -347,20 +422,30 @@ not:
    | =ores_dev_eager_maxwell= | =feature/badge-source-self-annotation= | 0 | -- |
    | =ores_dev_clever_dijkstra= | =feature/codegen-qt-parent-scoped-list= | 0 | -- |
 
-   Outstanding at capture time, both of which must be resolved before
-   Step 3:
+   *All outstanding work was found and resolved on 2026-07-28.* What the
+   full sweep turned up, well beyond the nine worktrees:
 
-   - One unpushed commit, =f8c7241a5= "[agile] Write Result prose for
-     merged party/counterparty verification tasks", on
-     =feature/build-composite-child-table-qt-facet= -- a branch no
-     worktree currently has checked out. Note that
-     =git log --branches --not --remotes= reports this from *every*
-     worktree because they share one object store; it is one commit, not
-     nine. Push it.
-   - One modified file in =merry_newton=: this story. Commit and push it
-     -- it is the plan for the migration and must not live only on the
-     disk being destroyed. See also the =/tmp= and =$HOME= reference
-     copies noted under Step 0.
+   | Repo | Was | Resolution |
+   |------+-----+------------|
+   | =Hedgr.remote= | 6 dirty, *4 unpushed* | committed; branch =feature/initial_infrastructure= pushed (it had no upstream at all) |
+   | =Moimba/Baobab.local1= | 12 dirty, 1 unpushed | committed and pushed; =out/= + =tmp/= gitignored |
+   | =Moimba/Karga.local1= | 5 dirty | committed and pushed |
+   | =Moimba/KargaFormacao/Karga= | 6 dirty | pushed to =wip/kargaformacao-tallysheet3=; also copied to =$HOME= |
+   | =Moimba/Corimba.remote=, =Corimba.plan30= | 1 dirty each | =.claude/settings.json= committed and pushed |
+   | =Papers= | 4 dirty | committed and pushed; also copied to =$HOME= |
+   | =prime_origin/.claude/worktrees/agent-af474...= | 2 dirty (*283 lines*) | committed; pushed to =worktree-agent-af474c160d620e68c= |
+   | OreStudio ×9 | 1 unpushed (=f8c7241a5=) | pushed. Reported from every worktree because they share one object store -- one commit, not nine |
+   | =Engine.remote= | 1 dirty | *deliberately left* -- see below |
+
+   Two deliberate non-actions:
+
+   - =Engine.remote= is a fork (=origin= =OreStudio/Engine=, =upstream=
+     =OpenSourceRisk/Engine=) whose only change is incidental submodule
+     checkout drift on =ORE-SWIG/QuantLib-SWIG=, on a =master= that is
+     *1324 commits behind* origin. No work was done in it. It is
+     re-cloned in Step 6, which also brings it current.
+   - Stashes (3 shared across the OreStudio worktrees, 1 in each Baobab
+     clone) are accepted as discarded, by explicit decision.
 
 2. =Hedgr.remote= / =Engine.remote= (4.8G / 2.2G): verify clean against
    upstream, then re-clone rather than copy.
@@ -525,6 +610,44 @@ cd /mnt/development/Development/OreStudio/ores_dev_prime_origin
 # then the remaining eight, which should run mostly on cache hits
 #+end_src
 
+*** 6b. Recreate Moimba
+
+Same clone-plus-worktree shape as before the migration (see the Moimba
+inventory above for the branch each worktree was on):
+
+#+begin_src sh
+mkdir -p /mnt/development/Development/Moimba
+cd /mnt/development/Development/Moimba
+
+git clone git@github.com:Moimba/Corimba.git Corimba.remote
+git clone git@github.com:Moimba/Karga.git   Karga.remote
+git clone git@github.com:Moimba/Baobab.git  Baobab.remote
+
+git -C Corimba.remote worktree add ../Corimba.plan30 feature/tidy_up_employee_dataset
+git -C Corimba.remote worktree add ../Corimba.plan31   # was detached
+git -C Corimba.remote worktree add ../Corimba.plan32 main
+git -C Karga.remote   worktree add ../Karga.local1   feature/blazor-single-binary-publish
+git -C Baobab.remote  worktree add ../Baobab.local1  feature/run_complete_ciclo_fixes
+#+end_src
+
+=KargaFormacao= is *not* re-cloned -- restore it from the =$HOME= copy,
+because it is the one tree whose layout is not reproducible from a
+remote alone:
+
+#+begin_src sh
+cp -a /home/marco/Development/KargaFormacao /mnt/development/Development/Moimba/
+#+end_src
+
+Its committed work is also on =Moimba/Karga= at
+=wip/kargaformacao-tallysheet3= if the copy is ever lost.
+
+Finally, confirm the =/home/marco/Development/Moimba= symlink resolves
+again (it dangles from the moment of the reformat until this step):
+
+#+begin_src sh
+ls -l /home/marco/Development/Moimba && ls /home/marco/Development/Moimba/
+#+end_src
+
 *** 7. Deduplicate
 
 Reflinks only arise where something clones a file. The ~1.2G
@@ -601,9 +724,9 @@ and it should be written down rather than rediscovered:
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Steps 0 and 0b DONE (tooling installed, state captured, SSH agent fixed). Nothing destructive executed. |
-| Waiting on    | Nothing. Step 2 git gate is clear -- no unpushed commits, no dirty worktrees. |
-| Next          | Step 1 (stop services, swapoff), then STOP for explicit confirmation before Step 3. |
+| Now           | Steps 0, 0b, 1 and 2 DONE. Services stopped, PostgreSQL down, swapfile off. All 26 repos swept and pushed. Nothing destroyed. |
+| Waiting on    | Explicit confirmation to run Step 3 (irreversible). |
+| Next          | Step 3: repartition and reformat.       |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance
@@ -643,6 +766,13 @@ and it should be written down rather than rediscovered:
   exists on the btrfs filesystem.
 - Total footprint with all nine worktrees built is below the 173G the
   ext4 layout used.
+- Moimba is recreated: three clones plus five worktrees on their
+  recorded branches, and =KargaFormacao= restored from the =$HOME= copy.
+- =/home/marco/Development/Moimba= resolves again (it dangles between
+  Step 3 and Step 6b).
+- The Step 2 discovery sweep, re-run after recreation, reports no
+  repository with uncommitted or unpushed work other than the known
+  =Engine.remote= submodule drift.
 
 * Tasks
 
@@ -721,6 +851,26 @@ would have left the requirement half-satisfied.
 Note the cluster *configuration* at =/etc/postgresql/18/main= lives on
 =/=, not the SSD, so it survives the reformat -- but =pg_dropcluster=
 deletes it, hence the config copy in Step 2.
+
+** D6: Discover repositories, never enumerate them (2026-07-28)
+
+The original Step 2 gate looped over nine hardcoded worktree names. The
+partition actually holds *26 git repositories*, and the missing 17
+included an entire second project (Moimba, 12G) plus real uncommitted
+work. Three separate rounds of discovery were each incomplete:
+
+1. Enumerating the nine known worktrees missed Moimba entirely, plus
+   =Hedgr.remote='s 4 unpushed commits -- which the plan had written off
+   as "a clean clone, just re-clone it", an assumption that was false.
+2. Checking =status= and unpushed commits but not =stash list= missed
+   five stashes.
+3. =find -maxdepth 4= missed =KargaFormacao/Karga= (depth 5, and the one
+   tree with no SSH remote) and two Claude Code agent worktrees under
+   =.claude/worktrees/=, one holding 283 uncommitted lines.
+
+Rule going forward: enumerate by =find=, at full depth, checking dirty
+*and* unpushed *and* stash. A hand-maintained list of directories is a
+latent data-loss bug on a machine where new checkouts appear routinely.
 
 * Out of scope
 

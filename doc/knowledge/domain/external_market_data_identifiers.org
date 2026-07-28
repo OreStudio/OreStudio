@@ -2,12 +2,12 @@
 :ID: F3010EA7-6A0E-405C-81FA-1EF051749B5E
 :END:
 #+title: External market data identifiers
-#+description: A comparative analysis of five market data identifier schemes — RIC, Bloomberg ticker, the ORE canonical key, MDDL, and FIX — their origin, ownership, formal specification status, and pros, cons, and limitations.
+#+description: A comparative analysis of six market data identifier schemes — RIC, Bloomberg ticker, the ORE canonical key, MDDL, FIX, and OpenGamma Strata — their origin, ownership, formal specification status, and pros, cons, and limitations.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:identifiers:
 #+created: 2026-06-25
-#+updated: 2026-07-25
+#+updated: 2026-07-28
 
 * Summary
 
@@ -27,10 +27,14 @@ notation. FIX (Financial Information eXchange — see
 explicit member schemes, but adds a dedicated wire-message family for
 market data itself (=MarketDataSnapshotFullRefresh=,
 =MarketDataIncrementalRefresh=, ...) that neither MDDL nor the other
-schemes have. This document is a comparative analysis of these five
-schemes on their own terms — what each is, who owns it, whether a formal
-specification exists, and each scheme's pros, cons, and limitations —
-independent of any particular consumer of the schemes.
+schemes have. OpenGamma Strata's =com.opengamma.strata.data.MarketDataId<T>=
+takes yet another approach: an open-source Java generic interface that names
+no concrete fields at the base level, leaving field structure entirely to
+each implementing class — the only scheme here that is a type abstraction
+rather than a string format or wire protocol. This document is a comparative
+analysis of these six schemes on their own terms — what each is, who owns
+it, whether a formal specification exists, and each scheme's pros, cons, and
+limitations — independent of any particular consumer of the schemes.
 
 * Format overviews
 
@@ -136,6 +140,42 @@ on GitHub]] (the =Examples/= directory contains the =marketdata.csv= files
 this key format is drawn from; =OREData/ored/marketdata/= contains the
 =CSVLoader=/=MarketDatum= parsing code).
 
+*** ORE's =CurveSpec= class hierarchy
+
+Alongside the canonical key format, ORE has a parallel internal
+addressing scheme used within its own engine: the =CurveSpec= class
+hierarchy, declared in =OREData/ored/marketdata/curvespec.hpp=. The base
+class carries a =curveConfigID= field common to every curve type, and
+each concrete subclass — =YieldCurveSpec=, =FXVolatilityCurveSpec=,
+=SwaptionVolatilityCurveSpec=, and so on — adds the type-specific fields
+that particular curve family needs to be uniquely addressed within ORE's
+own engine (a currency code for a yield curve; a currency pair for an FX
+volatility curve). =CurveSpec= additionally carries an explicit
+=CurveType= enumeration (=FX=, =Yield=, =CapFloorVolatility=, ...)
+discriminating which concrete subclass applies.
+
+=CurveSpec= is ORE's internal C++ representation, not the canonical key
+format: an external consumer's system produces a canonical key string
+(e.g. =DISCOUNT/RATE/EUR/EUR-DUMMY/2Y=) that ORE resolves to the
+corresponding =CurveSpec= object internally. From the point of view of
+a system projecting its own identifiers into ORE's notation, =CurveSpec=
+is the *target* that projection must produce — not a peer identifier
+scheme to be compared directly against the canonical key. The fields that
+$T_{\text{ORE}}$ would need to populate a =CurveSpec= (=curveConfigID=,
+ORE-specific curve-building hints) represent the physical-field gap that
+a purely logical identifier does not yet carry.
+
+One terminological trap is worth flagging explicitly: the file-level
+documentation comment at the top of =curvespec.hpp= reads /"Curve
+requirements specification."/ ORE's own prose calls =CurveSpec= — which
+sits on the *identifier* side of the requirement/identifier distinction
+and squarely on the *vendor* side of the identifier/vendor-key
+distinction — a "requirement." This is not a contradiction to resolve;
+it is a warning that "requirement" is not a safe, field-wide term with
+one settled meaning, and a reader moving between an external conceptual
+document and ORE's own source comments should not assume the word carries
+the same meaning in both places.
+
 ** MDDL (Market Data Definition Language)
 
 MDDL is an XML-based market data description language originally
@@ -189,26 +229,70 @@ Files retrieved from the QuickFIX open-source engine project (which
 redistributes the FIX Trading Community's own data dictionaries) are
 archived at [[proj:external/fix][=external/fix/=]].
 
+** OpenGamma Strata's =MarketDataId=
+
+OpenGamma Strata is an open-source Java library for OTC derivatives
+pricing and risk analytics, originally developed by OpenGamma Ltd and
+now maintained by the open-source community. Its identifier abstraction,
+=com.opengamma.strata.data.MarketDataId<T>=, differs fundamentally in
+kind from the other five schemes covered here: it is a Java generic
+interface, not a string format or wire protocol. The Javadoc describes it
+as "an identifier for a unique item of market data... Implementations can
+identify any piece of market data. This includes observable values, such
+as the quoted market value of a security, and derived values, such as a
+volatility surface or a discounting curve." The interface's only contract
+is uniqueness and a declared value type =T= (the type of the value the
+identifier resolves to — e.g. =double= for a spot rate, or a curve
+object for a full discount curve). All field structure is pushed down
+into each concrete implementing class; there is no single canonical field
+list at the interface level by design. Strata's rationale is
+extensibility across an open-ended set of data kinds a third-party
+library cannot anticipate in advance, in contrast to schemes that commit
+to a shared field shape across instrument types.
+
+Unlike every other scheme in this document, there is no canonical short
+string a consumer would use as a compact map key or pub/sub subject; the
+identifier is the Java object, not a serialisation of it. Strata does
+not mint a competing short-string notation and does not define a
+wire-message protocol. Like ORE's canonical key and unlike RIC,
+Bloomberg, MDDL, and FIX, Strata's =MarketDataId= is also silent on
+physical fields at the interface level — an implementing class is free to
+carry a source or convention, but nothing at the base contract requires
+or names one.
+
+The library is open source (Apache 2.0) and its source and Javadoc are
+freely readable without a licence of any kind. See
+[[https://github.com/OpenGamma/Strata][OpenGamma/Strata on GitHub]];
+the identifier interface lives in the =com.opengamma.strata.data=
+package, and concrete implementations such as =QuoteId=, =IborIndexId=,
+and =CurveId= illustrate the per-class field shape the interface
+deliberately omits at the base level.
+
 * Identifier scheme comparison
 
-Three of the five schemes address the same instruments with a short
+Three of the six schemes address the same instruments with a short
 string: RIC (Reuters/Refinitiv, now LSEG) is instrument-type-specific and
 not fully systematic; Bloomberg uses a space-separated =<ticker>
 <yellow-key>= composite; ORE uses a slash-delimited, per-type
 =TYPE/SUBTYPE/dim1/.../dimN= key consumed directly by the ORE pricing
 engine (=marketdata.csv=), documented type by type in the
 [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
-The other two, MDDL and FIX, do not — both wrap whichever short-string
+Two more, MDDL and FIX, do not — both wrap whichever short-string
 identifier a source system already publishes (MDDL's
 =instrumentIdentifier/codeType=, FIX's =SecurityIDSource=) rather than
 minting a competing one, so their comparison tables below carry a worked
-XML/message example instead of a short-string cell. RIC and Bloomberg
-cells below are compiled from publicly visible instrument examples, not a
-primary vendor spec — see [[*Sources][Sources]]. Every cell below is
-filled with either a concrete identifier or an explicit statement of why
-none exists (no standard public convention, no matching ORE quote type, or
-"not a single tradeable instrument") — see each subsection's notes for the
-reasoning behind any such cell.
+XML/message example instead of a short-string cell. OpenGamma Strata is
+similarly absent from the short-string columns — not because it wraps an
+existing scheme, but because it is a type abstraction with no canonical
+serialised form; it does not participate in an instrument-level comparison
+table and is covered separately in [[*OpenGamma Strata's =MarketDataId=][the
+format overview above]]. RIC and Bloomberg cells below are compiled from
+publicly visible instrument examples, not a primary vendor spec — see
+[[*Sources][Sources]]. Every cell below is filled with either a concrete
+identifier or an explicit statement of why none exists (no standard public
+convention, no matching ORE quote type, or "not a single tradeable
+instrument") — see each subsection's notes for the reasoning behind any
+such cell.
 
 ** FX
 
@@ -760,6 +844,7 @@ that every row in this document's comparison tables above draws from.
 | ORE canonical key | Open source and openly documented; the native format of every ORE pricing-engine input file; every type shares the same top-level =TYPE/SUBTYPE/dim1/.../dimN= shape, and the per-type dimension count and meaning is precisely documented for all 49 types; free of vendor licensing. | The per-type dimension count varies (2 to 8+), so — unlike RIC's or Bloomberg's flatter shapes — a consumer must know each type's specific dimension schema rather than applying one universal rule; several common real-world instruments (sovereign bond yields, listed equity/index futures) have no direct quote type at all; has no structured field for curve family or discount-vs-projection role. |
 | MDDL | Open, committee-governed specification (FISD/SIIA) rather than proprietary to one vendor; a full instrument-record XML schema, not just a key, so it carries far richer instrument/event data than a short identifier string; =instrumentIdentifier='s =codeType= controlled vocabulary can wrap ISIN, RIC, or any other existing scheme rather than forcing a migration. | Never adopted as any pricing engine's native input format (unlike ORE's key); last full release was 3.0-beta (2007) and the project was never finalised or continued — FISD instead contributed its vocabulary into ISO 20022/FIX; being a full XML record rather than a short string, it cannot serve as a compact pub/sub key or a natural map/dictionary key the way the other three schemes can. |
 | FIX | Open, committee-governed specification (FIX Trading Community), actively maintained (unlike MDDL) as "FIX Latest" since 2019; =SecurityIDSource= symbology explicitly names RIC and Bloomberg as member schemes rather than competing with them; the only scheme here with a dedicated market-data wire-message family (request/snapshot/incremental refresh/reject), not just an identifier or record shape; free of vendor licensing. | Not a compact string identifier any more than MDDL is — instrument identity plus market data both live inside multi-field messages, not a short key; correctly parsing tag=value framing (session header, checksum, repeating groups) generally requires a FIX engine rather than generic string/XML tooling; no native concept of curve family or discount-vs-projection role, same gap as the other four. |
+| OpenGamma Strata | Open source (Apache 2.0), freely readable without a licence; an interface-based design cleanly separates the identifier concept from any concrete field shape or string serialisation, giving implementations full freedom over field structure; actively maintained; like ORE's canonical key, silent on physical fields at the base level — a deliberate design choice, not an oversight. | Not a string identifier at all — no compact key usable as a pub/sub subject or map key without serialising the Java object; all field structure is per-implementation with no shared base-level shape, so two implementations covering the same logical instrument may be incompatible; Java-specific with no language-neutral wire form; no native concept of curve family, discount-vs-projection role, or physical source fields at the interface level, the same logical-only gap as ORE's canonical key. |
 
 * Sources
 
@@ -781,6 +866,13 @@ that every row in this document's comparison tables above draws from.
 - FIX — open, committee-governed specification published by the FIX Trading
   Community. See [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial
   Information eXchange (FIX) Protocol]] below.
+- OpenGamma Strata — open source (Apache 2.0), maintained by the
+  open-source community. See
+  [[https://github.com/OpenGamma/Strata][OpenGamma/Strata on GitHub]];
+  =com.opengamma.strata.data.MarketDataId= is the base identifier
+  interface, and the =com.opengamma.strata.data= package contains the
+  concrete implementations (=QuoteId=, =IborIndexId=, =CurveId=, ...) that
+  illustrate how field structure is expressed at the implementation level.
 
 * See also
 
@@ -788,4 +880,5 @@ that every row in this document's comparison tables above draws from.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative, per-type quote-key dimension inventory (49 types) that every ORE quote key in this document's comparison tables is drawn from.
 - [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — the fourth scheme compared above: version history, content model, and where its retrieved specification files live.
 - [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — the fifth scheme compared above: version history, the Market Data message family, symbology, and where its retrieved data dictionaries live.
-- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — a proposed sixth scheme: ORE Studio's own canonical identifier, with deterministic projection rules into every scheme compared in this document.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the conceptual document that uses ORE's and OpenGamma Strata's independent convergence on the same logical field shape as evidence for that shape's irreducibility.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — a proposed extension of the ORE-derived logical identifier with an explicit physical field group, structured tenor/curve-role/instrument-type grammar, and deterministic projection rules into every scheme compared in this document.

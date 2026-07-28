@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: E3246BEF-DEAA-4223-9D35-5F06426DF0D9
+:END:
+#+title: Synthetic Theme as One Atomic DQ Dataset
+#+AUTHOR: Claude
+#+DATE: 2026-07-27
+
+* Overview
+
+Implements [[id:3461BD8C-B8B1-4037-9B3D-D07AF9EA4768][the task]]'s recommended option 2: make a synthetic "theme"
+(e.g. "2016 ORE Samples") one DQ dataset covering every asset class,
+published atomically by one function in one transaction, instead of
+today's =N= independently-publishable datasets (one per asset class)
+that merely share a naming convention.
+
+** Confirmed current state (read from code, not assumed)
+
+*Updated 2026-07-27, post-merge of PR #1705
+(=feature/seed-ir-curve-sample-data=)*: that branch landed vintage-
+aware seeding for =ir_curve_feed= while this task was paused to avoid
+clashing with it (price_source/vintage_source/vintage_date columns on
+=ores_synthetic_publish_ir_curve_configs_from_dq_fn=, and
+=list_bundle_publishable_datasets()= now resolving bundle members
+through the dependency graph via
+=synthetic_dataset_dependency_populate.sql= rather than a flat SQL
+join). The bullets below are re-verified against that merged state;
+the design (one theme dataset, one merged publish function) is
+unaffected by their change other than needing to carry the vintage
+columns through and keep using the dependency-resolving
+=list_publishable_datasets()= core rather than reverting to the old
+flat lookup.
+
+- =ores_dq_dataset_bundle_member_populate.sql= already groups a
+  theme's per-asset-class datasets under one bundle code (e.g.
+  =synthetic_realistic_2026= has members
+  =synthetic.fx_spot_configs.realistic_2026= and
+  =synthetic.ir_curve_configs.realistic_2026=) — the *bundle* concept
+  already models "these datasets belong to one theme".
+- But =publication_service::publish()=
+  (=projects/ores.dq/core/src/service/publication_service.cpp=) loops
+  over the bundle's member dataset ids and calls
+  =publish_dataset()= once per id — each is its own DB round trip /
+  transaction, not one atomic operation. This is exactly the
+  task's rejected option 3 (orchestration-layer promise, not a data-
+  model property), and it's what actually runs today even though the
+  bundle *grouping* already exists.
+- =party_provisioning_bundle_plan()=
+  (=ores.dq.api/messaging/party_provisioning_plan.hpp=) publishes
+  bundle codes (e.g. =synthetic_realistic_2026=) as one step — it
+  already operates at the theme level; it doesn't need to change
+  shape, only what happens underneath it when a bundle is published.
+- =ores_synthetic_publish_fx_spot_configs_from_dq_fn=/
+  =..._ir_curve_configs_from_dq_fn=
+  (=synthetic_publish_from_dq_create.sql=) are near-identical: each
+  independently resolves-or-creates its own
+  =ores_synthetic_market_data_generation_configs_tbl= container (=v_config_id=
+  keyed by =dataset_id=) and its own =collection= folder (keyed by
+  =collection_id = v_config_id=) before looping its own artefact
+  table. Two calls, two containers, two folders, two dataset ids —
+  the actual root cause of the duplicate Market Simulator tree nodes
+  and the half-published-theme gap.
+- The DQ artefact tables (=ores_dq_synthetic_fx_spot_configs_artefact_tbl=,
+  =..._ir_curve_configs_artefact_tbl=, and the two entries/components
+  child tables) are *already* scoped only by =dataset_id= — nothing in
+  their own shape ties them to one asset class's dataset row. This
+  matters: it means the artefact tables themselves need no reshaping,
+  only what =dataset_id= value their rows are populated under.
+
+* Decision
+
+Collapse each theme's =N= per-asset-class DQ datasets into *one*
+theme-level dataset row (e.g. =synthetic.themes.realistic_2026=
+replacing =synthetic.fx_spot_configs.realistic_2026= +
+=synthetic.ir_curve_configs.realistic_2026=), whose artefact rows
+(still living in the existing, unmodified
+=ores_dq_synthetic_fx_spot_configs_artefact_tbl=/
+=..._ir_curve_configs_artefact_tbl=) are simply populated under the
+same =dataset_id=. One dataset id -> one
+=ores_synthetic_market_data_generation_configs_tbl= container -> one
+collection folder, by construction, once the publish function is
+merged (below) — not by a folder-reuse patch layered on top of two
+independent calls.
+
+** Why this is minimal-invasive, not a full artefact-schema rewrite
+
+Because the artefact tables are already dataset_id-scoped and
+otherwise asset-class-specific in shape (FX columns vs IR columns),
+the only structural change is *which* dataset row groups them — a
+catalog/bundle-membership change plus a merged publish function, not
+a redesign of the artefact tables' own columns.
+
+* Schema Changes
+
+0. *Dataset dependency rows* (=synthetic_dataset_dependency_populate.sql=,
+   landed by PR #1705, merged into this branch): three of the four
+   dependency rows key off a per-asset-class dataset code that this
+   design retires (=synthetic.fx_spot_configs.ore_samples_2016=,
+   =...uniform_demo=, =...realistic_2026=,
+   =synthetic.ir_curve_configs.ore_samples_2016=). Each must be
+   re-pointed to the new theme dataset code (e.g.
+   =synthetic.themes.ore_samples_2016=) in the same commit that
+   retires the old codes, or vintage-mode dependency resolution
+   silently loses its edge and regresses to the pre-#1705 "No vintage
+   data found" failure mode for every affected theme.
+1. *DQ dataset catalog* (=dq_dataset_populate.sql= or wherever
+   =synthetic.fx_spot_configs.<theme>=/=synthetic.ir_curve_configs.<theme>=
+   are currently seeded): replace the two rows per theme with one
+   =synthetic.themes.<theme>= row. Existing per-asset-class dataset
+   codes are retired (their rows voided via the standard bitemporal
+   pattern), not deleted outright, so historical publish records
+   (=ores_dq_dataset_publications_tbl= or equivalent) stay
+   attributable.
+2. *Populate scripts* (=synthetic_ir_curve_configs_realistic_2026_populate.sql=,
+   the FX equivalent, and the other two themes' scripts): change the
+   =dataset_id= they insert artefact rows under from the retired
+   per-asset-class dataset's id to the new theme dataset's id. The
+   scripts themselves can stay separate files (one per asset class,
+   per the task's own Goal: "the seed scripts can still be separate
+   =.sql= files ... while the *published* runtime artefact/dataset
+   identity is one dataset") — only the =dataset_id= FK value changes.
+3. *Bundle membership* (=dq_dataset_bundle_member_populate.sql=): each
+   theme bundle's two members (fx + ir dataset codes) collapse to one
+   member (the theme dataset code). The bundle table/mechanism itself
+   is unchanged and still useful for grouping unrelated datasets
+   (e.g. =risk_management=) — only synthetic themes' membership count
+   drops from 2 to 1.
+4. *Merged publish-from-dq function*: replace
+   =ores_synthetic_publish_fx_spot_configs_from_dq_fn= +
+   =..._ir_curve_configs_from_dq_fn= with one
+   =ores_synthetic_publish_theme_from_dq_fn(p_dataset_id, p_target_tenant_id, p_mode, p_params)=
+   that, in a single function body (single transaction), carrying
+   forward PR #1705's =price_source=/=vintage_source=/=vintage_date=
+   plumbing on both the FX and IR loops unchanged (already present on
+   both functions pre-merge):
+   - Resolves-or-creates *one* container
+     (=ores_synthetic_market_data_generation_configs_tbl= row) and
+     *one* collection folder for =p_dataset_id=, exactly like today's
+     shared resolution logic but written once instead of duplicated.
+   - Runs the FX loop against
+     =ores_dq_synthetic_fx_spot_configs_artefact_tbl= (only if it has
+     rows for this =dataset_id= — some future theme might be IR-only)
+     under the shared =v_config_id=/=v_collection_folder_id=, creating
+     the "FX" asset-class folder beneath the shared collection folder,
+     exactly as today's FX function does.
+   - Runs the IR loop against
+     =ores_dq_synthetic_ir_curve_configs_artefact_tbl= the same way,
+     creating the "Rates" asset-class folder beneath the *same*
+     collection folder.
+   - A third/future asset class is a third loop added to this same
+     function body against its own artefact table, under the same
+     shared container/folder — per the task's acceptance criterion
+     that a new asset class is "a new artefact table/row under the
+     same dataset, not a new independently publishable dataset."
+   - Returns one combined =(action, record_count)= result set (union
+     of what the two functions return today).
+5. *NATS wiring*: today's two subjects
+   (=synthetic.v1.fx-spot-configs.publish-from-dq=,
+   =synthetic.v1.ir-curve-configs.publish-from-dq=) collapse to one
+   (=synthetic.v1.theme.publish-from-dq=) calling the merged function.
+   =publication_service::publish_dataset()= then calls exactly one
+   NATS subject per theme dataset id — atomicity becomes a property of
+   the single SQL function's transaction, not of the caller's loop.
+
+* Migration (this environment's already-provisioned data)
+
+Barclays Plc here already has, for each provisioned theme,
+*separate* =ores_synthetic_market_data_generation_configs_tbl=
+containers and collection folders for FX and IR, with
+=ores_synthetic_fx_spot_generation_configs_tbl=/
+=..._ir_curve_generation_configs_tbl= rows pointing at their own
+=config_id=/=folder_id=. Migration must, per theme already
+provisioned:
+1. Pick a surviving container (e.g. the FX one) and re-point every IR
+   config row's =config_id=/=folder_id= at the FX container's
+   equivalents (creating the "Rates" asset-class folder under the FX
+   collection folder if not already resolvable).
+2. Void the now-orphaned IR container row and IR collection folder
+   (bitemporal =valid_to= close, not a hard delete).
+3. Re-point =ores_synthetic_market_data_generation_configs_tbl.dataset_id=
+   on the surviving container from the old per-asset-class dataset id
+   to the new theme dataset id.
+
+This is a one-off data-fix script run once per environment after the
+schema/function change deploys, not a generic reusable migration
+framework — this repo has none, and the task's own scope doesn't
+call for adding one. Written as a =projects/ores.sql/populate/=
+one-time script guarded by existence checks (idempotent, safe to
+re-run), not a numbered migration.
+
+* Qt / Client-side impact
+
+- =MarketSimulatorWindow='s tree already renders whatever
+  =collection=/=asset_class=/=instrument_type= folder rows exist —
+  once publish produces one collection folder with two asset-class
+  children instead of two collection folders, the tree naturally
+  shows one top-level node with FX/Rates sub-folders underneath, with
+  *no* client-side code change required (this is the acceptance
+  criterion "as a consequence of the dataset model above").
+- Start/stop-at-root behaviour (=promptThemeAndStart()=) operates on
+  the collection folder's descendants already, so it is expected to
+  keep working unchanged — verify with the "Synthetic data themes"
+  test scenario as a regression check per the task's acceptance.
+
+* Execution Order
+
+1. Write the merged =ores_synthetic_publish_theme_from_dq_fn= SQL
+   function (new file, old two functions' bodies retired/removed once
+   the new one is verified equivalent per asset class).
+2. Update the DQ dataset catalog and bundle-member populate scripts to
+   the one-theme-dataset shape; update each theme's populate =.sql=
+   scripts' =dataset_id= values.
+3. Update the NATS subject/handler wiring
+   (=ores.synthetic.service= registrar) to the single
+   =publish-from-dq= subject.
+4. Write and run the one-off migration script against this
+   environment's already-provisioned Barclays data; verify via the
+   regenerated Market Simulator tree.
+5. =compass build rat= green; extend/replace the existing
+   =synthetic_data_themes_and_start_root_guard= scenario (or a new
+   one) to cover the collapsed-tree regression check.
+6. =compass db recreate= + full Barclays re-provision as a from-
+   scratch verification that a *newly* provisioned party never sees
+   the two-container state at all.
+
+* Open Questions For Review
+
+- Exact table/column names for the DQ dataset catalog and any
+  publication-tracking table (=ores_dq_dataset_publications_tbl= or
+  similar) — to be confirmed by reading =dq_datasets_create.sql=
+  before writing migration SQL, not assumed here.
+- Whether =ores_dq_bundle_datasets_list_fn= and
+  =list_bundle_publishable_datasets= (C++/SQL) need signature changes,
+  or continue to work unmodified against a bundle with fewer (now 1)
+  members.

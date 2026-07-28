@@ -172,25 +172,27 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
 
     -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
-    -- Market-data generation config only, across all asset classes: a new
-    -- asset class never requires a client code change, only a new row here.
-    -- These configs' price_source='vintage' rows depend on real market data they resolve
+    -- One member: the theme dataset itself, covering every asset class it
+    -- contains (FX + IR today) in one atomic publish -- see
+    -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org. A new
+    -- asset class never requires a client code change or a new bundle
+    -- member, only a new artefact table/loop inside
+    -- ores_synthetic_publish_theme_from_dq_fn. This dataset's
+    -- price_source='vintage' rows depend on real market data they resolve
     -- against at feed-start time -- that dependency is declared in
-    -- synthetic_dataset_dependency_populate.sql, not re-stated here as bundle membership;
-    -- publish_bundle resolves it via the dependency graph (see
-    -- publication_service::list_bundle_publishable_datasets), same as the ID-based publish path.
+    -- synthetic_dataset_dependency_populate.sql, not re-stated here as bundle
+    -- membership; publish_bundle resolves it via the dependency graph (see
+    -- publication_service::list_bundle_publishable_datasets), same as the
+    -- ID-based publish path.
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.fx_spot_configs.ore_samples_2016', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.ir_curve_configs.ore_samples_2016', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.themes.ore_samples_2016', 10);
 
     -- --- Synthetic Data: 2026 Realistic Bundle Members ---
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.fx_spot_configs.realistic_2026', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.ir_curve_configs.realistic_2026', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_realistic_2026', 'synthetic.themes.realistic_2026', 10);
 
     -- --- Synthetic Data: Uniform Volatility Demo Bundle Members ---
 
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.fx_spot_configs.uniform_demo', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.ir_curve_configs.uniform_demo', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.themes.uniform_demo', 10);
 END $$;
 

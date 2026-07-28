@@ -67,34 +67,16 @@
  */
 
 -- =============================================================================
--- Dataset Registration
--- =============================================================================
-
-DO $$
-BEGIN
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.ir_curve_configs.realistic_2026',
-        'Synthetic Market Data',
-        'Trading',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Synthetic IR Curve Configs: 2026 Realistic',
-        'One overnight-RFR Cox-Ingersoll-Ross short-rate curve per top-20-by-turnover currency, per-curve-calibrated annualised parameters, seven-entry (short deposits through 10Y swap) Curve Template each.',
-        'ORESTUDIO',
-        '2026 Realistic theme for the Synthetic data collections bundle',
-        current_date,
-        'Internal Use Only',
-        'synthetic_ir_curve_configs'
-    );
-END $$;
-
--- =============================================================================
 -- Artefact Seed Data
 -- =============================================================================
+--
+-- The theme dataset itself (synthetic.themes.realistic_2026) is registered by
+-- synthetic_fx_spot_configs_realistic_2026_populate.sql, which this script's
+-- \ir ordering in synthetic_populate.sql runs after -- this script looks it
+-- up by code rather than registering its own dataset, so FX and IR rows
+-- share one dataset id, published atomically by
+-- ores_synthetic_publish_theme_from_dq_fn. See
+-- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org.
 
 do $$
 declare
@@ -104,11 +86,11 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.ir_curve_configs.realistic_2026'
+      and code = 'synthetic.themes.realistic_2026'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.ir_curve_configs.realistic_2026';
+        raise exception 'Dataset not found: synthetic.themes.realistic_2026';
     end if;
 
     if exists (
@@ -119,7 +101,7 @@ begin
         return;
     end if;
 
-    raise debug 'Populating synthetic IR curve configs (2026 realistic) for dataset: synthetic.ir_curve_configs.realistic_2026';
+    raise debug 'Populating synthetic IR curve configs (2026 realistic) for dataset: synthetic.themes.realistic_2026';
 
     -- Per-currency calibration: plain annualised kappa/sigma, distinct per curve rather than one
     -- uniform set. G10 currencies keep the original tighter reversion/lower vol; EM currencies

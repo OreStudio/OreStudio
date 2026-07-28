@@ -377,7 +377,7 @@ def run(argv, project_root: Path) -> int:
     parser.add_argument("--with-diff", action="store_true",
                         help="After writing, show the unified diff of .env.old vs .env")
     parser.add_argument("--compiler-cache", choices=("sccache", "ccache"),
-                        help="Compiler cache to use for local builds (default: sccache, "
+                        help="Compiler cache to use for local builds (default: ccache, "
                              "or whatever is already in .env). CI always uses sccache "
                              "regardless of this setting.")
     pkg_grp = parser.add_mutually_exclusive_group()
@@ -557,12 +557,6 @@ def run(argv, project_root: Path) -> int:
     # by editing ORES_DB_HOST/PGPORT alone.
     db_port_effective = db_port or "5432"
 
-    # sccache config: dir and size are shared across all worktrees (one
-    # server, one cache), so every checkout should agree on the same values.
-    sccache_dir = (existing.get("SCCACHE_DIR")
-                   or str(Path.home() / ".cache" / "sccache"))
-    sccache_cache_size = existing.get("SCCACHE_CACHE_SIZE") or "50G"
-
     # SSH agent directory (optional): compass.sh exports SSH_AUTH_SOCK from
     # the sole socket in this directory when the calling environment does not
     # provide a live one (e.g. sandboxed LLM sessions).
@@ -573,13 +567,19 @@ def run(argv, project_root: Path) -> int:
     # preserve whatever is already in .env; only default it on first write.
     cmake_build_parallel_level = existing.get("CMAKE_BUILD_PARALLEL_LEVEL") or "2"
 
-    # Compiler cache: local dev choice between sccache/ccache, read by
+    # Compiler cache: local dev choice between ccache/sccache, read by
     # build/scripts/compiler_cache_wrapper.sh. CI never reads this (it sets
-    # SCCACHE_DIR directly and doesn't run `compass env configure`), so
-    # defaulting to sccache here has no effect on CI behaviour.
+    # SCCACHE_DIR directly and doesn't run `compass env configure`), so the
+    # default here has no effect on CI behaviour.
+    #
+    # Defaults to ccache: /mnt/development is btrfs, and ccache's
+    # file_clone=true stores results as reflinks, so a cache hit costs no
+    # extra disk and concurrent worktrees cannot corrupt a shared inode the
+    # way hard_link=true allowed. sccache has no reflink equivalent and its
+    # store lives outside the SSD. See story 03831B51.
     compiler_cache = (args.compiler_cache
                        or existing.get("ORES_COMPILER_CACHE")
-                       or "sccache")
+                       or "ccache")
 
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
@@ -636,18 +636,6 @@ ORES_BASE_PORT={base_port}
 ORES_DATABASE_NAME={db_name}
 
 # ---------------------------------------------------------------------------
-# sccache: cache dir + size are shared across all worktrees — one server, one
-# cache. build/scripts/sccache_wrapper.sh reads these and exports them before
-# the server first starts, so a change only takes effect on the next build
-# after a server restart:
-#   sccache --stop-server
-# Change here and re-run compass env configure everywhere to keep worktrees
-# in sync, or edit directly.
-# ---------------------------------------------------------------------------
-SCCACHE_DIR={sccache_dir}
-SCCACHE_CACHE_SIZE={sccache_cache_size}
-
-# ---------------------------------------------------------------------------
 # SSH agent directory (optional) — compass.sh exports SSH_AUTH_SOCK from the
 # sole socket in this directory when the calling environment does not provide
 # a live one (e.g. sandboxed LLM sessions).
@@ -655,16 +643,20 @@ SCCACHE_CACHE_SIZE={sccache_cache_size}
 ORES_SSH_AGENT_DIR={ssh_agent_dir}
 
 # ---------------------------------------------------------------------------
-# Build parallelism (rotational-disk / sccache contention keeps this low on
-# this machine). Read by `compass build` as the default -j when --jobs is
+# Build parallelism. Read by `compass build` as the default -j when --jobs is
 # not passed explicitly.
 # ---------------------------------------------------------------------------
 CMAKE_BUILD_PARALLEL_LEVEL={cmake_build_parallel_level}
 
 # ---------------------------------------------------------------------------
-# Compiler cache for local builds (sccache or ccache). Read by
+# Compiler cache for local builds. Read by
 # build/scripts/compiler_cache_wrapper.sh. Change with:
-#   compass env configure --compiler-cache {{sccache,ccache}}
+#   compass env configure --compiler-cache {{ccache,sccache}}
+#
+# ccache is the default and the supported local choice: /mnt/development is
+# btrfs, and ccache's file_clone=true stores cache entries as reflinks, so a
+# hit costs no extra disk. sccache has no equivalent, and its store lives off
+# the SSD. See story 03831B51 (btrfs migration).
 # ---------------------------------------------------------------------------
 ORES_COMPILER_CACHE={compiler_cache}
 

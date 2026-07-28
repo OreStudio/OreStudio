@@ -46,8 +46,8 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "synthetic.v1.fx-spot-configs.publish-from-dq" to
- * "ores_synthetic_publish_fx_spot_configs_from_dq_fn".
+ * Converts "synthetic.v1.theme.publish-from-dq" to
+ * "ores_synthetic_publish_theme_from_dq_fn".
  */
 std::string subject_to_fn(std::string_view subject) {
     const auto v1_pos = subject.find("v1.");
@@ -75,9 +75,8 @@ std::string subject_to_fn(std::string_view subject) {
  * the subscription, when a new entity is wired up.
  */
 bool is_known_fn(std::string_view fn_name) {
-    static constexpr std::array<std::string_view, 2> known = {
-        "ores_synthetic_publish_fx_spot_configs_from_dq_fn",
-        "ores_synthetic_publish_ir_curve_configs_from_dq_fn"};
+    static constexpr std::array<std::string_view, 1> known = {
+        "ores_synthetic_publish_theme_from_dq_fn"};
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 

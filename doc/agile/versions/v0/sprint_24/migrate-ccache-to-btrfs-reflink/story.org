@@ -1,0 +1,1205 @@
+:PROPERTIES:
+:ID: 03831B51-455F-4743-AD12-216FFD778CC8
+:END:
+#+title: Story: Migrate shared ccache/build storage to btrfs for reflink-safe hardlink-free caching
+#+description: ccache's hard_link=true mode, combined with a cache_dir shared across many concurrent git worktrees on the same host, is explicitly documented by ccache as unsafe: two worktrees compiling the same TU concurrently can corrupt the shared inode, silently breaking every worktree holding a hardlink to it. Root-caused via GDB after a heap-corruption crash in ores.refdata.service during Barclays provisioning (see task_merge_asset_class_folders_into_one_theme_unit.org). ext4 (the current filesystem for /mnt/development) has no reflink support, so the safe alternative (file_clone=true) silently falls back to plain copies, losing the disk-space savings hard_link was adopted for. Fix: reformat the SSD to btrfs, migrate the ccache cache_dir there, switch ccache to file_clone=true/hard_link=false, and rebuild every active worktree. btrfs is chosen over XFS (the other reflink-capable candidate) specifically because file_clone=true forces ccache to store cache entries UNCOMPRESSED -- btrfs transparent zstd compression is what makes that affordable on a disk already at 83%.
+#+type: story
+#+level: s2
+#+filetags: :devops:infrastructure:sprint_24:v0:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Reformat the shared SSD (=/mnt/development=, currently a single 220G ext4
+partition at 83% full, 36G free) to btrfs, and reconfigure ccache to use
+btrfs reflinks (=file_clone=true=, =hard_link=false=) instead of hard
+links, so concurrent worktree builds can no longer corrupt each other's
+cached object files via a shared inode -- the failure class root-caused
+in [[id:390E6886-6A04-4840-A53D-9873FC491ABB][the CIR rename PR's review round]] (heap corruption crash in
+=ores.refdata.service= during Barclays provisioning, traced via GDB to a
+stale/corrupted =party_repository.cpp.o= that a ccache-disabled rebuild
+proved didn't match a fresh compile of the same source). ccache's own
+manual explicitly warns against =hard_link=true= combined with a
+=cache_dir= shared by multiple concurrent build trees, for exactly this
+reason; ext4 has no reflink support at all, so =file_clone= silently
+falls back to plain (non-deduplicated) copies without a filesystem
+change.
+
+Everything on this partition is destroyed by the reformat and must be
+recreated: every worktree's checkout, build output, and the ccache
+store itself, plus the shared PostgreSQL 18 cluster
+(=/mnt/development/postgres/18/main=) that backs every worktree's
+database.
+
+** SSD inventory (2026-07-28, as user =marco=, not root)
+
+=/mnt/development= (=/dev/sda1=, ext4, 220G total, 173G used, 36G free):
+
+| Path | Size | Notes |
+|------+------+-------|
+| =Development/OreStudio/ores_dev_swift_curie= | 19G | worktree |
+| =Development/OreStudio/ores_dev_prime_origin= | 17G | worktree |
+| =Development/OreStudio/ores_dev_brave_hopper= | 17G | worktree |
+| =Development/OreStudio/ores_dev_bright_faraday= | 14G | worktree |
+| =Development/OreStudio/ores_dev_jolly_knuth= | 13G | worktree |
+| =Development/OreStudio/ores_dev_solid_dirac= | 12G | worktree |
+| =Development/OreStudio/ores_dev_merry_newton= | 12G | worktree (this session) |
+| =Development/OreStudio/ores_dev_eager_maxwell= | 12G | worktree |
+| =Development/OreStudio/ores_dev_clever_dijkstra= | 12G | worktree |
+| =Development/OreStudio/Hedgr.remote= | 4.8G | external/reference repo |
+| =Development/OreStudio/Engine.remote= | 2.2G | external/reference repo (ORE upstream) |
+| =Development/OreStudio/Papers=, =log= | 35M, 120K | negligible |
+| =.cache/ccache= | 9.4G | the shared cache this story fixes |
+| =.cache/sccache= | 74M | second, mostly-unused compiler cache |
+| =swapfile= | 16G | *ACTIVE SWAP*, =pri=100=, 3.1G in use -- see Step 1 |
+| =postgres/18/main= | unknown (denied) | owned by =postgres= user, =du= needs root |
+| =lost+found=, =models= | 16K, 4K | negligible |
+
+PostgreSQL logical size (via =pg_database_size=, sums to less than the
+physical data directory will show): *11 GB* across all databases --
+=ores_dev_local1..4= (test/scratch dev DBs, ~9.3G combined) plus one
+~200-450MB database per active worktree.
+
+*Superseded by D2/D5*: the physical size of =postgres/18/main= was left
+unmeasured (needs root). It no longer gates anything -- the cluster is
+destroyed and recreated from scratch rather than copied or dumped, so
+neither its physical nor its logical size matters to this migration.
+
+** CORRECTION: the inventory above was incomplete (2026-07-28)
+
+The table above enumerates only =Development/OreStudio/*=. It misses an
+entire second project. Actual top level:
+
+| Path | Size |
+|------+------|
+| =Development/OreStudio= | 130G |
+| =Development/Moimba= | *12G -- absent from the original inventory* |
+
+Executing the plan as originally written would have destroyed Moimba
+without a single warning, because Step 2's gate looped over nine
+hardcoded OreStudio worktree names. See D6.
+
+** Moimba project (2026-07-28)
+
+Three .NET products sharing the same clone+worktree pattern as
+OreStudio. All remotes are under =github.com:Moimba/=.
+
+| Path | Size | Kind | Remote |
+|------+------+------+--------|
+| =Karga.local1= | 3.5G | worktree of =Karga.remote= | =Moimba/Karga= |
+| =Corimba.remote= | 3.1G | clone (hosts the worktrees) | =Moimba/Corimba= |
+| =Baobab.local1= | 2.1G | worktree of =Baobab.remote= | =Moimba/Baobab= |
+| =Corimba.plan32= | 871M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =Corimba.plan30= | 845M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =Corimba.plan31= | 657M | worktree of =Corimba.remote= | =Moimba/Corimba= |
+| =KargaFormacao= | 395M | *see below* | -- |
+| =Karga.remote= | 94M | clone (hosts =Karga.local1=) | =Moimba/Karga= |
+| =Baobab.remote= | 58M | clone (hosts =Baobab.local1=) | =Moimba/Baobab= |
+
+Same topology caveat as OreStudio (D3): =Corimba.remote=,
+=Karga.remote= and =Baobab.remote= each host the object store for their
+worktrees, so those three directories are load-bearing.
+
+*Superseded by D7*: Corimba *is* re-rooted on a bare =corimba.git= with
+equal worktrees, matching OreStudio. Karga and Baobab are not recreated
+on the SSD at all -- their work is pushed and they can return whenever
+wanted.
+
+*** =KargaFormacao= -- the one thing with no remote backing
+
+=KargaFormacao/Karga= is a full .NET source tree (=Karga.sln=,
+=Karga.Core=, =Karga.WebApi=, =Karga.Blazor=, =Karga.Mobile=, =Karga.Cli=)
+carrying its own =.git=. It was missed by the first repo sweep because
+that used =find -maxdepth 4= and this sits at depth 5 -- see D6.
+
+Its remote is *HTTPS* (=https://github.com/Moimba/Karga.git=), not SSH,
+so it does not authenticate via the agent configured in Step 0b. It held
+six uncommitted files of real work (=TallySheet3= domain, entity,
+repository and endpoint classes). Resolved 2026-07-28:
+
+- Committed and pushed to =wip/kargaformacao-tallysheet3= on
+  =git@github.com:Moimba/Karga.git= (pushed over SSH via an explicit
+  push URL; the repo's HTTPS remote config was left unchanged). Verified
+  on the remote at =e66226b44=.
+- The whole 395M tree is also copied to
+  =/home/marco/Development/KargaFormacao=, byte-identical.
+
+*** Trap: =/home/marco/Development/Moimba= is a symlink
+
+It points *at* =/mnt/development/Development/Moimba=. Anything copied
+"into home's Moimba" lands back on the partition being destroyed. Backup
+copies must go to a sibling path -- =/home/marco/Development/KargaFormacao=,
+not =/home/marco/Development/Moimba/KargaFormacao=.
+
+The symlink will dangle after the reformat until Moimba is recreated.
+
+** Filesystem decision: btrfs vs XFS
+
+Both candidates support reflinks (=FICLONE=), so both fix the
+correctness bug equally well. XFS is the better filesystem for this
+workload in almost every other respect -- faster parallel small-file
+metadata throughput (allocation groups suit 9 concurrent builds),
+honest =df= accounting, no chunk-allocation ENOSPC surprises, no
+=balance= maintenance, and it is the boring well-trodden choice for
+PostgreSQL. If the disk were at 40% full, XFS would win.
+
+It loses on one point, and that point is decisive here. From
+=man ccache= (4.13.6), on =file_clone=:
+
+#+begin_quote
+Files stored by cloning cannot be compressed, so the cache size will
+likely be significantly larger if this option is enabled.
+#+end_quote
+
+and under =compression=:
+
+#+begin_quote
+Compression will be disabled if file cloning (the file_clone option) or
+hard linking (the hard_link option) is enabled.
+#+end_quote
+
+So the fix this story exists to apply *turns off ccache's own zstd
+compression*. The current 9.4G cache is compressed; stored
+uncompressed, the same entries want several times that. On XFS that is
+paid in full out of 36G of free space. btrfs gives it back at the
+filesystem layer via =compress=zstd=, transparently, and still
+reflinks (btrfs clones compressed extents natively).
+
+Measured on this host, 2026-07-28:
+
+| Measurement | Value |
+|-------------+-------|
+| =zstd -3= ratio on debug =.o= files (25-file sample, 21.8MB) | *6.0x* |
+| Share of a worktree that is =build/output= | ~95% (16G of ~17G) |
+| =vcpkg_installed= per worktree | 1.2G, near-identical across all 9 (~11G total) |
+| Shared git object store (=prime_origin/.git=) | 1.8G, already shared |
+
+At even 3x average across ~150G of mixed build output (binaries and
+archives compress less than raw =.o=), transparent compression reclaims
+on the order of 100G. That is the difference between "this migration
+does not fit on the disk" and "this migration leaves room to spare".
+
+*Decision: btrfs*, with =compress=zstd:3=. Not because it is the better
+filesystem -- it is not, for this workload -- but because compression is
+the only option available that creates disk space rather than consuming
+it, and the ccache change consumes a lot.
+
+The COW-overhead concern raised against btrfs does not apply as feared:
+btrfs pre-allocates nothing for COW, and an overwrite only pins the old
+extent if a snapshot or reflink still references it. With no snapshots
+taken, there is no standing COW overhead. The real btrfs space costs are
+DUP metadata (removed below via =-m single=), chunk-allocation slack
+(managed by periodic =balance=), and rewrite fragmentation (which
+matters for PostgreSQL, handled below via =nodatacow=) -- none of which
+is "COW data we are not using".
+
+** Target architecture
+
+Rebuild, not restore. All data on the SSD is destroyed and recreated
+from remotes; *nothing is copied to =/dev/sdb=* (2TB ST2000DM008,
+rotational -- a bulk copy there would be slow and is not wanted). The
+opportunity is to recreate the layout cleaner and with more sharing than
+it has today.
+
+*** Disk layout (=/dev/sda=, ADATA SU650, 223.6G, non-rotational)
+
+Today the SSD is a single ext4 partition plus a 16G *swapfile inside
+it* (=pri=100=, 3.1G in use). btrfs swapfiles carry real constraints:
+they must be =nodatacow=, cannot be compressed, and forbid snapshots of
+the containing subvolume. A dedicated swap partition avoids all of it,
+so the SSD is repartitioned:
+
+| Partition | Size | Type | Purpose |
+|-----------+------+------+---------|
+| =/dev/sda1= | ~215G | btrfs | =/mnt/development=, label =development= |
+| =/dev/sda2= | 8G | swap | fast swap, =pri=100= |
+
+8G rather than the current 16G: the host has 31G RAM and is using only
+3.1G of swap, and =/dev/sdb3= already exists as a 64G swap partition
+sitting unused at =pri=-1=. Tiering fast SSD swap at =pri=100= over slow
+overflow swap at =pri=-1= keeps the current behaviour and returns 8G to
+the SSD. (Note =/dev/sdb3= is on the rotational disk -- it is overflow
+insurance, not a working tier.)
+
+*** Subvolume layout
+
+Subvolumes are free, cost nothing when unused, and let PostgreSQL get
+different mount semantics from everything else. Created at the top
+level of the new filesystem:
+
+| Subvolume | Mounted at | Options |
+|-----------+------------+---------|
+| =@development= | =/mnt/development= | =compress=zstd:3= |
+| =@postgres= | =/mnt/development/postgres= | =nodatacow= (via =chattr +C=), no compression |
+
+PostgreSQL's 8K random rewrites are the one workload that genuinely
+fragments badly under COW. =chattr +C= must be applied to the directory
+*while it is empty*, before =initdb= -- applying it afterwards does
+nothing for existing files. This is the single most common btrfs +
+database mistake and the story previously listed it as out of scope.
+
+*** Sharing layers
+
+Confirmed topology: the fleet is *already* =git worktree=-based -- 8
+worktrees hang off =ores_dev_prime_origin/.git=, sharing one 1.8G object
+store. That is good, but it makes =prime_origin= a load-bearing special
+case: deleting or corrupting it breaks the other 8. The clean form is a
+bare repository with 9 *equal* worktrees, none privileged.
+
+| Layer | Today | After |
+|-------+-------+-------|
+| Git objects | shared via =prime_origin/.git= (fragile: one worktree is special) | shared via bare =ores.git=, all 9 worktrees equal |
+| ccache | shared dir, =hard_link=true= (*unsafe -- the bug*) | shared dir, =file_clone=true= + FS compression |
+| =vcpkg_installed= | 1.2G copied per worktree (~11G) | deduplicated to shared extents post-build |
+| Build output | uncompressed, ~150G | transparently zstd-compressed |
+| Everything else | -- | =duperemove= pass reclaims residual duplication |
+
+** Migration plan (btrfs, exact commands)
+
+Nothing here has been run yet. =/dev/sda= is assumed throughout --
+*re-confirm with =lsblk -f= immediately before Step 3*, as device naming
+can change across boots and Step 3 is the irreversible one.
+
+*** 0. Preconditions and tooling (DONE 2026-07-28)
+
+btrfs kernel support is present (=btrfs.ko= ships with kernel
+=7.1.4+deb14-amd64=) but *btrfs-progs was not installed* -- =mkfs.btrfs=
+did not exist on this host. Install the toolchain first; discovering
+this after =umount= would be painful.
+
+Note two package names that are not what you would guess: =compsize= is
+shipped as *=btrfs-compsize=*, and =sgdisk= (needed by Step 3, i.e.
+*after* the =umount=) comes from *=gdisk=*, which was also absent.
+
+#+begin_src sh
+sudo apt update
+sudo apt install btrfs-progs duperemove btrfs-compsize gdisk
+mkfs.btrfs --version   # must succeed before proceeding
+sgdisk --version       # ditto -- Step 3 cannot run without it
+#+end_src
+
+Installed and verified 2026-07-28: btrfs-progs =v7.0=, duperemove
+=0.15.2=, btrfs-compsize =1.5=, gdisk/sgdisk =1.0.10=. =modprobe btrfs=
+succeeds and =btrfs= appears in =/proc/filesystems=.
+
+=/dev/sda= already carries a *GPT* label (disk identifier
+=D5A5F2FA-95B5-48DE-BF5A-DA950B1B0654=, single 223.6G partition), so
+Step 3's =sgdisk= commands need no MBR-to-GPT conversion.
+
+=apt update= reports pre-existing errors from two third-party repos
+(timescaledb-for-Ubuntu and a Microsoft mssql key). Unrelated to this
+work and harmless here -- everything needed comes from Debian main.
+
+- Confirm no other user is on =neumann=; no build or service may run
+  during Steps 1-3.
+- Note the current state for rollback reference (captured 2026-07-28 to
+  =/home/marco/=, which lives on =/dev/sdb2= and is untouched by this
+  migration):
+  #+begin_src sh
+  lsblk -f > ~/pre-migration-lsblk.txt; blkid >> ~/pre-migration-lsblk.txt
+  swapon --show > ~/swap.pre-migration.txt
+  df -hT /mnt/development >> ~/swap.pre-migration.txt
+  cp /etc/fstab ~/fstab.pre-migration
+  cp /home/marco/.config/ccache/ccache.conf ~/ccache.conf.pre-migration
+  # PostgreSQL cluster config -- pg_dropcluster in Step 6 deletes it:
+  sudo cp -a /etc/postgresql/18/main ~/postgresql-18-main.conf.pre-migration
+  #+end_src
+  The PostgreSQL config copy is listed again under Step 2; doing it here
+  is equivalent and gets it out of the way.
+- Keep an off-SSD copy of *this story*, since the disk holding it is the
+  one being destroyed:
+  #+begin_src sh
+  cp story.org ~/migrate-ccache-to-btrfs-reflink-story.org   # survives reboot
+  cp story.org /tmp/                                          # tmpfs: does NOT
+  #+end_src
+  =/tmp= on this host is tmpfs (15.6G, RAM-backed), so a copy there is
+  lost at the reboot in Step 4. =$HOME= is on =/dev/sdb2=, untouched by
+  this migration.
+
+*** 0b. SSH agent (done 2026-07-28)
+
+Step 6 re-clones from GitHub over SSH, so agent access must survive the
+reboot. It previously did not: =SSH_AUTH_SOCK= was supplied by sourcing
+=~/crap.sh=, a saved env snapshot pointing at a hand-started =ssh-agent=
+(PID 1547, parented to =init=), which went stale on every boot. Four
+agents were running concurrently as a result.
+
+No new unit was needed -- =openssh-client= already ships
+=ssh-agent.service= / =ssh-agent.socket= in =/usr/lib/systemd/user/=,
+already enabled, listening on =%t/openssh_agent=. The only gap was that
+nothing exported =SSH_AUTH_SOCK= to shells. Now configured:
+
+| File | Covers |
+|------+--------|
+| =~/.config/environment.d/10-ssh-agent.conf= | graphical session and =systemd --user= services (Emacs daemon) |
+| =~/.bashrc= | interactive terminals |
+| =~/.profile= | login shells that are not interactive (cron, =bash -lc=, =ssh neumann '<cmd>'=) |
+
+=~/.bashrc= alone is insufficient: it returns early for non-interactive
+shells, hence the duplicate block in =~/.profile=. =~/.ssh/config= gained
+a =github.com= block (=IdentityFile ~/.ssh/id_rsa=, =IdentitiesOnly
+yes=) and a trailing =Host *= default of =AddKeysToAgent yes=, so the
+passphrase is entered once per boot rather than once per connection.
+=loginctl show-user marco -p Linger= already reports =Linger=yes=, so the
+agent starts without an interactive login.
+
+=~/crap.sh= is now unused and can be deleted.
+
+*After the Step 4 reboot, confirm before relying on it:*
+#+begin_src sh
+systemctl --user status ssh-agent.socket
+echo "$SSH_AUTH_SOCK"          # expect /run/user/1000/openssh_agent
+ssh-add -l                     # expect the RSA key, may prompt for passphrase
+git ls-remote git@github.com:OreStudio/OreStudio.git >/dev/null && echo OK
+#+end_src
+
+*** 1. Stop everything using the partition (DONE 2026-07-28)
+
+#+begin_src sh
+# Per worktree (swift_curie, prime_origin, brave_hopper, bright_faraday,
+# jolly_knuth, solid_dirac, merry_newton, eager_maxwell, clever_dijkstra):
+cd /mnt/development/Development/OreStudio/ores_dev_<name>
+./projects/ores.compass/compass.sh services stop
+
+sudo systemctl stop postgresql@18-main postgresql
+
+# The 16G swapfile LIVES ON THE PARTITION BEING DESTROYED. umount fails
+# while it is active. /dev/sdb3 (64G) absorbs anything paged out.
+sudo swapoff /mnt/development/swapfile
+swapon --show   # confirm only /dev/sdb3 remains
+
+# Nothing may hold the mount open:
+sudo fuser -vm /mnt/development || echo "clear"
+#+end_src
+
+**** What this step missed in practice
+
+=compass services stop= *refused to run*: =merry_newton='s =.env= was at
+format version 12 against a required 14, and compass exits rather than
+operating on a stale env. Regenerating =.env= on a worktree about to be
+destroyed is pointless, so the services were stopped by signal instead.
+Order matters: *kill the controllers first*, then the domain services.
+The controller is a supervisor and respawns its children -- killing a
+domain service first simply produces a new one. There were *five*
+controllers running, not one, and six worktree =nats-server= instances.
+
+Then =fuser= still showed four holders that no service-stop would have
+touched:
+
+- A *podman pod* (=ores-pod-swift_curie=, infra container up 8 hours)
+  with its =cwd= inside a worktree. Stop it properly:
+  =podman pod stop --all=. Note =podman= fails with =cannot chdir= if
+  invoked with a =cwd= the target user cannot read.
+- A stale =tail -F | ugrep= monitor left over from an *earlier Claude
+  Code session* watching a build log, parented to =systemd --user=.
+
+Add to this step, before =fuser=:
+
+#+begin_src sh
+podman pod stop --all; podman stop --all      # run from an accessible cwd
+pkill -TERM -f 'ores\.controller\.service'    # supervisors FIRST
+pkill -TERM -f 'ores\.[a-z]*\.service'        # then domain services
+pkill -TERM nats-server                       # see caveat below
+#+end_src
+
+Caveat: =pkill nats-server= also matches the *system-wide*
+=nats-server.service= (config in =/etc=, =cwd=/=), which is unrelated to
+the fleet and does not hold the mount. systemd restarts it immediately,
+so no harm -- but match on the worktree config path if that matters.
+
+The general lesson is D6's, applied to processes rather than
+repositories: enumerate what is actually holding the mount with
+=fuser -vm=, do not assume a known list of services covers it.
+
+*** 2. Preserve only what cannot be regenerated
+
+No bulk backup, and *no PostgreSQL dump* -- the cluster is recreated
+from scratch (D5). Build output, =vcpkg= trees, NATS state, the ccache
+store and all database content are disposable by design. Two things are
+not:
+
+1. *Uncommitted or unpushed git work.* Push it to the remote -- not to
+   local disk.
+
+   *Do not enumerate repositories by hand.* The original version of this
+   step looped over nine hardcoded worktree names and would have missed
+   17 of the 26 repositories actually present (D6). Discover them:
+
+   #+begin_src sh
+   for p in $(find /mnt/development -name .git -not -path "*/vcpkg*" \
+                   -not -path "*/node_modules/*" | sed 's|/\.git$||' | sort); do
+       d=$(git -C "$p" status --porcelain | wc -l)
+       u=$(git -C "$p" log --branches --not --remotes --oneline | wc -l)
+       s=$(git -C "$p" stash list | wc -l)
+       [ "$d$u$s" != "000" ] && printf '%-60s dirty=%-4s unpushed=%-4s stash=%s\n' \
+           "${p#/mnt/development/Development/}" "$d" "$u" "$s"
+   done
+   #+end_src
+
+   Note =-maxdepth= is deliberately absent: =KargaFormacao/Karga= sits at
+   depth 5 and Claude Code agent worktrees under
+   =<worktree>/.claude/worktrees/= sit deeper still. Both hold real work.
+   =vcpkg= and =node_modules= are pruned because they contain vendored
+   third-party repos, not our work.
+   *Gate: this sweep must come back clean, or every remaining item must
+   be explicitly accepted as discarded, before Step 3 runs.*
+
+   State captured 2026-07-28, before any destructive step -- this is the
+   assignment Step 6 restores:
+
+   | Worktree | Branch | Dirty | Unpushed |
+   |----------+--------+-------+----------|
+   | =ores_dev_swift_curie= | =feature/debug-start-all-never-resumes-in-container= | 0 | -- |
+   | =ores_dev_prime_origin= | =feature/migrate-to-oresmd-delete-legacy-schemes= | 0 | -- |
+   | =ores_dev_brave_hopper= | =feature/simulate-holding-group-provisioning-via-internal-impersonation= | 0 | -- |
+   | =ores_dev_bright_faraday= | =feature/extend-synthetic-binding-dialog-to-ir-curves= | 0 | -- |
+   | =ores_dev_jolly_knuth= | =feature/add-entity-filter-flag-to-regenerate= | 0 | -- |
+   | =ores_dev_solid_dirac= | =feature/write-up-wire-format-architecture= | 0 | -- |
+   | =ores_dev_merry_newton= | =feature/merge-asset-class-folders-into-one-theme-unit= | 1 | -- |
+   | =ores_dev_eager_maxwell= | =feature/badge-source-self-annotation= | 0 | -- |
+   | =ores_dev_clever_dijkstra= | =feature/codegen-qt-parent-scoped-list= | 0 | -- |
+
+   *All outstanding work was found and resolved on 2026-07-28.* What the
+   full sweep turned up, well beyond the nine worktrees:
+
+   | Repo | Was | Resolution |
+   |------+-----+------------|
+   | =Hedgr.remote= | 6 dirty, *4 unpushed* | committed; branch =feature/initial_infrastructure= pushed (it had no upstream at all) |
+   | =Moimba/Baobab.local1= | 12 dirty, 1 unpushed | committed and pushed; =out/= + =tmp/= gitignored |
+   | =Moimba/Karga.local1= | 5 dirty | committed and pushed |
+   | =Moimba/KargaFormacao/Karga= | 6 dirty | pushed to =wip/kargaformacao-tallysheet3=; also copied to =$HOME= |
+   | =Moimba/Corimba.remote=, =Corimba.plan30= | 1 dirty each | =.claude/settings.json= committed and pushed |
+   | =Papers= | 4 dirty | committed and pushed; also copied to =$HOME= |
+   | =prime_origin/.claude/worktrees/agent-af474...= | 2 dirty (*283 lines*) | committed; pushed to =worktree-agent-af474c160d620e68c= |
+   | OreStudio ×9 | 1 unpushed (=f8c7241a5=) | pushed. Reported from every worktree because they share one object store -- one commit, not nine |
+   | =Engine.remote= | 1 dirty | *deliberately left* -- see below |
+
+   Two deliberate non-actions:
+
+   - =Engine.remote= is a fork (=origin= =OreStudio/Engine=, =upstream=
+     =OpenSourceRisk/Engine=) whose only change is incidental submodule
+     checkout drift on =ORE-SWIG/QuantLib-SWIG=, on a =master= that is
+     *1324 commits behind* origin. No work was done in it. It is
+     re-cloned in Step 6, which also brings it current.
+   - Stashes (3 shared across the OreStudio worktrees, 1 in each Baobab
+     clone) are accepted as discarded, by explicit decision.
+
+2. =Hedgr.remote= / =Engine.remote= (4.8G / 2.2G): verify clean against
+   upstream, then re-clone rather than copy.
+   #+begin_src sh
+   for r in Hedgr.remote Engine.remote; do
+       echo "=== $r ==="; cd /mnt/development/Development/OreStudio/$r
+       git status --short; git log --branches --not --remotes --oneline
+   done
+   #+end_src
+
+The PostgreSQL *cluster configuration* at =/etc/postgresql/18/main=
+lives on =/=, not on the SSD, so it survives the reformat untouched --
+but Step 6 drops and recreates the cluster, which deletes it. Copy it
+aside first so any local tuning can be diffed back in:
+
+#+begin_src sh
+sudo cp -a /etc/postgresql/18/main ~/postgresql-18-main.conf.pre-migration
+#+end_src
+
+*** 3. Repartition and reformat (POINT OF NO RETURN) -- DONE 2026-07-28
+
+#+begin_src sh
+lsblk -f                      # RE-CONFIRM /dev/sda is the 223.6G ADATA SU650
+sudo umount /mnt/development
+
+# Recreate the partition table: sda1 btrfs (rest), sda2 swap (8G at end).
+sudo sgdisk --zap-all /dev/sda
+sudo sgdisk -n 1:0:-8G  -t 1:8300 -c 1:development /dev/sda
+sudo sgdisk -n 2:0:0    -t 2:8200 -c 2:swap        /dev/sda
+sudo partprobe /dev/sda
+lsblk /dev/sda                # expect sda1 ~215G, sda2 8G
+
+# -m single: no duplicate metadata. Saves GBs across millions of small
+# build files; the trade is losing self-repair from the spare copy,
+# which is the right call for a disposable build scratch disk.
+sudo mkfs.btrfs -f -m single -L development /dev/sda1
+sudo mkswap -L devswap /dev/sda2
+
+sudo btrfs filesystem show /dev/sda1
+#+end_src
+
+*** 4. Subvolumes, mount, fstab (DONE 2026-07-28)
+
+#+begin_src sh
+sudo mount /dev/sda1 /mnt/development
+sudo btrfs subvolume create /mnt/development/@development
+sudo btrfs subvolume create /mnt/development/@postgres
+sudo umount /mnt/development
+
+sudo mount -o noatime,compress=zstd:3,space_cache=v2,subvol=@development \
+    /dev/sda1 /mnt/development
+sudo chown marco:marco /mnt/development
+
+sudo mkdir -p /mnt/development/postgres
+sudo mount -o noatime,space_cache=v2,subvol=@postgres /dev/sda1 /mnt/development/postgres
+# MUST be set while empty, before initdb -- has no effect on existing files:
+sudo chattr +C /mnt/development/postgres
+sudo chown postgres:postgres /mnt/development/postgres
+lsattr -d /mnt/development/postgres    # expect ---------------C------
+#+end_src
+
+**** =nodatacow= as a mount option DOES NOT WORK
+
+Tested on the empty filesystem 2026-07-28: mounting =@postgres= with
+=nodatacow= while =@development= was already mounted with
+=compress=zstd:3= produced a second mount that silently reported
+=compress=zstd:3= and no =nodatacow=. btrfs applies these options
+*filesystem-wide*, first mount wins; a second subvolume mount cannot
+override them. An fstab line carrying =nodatacow= looks correct, passes
+review, and still yields a fully COW cluster.
+
+=chattr +C= is the real mechanism -- a per-inode attribute, independent
+of mount options. Verified both directions:
+
+| Test | Result |
+|------+--------|
+| =chattr +C= on empty dir, then create file | file inherits =C= |
+| create file first, then =chattr +C= on dir | file does *not* get =C= |
+
+The second row is why =initdb= must run into an already-empty NOCOW
+directory, and why D5 (recreate, never restore a dump) is the only
+ordering that produces a genuinely non-COW cluster.
+
+Rewrite =/etc/fstab= -- *replace* the old ext4 line and *delete* the
+swapfile line; do not append. Actual UUIDs from the 2026-07-28 mkfs:
+
+#+begin_src conf
+# development SSD (ADATA SU650) on /dev/sda1 -- btrfs, see story 03831B51.
+# compress=zstd:3 is not optional: it is the reason btrfs was chosen over XFS.
+UUID=554d7790-02bd-4a66-852d-a5a1d0c8e732 /mnt/development btrfs noatime,compress=zstd:3,space_cache=v2,subvol=@development,nofail 0 0
+# PostgreSQL data. NOCOW comes from `chattr +C` on the directory, NOT from a
+# nodatacow mount option -- see above.
+UUID=554d7790-02bd-4a66-852d-a5a1d0c8e732 /mnt/development/postgres btrfs noatime,space_cache=v2,subvol=@postgres,nofail 0 0
+# Fast swap on /dev/sda2, replacing the old in-partition swapfile.
+UUID=bd1e0db0-a01b-4782-9440-45a4ea233ed0 none swap sw,pri=100 0 0
+#+end_src
+
+=findmnt --verify= warns =target specified more than once=; that is only
+the two swap entries both using =none= as their target. Harmless.
+Run =systemctl daemon-reload= after editing, then verify with
+=umount= + =mount -a= *before* rebooting.
+
+Then verify the entries mount cleanly before rebooting into them:
+#+begin_src sh
+sudo findmnt --verify --verbose
+sudo swapon -a && swapon --show   # sda2 pri=100, sdb3 pri=-1
+#+end_src
+
+*** 5. Reconfigure ccache for reflink, not hard link (DONE 2026-07-28)
+
+#+begin_src sh
+mkdir -p /mnt/development/.cache/ccache
+ccache --set-config=cache_dir=/mnt/development/.cache/ccache
+ccache --set-config=hard_link=false     # THE BUG: currently true
+ccache --set-config=file_clone=true
+# Entries are now stored uncompressed (compression is force-disabled by
+# file_clone), so the same hit rate needs a much larger nominal budget.
+# The filesystem compresses it back down on disk.
+ccache --set-config=max_size=150G
+ccache --zero-stats
+ccache --show-config | grep -E 'hard_link|file_clone|max_size|cache_dir'
+#+end_src
+
+Keep =direct_mode=true= and =hash_dir=false= exactly as they are --
+=hash_dir=false= is what makes cross-worktree sharing possible at all,
+and changing it would silently defeat this whole story. Both confirmed
+still set after the reconfiguration.
+
+**** Filesystem capability verified 2026-07-28
+
+Both pillars of the design tested on the real filesystem before any
+build ran:
+
+| Property | Test | Result |
+|----------+------+--------|
+| reflink | =cp --reflink=always= | *supported*; both files report =links=1=, so it is a reflink and not a hard link -- exactly the property whose absence caused the corruption bug |
+| compression | 200MB compressible payload | 190M uncompressed -> *5.9M on disk* |
+| extent sharing | reflink the above, then =compsize= | 2 files, *381M referenced, still 5.9M on disk*; 1526 extents carrying 3052 refs |
+
+Caveat on the numbers: that payload was synthetic and repeating, so 3%
+flatters the result badly. The figure to plan against is the *6.0x
+(~17%)* measured on this codebase's real debug objects, recorded under
+the filesystem decision above.
+
+Note =compsize= must be run as root; as an unprivileged user it silently
+prints nothing rather than failing.
+
+*** 6. Recreate the fleet
+
+Bare repo first, so no worktree is privileged:
+
+*Layout change*: there is no =Development/= level any more. It was a
+redundant directory inside a mount already called =/mnt/development=.
+Projects sit directly under the mount point:
+
+: /mnt/development/OreStudio/...
+: /mnt/development/Moimba/...
+: /mnt/development/.cache/ccache
+: /mnt/development/postgres        (the @postgres subvolume)
+
+Every old path of the form
+=/mnt/development/Development/OreStudio/<x>= becomes
+=/mnt/development/OreStudio/<x>=.
+
+#+begin_src sh
+mkdir -p /mnt/development/OreStudio
+cd /mnt/development/OreStudio
+git clone --bare git@github.com:OreStudio/OreStudio.git ores.git
+cd ores.git
+git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git fetch origin
+
+# Then all nine as equal siblings, restoring the branch assignment from
+# the table in Step 2:
+git worktree add ../ores_dev_swift_curie     feature/debug-start-all-never-resumes-in-container
+git worktree add ../ores_dev_prime_origin    feature/migrate-to-oresmd-delete-legacy-schemes
+git worktree add ../ores_dev_brave_hopper    feature/simulate-holding-group-provisioning-via-internal-impersonation
+git worktree add ../ores_dev_bright_faraday  feature/extend-synthetic-binding-dialog-to-ir-curves
+git worktree add ../ores_dev_jolly_knuth     feature/add-entity-filter-flag-to-regenerate
+git worktree add ../ores_dev_solid_dirac     feature/write-up-wire-format-architecture
+git worktree add ../ores_dev_merry_newton    feature/merge-asset-class-folders-into-one-theme-unit
+git worktree add ../ores_dev_eager_maxwell   feature/badge-source-self-annotation
+git worktree add ../ores_dev_clever_dijkstra feature/codegen-qt-parent-scoped-list
+#+end_src
+
+Remote verified reachable 2026-07-28 via
+=git ls-remote git@github.com:OreStudio/OreStudio.git=. SSH auth is via
+the systemd-managed agent (see Step 0), not the old =~/crap.sh= env
+snapshot.
+
+PostgreSQL cluster once, created fresh into the =nodatacow= subvolume
+(see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][devops-provision-environment]] for the scripted form). The Debian
+cluster definition at =/etc/postgresql/18/main= survives the reformat
+but points at a data directory that no longer exists, so drop and
+recreate it rather than trying to repair it:
+
+#+begin_src sh
+# The old cluster is now a dangling definition -- data dir is gone.
+sudo pg_dropcluster 18 main --stop
+
+# Recreate with the data directory on the nodatacow subvolume. The dir
+# must not already contain data; pg_createcluster runs initdb into it,
+# and every file it creates inherits the +C flag set in Step 4.
+sudo pg_createcluster 18 main -d /mnt/development/postgres/18/main
+sudo systemctl start postgresql@18-main
+pg_lsclusters                     # expect: 18 main 5432 online
+
+# Confirm nodatacow was actually inherited by the new data directory:
+sudo lsattr -d /mnt/development/postgres/18/main   # expect ---------------C------
+#+end_src
+
+**** pg_createcluster produces a DEFAULT config -- local tuning is lost
+
+This is not a formality. Diffing =~/postgresql-18-main.conf.pre-migration=
+against the freshly generated config on 2026-07-28 found four settings
+silently reverted, two of them serious:
+
+| Setting | Was | Fresh default | Consequence if not restored |
+|---------+-----+---------------+-----------------------------|
+| =shared_preload_libraries= | ='timescaledb,pg_cron'= | *absent* | TimescaleDB and pg_cron simply do not load; any database using them breaks |
+| =max_connections= | 800 | 100 | nine worktrees' services exhaust the pool |
+| =superuser_reserved_connections= | 5 | 3 | minor |
+| =listen_addresses= | ='localhost'= | commented | none in practice (same effective value) |
+
+=pg_hba.conf=, =pg_ident.conf=, =start.conf= and =conf.d/= were
+unchanged, so only =postgresql.conf= needs attention.
+
+#+begin_src sh
+CONF=/etc/postgresql/18/main/postgresql.conf
+sudo cp "$CONF" "$CONF.fresh-backup"
+sudo sed -i "s|^max_connections = 100|max_connections = 800|" "$CONF"
+sudo sed -i "s|^#\?superuser_reserved_connections = .*|superuser_reserved_connections = 5|" "$CONF"
+sudo sed -i "s|^#\?shared_preload_libraries = .*|shared_preload_libraries = 'timescaledb,pg_cron'|" "$CONF"
+sudo sed -i "s|^#\?listen_addresses = .*|listen_addresses = 'localhost'|" "$CONF"
+sudo systemctl restart postgresql@18-main
+#+end_src
+
+Verify the settings are actually live, and that the preloaded libraries
+started rather than merely being named:
+
+#+begin_src sh
+sudo -u postgres psql -tAc "select name||' = '||setting from pg_settings \
+  where name in ('max_connections','shared_preload_libraries', \
+                 'superuser_reserved_connections','listen_addresses')"
+grep -iE 'timescale|cron' /var/log/postgresql/postgresql-18-main.log | tail -3
+# expect: "TimescaleDB background worker launcher connected to shared catalogs"
+#         "pg_cron scheduler started"
+#+end_src
+
+Confirmed 2026-07-28: both loaded, cluster online, and the data files
+themselves carry the NOCOW flag --
+=lsattr /mnt/development/postgres/18/main/base/1/1255= reports
+=---------------C------=, so the =chattr +C= chain survives all the way
+from Step 4 through =initdb= to live database files.
+
+Then, per worktree, the normal idempotent path:
+
+#+begin_src sh
+./projects/ores.compass/compass.sh db recreate -y -k
+#+end_src
+
+Then build. Build *one* worktree to completion first to populate the
+ccache from cold, then the rest -- this maximises reflink sharing and
+avoids nine cold-cache builds racing each other:
+
+#+begin_src sh
+cd /mnt/development/OreStudio/ores_dev_prime_origin
+./projects/ores.compass/compass.sh env configure -y
+./projects/ores.compass/compass.sh build          # cold, populates cache
+# then the remaining eight, which should run mostly on cache hits
+#+end_src
+
+The nine OreStudio worktree names are *kept exactly as they were* --
+they are familiar and there is no reason to churn them. Note that
+=ores_dev_prime_origin= is no longer special: under D3 it is an ordinary
+worktree like the other eight, and the object store lives in
+=ores.git=.
+
+**** One recorded branch had vanished upstream
+
+=ores_dev_eager_maxwell= was on =feature/badge-source-self-annotation=,
+which had been *merged via PR #1723 and deleted on the remote*. It only
+still existed as a local branch on the old disk, so a fresh clone cannot
+recreate it and =git worktree add= fails with =invalid reference=. Its
+work is in =main=; nothing is lost.
+
+Reassigned to =feature/decide-nats-compression-vs-http-transport= -- the
+most recent real feature branch not already checked out elsewhere.
+
+General point for any future re-clone: the branch table captured in
+Step 2 is a snapshot of *local* state, and a merged-and-deleted branch
+will not survive the round trip. Check each recorded branch still exists
+on the remote before relying on it.
+
+Note also that =git clone --bare= mirrors remote heads directly into
+=refs/heads=, so every branch is already a local branch -- =git worktree
+add ../x <branch>= works without =-b=/=--track=, and =git switch -c=
+fails with "branch already exists".
+
+*** Actual result 2026-07-28
+
+| Item | Value |
+|------+-------|
+| =ores.git= (bare) | *548M* -- against 1.8G for the old shared object store |
+| Worktrees | 9, all on distinct branches |
+| PostgreSQL | online, data files NOCOW-verified |
+
+*** 6b. Recreate Moimba
+
+*Scope: Corimba only.* Karga and Baobab are *not* recreated on the SSD.
+All of their work was committed and pushed during Step 2, so nothing is
+lost -- they can be cloned back at any time if needed. This also returns
+~5.8G (=Karga.local1= 3.5G, =Baobab.local1= 2.1G, plus the two small
+clones) to the disk.
+
+Corimba adopts *both* OreStudio conventions (D7): a bare repo with equal
+worktrees (D3), and the =<project>_dev_<adjective>_<scientist>= naming
+scheme. The old =Corimba.remote= / =Corimba.plan3x= names are retired --
+=Corimba.remote= was a clone that also hosted the other worktrees'
+object store, exactly the load-bearing arrangement D3 exists to remove.
+
+| Was | Branch it carried | Becomes |
+|-----+-------------------+---------|
+| =Corimba.plan30= | =feature/tidy_up_employee_dataset= | =corimba_dev_keen_lovelace= |
+| =Corimba.plan32= | =main= | =corimba_dev_bold_turing= |
+| =Corimba.remote= | =feature/cycle-phases-architecture= | =corimba_dev_wise_shannon= |
+| =Corimba.plan31= | detached, clean | dropped |
+
+Names are chosen not to collide with the nine OreStudio ones.
+=Corimba.plan31= was detached and clean, so its slot is given to the
+branch the old =Corimba.remote= clone was on -- no branch is lost.
+
+#+begin_src sh
+mkdir -p /mnt/development/Moimba
+cd /mnt/development/Moimba
+
+git clone --bare git@github.com:Moimba/Corimba.git corimba.git
+git -C corimba.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git -C corimba.git fetch origin
+
+git -C corimba.git worktree add ../corimba_dev_keen_lovelace feature/tidy_up_employee_dataset
+git -C corimba.git worktree add ../corimba_dev_bold_turing   main
+git -C corimba.git worktree add ../corimba_dev_wise_shannon  feature/cycle-phases-architecture
+#+end_src
+
+=KargaFormacao= is *not* restored to the SSD, consistent with dropping
+Karga. It stays at =/home/marco/Development/KargaFormacao= (395M,
+byte-identical copy taken 2026-07-28), and its committed work is on
+=Moimba/Karga= at =wip/kargaformacao-tallysheet3=. It is the one tree
+not reproducible from a remote alone, so *do not delete the =$HOME=
+copy* -- it is now the only full copy of that layout.
+
+Finally, *repoint* the =/home/marco/Development/Moimba= symlink. It
+targets =/mnt/development/Development/Moimba=, a path that no longer
+exists under the new layout, so it dangles from the moment of the
+reformat and would still dangle even after Moimba is recreated:
+
+#+begin_src sh
+ln -sfn /mnt/development/Moimba /home/marco/Development/Moimba
+ls -l /home/marco/Development/Moimba && ls /home/marco/Development/Moimba/
+#+end_src
+
+*** 7. Deduplicate
+
+Reflinks only arise where something clones a file. The ~1.2G
+=vcpkg_installed= tree that each worktree builds independently is
+near-identical across all nine (~11G for ~1.2G of content) and nothing
+clones it. An offline dedup pass converts those into shared extents:
+
+#+begin_src sh
+# Whole mount, not just OreStudio: Moimba's five worktrees share vendored
+# NuGet/obj trees with each other in the same way.
+sudo duperemove -rdh --hashfile=/var/tmp/dev-dedup.hash /mnt/development
+sudo compsize /mnt/development
+#+end_src
+
+Re-run after any large rebuild wave. =compsize= reports both the
+compression ratio actually achieved and the extent sharing. It must be
+run as *root* -- unprivileged it prints nothing rather than failing.
+
+Exclude =/mnt/development/postgres= from any future dedup pass if one is
+scripted: deduplicating a NOCOW database file reintroduces shared
+extents, which silently converts writes back into copy-on-write and
+undoes Step 4.
+
+*** 8. Verify
+
+Correctness -- the bug this story exists to fix:
+
+- =ccache --show-config= reports =hard_link = false=, =file_clone =
+  true=.
+- A build in two different worktrees of the same commit produces a
+  ccache hit in the second one (confirms the shared cache still works)
+  without the second worktree's object file being a hard link
+  (=stat -c '%h' <file>.o= reports link count 1, not >1).
+- Full =compass build rat= green in at least two worktrees run
+  concurrently, deliberately racing the same TU, with no crash --
+  the regression test for the bug this story fixes.
+
+Space -- the constraint that drove the filesystem choice:
+
+#+begin_src sh
+sudo compsize /mnt/development/Development/OreStudio   # ratio + shared extents
+sudo btrfs filesystem usage /mnt/development           # real free space, not df
+df -h /mnt/development                                 # for contrast; trust the above
+#+end_src
+
+- =compsize= reports a compression ratio materially below 1.0 (target:
+  roughly 0.35-0.5 across the build trees) -- if it reports ~1.0, the
+  =compress=zstd:3= mount option did not take, and the entire rationale
+  for choosing btrfs over XFS has silently evaporated. This is the check
+  that matters most.
+- =btrfs filesystem usage= shows unallocated space remaining. Chunk
+  exhaustion, not =df=, is what causes btrfs ENOSPC.
+- Total footprint after all nine worktrees are built is *below* the
+  173G the ext4 layout consumed, despite ccache now storing entries
+  uncompressed.
+
+Configuration:
+
+- =lsattr -d /mnt/development/postgres= shows the =C= (nodatacow) flag.
+- =swapon --show= lists =/dev/sda2= at =pri=100= and =/dev/sdb3= at
+  =pri=-1=; no swapfile on the btrfs filesystem.
+- A reboot mounts everything from =/etc/fstab= with no manual
+  intervention.
+
+*** 8b. Validation results (2026-07-28)
+
+Every acceptance claim verified on real builds, not inferred.
+
+**** The corruption fix
+
+| Check | Result |
+|-------+--------|
+| Link count, all objects in =merry_newton= | *3074/3074 at links=1* |
+| Link count, all objects in =prime_origin= | *3078/3078 at links=1* |
+| Any object with links > 1 | *none* |
+
+Under the old =hard_link=true=, a cache hit produced an object file
+sharing an inode with the cache entry -- link count 2 -- which is how two
+worktrees compiling the same TU concurrently corrupted each other. That
+signature is now entirely absent.
+
+**** Reflink proven at block level, not inferred
+
+=btrfs inspect-internal logical-resolve= on one extent returned exactly
+two files:
+
+: /mnt/development/OreStudio/ores_dev_merry_newton/build/output/.../app_command_args_tests.cpp.o
+: /mnt/development/.cache/ccache/8/7/c3bb3a464c77d2b4f9d3de8982e305a0a00545_00
+
+Same physical blocks, independent inodes, each with link count 1. That is
+=file_clone=true= exactly: the disk saving of a hard link with none of the
+shared-inode hazard.
+
+**** Cache correctness
+
+Full rebuild of =merry_newton= after deleting its object tree:
+*2382/2382 hits, 0 misses, 0 errors, exit 0*. Cache size did not move
+from 7.1 GB -- hits clone existing entries rather than writing new ones.
+
+**** Cross-worktree sharing (the =CCACHE_BASEDIR= question)
+
+=base_dir= is *empty in ccache.conf*; it is injected at runtime by
+=build/scripts/compiler_cache_wrapper.sh= as =CCACHE_BASEDIR=. Nothing
+prior to this test exercised it, because every hit until then came from
+the same worktree at the same path.
+
+=prime_origin= (different directory, different branch) built against the
+cache =merry_newton= populated:
+
+| Sample | Hit rate |
+|--------+----------|
+| first 93 objects | 79.6% |
+| 2128 objects | 80.9% |
+| *final: 2391 objects* | *72.5% (1734 hits, 657 misses)* |
+
+Had =CCACHE_BASEDIR= or =hash_dir=false= been broken, this would have been
+*0%*. The drift from 80% to 72.5% is composition, not regression: shared
+infrastructure hits early, and the Qt UI sources where these two branches
+genuinely diverge legitimately miss. Same-commit worktrees approach 100%,
+as the rebuild above shows.
+
+**** Space -- the reason btrfs was chosen over XFS
+
+| Measurement | Value |
+|-------------+-------|
+| ccache store | 6.6G logical -> *1.3G on disk* (5.1x) |
+| Build tree (one worktree) | 14G logical -> *3.7G on disk* (3.8x) |
+| Two built worktrees + shared cache, logical | *38.9G* |
+| Same, actually on disk | *13G* |
+| Pre-migration size of those same two worktrees + cache | 38.4G |
+
+Two fully built worktrees plus a 9.6G shared cache now occupy less disk
+than *one* worktree did before. Extrapolated to nine worktrees: ~145G
+logical lands near ~52G physical, against the 173G that filled the old
+partition.
+
+The ccache store number is the load-bearing one. Those entries are
+genuinely uncompressed -- =file_clone= forces ccache's own compression
+off -- so on XFS they would occupy the full 6.6G. btrfs stores them in
+1.3G. That gap *is* the migration's justification.
+
+*** 9. Ongoing maintenance
+
+Not required for acceptance, but this is what btrfs costs versus XFS
+and it should be written down rather than rediscovered:
+
+- If =btrfs filesystem usage= shows unallocated space approaching zero
+  while =df= still claims free space, run
+  =sudo btrfs balance start -dusage=50 /mnt/development=.
+- Re-run =duperemove= (Step 7) after large rebuild waves.
+- Never enable snapshots on =@development= without revisiting the space
+  budget -- snapshots are the one thing that turns COW into standing
+  overhead, which is precisely the failure mode this design avoids.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Steps 0-6 and 8 DONE. btrfs live; fleet re-cloned; PostgreSQL recreated; two worktrees built clean; caching fully validated (see 8b). |
+| Waiting on    | PR review for the ccache-default fix.   |
+| Next          | Merge the PR, rebase the other worktrees, build the remaining seven, then 6b (Corimba) and 7 (duperemove). |
+| Last touched  | 2026-07-28                               |
+
+* Acceptance
+
+- =/mnt/development= is reformatted to btrfs and mounted with the
+  new filesystem in =/etc/fstab= (ext4 entry replaced, not appended).
+- Shared ccache =cache_dir= is reconfigured with =hard_link = false=,
+  =file_clone = true=, and =ccache --show-config= confirms both.
+- Every worktree in the fleet (=ores_dev_swift_curie=,
+  =ores_dev_prime_origin=, =ores_dev_brave_hopper=,
+  =ores_dev_bright_faraday=, =ores_dev_jolly_knuth=,
+  =ores_dev_solid_dirac=, =ores_dev_merry_newton=,
+  =ores_dev_eager_maxwell=, =ores_dev_clever_dijkstra=) is recreated
+  and builds clean from scratch.
+- PostgreSQL 18 cluster is recreated from scratch via
+  =pg_createcluster= onto the =nodatacow= subvolume, and every
+  worktree's database is rebuilt to a working state via =db recreate=.
+  No dump is restored.
+- A ccache hit across two different worktrees building the same
+  commit produces an object file with link count 1 (=stat -c '%h'=),
+  confirming =file_clone=/copy semantics rather than a hard link.
+- =compass build rat= run concurrently in two worktrees, deliberately
+  racing the same TU, completes green with no crash -- the regression
+  test for the corruption bug this story fixes.
+- No git worktree loses committed history; any uncommitted work
+  found during the pre-migration sweep is either pushed or explicitly
+  accepted as discarded by the user before the reformat proceeds.
+- =compsize= confirms transparent compression is actually engaged on
+  the build trees (ratio materially below 1.0). Without this the
+  migration has taken on btrfs's costs and delivered none of its
+  benefit.
+- The fleet is rooted on a bare =ores.git= with nine equal worktrees;
+  no worktree hosts the object store for the others.
+- =/mnt/development/postgres= carries the =nodatacow= attribute, set
+  before =initdb=.
+- Swap is a dedicated =/dev/sda2= partition at =pri=100=; no swapfile
+  exists on the btrfs filesystem.
+- Total footprint with all nine worktrees built is below the 173G the
+  ext4 layout used.
+- Moimba is recreated: three clones plus five worktrees on their
+  recorded branches, and =KargaFormacao= restored from the =$HOME= copy.
+- =/home/marco/Development/Moimba= resolves again (it dangles between
+  Step 3 and Step 6b).
+- The Step 2 discovery sweep, re-run after recreation, reports no
+  repository with uncommitted or unpushed work other than the known
+  =Engine.remote= submodule drift.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+** D1: btrfs over XFS (2026-07-28)
+
+Both support reflinks and both fix the bug. Chose btrfs solely for
+transparent zstd compression, because =file_clone=true= force-disables
+ccache's own compression (=man ccache=), inflating a 9.4G compressed
+cache several-fold on a disk already at 83%. Measured 6.0x zstd ratio on
+this codebase's debug objects. XFS is otherwise the better fit --
+faster on parallel small-file metadata, honest =df=, no =balance=
+maintenance, friendlier to PostgreSQL -- and would be the choice if
+space were not the binding constraint. Accepted costs: chunk-allocation
+ENOSPC risk, =balance= maintenance, PostgreSQL requiring =nodatacow=.
+
+** D2: Rebuild rather than restore (2026-07-28)
+
+All SSD data is destroyed and recreated from remotes. Nothing is bulk-
+copied to =/dev/sdb= -- it is rotational (ST2000DM008) and the copy
+would be slow and pointless for regenerable build output. Only two
+things are preserved: unpushed git work (pushed to the remote, not to
+local disk) and the pre-migration config files. This also buys the
+chance to recreate the layout cleaner than it was.
+
+** D3: Bare repo with nine equal worktrees (2026-07-28)
+
+The fleet is already =git worktree=-based, but the object store lives
+inside =ores_dev_prime_origin/.git=, making one worktree load-bearing
+for the other eight. Since everything is being recreated anyway, re-root
+on a bare =ores.git=. Same disk saving, no privileged worktree.
+
+** D4: Dedicated swap partition, 8G (2026-07-28)
+
+The current 16G swapfile sits *inside* the partition being reformatted.
+Keeping a swapfile on btrfs is possible but constrained -- it must be
+=nodatacow=, cannot be compressed, and blocks snapshots of its
+subvolume. A dedicated =/dev/sda2= partition avoids all three.
+
+Sized at 8G, down from 16G:
+
+- 31G RAM, 4.8G in use, 26G available; swap usage is 3.1G. 8G is ~2.6x
+  observed peak usage.
+- =/dev/sdb3= already exists as a 64G swap partition, unused at
+  =pri=-1=. Tiering fast SSD swap at =pri=100= over that as overflow
+  means shrinking the fast tier cannot cause an OOM -- the tail is
+  still covered, just slowly. This is what makes 8G safe rather than
+  optimistic.
+- Hibernation is not in play (it would require swap >= 31G RAM); this
+  is a build host that stays up.
+- Swap's real job here is evicting cold anonymous pages so RAM stays
+  available for page cache -- currently 23G of buff/cache, which is
+  what keeps builds fast. That job needs a fast tier, not a large one.
+- Returns 8G to a disk that has 36G free.
+
+** D5: PostgreSQL recreated, not dumped and restored (2026-07-28)
+
+No =pg_dumpall= is taken. The cluster is dropped and recreated from
+scratch with =pg_createcluster=, and each worktree's database is rebuilt
+by =compass db recreate= from the repo's =create=/=populate= scripts --
+the project's normal, already-idempotent path. The
+=ores_dev_local1..4= scratch databases (~9.3G logical) are accepted as
+discarded.
+
+This is also the *technically cleaner* option, not merely the cheaper
+one: =chattr +C= only affects files created after it is set, so a fresh
+=initdb= into an empty =nodatacow= directory is the only way to get a
+fully NOCOW cluster. Restoring a dump into a pre-existing directory
+would have left the requirement half-satisfied.
+
+Note the cluster *configuration* at =/etc/postgresql/18/main= lives on
+=/=, not the SSD, so it survives the reformat -- but =pg_dropcluster=
+deletes it, hence the config copy in Step 2.
+
+** D6: Discover repositories, never enumerate them (2026-07-28)
+
+The original Step 2 gate looped over nine hardcoded worktree names. The
+partition actually holds *26 git repositories*, and the missing 17
+included an entire second project (Moimba, 12G) plus real uncommitted
+work. Three separate rounds of discovery were each incomplete:
+
+1. Enumerating the nine known worktrees missed Moimba entirely, plus
+   =Hedgr.remote='s 4 unpushed commits -- which the plan had written off
+   as "a clean clone, just re-clone it", an assumption that was false.
+2. Checking =status= and unpushed commits but not =stash list= missed
+   five stashes.
+3. =find -maxdepth 4= missed =KargaFormacao/Karga= (depth 5, and the one
+   tree with no SSH remote) and two Claude Code agent worktrees under
+   =.claude/worktrees/=, one holding 283 uncommitted lines.
+
+Rule going forward: enumerate by =find=, at full depth, checking dirty
+*and* unpushed *and* stash. A hand-maintained list of directories is a
+latent data-loss bug on a machine where new checkouts appear routinely.
+
+** D7: Layout and naming (2026-07-28)
+
+Three changes settled while executing, all cheap now and expensive later:
+
+- *No =Development/= level.* =/mnt/development/Development/OreStudio/x=
+  becomes =/mnt/development/OreStudio/x=. The old level was a redundant
+  directory inside a mount already called =/mnt/development=.
+- *OreStudio worktree names unchanged.* All nine keep their
+  =ores_dev_<adjective>_<scientist>= names; they are familiar and there
+  is no reason to churn them. =ores_dev_prime_origin= is no longer
+  privileged, though -- under D3 the object store lives in =ores.git=.
+- *Corimba adopts the same conventions*: bare =corimba.git= plus three
+  equal worktrees named =corimba_dev_<adjective>_<scientist>=, chosen
+  not to collide with the OreStudio nine.
+
+*Karga and Baobab are dropped from the SSD*, along with
+=KargaFormacao=. Their work is pushed and they can return whenever
+wanted; this reclaims roughly 6.2G. =KargaFormacao= is the exception
+worth watching: it is not reproducible from a remote alone, so the
+=$HOME= copy is now its only full copy.
+
+* Out of scope
+
+- Automated detection/recovery tooling for hard-link corruption
+  (option C from the alternatives considered) -- superseded by this
+  migration, not built alongside it.
+- Serializing builds across worktrees (option B) -- rejected in
+  favour of this fix.
+- Migrating any host other than =neumann= (the fleet's build host).
+- Changing ccache's =direct_mode=/=inode_cache=/=compiler_check=
+  settings beyond =hard_link=/=file_clone=/=max_size= -- out of scope
+  unless a problem surfaces during verification. =hash_dir=false= in
+  particular must not change: it is what makes cross-worktree cache
+  sharing work at all.
+- btrfs *snapshots*. Deliberately excluded: snapshots are the one
+  feature that converts COW into standing space overhead, which this
+  design cannot afford. (Subvolume layout, =compress=zstd= and
+  =nodatacow= were previously listed here as optional; they have been
+  pulled *into* scope -- compression is the reason btrfs was chosen at
+  all, and =nodatacow= is required for PostgreSQL to be usable.)
+- Migrating =sccache= (74M, mostly unused) or consolidating it with
+  ccache.
+- Finishing the SSD/Postgres physical-size inventory -- superseded by
+  D2: the data is being destroyed, so its physical size no longer gates
+  anything.

@@ -43,6 +43,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 12 | 2026-07-12 | Retroactively applied version 11's port migration by hand to every pre-existing environment's .env (base ports 50000-56000 -> 20000-26000), since compass env configure only migrates on regeneration and does not touch environments whose .env already has an ORES_BASE_PORT set |
 | 13 | 2026-07-23 | Add PGPORT for non-default-port Postgres hosts (e.g. remote/WSL offload) |
 | 14 | 2026-07-25 | Added per-service and per-client DB_HOST/DB_PORT env vars so every service derives its DB endpoint from ORES_DB_HOST/PGPORT instead of silently defaulting to localhost:5432 |
+| 15 | 2026-07-28 | ORES_COMPILER_CACHE now defaults to ccache instead of sccache (btrfs reflink caching, story 03831B51); removed the stale SCCACHE_DIR/SCCACHE_CACHE_SIZE block from the generated .env, which version 10 said was removed but the template kept writing |
 
 * See also
 

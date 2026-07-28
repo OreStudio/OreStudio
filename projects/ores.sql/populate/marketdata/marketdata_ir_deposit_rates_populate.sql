@@ -30,7 +30,7 @@
  * "MM/RATE/USD/2D/3M 0.007961"). This is the exact DEPOSIT-tenor point
  * ir_curve_generation_config.price_source='vintage' resolves against for
  * a USD-LIBOR-3M config (see resolve_vintage_initial_rate in
- * ir_curve_feed.cpp) -- synthetic.ir_curve_configs.ore_samples_2016's
+ * ir_curve_feed.cpp) -- synthetic.themes.ore_samples_2016's
  * USD-LIBOR-3M config is seeded to use it.
  *
  * Scoped to one currency/tenor for now (unlike the FX driver rates'
@@ -102,7 +102,7 @@ BEGIN
         'Raw',
         'ORE Bundled Sample Market Data',
         'IR Deposit Rates 2016',
-        'Real IR deposit-tenor rate(s) from ORE''s own bundled Legacy/Example_56 sample, for the 2016-02-05 reference vintage -- currently just USD LIBOR-3M, the DEPOSIT anchor for synthetic.ir_curve_configs.ore_samples_2016''s USD-LIBOR-3M config.',
+        'Real IR deposit-tenor rate(s) from ORE''s own bundled Legacy/Example_56 sample, for the 2016-02-05 reference vintage -- currently just USD LIBOR-3M, the DEPOSIT anchor for synthetic.themes.ore_samples_2016''s USD-LIBOR-3M config.',
         'ORESTUDIO',
         'Seed data for the IR deposit rates Librarian bundle',
         '2016-02-05',

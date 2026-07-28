@@ -32,7 +32,7 @@
  *
  * Date: 2026-05-05, a single current-regime snapshot (unlike the 2016
  * dataset's 25 vintages across the year) -- this dataset exists
- * specifically to ground synthetic.fx_spot_configs.realistic_2026 in a
+ * specifically to ground synthetic.themes.realistic_2026 in a
  * real current FX vintage instead of reusing 2016-02-05 data, closing
  * the gap noted in that dataset's own description.
  *

@@ -23,11 +23,11 @@ book/book_status/portfolio via the new primary-key model shape.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Local build green; full ctest run in progress. |
-| Waiting on    | ctest completion.                               |
-| Next          | Confirm ctest green, then this PR is ready to merge. |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ book/book_status/portfolio via the new primary-key model shape.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:79605F8B-E796-4919-9EE6-35FB0BE58E12][Scaffold story: Qt as-of combo facet and primary-key model shape migration]] | DONE | 2026-07-28 | 2026-07-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0BB94CF5-87F0-472A-8A9B-7E852EE6ECA2][Implement Qt as-of combo facet and primary-key model shape migration]] | STARTED | 2026-07-28 | | Initial task for: Qt as-of combo facet and primary-key model shape migration |
+| [[id:0BB94CF5-87F0-472A-8A9B-7E852EE6ECA2][Implement Qt as-of combo facet and primary-key model shape migration]] | DONE | 2026-07-28 | 2026-07-28 | Initial task for: Qt as-of combo facet and primary-key model shape migration |
 
 * Decisions
 

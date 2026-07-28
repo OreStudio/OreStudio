@@ -28,11 +28,11 @@ Columns/:primary_key: model shape needed to regenerate them at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:903B7C8F-04FA-4258-AB77-E8414B6DE585][Qt as-of combo facet and primary-key model shape migration]] |
-| Now          | Local build green; full ctest run in progress. |
-| Waiting on   | ctest completion.                               |
-| Next         | Confirm ctest green, then this PR is ready to merge. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-07-28                               |
 
 * Acceptance
@@ -70,6 +70,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR description claims book/book_status/portfolio.org primary-key migration; not actually in this diff | PR body | Accepted | Corrected the PR description; primary-key shape already on main (commit 1e0775417), portfolio.org has zero diff |
+| 2 | Malformed table row (ragged trailing cells) in book_status.org | =ores.refdata.book_status.org= | Accepted | Trimmed the two stray empty cells on the ModifiedBy/RecordedAt rows |
+| 3 | Missing test coverage for has_as_of_combo_fields | =core.py= | Accepted | Extracted to a standalone function + added =test_as_of_combo_fields.py= |
+| 4 | Incidental drift-fix riding along with the regen not called out in description | PR body | Accepted | Updated the PR description to list the checkbox/pagination/tooltip drift explicitly and flag it for manual smoke test |
 
 * Result
+
+74/74 ctest confirmed green. Review round 1 addressed: corrected the
+PR description (no primary-key migration in this diff; portfolio.org
+has zero diff), fixed a malformed table row in book_status.org, added
+unit test coverage for has_as_of_combo_fields, and called out the
+incidental checkbox/pagination/tooltip drift-fix riding along with
+the regen.

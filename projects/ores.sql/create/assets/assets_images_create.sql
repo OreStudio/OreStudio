@@ -117,3 +117,20 @@ do instead
   where tenant_id = old.tenant_id
   and image_id = old.image_id
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Lets a service read a system-tenant template image (e.g. a demo logo) by
+-- key, across the tenant-isolation RLS policy above -- security definer,
+-- owned by the table owner, so it runs with owner privileges regardless of
+-- the caller's own tenant context.
+create or replace function ores_assets_get_template_image_fn(p_key text)
+returns table("description" text, "mime_type" text, "data" text)
+language sql
+security definer
+set search_path = public
+as $$
+    select "description", "mime_type", "data"
+    from "ores_assets_images_tbl"
+    where tenant_id = ores_utility_system_tenant_id_fn()
+    and key = p_key
+    and valid_to = ores_utility_infinity_timestamp_fn();
+$$;

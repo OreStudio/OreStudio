@@ -21,6 +21,10 @@
 
 - ores_iam_
 
+** Select prefixes
+
+- ores_assets_
+
 * refdata
 :PROPERTIES:
 :psql_var:    refdata_service

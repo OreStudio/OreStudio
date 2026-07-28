@@ -36,7 +36,6 @@ auto& lg() {
 }
 
 constexpr auto poll_interval = std::chrono::milliseconds(500);
-constexpr int max_consecutive_poll_failures = 5;
 } // namespace
 
 internal_request_client::internal_request_client(ores::nats::service::client& nats,
@@ -58,7 +57,7 @@ bool internal_request_client::wait_for_workflow_instance(
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
-    int consecutive_failures = 0;
+    int poll_failures = 0;
 
     while (true) {
         ores::workflow::messaging::get_workflow_steps_request req;
@@ -75,17 +74,15 @@ bool internal_request_client::wait_for_workflow_instance(
         }
 
         if (!ok) {
-            ++consecutive_failures;
-            BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
-                                      << instance_id << ": " << result.message;
-            if (consecutive_failures >= max_consecutive_poll_failures) {
-                BOOST_LOG_SEV(lg(), error) << "Aborting wait after " << max_consecutive_poll_failures
-                                          << " consecutive poll failures for " << instance_id;
-                return false;
-            }
+            // A busy workflow.service under heavy insert load (e.g. the
+            // ~13k-row GLEIF counterparty bundle) can go unresponsive to
+            // this query for the bundle's *entire* run, not just a brief
+            // blip -- so failures here are not a reason to give up early;
+            // the deadline below is the only backstop.
+            ++poll_failures;
+            BOOST_LOG_SEV(lg(), warn) << "Poll " << poll_failures << " failed for " << instance_id
+                                      << ": " << result.message;
         } else {
-            consecutive_failures = 0;
-
             for (const auto& step : result.steps) {
                 auto& last = last_status[step.step_index];
                 if (last != step.status) {

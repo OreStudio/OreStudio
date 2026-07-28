@@ -46,7 +46,10 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
+#include <algorithm>
+#include <chrono>
 #include <stdexcept>
+#include <thread>
 
 namespace ores::iam::messaging {
 
@@ -340,17 +343,22 @@ public:
                     { reply(nats_, msg, resp); return; }
             }
 
-            // Step 2: real GLEIF counterparties (small), tenant-wide.
+            // Step 2: real GLEIF counterparties (small -- ~13k rows, still
+            // the slowest single step here). Best-effort: every party a
+            // tester actually cares about is created in steps 3+
+            // regardless of whether this large, non-blocking dataset finishes
+            // within the wait window, so a slow/failed import here is
+            // logged and does not abort the rest of provisioning.
             {
                 internal_request_client client(nats_, mint(caller_party_id));
                 add_step("Step 2: Importing GLEIF counterparties", "starting", 0);
-                if (!publish_bundle(client,
-                                    "acme_gleif_counterparties",
-                                    username,
-                                    "{}",
-                                    add_step,
-                                    progress("acme_gleif_counterparties")))
-                    { reply(nats_, msg, resp); return; }
+                publish_bundle(client,
+                              "acme_gleif_counterparties",
+                              username,
+                              "{}",
+                              add_step,
+                              progress("acme_gleif_counterparties"),
+                              std::chrono::seconds{600});
             }
 
             // Step 3: the holding company -- no desks/staff of its own, so
@@ -367,8 +375,6 @@ public:
                     finish_party(client, *ctx_expected, tenant_id_str, account_id, username,
                                 *holding, /*set_default=*/true);
                     add_step("Step 3: Activating Acme Corporation Plc", "completed");
-
-                    attach_demo_counterparty_logo(client, *ctx_expected, tenant_id_str, username);
                 }
             }
 
@@ -401,6 +407,17 @@ public:
                 finish_party(client, *ctx_expected, tenant_id_str, account_id, username, *party,
                             /*set_default=*/false);
                 add_step(office.code + ".onboarding", "completed");
+            }
+
+            // Attaching the Barclays demo logo needs the GLEIF counterparty
+            // import (Step 2) to have actually landed rows -- that bundle
+            // publish is by far the largest and often still running in the
+            // background when Step 2's own wait times out, so this is
+            // deliberately last, after every other step has given it more
+            // time to finish.
+            {
+                internal_request_client client(nats_, mint(caller_party_id));
+                attach_demo_counterparty_logo(client, *ctx_expected, tenant_id_str, username);
             }
 
             BOOST_LOG_SEV(tenant_handler_lg(), info) << "Acme tenant provisioned: " << tenant_id_str
@@ -442,7 +459,8 @@ private:
                    const std::string& username,
                    const std::string& params_json,
                    const std::function<void(std::string, std::string, std::uint64_t)>& add_step,
-                   const std::function<void(const std::string&)>& on_progress) {
+                   const std::function<void(const std::string&)>& on_progress,
+                   std::chrono::seconds timeout = std::chrono::seconds{120}) {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = bundle_code;
         req.published_by = username;
@@ -457,7 +475,7 @@ private:
         add_step(bundle_code, "dispatched", static_cast<std::uint64_t>(pub.datasets_dispatched));
 
         if (!client.wait_for_workflow_instance(pub.instance_id,
-                                               std::chrono::seconds{120},
+                                               timeout,
                                                static_cast<std::size_t>(pub.datasets_dispatched),
                                                on_progress)) {
             add_step(bundle_code + ".failed", "workflow did not complete", 0);
@@ -504,9 +522,7 @@ private:
 
         auto rows = execute_parameterized_multi_column_query(
             ctx,
-            "SELECT description, mime_type, data FROM ores_assets_images_tbl WHERE tenant_id = "
-            "ores_utility_system_tenant_id_fn() AND key = $1 AND valid_to = "
-            "ores_utility_infinity_timestamp_fn()",
+            "SELECT description, mime_type, data FROM ores_assets_get_template_image_fn($1)",
             {key},
             tenant_handler_lg(),
             "copy_template_image");
@@ -605,25 +621,57 @@ private:
                                        ores::database::context& ctx,
                                        const std::string& tenant_id,
                                        const std::string& username) {
-        ores::refdata::messaging::get_counterparties_request req;
-        req.limit = 1000;
-        auto resp = client.request(req);
-        for (auto& cp : resp.counterparties) {
-            if (cp.short_code != "BRCLYS")
-                continue;
-            if (cp.image_id)
+        // The GLEIF counterparty bundle (Step 2) is by far the largest and
+        // slowest publish here; its own wait can give up (or the workflow
+        // engine's progress query can go unresponsive under that load)
+        // well before the underlying import actually finishes. Rather than
+        // depend on that wait, poll refdata directly -- a plain read, not
+        // subject to the same workflow-engine contention -- for BARCLAYS
+        // PLC to actually exist before giving up on the logo.
+        // Best-effort: a demo touch, not a hard prerequisite for anything
+        // else in provisioning, and every request below can transiently
+        // fail (parse/timeout) while the server is busy with the GLEIF
+        // import's own heavy load -- swallow any such failure rather than
+        // letting it abort the whole provision_acme response.
+        try {
+            ores::refdata::messaging::get_counterparties_request req;
+            req.limit = 1000;
+            ores::refdata::messaging::get_counterparties_response resp;
+            // The GLEIF import (Step 2) has been observed taking anywhere
+            // from ~90s to several minutes under load; poll for up to 8
+            // minutes before giving up on the logo.
+            for (int attempt = 0; attempt < 240; ++attempt) {
+                try {
+                    resp = client.request(req);
+                    if (std::any_of(resp.counterparties.begin(), resp.counterparties.end(),
+                                    [](const auto& cp) { return cp.short_code == "BRCLYS"; }))
+                        break;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                        << "attach_demo_counterparty_logo: poll failed: " << e.what();
+                }
+                std::this_thread::sleep_for(std::chrono::seconds{2});
+            }
+            for (auto& cp : resp.counterparties) {
+                if (cp.short_code != "BRCLYS")
+                    continue;
+                if (cp.image_id)
+                    return;
+                auto image_id =
+                    copy_template_image(client, ctx, tenant_id, "demo_counterparty_logo", username);
+                if (!image_id)
+                    return;
+                cp.image_id = image_id;
+                cp.change_reason_code = "system.external_data_import";
+                cp.change_commentary = "Attached demo logo to BARCLAYS PLC during Acme provisioning";
+                cp.modified_by = username;
+                cp.performed_by = username;
+                client.request(ores::refdata::messaging::save_counterparty_request::from(cp));
                 return;
-            auto image_id =
-                copy_template_image(client, ctx, tenant_id, "demo_counterparty_logo", username);
-            if (!image_id)
-                return;
-            cp.image_id = image_id;
-            cp.change_reason_code = "system.external_data_import";
-            cp.change_commentary = "Attached demo logo to BARCLAYS PLC during Acme provisioning";
-            cp.modified_by = username;
-            cp.performed_by = username;
-            client.request(ores::refdata::messaging::save_counterparty_request::from(cp));
-            return;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "attach_demo_counterparty_logo: failed (non-fatal): " << e.what();
         }
     }
 

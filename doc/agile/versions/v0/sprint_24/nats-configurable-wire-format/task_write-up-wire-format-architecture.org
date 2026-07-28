@@ -8,7 +8,7 @@
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
 #+branch: feature/write-up-wire-format-architecture
-#+pr:
+#+pr: 1722
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -288,7 +288,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1722][#1722]] | [agile] Write up NATS wire-format architecture and design decision |
 
 * Review
 

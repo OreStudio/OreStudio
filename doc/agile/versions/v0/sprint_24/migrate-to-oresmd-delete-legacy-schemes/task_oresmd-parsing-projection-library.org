@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 657F1AF9-0B49-40DA-9F2D-68006B53F814
 :END:
-#+title: Task: Add oresmd parsing/projection library
-#+description: Implement parse_oresmd, to_uri, and resolve per the oresmd design's variant-based data model, with projection rules into ORE's index/curve/quote keys -- no consumer migration yet.
+#+title: Task: Add oresmd support to ores.marketdata
+#+description: Implement parse_oresmd, to_uri, and resolve inside ores.marketdata (api/core), per the oresmd design's variant-based data model, with projection rules into ORE's index/curve/quote keys -- no consumer migration yet.
 #+type: task
 #+level: s1
 #+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
@@ -20,7 +20,33 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =oresmd= support directly to [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]'s home component,
+=ores.marketdata= -- *not* as a separate standalone library/component --
+so every downstream migration task on this story (=ore_key=,
+=ir_curve_generation_config=, =market_series=, and the ORE XML
+round-trip) has a single place to depend on:
+
+- =market_data_identifier=/=market_data_requirement= variants and the
+  five per-asset-class concrete structs, per the design doc's data
+  model, living in =ores.marketdata.api/domain= under the normal
+  =ores::marketdata= namespace -- no dedicated =oresmd= C++ namespace;
+  =oresmd= is just the URI scheme string (a =constexpr= constant), not
+  a code-organisation boundary.
+- =parse_oresmd(uri) -> market_data_identifier=,
+  =to_uri(market_data_identifier) -> oresmd_uri=, and
+  =resolve(market_data_requirement, ...) -> market_data_identifier=,
+  dispatching via =std::visit= on the URI's =asset_class= -- living in
+  =ores.marketdata.core= alongside =market_series_service= and the
+  other identifier-facing logic that component already owns.
+- The projection rules from the design doc (into ORE's index name,
+  curve key, and quote key) as free functions callable from any other
+  component that already depends on =ores.marketdata= (=ores.synthetic=,
+  =ores.qt.*=, =ores.reporting=) without a new inter-component
+  dependency edge.
+
+No consumer migration happens in this task -- it only adds the
+capability =ores.marketdata= exposes for the story's remaining tasks to
+consume.
 
 * Status
 
@@ -35,7 +61,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =market_data_identifier=/=market_data_requirement= and the five
+  per-asset-class structs are added to =ores.marketdata.api=, with no
+  abstract base class/virtual dispatch (per the design doc's
+  =rfl=-driven decision).
+- =parse_oresmd=, =to_uri=, and =resolve= are added to
+  =ores.marketdata.core=, covering every asset class in the design
+  doc's worked examples.
+- Projection rules into ORE's index name, curve key, and quote key are
+  implemented and unit-tested against the design doc's worked
+  examples (FX, IR, swaption, equity, credit, commodity).
+- No new component/library is created -- the capability lives entirely
+  inside =ores.marketdata=, reachable by any existing consumer of that
+  component without a new dependency edge.
+- No consumer (=ore_key=, =market_series=, =ir_curve_generation_config=,
+  ORE XML) is migrated as part of this task.
 
 * Plan
 

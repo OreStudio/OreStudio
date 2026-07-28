@@ -373,6 +373,7 @@ via its "Verifies task" field.
 | 4 | ores.shell definition count still wrong after round 3 fix: 14/9 claimed, actually 18/13, plus provision_commands.cpp is a differently-shaped third variant | task_write-up-wire-format-architecture.org | Fixed | Corrected to 18 definitions across 13 files, noted provision_commands.cpp's distinct Request-object shape |
 | 5 | Stale "9 files" leftover survived the round-4 fix in one sentence | task_write-up-wire-format-architecture.org | Fixed | Updated to "13 files" for consistency with the rest of the section |
 | 6 | Goal section and story.org's Tasks table still stated the original wrong audit numbers (2 sites/already centralised; 26 occurrences/~13 files) | task_write-up-wire-format-architecture.org, story.org, task_consolidate-migrate-shell-wire-codec.org | Fixed | Reworded Goal to avoid restating counts that go stale; corrected story.org's Tasks row and, while at it, the sibling shell-migration task's stale description/Goal too |
+| 7 | Sibling task's reworded Goal listed application.cpp/repl.cpp alongside the 7-file/15-occurrence group, implying 9 files behind that count | task_consolidate-migrate-shell-wire-codec.org | Fixed | Separated application.cpp/repl.cpp as distinct previously-known stragglers, matching the write-up task's Plan presentation |
 
 * Result
 

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 1A815B1E-904E-460C-A2FB-31D9E3B392E2
+:END:
+#+title: Story: Make NATS wire format configurable: JSON/MessagePack, decided once at startup
+#+description: Decouple NATS message serialization from a hard-coded rfl::json call at every send/receive site. Build a single, non-polymorphic wire_codec chosen once at process startup from .env config, threaded through ores.service (server handlers), ores.qt (ClientManager), and ores.shell (command request helpers) via dependency injection -- no per-message format negotiation or runtime auto-detection. Supersedes the narrower raw-bytes-not-base64-for-images task: MessagePack's native binary type replaces base64 for every byte-vector field, for every message type, once adopted. ores.http and ores.wt are explicitly out of scope, handled separately.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every NATS message (server responses, service handler decode, Qt
+client requests, shell client requests) is currently serialized by a
+hard-coded, inline =rfl::json::write=/=rfl::json::read= call at each
+individual send/receive site -- roughly 40+ distinct call sites spread
+across four codebases (=ores.service=, =ores.qt=, =ores.shell=,
+=ores.cli=). This baked-in choice is why the image-batch story's
+raw-bytes-not-base64 follow-up needed a bespoke, message-specific
+binary framing: there was no general way to avoid JSON's base64
+encoding of byte vectors anywhere in the stack.
+
+This story decouples serialization format from the call sites
+entirely. A single =wire_codec= value -- concrete, non-polymorphic,
+holding the chosen =wire_format= (=json= or =msgpack=, via
+=reflect-cpp='s existing =rfl::msgpack= support) -- is constructed
+*once*, at process startup, from a =.env=-driven config value. It is
+then threaded through every consuming layer via dependency injection;
+no code anywhere inspects a message to decide its format at runtime,
+and no per-message negotiation or auto-detection exists. Switching a
+process's wire format becomes a one-line =.env= change plus a
+restart, not a code change.
+
+As a consequence, MessagePack's native binary type (which
+=reflect-cpp= already maps =std::vector<uint8_t>= onto, with zero
+custom code) eliminates the base64 tax for every message that carries
+binary data, for every message type -- not just images -- once a
+process's =.env= selects =msgpack=. This supersedes the narrower
+[[id:77F77107-23CE-46B4-B51E-F7DBAC742C3D][raw-bytes-not-base64-for-images]]
+task.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the write-up/design task.        |
+| Last touched  | 2026-07-28                               |
+
+* Acceptance
+
+- A written design doc (this story's first task) captures the current
+  blast-radius audit, the chosen architecture, and the rationale
+  against alternatives (esp. per-message header-based negotiation,
+  which this story deliberately does not do).
+- A =wire_codec= type in =ores.nats= wraps =rfl::json=/=rfl::msgpack=
+  behind one interface, selected once at construction from a
+  =.env=-driven =wire_format= value, with round-trip unit test
+  coverage for both formats.
+- =ores.service::messaging::handler_helpers= (server), =ores.qt='s
+  =ClientManager=, and =ores.shell='s command request helpers all
+  route through the injected =wire_codec= instead of a hard-coded
+  =rfl::json= call.
+- =ores.shell='s copy-pasted =do_request=/=do_auth_request= helper
+  (duplicated across ~13 command files) is consolidated into one
+  shared helper as part of this migration.
+- End-to-end verification: a test environment configured for
+  =msgpack= round-trips correctly across Qt<->service and
+  shell<->service, confirmed via the existing image-batch test
+  scenarios (proving the raw-bytes-not-base64 win is realised for
+  free).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AC1B96D9-D86C-4BBB-94A4-E187469A0A8F][Write up the wire-format architecture analysis and design decision]] | BACKLOG | | | Document the current blast-radius audit (every NATS-relevant rfl::json call site across ores.service, ores.qt, ores.shell, plus confirming ores.cli is out of scope), the chosen architecture (a single non-polymorphic wire_codec constructed once at startup from .env, threaded via dependency injection, no per-message negotiation), and the rationale versus the rejected per-message header-negotiation alternative. This becomes the spec the later implementation tasks execute against. |
+| [[id:D7D9EF5E-0299-47C4-A4FD-E64B284DF8DA][Build wire_codec abstraction and startup config in ores.nats]] | BACKLOG | | | Add a wire_format enum (json, msgpack), a .env-driven config value read once at startup, and a wire_codec class holding the chosen format at construction with template encode/decode methods dispatching to rfl::json or rfl::msgpack. Non-polymorphic, no per-message branching on message content -- the format is fixed for the codec instance's lifetime. Round-trip unit tests for both formats. This is the shared foundation every other task in this story depends on. |
+| [[id:7E1FE4CF-3FFD-4977-8ED8-2D7D51461BDA][Migrate ores.service messaging handler_helpers to wire_codec]] | BACKLOG | | | Update reply() and decode() in ores.service/messaging/handler_helpers.hpp to route through an injected wire_codec instead of a hard-coded rfl::json call. This is the server-side choke point almost every service handler already goes through, so this single change flips every service's request/response handling in one pass. Audit for any service-to-service NATS calls that bypass these two helpers and migrate or document them separately. |
+| [[id:12674934-6F8E-40C9-A8D7-ED29B0ADF322][Consolidate and migrate ores.qt ClientManager to wire_codec]] | BACKLOG | | | ClientManager.hpp/.cpp plus ClientManagerExportPortfolio.cpp and ClientManagerTradeInstrument.cpp currently have around ten separate call sites hard-coding rfl::json (process_authenticated_request variants, send_authenticated_request variants, login, signup, event-cache decode, exportPortfolio, trade_instrument). Consolidate these into one or two shared private helpers first, reducing duplication as a side effect, then have those route through an injected wire_codec instead of rfl::json directly. |
+| [[id:926379AF-B17C-4700-AF89-6AD1EB006281][Consolidate and migrate ores.shell request helpers to wire_codec]] | BACKLOG | | | The do_request/do_auth_request template helper is copy-pasted independently into roughly thirteen shell command .cpp files (26 occurrences), each hard-coding rfl::json. De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly. |
+| [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] | BACKLOG | | | With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe. |
+
+* Decisions
+
+* Out of scope
+
+- =ores.http= -- the public REST API must stay JSON for external
+  client compatibility; handled separately if ever revisited.
+- =ores.wt= -- handled separately.
+- Per-message format negotiation, a content-type header, or any
+  runtime auto-detection scheme -- deliberately rejected in favour of
+  a single startup-time decision (see the write-up/decision task for
+  the full rationale versus that alternative).
+- Database entity JSON columns and config-file parsing -- unrelated
+  =rfl::json= usages, not NATS wire format.
+- =ores.cli= -- its =rfl::json= usages appear to be config-file
+  I/O, not NATS wire calls; the write-up task should confirm this and
+  either drop it from scope entirely or file a small follow-up if any
+  genuine NATS call sites are found there.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/raw-bytes-not-base64-for-images
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-27
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,12 +41,12 @@ compression task rather than bundled with it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded -- see Notes.               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-27                               |
+| Next         | Nothing (superseded).                  |
+| Last touched | 2026-07-28                               |
 
 * Acceptance
 
@@ -59,6 +59,18 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Superseded on 2026-07-28 by
+[[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once
+at startup]]. While scoping this task's custom binary framing for
+image-carrying messages specifically, it became clear the base64
+overhead isn't image-specific -- every =rfl::json=-encoded NATS
+message pays it for any byte-vector field. =reflect-cpp= already
+supports MessagePack (=rfl::msgpack=), which natively packs
+=std::vector<uint8_t>= as binary with zero custom framing code. The
+new story solves this task's goal generically, for every message
+type, via a single =.env=-driven format choice rather than a bespoke
+per-message wire format.
 
 * Test Scenarios
 

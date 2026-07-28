@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 12674934-6F8E-40C9-A8D7-ED29B0ADF322
+:END:
+#+title: Task: Consolidate and migrate ores.qt ClientManager to wire_codec
+#+description: ClientManager.hpp/.cpp plus ClientManagerExportPortfolio.cpp and ClientManagerTradeInstrument.cpp currently have around ten separate call sites hard-coding rfl::json (process_authenticated_request variants, send_authenticated_request variants, login, signup, event-cache decode, exportPortfolio, trade_instrument). Consolidate these into one or two shared private helpers first, reducing duplication as a side effect, then have those route through an injected wire_codec instead of rfl::json directly.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ClientManager= (the Qt client's NATS entry point) has roughly ten
+separate call sites hard-coding =rfl::json=, spread across
+=ClientManager.hpp=/=.cpp= plus two extra translation units
+(=ClientManagerExportPortfolio.cpp=, =ClientManagerTradeInstrument.cpp=):
+the =process_authenticated_request= template's several overloads,
+=send_authenticated_request*= variants, login, signup, the event-cache
+decode path, =exportPortfolio=, and =trade_instrument=. Consolidate
+these onto one or two shared private helpers first -- reducing
+duplication as a side effect -- then have those route through an
+injected =wire_codec= instead of calling =rfl::json= directly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- [ ] All ~10 call sites route through a small number of shared
+  helpers rather than each hard-coding =rfl::json= independently.
+- [ ] Those helpers use the injected =wire_codec=.
+- [ ] Existing Qt client behaviour is unchanged when the codec is
+  configured for =json= (today's default) -- manually verified against
+  a running client/service pair per this project's UI-change testing
+  convention.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

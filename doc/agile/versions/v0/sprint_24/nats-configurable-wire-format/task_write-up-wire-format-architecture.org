@@ -202,7 +202,7 @@ Honest grand total (excluding =config/options.cpp= and
 stream with no =nats_client=/=session.request= reference nearby --
 config-file I/O, not NATS wire format, same exclusion rationale as
 =ores.cli= below): *101 =rfl::json= occurrences across 22 files*.
-The migration task needs to consolidate all of it, not just the 9
+The migration task needs to consolidate all of it, not just the 13
 files that already use the named template pattern.
 
 *** ores.cli -- confirmed out of scope
@@ -370,6 +370,7 @@ via its "Verifies task" field.
 | 3 | ores.shell count ("26 across ~13 files") doesn't match reality; task-count in story.org also stale | task_write-up-wire-format-architecture.org, story.org | Fixed | Corrected to the verified breakdown (101 occurrences across 22 files); story.org's "Now" field corrected from 4 to 5 remaining tasks |
 |   | Minor nits (typo, missing default/unreachable arm in wire_codec snippet) | task_write-up-wire-format-architecture.org | Fixed | "suffient" -> "sufficient"; added std::unreachable() note to the snippet |
 | 4 | ores.shell definition count still wrong after round 3 fix: 14/9 claimed, actually 18/13, plus provision_commands.cpp is a differently-shaped third variant | task_write-up-wire-format-architecture.org | Fixed | Corrected to 18 definitions across 13 files, noted provision_commands.cpp's distinct Request-object shape |
+| 5 | Stale "9 files" leftover survived the round-4 fix in one sentence | task_write-up-wire-format-architecture.org | Fixed | Updated to "13 files" for consistency with the rest of the section |
 
 * Result
 

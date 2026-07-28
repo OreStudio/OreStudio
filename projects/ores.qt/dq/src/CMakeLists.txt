@@ -24,12 +24,12 @@ set(ORES_QT_DQ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB_RECURSE files RELATIVE
+file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS "${ORES_QT_DQ_DIR}/include/*.hpp")
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_DQ_DIR}/include/*.hpp")
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_DQ_DIR}/ui/*.ui")
 

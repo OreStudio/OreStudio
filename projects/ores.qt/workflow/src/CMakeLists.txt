@@ -23,12 +23,12 @@ set(ORES_QT_WORKFLOW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 # Qt code generation (MOC for Q_OBJECT)
 set(CMAKE_AUTOMOC ON)
 
-file(GLOB_RECURSE files RELATIVE
+file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS "${ORES_QT_WORKFLOW_DIR}/include/*.hpp")
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_WORKFLOW_DIR}/include/*.hpp")
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_WORKFLOW_LIBRARY)

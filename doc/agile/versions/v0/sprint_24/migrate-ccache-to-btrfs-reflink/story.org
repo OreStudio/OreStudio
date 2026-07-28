@@ -914,6 +914,83 @@ Configuration:
 - A reboot mounts everything from =/etc/fstab= with no manual
   intervention.
 
+*** 8b. Validation results (2026-07-28)
+
+Every acceptance claim verified on real builds, not inferred.
+
+**** The corruption fix
+
+| Check | Result |
+|-------+--------|
+| Link count, all objects in =merry_newton= | *3074/3074 at links=1* |
+| Link count, all objects in =prime_origin= | *3078/3078 at links=1* |
+| Any object with links > 1 | *none* |
+
+Under the old =hard_link=true=, a cache hit produced an object file
+sharing an inode with the cache entry -- link count 2 -- which is how two
+worktrees compiling the same TU concurrently corrupted each other. That
+signature is now entirely absent.
+
+**** Reflink proven at block level, not inferred
+
+=btrfs inspect-internal logical-resolve= on one extent returned exactly
+two files:
+
+: /mnt/development/OreStudio/ores_dev_merry_newton/build/output/.../app_command_args_tests.cpp.o
+: /mnt/development/.cache/ccache/8/7/c3bb3a464c77d2b4f9d3de8982e305a0a00545_00
+
+Same physical blocks, independent inodes, each with link count 1. That is
+=file_clone=true= exactly: the disk saving of a hard link with none of the
+shared-inode hazard.
+
+**** Cache correctness
+
+Full rebuild of =merry_newton= after deleting its object tree:
+*2382/2382 hits, 0 misses, 0 errors, exit 0*. Cache size did not move
+from 7.1 GB -- hits clone existing entries rather than writing new ones.
+
+**** Cross-worktree sharing (the =CCACHE_BASEDIR= question)
+
+=base_dir= is *empty in ccache.conf*; it is injected at runtime by
+=build/scripts/compiler_cache_wrapper.sh= as =CCACHE_BASEDIR=. Nothing
+prior to this test exercised it, because every hit until then came from
+the same worktree at the same path.
+
+=prime_origin= (different directory, different branch) built against the
+cache =merry_newton= populated:
+
+| Sample | Hit rate |
+|--------+----------|
+| first 93 objects | 79.6% |
+| 2128 objects | 80.9% |
+| *final: 2391 objects* | *72.5% (1734 hits, 657 misses)* |
+
+Had =CCACHE_BASEDIR= or =hash_dir=false= been broken, this would have been
+*0%*. The drift from 80% to 72.5% is composition, not regression: shared
+infrastructure hits early, and the Qt UI sources where these two branches
+genuinely diverge legitimately miss. Same-commit worktrees approach 100%,
+as the rebuild above shows.
+
+**** Space -- the reason btrfs was chosen over XFS
+
+| Measurement | Value |
+|-------------+-------|
+| ccache store | 6.6G logical -> *1.3G on disk* (5.1x) |
+| Build tree (one worktree) | 14G logical -> *3.7G on disk* (3.8x) |
+| Two built worktrees + shared cache, logical | *38.9G* |
+| Same, actually on disk | *13G* |
+| Pre-migration size of those same two worktrees + cache | 38.4G |
+
+Two fully built worktrees plus a 9.6G shared cache now occupy less disk
+than *one* worktree did before. Extrapolated to nine worktrees: ~145G
+logical lands near ~52G physical, against the 173G that filled the old
+partition.
+
+The ccache store number is the load-bearing one. Those entries are
+genuinely uncompressed -- =file_clone= forces ccache's own compression
+off -- so on XFS they would occupy the full 6.6G. btrfs stores them in
+1.3G. That gap *is* the migration's justification.
+
 *** 9. Ongoing maintenance
 
 Not required for acceptance, but this is what btrfs costs versus XFS
@@ -933,9 +1010,9 @@ and it should be written down rather than rediscovered:
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Steps 0-5 DONE. SSD repartitioned and reformatted to btrfs; subvolumes mounted; fstab rewritten; ccache reconfigured. Disk is empty apart from the postgres subvolume. |
-| Waiting on    | Nothing.                                |
-| Next          | Step 6: re-clone OreStudio, recreate the PostgreSQL cluster, cold build. Then 6b (Corimba), 7, 8. |
+| Now           | Steps 0-6 and 8 DONE. btrfs live; fleet re-cloned; PostgreSQL recreated; two worktrees built clean; caching fully validated (see 8b). |
+| Waiting on    | PR review for the ccache-default fix.   |
+| Next          | Merge the PR, rebase the other worktrees, build the remaining seven, then 6b (Corimba) and 7 (duperemove). |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance

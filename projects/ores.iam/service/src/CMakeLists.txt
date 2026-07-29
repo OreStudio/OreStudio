@@ -20,14 +20,7 @@ set(name "ores.iam.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/host.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "main.cpp"
-    "messaging/account_contact_information_event_registrar.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

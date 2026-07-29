@@ -20,16 +20,21 @@
 #include "ores.qt/FeedBindingController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedBindingDetailDialog.hpp"
-#include "ores.qt/FeedBindingHistoryDialog.hpp"
 #include "ores.qt/FeedBindingMdiWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -154,6 +159,7 @@ void FeedBindingController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new feed binding requested";
     showAddWindow();
 }
+
 
 void FeedBindingController::onShowHistory(
     const ores::marketdata::domain::feed_binding& feed_binding) {
@@ -290,11 +296,15 @@ void FeedBindingController::showHistoryWindow(
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << feed_binding.ore_key;
 
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(feed_binding.id));
     auto* historyDialog =
-        new FeedBindingHistoryDialog(feed_binding.id, code, clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(ores::marketdata::domain::feed_binding{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &FeedBindingHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<FeedBindingController>(this)](const QString& message) {
                 if (!self)
@@ -302,7 +312,7 @@ void FeedBindingController::showHistoryWindow(
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &FeedBindingHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<FeedBindingController>(this)](const QString& message) {
                 if (!self)
@@ -310,13 +320,23 @@ void FeedBindingController::showHistoryWindow(
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &FeedBindingHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &FeedBindingController::onRevertVersion);
+            [self = QPointer<FeedBindingController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &FeedBindingHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &FeedBindingController::onOpenVersion);
+            [self = QPointer<FeedBindingController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -327,6 +347,7 @@ void FeedBindingController::showHistoryWindow(
     historyWindow->setWindowTitle(QString("Feed Binding History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -405,6 +426,96 @@ void FeedBindingController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void FeedBindingController::fetchFeedBindingHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<ores::marketdata::domain::feed_binding>, QString>)>
+        callback) {
+    marketdata::messaging::get_feed_binding_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<ores::marketdata::domain::feed_binding>, QString>;
+
+    QPointer<FeedBindingController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void FeedBindingController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<FeedBindingController> self = this;
+    fetchFeedBindingHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<ores::marketdata::domain::feed_binding>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void FeedBindingController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<FeedBindingController> self = this;
+    fetchFeedBindingHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<ores::marketdata::domain::feed_binding>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void FeedBindingController::onRevertVersion(
     const ores::marketdata::domain::feed_binding& feed_binding) {
     BOOST_LOG_SEV(lg(), info) << "Reverting feed binding to version: " << feed_binding.version;
@@ -457,6 +568,28 @@ void FeedBindingController::onRevertVersion(
 
 EntityListMdiWindow* FeedBindingController::listWindow() const {
     return listWindow_;
+}
+
+void FeedBindingController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

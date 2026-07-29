@@ -42,8 +42,16 @@ std::uint32_t feed_binding_service::count_feed_bindings() {
     return repo_.get_total_feed_binding_count(ctx_);
 }
 
+
+std::optional<domain::feed_binding>
+feed_binding_service::get_feed_binding_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting feed binding at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
 std::optional<domain::feed_binding> feed_binding_service::get_feed_binding(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting feed binding: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting feed binding. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -53,11 +61,11 @@ std::optional<domain::feed_binding> feed_binding_service::get_feed_binding(const
 void feed_binding_service::save_feed_binding(const domain::feed_binding& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Feed Binding id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving feed binding: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving feed binding. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved feed binding: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved feed binding. " << "id: " << v.id;
 }
 
 void feed_binding_service::save_feed_bindings(
@@ -73,9 +81,9 @@ void feed_binding_service::save_feed_bindings(
 }
 
 void feed_binding_service::delete_feed_binding(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing feed binding: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing feed binding. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed feed binding: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed feed binding. " << "id: " << id;
 }
 
 void feed_binding_service::delete_feed_bindings(const std::vector<std::string>& ids) {
@@ -84,7 +92,7 @@ void feed_binding_service::delete_feed_bindings(const std::vector<std::string>& 
 
 std::vector<domain::feed_binding>
 feed_binding_service::get_feed_binding_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for feed binding: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for feed binding. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

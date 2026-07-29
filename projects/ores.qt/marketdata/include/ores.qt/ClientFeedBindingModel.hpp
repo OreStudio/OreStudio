@@ -78,6 +78,7 @@ public:
      */
     const ores::marketdata::domain::feed_binding* getBinding(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

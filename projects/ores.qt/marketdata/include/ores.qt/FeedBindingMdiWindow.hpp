@@ -64,13 +64,18 @@ signals:
     void addNewRequested();
     void feed_bindingDeleted(const QString& code);
     void showBindingHistory(const ores::marketdata::domain::feed_binding& feed_binding);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    void bindFromSynthetic();
 
 protected:
     void doReload() override;
@@ -105,7 +110,6 @@ private:
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
-    QAction* bindSyntheticAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;

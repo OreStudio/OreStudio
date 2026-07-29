@@ -31,21 +31,22 @@ the binding.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this feed binding.
 
-* Natural keys
-
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this feed binding.
@@ -58,23 +59,23 @@ ctx.generate_uuid()
 
 ** ore_key
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Official ORE market data key for the series being bound (e.g. =FX/RATE/EUR/USD=).
 
 ** source_name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Unique producer identity; the ingest loop subscribes to
 =synthetic.v1.tick.<source_name>=. Matches the =source_name= field in
 =start_market_feed_config_request=.
-
-* Columns
 
 ** enabled
 :PROPERTIES:

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :devops:infrastructure:sprint_24:v0:
 #+created: 2026-07-28
-#+updated: 2026-07-28
+#+updated: 2026-07-29
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -746,8 +746,27 @@ from Step 4 through =initdb= to live database files.
 Then, per worktree, the normal idempotent path:
 
 #+begin_src sh
-./projects/ores.compass/compass.sh db recreate -y -k
+./projects/ores.compass/compass.sh db recreate -y
 #+end_src
+
+*Gotcha (hit 2026-07-29):* after the ccache-default fix merged, =db
+recreate= failed on all seven remaining worktrees with =ERROR: .env is
+out of date=. Their =.env= files were written by the *pre-merge*
+=env_init.py= (version 12/14) while main now requires *15*. This is the
+migration note on PR #1727, and it applies to any checkout that predates
+a version bump:
+
+#+begin_src sh
+# Re-run configure FIRST; db recreate refuses to touch a stale .env.
+./projects/ores.compass/compass.sh env configure --preset linux-clang-debug-make -y
+#+end_src
+
+After that all seven wrote =ORES_ENV_VERSION=15=, preserved
+=ORES_COMPILER_CACHE=ccache= from their existing =.env= (no flag needed),
+and dropped the stale =SCCACHE_*= lines -- confirming the fix propagates
+correctly through merge and rebase. All nine databases then recreated in
+~1 minute each, 159 MB apiece, with
+=/mnt/development/postgres/18/main= still reporting =---------------C------=.
 
 Then build. Build *one* worktree to completion first to populate the
 ccache from cold, then the rest -- this maximises reflink sharing and
@@ -871,7 +890,35 @@ run as *root* -- unprivileged it prints nothing rather than failing.
 Exclude =/mnt/development/postgres= from any future dedup pass if one is
 scripted: deduplicating a NOCOW database file reintroduces shared
 extents, which silently converts writes back into copy-on-write and
-undoes Step 4.
+undoes Step 4. The run below was scoped to =OreStudio= and =Moimba=
+explicitly for this reason.
+
+**** Result (2026-07-29, all nine worktrees built)
+
+| | Used | Free |
+|-+------+------|
+| Before | 31G | 185G |
+| *After* | *14G* | *201G* |
+
+*17G reclaimed*, ~26 minutes over 237,250 files / 60.5GB.
+
+*The prediction in this story was wrong, and instructively so.* It named
+the nine near-identical =vcpkg_installed= trees as the prime target,
+estimating ~11G recoverable from pre-migration =du= figures. Measured on
+btrfs each vcpkg checkout costs *12M physical* (30M logical) -- ~108M for
+all nine. Compression had already absorbed that saving entirely.
+
+The 17G came from somewhere the plan never considered: *linked shared
+libraries*. Nine worktrees each link byte-identical =libores.*.so=
+binaries -- hundreds of MB apiece -- from identical object files, at nine
+separate paths. ccache cannot help there: *it caches compilation, not
+linking*. Reflinks cannot either, because nothing clones a linker's
+output. Dedup is the only mechanism that reaches it, which makes Step 7
+considerably more valuable than "mopping up" as originally framed.
+
+Integrity spot-checked afterwards: =ores.qt= intact at 38,111,376 bytes
+and executing (it reaches Qt platform-plugin init and fails only on
+=could not connect to display=, correct for a headless shell).
 
 *** 8. Verify
 
@@ -991,6 +1038,71 @@ genuinely uncompressed -- =file_clone= forces ccache's own compression
 off -- so on XFS they would occupy the full 6.6G. btrfs stores them in
 1.3G. That gap *is* the migration's justification.
 
+*** 8c. Final state (2026-07-29)
+
+Fleet rebuilt after merging the ccache-default fix and rebasing every
+worktree onto main. All nine: *exit 0, zero errors*.
+
+| Worktree | Time | ccache hit rate |
+|----------+------+-----------------|
+| =merry_newton= | incremental | 5 objects |
+| =solid_dirac= | 4m | 99.87% |
+| =eager_maxwell= | 4m | 99.87% |
+| =bright_faraday= | 4m | 99.71% |
+| =prime_origin= | 2m | 99.85% (incremental, 661 objects) |
+| =swift_curie= | 4m | 99.71% |
+| =brave_hopper= | 4m | 99.62% |
+| =jolly_knuth= | 4m | 99.83% |
+| =clever_dijkstra= | 4m | 99.83% |
+
+*Eight full rebuilds at 99.6-99.9% in ~4 minutes each, against ~40
+minutes cold.* The whole fleet rebuilt in about the time one cold build
+takes. Note the contrast with the 72.5% measured earlier across
+*divergent* branches: once every worktree shares a common main base,
+reuse is essentially total.
+
+Builds were run strictly *one at a time*. Concurrent builds contend on
+the vcpkg lock -- the failure mode that stalled Step 6 -- and serial runs
+keep per-worktree hit rates interpretable.
+
+**** Space, end to end
+
+| Measure | Value |
+|---------+-------|
+| Referenced (what nine worktrees see) | *146G* |
+| Unique uncompressed | 34G |
+| *Actually on disk* | *13G* |
+| Marginal cost of one more built worktree | ~4G physical (14G logical) |
+
+Nine *fully built* worktrees, a 9.6G ccache, Corimba and PostgreSQL
+occupy *16G of 216G* (14G before the databases). The old partition held
+nine *partially* built worktrees plus the cache at *173G, 83% full*.
+
+Three mechanisms stack, in this order of contribution: reflinks reduce
+146G of references to 34G unique; zstd takes that to 13G; dedup collapses
+the linker output neither can reach.
+
+**** How many worktrees can this now support?
+
+Disk has stopped being the constraint -- 201G free at ~4G marginal cost
+is ~40 more. *The binding limit is port allocation: 13.*
+
+: BASE_PORT_START = 20000, BASE_PORT_STEP = 1000, top offset +6
+: EPHEMERAL_PORT_FLOOR = 32768   (kernel range here: 32768-60999)
+
+Bases must stay below the ephemeral floor, giving 20000..32000 = *13
+slots*. Nine are held (20000-28000); *four remain* (29000-32000).
+
+Raising it is not a one-constant change -- version 11 moved
+=BASE_PORT_START= off 50000 precisely to stop fixed listeners colliding
+with kernel-assigned ephemeral source ports. The clean lever is
+=BASE_PORT_STEP=: only 7 offsets are used, so 1000 is generous and 100
+would give ~127 slots.
+
+Secondary limits arrive only if services *run* in many worktrees at once,
+not from building: 31G RAM against ~17 services per worktree, and
+PostgreSQL =max_connections= (800, restored in Step 6).
+
 *** 9. Ongoing maintenance
 
 Not required for acceptance, but this is what btrfs costs versus XFS
@@ -1008,11 +1120,11 @@ and it should be written down rather than rediscovered:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Steps 0-6 and 8 DONE. btrfs live; fleet re-cloned; PostgreSQL recreated; two worktrees built clean; caching fully validated (see 8b). |
-| Waiting on    | PR review for the ccache-default fix.   |
-| Next          | Merge the PR, rebase the other worktrees, build the remaining seven, then 6b (Corimba) and 7 (duperemove). |
+| Now           | *All steps DONE.* btrfs live; fleet re-cloned and rebuilt (9/9 clean); Corimba recreated; PostgreSQL and all nine databases recreated; caching validated; dedup run. PR #1727 merged. |
+| Waiting on    | Nothing.                                |
+| Next          | Close the story. Follow-ups: header-comment drift from PR #1727 review finding 3; rotate the postgres superuser password. |
 | Last touched  | 2026-07-28                               |
 
 * Acceptance

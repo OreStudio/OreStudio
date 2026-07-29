@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 290FBDF6-0DDA-47E0-BB4C-218CCCC59F95
+:END:
+#+title: Task: Codegen: teach the ores.cpp.qt facet to render junction models
+#+description: The ores.cpp.qt facet's mustache templates and ~1300 lines of enrichment in core.py/org_loader.py are hard-wired to the domain_entity model shape (entity_pascal/entity_singular derivation, ** Qt drawer parsing including detail_fields/combo-widget machinery). Junction models load into a structurally different {"junction": {...}} dict (name_singular instead of entity_singular, no Qt-section parsing in load_org_junction_model at all, no entity_pascal derivation anywhere in the junction path). Flipping ores.cpp.qt.org's #+model_types: to include junction routes generation correctly (verified: dry-run produces the right 6 files, has_readonly_paginated_list detail-dialog suppression works, zero drift on unrelated domain entities) but the actual render is broken: empty class names (class Controller), empty includes (#include ""), mangled macro guards (ORES_QT__CONTROLLER_HPP) -- because entity_pascal/entity_singular and the Qt-drawer context are simply never populated for a junction model.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make calendar_date (and future read-only, parent-scoped junction datasets) generatable through the ores.cpp.qt facet by teaching the junction loading/enrichment path to produce the same domain_entity-shaped Qt render context the templates already consume, without disturbing any existing domain_entity Qt generation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- - load_org_junction_model (org_loader.py) parses a junction model's ** Qt drawer the same way load_org_model does for domain_entity (properties, Detail fields / Columns (Qt model) sub-tables), producing a qt sub-dict.
+- The junction model gains entity_singular/entity_plural/entity_pascal-equivalent derived fields (from name_singular/name) so the ores.cpp.qt mustache templates render identically whether fed a domain_entity or a junction -- either by aliasing junction fields onto the same keys the domain_entity enrichment block in core.py expects, or by extending that enrichment block (core.py ~line 1706 onward) to also run for is_junction models with 'junction' in data.
+- core.py's generate_qt dispatch/enrichment (currently gated on is_domain_entity and 'domain_entity' in data) is extended to also handle is_junction and 'junction' in data with a 'qt' section present.
+- Regenerating calendar_date --address ores.cpp.qt produces correct, compilable output: real class names (ClientCalendarDateModel, CalendarDateController, CalendarDateMdiWindow), correct includes, correct macro guards -- matching the has_readonly_paginated_list/has_parent_scoped_list design from 1C673C53-8D... (Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list).
+- --diff against an existing domain_entity (e.g. currency, book) with ores.cpp.qt shows zero drift -- the domain_entity path must be byte-identical before and after this change.
+- Full local build green with the newly generated calendar_date Qt files compiling and linking.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,5 +1,8 @@
 :PROPERTIES:
 :ID: 1DC67FAD-7543-4E63-A91D-9EE878A2EE8D
+:ores.cpp.qt.detail_dialog_header.enabled: false
+:ores.cpp.qt.detail_dialog_impl.enabled: false
+:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.refdata.calendar_date
 #+description: Codegen junction model for calendar_dates -- the materialised, DQ-published output of instantiating a calendar template's rules/exceptions over a date range.
@@ -161,6 +164,36 @@ std::string("quantlib_computed")
 | source           | Source       |
 | modified_by      | Modified By  |
 | version          | Version      |
+
+** Qt
+:PROPERTIES:
+:domain_include:            ores.refdata.api/domain/calendar_date.hpp
+:domain_class:               refdata::domain::calendar_date
+:protocol_include:           ores.refdata.api/messaging/calendar_date_protocol.hpp
+:collection_name:            calendar_dates
+:item_var:                   calendar_date
+:key_field:                  date
+:get_request_class:          refdata::messaging::get_calendar_dates_by_calendar_request
+:get_response_class:         refdata::messaging::get_calendar_dates_by_calendar_response
+:get_message_type:           get_calendar_dates_by_calendar_request
+:has_pagination:             true
+:has_readonly_paginated_list: true
+:has_parent_scoped_list:     true
+:parent_key_field:           calendar_code
+:parent_key_param:           calendarCode
+:settings_group:             CalendarDateListWindow
+:qt_settings_version:        1
+:window_title:                Browse Holidays
+:icon:                        Table
+:END:
+
+*** Columns (Qt model)
+
+| field           | label        | type    |
+|-----------------+--------------+---------|
+| date             | Date         | date    |
+| is_business_day  | Business Day | boolean |
+| source           | Source       | text    |
 
 * See also
 

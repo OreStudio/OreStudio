@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/qt-wire-browse-holidays-view
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]]
+#+blocked_since: 2026-07-29
 #+created: 2026-07-27
-#+updated: 2026-07-27
+#+updated: 2026-07-29
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,11 +33,11 @@ open calendar. Closes the deferred acceptance item from
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Investigation complete; ready to implement. |
-| Waiting on   | Nothing.                               |
-| Next         | Add =** Qt= drawer to =ores.refdata.calendar_date.org=, regenerate, wire =CalendarDetailDialog=. |
+| Now          | Blocked on codegen groundwork.         |
+| Waiting on   | [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]] |
+| Next         | Resume once the junction-Qt codegen path exists; regenerate =calendar_date --address ores.cpp.qt=, wire =CalendarDetailDialog=. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -165,6 +165,49 @@ plan itself stays — it is the historical record of what we did.)
   same regression-guard pattern every prior task in this chain used.
 
 * Notes
+
+** Blocked: junction models can't render through ores.cpp.qt yet
+
+Added the =** Qt= drawer to =calendar_date.org= (per the Direction
+above) and widened =ores.cpp.qt.org='s =#+model_types:= from
+=domain_entity= to =domain_entity junction=. Verified the routing
+layer works correctly:
+
+- =compass codegen entity generate calendar_date --address
+  ores.cpp.qt --dry-run= produced exactly the right 6 output paths
+  (=ClientCalendarDateModel=, =CalendarDateController=,
+  =CalendarDateMdiWindow=, header+impl each), with the
+  =detail_dialog_*= archetypes correctly suppressed via
+  =:ores.cpp.qt.detail_dialog_{header,impl,ui}.enabled: false=
+  overrides.
+- =--diff= against =currency= and =book= (unrelated domain entities)
+  showed zero drift from the =model_types= widening -- the routing
+  change is safe.
+
+But the actual render is broken: =class Controller= (not
+=CalendarDateController=), =#include ""=, =ORES_QT__CONTROLLER_HPP=
+macro guard. Root cause: the =ores.cpp.qt= mustache templates and
+~1300 lines of enrichment in =core.py=/=org_loader.py= (deriving
+=entity_pascal=, =entity_singular_upper=, etc., and parsing the
+=** Qt= drawer's =detail_fields=/combo-widget machinery) are
+hard-wired to the =domain_entity= model shape. A junction model loads
+into a structurally different ={"junction": {...}}= dict
+(=name_singular= instead of =entity_singular=, no Qt-section parsing
+in =load_org_junction_model= at all, no =entity_pascal= derivation
+anywhere in the junction path) -- =core.py='s =generate_qt= dispatch
+is itself gated on =is_domain_entity and 'domain_entity' in data=
+(core.py ~line 3112), so junction data never even reaches the
+enrichment block that would populate these fields.
+
+Deleted the 6 broken generated files rather than leave garbage C++ in
+the tree. Left the =calendar_date.org= Qt drawer and the
+=model_types= widening in place -- both are correct, verified-safe
+groundwork the split-out task can build on directly.
+
+Split the render-path fix into
+[[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]]
+rather than freehanding a fix to a ~3600-line file under this task's
+scope -- same call B2888D7D made for this exact chain a sprint ago.
 
 * Test Scenarios
 

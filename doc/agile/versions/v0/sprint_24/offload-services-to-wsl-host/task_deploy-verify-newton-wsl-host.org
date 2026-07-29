@@ -8,7 +8,7 @@
 #+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/deploy-verify-newton-wsl-host
-#+pr:
+#+pr: 1747
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -216,7 +216,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1747][#1747]] | [docker] Deploy service runtime to Newton: fixes, partial success, corruption flagged |
 
 * Review
 

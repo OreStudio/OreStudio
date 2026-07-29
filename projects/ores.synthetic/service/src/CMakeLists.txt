@@ -20,24 +20,7 @@ set(name "ores.synthetic.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/host.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "fx_spot_feed.cpp"
-    "ir_curve_feed.cpp"
-    "ir_curve_template_resolver.cpp"
-    "main.cpp"
-    "messaging/event_registrar.cpp"
-    "messaging/fx_spot_generation_config_event_registrar.cpp"
-    "messaging/gmm_component_event_registrar.cpp"
-    "messaging/ir_curve_generation_config_event_registrar.cpp"
-    "messaging/ir_curve_template_entry_event_registrar.cpp"
-    "messaging/market_data_generation_config_event_registrar.cpp"
-    "messaging/yield_curve_process_type_event_registrar.cpp"
-    "registrar.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

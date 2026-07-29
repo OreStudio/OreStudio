@@ -1238,14 +1238,22 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             # name_short/name_singular_short naming.
             repo = j.get("repository") or {}
             if repo:
-                j["repository"] = {
+                # Merge, not replace -- repo also carries name_short/
+                # name_singular_short/name_words/order_column, which
+                # core.py's repository-field hoist (below) copies onto
+                # the junction's top level for the non-Qt repository/
+                # service/nats-handler templates to consume directly
+                # (e.g. order_by("{{order_column}}"_c)). Replacing the
+                # dict wholesale would silently corrupt those facets the
+                # next time they're regenerated.
+                repo.update({
                     "entity_singular_short": repo.get("name_singular_short", name_singular),
                     "entity_plural_short": repo.get("name_short", j["entity_plural"]),
                     "entity_singular_words": repo.get(
                         "name_singular_words", j["entity_singular_words"]),
                     "entity_plural_words": repo.get(
                         "name_words", j["entity_plural_words"]),
-                }
+                })
     if cpp_out:
         j["cpp"] = cpp_out
 

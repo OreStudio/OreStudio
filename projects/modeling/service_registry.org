@@ -34,6 +34,14 @@
 
 - ores_refdata_
 
+** Select prefixes
+
+- ores_variability_
+
+** Execute prefixes
+
+- ores_refdata_publish_
+
 * workspace
 :PROPERTIES:
 :psql_var:    workspace_service
@@ -87,6 +95,10 @@
 
 - ores_assets_
 
+** Execute prefixes
+
+- ores_assets_publish_
+
 * scheduler
 :PROPERTIES:
 :psql_var:    scheduler_service
@@ -112,6 +124,10 @@
 ** DML prefixes
 
 - ores_reporting_
+
+** Execute prefixes
+
+- ores_reporting_publish_
 
 * telemetry
 :PROPERTIES:
@@ -162,10 +178,14 @@
 :email:       synthetic_service@system.ores
 :END:
 
+** DML prefixes
+
+- ores_synthetic_
+- ores_refdata_
+
 ** Select prefixes
 
 - ores_iam_
-- ores_refdata_
 - ores_dq_
 - ores_trading_
 - ores_variability_
@@ -174,6 +194,10 @@
 - ores_scheduler_
 - ores_compute_
 - ores_telemetry_
+
+** Execute prefixes
+
+- ores_synthetic_publish_
 
 * workflow
 :PROPERTIES:
@@ -209,6 +233,10 @@
 ** DML prefixes
 
 - ores_marketdata_
+
+** Select prefixes
+
+- ores_refdata_
 
 * controller
 :PROPERTIES:

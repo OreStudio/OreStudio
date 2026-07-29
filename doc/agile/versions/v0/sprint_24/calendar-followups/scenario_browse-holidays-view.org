@@ -61,11 +61,23 @@ was last provisioned, re-run
 =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 first.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the Calendars list window
 
 - =Reference Data > Calendars= (or the Calendars toolbar icon).
 - Confirm the list loads and shows seeded QuantLib calendars,
   including =TARGET=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Open TARGET's detail dialog
 
@@ -78,6 +90,26 @@ first.
 - Confirm a *Browse Holidays* toolbar action is present alongside
   the existing *Regenerate* action.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Regenerate TARGET's holiday dates
+
+- =calendar_dates= starts empty on a fresh database -- it is only
+  materialised by the *Regenerate* action, never by provisioning.
+  Click *Regenerate*, accept the default end year, and confirm the
+  dialog reports success with a nonzero rows-written count.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Repository error: Query execution failed: ERROR:  permission denied for table ores_variability_system_settings_tbl |
+
 ** Click Browse Holidays
 
 - Click the *Browse Holidays* toolbar action.
@@ -88,6 +120,12 @@ first.
 - Confirm every row's =Source= column reads =quantlib_computed=
   (TARGET has no base template, so all its materialised dates come
   from the QuantLib batch engine).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Verify pagination and parent scoping
 
@@ -115,14 +153,20 @@ first.
 # Single-client scenarios (the common case) keep steps as direct
 # children of * Steps, as above.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-29T19:31:24Z |
+| Branch        | feature/qt-wire-browse-holidays-view |
+| Commit        | 22c31e7f6 |
+| Worktree      | clever_dijkstra |
 
 * Notes

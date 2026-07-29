@@ -1538,8 +1538,8 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     ``services[]`` entry. The property drawer carries the scalars
     (``:psql_var:``, ``:env_key:``, ``:iam_role:``, ``:description:``,
     optional ``:role:``, ``:email:``); ``** DML prefixes`` /
-    ``** Select tables`` / ``** Select prefixes`` sub-headings carry
-    the per-service lists as org bullets."""
+    ``** Select tables`` / ``** Select prefixes`` / ``** Execute prefixes``
+    sub-headings carry the per-service lists as org bullets."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
 
@@ -1559,6 +1559,7 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
         ordered["dml_prefixes"] = _service_registry_prefix_bullets(node, "DML prefixes")
         ordered["select_tables"] = _service_registry_select_tables(node)
         ordered["select_prefixes"] = _service_registry_prefix_bullets(node, "Select prefixes")
+        ordered["execute_prefixes"] = _service_registry_prefix_bullets(node, "Execute prefixes")
         services.append(ordered)
 
     return {"service_registry": {"services": services}}

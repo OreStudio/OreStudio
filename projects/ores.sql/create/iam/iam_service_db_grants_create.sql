@@ -73,6 +73,24 @@ begin
     end loop;
 end $$;
 
+-- Helper: grant EXECUTE on every function whose name starts with p_prefix.
+-- Used for publish-from-dq SECURITY DEFINER functions: each runs with
+-- DB-owner privileges, but the calling service user still needs EXECUTE.
+create or replace function _ores_grant_execute_fn(p_prefix text, p_user text)
+returns void language plpgsql as $$
+declare
+    v_fn_sig text;
+begin
+    for v_fn_sig in
+        select oid::regprocedure::text
+        from pg_proc
+        where pronamespace = (select oid from pg_namespace where nspname = 'public')
+          and proname like p_prefix || '%'
+    loop
+        execute format('grant execute on function %s to %I', v_fn_sig, p_user);
+    end loop;
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- Sequence access — granted to all service users.
 -- ---------------------------------------------------------------------------
@@ -129,6 +147,8 @@ select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 -- refdata_service: Reference Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_variability_', :'refdata_service_user');
+select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- workspace_service: Workspace domain service
@@ -150,6 +170,7 @@ select _ores_grant_dml_fn('ores_variability_', :'variability_service_user');
 -- assets_service: Assets domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_assets_', :'assets_service_user');
+select _ores_grant_execute_fn('ores_assets_publish_', :'assets_service_user');
 
 -- ---------------------------------------------------------------------------
 -- scheduler_service: Scheduler domain service
@@ -160,6 +181,7 @@ select _ores_grant_dml_fn('ores_scheduler_', :'scheduler_service_user');
 -- reporting_service: Reporting domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_reporting_', :'reporting_service_user');
+select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
 -- telemetry_service: Telemetry domain service
@@ -179,14 +201,9 @@ select _ores_grant_dml_fn('ores_compute_', :'compute_service_user');
 -- ---------------------------------------------------------------------------
 -- synthetic_service: Synthetic domain service
 -- ---------------------------------------------------------------------------
-select _ores_grant_select_fn('ores_iam_', :'synthetic_service_user');
--- The synthetic service owns its own generation-config tables and must be able
--- to read and write them.
 select _ores_grant_dml_fn('ores_synthetic_', :'synthetic_service_user');
--- The synthetic generator writes the organisation it creates (parties,
--- counterparties, business units, portfolios, books, contacts,
--- identifiers) directly into refdata tables, so it needs DML there.
 select _ores_grant_dml_fn('ores_refdata_', :'synthetic_service_user');
+select _ores_grant_select_fn('ores_iam_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_dq_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_trading_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_variability_', :'synthetic_service_user');
@@ -195,6 +212,7 @@ select _ores_grant_select_fn('ores_reporting_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_scheduler_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_compute_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_telemetry_', :'synthetic_service_user');
+select _ores_grant_execute_fn('ores_synthetic_publish_', :'synthetic_service_user');
 
 -- ---------------------------------------------------------------------------
 -- workflow_service: Workflow Orchestration domain service
@@ -209,11 +227,6 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 -- marketdata_service: Market Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
--- crm_ingest_bridge reads crm_topology_config/crm_driver_pair/
--- crm_enabled_derived_pair, which live in ores.refdata (configuration
--- data, not marketdata) since the Cross Rates Matrix reclassification;
--- read-only is sufficient, publishing writes go through
--- ores.refdata.service's own publish-from-dq function.
 select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
 
 -- ---------------------------------------------------------------------------
@@ -225,33 +238,6 @@ select _ores_grant_dml_fn('ores_controller_', :'controller_service_user');
 -- analytics_service: Analytics domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
-
--- ---------------------------------------------------------------------------
--- EXECUTE grants for publish-from-dq SECURITY DEFINER functions
---
--- Each target service needs EXECUTE on its own publish-from-dq functions.
--- The functions run with DB-owner privileges (SECURITY DEFINER) but the
--- service user must be granted EXECUTE to call them.
--- ---------------------------------------------------------------------------
-create or replace function _ores_grant_execute_fn(p_prefix text, p_user text)
-returns void language plpgsql as $$
-declare
-    v_fn_sig text;
-begin
-    for v_fn_sig in
-        select oid::regprocedure::text
-        from pg_proc
-        where pronamespace = (select oid from pg_namespace where nspname = 'public')
-          and proname like p_prefix || '%'
-    loop
-        execute format('grant execute on function %s to %I', v_fn_sig, p_user);
-    end loop;
-end $$;
-
-select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
-select _ores_grant_execute_fn('ores_assets_publish_', :'assets_service_user');
-select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
-select _ores_grant_execute_fn('ores_synthetic_publish_', :'synthetic_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

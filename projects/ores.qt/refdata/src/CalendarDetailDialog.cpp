@@ -125,7 +125,7 @@ void CalendarDetailDialog::setupConnections() {
             this,
             &CalendarDetailDialog::onFieldChanged);
     regenerateAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor),
         tr("Regenerate"));
     regenerateAction_->setToolTip(tr("Regenerate this calendar's holidays up to a chosen year"));
     regenerateAction_->setEnabled(!createMode_);

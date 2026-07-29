@@ -154,6 +154,10 @@ private:
     // own" rule (userEditedSource_).
     [[nodiscard]] QString defaultSourceName() const;
     void recomputeDefaultSourceName();
+    // Mirrors FxSpotRateEditor::recomputeOreKey(): a selectable label showing the exact
+    // feed_binding.ore_key SyntheticBindingDialog will compute for this config, so the tester
+    // doesn't have to work it out by hand when binding.
+    void recomputeOreKey();
     void refreshCharts();
     void syncTableFromModel();
     void rebuildModelFromTable();
@@ -177,6 +181,7 @@ private:
     // Instrument tab.
     QComboBox* currencyCombo_;
     QComboBox* indexNameCombo_;
+    QLabel* oreKeyLabel_;
     QComboBox* fixedLegFrequencyCombo_;
     QCheckBox* enabledCheck_;
     QSpinBox* secondsSpin_;

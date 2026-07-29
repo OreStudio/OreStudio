@@ -20,10 +20,24 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "main.cpp"
+    "messaging_account_party_handler_tests.cpp"
+    "repository_account_party_repository_tests.cpp"
+    "repository_account_repository_tests.cpp"
+    "repository_account_role_repository_tests.cpp"
+    "repository_login_info_repository_tests.cpp"
+    "repository_permission_repository_tests.cpp"
+    "repository_role_permission_repository_tests.cpp"
+    "repository_role_repository_tests.cpp"
+    "repository_session_repository_tests.cpp"
+    "repository_tenant_repository_tests.cpp"
+    "repository_tenant_status_repository_tests.cpp"
+    "repository_tenant_type_repository_tests.cpp"
+    "service_account_service_tests.cpp"
+    "service_account_tests.cpp"
+    "service_authorization_check_permission_tests.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

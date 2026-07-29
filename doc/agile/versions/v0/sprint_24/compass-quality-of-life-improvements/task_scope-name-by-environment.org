@@ -35,11 +35,11 @@ e.g. =claude-brave_hopper-<pid>=, and in the scope's =--description=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -55,9 +55,11 @@ e.g. =claude-brave_hopper-<pid>=, and in the scope's =--description=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =_env_name(project_root)= to =compass_claude.py=: reads
+=ORES_ENV_NAME= from the checkout's =.env=, falls back to the checkout
+directory's own name, then sanitises to =[A-Za-z0-9_.-]= (systemd unit
+name charset). Threaded the result into both =--unit= and
+=--description= of the =systemd-run= invocation in =run()=.
 
 * Notes
 
@@ -85,3 +87,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+`compass claude`'s systemd scope/unit is now named
+=claude-<env>-<pid>= (e.g. =claude-brave_hopper-<pid>=) instead of
+=claude-<pid>=, with the environment identity also carried in the
+=--description=. Environment identity resolves from =ORES_ENV_NAME=
+in =.env=, falling back to the checkout directory name, sanitised to
+the characters systemd unit names allow. Verified with unit tests
+against =_env_name()= (real =.env=, missing =project_root=, missing
+=.env= file) and =python3 -m py_compile= for a clean compile. All
+acceptance criteria met; no change to the plain =claude= binary path.

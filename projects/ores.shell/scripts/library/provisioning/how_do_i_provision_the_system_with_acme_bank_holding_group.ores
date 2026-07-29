@@ -1,0 +1,14 @@
+# How do I provision the system with Acme Bank (holding group)?
+# End-to-end system provisioning from the shell with an Acme Bank tenant, driven server-side via internal actor impersonation (--source acme).
+#
+# GENERATED from doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_bank_holding_group.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acmebank --tenant-name "Acme Bank" --tenant-hostname acmebank
+logout
+
+login tenant_admin@acmebank Secure-Password-123
+provision tenant --source acme
+logout

@@ -19,14 +19,7 @@ set(name "ores.eventing.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/entity_change_event_json_io.cpp"
-    "domain/entity_change_event_table_io.cpp"
-    "domain/event_channel_info_json_io.cpp"
-    "generators/entity_change_event_generator.cpp"
-    "service/event_bus.cpp"
-    "service/event_channel_registry.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

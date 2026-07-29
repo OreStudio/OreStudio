@@ -307,7 +307,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --service with no value fails with bash's raw "unbound variable" instead of a clear message | stage-runtime.sh | Accepted | Now uses ~"${2:?--service requires a binary name}"~ |
+| 2 | SERVICE_NAME/staged-binary mismatch only fails at container run time (dangling symlink), not build time | service-runtime.Dockerfile | Accepted | Added a ~RUN test -f~ guard before creating the entrypoint symlink -- verified it fails the build loudly on a deliberate mismatch |
+| 3 | Pre-existing opts leak if check_file() throws before natsOptions_Destroy | client.cpp | Declined (for now) | Correct, but pre-existing and out of scope for this PR's stated fix; noted for a future tidy-up |
+| 4 | No automated test coverage for the new cert-load error paths | client.cpp | Declined (for now) | Needs a live NATS server or fake TLS setup to exercise meaningfully; existing 26/51 suite still passes. Worth a follow-up, not a blocker for a pilot |
+| 5 | story.org's #+updated/Last touched dates weren't bumped despite content changes | story.org | Accepted | Bumped to 2026-07-29 |
 
 * Result
 

@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: BB046E80-655A-4D6F-950C-0A81C9040F05
+:END:
+#+title: Task: Add compass command to prune merged git branches and report branch/environment usage
+#+description: Add a compass git subcommand (e.g. 'compass branches prune' or similar) that deletes all fully-merged local and remote git branches, and separately reports which branches are stale/unmerged, mapping each to the fleet worktree/environment currently using it if any. Formalises a manual git-branch cleanup workflow performed ad hoc in this session (fetch --prune, diff local/remote against origin/main, cross-reference against 'compass fleet' to avoid deleting a branch another environment has checked out, then git branch -d / git push origin --delete for the safe set).
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give developers a single compass command to safely prune git branches that have already been merged into origin/main -- both local and remote -- without risking deletion of a branch another worktree/environment is actively using, and to surface a report of branch staleness and fleet ownership so cleanup decisions (or further manual deletions) can be made confidently.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- - A new compass command (git/branches subcommand) identifies local branches fully merged into origin/main and remote branches fully merged into origin/main, excluding the current branch, main itself, and any branch checked out by another worktree (cross-referenced via 'compass fleet' / 'git worktree list' equivalent).
+- The command deletes the safe-to-delete set both locally ('git branch -d') and on the remote ('git push origin --delete'), in one step, with a summary of what was deleted.
+- The command (or a companion report mode) lists branches NOT deleted, bucketed by reason: checked out by another environment (name the environment/worktree), unmerged/active work, or ambiguous/needs-human-review.
+- The report flags 'stale' branches -- e.g. no commits in N days, or merged-but-still-present-in-fleet -- so a human can decide on cases the automatic prune correctly leaves alone (e.g. a worktree still parked on an already-merged branch after finishing its task).
+- Documented in the relevant recipe (doc/recipes/compass/...) with example output.
+- Manually exercised against the current live branch set (the same one audited in this session: ~28 local, ~28 remote branches) and confirmed it reaches the same safe-delete conclusions reached manually (6 local + 6 remote merged branches deleted, feature/write-up-wire-format-architecture and the then-current feature branch correctly left alone).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Reference session: manual steps performed 2026-07-29
+
+The session that captured this task ran the following sequence by
+hand, in the =clever_dijkstra= worktree, right after merging PR #1719.
+This is the workflow to formalise into a compass command.
+
+1. Fetch and prune remote-tracking refs first, so deleted remotes
+   don't show up as phantom candidates:
+   #+begin_src sh
+   git fetch --prune origin
+   #+end_src
+
+2. List local branches with tracking/verbose info, and remote
+   branches, to see the full candidate set:
+   #+begin_src sh
+   git branch -vv
+   git branch -r
+   #+end_src
+   On this run: ~28 local branches, ~28 remote branches. Local
+   branches checked out by *other* worktrees are marked with a
+   leading =+= by =git branch -vv= (not deletable from this
+   worktree without first switching that worktree off it); the
+   worktree's path is printed after the commit hash, e.g.
+   =(/mnt/development/OreStudio/ores_dev_jolly_knuth)=.
+
+3. Compute the merged set against =origin/main= (not local =main=,
+   which can be stale in a worktree that isn't actively tracking
+   it):
+   #+begin_src sh
+   git branch --merged origin/main
+   git branch -r --merged origin/main
+   #+end_src
+   =--merged= against local =main= under-reports if that worktree's
+   local =main= is behind (seen here: local =main= was 9 commits
+   behind =origin/main=, tracked in a different worktree entirely).
+
+4. Cross-reference the merged set against the live fleet before
+   deleting anything:
+   #+begin_src sh
+   compass fleet
+   #+end_src
+   Exclude from deletion:
+   - the current branch (can't delete the branch you're on),
+   - =main= itself,
+   - any branch =git branch -vv= marks with =+= (checked out in
+     another worktree) *or* that =compass fleet= shows as another
+     environment's active =BRANCH= column,
+   - any branch merged into =origin/main= but still parked as
+     another environment's current branch even though its task/PR
+     already closed (e.g. =feature/write-up-wire-format-architecture=
+     was fully merged but still checked out by =solid_dirac= --
+     correctly left alone rather than force-cleaned, since another
+     session may still be using that worktree state).
+
+5. Delete the safe set, local then remote, as two explicit batches
+   (not a loop with individual confirmations -- one command per
+   side listing every branch to delete):
+   #+begin_src sh
+   git branch -d <branch1> <branch2> ...
+   git push origin --delete <branch1> <branch2> ...
+   #+end_src
+   =-d= (not =-D=) deliberately -- it refuses to delete a branch
+   with unmerged commits, which is the safety net that matters if
+   the =--merged= computation above was wrong for any reason.
+
+6. Report back to the user: what was deleted (local count + remote
+   count, names), and what was deliberately left alone and why
+   (bucketed: "checked out by another environment", "is the current
+   branch", "is main", "unmerged/active work").
+
+** Concrete before/after from that session
+
+- Started with ~28 local / ~28 remote branches.
+- Deleted 6 local + 6 remote (one extra remote-only deletion,
+  =claude/windows-cxx-linking-hotfix-upn21a=, which had no
+  corresponding local branch to check but was independently
+  confirmed via =git branch -r --merged origin/main=).
+- Left alone: =feature/write-up-wire-format-architecture= (merged,
+  but checked out by =solid_dirac=), =feature/codegen-qt-parent-scoped-list=
+  (was the current branch at the time; deleted locally in a later
+  step once the worktree moved off it onto the next task's branch),
+  =main= (checked out by the =ores.git= worktree), and every branch
+  representing another environment's still-open, unmerged work.
+- This asymmetry -- a branch fully merged into main but still the
+  active branch of a live worktree -- is exactly the "stale but
+  fleet-owned" case the acceptance criteria call out; the command
+  should report it, not silently delete or silently ignore it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

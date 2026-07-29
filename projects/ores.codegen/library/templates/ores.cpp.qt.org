@@ -4,7 +4,7 @@
 #+title: ores.cpp.qt
 #+description: Qt UI: windows, dialogs, controllers, client models.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

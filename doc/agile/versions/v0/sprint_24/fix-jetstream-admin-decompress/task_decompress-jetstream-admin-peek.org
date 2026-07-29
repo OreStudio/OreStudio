@@ -8,7 +8,7 @@
 #+filetags: :fix-jetstream-admin-decompress:sprint_24:v0:
 #+owner: marco
 #+branch: feature/decompress-jetstream-admin-peek
-#+pr:
+#+pr: 1736
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1736][#1736]] | [ores.nats] Decompress jetstream_admin peek payloads |
 
 * Review
 

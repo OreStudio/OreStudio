@@ -20,10 +20,15 @@ set(name "ores.compute.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "app/application.cpp"
+    "app/batch_workflow_bridge.cpp"
+    "app/compute_grid_poller.cpp"
+    "app/host.cpp"
+    "config/options.cpp"
+    "config/parser.cpp"
+    "main.cpp"
+)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

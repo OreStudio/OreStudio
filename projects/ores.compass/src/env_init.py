@@ -836,6 +836,23 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     else:
         print("No test logging configuration found; skipping.")
 
+    # Always emit the connections.db master-password var (blank by default,
+    # preserved if already set) so every environment's .env carries it and
+    # discovers the feature, rather than only environments that opt in.
+    connections_master_password = existing.get("ORES_CONNECTIONS_MASTER_PASSWORD", "")
+    if connections_master_password:
+        print("Preserving connections.db master password.")
+    else:
+        print("No connections.db master password set; leaving blank.")
+    out.append(f"""
+# ---------------------------------------------------------------------------
+# ores.qt connections.db master-password auto-unlock (optional; blank by
+# default). --master-password on the command line overrides this. See
+# story "Automate connections.db master-password unlock via CLI/env".
+# ---------------------------------------------------------------------------
+ORES_CONNECTIONS_MASTER_PASSWORD={connections_master_password}
+""")
+
     print("Setting file permissions...")
     env_file.write_text("".join(out))
     env_file.chmod(0o600)

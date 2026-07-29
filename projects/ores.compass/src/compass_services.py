@@ -605,6 +605,8 @@ def cmd_client_start(ctx, args):
         client_args += ["--instance-color", colour_hex]
     if args.open_scenario:
         client_args += ["--open-scenario", args.open_scenario]
+    if args.master_password:
+        client_args += ["--master-password", args.master_password]
 
     _launch(ctx, pid_name, "ores.qt", client_args)
     print(f"\nLogs : {ctx.log_dir / log_file}")
@@ -678,6 +680,10 @@ def run_client(argv, project_root: Path) -> int:
     st.add_argument("--open-scenario", default=None,
                     help="Path to a test_scenario .org doc to open in the "
                          "Scenario Runner on startup (System > Testing)")
+    st.add_argument("--master-password", default=None,
+                    help="Connections.db master password, passed through to "
+                         "--master-password. Falls back to "
+                         "ORES_CONNECTIONS_MASTER_PASSWORD in .env if not set.")
 
     sp = sub.add_parser("stop", help="Stop a running Qt client instance")
     _common(sp)

@@ -963,8 +963,11 @@ bool MainWindow::initializeConnectionManager() {
     // Auto-unlock: try a CLI/env-supplied master password before falling
     // back to the interactive dialog, if no password is already in hand.
     const bool autoUnlockAttempted = masterPassword_.isEmpty() && !cliMasterPassword_.isEmpty();
-    if (autoUnlockAttempted)
+    if (autoUnlockAttempted) {
         masterPassword_ = cliMasterPassword_;
+        BOOST_LOG_SEV(lg(), info)
+            << "Attempting connections.db auto-unlock from CLI/env master password";
+    }
 
     try {
         // First, try with stored master password (or empty if none)
@@ -1057,6 +1060,9 @@ bool MainWindow::initializeConnectionManager() {
                 }
                 // If cancelled, continue with empty password (user can set it later)
             }
+        } else if (autoUnlockAttempted) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Connections database auto-unlocked successfully via CLI/env master password";
         }
 
         return true;

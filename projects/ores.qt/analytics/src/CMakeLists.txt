@@ -24,12 +24,54 @@ set(ORES_QT_ANALYTICS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "AnalyticsPlugin.cpp"
+    "ClientPricingEngineTypeModel.cpp"
+    "ClientPricingModelConfigModel.cpp"
+    "ClientPricingModelProductModel.cpp"
+    "ClientPricingModelProductParameterModel.cpp"
+    "PricingEngineTypeController.cpp"
+    "PricingEngineTypeDetailDialog.cpp"
+    "PricingEngineTypeHistoryDialog.cpp"
+    "PricingEngineTypeMdiWindow.cpp"
+    "PricingModelConfigController.cpp"
+    "PricingModelConfigDetailDialog.cpp"
+    "PricingModelConfigHistoryDialog.cpp"
+    "PricingModelConfigMdiWindow.cpp"
+    "PricingModelProductController.cpp"
+    "PricingModelProductDetailDialog.cpp"
+    "PricingModelProductHistoryDialog.cpp"
+    "PricingModelProductMdiWindow.cpp"
+    "PricingModelProductParameterController.cpp"
+    "PricingModelProductParameterDetailDialog.cpp"
+    "PricingModelProductParameterHistoryDialog.cpp"
+    "PricingModelProductParameterMdiWindow.cpp"
+)
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_ANALYTICS_DIR}/include/*.hpp")
+set(HEADERS
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/AnalyticsPlugin.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/ClientPricingEngineTypeModel.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/ClientPricingModelConfigModel.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/ClientPricingModelProductModel.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/ClientPricingModelProductParameterModel.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingEngineTypeController.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingEngineTypeDetailDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingEngineTypeHistoryDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingEngineTypeMdiWindow.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelConfigController.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelConfigDetailDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelConfigHistoryDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelConfigMdiWindow.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductController.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductDetailDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductHistoryDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductMdiWindow.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductParameterController.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductParameterDetailDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductParameterHistoryDialog.hpp"
+    "${ORES_QT_ANALYTICS_DIR}/include/ores.qt/PricingModelProductParameterMdiWindow.hpp"
+)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_ANALYTICS_DIR}/ui/*.ui")
 

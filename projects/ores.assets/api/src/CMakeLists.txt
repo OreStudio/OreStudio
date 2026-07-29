@@ -19,11 +19,7 @@ set(name "ores.assets.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/image_json_io.cpp"
-    "domain/image_tag_json_io.cpp"
-    "domain/tag_json_io.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

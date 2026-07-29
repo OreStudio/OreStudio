@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_table.hpp"
+
 #include <fort.hpp>
 
 namespace ores::refdata::domain {

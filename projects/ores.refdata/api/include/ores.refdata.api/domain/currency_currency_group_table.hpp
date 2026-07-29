@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_CURRENCY_CURRENCY_GROUP_TABLE_HPP
 #define ORES_REFDATA_DOMAIN_CURRENCY_CURRENCY_GROUP_TABLE_HPP
 
-#include "ores.refdata.api/domain/currency_currency_group.hpp"
-#include "ores.refdata.api/export.hpp"
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/currency_currency_group.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 

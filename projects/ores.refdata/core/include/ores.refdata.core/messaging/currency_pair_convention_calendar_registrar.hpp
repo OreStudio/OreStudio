@@ -17,21 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
-#define ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_REGISTRAR_HPP
+#define ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_REGISTRAR_HPP
 
-#include <string>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
-#include "ores.refdata.api/domain/currency_country.hpp"
-#include "ores.refdata.api/export.hpp"
 
-namespace ores::refdata::domain {
+namespace ores::refdata::messaging {
 
-/**
- * @brief Converts currency_countries to the table format.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency_country>& v);
+std::vector<ores::nats::service::subscription>
+register_currency_pair_convention_calendar_handlers(ores::nats::service::client& nats,
+                                     ores::database::context ctx,
+                                     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::refdata::messaging
 
 #endif

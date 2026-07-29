@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
-#define ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_CURRENCY_COUNTRY_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_CURRENCY_COUNTRY_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/currency_country.hpp"
-#include "ores.refdata.api/export.hpp"
 
-namespace ores::refdata::domain {
-
-/**
- * @brief Converts currency_countries to the table format.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency_country>& v);
+namespace ores::refdata::messaging {
 
 }
 

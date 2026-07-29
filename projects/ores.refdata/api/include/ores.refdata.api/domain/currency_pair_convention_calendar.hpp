@@ -27,8 +27,7 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Links a currency pair convention to the calendar(s) used to advance its spot/maturity
- * dates.
+ * @brief Links a currency pair convention to the calendar(s) used to advance its spot/maturity dates.
  *
  * Many-to-many junction between currency_pair_convention and calendar:
  * [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][a convention's AdvanceCalendar]]
@@ -59,9 +58,7 @@ struct currency_pair_convention_calendar final {
      *
      * References ores_refdata_currency_pair_conventions_tbl.pair_code (soft FK).
 
-The composite key is (pair_code, calendar_code), and neither field carries any other per-call-unique
-data -- an inline counter is the only way to guarantee repeated synthetic-generation calls don't
-collide on the same key (same convention as currency_country's own synthetic generator).
+The composite key is (pair_code, calendar_code), and neither field carries any other per-call-unique data -- an inline counter is the only way to guarantee repeated synthetic-generation calls don't collide on the same key (same convention as currency_country's own synthetic generator).
      */
     std::string pair_code;
 

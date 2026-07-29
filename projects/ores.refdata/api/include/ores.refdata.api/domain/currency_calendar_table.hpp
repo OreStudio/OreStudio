@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_CURRENCY_CALENDAR_TABLE_HPP
 #define ORES_REFDATA_DOMAIN_CURRENCY_CALENDAR_TABLE_HPP
 
-#include "ores.refdata.api/domain/currency_calendar.hpp"
-#include "ores.refdata.api/export.hpp"
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/currency_calendar.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 

@@ -18,8 +18,9 @@
  *
  */
 #include "ores.refdata.api/domain/currency_country_table_io.hpp"
-#include "ores.refdata.api/domain/currency_country_table.hpp"
+
 #include <ostream>
+#include "ores.refdata.api/domain/currency_country_table.hpp"
 
 namespace ores::refdata::domain {
 

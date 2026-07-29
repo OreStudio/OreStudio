@@ -18,16 +18,20 @@
  *
  */
 #include "ores.refdata.api/generators/currency_currency_group_generator.hpp"
+
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::currency_currency_group
-generate_synthetic_currency_currency_group(utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+domain::currency_currency_group generate_synthetic_currency_currency_group(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::currency_currency_group r;
     r.version = 0;
@@ -44,7 +48,7 @@ generate_synthetic_currency_currency_group(utility::generation::generation_conte
 
 std::vector<domain::currency_currency_group>
 generate_synthetic_currency_currency_groups(std::size_t n,
-                                            utility::generation::generation_context& ctx) {
+    utility::generation::generation_context& ctx) {
     std::vector<domain::currency_currency_group> r;
     r.reserve(n);
     while (r.size() < n)

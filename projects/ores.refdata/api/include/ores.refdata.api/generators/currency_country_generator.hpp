@@ -20,24 +20,25 @@
 #ifndef ORES_REFDATA_API_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
 #define ORES_REFDATA_API_GENERATORS_CURRENCY_COUNTRY_GENERATOR_HPP
 
-#include "ores.refdata.api/domain/currency_country.hpp"
-#include "ores.refdata.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include <vector>
+#include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/currency_country.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic currency_country.
  */
-ORES_REFDATA_API_EXPORT domain::currency_country
-generate_synthetic_currency_country(utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::currency_country generate_synthetic_currency_country(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic currency_countries.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency_country>
-generate_synthetic_currency_countries(std::size_t n, utility::generation::generation_context& ctx);
+generate_synthetic_currency_countries(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

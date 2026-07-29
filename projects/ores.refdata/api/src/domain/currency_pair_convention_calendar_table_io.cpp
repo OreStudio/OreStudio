@@ -18,15 +18,15 @@
  *
  */
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_table_io.hpp"
-#include "ores.refdata.api/domain/currency_pair_convention_calendar_table.hpp"
+
 #include <ostream>
+#include "ores.refdata.api/domain/currency_pair_convention_calendar_table.hpp"
 
 namespace ores::refdata::domain {
 
 namespace {
 
-void print_currency_pair_convention_calendar_table(
-    std::ostream& s, const std::vector<currency_pair_convention_calendar>& v) {
+void print_currency_pair_convention_calendar_table(std::ostream& s, const std::vector<currency_pair_convention_calendar>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

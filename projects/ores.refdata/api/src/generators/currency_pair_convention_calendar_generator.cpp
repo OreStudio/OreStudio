@@ -18,24 +18,25 @@
  *
  */
 #include "ores.refdata.api/generators/currency_pair_convention_calendar_generator.hpp"
+
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::currency_pair_convention_calendar
-generate_synthetic_currency_pair_convention_calendar(utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+domain::currency_pair_convention_calendar generate_synthetic_currency_pair_convention_calendar(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::currency_pair_convention_calendar r;
     r.version = 0;
     r.tenant_id = tenant_id;
-    r.pair_code = [] {
-        static std::size_t counter = 0;
-        return std::string("EURGBP") + std::to_string(++counter);
-    }();
+    r.pair_code = [] { static std::size_t counter = 0; return std::string("EURGBP") + std::to_string(++counter); }();
     r.calendar_code = std::string("TARGET");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
@@ -46,8 +47,8 @@ generate_synthetic_currency_pair_convention_calendar(utility::generation::genera
 }
 
 std::vector<domain::currency_pair_convention_calendar>
-generate_synthetic_currency_pair_convention_calendars(
-    std::size_t n, utility::generation::generation_context& ctx) {
+generate_synthetic_currency_pair_convention_calendars(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::currency_pair_convention_calendar> r;
     r.reserve(n);
     while (r.size() < n)

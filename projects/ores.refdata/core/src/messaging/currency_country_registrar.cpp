@@ -17,21 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
-#define ORES_REFDATA_DOMAIN_CURRENCY_COUNTRY_TABLE_HPP
+#include "ores.refdata.core/messaging/currency_country_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_country_handler.hpp"
+#include "ores.refdata.api/messaging/currency_country_protocol.hpp"
+#include <memory>
 
-#include <string>
-#include <vector>
-#include "ores.refdata.api/domain/currency_country.hpp"
-#include "ores.refdata.api/export.hpp"
+namespace ores::refdata::messaging {
 
-namespace ores::refdata::domain {
+namespace {
+static constexpr std::string_view queue_group = "ores.refdata.service";
+} // namespace
 
-/**
- * @brief Converts currency_countries to the table format.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency_country>& v);
-
+std::vector<ores::nats::service::subscription>
+register_currency_country_handlers(ores::nats::service::client& nats,
+                                     ores::database::context ctx,
+                                     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::vector<ores::nats::service::subscription> subs;
+    auto h = std::make_shared<currency_country_handler>(nats, std::move(ctx), std::move(verifier));
+    return subs;
 }
 
-#endif
+} // namespace ores::refdata::messaging

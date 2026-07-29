@@ -20,10 +20,20 @@ set(name "ores.controller.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "messaging/registrar.cpp"
+    "repository/service_definition_entity.cpp"
+    "repository/service_definition_mapper.cpp"
+    "repository/service_definition_repository.cpp"
+    "repository/service_dependency_repository.cpp"
+    "repository/service_event_entity.cpp"
+    "repository/service_event_mapper.cpp"
+    "repository/service_event_repository.cpp"
+    "repository/service_instance_entity.cpp"
+    "repository/service_instance_mapper.cpp"
+    "repository/service_instance_repository.cpp"
+    "service/process_supervisor.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

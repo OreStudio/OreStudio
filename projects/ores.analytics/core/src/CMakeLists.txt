@@ -20,10 +20,25 @@ set(name "ores.analytics.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "messaging/registrar.cpp"
+    "repository/pricing_engine_type_entity.cpp"
+    "repository/pricing_engine_type_mapper.cpp"
+    "repository/pricing_engine_type_repository.cpp"
+    "repository/pricing_model_config_entity.cpp"
+    "repository/pricing_model_config_mapper.cpp"
+    "repository/pricing_model_config_repository.cpp"
+    "repository/pricing_model_product_entity.cpp"
+    "repository/pricing_model_product_mapper.cpp"
+    "repository/pricing_model_product_parameter_entity.cpp"
+    "repository/pricing_model_product_parameter_mapper.cpp"
+    "repository/pricing_model_product_parameter_repository.cpp"
+    "repository/pricing_model_product_repository.cpp"
+    "service/pricing_engine_type_service.cpp"
+    "service/pricing_model_config_service.cpp"
+    "service/pricing_model_product_parameter_service.cpp"
+    "service/pricing_model_product_service.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

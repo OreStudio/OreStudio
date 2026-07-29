@@ -19,10 +19,31 @@ set(name "ores.ore.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain/bond_instrument_mapper.cpp"
+    "domain/calendar_adjustment_mapper.cpp"
+    "domain/commodity_instrument_mapper.cpp"
+    "domain/composite_instrument_mapper.cpp"
+    "domain/conventions_mapper.cpp"
+    "domain/credit_instrument_mapper.cpp"
+    "domain/currency_mapper.cpp"
+    "domain/domain.cpp"
+    "domain/equity_instrument_mapper.cpp"
+    "domain/fx_instrument_mapper.cpp"
+    "domain/scripted_instrument_mapper.cpp"
+    "domain/swap_instrument_mapper.cpp"
+    "domain/trade_mapper.cpp"
+    "hierarchy/ore_hierarchy_builder.cpp"
+    "log/ore_log_parser.cpp"
+    "market/fx_quote_convention_checker.cpp"
+    "market/market_data_parser.cpp"
+    "market/market_data_serializer.cpp"
+    "market/series_key_registry.cpp"
+    "planner/ore_import_planner.cpp"
+    "scanner/ore_directory_scanner.cpp"
+    "xml/exporter.cpp"
+    "xml/importer.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

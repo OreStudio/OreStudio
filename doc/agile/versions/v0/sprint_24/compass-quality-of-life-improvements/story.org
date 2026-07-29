@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F64924CE-8D35-437A-B275-617558DC5FBE
+:END:
+#+title: Story: Compass quality-of-life improvements
+#+description: Small developer-experience improvements to the compass CLI itself: ergonomics, safety nets, and workstation-integration niceties that don't fit any single domain story.
+#+type: story
+#+level: s2
+#+filetags: :compass:devx:sprint_24:v0:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Collect small, standalone improvements to compass itself — ergonomics,
+safety nets, and workstation-integration niceties — that are each too
+small to warrant their own story but are still real, shippable
+developer-experience work.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | First task done; PR pending.           |
+| Waiting on    | Nothing.                               |
+| Next          | Raise the PR; add further tasks as they come up. |
+| Last touched  | 2026-07-29                               |
+
+* Acceptance
+
+- Each task is a self-contained compass improvement with its own
+  PR; no cross-task coupling required.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8780F2D4-E135-448B-995C-8C36302B74E4][Add compass claude, a systemd-scoped Claude Code launcher]] | DONE | 2026-07-29 | 2026-07-29 | New compass claude subcommand launches Claude Code as a transient systemd --user scope under a checked-in app-claude.slice, so systemd-oomd can kill a runaway session without taking its parent (e.g. Emacs) down with it. Deploys the slice unit on first use, no separate machine bootstrap needed. |
+
+* Decisions
+
+* Out of scope
+
+-

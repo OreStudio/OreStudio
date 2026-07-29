@@ -19,10 +19,10 @@ set(name "ores.variability.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain/system_setting_json_io.cpp"
+    "domain/system_setting_table_io.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

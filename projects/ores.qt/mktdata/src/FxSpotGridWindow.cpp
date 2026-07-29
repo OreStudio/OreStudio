@@ -53,6 +53,12 @@ static const QColor k_up_color{34, 197, 94};   // green-400
 static const QColor k_down_color{239, 68, 68}; // red-400
 static const QColor k_flat_color{180, 180, 180};
 
+// Currency-pair label colour: fixed, never tick- or status-driven. Per the
+// FX Spot Monitor UI/UX audit (Strategy 1), colour is reserved exclusively
+// for directional price deltas (Mid/24h Chg) -- painting the whole pair
+// label red/green on every tick was the "Christmas tree" fatigue problem.
+static const QColor k_pair_label_color{226, 232, 240}; // slate-200
+
 static QColor status_color(FxSpotGridWindow::FeedStatus s) {
     switch (s) {
         case FxSpotGridWindow::FeedStatus::Live:
@@ -79,19 +85,6 @@ static Icon status_icon(FxSpotGridWindow::FeedStatus s) {
             return Icon::FeedPending;
     }
     return Icon::FeedPending;
-}
-
-static QColor pair_color_for_status(FxSpotGridWindow::FeedStatus s) {
-    switch (s) {
-        case FxSpotGridWindow::FeedStatus::Live:
-            return k_up_color;
-        case FxSpotGridWindow::FeedStatus::Stale:
-            return QColor(200, 140, 0);
-        case FxSpotGridWindow::FeedStatus::Disconnected:
-            return k_down_color;
-        default:
-            return k_flat_color;
-    }
 }
 
 namespace {
@@ -131,7 +124,10 @@ static void update_status_text(const StatusIndicator& ind,
             text = QStringLiteral("PENDING");
             break;
         case FxSpotGridWindow::FeedStatus::Live:
-            text = QStringLiteral("LIVE");
+            // No text: the green dot alone is the signal. Repeating "LIVE" on every
+            // row once the whole grid is connected is exactly the redundant-status
+            // noise the UI/UX audit flagged -- Stale/Disconnected/Pending keep their
+            // text since those states need explicit attention, not just a colour.
             break;
         case FxSpotGridWindow::FeedStatus::Stale: {
             const auto age = duration_cast<seconds>(system_clock::now() - last_tick).count();
@@ -176,6 +172,19 @@ static QString pair_from_ore_key(const std::string& ore_key) {
         qualifier += seg;
     }
     return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
+}
+
+// JPY pairs are conventionally quoted to 3 decimal places (pip on the 2nd,
+// fractional pip on the 3rd), not the 5 decimals standard G10 pairs use --
+// per the FX Spot Monitor UI/UX audit's convention-violation finding.
+static bool is_jpy_quoted(const QString& pairText) {
+    const auto slash = pairText.lastIndexOf(QLatin1Char('/'));
+    const auto quote = slash >= 0 ? pairText.mid(slash + 1) : pairText;
+    return quote.compare(QStringLiteral("JPY"), Qt::CaseInsensitive) == 0;
+}
+
+static QString format_rate(double mid, bool jpy) {
+    return QString::number(mid, 'f', jpy ? 3 : 5);
 }
 
 // This window has no separate base/quote columns to put one flag each on
@@ -305,27 +314,37 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         const std::string& ore_key = b.ore_key;
         table_->insertRow(row);
 
-        // Pair
+        // Pair — fixed neutral colour always (see k_pair_label_color's own comment);
+        // never recoloured by tick direction or connection status.
         const QString pairText = pair_from_ore_key(ore_key);
         auto* pairItem = new QTableWidgetItem(pairText);
         QFont pf = pairItem->font();
         pf.setBold(true);
         pairItem->setFont(pf);
         pairItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        pairItem->setForeground(k_pair_label_color);
         if (imageCache_)
             pairItem->setIcon(pair_icon_for(*imageCache_, pairText));
         table_->setItem(row, ColPair, pairItem);
+
+        // Mid/Change: monospace + right-aligned so decimal points stack vertically
+        // for fast scanning (UI/UX audit Strategy 2) -- a proportional font still
+        // drifts column-to-column under right-alignment alone since digit widths
+        // differ.
+        const QFont numFont(QStringLiteral("Monospace"));
 
         // Mid
         auto* midItem = new QTableWidgetItem(QStringLiteral("—"));
         midItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         midItem->setForeground(k_flat_color);
+        midItem->setFont(numFont);
         table_->setItem(row, ColMid, midItem);
 
         // Change
         auto* chgItem = new QTableWidgetItem(QStringLiteral("—"));
         chgItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         chgItem->setForeground(k_flat_color);
+        chgItem->setFont(numFont);
         table_->setItem(row, ColChange, chgItem);
 
         // Status indicator: icon + text inline, no pill background.
@@ -399,15 +418,14 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
 
     const QColor dirColor = first ? k_flat_color : (up ? k_up_color : k_down_color);
 
-    // Pair name and mid both follow tick direction.
-    if (auto* p = table_->item(rs.row, ColPair))
-        p->setForeground(dirColor);
-
+    // Only the Mid value carries directional colour -- the pair label stays
+    // neutral (k_pair_label_color, set once in buildRows and never touched here).
     auto* midItem = table_->item(rs.row, ColMid);
     if (midItem) {
         const QString arrow =
             first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
-        midItem->setText(arrow + QString::number(mid, 'f', 5));
+        const bool jpy = is_jpy_quoted(pair_from_ore_key(ore_key));
+        midItem->setText(arrow + format_rate(mid, jpy));
         midItem->setForeground(dirColor);
     }
 
@@ -425,11 +443,11 @@ void FxSpotGridWindow::onStaleCheck() {
         const auto status = deriveStatus(rs);
         const StatusIndicator indicator{rs.status_icon_label, rs.status_text_label};
         if (status != rs.last_status) {
-            // Transition: icon/colour actually changed, full repaint.
+            // Transition: icon/colour actually changed, full repaint. Pair label
+            // itself stays k_pair_label_color regardless -- connection status is
+            // the status indicator's job, not another thing tinting the ticker text.
             rs.last_status = status;
             apply_status_indicator(indicator, status, rs.last_tick);
-            if (auto* p = table_->item(rs.row, ColPair))
-                p->setForeground(pair_color_for_status(status));
         } else if (status == FeedStatus::Stale) {
             // Same status, still stale: only the elapsed-seconds text
             // changes — skip re-rendering the (unchanged) icon.

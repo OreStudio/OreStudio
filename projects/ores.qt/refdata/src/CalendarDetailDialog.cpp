@@ -131,6 +131,16 @@ void CalendarDetailDialog::setupConnections() {
     regenerateAction_->setEnabled(!createMode_);
     connect(
         regenerateAction_, &QAction::triggered, this, &CalendarDetailDialog::onRegenerateClicked);
+
+    browseHolidaysAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor),
+        tr("Browse Holidays"));
+    browseHolidaysAction_->setToolTip(tr("Browse this calendar's materialised holiday dates"));
+    browseHolidaysAction_->setEnabled(!createMode_);
+    connect(browseHolidaysAction_,
+            &QAction::triggered,
+            this,
+            &CalendarDetailDialog::onBrowseHolidaysClicked);
 }
 
 void CalendarDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -202,6 +212,8 @@ void CalendarDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
     if (regenerateAction_)
         regenerateAction_->setEnabled(!createMode);
+    if (browseHolidaysAction_)
+        browseHolidaysAction_->setEnabled(!createMode);
 }
 
 void CalendarDetailDialog::markDirty() {
@@ -495,6 +507,10 @@ void CalendarDetailDialog::onDeleteClicked() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void CalendarDetailDialog::onBrowseHolidaysClicked() {
+    emit browseHolidaysRequested(code());
 }
 
 void CalendarDetailDialog::onRegenerateClicked() {

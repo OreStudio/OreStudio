@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 4C33C1B5-43F8-4142-8D55-0540B3089761
+:END:
+#+title: Test Scenario: Browse Holidays view for a QuantLib calendar
+#+description: Manual QA scenario verifying the Browse Holidays action wired onto Calendar's detail dialog: opens a read-only, paginated, calendar_code-scoped list of that calendar's materialised calendar_dates rows.
+#+type: test_scenario
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+target_dialog: CalendarDetailDialog / CalendarDateMdiWindow
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]] in [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]] |
+| Parent story  | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =clever_dijkstra= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*. If the database has been recreated since Barclays
+was last provisioned, re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first.
+
+** Open the Calendars list window
+
+- =Reference Data > Calendars= (or the Calendars toolbar icon).
+- Confirm the list loads and shows seeded QuantLib calendars,
+  including =TARGET=.
+
+** Open TARGET's detail dialog
+
+- Double-click the =TARGET= row (or select it and click the detail
+  action).
+- Confirm the detail dialog opens showing =code=TARGET=,
+  =source=quantlib=, and the form is fully locked (per
+  =is_editable=false=) -- the whole form should be read-only, not
+  just the usual locked-after-create fields.
+- Confirm a *Browse Holidays* toolbar action is present alongside
+  the existing *Regenerate* action.
+
+** Click Browse Holidays
+
+- Click the *Browse Holidays* toolbar action.
+- Confirm a new MDI window titled "Browse Holidays" opens.
+- Confirm the window shows a paginated table with three columns:
+  *Date*, *Business Day*, *Source* -- and nothing else (no add/edit/
+  delete toolbar actions, since this is a read-only list).
+- Confirm every row's =Source= column reads =quantlib_computed=
+  (TARGET has no base template, so all its materialised dates come
+  from the QuantLib batch engine).
+
+** Verify pagination and parent scoping
+
+- Confirm the pagination controls (page size / Next / Load All) work
+  and the total-available count looks plausible for a materialised
+  multi-year calendar.
+- Open a *second* calendar's detail dialog (e.g. =UnitedStates= or
+  any other seeded calendar) and click its own *Browse Holidays*
+  action.
+- Confirm the second window is independent -- distinct data, both
+  windows can stay open simultaneously, and closing one does not
+  affect the other's contents (per the parent-scoped window-key
+  design; live cross-window reload staleness is a documented,
+  accepted limitation -- not something this step needs to verify).
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -42,7 +42,7 @@ open calendar. Closes the deferred acceptance item from
 
 * Acceptance
 
-- [ ] =ores.refdata.calendar_date.org= gains a =** Qt= drawer (under
+- [X] =ores.refdata.calendar_date.org= gains a =** Qt= drawer (under
   =* C++=, mirroring =ores.refdata.book.org='s =** Qt= drawer shape)
   setting =:has_readonly_paginated_list: true=,
   =:has_parent_scoped_list: true=, =:parent_key_field: calendar_code=,
@@ -53,30 +53,30 @@ open calendar. Closes the deferred acceptance item from
   =:get_message_type:=, =:collection_name: calendar_dates=,
   =:item_var: calendar_date=, =:key_field:=, MDI chrome
   (=:settings_group:=, =:window_title: Browse Holidays=, =:icon:=).
-- [ ] Generating =calendar_date='s =ores.cpp.qt= facet produces a
+- [X] Generating =calendar_date='s =ores.cpp.qt= facet produces a
   working =ClientCalendarDateModel=, =CalendarDateMdiWindow=, and
   =CalendarDateController= -- read-only (no add/edit/delete/history,
   per =has_readonly_paginated_list=), paginated, and scoped to the
   parent =calendar_code= on every fetch (per
   =has_parent_scoped_list=), per the design in =1C673C53=.
-- [ ] =RefdataPlugin= constructs a =CalendarDateController= alongside
+- [X] =RefdataPlugin= constructs a =CalendarDateController= alongside
   the other refdata controllers (same constructor-injection pattern
   as =calendarController_=/=businessCentreController_=).
-- [ ] =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
+- [X] =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
   (same shape as the existing =regenerateAction_=/=onRegenerateClicked=
   pair added in #1707), emitting a new
   =browseHolidaysRequested(QString calendarCode)= signal instead of
   reaching for a sibling controller directly (dialogs don't hold
   controller references today -- see =calendarSaved=/=calendarDeleted=
   for the existing signal-out pattern).
-- [ ] =CalendarController= relays that signal outward (mirroring
+- [X] =CalendarController= relays that signal outward (mirroring
   =BookController::showBookStatusesRequested='s cross-domain relay
   shape), and =RefdataPlugin= connects it to
   =calendarDateController_->openForParent(calendarCode)=.
-- [ ] Each row of the opened "Browse Holidays" list shows date,
+- [X] Each row of the opened "Browse Holidays" list shows date,
   is-business-day, and source, per =B2888D7D='s original acceptance
   wording and the =calendar_date.org= "Table display" table.
-- [ ] Verified via =--diff= against an existing entity with the new
+- [X] Verified via =--diff= against an existing entity with the new
   knobs left unset showing zero unrelated drift (same approach as
   =1C673C53='s verification), plus a real, working generation for
   =calendar_date= itself (first entity to actually exercise these
@@ -218,7 +218,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:4C33C1B5-43F8-4142-8D55-0540B3089761][Browse Holidays view for a QuantLib calendar]] | PENDING | |
 
 * PRs
 

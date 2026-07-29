@@ -248,6 +248,10 @@ void CalendarController::showDetailWindow(const refdata::domain::calendar& calen
                 BOOST_LOG_SEV(lg(), info) << "Calendar deleted: " << code.toStdString();
                 self->handleEntityDeleted();
             });
+    connect(detailDialog,
+            &CalendarDetailDialog::browseHolidaysRequested,
+            this,
+            &CalendarController::browseHolidaysRequested);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);

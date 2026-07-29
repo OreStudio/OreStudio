@@ -79,6 +79,7 @@ public:
 signals:
     void calendarSaved(const QString& code);
     void calendarDeleted(const QString& code);
+    void browseHolidaysRequested(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -113,6 +114,9 @@ private:
 
     QAction* regenerateAction_{nullptr};
     void onRegenerateClicked();
+
+    QAction* browseHolidaysAction_{nullptr};
+    void onBrowseHolidaysClicked();
 
     Ui::CalendarDetailDialog* ui_;
     ClientManager* clientManager_;

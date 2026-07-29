@@ -27,6 +27,7 @@
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/CalendarController.hpp"
+#include "ores.qt/CalendarDateController.hpp"
 #include "ores.qt/CalendarExceptionController.hpp"
 #include "ores.qt/CalendarRuleController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
@@ -461,6 +462,22 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                ctx_.badge_cache,
                                                                this);
     connectControllerSignals(calendarController_.get());
+
+    calendarDateController_ = std::make_unique<CalendarDateController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(calendarDateController_.get());
+
+    // CalendarController cross-domain relay: the "Browse Holidays" toolbar
+    // action on CalendarDetailDialog opens calendar_date's read-only,
+    // parent-scoped list window for the current calendar, mirroring
+    // BookController's showBookStatusesRequested relay shape above.
+    connect(calendarController_.get(),
+            &CalendarController::browseHolidaysRequested,
+            this,
+            [this](const QString& calendarCode) {
+                if (calendarDateController_)
+                    calendarDateController_->openForParent(calendarCode);
+            });
 
     calendarRuleController_ = std::make_unique<CalendarRuleController>(ctx_.main_window,
                                                                        ctx_.mdi_area,

@@ -51,6 +51,7 @@ class CurrencyPairController;
 class CurrencyPairConventionController;
 class CurrencyGroupController;
 class CalendarController;
+class CalendarDateController;
 class CalendarRuleController;
 class CalendarExceptionController;
 class CdsConventionController;
@@ -186,6 +187,7 @@ private:
     std::unique_ptr<CurrencyPairController> currencyPairController_;
     std::unique_ptr<CurrencyGroupController> currencyGroupController_;
     std::unique_ptr<CalendarController> calendarController_;
+    std::unique_ptr<CalendarDateController> calendarDateController_;
     std::unique_ptr<CalendarRuleController> calendarRuleController_;
     std::unique_ptr<CalendarExceptionController> calendarExceptionController_;
     std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;

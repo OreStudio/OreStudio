@@ -40,7 +40,7 @@ std::string party_repository::sql() {
 }
 
 void party_repository::write(context ctx, const domain::party& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party. " << "id: " << v.id;
     execute_write_query(ctx, party_mapper::map(v), lg(), "Writing party to database.");
 }
 
@@ -65,7 +65,7 @@ std::vector<domain::party> party_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::party> party_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
@@ -81,7 +81,7 @@ std::vector<domain::party> party_repository::read_latest(context ctx, const std:
 
 
 std::vector<domain::party> party_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -97,7 +97,8 @@ std::vector<domain::party> party_repository::read_all(context ctx, const std::st
 
 std::optional<domain::party>
 party_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. id: " << id << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. " << "id: " << id
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
@@ -116,7 +117,7 @@ party_repository::read_at_version(context ctx, const std::string& id, std::uint3
 }
 
 void party_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_entity> |

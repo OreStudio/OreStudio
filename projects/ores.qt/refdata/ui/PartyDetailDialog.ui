@@ -131,7 +131,7 @@
        <item>
         <widget class="QGroupBox" name="flagGroup">
          <property name="title">
-          <string>Logo</string>
+          <string>Icon</string>
          </property>
          <layout class="QVBoxLayout" name="flagGroupLayout"/>
         </widget>

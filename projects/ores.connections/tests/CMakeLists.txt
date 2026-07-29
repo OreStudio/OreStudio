@@ -20,10 +20,16 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain_environment_tag_tests.cpp"
+    "domain_folder_tests.cpp"
+    "domain_tag_tests.cpp"
+    "main.cpp"
+    "repository_environment_tag_repository_tests.cpp"
+    "repository_folder_repository_tests.cpp"
+    "repository_tag_repository_tests.cpp"
+    "service_connection_manager_tests.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

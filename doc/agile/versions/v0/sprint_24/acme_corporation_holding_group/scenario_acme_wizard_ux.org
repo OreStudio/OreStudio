@@ -13,7 +13,7 @@
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
-This page documents a test scenario verifying [[id:F9D8112C-CA73-43E1-9CAD-3578E993CC30][ores.shell and ores.qt UX for one-click Acme provisioning]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+This page documents a test scenario verifying [[id:F9D8112C-CA73-43E1-9CAD-3578E993CC30][ores.shell and ores.qt UX for one-click Acme provisioning]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
 * Scenario Info
 
@@ -26,7 +26,7 @@ This page documents a test scenario verifying [[id:F9D8112C-CA73-43E1-9CAD-3578E
 | Field         | Value                                   |
 |---------------+------------------------------------------|
 | Verifies task | [[id:F9D8112C-CA73-43E1-9CAD-3578E993CC30][ores.shell and ores.qt UX for one-click Acme provisioning]] |
-| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]   |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
 | Target dialog | TenantProvisioningWizard                |
 | Clients       |                                          |
 | State         | PENDING                               |

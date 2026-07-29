@@ -13,14 +13,14 @@
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
-This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
 * Scenario Info
 
 | Field         | Value                                   |
 |---------------+------------------------------------------|
 | Verifies task | [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] |
-| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]   |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
 | Target dialog | (several — see individual steps)        |
 | Clients       | blue, red, green                        |
 | State         | PENDING                               |

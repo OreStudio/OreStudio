@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: CB7351E9-8E7E-4BA4-9399-4EB22F6192D4
 :END:
-#+title: Story: Commission Acme Bank: a realistic holding-group test entity
-#+description: Build a comprehensive synthetic legal-entity group, Acme Bank, modelled on Barclays' corporate structure, with business units, portfolios, books, and locale-appropriate staff across derivative-trading divisions, to replace Barclays Plc as the system's realistic test/demo entity.
+#+title: Story: Commission Acme Corporation: a realistic holding-group test entity
+#+description: Build a comprehensive synthetic legal-entity group, Acme Corporation, modelled on Barclays' corporate structure, with business units, portfolios, books, and locale-appropriate staff across derivative-trading divisions, to replace Barclays Plc as the system's realistic test/demo entity.
 #+type: story
 #+level: s2
 #+filetags: :refdata:test-data:parties:onboarding:sprint_24:v0:
@@ -22,7 +22,7 @@ staff/role identity — e.g. verifying that logging in as Middle
 Office, or as a Trader, resolves the correct permissions and data
 visibility.
 
-Introduce *Acme Bank* — a synthetic holding-group legal entity,
+Introduce *Acme Corporation* — a synthetic holding-group legal entity,
 structured after Barclays' real corporate shape (holding company →
 Retail Banking, Investment Bank, and other divisions, across
 multiple global business centres) — and populate it fully across
@@ -35,7 +35,7 @@ RBAC (trader, middle office, etc.), with names generated to match
 the locale of their business centre (e.g. Korean names for the Seoul
 desk) and a profile picture per staff member.
 
-Acme Bank becomes the system's reference "fully populated" entity —
+Acme Corporation becomes the system's reference "fully populated" entity —
 extended over time as new entities and features are added, so it
 stays comprehensive rather than needing to be rebuilt from scratch
 each time.
@@ -53,7 +53,7 @@ each time.
 
 * Acceptance
 
-- A holding-group party hierarchy exists for Acme Bank, modelled on
+- A holding-group party hierarchy exists for Acme Corporation, modelled on
   Barclays' real corporate structure: a top-level holding company
   with subsidiaries for at least Retail Banking and Investment
   Banking, spread across multiple business centres/locations.
@@ -96,7 +96,7 @@ each time.
 | [[id:A226BB18-9C51-4322-BE35-EEC461A2DF81][Fix Acme staff email domains: proper per-country TLDs, not a raw office code]] | BACKLOG | | | generate_data.py builds staff emails as name.index@office_code.acmecorp.example (e.g. ...@acme_uk.acmecorp.example), which looks wrong, not like a real corporate email. Use a proper per-country domain instead (e.g. acmecorp.co.uk, acmecorp.com, acmecorp.com.hk), matching each OFFICES entry's country. |
 | [[id:9A96B3F7-8A99-40AF-B588-451B31216C71][Attach FaceStudio profile pictures to generated Acme staff accounts]] | BACKLOG | | | The Generalise account images task added an image_id FK to ores_iam_accounts_tbl specifically so accounts could carry a profile picture, and its own Result explicitly deferred actually setting it to this follow-up -- which was never filed. generate_data.py currently sets no image_id at all for any of the 45 generated Acme staff accounts, so no photos appear anywhere in the Qt UI. |
 | [[id:4D2F72BC-09C5-41B6-A9BB-AF2B8B140B50][Extract shared party-bundle-plan publisher: dedupe provision_acme vs shell's provision party]] | BACKLOG | | | provision_acme's per-office market-data loop and ores.shell's process_party both iterate party_provisioning_bundle_plan(), calling publish_bundle + wait_for_workflow_instance per bundle -- the same loop, duplicated once in ores.iam.core (internal_request_client-based) and once in ores.shell (nats_client/workflow_commands-based). |
-| [[id:0AAFA676-6A9B-44BB-95A6-19E22E19BC8B][Retire Barclays as the demo/test entity now that Acme Bank replaces it]] | BACKLOG | | | Barclays Plc was the system's stand-in test/demo entity before Acme Bank existed. Now that Acme is fully provisioned (parties, business units, portfolios, books, accounts, CRM/IR/FX market data), retire every place that still defaults to or documents Barclays as the reference entity. |
+| [[id:0AAFA676-6A9B-44BB-95A6-19E22E19BC8B][Retire Barclays as the demo/test entity now that Acme Corporation replaces it]] | BACKLOG | | | Barclays Plc was the system's stand-in test/demo entity before Acme Corporation existed. Now that Acme is fully provisioned (parties, business units, portfolios, books, accounts, CRM/IR/FX market data), retire every place that still defaults to or documents Barclays as the reference entity. |
 
 * Decisions
 
@@ -139,9 +139,9 @@ each time.
   field-count-detection bug (segfault/corrupted JSON on multi-element
   vectors) specific to that struct; =boost::uuids::nil_uuid()= as
   "unset" is an existing codebase convention and sidesteps it.
-- *Four legal entities, each with its own full structure.* Acme Bank
-  Group plc (holding), Acme Bank UK plc, Acme Bank US Inc, Acme Bank
-  HK Ltd — each needs its own business units, portfolios, books, and
+- *Four legal entities, each with its own full structure.* Acme
+  Corporation Plc (holding), ACME Corporation UK plc, ACME Corporation
+  US Inc, ACME Corporation HK Ltd — each needs its own business units, portfolios, books, and
   staff, not just the holding company. Existing publish-from-dq
   functions are single-party-scoped per call (=params.party_id=), so
   giving four entities their own structure means four calls against
@@ -226,7 +226,7 @@ each time.
 
 * Out of scope
 
-- Retiring or removing Barclays Plc — Acme Bank supplements it as the
+- Retiring or removing Barclays Plc — Acme Corporation supplements it as the
   richer/fully-populated entity; Barclays Plc may still be useful for
   simpler/lighter-weight test scenarios.
 - Modelling every possible business unit/portfolio/book combination

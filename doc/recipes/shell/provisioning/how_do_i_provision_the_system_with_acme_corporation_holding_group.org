@@ -14,7 +14,7 @@ three-stage shell flow, but =provision tenant= is called with
 =--source acme=, which drives the actual request/handler pipeline
 (LEI import, per-party dataset-bundle publish, activation, onboarding)
 server-side via internal actor impersonation — see the [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme
-provisioning]] task in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]. The tenant itself is named
+provisioning]] task in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]. The tenant itself is named
 =Acme Corporation= (=acme_corporation=), matching the seeded dataset
 and the Qt one-click wizard's naming, not =Acme Bank= — an earlier
 name that was renamed away from everywhere it could be found at the

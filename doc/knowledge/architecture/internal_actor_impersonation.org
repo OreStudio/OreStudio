@@ -26,7 +26,7 @@ pattern is built to drive — so =internal_request_client= transparently
 re-mints and retries once on expiry, given a refresh callback; without
 one, expiry is a fast, clearly-labelled failure rather than a silent
 retry-until-timeout. =tenant_handler::provision_acme= (see
-[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]) is the worked example and the pattern's origin.
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]) is the worked example and the pattern's origin.
 
 * Detail
 
@@ -113,7 +113,7 @@ retry storm or a spurious failure:
   credential (worth refreshing, or else giving up loudly) is the
   concrete bug this pattern's first iteration shipped with, went
   undetected through a full ~10-minute happy-path run, and only
-  surfaced under an end-to-end test against live services -- see [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]'s task journal for how it was caught, diagnosed via
+  surfaced under an end-to-end test against live services -- see [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]'s task journal for how it was caught, diagnosed via
   the =ores.iam.service=/=ores.workflow.service= logs, and fixed.
 
 ** Wiring the refresh callback: one identity per client
@@ -164,7 +164,7 @@ construction left in that handler.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]]
   — the other two service-to-service auth flows this pattern sits
   alongside.
-- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] — the
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] — the
   story that introduced this pattern; =tenant_handler::provision_acme= is
   the worked example.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — general service call mechanics (mint or

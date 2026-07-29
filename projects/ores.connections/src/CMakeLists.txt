@@ -19,35 +19,7 @@ set(name "ores.connections")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/environment_tag_json_io.cpp"
-    "domain/environment_tag_table_io.cpp"
-    "domain/folder_json_io.cpp"
-    "domain/folder_table_io.cpp"
-    "domain/tag_json_io.cpp"
-    "domain/tag_table_io.cpp"
-    "generators/connection_generator.cpp"
-    "generators/environment_generator.cpp"
-    "generators/environment_tag_generator.cpp"
-    "generators/folder_generator.cpp"
-    "generators/tag_generator.cpp"
-    "repository/connection_mapper.cpp"
-    "repository/connection_repository.cpp"
-    "repository/connection_tag_mapper.cpp"
-    "repository/connection_tag_repository.cpp"
-    "repository/environment_mapper.cpp"
-    "repository/environment_repository.cpp"
-    "repository/environment_tag_mapper.cpp"
-    "repository/environment_tag_repository.cpp"
-    "repository/folder_mapper.cpp"
-    "repository/folder_repository.cpp"
-    "repository/recent_party_mapper.cpp"
-    "repository/recent_party_repository.cpp"
-    "repository/sqlite_context.cpp"
-    "repository/tag_mapper.cpp"
-    "repository/tag_repository.cpp"
-    "service/connection_manager.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

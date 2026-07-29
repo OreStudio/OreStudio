@@ -19,10 +19,20 @@ set(name "ores.trading.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain_activity_type_tests.cpp"
+    "domain_fpml_event_type_tests.cpp"
+    "domain_lifecycle_event_tests.cpp"
+    "domain_party_role_type_tests.cpp"
+    "domain_trade_id_type_tests.cpp"
+    "domain_trade_identifier_tests.cpp"
+    "domain_trade_party_role_tests.cpp"
+    "domain_trade_tests.cpp"
+    "domain_trade_type_tests.cpp"
+    "eventing_trade_events_tests.cpp"
+    "generators_tests.cpp"
+    "main.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

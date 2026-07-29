@@ -80,7 +80,9 @@ void CommandLineParser::setupOptions() {
     parser_.addOption({"master-password",
                        "Master password to auto-unlock connections.db instead of prompting "
                        "via MasterPasswordDialog. Falls back to "
-                       "ORES_CONNECTIONS_MASTER_PASSWORD if not set.",
+                       "ORES_CONNECTIONS_MASTER_PASSWORD if not set. Prefer the env var over "
+                       "this flag: CLI arguments are visible to other local processes/users "
+                       "(e.g. via ps) for the process's lifetime.",
                        "password"});
 }
 

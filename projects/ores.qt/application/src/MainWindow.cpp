@@ -988,6 +988,10 @@ bool MainWindow::initializeConnectionManager() {
                        "command line or environment, but the supplied master password was "
                        "incorrect. Please enter it manually."));
                 masterPassword_.clear();
+                // Prevent retrying the same known-bad password on a later
+                // call (e.g. reopening the Connection Browser after
+                // cancelling the dialog below).
+                cliMasterPassword_.clear();
             }
 
             // Prompt for master password (Unlock mode)
@@ -1063,6 +1067,13 @@ bool MainWindow::initializeConnectionManager() {
         } else if (autoUnlockAttempted) {
             BOOST_LOG_SEV(lg(), info)
                 << "Connections database auto-unlocked successfully via CLI/env master password";
+            // verify_master_password() trivially succeeds on a fresh DB with
+            // no encrypted passwords yet, so this path can be taken on
+            // first run too -- mark configured the same way the Create
+            // dialog does, or a later launch without the CLI/env value
+            // would unexpectedly re-prompt to create one.
+            QSettings settings;
+            settings.setValue("connections/master_password_configured", true);
         }
 
         return true;

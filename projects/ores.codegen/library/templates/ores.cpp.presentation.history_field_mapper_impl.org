@@ -29,8 +29,8 @@ Notes for the full list): flat entities only (no
 =has_identity_group=/=has_audit_group= — none of the currently-covered
 =ores.refdata= entities use them); enum columns not yet rendered
 (=is_enum=, none present in the covered entities today); primary key
-and natural keys support =string= and =uuid= only (every currently-
-covered entity's primary/natural keys are one of those two).
+supports =string= and =uuid= only; natural keys support =string=,
+=uuid=, =date=, and =timestamp=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -51,6 +51,9 @@ The full template source. Edit here and re-tangle with
 #include <boost/uuid/uuid_io.hpp>
 {{/has_render_uuid_columns}}
 #include "ores.platform/time/datetime.hpp"
+{{#has_date_natural_keys}}
+#include <format>
+{{/has_date_natural_keys}}
 
 namespace ores::{{component}}::presentation {
 
@@ -71,7 +74,18 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{column}})});
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_date}}
+    fields.push_back({.name = "{{render_label}}", .value = std::format("{:%Y-%m-%d}", v.{{column}})});
+{{/is_date}}
+{{^is_date}}
+{{#is_timestamp}}
+    fields.push_back(
+        {.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_utc(v.{{column}})});
+{{/is_timestamp}}
+{{^is_timestamp}}
     fields.push_back({.name = "{{render_label}}", .value = v.{{column}}});
+{{/is_timestamp}}
+{{/is_date}}
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}

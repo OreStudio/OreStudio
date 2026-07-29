@@ -20,6 +20,7 @@
 #include "ores.refdata.core/presentation/calendar_exception_history_field_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <format>
 
 namespace ores::refdata::presentation {
 

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FC925656-E898-46FA-A94C-EE8E6BFCA990
+:END:
+#+title: Header-comment drift in renamed synthetic populate SQL scripts
+#+description: Header-comment drift in renamed synthetic populate SQL scripts: several top-of-file header comments still say the dataset registered/looked up is synthetic.fx_spot_configs.X / synthetic.ir_curve_configs.X, but since the theme-unit merge (PR #1727) it's actually synthetic.themes.X. Cosmetic only (comment text, not functional), explicitly deferred as a follow-up during PR #1727 review (finding 3). Known locations: synthetic_fx_spot_configs_ore_samples_2016_populate.sql:24; synthetic_ir_curve_configs_uniform_demo_populate.sql:24,26,44,119,129; synthetic_ir_curve_configs_realistic_2026_populate.sql:62.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

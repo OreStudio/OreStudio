@@ -6362,6 +6362,9 @@ def cmd_codegen(argv):
                              help="Regenerate all components")
     regen_p.add_argument("--address", required=True, metavar="ADDRESS",
                          help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt)")
+    regen_p.add_argument("--entity", metavar="NAME[,NAME...]",
+                         help="Restrict --component to a comma-separated list of entity names "
+                              "(e.g. rounding_type,monetary_nature). Not valid with --all.")
     regen_p.add_argument("--dry-run", action="store_true",
                          help="Print output paths without writing")
 

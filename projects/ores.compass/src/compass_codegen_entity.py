@@ -31,27 +31,6 @@ def _read_org_id(path: Path) -> str:
         return ""
 
 
-def _entity_name_from_path(path: Path) -> str:
-    """Extract a human-readable entity name from a model file path.
-
-    ores.refdata.country.org        → country
-    ores.refdata.book_status.org    → book_status
-    country_domain_entity.json      → country
-    audit_record_field_group.org    → audit_record
-    """
-    stem = path.stem
-    for suffix in (
-        "_domain_entity", "_field_group", "_junction",
-        "_table", "_lookup_entity", "_enum", "_component", "_service_registry",
-    ):
-        if stem.endswith(suffix):
-            stem = stem[: -len(suffix)]
-            break
-    if "." in stem:
-        stem = stem.split(".")[-1]
-    return stem
-
-
 def _discover_all(base_dir: Path, project_root: Path):
     """Yield (model_path, metatype, component_name, entity_name) for every
     model file across all components.
@@ -62,14 +41,16 @@ def _discover_all(base_dir: Path, project_root: Path):
     must still resolve every model, including excluded types like
     junctions.
     """
-    from codegen.manifest import all_components, discover_models, get_component  # noqa: PLC0415
+    from codegen.manifest import (  # noqa: PLC0415
+        all_components, discover_models, entity_name_from_path, get_component,
+    )
     from codegen.core import get_model_type  # noqa: PLC0415
 
     for comp_name in all_components():
         comp = get_component(comp_name)
         for model_path in discover_models(comp, project_root, apply_exclusions=False):
             metatype = get_model_type(model_path.name, model_path)
-            entity_name = _entity_name_from_path(model_path)
+            entity_name = entity_name_from_path(model_path)
             yield model_path, metatype, comp_name, entity_name
 
 

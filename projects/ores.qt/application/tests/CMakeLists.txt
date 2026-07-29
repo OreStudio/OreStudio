@@ -23,7 +23,7 @@ set(tests_target_name ${name}.tests)
 set(CMAKE_AUTOMOC ON)
 
 set(files "")
-file(GLOB_RECURSE files RELATIVE
+file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 

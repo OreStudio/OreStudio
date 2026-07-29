@@ -75,6 +75,14 @@ def main() -> None:
         help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt).",
     )
     regen_p.add_argument(
+        "--entity",
+        metavar="NAME[,NAME...]",
+        help="Restrict --component to a comma-separated list of entity "
+             "names (e.g. rounding_type,monetary_nature). No other "
+             "entity's files are generated or written to disk. Not valid "
+             "with --all; unknown names are an error.",
+    )
+    regen_p.add_argument(
         "--dry-run",
         action="store_true",
         help="Print output paths that would be written without writing them",

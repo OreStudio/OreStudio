@@ -21,7 +21,7 @@ set(tests_target_name ${name}.tests)
 
 set(ORES_QT_HEADLESS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-file(GLOB_RECURSE files RELATIVE
+file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 

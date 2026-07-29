@@ -8,7 +8,7 @@
 #+filetags: :fix-image-batch-payload-and-compression:sprint_24:v0:
 #+owner: marco
 #+branch: feature/decide-nats-compression-vs-http-transport
-#+pr:
+#+pr: 1733
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
@@ -148,7 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1733][#1733]] | [agile] Close image-batch payload story, split off jetstream_admin decompress |
 
 * Review
 

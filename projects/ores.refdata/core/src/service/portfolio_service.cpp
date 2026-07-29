@@ -45,12 +45,13 @@ std::uint32_t portfolio_service::count_portfolios() {
 
 std::optional<domain::portfolio>
 portfolio_service::get_portfolio_at_version(const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio at version: " << id << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio at version. " << "id: " << id
+                               << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::portfolio> portfolio_service::get_portfolio(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -60,11 +61,11 @@ std::optional<domain::portfolio> portfolio_service::get_portfolio(const std::str
 void portfolio_service::save_portfolio(const domain::portfolio& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Portfolio id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving portfolio: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving portfolio. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved portfolio: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved portfolio. " << "id: " << v.id;
 }
 
 void portfolio_service::save_portfolios(const std::vector<domain::portfolio>& portfolios) {
@@ -79,9 +80,9 @@ void portfolio_service::save_portfolios(const std::vector<domain::portfolio>& po
 }
 
 void portfolio_service::delete_portfolio(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed portfolio: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed portfolio. " << "id: " << id;
 }
 
 void portfolio_service::delete_portfolios(const std::vector<std::string>& ids) {
@@ -89,7 +90,7 @@ void portfolio_service::delete_portfolios(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::portfolio> portfolio_service::get_portfolio_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

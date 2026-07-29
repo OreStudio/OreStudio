@@ -37,7 +37,7 @@ std::string regulatory_book_type_repository::sql() {
 }
 
 void regulatory_book_type_repository::write(context ctx, const domain::regulatory_book_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing regulatory book type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing regulatory book type. " << "code: " << v.code;
     execute_write_query(ctx,
                         regulatory_book_type_mapper::map(v),
                         lg(),
@@ -71,7 +71,7 @@ regulatory_book_type_repository::read_latest(context ctx) {
 
 std::vector<domain::regulatory_book_type>
 regulatory_book_type_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest regulatory book type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest regulatory book type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -123,7 +123,7 @@ std::vector<domain::regulatory_book_type> regulatory_book_type_repository::read_
 
 std::vector<domain::regulatory_book_type>
 regulatory_book_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all regulatory book type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all regulatory book type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<regulatory_book_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -139,7 +139,7 @@ regulatory_book_type_repository::read_all(context ctx, const std::string& code) 
 
 std::optional<domain::regulatory_book_type> regulatory_book_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<regulatory_book_type_entity>> |
@@ -160,7 +160,7 @@ std::optional<domain::regulatory_book_type> regulatory_book_type_repository::rea
 }
 
 void regulatory_book_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

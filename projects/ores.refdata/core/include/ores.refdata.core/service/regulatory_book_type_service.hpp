@@ -92,7 +92,6 @@ public:
      * @brief Retrieves a single regulatory book type as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the regulatory book type.
      * @param version The version to fetch.
      * @return The regulatory book type at that version if found, std::nullopt otherwise.
      */
@@ -100,9 +99,8 @@ public:
                                                                     std::uint32_t version);
 
     /**
-     * @brief Retrieves a single regulatory book type by its code.
+     * @brief Retrieves a single regulatory book type by its primary key.
      *
-     * @param code The code of the regulatory book type.
      * @return The regulatory book type if found, std::nullopt otherwise.
      */
     std::optional<domain::regulatory_book_type> get_type(const std::string& code);
@@ -124,15 +122,14 @@ public:
     void save_types(const std::vector<domain::regulatory_book_type>& types);
 
     /**
-     * @brief Deletes a regulatory book type by its code.
+     * @brief Deletes a regulatory book type by its primary key.
      *
-     * @param code The code of the regulatory book type to delete.
      * @throws std::exception on failure.
      */
     void delete_type(const std::string& code);
 
     /**
-     * @brief Deletes regulatory book types by their codes.
+     * @brief Deletes regulatory book types by their primary keys.
      */
     void delete_types(const std::vector<std::string>& codes);
 

@@ -80,7 +80,6 @@ public:
      * @brief Retrieves a single portfolio as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the portfolio.
      * @param version The version to fetch.
      * @return The portfolio at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +87,8 @@ public:
                                                               std::uint32_t version);
 
     /**
-     * @brief Retrieves a single portfolio by its id.
+     * @brief Retrieves a single portfolio by its primary key.
      *
-     * @param id The id of the portfolio.
      * @return The portfolio if found, std::nullopt otherwise.
      */
     std::optional<domain::portfolio> get_portfolio(const std::string& id);
@@ -112,15 +110,14 @@ public:
     void save_portfolios(const std::vector<domain::portfolio>& portfolios);
 
     /**
-     * @brief Deletes a portfolio by its id.
+     * @brief Deletes a portfolio by its primary key.
      *
-     * @param id The id of the portfolio to delete.
      * @throws std::exception on failure.
      */
     void delete_portfolio(const std::string& id);
 
     /**
-     * @brief Deletes portfolios by their ids.
+     * @brief Deletes portfolios by their primary keys.
      */
     void delete_portfolios(const std::vector<std::string>& ids);
 

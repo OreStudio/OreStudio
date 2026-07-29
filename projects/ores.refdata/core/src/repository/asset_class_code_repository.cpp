@@ -37,7 +37,7 @@ std::string asset_class_code_repository::sql() {
 }
 
 void asset_class_code_repository::write(context ctx, const domain::asset_class_code& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset class code: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset class code. " << "code: " << v.code;
     execute_write_query(
         ctx, asset_class_code_mapper::map(v), lg(), "Writing asset class code to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(c
 
 std::vector<domain::asset_class_code>
 asset_class_code_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class code. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class code. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -81,9 +81,10 @@ asset_class_code_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest asset class code by code.");
 }
 
+
 std::vector<domain::asset_class_code>
 asset_class_code_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all asset class code versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all asset class code versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<asset_class_code_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -99,7 +100,7 @@ asset_class_code_repository::read_all(context ctx, const std::string& code) {
 
 std::optional<domain::asset_class_code> asset_class_code_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading asset class code at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading asset class code at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<asset_class_code_entity>> |
@@ -119,7 +120,7 @@ std::optional<domain::asset_class_code> asset_class_code_repository::read_at_ver
 }
 
 void asset_class_code_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset class code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing asset class code. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

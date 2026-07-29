@@ -53,14 +53,14 @@ regulatory_book_type_service::list_types_at_timepoint(const std::string& as_of,
 
 std::optional<domain::regulatory_book_type>
 regulatory_book_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::regulatory_book_type>
 regulatory_book_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -70,18 +70,19 @@ regulatory_book_type_service::get_type(const std::string& code) {
 void regulatory_book_type_service::save_type(const domain::regulatory_book_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Regulatory Book Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving regulatory book type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving regulatory book type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved regulatory book type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved regulatory book type. " << "code: " << v.code;
 }
 
 void regulatory_book_type_service::save_types(
     const std::vector<domain::regulatory_book_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.code.empty())
             throw std::invalid_argument("Regulatory Book Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " regulatory book types";
     auto ts = types;
     for (auto& e : ts)
@@ -90,9 +91,9 @@ void regulatory_book_type_service::save_types(
 }
 
 void regulatory_book_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed regulatory book type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed regulatory book type. " << "code: " << code;
 }
 
 void regulatory_book_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -101,7 +102,7 @@ void regulatory_book_type_service::delete_types(const std::vector<std::string>& 
 
 std::vector<domain::regulatory_book_type>
 regulatory_book_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for regulatory book type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for regulatory book type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -20,20 +20,7 @@ set(name "ores.analytics.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/pricing_engine_type_json_io.cpp"
-    "domain/pricing_engine_type_table.cpp"
-    "domain/pricing_model_config_json_io.cpp"
-    "domain/pricing_model_config_table.cpp"
-    "domain/pricing_model_product_json_io.cpp"
-    "domain/pricing_model_product_parameter_json_io.cpp"
-    "domain/pricing_model_product_parameter_table.cpp"
-    "domain/pricing_model_product_table.cpp"
-    "generators/pricing_engine_type_generator.cpp"
-    "generators/pricing_model_config_generator.cpp"
-    "generators/pricing_model_product_generator.cpp"
-    "generators/pricing_model_product_parameter_generator.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

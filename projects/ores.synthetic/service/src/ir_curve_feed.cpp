@@ -153,7 +153,7 @@ void ir_curve_feed::stop() {
     stop_flag_.store(true, std::memory_order_relaxed);
 }
 
-const ir_curve_resolved_entry*
+ORES_SYNTHETIC_SERVICE_EXPORT const ir_curve_resolved_entry*
 select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
     const ir_curve_resolved_entry* anchor = nullptr;
     for (const auto& e : resolved) {

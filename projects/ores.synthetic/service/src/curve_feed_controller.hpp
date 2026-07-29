@@ -32,6 +32,18 @@
 namespace ores::synthetic::service {
 
 /**
+ * @brief Whether two running/candidate feeds would collide: same (qualifier, role) pair.
+ * role is part of the comparison deliberately -- a discount feed and a projection feed for the
+ * same qualifier are expected to coexist, not conflict. Pure and free of ir_curve_feed/NATS so
+ * it's directly unit-testable (curve_feed_controller_tests.cpp) without a live NATS client,
+ * which neither ir_curve_feed nor curve_feed_controller itself can be constructed without.
+ */
+inline bool ir_curve_feeds_conflict(const std::string& qualifier_a, const std::string& role_a,
+                                    const std::string& qualifier_b, const std::string& role_b) {
+    return qualifier_a == qualifier_b && role_a == role_b;
+}
+
+/**
  * @brief Owns the running ir_curve_feed producers; one tick thread per feed, keyed by
  * source_name -- same shape as feed_controller's own feeds_ map for FX.
  *
@@ -193,7 +205,8 @@ private:
                             const std::string& role,
                             const std::string& excluding_source_name) const {
         for (const auto& [name, rf] : feeds_)
-            if (rf.qualifier == qualifier && rf.role == role && name != excluding_source_name)
+            if (ir_curve_feeds_conflict(rf.qualifier, rf.role, qualifier, role) &&
+                name != excluding_source_name)
                 return name;
         return std::nullopt;
     }

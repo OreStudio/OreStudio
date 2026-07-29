@@ -46,34 +46,44 @@ story's =* Decisions=).
 
 * Acceptance
 
-- [ ] =ir_curve_generation_config= has =index_family= (enum-shaped
+- [X] =ir_curve_generation_config= has =index_family= (enum-shaped
   text: =libor=/=euribor=/=sofr=/=estr=/=sonia=/=tona=), =tenor=
   (text, required iff =index_family= is a term family, empty
   otherwise -- mirrors the =price_source=/=vintage_source= empty-string
   nullable pattern already used on this table), and =role= (text:
   =discount=/=projection=/=self_discounting=) columns; =index_name= is
   deleted (hard cutover, no coexistence).
-- [ ] The Insert-trigger validator for the new fields checks
-  =(currency_code, index_family)= resolves to a real
-  =overnight_index_convention= or =ibor_index_convention= row (id =
-  =currency_code + "-" + upper(index_family)=), replacing the old
-  single-column =floating_index_type= FK validator.
-- [ ] Every consumer of =index_name= (feed qualifier construction,
-  vintage lookup, Qt list/detail/history, generator, event registrar)
-  is migrated onto =index_family=/=tenor=; grep for =index_name= across
-  =ores.synthetic=/=ores.qt= returns nothing once done.
-- [ ] =curve_feed_controller='s collision check
-  (=find_qualifier_conflict=) keys on the new
-  =(currency_code, index_family, tenor, role)= tuple, not the current
-  flat =qualifier= string -- two feeds with the same
-  =(currency_code, index_family, tenor)= but different =role= (one
-  =discount=, one =projection=) no longer conflict.
-- [ ] Full =compass build= clean; =ctest= full suite green; existing
-  =curve_feed_controller=/=ir_curve_feed= tests updated/extended to
-  cover the discount-vs-projection non-conflict case.
-- [ ] [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize
-  floating-rate index reference data]] closed as superseded, per the
-  parent story's =* Decisions=.
+- [X] The =(currency_code, index_family)= composite check resolves to
+  a real =overnight_index_convention= or =ibor_index_convention= row
+  (id = =currency_code + "-" + upper(index_family)=) -- implemented as
+  a C++ service-layer validator
+  (=ir_curve_generation_config_service::validate_index_family=), not a
+  DB trigger (the codegen Insert-trigger Validations mechanism can't
+  express a two-column lookup; matches the precedent this entity's own
+  =tenor= field already sets).
+- [X] Every consumer of =index_name= (feed qualifier construction,
+  vintage lookup, Qt list/detail/history, generator, event registrar,
+  binding-collision preflight check) is migrated onto
+  =index_family=/=tenor=; grep for =index_name= across
+  =ores.synthetic=/=ores.qt= returns only unrelated hits (a different
+  entity's own =index.index_name= field, and widget variable names
+  intentionally retained for minimal diff).
+- [X] =curve_feed_controller='s collision check
+  (=find_qualifier_conflict=, via the new =ir_curve_feeds_conflict=
+  pure predicate) keys on =(qualifier, role)= -- two feeds with the
+  same =(currency_code, index_family, tenor)= qualifier but different
+  =role= (one =discount=, one =projection=) no longer conflict.
+- [X] Full =compass build= clean; =ctest= full suite green (74/74);
+  new =curve_feed_controller_tests.cpp= covers the
+  discount-vs-projection non-conflict case (and same-role conflict,
+  different-qualifier non-conflict) directly against the extracted
+  pure predicate -- =ir_curve_feed=/=curve_feed_controller= themselves
+  need a live NATS client to construct and have no prior unit test
+  precedent to extend.
+- [X] [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize
+  floating-rate index reference data]] was already closed as
+  superseded (state =ABANDONED=, PR #1713, full =* Result=) before this
+  task started -- nothing further needed here.
 
 * Plan
 

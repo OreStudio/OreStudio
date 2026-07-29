@@ -20,6 +20,8 @@
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include <algorithm>
+#include <cstdlib>
+#include <memory>
 #include <nats/nats.h>
 #include <stdexcept>
 #include <string>
@@ -96,6 +98,11 @@ void fill_data_and_headers(natsMsg* msg, domain::stream_message& result) {
 
     result.data = ores::nats::decompress_if_flagged(result.data, result.headers);
 }
+
+// RAII guard for natsMsg (a raw C pointer): decompress_if_flagged() inside
+// fill_data_and_headers() can throw on a gzip-flagged-but-malformed payload,
+// and without this guard that would skip natsMsg_Destroy() and leak msg.
+using nats_msg_guard = std::unique_ptr<natsMsg, decltype(&natsMsg_Destroy)>;
 
 domain::consumer_info fill_consumer_info(jsConsumerInfo* info) {
     domain::consumer_info ci;
@@ -268,6 +275,7 @@ domain::stream_message jetstream_admin::peek_message(std::string_view stream_nam
     const natsStatus s =
         js_GetMsg(&msg, js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
     check(s, "js_GetMsg");
+    nats_msg_guard guard(msg, natsMsg_Destroy);
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
@@ -276,7 +284,6 @@ domain::stream_message jetstream_admin::peek_message(std::string_view stream_nam
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
     fill_data_and_headers(msg, result);
 
-    natsMsg_Destroy(msg);
     return result;
 }
 
@@ -292,6 +299,7 @@ domain::stream_message jetstream_admin::peek_last_message(std::string_view strea
     const natsStatus s = js_GetLastMsg(
         &msg, js, std::string(stream_name).c_str(), std::string(subject).c_str(), &opts, &jerr);
     check(s, "js_GetLastMsg");
+    nats_msg_guard guard(msg, natsMsg_Destroy);
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
@@ -300,7 +308,6 @@ domain::stream_message jetstream_admin::peek_last_message(std::string_view strea
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
     fill_data_and_headers(msg, result);
 
-    natsMsg_Destroy(msg);
     return result;
 }
 

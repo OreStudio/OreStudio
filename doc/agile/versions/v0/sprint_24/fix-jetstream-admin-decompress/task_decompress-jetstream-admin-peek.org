@@ -99,7 +99,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | natsMsg leak if decompress_if_flagged() throws on malformed gzip (raised independently by 2 reviewers) | jetstream_admin.cpp | Fixed | Added nats_msg_guard RAII (unique_ptr with natsMsg_Destroy deleter) in both peek functions, mirroring client.cpp's on_msg() exception-safety handling. |
+| 2 | free(keys) used without an explicit #include <cstdlib> | jetstream_admin.cpp | Fixed | Added the include, matching client.cpp's convention. |
 
 * Result
 
@@ -108,7 +109,17 @@ extract headers and call =decompress_if_flagged()= before returning
 =stream_message=, via a shared helper mirroring =client.cpp='s
 =extract_message()=. Admin tooling (=ores.qt='s =QueueDetailDialog=)
 will see decompressed content for any JetStream message above the
-4096-byte compression threshold, instead of raw gzip bytes. Local
-build (=ores.nats.lib=) and =ores.nats.tests= both pass; no new unit
-test added since =jetstream_admin= has no existing unit-test coverage
-(live-JetStream-only, exercised via manual QA).
+4096-byte compression threshold, instead of raw gzip bytes.
+
+Review round 1 caught a genuine resource-safety gap: since
+=decompress_if_flagged()= can throw on a gzip-flagged-but-malformed
+payload, calling it before =natsMsg_Destroy(msg)= would leak =msg= on
+that path. Fixed with a =nats_msg_guard= RAII wrapper
+(=std::unique_ptr= with =natsMsg_Destroy= as deleter), mirroring the
+same exception-safety handling =client.cpp='s =on_msg()= already has
+for this exact hazard. Also added the missing =#include <cstdlib>=
+for =free()=, matching =client.cpp='s convention.
+
+Local build (=ores.nats.lib=) and =ores.nats.tests= both pass; no new
+unit test added since =jetstream_admin= has no existing unit-test
+coverage (live-JetStream-only, exercised via manual QA).

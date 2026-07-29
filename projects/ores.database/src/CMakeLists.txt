@@ -19,10 +19,20 @@ set(name "ores.database")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "config/database_configuration.cpp"
+    "domain/database_info_json_io.cpp"
+    "domain/database_options.cpp"
+    "repository/bitemporal_operations.cpp"
+    "repository/database_info_entity.cpp"
+    "repository/database_info_mapper.cpp"
+    "repository/database_info_repository.cpp"
+    "service/context_factory.cpp"
+    "service/health_monitor.cpp"
+    "service/party_context.cpp"
+    "service/postgres_listener_service.cpp"
+    "service/tenant_context.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

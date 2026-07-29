@@ -19,10 +19,12 @@ set(name "ores.assets.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain_image_tag_tests.cpp"
+    "domain_image_tests.cpp"
+    "domain_tag_tests.cpp"
+    "main.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

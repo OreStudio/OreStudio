@@ -8,7 +8,7 @@
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
 #+branch: feature/add-entity-filter-flag-to-regenerate
-#+pr:
+#+pr: 1734
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1734][#1734]] | [agile,codegen] Add --entity filter flag to codegen regenerate |
 
 * Review
 

@@ -38,7 +38,7 @@ std::string party_identifier_repository::sql() {
 }
 
 void party_identifier_repository::write(context ctx, const domain::party_identifier& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party identifier. " << "id: " << v.id;
     execute_write_query(
         ctx, party_identifier_mapper::map(v), lg(), "Writing party identifier to database.");
 }
@@ -67,7 +67,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest(c
 
 std::vector<domain::party_identifier>
 party_identifier_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
@@ -81,9 +81,10 @@ party_identifier_repository::read_latest(context ctx, const std::string& id) {
         "Reading latest party identifier by id.");
 }
 
+
 std::vector<domain::party_identifier> party_identifier_repository::read_all(context ctx,
                                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party identifier versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -99,7 +100,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_all(cont
 
 std::optional<domain::party_identifier> party_identifier_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party identifier at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading party identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_by_party
         "Reading party identifiers as of window by party_id.");
 }
 void party_identifier_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party identifier. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_identifier_entity> |

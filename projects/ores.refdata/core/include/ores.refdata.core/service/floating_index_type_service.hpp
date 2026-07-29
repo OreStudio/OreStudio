@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_types();
 
+
     /**
      * @brief Retrieves a single floating index type as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the floating index type.
      * @param version The version to fetch.
      * @return The floating index type at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                    std::uint32_t version);
 
     /**
-     * @brief Retrieves a single floating index type by its code.
+     * @brief Retrieves a single floating index type by its primary key.
      *
-     * @param code The code of the floating index type.
      * @return The floating index type if found, std::nullopt otherwise.
      */
     std::optional<domain::floating_index_type> get_type(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_types(const std::vector<domain::floating_index_type>& types);
 
     /**
-     * @brief Deletes a floating index type by its code.
+     * @brief Deletes a floating index type by its primary key.
      *
-     * @param code The code of the floating index type to delete.
      * @throws std::exception on failure.
      */
     void delete_type(const std::string& code);
 
     /**
-     * @brief Deletes floating index types by their codes.
+     * @brief Deletes floating index types by their primary keys.
      */
     void delete_types(const std::vector<std::string>& codes);
 

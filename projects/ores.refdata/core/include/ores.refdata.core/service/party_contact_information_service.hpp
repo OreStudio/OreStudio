@@ -77,6 +77,7 @@ public:
      */
     std::uint32_t count_party_contact_informations();
 
+
     /**
      * @brief Lists party contact informations filtered by party_id, with pagination.
      *
@@ -115,7 +116,6 @@ public:
      * @brief Retrieves a single party contact information as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the party contact information.
      * @param version The version to fetch.
      * @return The party contact information at that version if found, std::nullopt otherwise.
      */
@@ -123,9 +123,8 @@ public:
     get_party_contact_information_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single party contact information by its id.
+     * @brief Retrieves a single party contact information by its primary key.
      *
-     * @param id The id of the party contact information.
      * @return The party contact information if found, std::nullopt otherwise.
      */
     std::optional<domain::party_contact_information>
@@ -150,15 +149,14 @@ public:
         const std::vector<domain::party_contact_information>& party_contact_informations);
 
     /**
-     * @brief Deletes a party contact information by its id.
+     * @brief Deletes a party contact information by its primary key.
      *
-     * @param id The id of the party contact information to delete.
      * @throws std::exception on failure.
      */
     void delete_party_contact_information(const std::string& id);
 
     /**
-     * @brief Deletes party contact informations by their ids.
+     * @brief Deletes party contact informations by their primary keys.
      */
     void delete_party_contact_informations(const std::vector<std::string>& ids);
 

@@ -42,16 +42,17 @@ std::uint32_t party_id_scheme_service::count_schemes() {
     return repo_.get_total_scheme_count(ctx_);
 }
 
+
 std::optional<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::party_id_scheme>
 party_id_scheme_service::get_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -61,17 +62,18 @@ party_id_scheme_service::get_scheme(const std::string& code) {
 void party_id_scheme_service::save_scheme(const domain::party_id_scheme& v) {
     if (v.code.empty())
         throw std::invalid_argument("Party ID Scheme code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party ID scheme: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving party ID scheme. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme. " << "code: " << v.code;
 }
 
 void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_scheme>& schemes) {
-    for (const auto& e : schemes)
+    for (const auto& e : schemes) {
         if (e.code.empty())
             throw std::invalid_argument("Party ID Scheme code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
     auto ts = schemes;
     for (auto& e : ts)
@@ -80,9 +82,9 @@ void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_sc
 }
 
 void party_id_scheme_service::delete_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed party ID scheme: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed party ID scheme. " << "code: " << code;
 }
 
 void party_id_scheme_service::delete_schemes(const std::vector<std::string>& codes) {
@@ -91,7 +93,7 @@ void party_id_scheme_service::delete_schemes(const std::vector<std::string>& cod
 
 std::vector<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

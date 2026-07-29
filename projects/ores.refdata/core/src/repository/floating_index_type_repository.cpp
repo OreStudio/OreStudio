@@ -37,7 +37,7 @@ std::string floating_index_type_repository::sql() {
 }
 
 void floating_index_type_repository::write(context ctx, const domain::floating_index_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing floating index type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing floating index type. " << "code: " << v.code;
     execute_write_query(
         ctx, floating_index_type_mapper::map(v), lg(), "Writing floating index type to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::floating_index_type> floating_index_type_repository::read_la
 
 std::vector<domain::floating_index_type>
 floating_index_type_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest floating index type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest floating index type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -81,9 +81,10 @@ floating_index_type_repository::read_latest(context ctx, const std::string& code
         "Reading latest floating index type by code.");
 }
 
+
 std::vector<domain::floating_index_type>
 floating_index_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all floating index type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all floating index type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<floating_index_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -99,7 +100,7 @@ floating_index_type_repository::read_all(context ctx, const std::string& code) {
 
 std::optional<domain::floating_index_type> floating_index_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading floating index type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading floating index type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<floating_index_type_entity>> |
@@ -120,7 +121,7 @@ std::optional<domain::floating_index_type> floating_index_type_repository::read_
 }
 
 void floating_index_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing floating index type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing floating index type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

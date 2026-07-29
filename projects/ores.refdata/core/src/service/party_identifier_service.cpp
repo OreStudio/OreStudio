@@ -42,6 +42,7 @@ std::uint32_t party_identifier_service::count_party_identifiers() {
     return repo_.get_total_party_identifier_count(ctx_);
 }
 
+
 std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers_by_party_id(
     const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers by party_id: " << party_id;
@@ -66,14 +67,14 @@ party_identifier_service::list_party_identifiers_by_party_id_as_of(
 std::optional<domain::party_identifier>
 party_identifier_service::get_party_identifier_at_version(const std::string& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party identifier at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting party identifier at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::party_identifier>
 party_identifier_service::get_party_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting party identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -83,11 +84,11 @@ party_identifier_service::get_party_identifier(const std::string& id) {
 void party_identifier_service::save_party_identifier(const domain::party_identifier& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Party Identifier id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving party identifier. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved party identifier. " << "id: " << v.id;
 }
 
 void party_identifier_service::save_party_identifiers(
@@ -103,9 +104,9 @@ void party_identifier_service::save_party_identifiers(
 }
 
 void party_identifier_service::delete_party_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party identifier. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed party identifier: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed party identifier. " << "id: " << id;
 }
 
 void party_identifier_service::delete_party_identifiers(const std::vector<std::string>& ids) {
@@ -114,7 +115,7 @@ void party_identifier_service::delete_party_identifiers(const std::vector<std::s
 
 std::vector<domain::party_identifier>
 party_identifier_service::get_party_identifier_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party identifier. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

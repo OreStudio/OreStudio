@@ -37,7 +37,7 @@ std::string party_status_repository::sql() {
 }
 
 void party_status_repository::write(context ctx, const domain::party_status& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party status: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party status. " << "code: " << v.code;
     execute_write_query(
         ctx, party_status_mapper::map(v), lg(), "Writing party status to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::party_status> party_status_repository::read_latest(context c
 
 std::vector<domain::party_status> party_status_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party status. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party status. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ std::vector<domain::party_status> party_status_repository::read_latest(context c
         "Reading latest party status by code.");
 }
 
+
 std::vector<domain::party_status> party_status_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party status versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party status versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_status_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::party_status> party_status_repository::read_all(context ctx,
 
 std::optional<domain::party_status> party_status_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party status at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading party status at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_status_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::party_status> party_status_repository::read_at_version(
 }
 
 void party_status_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party status: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party status. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

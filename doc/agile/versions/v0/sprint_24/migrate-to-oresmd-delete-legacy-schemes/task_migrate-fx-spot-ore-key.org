@@ -117,7 +117,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | recomputeOreKey() preview label still hand-concatenates FX/RATE/base/quote, duplicating the exact formula the task set out to eliminate | FxSpotRateEditor.cpp | Accepted | Extracted a shared oreKeyFor(base, quote) helper (anonymous namespace) wrapping oresmd_projections::to_quote_key; both recomputeOreKey() and onSaveClicked() now call it, so there is exactly one implementation of the FX ore_key format in this file. |
+| 2 | to_quote_key(...).value_or(std::string()) silently persists an empty ore_key if the projection ever returns nullopt, unlike every other validation failure in onSaveClicked which warns and returns | FxSpotRateEditor.cpp | Accepted | onSaveClicked now checks oreKeyFor(...)'s result explicitly: on nullopt it shows a QMessageBox::warning ("Could not derive an ORE key for this currency pair.") and returns without saving, consistent with the function's other validation checks. |
 
 * Result
 

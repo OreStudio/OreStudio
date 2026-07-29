@@ -123,6 +123,15 @@ const EngineInfo* find_engine(const std::string& code) {
     return nullptr;
 }
 
+// Single source of truth for FX ore_key derivation, shared by the live preview
+// label (recomputeOreKey) and the actual save path (onSaveClicked) -- both
+// must agree with what oresmd_projections::to_quote_key would produce.
+std::optional<std::string> oreKeyFor(const std::string& base, const std::string& quote) {
+    const marketdata::domain::fx_market_data_identifier id{
+        .pair = base + quote, .type = marketdata::domain::instrument_type::quote};
+    return marketdata::core::oresmd_projections::to_quote_key(id);
+}
+
 // Advanced table columns (no per-component Type — engine is config-level now).
 enum Col {
     ColColor = 0,
@@ -923,7 +932,7 @@ void FxSpotRateEditor::recomputeOreKey() {
     if (base.empty() || quote.empty())
         oreKeyLabel_->setText({});
     else
-        oreKeyLabel_->setText(QString::fromStdString("FX/RATE/" + base + "/" + quote));
+        oreKeyLabel_->setText(QString::fromStdString(oreKeyFor(base, quote).value_or(std::string())));
 }
 
 void FxSpotRateEditor::recomputeDefaultSourceName() {
@@ -1801,10 +1810,14 @@ void FxSpotRateEditor::onSaveClicked() {
     auto fx = fx_;
     fx.base_currency_code = base;
     fx.quote_currency_code = quote;
-    const marketdata::domain::fx_market_data_identifier oresmdFxId{
-        .pair = base + quote, .type = marketdata::domain::instrument_type::quote};
-    fx.ore_key =
-        marketdata::core::oresmd_projections::to_quote_key(oresmdFxId).value_or(std::string());
+    const auto oreKey = oreKeyFor(base, quote);
+    if (!oreKey) {
+        QMessageBox::warning(this,
+                             tr("Invalid pair"),
+                             tr("Could not derive an ORE key for this currency pair."));
+        return;
+    }
+    fx.ore_key = *oreKey;
     fx.source_name = sourceNameEdit_->text().trimmed().toStdString();
     if (fx.source_name.empty())
         fx.source_name = defaultSourceName().toStdString();

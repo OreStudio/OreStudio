@@ -19,10 +19,13 @@ set(name "ores.variability.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "messaging/registrar.cpp"
+    "repository/system_setting_entity.cpp"
+    "repository/system_setting_mapper.cpp"
+    "repository/system_settings_repository.cpp"
+    "service/system_settings_service.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

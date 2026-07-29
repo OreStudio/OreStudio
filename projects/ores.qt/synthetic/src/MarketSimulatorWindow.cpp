@@ -1952,6 +1952,11 @@ void MarketSimulatorWindow::promptThemeAndStart() {
     connect(buttons, &QDialogButtonBox::accepted, this, [this, combo, sub]() {
         const QString chosen = combo->currentText();
         sub->close();
+        // Re-fetched rather than reusing the outer `collections` -- this
+        // picker is non-modal, so the tree can rebuild (e.g. via reload())
+        // while it's open, which would leave outer's QStandardItem*
+        // pointers dangling. Re-querying here is deliberate, not an
+        // oversight.
         const auto collections = rootCollections();
         for (auto* item : collections) {
             if (item->text() != chosen)

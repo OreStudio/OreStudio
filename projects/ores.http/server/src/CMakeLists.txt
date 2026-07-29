@@ -19,14 +19,7 @@ set(name "ores.http.server")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/host.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "main.cpp"
-    "messaging/registrar.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

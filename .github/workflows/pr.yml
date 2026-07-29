@@ -114,9 +114,33 @@ jobs:
       - name: Run ORE domain roundtrip check
         run: python3 scripts/ore_domain_roundtrip_check.py
 
+  cmake-sources-drift:
+    name: cmake-sources-drift
+    needs: classify
+    # yamllint disable-line rule:line-length
+    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check every component_files.cmake is up to date
+        # Every component's CMakeLists.txt include()s a generated
+        # component_files.cmake instead of using file(GLOB_RECURSE ...)
+        # (see the "Replace GLOB_RECURSE with explicit source lists"
+        # story) -- a source file added without regenerating it never
+        # gets compiled, with no compiler/linker signal if nothing else
+        # references it yet. This is the CI gate that catches that.
+        run: |
+          script=projects/ores.codegen/scripts/regenerate_cmake_component_files.py
+          python3 "$script" --all --check
+
   pr-gate:
     name: pr-gate
-    needs: [classify, site, roundtrip]
+    needs: [classify, site, roundtrip, cmake-sources-drift]
     if: always()
     runs-on: ubuntu-24.04
     steps:
@@ -125,11 +149,12 @@ jobs:
           CLASSIFY: ${{ needs.classify.result }}
           SITE: ${{ needs.site.result }}
           ROUNDTRIP: ${{ needs.roundtrip.result }}
+          CMAKE_SOURCES_DRIFT: ${{ needs.cmake-sources-drift.result }}
         run: |
           echo "classify=$CLASSIFY site=$SITE"
-          echo "roundtrip=$ROUNDTRIP"
+          echo "roundtrip=$ROUNDTRIP cmake-sources-drift=$CMAKE_SOURCES_DRIFT"
           [ "$CLASSIFY" = "success" ] || { echo "classifier failed"; exit 1; }
-          for r in "$SITE" "$ROUNDTRIP"; do
+          for r in "$SITE" "$ROUNDTRIP" "$CMAKE_SOURCES_DRIFT"; do
             case "$r" in
               success|skipped) ;;
               *) echo "a required job failed: $r"; exit 1 ;;

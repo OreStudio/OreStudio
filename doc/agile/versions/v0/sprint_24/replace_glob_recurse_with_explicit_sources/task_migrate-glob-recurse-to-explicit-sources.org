@@ -166,7 +166,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1751#issuecomment-5124181331][5124181331]] | Claude review: =--check= is documented as "for CI drift detection" (task acceptance + script docstring) but no workflow actually invokes it -- a new =.cpp= added without regenerating silently never compiles/links, with no CI signal | =.github/workflows/pr.yml= | Accepted | Added a =cmake-sources-drift= job (gated like =roundtrip=, on =classify.outputs.code \vert\vert ci=) running =regenerate_cmake_component_files.py --all --check=, wired into =pr-gate='s required set. |
 
 * Result
 

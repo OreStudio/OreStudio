@@ -41,11 +41,11 @@ JWKS fetch from IAM should succeed on the first attempt, not loop forever.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-27                               |
 
 * Acceptance
@@ -119,3 +119,46 @@ via its "Verifies task" field.
 | 4 | Root-cause narrative comment's claim about co_spawn scheduling worth double-checking | application.cpp | Declined | Comment reflects extensive empirical verification described in the PR; left as-is |
 
 * Result
+
+Root cause: ~process_supervisor::start_all()~ was spawned via ~co_spawn(io_ctx,
+..., use_awaitable)~ in ~application.cpp~ without an immediate ~co_await~ on
+the returned awaitable. Confirmed by direct, repeated experiment that this
+pattern never gets its first resume scheduled in some environments
+(reproducible over hundreds of retries / hours of container runtime), even
+though the same ~io_context~ was demonstrably running other coroutines
+throughout.
+
+Fix: spawn ~start_all()~ ~detached~ instead (detached's first resume runs
+immediately and reliably), and signal completion via a one-shot
+~steady_timer~ (~start_all_done~, moved into the past when ~start_all()~
+finishes) that ~application::run()~ awaits before touching ~supervisor~
+again -- the standard Asio idiom for a join point without holding the
+coroutine's own completion token.
+
+Review (4 passes) surfaced a related cross-thread race in that new
+completion signal: ~process_supervisor::do_launch()~ hops onto a separate
+~db_pool_~ thread pool for post-launch DB writes and never hopped back, so
+once ~start_all()~'s loop crossed onto that thread the whole coroutine
+chain -- including the completion signal -- could run there instead of on
+~io_ctx~, racing the ~async_wait()~ on the same timer object. Fixed by
+having ~do_launch()~ post back onto ~ioc_~'s executor before returning,
+mirroring the existing pattern in ~monitor_process()~. Also widened
+exception handling in the detached coroutine (~catch (...)~ alongside
+~catch (const std::exception&)~) and narrowed the timer's exception
+handling to only swallow ~operation_aborted~, rethrowing anything else.
+
+Along the way, fixed a second real bug found during debugging:
+~lifecycle_manager::make_console_sink()~ never called ~auto_flush(true)~
+on the console sink, unlike the file sink -- this made ~podman logs~
+output appear to "hang" in bursts, which cost real debugging time. Also
+fixed a ~docker/run-pod.sh~ podman rootless uid-remap issue
+(~--userns=keep-id~ on the pod).
+
+Acceptance met: all 18 services now reach ~running~ phase end-to-end via
+~docker/run-pod.sh~, matching native timing; verified natively and by
+extensive manual runs described in PR #1724. No new automated test
+coverage was added for the scheduling/threading fix itself -- it is a
+timing/environment-dependent race, hard to assert on deterministically,
+consistent with all four review passes' own conclusion.
+
+PR #1724 merged into main.

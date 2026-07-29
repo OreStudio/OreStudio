@@ -78,11 +78,11 @@ public:
      */
     std::uint32_t count_conventions();
 
+
     /**
      * @brief Retrieves a single currency pair convention as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param pair_code The pair_code of the currency pair convention.
      * @param version The version to fetch.
      * @return The currency pair convention at that version if found, std::nullopt otherwise.
      */
@@ -90,9 +90,8 @@ public:
     get_convention_at_version(const std::string& pair_code, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single currency pair convention by its pair_code.
+     * @brief Retrieves a single currency pair convention by its primary key.
      *
-     * @param pair_code The pair_code of the currency pair convention.
      * @return The currency pair convention if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_pair_convention> get_convention(const std::string& pair_code);
@@ -114,15 +113,14 @@ public:
     void save_conventions(const std::vector<domain::currency_pair_convention>& conventions);
 
     /**
-     * @brief Deletes a currency pair convention by its pair_code.
+     * @brief Deletes a currency pair convention by its primary key.
      *
-     * @param pair_code The pair_code of the currency pair convention to delete.
      * @throws std::exception on failure.
      */
     void delete_convention(const std::string& pair_code);
 
     /**
-     * @brief Deletes currency pair conventions by their pair_codes.
+     * @brief Deletes currency pair conventions by their primary keys.
      */
     void delete_conventions(const std::vector<std::string>& pair_codes);
 

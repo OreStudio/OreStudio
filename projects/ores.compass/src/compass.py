@@ -6462,7 +6462,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "db", "sql", "services", "client", "test", "build",
+            "env", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen",
             "inbox", "next", "deferred", "discarded", "backlog",

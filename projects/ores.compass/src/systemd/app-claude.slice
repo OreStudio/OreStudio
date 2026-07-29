@@ -1,4 +1,3 @@
-\
 # Deployed by `compass claude` to ~/.config/systemd/user/app-claude.slice.
 # Source of truth: projects/ores.compass/src/systemd/app-claude.slice.
 #

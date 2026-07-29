@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 231CF058-F688-4E9D-B0D9-703B2951A40F
+:END:
+#+title: ores.qt.synthetic
+#+description: Qt widgets for synthetic market data generation: FX spot and IR curve generation configs, GMM components, curve templates, and the Market Simulator.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: qt.synthetic
+#+full_name: ores.qt.synthetic
+#+brief: Qt synthetic data UI
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.synthetic component diagram
+#+caption: ores.qt.synthetic
+[[file:ores.qt.synthetic.png][file:ores.qt.synthetic.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

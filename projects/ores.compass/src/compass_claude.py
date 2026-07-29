@@ -28,6 +28,7 @@ Inspect live accounting with: systemd-cgtop --user
 
 import filecmp
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -45,11 +46,12 @@ def run(argv, project_root=None) -> int:
 
     if _has_user_systemd():
         _ensure_slice_deployed()
+        env_name = _env_name(project_root)
         cmd = [
             "systemd-run", "--user", "--scope", "-q", "--collect",
-            f"--unit=claude-{os.getpid()}",
+            f"--unit=claude-{env_name}-{os.getpid()}",
             f"--slice={_SLICE_NAME}",
-            f"--description=Claude Code session (pid {os.getpid()})",
+            f"--description=Claude Code session ({env_name}, pid {os.getpid()})",
             real, *argv,
         ]
         os.execvp(cmd[0], cmd)
@@ -57,6 +59,29 @@ def run(argv, project_root=None) -> int:
     print("compass claude: no user systemd manager; running unscoped",
           flush=True)
     os.execvp(real, [real, *argv])
+
+
+def _env_name(project_root) -> str:
+    """Resolve the environment's identity for use in a systemd unit name.
+
+    Reads ORES_ENV_NAME from the checkout's .env, falling back to the
+    checkout directory's own name, then sanitises it to the characters
+    systemd unit names allow.
+    """
+    name = None
+    if project_root is not None:
+        env_file = Path(project_root) / ".env"
+        if env_file.is_file():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.lstrip().startswith("ORES_ENV_NAME="):
+                    name = line.partition("=")[2].strip().strip("'\"")
+                    break
+        if not name:
+            name = Path(project_root).name
+
+    name = name or "unknown"
+    name = re.sub(r"[^A-Za-z0-9_.-]", "_", name)
+    return name or "unknown"
 
 
 def _has_user_systemd() -> bool:

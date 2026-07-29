@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 9D32A18D-C05C-4189-867B-A26A0CDEF719
+:END:
+#+title: Task: Name compass claude's systemd scope after the environment identity
+#+description: compass claude currently names its transient systemd scope/unit claude-<pid>, so systemd-cgtop/systemctl --user status can't tell which worktree a Claude session belongs to. Include ORES_ENV_NAME (falling back to the checkout dir name) in the unit name, e.g. claude-<env>-<pid>.
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
+#+owner: marco
+#+branch: feature/scope-name-by-environment
+#+pr: 1731
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+`compass claude` launches Claude Code in a transient systemd --user scope
+named =claude-<pid>=, under =app-claude.slice=. This isolates it from
+=emacs.service= for oomd purposes, but every scope looks identical in
+=systemd-cgtop --user= / =systemctl --user status= — there is no way to
+tell which worktree/environment a given Claude session belongs to short
+of cross-referencing PIDs.
+
+Include the environment identity (=ORES_ENV_NAME= from the checkout's
+=.env=, falling back to the checkout directory name) in the unit name,
+e.g. =claude-brave_hopper-<pid>=, and in the scope's =--description=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- The scope/unit name includes the environment identity (=ORES_ENV_NAME=,
+  falling back to the checkout directory name), sanitised to the
+  characters systemd unit names allow.
+- The =--description= passed to =systemd-run= also carries the
+  environment identity alongside the pid.
+- Falls back sanely when =project_root= or =.env= is unavailable.
+- No change in behaviour for anyone invoking the plain =claude= binary
+  directly (this only affects the =compass claude= launcher).
+
+* Plan
+
+Added =_env_name(project_root)= to =compass_claude.py=: reads
+=ORES_ENV_NAME= from the checkout's =.env=, falls back to the checkout
+directory's own name, then sanitises to =[A-Za-z0-9_.-]= (systemd unit
+name charset). Threaded the result into both =--unit= and
+=--description= of the =systemd-run= invocation in =run()=.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1731][#1731]] | [compass] Name compass claude's systemd scope after the environment identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+`compass claude`'s systemd scope/unit is now named
+=claude-<env>-<pid>= (e.g. =claude-brave_hopper-<pid>=) instead of
+=claude-<pid>=, with the environment identity also carried in the
+=--description=. Environment identity resolves from =ORES_ENV_NAME=
+in =.env=, falling back to the checkout directory name, sanitised to
+the characters systemd unit names allow. Verified with unit tests
+against =_env_name()= (real =.env=, missing =project_root=, missing
+=.env= file) and =python3 -m py_compile= for a clean compile. All
+acceptance criteria met; no change to the plain =claude= binary path.
